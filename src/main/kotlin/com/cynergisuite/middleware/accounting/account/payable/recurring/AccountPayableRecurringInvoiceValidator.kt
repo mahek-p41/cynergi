@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,7 +27,7 @@ class AccountPayableRecurringInvoiceValidator @Inject constructor(
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: Long, dto: AccountPayableRecurringInvoiceDTO, company: Company): AccountPayableRecurringInvoiceEntity {
+   fun validateUpdate(id: UUID, dto: AccountPayableRecurringInvoiceDTO, company: Company): AccountPayableRecurringInvoiceEntity {
       logger.debug("Validating Update AccountPayableRecurringInvoice {}", dto)
 
       return doSharedValidation(dto, company)

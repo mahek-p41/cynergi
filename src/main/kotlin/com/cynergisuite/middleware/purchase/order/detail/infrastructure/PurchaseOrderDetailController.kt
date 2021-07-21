@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -42,7 +43,7 @@ class PurchaseOrderDetailController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(PurchaseOrderDetailController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["PurchaseOrderDetailEndpoints"], summary = "Fetch a single PurchaseOrderDetail", description = "Fetch a single PurchaseOrderDetail by its system generated primary key", operationId = "purchaseOrderDetail-fetchOne")
    @ApiResponses(
       value = [
@@ -54,7 +55,7 @@ class PurchaseOrderDetailController @Inject constructor(
    )
    fun fetchOne(
       @Valid @QueryValue("id")
-      id: Long,
+      id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): PurchaseOrderDetailDTO {
@@ -126,7 +127,7 @@ class PurchaseOrderDetailController @Inject constructor(
       return response
    }
 
-   @Put(value = "/{id}", processes = [APPLICATION_JSON])
+   @Put(value = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["PurchaseOrderDetailEndpoints"], summary = "Update a single PurchaseOrderDetail", description = "Update a single PurchaseOrderDetail", operationId = "purchaseOrderDetail-update")
    @ApiResponses(
@@ -141,7 +142,7 @@ class PurchaseOrderDetailController @Inject constructor(
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the PurchaseOrderDetail being updated")
       @QueryValue("id")
-      id: Long,
+      id: UUID,
       @Body @Valid
       dto: PurchaseOrderDetailDTO,
       authentication: Authentication,
@@ -157,7 +158,7 @@ class PurchaseOrderDetailController @Inject constructor(
       return response
    }
 
-   @Delete(uri = "/{id:[0-9]+}")
+   @Delete(uri = "/{id:[0-9a-fA-F\\-]+}")
    @Operation(tags = ["PurchaseOrderDetailEndpoints"], summary = "Delete a single purchase order detail", description = "Deletes a purchase order detail based on passed id", operationId = "purchaseOrderDetail-delete")
    @ApiResponses(
       value = [
@@ -167,7 +168,7 @@ class PurchaseOrderDetailController @Inject constructor(
       ]
    )
    fun delete(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ) {

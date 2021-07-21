@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import java.util.UUID
 import javax.validation.constraints.Digits
 import javax.validation.constraints.Max
 import javax.validation.constraints.Min
@@ -15,9 +16,8 @@ import javax.validation.constraints.Positive
 @Schema(name = "VendorPaymentTermSchedule", title = "Single vendor payment term schedule definition", description = "Single vendor payment term schedule")
 data class VendorPaymentTermScheduleDTO(
 
-   @field:Positive
    @field:Schema(name = "id", minimum = "1", required = false, description = "System generated ID")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:Positive
    @field:Min(value = 1)
@@ -55,5 +55,5 @@ data class VendorPaymentTermScheduleDTO(
          scheduleOrderNumber = entity.scheduleOrderNumber
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

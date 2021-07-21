@@ -4,6 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.deleteReturning
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.Company
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.sql.SQLException
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -58,7 +60,6 @@ class RegionRepository @Inject constructor(
                emp.emp_alternative_store_indicator    AS emp_alternative_store_indicator,
                emp.emp_alternative_area               AS emp_alternative_area,
                emp.comp_id                            AS comp_id,
-               emp.comp_uu_row_id                     AS comp_uu_row_id,
                emp.comp_time_created                  AS comp_time_created,
                emp.comp_time_updated                  AS comp_time_updated,
                emp.comp_name                          AS comp_name,
@@ -89,7 +90,7 @@ class RegionRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long, company: Company): RegionEntity? {
+   fun findOne(id: UUID, company: Company): RegionEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId(), "comp_dataset_code" to company.myDataset())
       val query =
          """${selectBaseQuery()} WHERE reg.id = :id
@@ -164,7 +165,7 @@ class RegionRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(id: Long, entity: RegionEntity): RegionEntity {
+   fun update(id: UUID, entity: RegionEntity): RegionEntity {
       logger.debug("Updating region {}", entity)
 
       return jdbc.updateReturning(
@@ -192,7 +193,7 @@ class RegionRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: Long, company: Company): RegionEntity? {
+   fun delete(id: UUID, company: Company): RegionEntity? {
       logger.debug("Deleting Region using {}/{}", id, company)
 
       val region = findOne(id, company)
@@ -293,7 +294,7 @@ class RegionRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = "reg_"): RegionEntity =
       RegionEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
          division = divisionRepository.mapRow(rs, company, "div_"),
          name = rs.getString("${columnPrefix}name"),
@@ -315,7 +316,7 @@ class RegionRepository @Inject constructor(
 
    fun mapRow(rs: ResultSet, region: RegionEntity, columnPrefix: String = EMPTY): RegionEntity =
       RegionEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
          division = region.division,
          name = rs.getString("${columnPrefix}name"),

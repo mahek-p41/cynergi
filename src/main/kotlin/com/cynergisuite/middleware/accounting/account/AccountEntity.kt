@@ -1,9 +1,10 @@
 package com.cynergisuite.middleware.accounting.account
 
 import com.cynergisuite.domain.Identifiable
+import java.util.UUID
 
 data class AccountEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val number: Long,
    val name: String,
    val type: AccountType,
@@ -30,5 +31,5 @@ data class AccountEntity(
          corporateAccountIndicator = accountDTO.corporateAccountIndicator!!
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

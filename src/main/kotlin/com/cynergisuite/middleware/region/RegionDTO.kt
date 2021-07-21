@@ -1,9 +1,10 @@
 package com.cynergisuite.middleware.region
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.division.DivisionDTO
 import io.swagger.v3.oas.annotations.media.Schema
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
@@ -11,9 +12,8 @@ import javax.validation.constraints.Positive
 @Schema(name = "Region", title = "Region", description = "A region of a division.")
 data class RegionDTO(
 
-   @field:Positive
    @field:Schema(name = "id", minimum = "1", required = false, nullable = true, description = "System generated ID")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:Positive
    @field:Schema(name = "id", minimum = "1", description = "System Z external number")
@@ -35,10 +35,10 @@ data class RegionDTO(
    @field:Valid
    @field:NotNull
    @field:Schema(name = "regionalManager", description = "Regional manager id")
-   var regionalManager: SimpleIdentifiableDTO? = null,
+   var regionalManager: SimpleLegacyIdentifiableDTO? = null,
 
 ) : Identifiable {
-   override fun myId() = id
+   override fun myId(): UUID? = id
 
    constructor(entity: RegionEntity) :
       this(
@@ -46,7 +46,7 @@ data class RegionDTO(
          number = entity.number,
          name = entity.name,
          description = entity.description,
-         regionalManager = SimpleIdentifiableDTO(entity.regionalManager?.id),
+         regionalManager = SimpleLegacyIdentifiableDTO(entity.regionalManager?.id),
          division = DivisionDTO(entity.division),
       )
 }

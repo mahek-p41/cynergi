@@ -2,11 +2,12 @@ package com.cynergisuite.middleware.region
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.region.infrastructure.RegionRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,7 +18,7 @@ class RegionService @Inject constructor(
    private val storeRepository: StoreRepository
 ) {
 
-   fun fetchById(id: Long, company: Company): RegionDTO? =
+   fun fetchById(id: UUID, company: Company): RegionDTO? =
       regionRepository.findOne(id, company)?.let { RegionDTO(it) }
 
    fun fetchAll(company: Company, pageRequest: PageRequest): Page<RegionDTO> {
@@ -34,17 +35,17 @@ class RegionService @Inject constructor(
       return RegionDTO(regionRepository.insert(toCreate))
    }
 
-   fun update(id: Long, dto: RegionDTO, company: Company): RegionDTO {
+   fun update(id: UUID, dto: RegionDTO, company: Company): RegionDTO {
       val toUpdate = regionValidator.validateUpdate(id, dto, company)
 
       return RegionDTO(regionRepository.update(id, toUpdate))
    }
 
-   fun delete(id: Long, company: Company): RegionDTO? {
+   fun delete(id: UUID, company: Company): RegionDTO? {
       return regionRepository.delete(id, company)?.let { RegionDTO(it) }
    }
 
-   fun assignStoreToRegion(regionId: Long, dto: SimpleIdentifiableDTO, company: Company) {
+   fun assignStoreToRegion(regionId: UUID, dto: SimpleLegacyIdentifiableDTO, company: Company) {
       val region = regionRepository.findOne(regionId, company) ?: throw NotFoundException(regionId)
       val store = storeRepository.findOne(dto.id!!, company) ?: throw NotFoundException(dto.id!!)
 
@@ -55,7 +56,7 @@ class RegionService @Inject constructor(
       }
    }
 
-   fun disassociateStoreFromRegion(regionId: Long, storeId: Long, company: Company) {
+   fun disassociateStoreFromRegion(regionId: UUID, storeId: Long, company: Company) {
       val region = regionRepository.findOne(regionId, company) ?: throw NotFoundException(regionId)
       val store = storeRepository.findOne(storeId, company) ?: throw NotFoundException(storeId)
 

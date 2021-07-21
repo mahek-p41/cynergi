@@ -3,14 +3,15 @@ package com.cynergisuite.middleware.address
 import com.cynergisuite.extensions.deleteReturning
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getDoubleOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -41,16 +42,15 @@ class AddressRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long): AddressEntity? {
+   fun findOne(id: UUID): AddressEntity? {
       val params = mutableMapOf<String, Any?>("id" to id)
       val query = "${selectBaseQuery()} WHERE address.id = :id"
       val found = jdbc.findFirstOrNull(
          query,
-         params,
-         RowMapper { rs, _ ->
-            mapAddress(rs, "address_")
-         }
-      )
+         params
+      ) { rs, _ ->
+         mapAddress(rs, "address_")
+      }
 
       logger.trace("Searching for AuditDetail: {} resulted in {}", id, found)
 
@@ -89,11 +89,10 @@ class AddressRepository @Inject constructor(
             "county" to address.county,
             "phone" to address.phone,
             "fax" to address.fax
-         ),
-         RowMapper { rs, _ ->
-            mapAddress(rs)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapAddress(rs)
+      }
    }
 
    @Transactional
@@ -134,11 +133,10 @@ class AddressRepository @Inject constructor(
             "county" to address.county,
             "phone" to address.phone,
             "fax" to address.fax
-         ),
-         RowMapper { rs, _ ->
-            mapAddress(rs)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapAddress(rs)
+      }
    }
 
    fun upsert(address: AddressEntity): AddressEntity =
@@ -149,7 +147,7 @@ class AddressRepository @Inject constructor(
       }
 
    @Transactional
-   fun delete(id: Long): AddressEntity? {
+   fun delete(id: UUID): AddressEntity? {
       logger.debug("Deleting Address using {}", id)
 
       val existingAddress = findOne(id)
@@ -162,25 +160,24 @@ class AddressRepository @Inject constructor(
             RETURNING
                *
             """,
-            mapOf("id" to id),
-            RowMapper { rs, _ ->
-               AddressEntity(
-                  id = rs.getLong("id"),
-                  name = existingAddress.name,
-                  address1 = existingAddress.address1,
-                  address2 = existingAddress.address2,
-                  city = existingAddress.city,
-                  state = existingAddress.state,
-                  postalCode = existingAddress.postalCode,
-                  latitude = existingAddress.latitude,
-                  longitude = existingAddress.longitude,
-                  country = existingAddress.country,
-                  county = existingAddress.county,
-                  phone = existingAddress.phone,
-                  fax = existingAddress.fax
-               )
-            }
-         )
+            mapOf("id" to id)
+         ) { rs, _ ->
+            AddressEntity(
+               id = rs.getUuid("id"),
+               name = existingAddress.name,
+               address1 = existingAddress.address1,
+               address2 = existingAddress.address2,
+               city = existingAddress.city,
+               state = existingAddress.state,
+               postalCode = existingAddress.postalCode,
+               latitude = existingAddress.latitude,
+               longitude = existingAddress.longitude,
+               country = existingAddress.country,
+               county = existingAddress.county,
+               phone = existingAddress.phone,
+               fax = existingAddress.fax
+            )
+         }
       } else {
          null
       }
@@ -188,7 +185,7 @@ class AddressRepository @Inject constructor(
 
    fun mapAddress(rs: ResultSet, columnPrefix: String = EMPTY): AddressEntity =
       AddressEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          name = rs.getString("${columnPrefix}name"),
          address1 = rs.getString("${columnPrefix}address1"),
          address2 = rs.getString("${columnPrefix}address2"),
@@ -205,21 +202,7 @@ class AddressRepository @Inject constructor(
 
    fun mapAddressOrNull(rs: ResultSet, columnPrefix: String = EMPTY): AddressEntity? =
       if (rs.getString("${columnPrefix}id") != null) {
-         AddressEntity(
-            id = rs.getLong("${columnPrefix}id"),
-            name = rs.getString("${columnPrefix}name"),
-            address1 = rs.getString("${columnPrefix}address1"),
-            address2 = rs.getString("${columnPrefix}address2"),
-            city = rs.getString("${columnPrefix}city"),
-            state = rs.getString("${columnPrefix}state"),
-            postalCode = rs.getString("${columnPrefix}postal_code"),
-            latitude = rs.getDoubleOrNull("${columnPrefix}latitude"),
-            longitude = rs.getDoubleOrNull("${columnPrefix}longitude"),
-            country = rs.getString("${columnPrefix}country"),
-            county = rs.getString("${columnPrefix}county"),
-            phone = rs.getString("${columnPrefix}phone"),
-            fax = rs.getString("${columnPrefix}fax")
-         )
+         mapAddress(rs, columnPrefix)
       } else {
          null
       }

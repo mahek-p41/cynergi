@@ -4,8 +4,10 @@ import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
+import com.cynergisuite.middleware.purchase.order.infrastructure.PurchaseOrderRepository
 import com.cynergisuite.middleware.purchase.order.type.infrastructure.ExceptionIndicatorTypeRepository
 import com.cynergisuite.middleware.purchase.order.type.infrastructure.PurchaseOrderStatusTypeRepository
 import com.cynergisuite.middleware.purchase.order.type.infrastructure.PurchaseOrderTypeRepository
@@ -18,6 +20,7 @@ import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,13 +31,14 @@ class PurchaseOrderValidator @Inject constructor(
    private val exceptionIndicatorTypeRepository: ExceptionIndicatorTypeRepository,
    private val freightOnboardTypeRepository: FreightOnboardTypeRepository,
    private val freightTermTypeRepository: FreightTermTypeRepository,
-   private val paymentTermRepository: VendorPaymentTermRepository,
+   private val purchaseOrderRepository: PurchaseOrderRepository,
+   private val statusTypeRepository: PurchaseOrderStatusTypeRepository,
+   private val typeRepository: PurchaseOrderTypeRepository,
+   private val storeRepository: StoreRepository,
    private val shipLocationTypeRepository: ShipLocationTypeRepository,
    private val shipViaRepository: ShipViaRepository,
-   private val statusTypeRepository: PurchaseOrderStatusTypeRepository,
-   private val storeRepository: StoreRepository,
-   private val typeRepository: PurchaseOrderTypeRepository,
-   private val vendorRepository: VendorRepository
+   private val paymentTermRepository: VendorPaymentTermRepository,
+   private val vendorRepository: VendorRepository,
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(PurchaseOrderValidator::class.java)
 
@@ -44,13 +48,15 @@ class PurchaseOrderValidator @Inject constructor(
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: Long, dto: PurchaseOrderDTO, company: Company): PurchaseOrderEntity {
+   fun validateUpdate(id: UUID, dto: PurchaseOrderDTO, company: Company): PurchaseOrderEntity {
       logger.debug("Validating Update PurchaseOrder {}", dto)
 
-      return doSharedValidation(dto, company)
+      val existingEntity = purchaseOrderRepository.findOne(id, company) ?: throw NotFoundException(id)
+
+      return doSharedValidation(dto, company, existingEntity)
    }
 
-   private fun doSharedValidation(dto: PurchaseOrderDTO, company: Company): PurchaseOrderEntity {
+   private fun doSharedValidation(dto: PurchaseOrderDTO, company: Company, existingEntity: PurchaseOrderEntity? = null): PurchaseOrderEntity {
       val vendor = vendorRepository.findOne(dto.vendor!!.id!!, company)
       val statusType = statusTypeRepository.findOne(dto.statusType!!.value)
       val type = typeRepository.findOne(dto.type!!.value)
@@ -64,7 +70,6 @@ class PurchaseOrderValidator @Inject constructor(
       val paymentTermType = paymentTermRepository.findOne(dto.paymentTermType!!.id!!, company)
       val exceptionIndicatorType = exceptionIndicatorTypeRepository.findOne(dto.exceptionIndicatorType!!.value)
       val vendorSubmittedEmployee = dto.vendorSubmittedEmployee?.id?.let { employeeRepository.findOne(dto.vendorSubmittedEmployee!!.number!!, dto.vendorSubmittedEmployee!!.type!!, company) }
-      val customerAccount = dto.customerAccount?.id?.let { accountRepository.findOne(it, company) }
 
       doValidation { errors ->
          vendor
@@ -106,13 +111,10 @@ class PurchaseOrderValidator @Inject constructor(
          if (dto.vendorSubmittedEmployee?.number != null && vendorSubmittedEmployee == null) {
             errors.add(ValidationError("vendorSubmittedEmployee.number", NotFound(dto.vendorSubmittedEmployee!!.number!!)))
          }
-
-         if (dto.customerAccount?.id != null && customerAccount == null) {
-            errors.add(ValidationError("customerAccount.id", NotFound(dto.customerAccount!!.id!!)))
-         }
       }
 
       return PurchaseOrderEntity(
+         existingEntity = existingEntity,
          dto = dto,
          vendor = vendor!!,
          statusType = statusType!!,
@@ -127,7 +129,6 @@ class PurchaseOrderValidator @Inject constructor(
          paymentTermType = paymentTermType!!,
          exceptionIndicatorType = exceptionIndicatorType!!,
          vendorSubmittedEmployee = vendorSubmittedEmployee,
-         customerAccount = customerAccount
       )
    }
 }

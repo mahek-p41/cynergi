@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -42,7 +43,7 @@ class GeneralLedgerSourceCodeController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerSourceCodeController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerSourceCodeEndpoints"], summary = "Fetch a single GeneralLedgerSourceCode", description = "Fetch a single GeneralLedgerSourceCode by it's system generated primary key", operationId = "generalLedgerSourceCode-fetchOne")
    @ApiResponses(
       value = [
@@ -53,7 +54,7 @@ class GeneralLedgerSourceCodeController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): GeneralLedgerSourceCodeDTO {
@@ -138,7 +139,7 @@ class GeneralLedgerSourceCodeController @Inject constructor(
    )
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the GeneralLedgerSourceCode being updated") @QueryValue("id")
-      id: Long,
+      id: UUID,
       @Body @Valid
       dto: GeneralLedgerSourceCodeDTO,
       authentication: Authentication,
@@ -166,7 +167,7 @@ class GeneralLedgerSourceCodeController @Inject constructor(
       ]
    )
    fun delete(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ) {

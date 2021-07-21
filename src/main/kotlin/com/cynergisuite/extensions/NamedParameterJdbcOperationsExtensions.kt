@@ -1,6 +1,5 @@
 package com.cynergisuite.extensions
 
-import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.error.DataAccessException
 import com.cynergisuite.domain.infrastructure.PagedResultSetExtractor
@@ -32,7 +31,7 @@ fun <ENTITY> NamedParameterJdbcOperations.findFirst(query: String, params: Map<S
    return mineListForFirstElement(query, resultList, params)!!
 }
 
-fun <ENTITY : Identifiable> NamedParameterJdbcOperations.queryFullList(sql: String, params: Map<String, *>, mapper: (rs: ResultSet, elements: MutableList<ENTITY>) -> Unit): List<ENTITY> {
+fun <ENTITY> NamedParameterJdbcOperations.queryFullList(sql: String, params: Map<String, *>, mapper: (rs: ResultSet, elements: MutableList<ENTITY>) -> Unit): List<ENTITY> {
    return this.query(sql, params, SimpleResultSetExtractor(mapper))!!
 }
 

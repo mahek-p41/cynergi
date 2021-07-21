@@ -6,9 +6,10 @@ import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSource
 import com.cynergisuite.middleware.store.Store
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 
 data class GeneralLedgerDetailEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val account: AccountEntity,
    val profitCenter: Store,
    val date: LocalDate,
@@ -21,13 +22,14 @@ data class GeneralLedgerDetailEntity(
 ) : Identifiable {
 
    constructor(
+      id: UUID?,
       dto: GeneralLedgerDetailDTO,
       account: AccountEntity,
       profitCenter: Store,
       source: GeneralLedgerSourceCodeEntity
    ) :
       this(
-         id = dto.id,
+         id = id,
          account = account,
          date = dto.date!!,
          profitCenter = profitCenter,
@@ -38,5 +40,5 @@ data class GeneralLedgerDetailEntity(
          journalEntryNumber = dto.journalEntryNumber
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

@@ -1,10 +1,10 @@
 package com.cynergisuite.middleware.schedule.argument.infrastructure
 
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
@@ -25,15 +25,14 @@ class ScheduleArgumentRepository @Inject constructor(
          RETURNING
             *
          """.trimIndent(),
-         mapOf("value" to entity.value, "description" to entity.description, "schedule_id" to parent.id),
-         RowMapper { rs, _ ->
-            ScheduleArgumentEntity(
-               id = rs.getLong("id"),
-               value = rs.getString("value"),
-               description = rs.getString("description")
-            )
-         }
-      )
+         mapOf("value" to entity.value, "description" to entity.description, "schedule_id" to parent.id)
+      ) { rs, _ ->
+         ScheduleArgumentEntity(
+            id = rs.getUuid("id"),
+            value = rs.getString("value"),
+            description = rs.getString("description")
+         )
+      }
    }
 
    @Transactional
@@ -51,15 +50,14 @@ class ScheduleArgumentRepository @Inject constructor(
             "id" to entity.id,
             "value" to entity.value,
             "description" to entity.description
-         ),
-         RowMapper { rs, _ ->
-            ScheduleArgumentEntity(
-               id = rs.getLong("id"),
-               value = rs.getString("value"),
-               description = rs.getString("description")
-            )
-         }
-      )
+         )
+      ) { rs, _ ->
+         ScheduleArgumentEntity(
+            id = rs.getUuid("id"),
+            value = rs.getString("value"),
+            description = rs.getString("description")
+         )
+      }
    }
 
    @Transactional
@@ -81,7 +79,7 @@ class ScheduleArgumentRepository @Inject constructor(
       ) { rs ->
          result.add(
             ScheduleArgumentEntity(
-               id = rs.getLong("id"),
+               id = rs.getUuid("id"),
                value = rs.getString("value"),
                description = rs.getString("description")
             )
@@ -103,7 +101,7 @@ class ScheduleArgumentRepository @Inject constructor(
    fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "sa_"): ScheduleArgumentEntity? {
       return if (rs.getString("${columnPrefix}id") != null) {
          ScheduleArgumentEntity(
-            id = rs.getLong("${columnPrefix}id"),
+            id = rs.getUuid("${columnPrefix}id"),
             value = rs.getString("${columnPrefix}value"),
             description = rs.getString("${columnPrefix}description")
          )

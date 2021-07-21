@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
@@ -52,15 +53,18 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
    }
 
    void "fetch one not found" () {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      get("$path/0")
+      get("$path/$nonExistentId")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == "0 was unable to be found"
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "fetch all" () {
@@ -180,7 +184,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       final glRecurringDistributionDTO = dataLoaderService.singleDTO(
          new GeneralLedgerRecurringDTO(glRecurring),
          new SimpleIdentifiableDTO(account),
-         new SimpleIdentifiableDTO(profitCenter.myId())
+         new SimpleLegacyIdentifiableDTO(profitCenter.myId())
       )
 
       when:
@@ -190,7 +194,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       notThrown(Exception)
       result != null
       with(result) {
-         id > 0
+         id != null
          generalLedgerRecurring.id == glRecurringDistributionDTO.generalLedgerRecurring.id
          generalLedgerDistributionAccount.id == glRecurringDistributionDTO.generalLedgerDistributionAccount.myId()
          generalLedgerDistributionProfitCenter.id == glRecurringDistributionDTO.generalLedgerDistributionProfitCenter.myId()
@@ -209,7 +213,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       final glRecurringDistributionDTO = dataLoaderService.singleDTO(
          new GeneralLedgerRecurringDTO(glRecurring),
          new SimpleIdentifiableDTO(account),
-         new SimpleIdentifiableDTO(profitCenter.myId())
+         new SimpleLegacyIdentifiableDTO(profitCenter.myId())
       )
       glRecurringDistributionDTO["$nonNullableProp"] = null
 
@@ -243,11 +247,11 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       final glRecurringDistributionDTO = dataLoaderService.singleDTO(
          new GeneralLedgerRecurringDTO(glRecurring),
          new SimpleIdentifiableDTO(account),
-         new SimpleIdentifiableDTO(profitCenter.myId())
+         new SimpleLegacyIdentifiableDTO(profitCenter.myId())
       )
-      glRecurringDistributionDTO["$testProp"] = invalidValue
 
       when:
+      glRecurringDistributionDTO["$testProp"] = invalidValue
       post(path, glRecurringDistributionDTO)
 
       then:
@@ -258,9 +262,9 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       response[0].path == errorResponsePath
       response[0].message == errorMessage
       where:
-      testProp                                   | invalidValue                         || errorResponsePath                             | errorMessage
-      'generalLedgerDistributionAccount'         | new SimpleIdentifiableDTO(999999)    || 'generalLedgerDistributionAccount.id'         | '999,999 was unable to be found'
-      'generalLedgerDistributionProfitCenter'    | new SimpleIdentifiableDTO(999999)    || 'generalLedgerDistributionProfitCenter.id'    | '999,999 was unable to be found'
+      testProp                                | invalidValue                                                                       || errorResponsePath                          | errorMessage
+      'generalLedgerDistributionAccount'      | new SimpleIdentifiableDTO(UUID.fromString('0fd98cc1-0870-4a98-958b-e62bf5c389e8')) || 'generalLedgerDistributionAccount.id'      | "0fd98cc1-0870-4a98-958b-e62bf5c389e8 was unable to be found"
+      'generalLedgerDistributionProfitCenter' | new SimpleLegacyIdentifiableDTO(999_999)                                           || 'generalLedgerDistributionProfitCenter.id' | '999,999 was unable to be found'
    }
 
    void "update one" () {
@@ -274,7 +278,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       final glRecurringDistributionDTO = dataLoaderService.singleDTO(
          new GeneralLedgerRecurringDTO(glRecurring),
          new SimpleIdentifiableDTO(account),
-         new SimpleIdentifiableDTO(profitCenter.myId())
+         new SimpleLegacyIdentifiableDTO(profitCenter.myId())
       )
       glRecurringDistributionDTO.id = glRecurringDistributionEntity.id
 
@@ -305,9 +309,8 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       final glRecurringDistributionDTO = dataLoaderService.singleDTO(
          new GeneralLedgerRecurringDTO(glRecurring),
          new SimpleIdentifiableDTO(account),
-         new SimpleIdentifiableDTO(profitCenter.myId())
+         new SimpleLegacyIdentifiableDTO(profitCenter.myId())
       )
-      glRecurringDistributionDTO.id = glRecurringDistributionEntity.id
       glRecurringDistributionDTO["$nonNullableProp"] = null
 
       when:
@@ -341,12 +344,11 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       final glRecurringDistributionDTO = dataLoaderService.singleDTO(
          new GeneralLedgerRecurringDTO(glRecurring),
          new SimpleIdentifiableDTO(account),
-         new SimpleIdentifiableDTO(profitCenter.myId())
+         new SimpleLegacyIdentifiableDTO(profitCenter.myId())
       )
-      glRecurringDistributionDTO.id = glRecurringDistributionEntity.id
-      glRecurringDistributionDTO["$testProp"] = invalidValue
 
       when:
+      glRecurringDistributionDTO["$testProp"] = invalidValue
       put("$path/${glRecurringDistributionEntity.id}", glRecurringDistributionDTO)
 
       then:
@@ -357,9 +359,9 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       response[0].path == errorResponsePath
       response[0].message == errorMessage
       where:
-      testProp                                   | invalidValue                         || errorResponsePath                             | errorMessage
-      'generalLedgerDistributionAccount'         | new SimpleIdentifiableDTO(999999)    || 'generalLedgerDistributionAccount.id'         | '999,999 was unable to be found'
-      'generalLedgerDistributionProfitCenter'    | new SimpleIdentifiableDTO(999999)    || 'generalLedgerDistributionProfitCenter.id'    | '999,999 was unable to be found'
+      testProp                                | invalidValue                                                                       || errorResponsePath                          | errorMessage
+      'generalLedgerDistributionAccount'      | new SimpleIdentifiableDTO(UUID.fromString('0fd98cc1-0870-4a98-958b-e62bf5c389e8')) || 'generalLedgerDistributionAccount.id'      | "0fd98cc1-0870-4a98-958b-e62bf5c389e8 was unable to be found"
+      'generalLedgerDistributionProfitCenter' | new SimpleLegacyIdentifiableDTO(999_999L)                                          || 'generalLedgerDistributionProfitCenter.id' | "999,999 was unable to be found"
    }
 
    void "delete one GL recurring distribution" () {

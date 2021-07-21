@@ -29,7 +29,6 @@ object PurchaseOrderControlDataLoader {
 
       return IntStream.range(0, number).mapToObj {
          PurchaseOrderControlEntity(
-            id = Random.nextLong(),
             dropFiveCharactersOnModelNumber = Random.nextBoolean(),
             updateAccountPayable = Random.nextBoolean(),
             printSecondDescription = Random.nextBoolean(),
@@ -84,7 +83,7 @@ object PurchaseOrderControlDataLoader {
       private val purchaseOrderControlRepository: PurchaseOrderControlRepository
    ) {
       fun stream(numberIn: Int = 1, company: Company, defaultVendor: VendorEntity, defaultApprover: EmployeeEntity): Stream<PurchaseOrderControlEntity> {
-         return PurchaseOrderControlDataLoader.stream(numberIn, defaultVendor, defaultApprover).map {
+         return stream(numberIn, defaultVendor, defaultApprover).map {
             purchaseOrderControlRepository.insert(it, company)
          }
       }
@@ -94,7 +93,7 @@ object PurchaseOrderControlDataLoader {
       }
 
       fun singleDTO(defaultVendor: SimpleIdentifiableDTO?, defaultApprover: EmployeeEntity?): PurchaseOrderControlDTO {
-         return PurchaseOrderControlDataLoader.streamDTO(1, defaultVendor, defaultApprover).findFirst().orElseThrow { Exception("Unable to create PurchaseOrderControl") }
+         return streamDTO(1, defaultVendor, defaultApprover).findFirst().orElseThrow { Exception("Unable to create PurchaseOrderControl") }
       }
    }
 }

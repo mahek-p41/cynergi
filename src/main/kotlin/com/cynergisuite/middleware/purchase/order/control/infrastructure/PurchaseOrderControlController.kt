@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -84,7 +85,7 @@ class PurchaseOrderControlController @Inject constructor(
       return response
    }
 
-   @Put(uri = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
+   @Put(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["PurchaseOrderControlEndpoints"], summary = "Update a PurchaseOrderControlEntity", description = "Update a PurchaseOrderControlEntity from a body of PurchaseOrderControlDTO", operationId = "purchaseOrderControl-update")
    @ApiResponses(
@@ -96,7 +97,7 @@ class PurchaseOrderControlController @Inject constructor(
       ]
    )
    fun update(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       @Body @Valid
       dto: PurchaseOrderControlDTO,
       authentication: Authentication

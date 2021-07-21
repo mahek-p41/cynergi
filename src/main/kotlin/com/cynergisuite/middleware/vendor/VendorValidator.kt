@@ -17,6 +17,7 @@ import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -61,7 +62,7 @@ class VendorValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateUpdate(id: Long, dto: VendorDTO, company: Company): Pair<VendorEntity, VendorEntity> {
+   fun validateUpdate(id: UUID, dto: VendorDTO, company: Company): Pair<VendorEntity, VendorEntity> {
       logger.trace("Validating Update Vendor {}", dto)
 
       val vendorGroup = dto.vendorGroup?.id?.let { vendorGroupRepository.findOne(it, company) }

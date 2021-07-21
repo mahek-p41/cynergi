@@ -42,6 +42,7 @@ import io.micronaut.security.authentication.AuthenticationException
 import io.micronaut.security.authentication.AuthorizationException
 import io.micronaut.web.router.exceptions.UnsatisfiedRouteException
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.postgresql.util.PSQLException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
@@ -278,6 +279,15 @@ class ErrorHandlerController @Inject constructor(
          else ->
             logger.error("Unknown IOException occurred during request processing", exception)
       }
+   }
+
+   @Error(global = true, exception = PSQLException::class)
+   fun sqlExceptionHandler(httpRequest: HttpRequest<*>, throwable: PSQLException): HttpResponse<ErrorDTO> {
+      logger.error("SQL Error", throwable)
+
+      val locale = httpRequest.findLocaleWithDefault()
+
+      return serverError(ErrorDTO(localizationService.localize(localizationCode = InternalError(), locale = locale)))
    }
 
    @Error(global = true, exception = Throwable::class)

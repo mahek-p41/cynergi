@@ -1,21 +1,20 @@
 package com.cynergisuite.middleware.audit.schedule
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.location.Location
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.DayOfWeek
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @Schema(name = "AuditScheduleCreateUpdate", title = "Requirements for creating an audit schedule", description = "Payload for creating a schedule for an audit associated with what stores and which department is supposed to do the audit")
 data class AuditScheduleCreateUpdateDTO(
 
-   @field:Positive
    @field:Schema(name = "id", description = "System generated ID for the associated schedule")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Size(min = 3, max = 64)
@@ -34,7 +33,7 @@ data class AuditScheduleCreateUpdateDTO(
    @field:Valid
    @field:NotEmpty
    @field:Schema(name = "stores", description = "Set of stores the audit schedule is supposed to run against")
-   var stores: Set<SimpleIdentifiableDTO> = mutableSetOf(), // is from a schedule argument that is collected together
+   var stores: Set<SimpleLegacyIdentifiableDTO> = mutableSetOf(), // is from a schedule argument that is collected together
 
    @field:NotNull
    @field:Schema(name = "enabled", description = "Whether the audit is enabled or not")
@@ -46,7 +45,7 @@ data class AuditScheduleCreateUpdateDTO(
          title = title,
          description = description,
          schedule = schedule,
-         stores = stores.asSequence().map { SimpleIdentifiableDTO(it.myId()) }.toSet(),
+         stores = stores.asSequence().map { SimpleLegacyIdentifiableDTO(it.myId()) }.toSet(),
          enabled = true
       )
 
@@ -55,17 +54,17 @@ data class AuditScheduleCreateUpdateDTO(
          title = title,
          description = description,
          schedule = schedule,
-         stores = stores.asSequence().map { SimpleIdentifiableDTO(it.myId()) }.toSet(),
+         stores = stores.asSequence().map { SimpleLegacyIdentifiableDTO(it.myId()) }.toSet(),
          enabled = enabled
       )
 
-   constructor(id: Long, title: String, description: String, schedule: DayOfWeek, stores: Set<Location>) :
+   constructor(id: UUID, title: String, description: String, schedule: DayOfWeek, stores: Set<Location>) :
       this(
          id = id,
          title = title,
          description = description,
          schedule = schedule,
-         stores = stores.asSequence().map { SimpleIdentifiableDTO(it.myId()) }.toSet(),
+         stores = stores.asSequence().map { SimpleLegacyIdentifiableDTO(it.myId()) }.toSet(),
          enabled = true
       )
 }

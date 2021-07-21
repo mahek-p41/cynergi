@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.location
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -26,20 +26,13 @@ data class LocationDTO(
    @field:Schema(name = "name", required = false, nullable = true, description = "Human readable name for a location")
    var name: String? = null
 
-) : Identifiable {
+) : LegacyIdentifiable {
 
    constructor(entity: LocationEntity) :
       this(
          id = entity.id,
          number = entity.number,
          name = entity.name
-      )
-
-   constructor(location: Location) :
-      this(
-         id = location.myId(),
-         number = location.myNumber(),
-         name = location.myName()
       )
 
    override fun myId(): Long? = id

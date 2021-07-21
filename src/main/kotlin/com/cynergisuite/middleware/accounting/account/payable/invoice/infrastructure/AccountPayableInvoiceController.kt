@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -41,7 +42,7 @@ class AccountPayableInvoiceController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableInvoiceController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Fetch a single Account Payable Invoice", description = "Fetch a single Account Payable Invoice by its system generated primary key", operationId = "accountPayableInvoice-fetchOne")
    @ApiResponses(
       value = [
@@ -53,7 +54,7 @@ class AccountPayableInvoiceController @Inject constructor(
    )
    fun fetchOne(
       @Valid @QueryValue("id")
-      id: Long,
+      id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AccountPayableInvoiceDTO {
@@ -140,7 +141,7 @@ class AccountPayableInvoiceController @Inject constructor(
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the Account Payable Invoice being updated")
       @QueryValue("id")
-      id: Long,
+      id: UUID,
       @Body @Valid
       dto: AccountPayableInvoiceDTO,
       authentication: Authentication,

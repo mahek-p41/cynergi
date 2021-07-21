@@ -10,7 +10,7 @@ class AuditStatusService(
    fun exists(value: String): Boolean =
       auditStatusRepository.exists(value)
 
-   fun fetchOne(id: Long) =
+   fun fetchOne(id: Int) =
       auditStatusRepository.findOne(id)
 
    fun fetchByValue(value: String): AuditStatus? =

@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.sql.SQLException
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -37,7 +38,6 @@ class StoreRepository @Inject constructor(
             store.number                  AS number,
             store.name                    AS name,
             comp.id                       AS comp_id,
-            comp.uu_row_id                AS comp_uu_row_id,
             comp.time_created             AS comp_time_created,
             comp.time_updated             AS comp_time_updated,
             comp.name                     AS comp_name,
@@ -141,7 +141,7 @@ class StoreRepository @Inject constructor(
             params["store_number"] = user.myLocation().myNumber()
          }
          "R" -> {
-            pagedQuery.append(" AND region.id = :region_id ")
+            pagedQuery.append(" AND region.number = :region_id ")
             params["region_id"] = user.myAlternativeArea()
          }
          "D" -> {
@@ -230,7 +230,7 @@ class StoreRepository @Inject constructor(
    fun doesNotExist(id: Long, company: Company): Boolean = !exists(id, company)
 
    @Transactional
-   fun assignToRegion(store: Location, region: RegionEntity, companyId: Long): Pair<RegionEntity, Location> {
+   fun assignToRegion(store: Location, region: RegionEntity, companyId: UUID): Pair<RegionEntity, Location> {
       logger.trace("Assigning Store {} to Region {}", store, region)
 
       jdbc.update(

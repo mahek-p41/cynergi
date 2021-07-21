@@ -38,6 +38,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -51,7 +52,7 @@ class AuditController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditEndpoints"], summary = "Fetch a single Audit", description = "Fetch a single Audit by it's system generated primary key", operationId = "audit-fetchOne")
    @ApiResponses(
       value = [
@@ -63,7 +64,7 @@ class AuditController @Inject constructor(
    )
    fun fetchOne(
       @Parameter(description = "Primary Key to lookup the Audit with", `in` = PATH) @QueryValue("id")
-      id: Long,
+      id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {
@@ -218,7 +219,7 @@ class AuditController @Inject constructor(
       return response
    }
 
-   @Get(uri = "/{id:[0-9]+}/report/exception", produces = ["application/pdf"])
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}/report/exception", produces = ["application/pdf"])
    @Throws(NotFoundException::class)
    @Operation(tags = ["AuditEndpoints"], summary = "Request Audit Exception Report", description = "This operation will generate a PDF representation of the Audit's exceptions on demand.", operationId = "audit-fetchAuditExceptionReport")
    @ApiResponses(
@@ -231,7 +232,7 @@ class AuditController @Inject constructor(
    )
    fun fetchAuditExceptionReport(
       @Parameter(description = "Primary Key to lookup the Audit with that the Audit Exception Report will be generated from", `in` = PATH) @QueryValue("id")
-      id: Long,
+      id: UUID,
       authentication: Authentication
    ): HttpResponse<*> {
       val user = userService.findUser(authentication)
@@ -245,7 +246,7 @@ class AuditController @Inject constructor(
       return HttpResponse.ok(stream)
    }
 
-   @Get(uri = "/{id:[0-9]+}/report/unscanned", produces = ["application/pdf"])
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}/report/unscanned", produces = ["application/pdf"])
    @Throws(NotFoundException::class)
    @Operation(
       tags = ["AuditEndpoints"],
@@ -264,7 +265,7 @@ class AuditController @Inject constructor(
    fun fetchUnscannedIdleInventoryReport(
       @Parameter(description = "Primary Key to lookup the Audit with that the Unscanned Idle Inventory Report will be generated from", `in` = PATH)
       @QueryValue("id")
-      id: Long,
+      id: UUID,
       authentication: Authentication
    ): HttpResponse<*> {
       val user = userService.findUser(authentication)

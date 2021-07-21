@@ -45,21 +45,24 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       with(result) {
          id == bank.id
          name == bank.name
-         generalLedgerProfitCenter.id == bank.generalLedgerProfitCenter.id
+         generalLedgerProfitCenter.id == bank.generalLedgerProfitCenter.myId()
          generalLedgerAccount.id == bank.generalLedgerAccount.id
       }
    }
 
    void "fetch one bank by id not found" () {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      get("$path/0")
+      get("$path/$nonExistentId")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == '0 was unable to be found'
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "fetch all" () {
@@ -154,7 +157,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id != null
          name == bankDTO.name
          generalLedgerProfitCenter.id == bankDTO.generalLedgerProfitCenter.id
          generalLedgerAccount.id == bankDTO.generalLedgerAccount.id
@@ -177,7 +180,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       final response = ex.response.bodyAsJson()
       response.size() == 1
       response.collect { new ErrorDTO(it.message, it.path) } == [
-         new ErrorDTO("${String.format('%,d', account.id)} was unable to be found", "generalLedgerAccount.id")
+         new ErrorDTO("${account.id} was unable to be found", "generalLedgerAccount.id")
       ]
    }
 
@@ -266,7 +269,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id == updatedBankDTO.id
          name == updatedBankDTO.name
          generalLedgerProfitCenter.id == updateStore.id
          generalLedgerAccount.id == updatedBankDTO.generalLedgerAccount.id
@@ -290,7 +293,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id == updatedBankDTO.id
          name == updatedBankDTO.name
          generalLedgerProfitCenter.id == store.id
          generalLedgerAccount.id == updateAccount.id
@@ -362,7 +365,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id == updatedBankDTO.id
          name == updatedBankDTO.name
          generalLedgerProfitCenter.id == store.id
          generalLedgerAccount.id == updatedBankDTO.generalLedgerAccount.id

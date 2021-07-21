@@ -1,13 +1,13 @@
 package com.cynergisuite.middleware.company
 
-import com.cynergisuite.middleware.address.AddressDTO
 import com.cynergisuite.middleware.address.AddressEntity
 import org.apache.commons.lang3.builder.CompareToBuilder
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
+import java.util.UUID
 
 data class CompanyEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val name: String,
    val doingBusinessAs: String? = null,
    val clientCode: String,
@@ -52,7 +52,7 @@ data class CompanyEntity(
          address = companyDTO.address?.let { AddressEntity(it) }
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
    override fun myClientCode(): String = clientCode
    override fun myClientId(): Int = clientId
    override fun myDataset(): String = datasetCode
@@ -102,18 +102,5 @@ data class CompanyEntity(
       } else {
          compareToBuilder.toComparison()
       }
-   }
-
-   fun toValueObject(): CompanyDTO {
-      return CompanyDTO(
-         id = this.id,
-         name = this.name,
-         doingBusinessAs = this.doingBusinessAs,
-         clientCode = this.clientCode,
-         clientId = this.clientId,
-         datasetCode = this.datasetCode,
-         federalTaxNumber = this.federalIdNumber,
-         address = this.address?.let { AddressDTO(it) }
-      )
    }
 }

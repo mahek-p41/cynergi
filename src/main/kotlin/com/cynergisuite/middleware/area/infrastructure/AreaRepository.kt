@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.area.infrastructure
 
 import com.cynergisuite.extensions.getIntOrNull
-import com.cynergisuite.extensions.getLongOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.area.AreaType
 import com.cynergisuite.middleware.area.MenuType
@@ -9,7 +8,6 @@ import com.cynergisuite.middleware.area.ModuleType
 import com.cynergisuite.middleware.company.Company
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
@@ -58,7 +56,7 @@ class AreaRepository @Inject constructor(
          mapOf("comp_id" to company.myId())
       ) { rs, _ ->
          do {
-            val tempArea = if (currentArea?.id != rs.getLong("area_id")) {
+            val tempArea = if (currentArea?.id != rs.getInt("area_id")) {
                val localArea = mapArea(rs)
                areas.add(localArea)
                currentArea = localArea
@@ -68,7 +66,7 @@ class AreaRepository @Inject constructor(
                currentArea!!
             }
 
-            val tempMenu = if (currentMenu?.id != rs.getLong("menu_id")) {
+            val tempMenu = if (currentMenu?.id != rs.getInt("menu_id")) {
                val localMenu = mapMenu(rs)
                tempArea.menus.add(localMenu)
                currentMenu = localMenu
@@ -86,7 +84,7 @@ class AreaRepository @Inject constructor(
    }
 
    @Transactional
-   fun enable(company: Company, areaTypeId: Long) {
+   fun enable(company: Company, areaTypeId: Int) {
       logger.debug("Enable area {} for company {}", areaTypeId, company.myDataset())
 
       jdbc.update(
@@ -102,7 +100,7 @@ class AreaRepository @Inject constructor(
    }
 
    @Transactional
-   fun disable(company: Company, areaTypeId: Long) {
+   fun disable(company: Company, areaTypeId: Int) {
       logger.debug("Disable area {} for company {}", areaTypeId, company.myDataset())
 
       jdbc.update(
@@ -128,12 +126,11 @@ class AreaRepository @Inject constructor(
          mapOf(
             "company_id" to company.myId(),
             "area_type_id" to areaType.myId()
-         ),
-         RowMapper { _, _ -> areaType }
-      )
+         )
+      ) { _, _ -> areaType }
    }
 
-   fun exists(areaTypeId: Long): Boolean {
+   fun exists(areaTypeId: Int): Boolean {
       val exists = jdbc.queryForObject(
          """
          SELECT EXISTS (SELECT id FROM area_type_domain WHERE id = :area_type_id)
@@ -150,11 +147,12 @@ class AreaRepository @Inject constructor(
    private fun groupingMenus(areas: List<AreaType>): List<AreaType> {
       return areas.map { area ->
          val subMenu = area.menus
-            .filter { it.parent_id != null && it.parent_id > 0 }
-            .groupBy { it.parent_id }
+            .asSequence()
+            .filter { it.parentId != null && it.parentId > 0 }
+            .groupBy { it.parentId }
 
          val menus: List<MenuType> = area.menus
-            .filter { it.parent_id == null }
+            .filter { it.parentId == null }
             .map { menu ->
                subMenu[menu.id]?.let { menu.menus.addAll(it) }
                menu
@@ -166,7 +164,7 @@ class AreaRepository @Inject constructor(
 
    private fun mapArea(rs: ResultSet): AreaType {
       return AreaType(
-         id = rs.getLong("area_id"),
+         id = rs.getInt("area_id"),
          value = rs.getString("area_value"),
          description = rs.getString("area_description"),
          localizationCode = rs.getString("area_localization_code"),
@@ -177,8 +175,8 @@ class AreaRepository @Inject constructor(
 
    private fun mapMenu(rs: ResultSet): MenuType {
       return MenuType(
-         id = rs.getLong("menu_id"),
-         parent_id = rs.getLongOrNull("menu_parent_id"),
+         id = rs.getInt("menu_id"),
+         parentId = rs.getIntOrNull("menu_parent_id"),
          value = rs.getString("menu_value"),
          description = rs.getString("menu_description"),
          orderNumber = rs.getInt("menu_order_number"),
@@ -190,7 +188,7 @@ class AreaRepository @Inject constructor(
    private fun mapModule(rs: ResultSet): ModuleType? {
       return if (rs.getString("module_id") != null) {
          ModuleType(
-            id = rs.getLong("module_id"),
+            id = rs.getInt("module_id"),
             value = rs.getString("module_value"),
             description = rs.getString("module_description"),
             localizationCode = rs.getString("module_localization_code"),

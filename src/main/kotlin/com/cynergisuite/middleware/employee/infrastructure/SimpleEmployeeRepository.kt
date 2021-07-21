@@ -17,7 +17,6 @@ import com.cynergisuite.middleware.employee.EmployeePageRequest
 import com.cynergisuite.middleware.store.Store
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -56,7 +55,6 @@ class SimpleEmployeeRepository @Inject constructor(
                emp.alternative_store_indicator AS emp_alternative_store_indicator,
                emp.alternative_area            AS emp_alternative_area,
                comp.id                         AS comp_id,
-               comp.uu_row_id                  AS comp_uu_row_id,
                comp.time_created               AS comp_time_created,
                comp.time_updated               AS comp_time_updated,
                comp.name                       AS comp_name,
@@ -104,7 +102,6 @@ class SimpleEmployeeRepository @Inject constructor(
                emp.alternative_store_indicator AS emp_alternative_store_indicator,
                emp.alternative_area            AS emp_alternative_area,
                comp.id                         AS comp_id,
-               comp.uu_row_id                  AS comp_uu_row_id,
                comp.time_created               AS comp_time_created,
                comp.time_updated               AS comp_time_updated,
                comp.name                       AS comp_name,
@@ -148,9 +145,8 @@ class SimpleEmployeeRepository @Inject constructor(
    fun findOne(id: Long, company: Company): EmployeeEntity? {
       val found = jdbc.findFirstOrNull(
          "${employeeBaseQuery()} WHERE comp_id = :comp_id AND emp_id = :emp_id LIMIT 1",
-         mutableMapOf("comp_id" to company.myId(), "emp_id" to id),
-         RowMapper { rs, _ -> mapRow(rs) }
-      )
+         mutableMapOf("comp_id" to company.myId(), "emp_id" to id)
+      ) { rs, _ -> mapRow(rs) }
 
       logger.trace("Searching for Employee: {} {} {} resulted in {}", company, found)
 
@@ -160,9 +156,8 @@ class SimpleEmployeeRepository @Inject constructor(
    fun findOne(id: Long, employeeType: String, company: Company): EmployeeEntity? {
       val found = jdbc.findFirstOrNull(
          "${employeeBaseQuery()} WHERE comp_id = :comp_id AND emp_id = :emp_id AND emp_type = :emp_type LIMIT 1",
-         mutableMapOf("comp_id" to company.myId(), "emp_id" to id, "emp_type" to employeeType),
-         RowMapper { rs, _ -> mapRow(rs) }
-      )
+         mutableMapOf("comp_id" to company.myId(), "emp_id" to id, "emp_type" to employeeType)
+      ) { rs, _ -> mapRow(rs) }
 
       logger.trace("Searching for Employee: {} {} {} resulted in {}", id, employeeType, company, found)
 
@@ -180,9 +175,8 @@ class SimpleEmployeeRepository @Inject constructor(
                   AND comp_id = :comp_id
             LIMIT 1
             """,
-         mapOf("emp_number" to number, "emp_type" to employeeType, "comp_id" to company.myId()),
-         RowMapper { rs, _ -> mapRow(rs) }
-      )
+         mapOf("emp_number" to number, "emp_type" to employeeType, "comp_id" to company.myId())
+      ) { rs, _ -> mapRow(rs) }
 
       logger.trace("Searching for Employee: {} {} resulted in {}", number, employeeType, found)
 
@@ -200,9 +194,8 @@ class SimpleEmployeeRepository @Inject constructor(
                AND comp_id = :comp_id
          LIMIT 1
          """,
-         mutableMapOf("id" to user.myId(), "employee_type" to user.myEmployeeType(), "comp_id" to user.myCompany().myId()),
-         RowMapper { rs, _ -> mapRow(rs) }
-      )
+         mutableMapOf("id" to user.myId(), "employee_type" to user.myEmployeeType(), "comp_id" to user.myCompany().myId())
+      ) { rs, _ -> mapRow(rs) }
 
       logger.trace("Searching for Employee: {} resulted in {}", user, found)
 
@@ -339,11 +332,10 @@ class SimpleEmployeeRepository @Inject constructor(
             "store_number" to entity.store?.myNumber(),
             "alternative_store_indicator" to entity.alternativeStoreIndicator,
             "alternative_area" to entity.alternativeArea
-         ),
-         RowMapper { rs, _ ->
-            mapDDLRow(rs, entity.company, entity.department, entity.store)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapDDLRow(rs, entity.company, entity.department, entity.store)
+      }
    }
 
    fun mapRow(rs: ResultSet, columnPrefix: String = "emp_", companyColumnPrefix: String = "comp_", departmentColumnPrefix: String = "dept_", storeColumnPrefix: String = "store_"): EmployeeEntity {

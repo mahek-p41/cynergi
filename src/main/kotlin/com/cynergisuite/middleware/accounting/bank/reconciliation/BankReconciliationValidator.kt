@@ -10,6 +10,7 @@ import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,7 +28,7 @@ class BankReconciliationValidator @Inject constructor(
       return doValidation(dto = dto, company = company)
    }
 
-   fun validateUpdate(id: Long, dto: BankReconciliationDTO, company: Company): BankReconciliationEntity {
+   fun validateUpdate(id: UUID, dto: BankReconciliationDTO, company: Company): BankReconciliationEntity {
       logger.trace("Validating Update BankReconciliation {}", dto)
 
       val existingBankRecon = bankReconciliationRepository.findOne(id, company) ?: throw NotFoundException(id)

@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerJournalRepository
 import com.cynergisuite.middleware.company.Company
@@ -31,7 +32,7 @@ object GeneralLedgerJournalDataLoader {
    }
 
    @JvmStatic
-   fun streamDTO(numberIn: Int = 1, accountIn: SimpleIdentifiableDTO, profitCenterIn: SimpleIdentifiableDTO, dateIn: LocalDate, sourceIn: GeneralLedgerSourceCodeDTO): Stream<GeneralLedgerJournalDTO> {
+   fun streamDTO(numberIn: Int = 1, accountIn: SimpleIdentifiableDTO, profitCenterIn: SimpleLegacyIdentifiableDTO, dateIn: LocalDate, sourceIn: GeneralLedgerSourceCodeDTO): Stream<GeneralLedgerJournalDTO> {
       val number = if (numberIn > 0) numberIn else 1
       val faker = Faker()
       val numbers = faker.number()
@@ -59,7 +60,7 @@ class GeneralLedgerJournalDataLoaderService @Inject constructor(
       return stream(1, company, accountIn, profitCenterIn, dateIn, sourceIn).findFirst().orElseThrow { Exception("Unable to find GeneralLedgerJournal") }
    }
 
-   fun singleDTO(accountIn: SimpleIdentifiableDTO, profitCenterIn: SimpleIdentifiableDTO, dateIn: LocalDate, sourceIn: GeneralLedgerSourceCodeDTO): GeneralLedgerJournalDTO {
+   fun singleDTO(accountIn: SimpleIdentifiableDTO, profitCenterIn: SimpleLegacyIdentifiableDTO, dateIn: LocalDate, sourceIn: GeneralLedgerSourceCodeDTO): GeneralLedgerJournalDTO {
       return GeneralLedgerJournalDataLoader.streamDTO(1, accountIn, profitCenterIn, dateIn, sourceIn).findFirst().orElseThrow { Exception("Unable to create GeneralLedgerJournal") }
    }
 }

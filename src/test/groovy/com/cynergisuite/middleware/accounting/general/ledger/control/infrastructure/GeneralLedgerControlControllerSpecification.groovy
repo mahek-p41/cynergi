@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.control.GeneralLedgerControlDataLoaderService
@@ -90,7 +91,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
       final def generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
-         new SimpleIdentifiableDTO(defProfitCenter.myId()),
+         new SimpleLegacyIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
          new SimpleIdentifiableDTO(defARAcct.myId()),
@@ -108,7 +109,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id != null
          defaultProfitCenter.id == generalLedgerControl.defaultProfitCenter.id
          defaultAccountPayableAccount.id == generalLedgerControl.defaultAccountPayableAccount.id
          defaultAccountPayableDiscountAccount.id == generalLedgerControl.defaultAccountPayableDiscountAccount.id
@@ -134,7 +135,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
       final def generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
-         new SimpleIdentifiableDTO(defProfitCenter.myId()),
+         new SimpleLegacyIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
          new SimpleIdentifiableDTO(defARAcct.myId()),
@@ -160,7 +161,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id != null
          defaultProfitCenter.id == generalLedgerControl.defaultProfitCenter.id
          defaultAccountPayableAccount == null
          defaultAccountPayableDiscountAccount == null
@@ -231,7 +232,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
       def generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
-         new SimpleIdentifiableDTO(defProfitCenter.myId()),
+         new SimpleLegacyIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
          new SimpleIdentifiableDTO(defARAcct.myId()),
@@ -261,17 +262,18 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
 
    void "create invalid general ledger control with non-existing account ids" () {
       given:
+      final nonExistentId = UUID.randomUUID()
       final defProfitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final def generalLedgerControl = generalLedgerControlDataLoaderService.singleDTO(
-         new SimpleIdentifiableDTO(defProfitCenter.myId()),
-         new SimpleIdentifiableDTO(0),
-         new SimpleIdentifiableDTO(0),
-         new SimpleIdentifiableDTO(0),
-         new SimpleIdentifiableDTO(0),
-         new SimpleIdentifiableDTO(0),
-         new SimpleIdentifiableDTO(0),
-         new SimpleIdentifiableDTO(0),
-         new SimpleIdentifiableDTO(0)
+         new SimpleLegacyIdentifiableDTO(defProfitCenter.myId()),
+         new SimpleIdentifiableDTO(nonExistentId),
+         new SimpleIdentifiableDTO(nonExistentId),
+         new SimpleIdentifiableDTO(nonExistentId),
+         new SimpleIdentifiableDTO(nonExistentId),
+         new SimpleIdentifiableDTO(nonExistentId),
+         new SimpleIdentifiableDTO(nonExistentId),
+         new SimpleIdentifiableDTO(nonExistentId),
+         new SimpleIdentifiableDTO(nonExistentId)
       )
 
       when:
@@ -290,7 +292,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       response[5].path == "defaultAccountSerializedInventoryAccount.id"
       response[6].path == "defaultAccountUnbilledInventoryAccount.id"
       response[7].path == "defaultAccountFreightAccount.id"
-      response.collect { it.message } as Set == ['0 was unable to be found'] as Set
+      response.collect { it.message } as Set == ["$nonExistentId was unable to be found"] as Set
    }
 
    void "update valid general ledger control by id" () {
@@ -318,7 +320,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
          defAcctFreightAcct
       )
       final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
-         new SimpleIdentifiableDTO(defProfitCenter.myId()),
+         new SimpleLegacyIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
          new SimpleIdentifiableDTO(defARAcct.myId()),
@@ -337,7 +339,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id != null
          defaultProfitCenter.id == updatedGLControlDTO.defaultProfitCenter.id
          defaultAccountPayableAccount.id == updatedGLControlDTO.defaultAccountPayableAccount.id
          defaultAccountPayableDiscountAccount.id == updatedGLControlDTO.defaultAccountPayableDiscountAccount.id
@@ -375,7 +377,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
          defAcctFreightAcct
       )
       final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
-         new SimpleIdentifiableDTO(defProfitCenter.myId()),
+         new SimpleLegacyIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
          new SimpleIdentifiableDTO(defARAcct.myId()),
@@ -402,7 +404,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id != null
          defaultProfitCenter.id == updatedGLControlDTO.defaultProfitCenter.id
          defaultAccountPayableAccount == null
          defaultAccountPayableDiscountAccount == null
@@ -422,8 +424,9 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       result2 != null
    }
 
-   void "update invalid general ledger control with id 0" () {
+   void "update invalid general ledger control for a company that hasn't defined one yet" () {
       given:
+      final nonExistentId = UUID.randomUUID()
       final company = nineNineEightEmployee.company
       final defProfitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final defAPAcct = accountDataLoaderService.single(company)
@@ -435,7 +438,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
       final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
-         new SimpleIdentifiableDTO(defProfitCenter.myId()),
+         new SimpleLegacyIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
          new SimpleIdentifiableDTO(defARAcct.myId()),
@@ -445,73 +448,16 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
          new SimpleIdentifiableDTO(defAcctUnbilledInvAcct.myId()),
          new SimpleIdentifiableDTO(defAcctFreightAcct.myId())
       )
-      updatedGLControlDTO.id = 0
+      updatedGLControlDTO.id = nonExistentId
 
       when:
       put("$path", updatedGLControlDTO)
 
       then:
       def exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
+      exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "id"
-      response[0].message == "id must be greater than zero"
-   }
-
-   void "update invalid general ledger control with non-existing company" () {
-      given:
-      final tstds2 = companyFactoryService.forDatasetCode('tstds2') // load the company that isn't logged in to create the control record
-      final defProfitCenter = storeFactoryService.store(3, tstds2)
-      final defAPAcct = accountDataLoaderService.single(tstds2)
-      final defAPDiscAcct = accountDataLoaderService.single(tstds2)
-      final defARAcct = accountDataLoaderService.single(tstds2)
-      final defARDiscAcct = accountDataLoaderService.single(tstds2)
-      final defAcctMiscInvAcct = accountDataLoaderService.single(tstds2)
-      final defAcctSerializedInvAcct = accountDataLoaderService.single(tstds2)
-      final defAcctUnbilledInvAcct = accountDataLoaderService.single(tstds2)
-      final defAcctFreightAcct = accountDataLoaderService.single(tstds2)
-      final def existingGLControl = generalLedgerControlDataLoaderService.single(
-         tstds2,
-         defProfitCenter,
-         defAPAcct,
-         defAPDiscAcct,
-         defARAcct,
-         defARDiscAcct,
-         defAcctMiscInvAcct,
-         defAcctSerializedInvAcct,
-         defAcctUnbilledInvAcct,
-         defAcctFreightAcct
-      )
-      final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
-         new SimpleIdentifiableDTO(defProfitCenter.myId()),
-         new SimpleIdentifiableDTO(defAPAcct.myId()),
-         new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
-         new SimpleIdentifiableDTO(defARAcct.myId()),
-         new SimpleIdentifiableDTO(defARDiscAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctMiscInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctSerializedInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctUnbilledInvAcct.myId()),
-         new SimpleIdentifiableDTO(defAcctFreightAcct.myId())
-      )
-      updatedGLControlDTO.id = existingGLControl.id
-
-      when:
-      put("$path", updatedGLControlDTO)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.message[0] == "${defProfitCenter.myId()} was unable to be found"
-      response.message[1] == "${defAPAcct.myId()} was unable to be found"
-      response.message[2] == "${defAPDiscAcct.myId()} was unable to be found"
-      response.message[3] == "${defARAcct.myId()} was unable to be found"
-      response.message[4] == "${defARDiscAcct.myId()} was unable to be found"
-      response.message[5] == "${defAcctMiscInvAcct.myId()} was unable to be found"
-      response.message[6] == "${defAcctSerializedInvAcct.myId()} was unable to be found"
-      response.message[7] == "${defAcctUnbilledInvAcct.myId()} was unable to be found"
-      response.message[8] == "${defAcctFreightAcct.myId()} was unable to be found"
+      response.message == "${company.myId()} was unable to be found"
    }
 
    @Unroll
@@ -528,7 +474,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final defAcctUnbilledInvAcct = accountDataLoaderService.single(company)
       final defAcctFreightAcct = accountDataLoaderService.single(company)
       final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
-         new SimpleIdentifiableDTO(defProfitCenter.myId()),
+         new SimpleLegacyIdentifiableDTO(defProfitCenter.myId()),
          new SimpleIdentifiableDTO(defAPAcct.myId()),
          new SimpleIdentifiableDTO(defAPDiscAcct.myId()),
          new SimpleIdentifiableDTO(defARAcct.myId()),
@@ -558,6 +504,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
 
    void "update invalid general ledger control with non-existing account ids" () {
       given:
+      final nonExistentId = UUID.randomUUID()
       final company = nineNineEightEmployee.company
       final defProfitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final defAPAcct = accountDataLoaderService.single(company)
@@ -581,15 +528,15 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
          defAcctFreightAcct
       )
       final def updatedGLControlDTO = generalLedgerControlDataLoaderService.singleDTO(
-         new SimpleIdentifiableDTO(0),
-         new SimpleIdentifiableDTO(0),
-         new SimpleIdentifiableDTO(0),
-         new SimpleIdentifiableDTO(0),
-         new SimpleIdentifiableDTO(0),
-         new SimpleIdentifiableDTO(0),
-         new SimpleIdentifiableDTO(0),
-         new SimpleIdentifiableDTO(0),
-         new SimpleIdentifiableDTO(0)
+         new SimpleLegacyIdentifiableDTO(0),
+         new SimpleIdentifiableDTO(nonExistentId),
+         new SimpleIdentifiableDTO(nonExistentId),
+         new SimpleIdentifiableDTO(nonExistentId),
+         new SimpleIdentifiableDTO(nonExistentId),
+         new SimpleIdentifiableDTO(nonExistentId),
+         new SimpleIdentifiableDTO(nonExistentId),
+         new SimpleIdentifiableDTO(nonExistentId),
+         new SimpleIdentifiableDTO(nonExistentId)
       )
       updatedGLControlDTO.id = existingGLControl.id
 
@@ -610,6 +557,6 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       response[6].path == "defaultAccountSerializedInventoryAccount.id"
       response[7].path == "defaultAccountUnbilledInventoryAccount.id"
       response[8].path == "defaultAccountFreightAccount.id"
-      response.collect { it.message } as Set == ['0 was unable to be found'] as Set
+      response.collect { it.message } as Set == ["$nonExistentId was unable to be found", "0 was unable to be found"] as Set
    }
 }

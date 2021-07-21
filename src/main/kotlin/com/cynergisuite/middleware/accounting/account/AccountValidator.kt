@@ -11,6 +11,7 @@ import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,7 +41,7 @@ class AccountValidator @Inject constructor(
       return AccountEntity(accountDTO, accountType!!, balanceType!!, statusType!!)
    }
 
-   fun validateUpdate(id: Long, accountDTO: AccountDTO, company: Company): AccountEntity {
+   fun validateUpdate(id: UUID, accountDTO: AccountDTO, company: Company): AccountEntity {
       logger.trace("Validating Update Account {}", accountDTO)
       val accountType = accountTypeRepository.findOne(value = accountDTO.type?.value!!)
       val balanceType = balanceTypeRepository.findOne(value = accountDTO.normalAccountBalance?.value!!)

@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 import javax.validation.ValidationException
@@ -42,7 +43,7 @@ class DivisionController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(DivisionController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(uri = "/{id:[0-9]+}", produces = [MediaType.APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [MediaType.APPLICATION_JSON])
    @Operation(tags = ["DivisionEndpoints"], summary = "Fetch a single Division", description = "Fetch a single Division by ID", operationId = "division-fetchOne")
    @ApiResponses(
       value = [
@@ -52,7 +53,7 @@ class DivisionController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): DivisionDTO {
@@ -119,7 +120,7 @@ class DivisionController @Inject constructor(
       return response
    }
 
-   @Put(uri = "/{id:[0-9]+}", processes = [MediaType.APPLICATION_JSON])
+   @Put(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [MediaType.APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["DivisionEndpoints"], summary = "Update a single division", description = "Update a single division.", operationId = "division-update")
@@ -132,7 +133,7 @@ class DivisionController @Inject constructor(
       ]
    )
    fun update(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       @Body @Valid
       dto: DivisionDTO,
       authentication: Authentication,
@@ -148,7 +149,7 @@ class DivisionController @Inject constructor(
       return response
    }
 
-   @Delete(uri = "/{id:[0-9]+}", produces = [MediaType.APPLICATION_JSON])
+   @Delete(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [MediaType.APPLICATION_JSON])
    @AccessControl
    @Operation(tags = ["DivisionEndpoints"], summary = "Delete a single Division", description = "Delete a single Division by it's system generated primary key", operationId = "division-delete")
    @ApiResponses(
@@ -161,7 +162,7 @@ class DivisionController @Inject constructor(
    )
    fun delete(
       @Parameter(description = "Primary Key to delete the Division with", `in` = ParameterIn.PATH) @QueryValue("id")
-      id: Long,
+      id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): DivisionDTO {

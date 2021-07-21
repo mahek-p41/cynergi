@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.purchase.order.control.infrastructure.Purchas
 import com.cynergisuite.middleware.purchase.order.type.ApprovalRequiredFlagDTO
 import com.cynergisuite.middleware.purchase.order.type.DefaultPurchaseOrderTypeDTO
 import com.cynergisuite.middleware.purchase.order.type.UpdatePurchaseOrderCostTypeValueObject
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,10 +29,14 @@ class PurchaseOrderControlService @Inject constructor(
       return transformEntity(purchaseOrderControlRepository.insert(toCreate, company))
    }
 
-   fun update(id: Long, dto: PurchaseOrderControlDTO, company: Company): PurchaseOrderControlDTO {
-      val toUpdate = purchaseOrderControlValidator.validateUpdate(id, dto, company)
+   fun update(id: UUID, dto: PurchaseOrderControlDTO, company: Company): PurchaseOrderControlDTO {
+      val (existing, toUpdate) = purchaseOrderControlValidator.validateUpdate(id, dto, company)
 
-      return transformEntity(purchaseOrderControlRepository.update(toUpdate, company))
+      return if (existing != toUpdate) {
+         transformEntity(purchaseOrderControlRepository.update(toUpdate, company))
+      } else {
+         transformEntity(existing)
+      }
    }
 
    private fun transformEntity(purchaseOrderControl: PurchaseOrderControlEntity): PurchaseOrderControlDTO {

@@ -5,9 +5,10 @@ import com.cynergisuite.middleware.accounting.bank.BankEntity
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationType
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 
 data class BankReconciliationEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    var bank: BankEntity,
    var type: BankReconciliationType,
    var date: LocalDate,
@@ -25,7 +26,7 @@ data class BankReconciliationEntity(
          type = type
       )
 
-   constructor(id: Long? = null, dto: BankReconciliationDTO, bank: BankEntity, type: BankReconciliationType) :
+   constructor(id: UUID? = null, dto: BankReconciliationDTO, bank: BankEntity, type: BankReconciliationType) :
       this(
          id = id,
          bank = bank,
@@ -37,5 +38,5 @@ data class BankReconciliationEntity(
          document = dto.document
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

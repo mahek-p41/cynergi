@@ -5,6 +5,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.shipping.shipvia.infrastructure.ShipViaRepository
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,7 +15,7 @@ class ShipViaService @Inject constructor(
    private val shipViaValidator: ShipViaValidator
 ) {
 
-   fun fetchById(id: Long, company: Company): ShipViaDTO? =
+   fun fetchById(id: UUID, company: Company): ShipViaDTO? =
       shipViaRepository.findOne(id, company)?.let { ShipViaDTO(entity = it) }
 
    fun fetchAll(pageRequest: PageRequest, company: Company): Page<ShipViaDTO> {
@@ -33,7 +34,7 @@ class ShipViaService @Inject constructor(
       )
    }
 
-   fun delete(id: Long, company: Company) {
+   fun delete(id: UUID, company: Company) {
       shipViaRepository.delete(id, company)
    }
 

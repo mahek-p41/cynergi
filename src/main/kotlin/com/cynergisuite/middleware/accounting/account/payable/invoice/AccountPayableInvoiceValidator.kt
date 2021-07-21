@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice
 
 import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceSelectedTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
@@ -14,6 +15,7 @@ import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,7 +37,7 @@ class AccountPayableInvoiceValidator @Inject constructor(
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: Long, dto: AccountPayableInvoiceDTO, company: Company): AccountPayableInvoiceEntity {
+   fun validateUpdate(id: UUID, dto: AccountPayableInvoiceDTO, company: Company): AccountPayableInvoiceEntity {
       logger.debug("Validating Update AccountPayableInvoice {}", dto)
 
       return doSharedValidation(dto, company)
@@ -81,7 +83,7 @@ class AccountPayableInvoiceValidator @Inject constructor(
          type!!,
          status!!,
          SimpleIdentifiableEntity(payTo!!),
-         location?.let { SimpleIdentifiableEntity(it.id) }
+         location?.let { SimpleLegacyIdentifiableEntity(it.id) }
       )
    }
 }

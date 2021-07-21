@@ -9,17 +9,16 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AccountPayableRecurringInvoice", title = "Account Payable Recurring Invoice", description = "Account payable recurring invoice entity")
 data class AccountPayableRecurringInvoiceDTO(
 
-   @field:Positive
    @field:Schema(description = "Account payable recurring invoice id")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Schema(description = "Account payable recurring invoice vendor")
@@ -135,5 +134,5 @@ data class AccountPayableRecurringInvoiceDTO(
          nextExpenseDate = entity.nextExpenseDate
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

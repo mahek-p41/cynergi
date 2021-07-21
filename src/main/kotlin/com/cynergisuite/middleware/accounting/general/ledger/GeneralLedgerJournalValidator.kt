@@ -2,37 +2,47 @@ package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
+import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerJournalRepository
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class GeneralLedgerJournalValidator @Inject constructor(
    private val accountRepository: AccountRepository,
+   private val generalLedgerJournalRepository: GeneralLedgerJournalRepository,
+   private val generalLedgerSourceCodeRepository: GeneralLedgerSourceCodeRepository,
    private val storeRepository: StoreRepository,
-   private val generalLedgerSourceCodeRepository: GeneralLedgerSourceCodeRepository
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerJournalValidator::class.java)
 
    fun validateCreate(dto: GeneralLedgerJournalDTO, company: Company): GeneralLedgerJournalEntity {
       logger.trace("Validating Save GeneralLedgerJournal {}", dto)
 
-      return doSharedValidation(dto, company)
+      return doSharedValidation(dto, company, null)
    }
 
-   fun validateUpdate(dto: GeneralLedgerJournalDTO, company: Company): GeneralLedgerJournalEntity {
+   fun validateUpdate(id: UUID, dto: GeneralLedgerJournalDTO, company: Company): GeneralLedgerJournalEntity {
       logger.trace("Validating Update GeneralLedgerJournal {}", dto)
 
-      return doSharedValidation(dto, company)
+      val existingGeneralLedgerJournal = generalLedgerJournalRepository.findOne(id, company) ?: throw NotFoundException(id)
+
+      return doSharedValidation(dto, company, existingGeneralLedgerJournal)
    }
 
-   private fun doSharedValidation(dto: GeneralLedgerJournalDTO, company: Company): GeneralLedgerJournalEntity {
+   private fun doSharedValidation(
+      dto: GeneralLedgerJournalDTO,
+      company: Company,
+      existingGeneralLedgerJournal: GeneralLedgerJournalEntity?
+   ): GeneralLedgerJournalEntity {
       val account = dto.account?.id?.let { accountRepository.findOne(it, company) }
       val profitCenter = dto.profitCenter?.id?.let { storeRepository.findOne(it, company) }
       val source = dto.source?.id?.let { generalLedgerSourceCodeRepository.findOne(it, company) }
@@ -49,6 +59,12 @@ class GeneralLedgerJournalValidator @Inject constructor(
          }
       }
 
-      return GeneralLedgerJournalEntity(dto, account!!, profitCenter!!, source!!)
+      return GeneralLedgerJournalEntity(
+         existingGeneralLedgerJournal?.id,
+         dto,
+         account!!,
+         profitCenter!!,
+         source!!
+      )
    }
 }

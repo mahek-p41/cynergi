@@ -8,9 +8,10 @@ import com.cynergisuite.middleware.purchase.order.type.DefaultPurchaseOrderType
 import com.cynergisuite.middleware.purchase.order.type.UpdatePurchaseOrderCostType
 import com.cynergisuite.middleware.vendor.VendorEntity
 import java.time.OffsetDateTime
+import java.util.UUID
 
 data class PurchaseOrderControlEntity(
-   val id: Long?,
+   val id: UUID? = null,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val dropFiveCharactersOnModelNumber: Boolean,
@@ -31,6 +32,7 @@ data class PurchaseOrderControlEntity(
 ) : Identifiable {
 
    constructor(
+      id: UUID?,
       dto: PurchaseOrderControlDTO,
       defaultAccountPayableStatusType: DefaultAccountPayableStatusType,
       defaultVendor: VendorEntity?,
@@ -40,7 +42,7 @@ data class PurchaseOrderControlEntity(
       approvalRequiredFlagType: ApprovalRequiredFlagType
    ) :
       this(
-         id = dto.id,
+         id = id,
          dropFiveCharactersOnModelNumber = dto.dropFiveCharactersOnModelNumber!!,
          updateAccountPayable = dto.updateAccountPayable!!,
          printSecondDescription = dto.printSecondDescription!!,
@@ -58,5 +60,5 @@ data class PurchaseOrderControlEntity(
          approvalRequiredFlagType = approvalRequiredFlagType
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

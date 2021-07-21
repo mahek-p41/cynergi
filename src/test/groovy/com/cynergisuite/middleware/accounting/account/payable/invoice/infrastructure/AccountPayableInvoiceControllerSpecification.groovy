@@ -1,9 +1,9 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceSelectedTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceTypeDTO
@@ -28,7 +28,6 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class AccountPayableInvoiceControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/accounting/account-payable/invoice"
 
-   @Inject AccountDataLoaderService accountDataLoaderService
    @Inject AccountPayableInvoiceDataLoaderService dataLoaderService
    @Inject PurchaseOrderDataLoaderService purchaseOrderDataLoaderService
    @Inject ShipViaTestDataLoaderService shipViaFactoryService
@@ -55,8 +54,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final poShipVia = shipViaList[2]
       final poPmtTerm = vendorPaymentTermList[2]
       final poVendorSubEmp = employeeList[2]
-      final poCustAcct = accountDataLoaderService.single(company)
-      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp, poCustAcct)
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
 
       final employeeIn = employeeList[3]
 
@@ -119,15 +117,18 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    }
 
    void "fetch one not found" () {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      get("$path/0")
+      get("$path/$nonExistentId")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == "0 was unable to be found"
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "fetch all" () {
@@ -150,8 +151,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final poShipVia = shipViaList[2]
       final poPmtTerm = vendorPaymentTermList[2]
       final poVendorSubEmp = employeeList[2]
-      final poCustAcct = accountDataLoaderService.single(company)
-      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp, poCustAcct)
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
 
       final employeeIn = employeeList[3]
 
@@ -378,8 +378,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final poShipVia = shipViaList[2]
       final poPmtTerm = vendorPaymentTermList[2]
       final poVendorSubEmp = employeeList[2]
-      final poCustAcct = accountDataLoaderService.single(company)
-      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp, poCustAcct)
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
 
       final employeeIn = employeeList[3]
 
@@ -393,7 +392,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
          new SimpleIdentifiableDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new SimpleIdentifiableDTO(payToIn),
-         new SimpleIdentifiableDTO(store.myId())
+         new SimpleLegacyIdentifiableDTO(store.myId())
       )
 
       when:
@@ -402,9 +401,8 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       then:
       notThrown(Exception)
       result != null
-      result.id != null
       with(result) {
-         id > 0
+         id != null
          vendor.id == apInvoiceDTO.vendor.id
          invoice == apInvoiceDTO.invoice
          purchaseOrder.id == apInvoiceDTO.purchaseOrder.id
@@ -469,8 +467,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final poShipVia = shipViaList[2]
       final poPmtTerm = vendorPaymentTermList[2]
       final poVendorSubEmp = employeeList[2]
-      final poCustAcct = accountDataLoaderService.single(company)
-      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp, poCustAcct)
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
 
       final employeeIn = employeeList[3]
 
@@ -484,7 +481,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
          new SimpleIdentifiableDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new SimpleIdentifiableDTO(payToIn),
-         new SimpleIdentifiableDTO(store.myId())
+         new SimpleLegacyIdentifiableDTO(store.myId())
       )
       apInvoiceDTO.purchaseOrder = null
       apInvoiceDTO.location = null
@@ -497,7 +494,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       result != null
       result.id != null
       with(result) {
-         id > 0
+         id != null
          vendor.id == apInvoiceDTO.vendor.id
          invoice == apInvoiceDTO.invoice
          purchaseOrder.id == apInvoiceDTO.purchaseOrder
@@ -563,8 +560,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final poShipVia = shipViaList[2]
       final poPmtTerm = vendorPaymentTermList[2]
       final poVendorSubEmp = employeeList[2]
-      final poCustAcct = accountDataLoaderService.single(company)
-      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp, poCustAcct)
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
 
       final employeeIn = employeeList[3]
 
@@ -578,7 +574,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
          new SimpleIdentifiableDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new SimpleIdentifiableDTO(payToIn),
-         new SimpleIdentifiableDTO(store.myId())
+         new SimpleLegacyIdentifiableDTO(store.myId())
       )
       apInvoiceDTO["$nonNullableProp"] = null
 
@@ -635,8 +631,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final poShipVia = shipViaList[2]
       final poPmtTerm = vendorPaymentTermList[2]
       final poVendorSubEmp = employeeList[2]
-      final poCustAcct = accountDataLoaderService.single(company)
-      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp, poCustAcct)
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
 
       final employeeIn = employeeList[3]
 
@@ -650,7 +645,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
          new SimpleIdentifiableDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new SimpleIdentifiableDTO(payToIn),
-         new SimpleIdentifiableDTO(store.myId())
+         new SimpleLegacyIdentifiableDTO(store.myId())
       )
       apInvoiceDTO["$testProp"] = invalidValue
 
@@ -666,14 +661,14 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       response[0].message == errorMessage
 
       where:
-      testProp          | invalidValue                                                  || errorResponsePath        | errorMessage
-      'vendor'          | new SimpleIdentifiableDTO(999999)                             || 'vendor.id'              | '999,999 was unable to be found'
-      'purchaseOrder'   | new SimpleIdentifiableDTO(999999)                             || 'purchaseOrder.id'       | '999,999 was unable to be found'
-      'selected'        | new AccountPayableInvoiceSelectedTypeDTO('Z', 'Invalid DTO')  || 'selected.value'         | 'Z was unable to be found'
-      'type'            | new AccountPayableInvoiceTypeDTO('Z', 'Invalid DTO')          || 'type.value'             | 'Z was unable to be found'
-      'status'          | new AccountPayableInvoiceStatusTypeDTO('Z', 'Invalid DTO')    || 'status.value'           | 'Z was unable to be found'
-      'payTo'           | new SimpleIdentifiableDTO(999999)                             || 'payTo.id'               | '999,999 was unable to be found'
-      'location'        | new SimpleIdentifiableDTO(999999)                             || 'location.id'            | '999,999 was unable to be found'
+      testProp        | invalidValue                                                                       || errorResponsePath  | errorMessage
+      'vendor'        | new SimpleIdentifiableDTO(UUID.fromString('905545bf-3509-4ad3-8ccc-e437b2dbdcb0')) || 'vendor.id'        | "905545bf-3509-4ad3-8ccc-e437b2dbdcb0 was unable to be found"
+      'purchaseOrder' | new SimpleIdentifiableDTO(UUID.fromString('905545bf-3509-4ad3-8ccc-e437b2dbdcb0')) || 'purchaseOrder.id' | "905545bf-3509-4ad3-8ccc-e437b2dbdcb0 was unable to be found"
+      'selected'      | new AccountPayableInvoiceSelectedTypeDTO('Z', 'Invalid DTO')                       || 'selected.value'   | "Z was unable to be found"
+      'type'          | new AccountPayableInvoiceTypeDTO('Z', 'Invalid DTO')                               || 'type.value'       | "Z was unable to be found"
+      'status'        | new AccountPayableInvoiceStatusTypeDTO('Z', 'Invalid DTO')                         || 'status.value'     | "Z was unable to be found"
+      'payTo'         | new SimpleIdentifiableDTO(UUID.fromString('905545bf-3509-4ad3-8ccc-e437b2dbdcb0')) || 'payTo.id'         | "905545bf-3509-4ad3-8ccc-e437b2dbdcb0 was unable to be found"
+      'location'      | new SimpleLegacyIdentifiableDTO(0)                                                 || 'location.id'      | "0 was unable to be found"
    }
 
    void "update one" () {
@@ -696,8 +691,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final poShipVia = shipViaList[2]
       final poPmtTerm = vendorPaymentTermList[2]
       final poVendorSubEmp = employeeList[2]
-      final poCustAcct = accountDataLoaderService.single(company)
-      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp, poCustAcct)
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
 
       final employeeIn = employeeList[3]
 
@@ -712,7 +706,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
          new SimpleIdentifiableDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new SimpleIdentifiableDTO(payToIn),
-         new SimpleIdentifiableDTO(store.myId())
+         new SimpleLegacyIdentifiableDTO(store.myId())
       )
       updatedAPInvoice.id = existingAPInvoice.id
 
@@ -722,9 +716,8 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       then:
       notThrown(Exception)
       result != null
-      result.id != null
-      result.id > 0
       with(result) {
+         id != null
          id == updatedAPInvoice.id
          vendor.id == updatedAPInvoice.vendor.id
          invoice == updatedAPInvoice.invoice
@@ -790,8 +783,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final poShipVia = shipViaList[2]
       final poPmtTerm = vendorPaymentTermList[2]
       final poVendorSubEmp = employeeList[2]
-      final poCustAcct = accountDataLoaderService.single(company)
-      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp, poCustAcct)
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
 
       final employeeIn = employeeList[3]
 
@@ -806,7 +798,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
          new SimpleIdentifiableDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new SimpleIdentifiableDTO(payToIn),
-         new SimpleIdentifiableDTO(store.myId())
+         new SimpleLegacyIdentifiableDTO(store.myId())
       )
       updatedAPInvoice.id = existingAPInvoice.id
       updatedAPInvoice.purchaseOrder = null
@@ -819,7 +811,6 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
       with(result) {
          id == updatedAPInvoice.id
          vendor.id == updatedAPInvoice.vendor.id
@@ -887,8 +878,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final poShipVia = shipViaList[2]
       final poPmtTerm = vendorPaymentTermList[2]
       final poVendorSubEmp = employeeList[2]
-      final poCustAcct = accountDataLoaderService.single(company)
-      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp, poCustAcct)
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
 
       final employeeIn = employeeList[3]
 
@@ -903,7 +893,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
          new SimpleIdentifiableDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new SimpleIdentifiableDTO(payToIn),
-         new SimpleIdentifiableDTO(store.myId())
+         new SimpleLegacyIdentifiableDTO(store.myId())
       )
       updatedAPInvoice.id = existingAPInvoice.id
       updatedAPInvoice["$nonNullableProp"] = null
@@ -961,8 +951,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final poShipVia = shipViaList[2]
       final poPmtTerm = vendorPaymentTermList[2]
       final poVendorSubEmp = employeeList[2]
-      final poCustAcct = accountDataLoaderService.single(company)
-      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp, poCustAcct)
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
 
       final employeeIn = employeeList[3]
 
@@ -977,7 +966,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
          new SimpleIdentifiableDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new SimpleIdentifiableDTO(payToIn),
-         new SimpleIdentifiableDTO(store.myId())
+         new SimpleLegacyIdentifiableDTO(store.myId())
       )
       updatedAPInvoice.id = existingAPInvoice.id
       updatedAPInvoice["$testProp"] = invalidValue
@@ -994,13 +983,13 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       response[0].message == errorMessage
 
       where:
-      testProp          | invalidValue                                                  || errorResponsePath        | errorMessage
-      'vendor'          | new SimpleIdentifiableDTO(999999)                             || 'vendor.id'              | '999,999 was unable to be found'
-      'purchaseOrder'   | new SimpleIdentifiableDTO(999999)                             || 'purchaseOrder.id'       | '999,999 was unable to be found'
-      'selected'        | new AccountPayableInvoiceSelectedTypeDTO('Z', 'Invalid DTO')  || 'selected.value'         | 'Z was unable to be found'
-      'type'            | new AccountPayableInvoiceTypeDTO('Z', 'Invalid DTO')          || 'type.value'             | 'Z was unable to be found'
-      'status'          | new AccountPayableInvoiceStatusTypeDTO('Z', 'Invalid DTO')    || 'status.value'           | 'Z was unable to be found'
-      'payTo'           | new SimpleIdentifiableDTO(999999)                             || 'payTo.id'               | '999,999 was unable to be found'
-      'location'        | new SimpleIdentifiableDTO(999999)                             || 'location.id'            | '999,999 was unable to be found'
+      testProp        | invalidValue                                                                       || errorResponsePath  | errorMessage
+      'vendor'        | new SimpleIdentifiableDTO(UUID.fromString('905545bf-3509-4ad3-8ccc-e437b2dbdcb0')) || 'vendor.id'        | "905545bf-3509-4ad3-8ccc-e437b2dbdcb0 was unable to be found"
+      'purchaseOrder' | new SimpleIdentifiableDTO(UUID.fromString('905545bf-3509-4ad3-8ccc-e437b2dbdcb0')) || 'purchaseOrder.id' | "905545bf-3509-4ad3-8ccc-e437b2dbdcb0 was unable to be found"
+      'selected'      | new AccountPayableInvoiceSelectedTypeDTO('Z', 'Invalid DTO')                       || 'selected.value'   | "Z was unable to be found"
+      'type'          | new AccountPayableInvoiceTypeDTO('Z', 'Invalid DTO')                               || 'type.value'       | "Z was unable to be found"
+      'status'        | new AccountPayableInvoiceStatusTypeDTO('Z', 'Invalid DTO')                         || 'status.value'     | "Z was unable to be found"
+      'payTo'         | new SimpleIdentifiableDTO(UUID.fromString('905545bf-3509-4ad3-8ccc-e437b2dbdcb0')) || 'payTo.id'         | "905545bf-3509-4ad3-8ccc-e437b2dbdcb0 was unable to be found"
+      'location'      | new SimpleLegacyIdentifiableDTO(0)                                                 || 'location.id'      | "0 was unable to be found"
    }
 }

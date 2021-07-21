@@ -4,6 +4,7 @@ import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure.GeneralLedgerControlRepository
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.ConfigAlreadyExist
@@ -33,7 +34,7 @@ class GeneralLedgerControlValidator @Inject constructor(
    fun validateUpdate(dto: GeneralLedgerControlDTO, company: Company): GeneralLedgerControlEntity {
       logger.debug("Validating Update GeneralLedgerControl {}", dto)
 
-      val generalLedgerControlEntity = generalLedgerControlRepository.findOne(company)
+      val generalLedgerControlEntity = generalLedgerControlRepository.findOne(company) ?: throw NotFoundException(company.myId()!!)
 
       return doSharedValidation(dto, company, generalLedgerControlEntity)
    }
@@ -96,7 +97,8 @@ class GeneralLedgerControlValidator @Inject constructor(
       }
 
       return GeneralLedgerControlEntity(
-         dto,
+         entity?.id,
+         company = company,
          defaultProfitCenter = defaultProfitCenter!!,
          defaultAccountPayableAccount = defaultAccountPayableAccount,
          defaultAccountPayableDiscountAccount = defaultAccountPayableDiscountAccount,

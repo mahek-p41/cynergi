@@ -11,6 +11,7 @@ import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumbe
 import com.cynergisuite.middleware.accounting.account.payable.control.infrastructure.AccountPayableControlRepository
 import com.cynergisuite.middleware.company.Company
 import io.micronaut.context.annotation.Requires
+import java.util.UUID
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
@@ -25,7 +26,7 @@ object AccountPayableControlDataLoader {
 
       return IntStream.range(0, number).mapToObj {
          AccountPayableControlEntity(
-            id = Random.nextLong(),
+            id = UUID.randomUUID(),
             checkFormType = AccountPayableCheckFormTypeDataLoader.random(),
             payAfterDiscountDate = Random.nextBoolean(),
             resetExpense = Random.nextBoolean(),

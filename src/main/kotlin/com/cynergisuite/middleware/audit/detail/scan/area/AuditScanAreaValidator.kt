@@ -5,11 +5,11 @@ import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.Duplicate
-import com.cynergisuite.middleware.localization.MustMatchPathVariable
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -33,17 +33,15 @@ class AuditScanAreaValidator @Inject constructor(
          }
       }
 
-      return AuditScanAreaEntity(dto, company, storeEntity!!)
+      return AuditScanAreaEntity(dto = dto, company = company, store = storeEntity!!)
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: Long, dto: AuditScanAreaDTO, company: Company): AuditScanAreaEntity {
+   fun validateUpdate(id: UUID, dto: AuditScanAreaDTO, company: Company): AuditScanAreaEntity {
       logger.trace("Validating Update AuditScanArea {}", dto)
       val storeEntity = storeRepository.findOne(dto.store!!.id!!, company)
 
       doValidation { errors ->
-         if (id != dto.id) errors.add(ValidationError("dto.id", MustMatchPathVariable("Id")))
-
          if (!auditScanAreaRepository.exists(id)) errors.add(ValidationError("dto.id", NotFound(dto.id!!)))
 
          storeEntity ?: errors.add(ValidationError("dto.store.id", NotFound(dto.store!!.id!!)))
@@ -53,6 +51,6 @@ class AuditScanAreaValidator @Inject constructor(
          }
       }
 
-      return AuditScanAreaEntity(dto, company, storeEntity!!)
+      return AuditScanAreaEntity(id, dto, company, storeEntity!!)
    }
 }

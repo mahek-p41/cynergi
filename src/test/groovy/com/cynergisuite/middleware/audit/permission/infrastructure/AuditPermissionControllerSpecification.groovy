@@ -65,18 +65,19 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
 
    void "fetch one by ID that doesn't exist" () {
       given:
+      final nonExistentId = UUID.randomUUID()
       def company = companyFactoryService.forDatasetCode("tstds1")
       def department = departmentFactoryService.random(company)
       def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
       def permission = auditPermissionFactoryService.single(department, permissionType, company)
 
       when:
-      get("/audit/permission/${permission.id + 1}")
+      get("/audit/permission/$nonExistentId")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == NOT_FOUND
-      exception.response.bodyAsJson().message == "${permission.id + 1} was unable to be found"
+      exception.response.bodyAsJson().message == "$nonExistentId was unable to be found"
    }
 
    void "fetch all permissions" () {
@@ -203,7 +204,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
 
       then:
       notThrown(Exception)
-      permission.id > 0
+      permission.id != null
       permission.type.id == permissionType.id
       permission.type.value == permissionType.value
       permission.department.id == salesAssociateDepartment.id
@@ -264,17 +265,18 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
 
    void "delete one by ID that doesn't exist" () {
       given:
+      final nonExistentId = UUID.randomUUID()
       final company = companyFactoryService.forDatasetCode("tstds1")
       final department = departmentFactoryService.random(company)
       final permissionType = AuditPermissionTypeFactory.findByValue("audit-approver")
       final permission = auditPermissionFactoryService.single(department, permissionType, company)
 
       when:
-      delete("/audit/permission/${permission.id + 1}")
+      delete("/audit/permission/$nonExistentId")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == NOT_FOUND
-      exception.response.bodyAsJson().message == "${permission.id + 1} was unable to be found"
+      exception.response.bodyAsJson().message == "$nonExistentId was unable to be found"
    }
 }

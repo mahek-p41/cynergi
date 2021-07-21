@@ -3,12 +3,12 @@ package com.cynergisuite.middleware.schedule.type
 import com.cynergisuite.domain.TypeDomainEntity
 
 sealed class ScheduleType(
-   open val id: Long,
+   open val id: Int,
    open val value: String,
    open val description: String,
    open val localizationCode: String
 ) : TypeDomainEntity<ScheduleType> {
-   override fun myId(): Long = id
+   override fun myId(): Int = id
    override fun myValue(): String = value
    override fun myDescription(): String = description
    override fun myLocalizationCode(): String = localizationCode
@@ -25,7 +25,7 @@ sealed class ScheduleType(
 }
 
 data class ScheduleTypeEntity(
-   override val id: Long,
+   override val id: Int,
    override val value: String,
    override val description: String,
    override val localizationCode: String

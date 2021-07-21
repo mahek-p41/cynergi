@@ -4,7 +4,7 @@ import com.cynergisuite.domain.TypeDomainEntity
 import org.apache.commons.lang3.builder.HashCodeBuilder
 
 data class InventoryLocationType(
-   val id: Long,
+   val id: Int,
    val value: String,
    val description: String,
    val localizationCode: String
@@ -16,7 +16,7 @@ data class InventoryLocationType(
       .append(localizationCode)
       .toHashCode()
 
-   override fun myId(): Long = id
+   override fun myId(): Int = id
    override fun myValue(): String = value
    override fun myDescription(): String = description
    override fun myLocalizationCode(): String = localizationCode

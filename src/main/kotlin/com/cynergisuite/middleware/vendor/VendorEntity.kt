@@ -9,9 +9,10 @@ import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
 import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import java.math.BigDecimal
+import java.util.UUID
 
 data class VendorEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val company: Company,
    val name: String, // 30 max
    val address: AddressEntity?,
@@ -50,7 +51,7 @@ data class VendorEntity(
    val phone: String?
 ) : Identifiable {
 
-   constructor(id: Long? = null, dto: VendorDTO, vendorPaymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, vendorGroup: VendorGroupEntity?, company: Company, freightOnboardType: FreightOnboardType, freightMethodType: FreightCalcMethodType, payTo: Identifiable? = null) :
+   constructor(id: UUID? = null, dto: VendorDTO, vendorPaymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, vendorGroup: VendorGroupEntity?, company: Company, freightOnboardType: FreightOnboardType, freightMethodType: FreightCalcMethodType, payTo: Identifiable? = null) :
       this(
          id = id ?: dto.id,
          company = company,
@@ -103,5 +104,5 @@ data class VendorEntity(
          payTo = payTo
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

@@ -13,7 +13,7 @@ ModuleType(
    program = "${row.program}",
    description = "${row.description}",
    localizationCode = "${row.localization_code}",
-   menuType = MenuTypeDataLoader.menuTypes().forId(${row.menu_type_id})
+   menuType = MenuTypeDataLoader.menuTypes().first { it.id == ${row.menu_type_id} }
 ),"""
    }
 }

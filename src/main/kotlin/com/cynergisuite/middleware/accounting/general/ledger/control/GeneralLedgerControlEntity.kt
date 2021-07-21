@@ -2,10 +2,13 @@ package com.cynergisuite.middleware.accounting.general.ledger.control
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.account.AccountEntity
+import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.store.Store
+import java.util.UUID
 
 data class GeneralLedgerControlEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
+   val company: Company,
    val defaultProfitCenter: Store,
    val defaultAccountPayableAccount: AccountEntity? = null,
    val defaultAccountPayableDiscountAccount: AccountEntity? = null,
@@ -17,30 +20,5 @@ data class GeneralLedgerControlEntity(
    val defaultAccountFreightAccount: AccountEntity? = null
 ) : Identifiable {
 
-   constructor(
-      dto: GeneralLedgerControlDTO,
-      defaultProfitCenter: Store,
-      defaultAccountPayableAccount: AccountEntity?,
-      defaultAccountPayableDiscountAccount: AccountEntity?,
-      defaultAccountReceivableAccount: AccountEntity?,
-      defaultAccountReceivableDiscountAccount: AccountEntity?,
-      defaultAccountMiscInventoryAccount: AccountEntity?,
-      defaultAccountSerializedInventoryAccount: AccountEntity?,
-      defaultAccountUnbilledInventoryAccount: AccountEntity?,
-      defaultAccountFreightAccount: AccountEntity?
-   ) :
-      this(
-         id = dto.id,
-         defaultProfitCenter = defaultProfitCenter,
-         defaultAccountPayableAccount = defaultAccountPayableAccount,
-         defaultAccountPayableDiscountAccount = defaultAccountPayableDiscountAccount,
-         defaultAccountReceivableAccount = defaultAccountReceivableAccount,
-         defaultAccountReceivableDiscountAccount = defaultAccountReceivableDiscountAccount,
-         defaultAccountMiscInventoryAccount = defaultAccountMiscInventoryAccount,
-         defaultAccountSerializedInventoryAccount = defaultAccountSerializedInventoryAccount,
-         defaultAccountUnbilledInventoryAccount = defaultAccountUnbilledInventoryAccount,
-         defaultAccountFreightAccount = defaultAccountFreightAccount
-      )
-
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

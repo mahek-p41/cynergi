@@ -6,8 +6,8 @@ services:
    cynergibasedb:
       image: cynergibasedb
       build:
-         context: basedb
-         dockerfile: basedb.dockerfile
+         context: cynergibasedb
+         dockerfile: cynergibasedb.dockerfile
    cynergidb:
       container_name: cynergidb
       networks:

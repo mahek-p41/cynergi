@@ -3,9 +3,10 @@ package com.cynergisuite.middleware.accounting.routine
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodType
 import java.time.LocalDate
+import java.util.UUID
 
 data class RoutineEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val overallPeriod: OverallPeriodType,
    val period: Int,
    val periodFrom: LocalDate,
@@ -27,5 +28,5 @@ data class RoutineEntity(
          accountPayableOpen = dto.accountPayableOpen!!
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

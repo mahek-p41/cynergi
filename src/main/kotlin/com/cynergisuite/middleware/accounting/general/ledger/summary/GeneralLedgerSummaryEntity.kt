@@ -5,9 +5,10 @@ import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodType
 import com.cynergisuite.middleware.store.Store
 import java.math.BigDecimal
+import java.util.UUID
 
 data class GeneralLedgerSummaryEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val account: AccountEntity,
    val profitCenter: Store,
    val overallPeriod: OverallPeriodType,
@@ -49,5 +50,5 @@ data class GeneralLedgerSummaryEntity(
          closingBalance = dto.closingBalance
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

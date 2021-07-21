@@ -28,6 +28,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -39,7 +40,7 @@ class GeneralLedgerSummaryController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerSummaryController::class.java)
 
-   @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerSummaryEndpoints"], summary = "Fetch a single GeneralLedgerSummaryDTO", description = "Fetch a single GeneralLedgerSummaryDTO that is associated with the logged-in user's company", operationId = "generalLedgerSummary-fetchOne")
    @ApiResponses(
       value = [
@@ -50,7 +51,7 @@ class GeneralLedgerSummaryController @Inject constructor(
    )
    fun fetchOne(
       @Valid @QueryValue("id")
-      id: Long,
+      id: UUID,
       authentication: Authentication
    ): GeneralLedgerSummaryDTO {
       val user = userService.findUser(authentication)
@@ -119,7 +120,7 @@ class GeneralLedgerSummaryController @Inject constructor(
       return response
    }
 
-   @Put(uri = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
+   @Put(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerSummaryEndpoints"], summary = "Update a GeneralLedgerSummaryEntity", description = "Update an GeneralLedgerSummaryEntity from a body of GeneralLedgerSummaryDTO", operationId = "generalLedgerSummary-update")
    @ApiResponses(
@@ -131,7 +132,7 @@ class GeneralLedgerSummaryController @Inject constructor(
       ]
    )
    fun update(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       @Body @Valid
       dto: GeneralLedgerSummaryDTO,
       authentication: Authentication

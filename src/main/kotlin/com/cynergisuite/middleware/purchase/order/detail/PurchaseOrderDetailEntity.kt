@@ -1,7 +1,8 @@
 package com.cynergisuite.middleware.purchase.order.detail
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.LegacyIdentifiable
+import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderEntity
 import com.cynergisuite.middleware.purchase.order.type.ExceptionIndicatorType
 import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderRequisitionIndicatorType
@@ -9,12 +10,12 @@ import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderStatusType
 import com.cynergisuite.middleware.vendor.VendorEntity
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 
 data class PurchaseOrderDetailEntity(
-   val id: Long?,
+   val id: UUID?,
    val number: Long,
    val purchaseOrder: PurchaseOrderEntity,
-   val sequence: Int?,
    val itemfileNumber: String,
    val orderQuantity: Int,
    val receivedQuantity: Int,
@@ -24,7 +25,7 @@ data class PurchaseOrderDetailEntity(
    val fabric: Int?,
    val cancelledQuantity: Int?,
    val cancelledTempQuantity: Int?,
-   val shipTo: Identifiable,
+   val shipTo: LegacyIdentifiable,
    val requiredDate: LocalDate?,
    val dateOrdered: LocalDate?,
    val freightPerItem: BigDecimal?,
@@ -43,7 +44,7 @@ data class PurchaseOrderDetailEntity(
    constructor(
       dto: PurchaseOrderDetailDTO,
       purchaseOrder: PurchaseOrderEntity,
-      shipTo: SimpleIdentifiableEntity,
+      shipTo: SimpleLegacyIdentifiableEntity,
       vendor: VendorEntity,
       statusType: PurchaseOrderStatusType,
       purchaseOrderRequisitionIndicatorType: PurchaseOrderRequisitionIndicatorType,
@@ -53,7 +54,6 @@ data class PurchaseOrderDetailEntity(
          id = dto.id,
          number = dto.number!!,
          purchaseOrder = purchaseOrder,
-         sequence = dto.sequence,
          itemfileNumber = dto.itemfileNumber!!,
          orderQuantity = dto.orderQuantity!!,
          receivedQuantity = dto.receivedQuantity!!,
@@ -78,5 +78,5 @@ data class PurchaseOrderDetailEntity(
          approvedIndicator = dto.approvedIndicator!!
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

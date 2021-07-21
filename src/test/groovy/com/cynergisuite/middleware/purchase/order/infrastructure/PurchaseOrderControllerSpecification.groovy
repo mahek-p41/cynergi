@@ -1,9 +1,9 @@
 package com.cynergisuite.middleware.purchase.order.infrastructure
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
@@ -25,7 +25,6 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/purchase-order"
 
-   @Inject AccountDataLoaderService accountDataLoaderService
    @Inject PurchaseOrderDataLoaderService purchaseOrderDataLoaderService
    @Inject ShipViaTestDataLoaderService shipViaFactoryService
    @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
@@ -44,8 +43,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
-      final def purchaseOrder = purchaseOrderDataLoaderService.single(
+      final purchaseOrder = purchaseOrderDataLoaderService.single(
          company,
          vendorIn,
          approvedByIn,
@@ -53,8 +51,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
          shipViaIn,
          shipToIn,
          paymentTermTypeIn,
-         vendorSubmittedEmployeeIn,
-         customerAccountIn
+         vendorSubmittedEmployeeIn
       )
 
       when:
@@ -115,20 +112,22 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
          vendorSubmittedTime.with { OffsetDateTime.parse(it) } == purchaseOrder.vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
          vendorSubmittedEmployee.number == purchaseOrder.vendorSubmittedEmployee.number
          ecommerceIndicator == purchaseOrder.ecommerceIndicator
-         customerAccount.id == purchaseOrder.customerAccount.id
       }
    }
 
    void "fetch one not found" () {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      get("$path/0")
+      get("$path/${nonExistentId}")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size()== 1
-      response.message == "0 was unable to be found"
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "fetch all" () {
@@ -144,7 +143,6 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
       def purchaseOrders = purchaseOrderDataLoaderService.stream(
          20,
          company,
@@ -154,8 +152,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
          shipViaIn,
          shipToIn,
          paymentTermTypeIn,
-         vendorSubmittedEmployeeIn,
-         customerAccountIn
+         vendorSubmittedEmployeeIn
       ).map { new PurchaseOrderDTO(it)}.sorted { o1, o2 -> o1.id <=> o2.id }.toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       def pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
@@ -231,7 +228,6 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
                vendorSubmittedTime.with { OffsetDateTime.parse(it) } == firstPage[index].vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
                vendorSubmittedEmployee.number == firstPage[index].vendorSubmittedEmployee.number
                ecommerceIndicator == firstPage[index].ecommerceIndicator
-               customerAccount.id == firstPage[index].customerAccount.id
             }
          }
       }
@@ -302,7 +298,6 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
                vendorSubmittedTime.with { OffsetDateTime.parse(it) } == secondPage[index].vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
                vendorSubmittedEmployee.number == secondPage[index].vendorSubmittedEmployee.number
                ecommerceIndicator == secondPage[index].ecommerceIndicator
-               customerAccount.id == secondPage[index].customerAccount.id
             }
          }
       }
@@ -373,7 +368,6 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
                vendorSubmittedTime.with { OffsetDateTime.parse(it) } == lastPage[index].vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
                vendorSubmittedEmployee.number == lastPage[index].vendorSubmittedEmployee.number
                ecommerceIndicator == lastPage[index].ecommerceIndicator
-               customerAccount.id == lastPage[index].customerAccount.id
             }
          }
       }
@@ -399,16 +393,14 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
-      final def purchaseOrder = purchaseOrderDataLoaderService.singleDTO(
+      final purchaseOrder = purchaseOrderDataLoaderService.singleDTO(
          new SimpleIdentifiableDTO(vendorIn),
          approvedByIn,
          purchaseAgentIn,
          new SimpleIdentifiableDTO(shipViaIn),
-         new SimpleIdentifiableDTO(shipToIn.myId()),
+         new SimpleLegacyIdentifiableDTO(shipToIn.myId()),
          new SimpleIdentifiableDTO(paymentTermTypeIn),
-         vendorSubmittedEmployeeIn,
-         new SimpleIdentifiableDTO(customerAccountIn)
+         vendorSubmittedEmployeeIn
       )
 
       when:
@@ -419,7 +411,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       result != null
       result.id != null
       with(result) {
-         id > 0
+         id != null
          number == purchaseOrder.number
          vendor.id == purchaseOrder.vendor.id
 
@@ -471,7 +463,6 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
          vendorSubmittedTime.with { OffsetDateTime.parse(it) } == purchaseOrder.vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
          vendorSubmittedEmployee.number == purchaseOrder.vendorSubmittedEmployee.number
          ecommerceIndicator == purchaseOrder.ecommerceIndicator
-         customerAccount.id == purchaseOrder.customerAccount.id
       }
    }
 
@@ -488,16 +479,14 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
       final def purchaseOrderDTO = purchaseOrderDataLoaderService.singleDTO(
          new SimpleIdentifiableDTO(vendorIn),
          approvedByIn,
          purchaseAgentIn,
          new SimpleIdentifiableDTO(shipViaIn),
-         new SimpleIdentifiableDTO(shipToIn.myId()),
+         new SimpleLegacyIdentifiableDTO(shipToIn.myId()),
          new SimpleIdentifiableDTO(paymentTermTypeIn),
-         vendorSubmittedEmployeeIn,
-         new SimpleIdentifiableDTO(customerAccountIn)
+         vendorSubmittedEmployeeIn
       )
       purchaseOrderDTO.totalAmount = null
       purchaseOrderDTO.receivedAmount = null
@@ -507,7 +496,6 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       purchaseOrderDTO.totalFreightAmount = null
       purchaseOrderDTO.vendorSubmittedTime = null
       purchaseOrderDTO.vendorSubmittedEmployee = null
-      purchaseOrderDTO.customerAccount = null
 
       when:
       def result = post("$path", purchaseOrderDTO)
@@ -517,7 +505,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       result != null
       result.id != null
       with(result) {
-         id > 0
+         id != null
          number == purchaseOrderDTO.number
          vendor.id == purchaseOrderDTO.vendor.id
 
@@ -569,7 +557,6 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
          vendorSubmittedTime == purchaseOrderDTO.vendorSubmittedTime
          vendorSubmittedEmployee == purchaseOrderDTO.vendorSubmittedEmployee
          ecommerceIndicator == purchaseOrderDTO.ecommerceIndicator
-         customerAccount == purchaseOrderDTO.customerAccount
       }
    }
 
@@ -587,16 +574,14 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
       final def purchaseOrderDTO = purchaseOrderDataLoaderService.singleDTO(
          new SimpleIdentifiableDTO(vendorIn),
          approvedByIn,
          purchaseAgentIn,
          new SimpleIdentifiableDTO(shipViaIn),
-         new SimpleIdentifiableDTO(shipToIn.myId()),
+         new SimpleLegacyIdentifiableDTO(shipToIn.myId()),
          new SimpleIdentifiableDTO(paymentTermTypeIn),
-         vendorSubmittedEmployeeIn,
-         new SimpleIdentifiableDTO(customerAccountIn)
+         vendorSubmittedEmployeeIn
       )
       purchaseOrderDTO["$nonNullableProp"] = null
 
@@ -643,8 +628,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
-      final def existingPurchaseOrder = purchaseOrderDataLoaderService.single(
+      final existingPurchaseOrder = purchaseOrderDataLoaderService.single(
          company,
          vendorIn,
          approvedByIn,
@@ -653,17 +637,15 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
          shipToIn,
          paymentTermTypeIn,
          vendorSubmittedEmployeeIn,
-         customerAccountIn
       )
-      final def updatedPurchaseOrderDTO = purchaseOrderDataLoaderService.singleDTO(
+      final updatedPurchaseOrderDTO = purchaseOrderDataLoaderService.singleDTO(
          new SimpleIdentifiableDTO(vendorIn),
          approvedByIn,
          purchaseAgentIn,
          new SimpleIdentifiableDTO(shipViaIn),
-         new SimpleIdentifiableDTO(shipToIn.myId()),
+         new SimpleLegacyIdentifiableDTO(shipToIn.myId()),
          new SimpleIdentifiableDTO(paymentTermTypeIn),
          vendorSubmittedEmployeeIn,
-         new SimpleIdentifiableDTO(customerAccountIn)
       )
       updatedPurchaseOrderDTO.id = existingPurchaseOrder.id
 
@@ -726,7 +708,6 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
          vendorSubmittedTime.with { OffsetDateTime.parse(it) } == updatedPurchaseOrderDTO.vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
          vendorSubmittedEmployee.number == updatedPurchaseOrderDTO.vendorSubmittedEmployee.number
          ecommerceIndicator == updatedPurchaseOrderDTO.ecommerceIndicator
-         customerAccount.id == updatedPurchaseOrderDTO.customerAccount.id
       }
    }
 
@@ -743,8 +724,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
-      final def existingPurchaseOrder = purchaseOrderDataLoaderService.single(
+      final existingPurchaseOrder = purchaseOrderDataLoaderService.single(
          company,
          vendorIn,
          approvedByIn,
@@ -752,18 +732,16 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
          shipViaIn,
          shipToIn,
          paymentTermTypeIn,
-         vendorSubmittedEmployeeIn,
-         customerAccountIn
+         vendorSubmittedEmployeeIn
       )
-      final def updatedPurchaseOrderDTO = purchaseOrderDataLoaderService.singleDTO(
+      final updatedPurchaseOrderDTO = purchaseOrderDataLoaderService.singleDTO(
          new SimpleIdentifiableDTO(vendorIn),
          approvedByIn,
          purchaseAgentIn,
          new SimpleIdentifiableDTO(shipViaIn),
-         new SimpleIdentifiableDTO(shipToIn.myId()),
+         new SimpleLegacyIdentifiableDTO(shipToIn.myId()),
          new SimpleIdentifiableDTO(paymentTermTypeIn),
-         vendorSubmittedEmployeeIn,
-         new SimpleIdentifiableDTO(customerAccountIn)
+         vendorSubmittedEmployeeIn
       )
       updatedPurchaseOrderDTO.id = existingPurchaseOrder.id
       updatedPurchaseOrderDTO.totalAmount = null
@@ -774,7 +752,6 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       updatedPurchaseOrderDTO.totalFreightAmount = null
       updatedPurchaseOrderDTO.vendorSubmittedTime = null
       updatedPurchaseOrderDTO.vendorSubmittedEmployee = null
-      updatedPurchaseOrderDTO.customerAccount = null
 
       when:
       def result = put("$path/${existingPurchaseOrder.id}", updatedPurchaseOrderDTO)
@@ -835,7 +812,6 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
          vendorSubmittedTime == updatedPurchaseOrderDTO.vendorSubmittedTime
          vendorSubmittedEmployee == updatedPurchaseOrderDTO.vendorSubmittedEmployee
          ecommerceIndicator == updatedPurchaseOrderDTO.ecommerceIndicator
-         customerAccount == updatedPurchaseOrderDTO.customerAccount
       }
    }
 
@@ -853,7 +829,6 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
       final def existingPurchaseOrder = purchaseOrderDataLoaderService.single(
          company,
          vendorIn,
@@ -862,18 +837,16 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
          shipViaIn,
          shipToIn,
          paymentTermTypeIn,
-         vendorSubmittedEmployeeIn,
-         customerAccountIn
+         vendorSubmittedEmployeeIn
       )
       final def updatedPurchaseOrderDTO = purchaseOrderDataLoaderService.singleDTO(
          new SimpleIdentifiableDTO(vendorIn),
          approvedByIn,
          purchaseAgentIn,
          new SimpleIdentifiableDTO(shipViaIn),
-         new SimpleIdentifiableDTO(shipToIn.myId()),
+         new SimpleLegacyIdentifiableDTO(shipToIn.myId()),
          new SimpleIdentifiableDTO(paymentTermTypeIn),
-         vendorSubmittedEmployeeIn,
-         new SimpleIdentifiableDTO(customerAccountIn)
+         vendorSubmittedEmployeeIn
       )
       updatedPurchaseOrderDTO.id = existingPurchaseOrder.id
       updatedPurchaseOrderDTO["$nonNullableProp"] = null
@@ -921,7 +894,6 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       final shipToIn = storeFactoryService.store(3, company)
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final customerAccountIn = accountDataLoaderService.single(company)
       final def purchaseOrder = purchaseOrderDataLoaderService.single(
          company,
          vendorIn,
@@ -930,8 +902,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
          shipViaIn,
          shipToIn,
          paymentTermTypeIn,
-         vendorSubmittedEmployeeIn,
-         customerAccountIn
+         vendorSubmittedEmployeeIn
       )
 
       when:

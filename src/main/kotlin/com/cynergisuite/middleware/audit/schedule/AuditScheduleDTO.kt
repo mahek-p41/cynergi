@@ -4,18 +4,17 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.store.StoreDTO
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.DayOfWeek
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @Schema(name = "AuditSchedule", title = "An audit schedule", description = "An audit schedule, the department that is supposed to do the audit at the desired stores")
 data class AuditScheduleDTO(
 
-   @field:Positive
    @field:Schema(name = "id", description = "System generated ID for the associated schedule")
-   var id: Long? = null, // equates to Schedule.id
+   var id: UUID? = null, // equates to Schedule.id
 
    @field:NotNull
    @field:Size(min = 3, max = 64)
@@ -41,5 +40,5 @@ data class AuditScheduleDTO(
    var enabled: Boolean? = true
 
 ) : Identifiable {
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

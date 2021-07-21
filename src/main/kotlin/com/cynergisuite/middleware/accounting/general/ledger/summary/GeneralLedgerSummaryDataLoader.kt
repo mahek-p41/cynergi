@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.summary
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository
 import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeDTO
@@ -45,7 +46,7 @@ object GeneralLedgerSummaryDataLoader {
    }
 
    @JvmStatic
-   fun streamDTO(numberIn: Int = 1, accountIn: SimpleIdentifiableDTO, profitCenterIn: SimpleIdentifiableDTO): Stream<GeneralLedgerSummaryDTO> {
+   fun streamDTO(numberIn: Int = 1, accountIn: SimpleIdentifiableDTO, profitCenterIn: SimpleLegacyIdentifiableDTO): Stream<GeneralLedgerSummaryDTO> {
       val number = if (numberIn < 0) 1 else numberIn
 
       return IntStream.range(0, number).mapToObj {
@@ -88,7 +89,7 @@ class GeneralLedgerSummaryDataLoaderService @Inject constructor(
       return stream(1, companyIn, accountIn, profitCenterIn).findFirst().orElseThrow { Exception("Unable to create GeneralLedgerSummaryEntity") }
    }
 
-   fun singleDTO(accountIn: SimpleIdentifiableDTO, profitCenterIn: SimpleIdentifiableDTO): GeneralLedgerSummaryDTO {
+   fun singleDTO(accountIn: SimpleIdentifiableDTO, profitCenterIn: SimpleLegacyIdentifiableDTO): GeneralLedgerSummaryDTO {
       return GeneralLedgerSummaryDataLoader.streamDTO(1, accountIn, profitCenterIn).findFirst().orElseThrow { Exception("Unable to create GeneralLedgerSummary") }
    }
 }

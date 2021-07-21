@@ -5,6 +5,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.company.Company
 import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,7 +14,7 @@ class BankService @Inject constructor(
    private val bankRepository: BankRepository,
    private val bankValidator: BankValidator
 ) {
-   fun fetchById(id: Long, company: Company, locale: Locale): BankDTO? =
+   fun fetchById(id: UUID, company: Company, locale: Locale): BankDTO? =
       bankRepository.findOne(id, company)?.let { BankDTO(it) }
 
    fun fetchAll(company: Company, pageRequest: PageRequest): Page<BankDTO> {
@@ -28,13 +29,13 @@ class BankService @Inject constructor(
       return BankDTO(bankRepository.insert(toCreate))
    }
 
-   fun update(id: Long, dto: BankDTO, company: Company): BankDTO {
+   fun update(id: UUID, dto: BankDTO, company: Company): BankDTO {
       val toUpdate = bankValidator.validateUpdate(id, dto, company)
 
       return BankDTO(bankRepository.update(toUpdate))
    }
 
-   fun delete(id: Long, company: Company) {
+   fun delete(id: UUID, company: Company) {
       bankRepository.delete(id, company)
    }
 }

@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -42,7 +43,7 @@ class VendorController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(VendorController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorEndpoints"], summary = "Fetch a single Vendor", description = "Fetch a single Vendor by it's system generated primary key", operationId = "vendor-fetchOne")
    @ApiResponses(
       value = [
@@ -53,7 +54,7 @@ class VendorController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): VendorDTO {
@@ -95,34 +96,6 @@ class VendorController @Inject constructor(
 
       return page
    }
-
-/*
-   @Throws(NotFoundException::class)
-   @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["VendorEndpoints"], summary = "Fetch a list of Vendors by Rebate", description = "Fetch a list of Vendor ids by Rebate id", operationId = "vendor-fetchVendorIdsByRebate")
-   @ApiResponses(
-      value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorDTO::class))]),
-         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-         ApiResponse(responseCode = "404", description = "There are no Vendors associated with the Rebate"),
-         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-      ]
-   )
-   fun fetchVendorIdsByRebate(
-      @QueryValue("rebateId") rebateId: Long,
-      authentication: Authentication,
-      httpRequest: HttpRequest<*>
-   ): MutableList<Identifiable> {
-      logger.info("Fetching Vendor ids by Rebate {}", rebateId)
-
-      val user = userService.findUser(authentication)
-      val response = vendorService.fetchVendorIdsByRebate(rebateId, user.myCompany())
-
-      logger.debug("Fetching Vendor ids by Rebate {} resulted in", rebateId, response)
-
-      return response
-   }
-*/
 
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/search{?pageRequest*}", produces = [APPLICATION_JSON])
@@ -195,7 +168,7 @@ class VendorController @Inject constructor(
    )
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the vendor being updated") @QueryValue("id")
-      id: Long,
+      id: UUID,
       @Body @Valid
       dto: VendorDTO,
       authentication: Authentication,

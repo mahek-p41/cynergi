@@ -17,6 +17,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.math.BigDecimal.ONE
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -39,7 +40,7 @@ class VendorPaymentTermValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: Long, vo: VendorPaymentTermDTO, company: Company): VendorPaymentTermEntity {
+   fun validateUpdate(id: UUID, vo: VendorPaymentTermDTO, company: Company): VendorPaymentTermEntity {
       logger.trace("Validating Update VendorPaymentTerm {}", vo)
 
       val existing = vendorPaymentTermRepository.findOne(id, company) ?: throw NotFoundException(id)

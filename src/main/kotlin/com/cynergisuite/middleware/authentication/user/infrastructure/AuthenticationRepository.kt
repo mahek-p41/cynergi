@@ -26,6 +26,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -63,7 +64,6 @@ class AuthenticationRepository @Inject constructor(
                   emp.alternative_store_indicator AS emp_alternative_store_indicator,
                   emp.alternative_area            AS emp_alternative_area,
                   comp.id                         AS comp_id,
-                  comp.uu_row_id                  AS comp_uu_row_id,
                   comp.time_created               AS comp_time_created,
                   comp.time_updated               AS comp_time_updated,
                   comp.name                       AS comp_name,
@@ -116,7 +116,6 @@ class AuthenticationRepository @Inject constructor(
                   emp.alternative_store_indicator AS emp_alternative_store_indicator,
                   emp.alternative_area            AS emp_alternative_area,
                   comp.id                         AS comp_id,
-                  comp.uu_row_id                  AS comp_uu_row_id,
                   comp.time_created               AS comp_time_created,
                   comp.time_updated               AS comp_time_updated,
                   comp.name                       AS comp_name,
@@ -215,7 +214,7 @@ class AuthenticationRepository @Inject constructor(
    }
 
    @Cacheable("creds-cache")
-   fun findUser(employeeId: Long, employeeType: String, employeeNumber: Int, companyId: Long, storeNumber: Int): AuthenticatedUser {
+   fun findUser(employeeId: Long, employeeType: String, employeeNumber: Int, companyId: UUID, storeNumber: Int): AuthenticatedUser {
       val company = companyRepository.findOne(companyId) ?: throw Exception("Unable to find company")
       val employee = employeeRepository.findOne(employeeId, employeeType, company) ?: throw Exception("Unable to find employee")
       val location = locationRepository.findOne(storeNumber, company) ?: throw Exception("Unable to find store from authentication")
@@ -236,7 +235,7 @@ class AuthenticationRepository @Inject constructor(
 
    private fun mapCompany(row: Row): Company {
       return CompanyEntity(
-         id = row.getLong("comp_id"),
+         id = row.getUUID("comp_id"),
          name = row.getString("comp_name"),
          doingBusinessAs = row.getString("comp_doing_business_as"),
          clientCode = row.getString("comp_client_code"),

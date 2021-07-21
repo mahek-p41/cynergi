@@ -2,18 +2,18 @@ package com.cynergisuite.middleware.accounting.general.ledger.summary
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeDTO
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import java.util.UUID
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 
 @Schema(name = "GeneralLedgerSummary", title = "Defines a general ledger summary", description = "Defines a general ledger summary")
 data class GeneralLedgerSummaryDTO(
 
-   @field:Positive
    @field:Schema(name = "id", minimum = "1", required = false, description = "System generated ID")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Schema(name = "account", description = "Account ID")
@@ -21,7 +21,7 @@ data class GeneralLedgerSummaryDTO(
 
    @field:NotNull
    @field:Schema(name = "profitCenter", description = "Profit center ID")
-   var profitCenter: SimpleIdentifiableDTO? = null,
+   var profitCenter: SimpleLegacyIdentifiableDTO? = null,
 
    @field:NotNull
    @field:Schema(name = "overallPeriod", description = "Overall period")
@@ -74,7 +74,7 @@ data class GeneralLedgerSummaryDTO(
       this(
          id = entity.id,
          account = SimpleIdentifiableDTO(entity.account.id),
-         profitCenter = SimpleIdentifiableDTO(entity.profitCenter.myId()),
+         profitCenter = SimpleLegacyIdentifiableDTO(entity.profitCenter.myId()),
          overallPeriod = OverallPeriodTypeDTO(entity.overallPeriod),
          netActivityPeriod1 = entity.netActivityPeriod1,
          netActivityPeriod2 = entity.netActivityPeriod2,
@@ -92,5 +92,5 @@ data class GeneralLedgerSummaryDTO(
          closingBalance = entity.closingBalance
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

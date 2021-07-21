@@ -2,18 +2,22 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
+import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringTypeRepository
 import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class GeneralLedgerRecurringValidator @Inject constructor(
    private val sourceCodeRepository: GeneralLedgerSourceCodeRepository,
+   private val recurringRepository: GeneralLedgerRecurringRepository,
    private val recurringTypeRepository: GeneralLedgerRecurringTypeRepository
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerRecurringValidator::class.java)
@@ -23,16 +27,22 @@ class GeneralLedgerRecurringValidator @Inject constructor(
 
       dto.lastTransferDate = null
 
-      return doSharedValidation(dto, company)
+      return doSharedValidation(dto, company, null)
    }
 
-   fun validateUpdate(id: Long, dto: GeneralLedgerRecurringDTO, company: Company): GeneralLedgerRecurringEntity {
+   fun validateUpdate(id: UUID, dto: GeneralLedgerRecurringDTO, company: Company): GeneralLedgerRecurringEntity {
       logger.debug("Validating Update GeneralLedgerRecurring{}", dto)
 
-      return doSharedValidation(dto, company)
+      val existingGeneralLedgerRecurring = recurringRepository.findOne(id, company) ?: throw NotFoundException(id)
+
+      return doSharedValidation(dto, company, existingGeneralLedgerRecurring)
    }
 
-   private fun doSharedValidation(dto: GeneralLedgerRecurringDTO, company: Company): GeneralLedgerRecurringEntity {
+   private fun doSharedValidation(
+      dto: GeneralLedgerRecurringDTO,
+      company: Company,
+      existingGeneralLedgerRecurring: GeneralLedgerRecurringEntity?
+   ): GeneralLedgerRecurringEntity {
       val source = sourceCodeRepository.findOne(dto.source!!.id!!, company)
       val recurringType = recurringTypeRepository.findOne(dto.type!!.value)
 
@@ -43,6 +53,7 @@ class GeneralLedgerRecurringValidator @Inject constructor(
       }
 
       return GeneralLedgerRecurringEntity(
+         existingGeneralLedgerRecurring?.id,
          dto,
          source!!,
          recurringType!!

@@ -2,20 +2,20 @@ package com.cynergisuite.middleware.accounting.account.payable.distribution
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import java.util.UUID
 import javax.validation.constraints.Digits
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "AccountPayableDistribution", title = "A data transfer object containing an account payable distribution", description = "A data transfer object containing an account payable distribution.")
 data class AccountPayableDistributionDTO(
 
-   @field:Positive
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Size(max = 10)
@@ -24,7 +24,7 @@ data class AccountPayableDistributionDTO(
 
    @field:NotNull
    @field:Schema(name = "profitCenter", description = "Profit center")
-   var profitCenter: SimpleIdentifiableDTO? = null,
+   var profitCenter: SimpleLegacyIdentifiableDTO? = null,
 
    @field:NotNull
    @field:Schema(name = "account", description = "Account")
@@ -41,10 +41,10 @@ data class AccountPayableDistributionDTO(
       this(
          id = entity.id,
          name = entity.name,
-         profitCenter = SimpleIdentifiableDTO(entity.profitCenter.myId()),
+         profitCenter = SimpleLegacyIdentifiableDTO(entity.profitCenter.myId()),
          account = SimpleIdentifiableDTO(entity.account.id),
          percent = entity.percent
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

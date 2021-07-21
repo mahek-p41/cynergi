@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.region
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
@@ -78,15 +79,18 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "fetch one region by id not found" () {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      get("$path/0")
+      get("$path/$nonExistentId")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == '0 was unable to be found'
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "fetch all" () {
@@ -201,10 +205,9 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id != null
          name == region.name
          number > 0
-         number == id
          description == region.description
          regionalManager.id == region.regionalManager.id
          with(division) {
@@ -303,46 +306,38 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "update a invalid region with non-existing region id"() {
       given:
-      final def regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
-      def jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
-      jsonRegion.id = 99
+      final nonExistentId = UUID.randomUUID()
+      final regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
+      final jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
 
       when:
-      put("$path/99", jsonRegion)
+      put("$path/$nonExistentId", jsonRegion)
 
       then:
       def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
+      exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
 
-      response[0].path == 'dto.id'
-      response[0].message == '99 was unable to be found'
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "update a invalid region without region id"() {
       given:
-      final def regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
-      def jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
+      final regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
+      final jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
       jsonRegion.remove('id')
 
       when:
       put("$path/$regionDTO.id", jsonRegion)
 
       then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-
-      response[0].path == 'dto.id'
-      response[0].message == 'Id must match path variable'
+      notThrown(HttpClientResponseException)
    }
 
    void "update a invalid region with un-match id in payload"() {
       given:
-      final def regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
-      def jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
+      final regionDTO = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
+      final jsonRegion = jsonSlurper.parseText(jsonOutput.toJson(regionDTO))
       jsonRegion.id = 99
 
       when:
@@ -352,10 +347,8 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       def exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.size() == 1
-
-      response[0].path == 'dto.id'
-      response[0].message == 'Id must match path variable'
+      response.path == 'id'
+      response.message == 'Failed to convert argument [id] for value [99]'
    }
 
    void "update a invalid region without region description"() {
@@ -397,7 +390,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "delete a valid region"() {
       given:
-      final def existingRegion = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
+      final existingRegion = regionFactoryService.single(tstds1Division, nineNineEightEmployee)
 
       when:
       def result = delete("$path/$existingRegion.id")
@@ -421,15 +414,17 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "delete an invalid region"() {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      delete("$path/0")
+      delete("$path/$nonExistentId")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response.message == '0 was unable to be found'
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "delete a region with region assigned"() {
@@ -536,7 +531,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       final region = regionFactoryService.single(division)
 
       when:
-      def result = post("$path/${region.id}/store", new SimpleIdentifiableDTO(store.myId()), tstds2SuperUserLogin)
+      def result = post("$path/${region.id}/store", new SimpleLegacyIdentifiableDTO(store.myId()), tstds2SuperUserLogin)
 
       then:
       notThrown(HttpClientResponseException)
@@ -555,7 +550,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       final region = regionFactoryService.single(division)
 
       when: "attempting to associate division/region/store from a company separate from the one the user is logged in under"
-      post("$path/${region.id}/store", new SimpleIdentifiableDTO(tstds1Store3.myId()), tstds2SuperUserLogin)
+      post("$path/${region.id}/store", new SimpleLegacyIdentifiableDTO(tstds1Store3.myId()), tstds2SuperUserLogin)
 
       then: "a not found should result"
       final ex = thrown(HttpClientResponseException)
@@ -629,7 +624,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       }
 
       when: 're-associate store with a new region'
-      post("$path/${newRegion.id}/store", new SimpleIdentifiableDTO(store1.myId()))
+      post("$path/${newRegion.id}/store", new SimpleLegacyIdentifiableDTO(store1.myId()))
 
       then:
       notThrown(HttpClientResponseException)
@@ -656,7 +651,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       final store1 = storeFactoryService.store(1, tstds1)
 
       when: 're-associate store with a region of other company'
-      post("$path/${regions[1].id}/store", new SimpleIdentifiableDTO(store1.myId()))
+      post("$path/${regions[1].id}/store", new SimpleLegacyIdentifiableDTO(store1.myId()))
 
       then: "a not found should result"
       final ex = thrown(HttpClientResponseException)

@@ -5,6 +5,7 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getOffsetDateTimeOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
@@ -26,9 +27,9 @@ import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaym
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -70,7 +71,6 @@ class PurchaseOrderRepository @Inject constructor(
          )
          SELECT
             po.id                                               AS po_id,
-            po.uu_row_id                                        AS po_uu_row_id,
             po.time_created                                     AS po_time_created,
             po.time_updated                                     AS po_time_updated,
             po.number                                           AS po_number,
@@ -86,7 +86,6 @@ class PurchaseOrderRepository @Inject constructor(
             po.vendor_submitted_time                            AS po_vendor_submitted_time,
             po.ecommerce_indicator                              AS po_ecommerce_indicator,
             vendor.v_id                                         AS po_vendor_id,
-            vendor.v_uu_row_id                                  AS po_vendor_uu_row_id,
             vendor.v_time_created                               AS po_vendor_time_created,
             vendor.v_time_updated                               AS po_vendor_time_updated,
             vendor.v_company_id                                 AS po_vendor_company_id,
@@ -95,11 +94,11 @@ class PurchaseOrderRepository @Inject constructor(
             vendor.v_account_number                             AS po_vendor_account_number,
             vendor.v_pay_to_id                                  AS po_vendor_pay_to_id,
             vendor.v_freight_on_board_type_id                   AS po_vendor_freight_on_board_type_id,
-            vendor.v_payment_terms_id                           AS po_vendor_payment_terms_id,
+            vendor.v_vendor_payment_term_id                     AS po_vendor_vendor_payment_term_id,
             vendor.v_normal_days                                AS po_vendor_normal_days,
             vendor.v_return_policy                              AS po_vendor_return_policy,
             vendor.v_ship_via_id                                AS po_vendor_ship_via_id,
-            vendor.v_group_id                                   AS po_vendor_group_id,
+            vendor.v_vendor_group_id                            AS po_vendor_group_id,
             vendor.v_minimum_quantity                           AS po_vendor_minimum_quantity,
             vendor.v_minimum_amount                             AS po_vendor_minimum_amount,
             vendor.v_free_ship_quantity                         AS po_vendor_free_ship_quantity,
@@ -125,7 +124,6 @@ class PurchaseOrderRepository @Inject constructor(
             vendor.v_note                                       AS po_vendor_note,
             vendor.v_phone_number                               AS po_vendor_phone_number,
             vendor.v_comp_id                                    AS po_vendor_comp_id,
-            vendor.v_comp_uu_row_id                             AS po_vendor_comp_uu_row_id,
             vendor.v_comp_time_created                          AS po_vendor_comp_time_created,
             vendor.v_comp_time_updated                          AS po_vendor_comp_time_updated,
             vendor.v_comp_name                                  AS po_vendor_comp_name,
@@ -156,7 +154,6 @@ class PurchaseOrderRepository @Inject constructor(
             vendor.v_method_description                         AS po_vendor_method_description,
             vendor.v_method_localization_code                   AS po_vendor_method_localization_code,
             vendor.v_address_id                                 AS po_vendor_address_id,
-            vendor.v_address_uu_row_id                          AS po_vendor_address_uu_row_id,
             vendor.v_address_time_created                       AS po_vendor_address_time_created,
             vendor.v_address_time_updated                       AS po_vendor_address_time_updated,
             vendor.v_address_number                             AS po_vendor_address_number,
@@ -173,7 +170,6 @@ class PurchaseOrderRepository @Inject constructor(
             vendor.v_address_phone                              AS po_vendor_address_phone,
             vendor.v_address_fax                                AS po_vendor_address_fax,
             vendor.v_vpt_id                                     AS po_vendor_vpt_id,
-            vendor.v_vpt_uu_row_id                              AS po_vendor_vpt_uu_row_id,
             vendor.v_vpt_time_created                           AS po_vendor_vpt_time_created,
             vendor.v_vpt_time_updated                           AS po_vendor_vpt_time_updated,
             vendor.v_vpt_company_id                             AS po_vendor_vpt_company_id,
@@ -184,13 +180,11 @@ class PurchaseOrderRepository @Inject constructor(
             vendor.v_vpt_discount_days                          AS po_vendor_vpt_discount_days,
             vendor.v_vpt_discount_percent                       AS po_vendor_vpt_discount_percent,
             vendor.v_shipVia_id                                 AS po_vendor_shipVia_id,
-            vendor.v_shipVia_uu_row_id                          AS po_vendor_shipVia_uu_row_id,
             vendor.v_shipVia_time_created                       AS po_vendor_shipVia_time_created,
             vendor.v_shipVia_time_updated                       AS po_vendor_shipVia_time_updated,
             vendor.v_shipVia_description                        AS po_vendor_shipVia_description,
             vendor.v_shipVia_number                             AS po_vendor_shipVia_number,
             vendor.v_vgrp_id                                    AS po_vendor_vgrp_id,
-            vendor.v_vgrp_uu_row_id                             AS po_vendor_vgrp_uu_row_id,
             vendor.v_vgrp_time_created                          AS po_vendor_vgrp_time_created,
             vendor.v_vgrp_time_updated                          AS po_vendor_vgrp_time_updated,
             vendor.v_vgrp_company_id                            AS po_vendor_vgrp_company_id,
@@ -235,7 +229,6 @@ class PurchaseOrderRepository @Inject constructor(
             approvedBy.dept_code                                AS po_approvedBy_dept_code,
             approvedBy.dept_description                         AS po_approvedBy_dept_description,
             approvedBy.comp_id                                  AS po_approvedBy_comp_id,
-            approvedBy.comp_uu_row_id                           AS po_approvedBy_comp_uu_row_id,
             approvedBy.comp_time_created                        AS po_approvedBy_comp_time_created,
             approvedBy.comp_time_updated                        AS po_approvedBy_comp_time_updated,
             approvedBy.comp_name                                AS po_approvedBy_comp_name,
@@ -275,7 +268,6 @@ class PurchaseOrderRepository @Inject constructor(
             purchaseAgent.dept_code                             AS po_purchaseAgent_dept_code,
             purchaseAgent.dept_description                      AS po_purchaseAgent_dept_description,
             purchaseAgent.comp_id                               AS po_purchaseAgent_comp_id,
-            purchaseAgent.comp_uu_row_id                        AS po_purchaseAgent_comp_uu_row_id,
             purchaseAgent.comp_time_created                     AS po_purchaseAgent_comp_time_created,
             purchaseAgent.comp_time_updated                     AS po_purchaseAgent_comp_time_updated,
             purchaseAgent.comp_name                             AS po_purchaseAgent_comp_name,
@@ -298,13 +290,11 @@ class PurchaseOrderRepository @Inject constructor(
             purchaseAgent.address_phone                         AS po_purchaseAgent_comp_address_phone,
             purchaseAgent.address_fax                           AS po_purchaseAgent_comp_address_fax,
             shipVia.id                                          AS po_shipVia_id,
-            shipVia.uu_row_id                                   AS po_shipVia_uu_row_id,
             shipVia.time_created                                AS po_shipVia_time_created,
             shipVia.time_updated                                AS po_shipVia_time_updated,
             shipVia.description                                 AS po_shipVia_description,
             shipVia.number                                      AS po_shipVia_number,
             shipVia.comp_id                                     AS po_shipVia_comp_id,
-            shipVia.comp_uu_row_id                              AS po_shipVia_comp_uu_row_id,
             shipVia.comp_name                                   AS po_shipVia_comp_name,
             shipVia.comp_doing_business_as                      AS po_shipVia_comp_doing_business_as,
             shipVia.comp_client_code                            AS po_shipVia_comp_client_code,
@@ -330,7 +320,6 @@ class PurchaseOrderRepository @Inject constructor(
             shipTo.name                                         AS po_shipTo_name,
             shipTo.dataset                                      AS po_shipTo_dataset,
             paymentTermType.vpt_id                              AS po_paymentTermType_vpt_id,
-            paymentTermType.vpt_uu_row_id                       AS po_paymentTermType_vpt_uu_row_id,
             paymentTermType.vpt_time_created                    AS po_paymentTermType_vpt_time_created,
             paymentTermType.vpt_time_updated                    AS po_paymentTermType_vpt_time_updated,
             paymentTermType.vpt_company_id                      AS po_paymentTermType_vpt_company_id,
@@ -341,7 +330,6 @@ class PurchaseOrderRepository @Inject constructor(
             paymentTermType.vpt_discount_days                   AS po_paymentTermType_vpt_discount_days,
             paymentTermType.vpt_discount_percent                AS po_paymentTermType_vpt_discount_percent,
             paymentTermType.comp_id                             AS po_paymentTermType_comp_id,
-            paymentTermType.comp_uu_row_id                      AS po_paymentTermType_comp_uu_row_id,
             paymentTermType.comp_time_created                   AS po_paymentTermType_comp_time_created,
             paymentTermType.comp_time_updated                   AS po_paymentTermType_comp_time_updated,
             paymentTermType.comp_name                           AS po_paymentTermType_comp_name,
@@ -364,10 +352,9 @@ class PurchaseOrderRepository @Inject constructor(
             paymentTermType.address_phone                       AS po_paymentTermType_address_phone,
             paymentTermType.address_fax                         AS po_paymentTermType_address_fax,
             paymentTermType.vpts_id                             AS po_paymentTermType_vpts_id,
-            paymentTermType.vpts_uu_row_id                      AS po_paymentTermType_vpts_uu_row_id,
             paymentTermType.vpts_time_created                   AS po_paymentTermType_vpts_time_created,
             paymentTermType.vpts_time_updated                   AS po_paymentTermType_vpts_time_updated,
-            paymentTermType.vpts_payment_term_id                AS po_paymentTermType_vpts_payment_term_id,
+            paymentTermType.vpts_vendor_payment_term_id         AS po_paymentTermType_vpts_payment_term_id,
             paymentTermType.vpts_due_month                      AS po_paymentTermType_vpts_due_month,
             paymentTermType.vpts_due_days                       AS po_paymentTermType_vpts_due_days,
             paymentTermType.vpts_due_percent                    AS po_paymentTermType_vpts_due_percent,
@@ -395,7 +382,6 @@ class PurchaseOrderRepository @Inject constructor(
             vendorSubmittedEmp.dept_code                        AS po_vendorSubmittedEmp_dept_code,
             vendorSubmittedEmp.dept_description                 AS po_vendorSubmittedEmp_dept_description,
             vendorSubmittedEmp.comp_id                          AS po_vendorSubmittedEmp_comp_id,
-            vendorSubmittedEmp.comp_uu_row_id                   AS po_vendorSubmittedEmp_comp_uu_row_id,
             vendorSubmittedEmp.comp_time_created                AS po_vendorSubmittedEmp_comp_time_created,
             vendorSubmittedEmp.comp_time_updated                AS po_vendorSubmittedEmp_comp_time_updated,
             vendorSubmittedEmp.comp_name                        AS po_vendorSubmittedEmp_comp_name,
@@ -416,25 +402,7 @@ class PurchaseOrderRepository @Inject constructor(
             vendorSubmittedEmp.address_country                  AS po_vendorSubmittedEmp_comp_address_country,
             vendorSubmittedEmp.address_county                   AS po_vendorSubmittedEmp_comp_address_county,
             vendorSubmittedEmp.address_phone                    AS po_vendorSubmittedEmp_comp_address_phone,
-            vendorSubmittedEmp.address_fax                      AS po_vendorSubmittedEmp_comp_address_fax,
-            custAcct.account_id                                 AS po_custAcct_id,
-            custAcct.account_number                             AS po_custAcct_number,
-            custAcct.account_name                               AS po_custAcct_name,
-            custAcct.account_form_1099_field                    AS po_custAcct_form_1099_field,
-            custAcct.account_corporate_account_indicator        AS po_custAcct_corporate_account_indicator,
-            custAcct.account_comp_id                            AS po_custAcct_comp_id,
-            custAcct.account_type_id                            AS po_custAcct_type_id,
-            custAcct.account_type_value                         AS po_custAcct_type_value,
-            custAcct.account_type_description                   AS po_custAcct_type_description,
-            custAcct.account_type_localization_code             AS po_custAcct_type_localization_code,
-            custAcct.account_balance_type_id                    AS po_custAcct_balance_type_id,
-            custAcct.account_balance_type_value                 AS po_custAcct_balance_type_value,
-            custAcct.account_balance_type_description           AS po_custAcct_balance_type_description,
-            custAcct.account_balance_type_localization_code     AS po_custAcct_balance_type_localization_code,
-            custAcct.account_status_id                          AS po_custAcct_status_id,
-            custAcct.account_status_value                       AS po_custAcct_status_value,
-            custAcct.account_status_description                 AS po_custAcct_status_description,
-            custAcct.account_status_localization_code           AS po_custAcct_status_localization_code
+            vendorSubmittedEmp.address_fax                      AS po_vendorSubmittedEmp_comp_address_fax
          FROM purchase_order_header po
             JOIN company comp ON po.company_id = comp.id
             JOIN vendor                                           ON po.vendor_id = vendor.v_id
@@ -449,14 +417,13 @@ class PurchaseOrderRepository @Inject constructor(
             JOIN fastinfo_prod_import.store_vw shipTo
                ON shipTo.dataset = comp.dataset_code
                   AND shipTo.number = po.ship_to_id_sfk
-            JOIN vendor_payment_term paymentTermType              ON po.payment_term_type_id = paymentTermType.vpt_id
+            JOIN vendor_payment_term paymentTermType              ON po.vendor_payment_term_id = paymentTermType.vpt_id
             JOIN exception_ind_type_domain exceptionIndType       ON po.exception_ind_type_id = exceptionIndType.id
             LEFT JOIN employee vendorSubmittedEmp                 ON po.vendor_submitted_employee_sfk = vendorSubmittedEmp.emp_number AND po.company_id = vendorSubmittedEmp.comp_id
-            JOIN account custAcct                                 ON po.customer_account_number_sfk = custAcct.account_id
       """
    }
 
-   fun findOne(id: Long, company: Company): PurchaseOrderEntity? {
+   fun findOne(id: UUID, company: Company): PurchaseOrderEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()}\nWHERE po.id = :id AND po.company_id = :comp_id"
 
@@ -518,15 +485,14 @@ class PurchaseOrderRepository @Inject constructor(
             ship_via_id,
             required_date,
             ship_to_id_sfk,
-            payment_term_type_id,
+            vendor_payment_term_id,
             message,
             total_landed_amount,
             total_freight_amount,
             exception_ind_type_id,
             vendor_submitted_time,
             vendor_submitted_employee_sfk,
-            ecommerce_indicator,
-            customer_account_number_sfk
+            ecommerce_indicator
          )
          VALUES (
             :number,
@@ -546,15 +512,14 @@ class PurchaseOrderRepository @Inject constructor(
             :ship_via_id,
             :required_date,
             :ship_to_id_sfk,
-            :payment_term_type_id,
+            :vendor_payment_term_id,
             :message,
             :total_landed_amount,
             :total_freight_amount,
             :exception_ind_type_id,
             :vendor_submitted_time,
             :vendor_submitted_employee_sfk,
-            :ecommerce_indicator,
-            :customer_account_number_sfk
+            :ecommerce_indicator
          )
          RETURNING
             *
@@ -577,7 +542,7 @@ class PurchaseOrderRepository @Inject constructor(
             "ship_via_id" to entity.shipVia.id,
             "required_date" to entity.requiredDate,
             "ship_to_id_sfk" to entity.shipTo.myNumber(),
-            "payment_term_type_id" to entity.paymentTermType.id,
+            "vendor_payment_term_id" to entity.paymentTermType.id,
             "message" to entity.message,
             "total_landed_amount" to entity.totalLandedAmount,
             "total_freight_amount" to entity.totalFreightAmount,
@@ -585,10 +550,8 @@ class PurchaseOrderRepository @Inject constructor(
             "vendor_submitted_time" to entity.vendorSubmittedTime,
             "vendor_submitted_employee_sfk" to entity.vendorSubmittedEmployee?.number,
             "ecommerce_indicator" to entity.ecommerceIndicator,
-            "customer_account_number_sfk" to entity.customerAccount?.id
-         ),
-         RowMapper { rs, _ -> mapRow(rs, entity) }
-      )
+         )
+      ) { rs, _ -> mapRow(rs, entity) }
    }
 
    @Transactional
@@ -616,15 +579,14 @@ class PurchaseOrderRepository @Inject constructor(
                ship_via_id = :ship_via_id,
                required_date = :required_date,
                ship_to_id_sfk = :ship_to_id_sfk,
-               payment_term_type_id = :payment_term_type_id,
+               vendor_payment_term_id = :vendor_payment_term_id,
                message = :message,
                total_landed_amount = :total_landed_amount,
                total_freight_amount = :total_freight_amount,
                exception_ind_type_id = :exception_ind_type_id,
                vendor_submitted_time = :vendor_submitted_time,
                vendor_submitted_employee_sfk = :vendor_submitted_employee_sfk,
-               ecommerce_indicator = :ecommerce_indicator,
-               customer_account_number_sfk = :customer_account_number_sfk
+               ecommerce_indicator = :ecommerce_indicator
             WHERE id = :id
             RETURNING
                *
@@ -648,7 +610,7 @@ class PurchaseOrderRepository @Inject constructor(
             "ship_via_id" to entity.shipVia.id,
             "required_date" to entity.requiredDate,
             "ship_to_id_sfk" to entity.shipTo.myNumber(),
-            "payment_term_type_id" to entity.paymentTermType.id,
+            "vendor_payment_term_id" to entity.paymentTermType.id,
             "message" to entity.message,
             "total_landed_amount" to entity.totalLandedAmount,
             "total_freight_amount" to entity.totalFreightAmount,
@@ -656,14 +618,12 @@ class PurchaseOrderRepository @Inject constructor(
             "vendor_submitted_time" to entity.vendorSubmittedTime,
             "vendor_submitted_employee_sfk" to entity.vendorSubmittedEmployee?.number,
             "ecommerce_indicator" to entity.ecommerceIndicator,
-            "customer_account_number_sfk" to entity.customerAccount?.id
-         ),
-         RowMapper { rs, _ -> mapRow(rs, entity) }
-      )
+         )
+      ) { rs, _ -> mapRow(rs, entity) }
    }
 
    @Transactional
-   fun delete(id: Long, company: Company) {
+   fun delete(id: UUID, company: Company) {
       logger.debug("Deleting PurchaseOrder with id={}", id)
 
       val rowsAffected = jdbc.update(
@@ -683,7 +643,7 @@ class PurchaseOrderRepository @Inject constructor(
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): PurchaseOrderEntity {
       return PurchaseOrderEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
          vendor = vendorRepository.mapRow(rs, company, "${columnPrefix}vendor_"),
          statusType = statusTypeRepository.mapRow(rs, "${columnPrefix}statusType_"),
@@ -708,7 +668,6 @@ class PurchaseOrderRepository @Inject constructor(
          vendorSubmittedTime = rs.getOffsetDateTimeOrNull("${columnPrefix}vendor_submitted_time"),
          vendorSubmittedEmployee = employeeRepository.mapRowOrNull(rs, "${columnPrefix}vendorSubmittedEmp_", "${columnPrefix}vendorSubmittedEmp_comp_", "${columnPrefix}vendorSubmittedEmp_comp_address_", "${columnPrefix}vendorSubmittedEmp_dept_", "${columnPrefix}vendorSubmittedEmp_store_"),
          ecommerceIndicator = rs.getBoolean("${columnPrefix}ecommerce_indicator"),
-         customerAccount = accountRepository.mapRowOrNull(rs, company, "${columnPrefix}custAcct_")
       )
    }
 
@@ -721,7 +680,7 @@ class PurchaseOrderRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet, entity: PurchaseOrderEntity, columnPrefix: String = EMPTY): PurchaseOrderEntity {
       return PurchaseOrderEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
          vendor = entity.vendor,
          statusType = entity.statusType,
@@ -746,7 +705,6 @@ class PurchaseOrderRepository @Inject constructor(
          vendorSubmittedTime = rs.getOffsetDateTimeOrNull("${columnPrefix}vendor_submitted_time"),
          vendorSubmittedEmployee = entity.vendorSubmittedEmployee,
          ecommerceIndicator = rs.getBoolean("${columnPrefix}ecommerce_indicator"),
-         customerAccount = entity.customerAccount
       )
    }
 }

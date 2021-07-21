@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.vendor.group
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.company.Company
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -11,13 +10,13 @@ import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class VendorGroupValidator @Inject constructor(
    private val vendorGroupRepository: VendorGroupRepository,
-   private val companyRepository: CompanyRepository
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(VendorGroupValidator::class.java)
 
@@ -31,7 +30,7 @@ class VendorGroupValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateUpdate(id: Long, vo: VendorGroupDTO, company: Company): VendorGroupEntity {
+   fun validateUpdate(id: UUID, vo: VendorGroupDTO, company: Company): VendorGroupEntity {
       logger.trace("Validating Update VendorGroup {}", vo)
 
       val existing = vendorGroupRepository.findOne(id, company) ?: throw NotFoundException(id)

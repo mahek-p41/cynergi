@@ -11,6 +11,7 @@ import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,7 +30,7 @@ class GeneralLedgerSummaryValidator @Inject constructor(
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: Long, dto: GeneralLedgerSummaryDTO, company: Company): GeneralLedgerSummaryEntity {
+   fun validateUpdate(id: UUID, dto: GeneralLedgerSummaryDTO, company: Company): GeneralLedgerSummaryEntity {
       logger.debug("Validating Update GeneralLedgerSummary {}", dto)
 
       val generalLedgerSummaryEntity = generalLedgerSummaryRepository.findOne(id, company) ?: throw NotFoundException(id)

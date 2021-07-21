@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -45,7 +46,7 @@ class AuditScheduleService @Inject constructor(
 ) : DailySchedule {
    private val logger: Logger = LoggerFactory.getLogger(AuditScheduleService::class.java)
 
-   fun fetchById(id: Long, company: Company): AuditScheduleDTO? {
+   fun fetchById(id: UUID, company: Company): AuditScheduleDTO? {
       val schedule = scheduleRepository.findOne(id)
 
       return if (schedule != null) {
@@ -167,7 +168,7 @@ class AuditScheduleService @Inject constructor(
                   startDate = LocalDate.now(),
                   dateCreated = null,
                   expirationDate = LocalDate.now().plusDays(1),
-                  company = company.myId()!!.toString(),
+                  company = company.myDataset(),
                   message = schedule.description!!,
                   sendingEmployee = employee.number.toString(),
                   notificationType = STORE.value,

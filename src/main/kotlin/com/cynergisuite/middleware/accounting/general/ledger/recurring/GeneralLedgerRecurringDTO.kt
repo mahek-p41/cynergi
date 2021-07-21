@@ -6,16 +6,15 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
+import java.util.UUID
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "GeneralLedgerRecurring", title = "General Ledger Recurring", description = "General ledger recurring entity")
 data class GeneralLedgerRecurringDTO(
 
-   @field:Positive
    @field:Schema(description = "General ledger recurring id")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Schema(description = "General ledger recurring reverse indicator")
@@ -57,5 +56,5 @@ data class GeneralLedgerRecurringDTO(
          lastTransferDate = entity.lastTransferDate
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

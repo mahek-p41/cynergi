@@ -12,7 +12,7 @@ import javax.validation.constraints.Size
 data class MenuDTO(
 
    @field:Positive
-   var id: Long? = null,
+   var id: Int? = null,
 
    @field:Schema(description = "List of sub-menus")
    var menus: MutableList<MenuDTO>? = null,

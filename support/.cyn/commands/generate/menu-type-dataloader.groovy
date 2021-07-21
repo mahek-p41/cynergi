@@ -13,7 +13,7 @@ MenuType(
    description = "${row.description}",
    localizationCode = "${row.localization_code}",
    orderNumber = ${row.order_number},
-   areaType = AreaDataLoader.areaTypes().forId(${row.area_type_id})
+   areaType = AreaDataLoader.areaTypes().first { it.id == ${row.area_type_id} }
 ),"""
    }
 }

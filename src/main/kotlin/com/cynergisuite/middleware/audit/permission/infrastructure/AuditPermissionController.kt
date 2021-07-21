@@ -34,6 +34,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -46,7 +47,7 @@ class AuditPermissionController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditPermissionController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @AccessControl("audit-permission-manager", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Fetch a single Audit Permission", description = "Fetch a single Audit Permission by it's system generated primary key", operationId = "auditPermission-fetchOne")
    @ApiResponses(
@@ -59,7 +60,7 @@ class AuditPermissionController @Inject constructor(
    )
    fun fetchOne(
       @Parameter(description = "Primary Key to lookup the Audit with", `in` = PATH) @QueryValue("id")
-      id: Long,
+      id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): AuditPermissionValueObject {
@@ -190,7 +191,7 @@ class AuditPermissionController @Inject constructor(
       return auditPermissionService.create(permission, user, locale)
    }
 
-   @Delete(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Delete(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @AccessControl("audit-permission-manager", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Delete a single Audit Permission", description = "Delete a single Audit Permission by it's system generated primary key", operationId = "auditPermission-delete")
    @ApiResponses(
@@ -203,7 +204,7 @@ class AuditPermissionController @Inject constructor(
    )
    fun delete(
       @Parameter(description = "Primary Key to delete the Audit Permission with", `in` = PATH) @QueryValue("id")
-      id: Long,
+      id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): AuditPermissionValueObject {

@@ -7,7 +7,8 @@ import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
-import com.cynergisuite.extensions.getLongOrNull
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.queryPaged
@@ -26,9 +27,9 @@ import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -48,7 +49,6 @@ class VendorRepository @Inject constructor(
          )
          SELECT
             v.id                                  AS v_id,
-            v.uu_row_id                           AS v_uu_row_id,
             v.time_created                        AS v_time_created,
             v.time_updated                        AS v_time_updated,
             v.company_id                          AS v_company_id,
@@ -57,11 +57,11 @@ class VendorRepository @Inject constructor(
             v.account_number                      AS v_account_number,
             v.pay_to_id                           AS v_pay_to_id,
             v.freight_on_board_type_id            AS v_freight_on_board_type_id,
-            v.payment_terms_id                    AS v_payment_terms_id,
+            v.vendor_payment_term_id                     AS v_vendor_payment_term_id,
             v.normal_days                         AS v_normal_days,
             v.return_policy                       AS v_return_policy,
             v.ship_via_id                         AS v_ship_via_id,
-            v.group_id                            AS v_group_id,
+            v.vendor_group_id                            AS v_vendor_group_id,
             v.minimum_quantity                    AS v_minimum_quantity,
             v.minimum_amount                      AS v_minimum_amount,
             v.free_ship_quantity                  AS v_free_ship_quantity,
@@ -87,7 +87,6 @@ class VendorRepository @Inject constructor(
             v.note                                AS v_note,
             v.phone_number                        AS v_phone_number,
             comp.id                               AS v_comp_id,
-            comp.uu_row_id                        AS v_comp_uu_row_id,
             comp.time_created                     AS v_comp_time_created,
             comp.time_updated                     AS v_comp_time_updated,
             comp.name                             AS v_comp_name,
@@ -118,7 +117,6 @@ class VendorRepository @Inject constructor(
             method.description                    AS v_method_description,
             method.localization_code              AS v_method_localization_code,
             address.id                            AS v_address_id,
-            address.uu_row_id                     AS v_address_uu_row_id,
             address.time_created                  AS v_address_time_created,
             address.time_updated                  AS v_address_time_updated,
             address.number                        AS v_address_number,
@@ -135,7 +133,6 @@ class VendorRepository @Inject constructor(
             address.phone                         AS v_address_phone,
             address.fax                           AS v_address_fax,
             vpt.id                                AS v_vpt_id,
-            vpt.uu_row_id                         AS v_vpt_uu_row_id,
             vpt.time_created                      AS v_vpt_time_created,
             vpt.time_updated                      AS v_vpt_time_updated,
             vpt.company_id                        AS v_vpt_company_id,
@@ -146,13 +143,11 @@ class VendorRepository @Inject constructor(
             vpt.discount_days                     AS v_vpt_discount_days,
             vpt.discount_percent                  AS v_vpt_discount_percent,
             shipVia.id                            AS v_shipVia_id,
-            shipVia.uu_row_id                     AS v_shipVia_uu_row_id,
             shipVia.time_created                  AS v_shipVia_time_created,
             shipVia.time_updated                  AS v_shipVia_time_updated,
             shipVia.description                   AS v_shipVia_description,
             shipVia.number                        AS v_shipVia_number,
             vgrp.id                               AS v_vgrp_id,
-            vgrp.uu_row_id                        AS v_vgrp_uu_row_id,
             vgrp.time_created                     AS v_vgrp_time_created,
             vgrp.time_updated                     AS v_vgrp_time_updated,
             vgrp.company_id                       AS v_vgrp_company_id,
@@ -163,13 +158,13 @@ class VendorRepository @Inject constructor(
             JOIN company comp                            ON v.company_id = comp.id
             JOIN freight_on_board_type_domain onboard    ON onboard.id = v.freight_on_board_type_id
             JOIN freight_calc_method_type_domain method  ON method.id = v.freight_calc_method_type_id
-            JOIN vendor_payment_term vpt                 ON vpt.id = v.payment_terms_id
+            JOIN vendor_payment_term vpt                 ON vpt.id = v.vendor_payment_term_id
             JOIN ship_via shipVia                        ON shipVia.id = v.ship_via_id
             LEFT OUTER JOIN address                      ON address.id = v.address_id
-            LEFT OUTER JOIN vendor_group vgrp            ON vgrp.id = v.group_id
+            LEFT OUTER JOIN vendor_group vgrp            ON vgrp.id = v.vendor_group_id
       """
 
-   fun findOne(id: Long, company: Company): VendorEntity? {
+   fun findOne(id: UUID, company: Company): VendorEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${baseSelectQuery()}\nWHERE v.id = :id AND comp.id = :comp_id"
 
@@ -207,7 +202,7 @@ class VendorRepository @Inject constructor(
       }
    }
 
-   fun findVendorIdsByRebate(rebateId: Long, company: Company): List<Identifiable> {
+   fun findVendorIdsByRebate(rebateId: UUID, company: Company): List<Identifiable> {
       return jdbc.queryFullList(
          """
             SELECT
@@ -220,7 +215,7 @@ class VendorRepository @Inject constructor(
          )
       ) { rs, elements ->
          do {
-            elements.add(SimpleIdentifiableEntity(rs.getLong("vendor_id")))
+            elements.add(SimpleIdentifiableEntity(rs.getUuid("vendor_id")))
          } while (rs.next())
       }
    }
@@ -263,7 +258,7 @@ class VendorRepository @Inject constructor(
       }
    }
 
-   fun exists(id: Long): Boolean {
+   fun exists(id: UUID): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM vendor WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if Vendor: {} exists resulted in {}", id, exists)
@@ -271,7 +266,7 @@ class VendorRepository @Inject constructor(
       return exists
    }
 
-   fun doesNotExist(id: Long): Boolean = !exists(id)
+   fun doesNotExist(id: UUID): Boolean = !exists(id)
 
    @Transactional
    fun insert(entity: VendorEntity): VendorEntity {
@@ -288,11 +283,11 @@ class VendorRepository @Inject constructor(
             account_number,
             pay_to_id,
             freight_on_board_type_id,
-            payment_terms_id,
+            vendor_payment_term_id,
             normal_days,
             return_policy,
             ship_via_id,
-            group_id,
+            vendor_group_id,
             minimum_quantity,
             minimum_amount,
             free_ship_quantity,
@@ -325,11 +320,11 @@ class VendorRepository @Inject constructor(
             :account_number,
             :pay_to_id,
             :freight_on_board_type_id,
-            :payment_terms_id,
+            :vendor_payment_term_id,
             :normal_days,
             :return_policy,
             :ship_via_id,
-            :group_id,
+            :vendor_group_id,
             :minimum_quantity,
             :minimum_amount,
             :free_ship_quantity,
@@ -365,11 +360,11 @@ class VendorRepository @Inject constructor(
             "account_number" to entity.accountNumber,
             "pay_to_id" to entity.payTo?.myId(),
             "freight_on_board_type_id" to entity.freightOnboardType.id,
-            "payment_terms_id" to entity.paymentTerm.id,
+            "vendor_payment_term_id" to entity.paymentTerm.id,
             "normal_days" to entity.normalDays,
             "return_policy" to entity.returnPolicy,
             "ship_via_id" to entity.shipVia.id,
-            "group_id" to entity.vendorGroup?.id,
+            "vendor_group_id" to entity.vendorGroup?.id,
             "minimum_quantity" to entity.minimumQuantity,
             "minimum_amount" to entity.minimumAmount,
             "free_ship_quantity" to entity.freeShipQuantity,
@@ -394,9 +389,19 @@ class VendorRepository @Inject constructor(
             "auto_submit_purchase_order" to entity.autoSubmitPurchaseOrder,
             "note" to entity.note,
             "phone_number" to entity.phone
-         ),
-         RowMapper { rs, _ -> mapRowUpsert(rs, entity.company, address, entity.freightOnboardType, entity.paymentTerm, entity.shipVia, entity.vendorGroup, entity.freightCalcMethodType) }
-      )
+         )
+      ) { rs, _ ->
+         mapRowUpsert(
+            rs,
+            entity.company,
+            address,
+            entity.freightOnboardType,
+            entity.paymentTerm,
+            entity.shipVia,
+            entity.vendorGroup,
+            entity.freightCalcMethodType
+         )
+      }
    }
 
    @Transactional
@@ -424,11 +429,11 @@ class VendorRepository @Inject constructor(
             account_number = :accountNumber,
             pay_to_id = :payTo,
             freight_on_board_type_id = :freightOnboardType,
-            payment_terms_id = :paymentTerm,
+            vendor_payment_term_id = :paymentTerm,
             normal_days = :normalDays,
             return_policy = :returnPolicy,
             ship_via_id = :shipVia,
-            group_id = :vendorGroup,
+            vendor_group_id = :vendorGroup,
             minimum_quantity = :minimumQuantity,
             minimum_amount = :minimumAmount,
             free_ship_quantity = :freeShipQuantity,
@@ -494,9 +499,19 @@ class VendorRepository @Inject constructor(
             "auto_submit_purchase_order" to toUpdate.autoSubmitPurchaseOrder,
             "note" to toUpdate.note,
             "phone_number" to toUpdate.phone
-         ),
-         RowMapper { rs, _ -> mapRowUpsert(rs, toUpdate.company, vendorAddress, toUpdate.freightOnboardType, toUpdate.paymentTerm, toUpdate.shipVia, toUpdate.vendorGroup, toUpdate.freightCalcMethodType) }
-      )
+         )
+      ) { rs, _ ->
+         mapRowUpsert(
+            rs,
+            toUpdate.company,
+            vendorAddress,
+            toUpdate.freightOnboardType,
+            toUpdate.paymentTerm,
+            toUpdate.shipVia,
+            toUpdate.vendorGroup,
+            toUpdate.freightCalcMethodType
+         )
+      }
 
       addressToDelete?.id?.let { addressRepository.delete(it) } // delete address if it exists, done this way because it avoids the race condition compilation error
 
@@ -504,10 +519,10 @@ class VendorRepository @Inject constructor(
    }
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String? = "v_"): VendorEntity {
-      val payToId = rs.getLongOrNull("${columnPrefix}pay_to_id")
+      val payToId = rs.getUuidOrNull("${columnPrefix}pay_to_id")
 
       return VendorEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          company = company,
          name = rs.getString("${columnPrefix}name"),
          address = addressRepository.mapAddressOrNull(rs, "${columnPrefix}address_"),
@@ -555,10 +570,10 @@ class VendorRepository @Inject constructor(
       }
 
    private fun mapRowUpsert(rs: ResultSet, company: Company, address: AddressEntity?, freightOnboardType: FreightOnboardType, paymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, vendorGroup: VendorGroupEntity?, freightCalcMethodType: FreightCalcMethodType): VendorEntity {
-      val payToId = rs.getLongOrNull("pay_to_id")
+      val payToId = rs.getUuidOrNull("pay_to_id")
 
       return VendorEntity(
-         id = rs.getLong("id"),
+         id = rs.getUuid("id"),
          company = company,
          name = rs.getString("name"),
          address = address, // This needs to have the newly inserted address passed in
@@ -600,7 +615,7 @@ class VendorRepository @Inject constructor(
 
    private fun mapOnboard(rs: ResultSet, columnPrefix: String): FreightOnboardType =
       FreightOnboardType(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getInt("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
@@ -608,7 +623,7 @@ class VendorRepository @Inject constructor(
 
    private fun mapMethod(rs: ResultSet, columnPrefix: String): FreightCalcMethodType =
       FreightCalcMethodType(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getInt("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
@@ -616,7 +631,7 @@ class VendorRepository @Inject constructor(
 
    private fun mapPaymentTerm(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): VendorPaymentTermEntity =
       VendorPaymentTermEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          company = company,
          description = rs.getString("${columnPrefix}description"),
          discountMonth = rs.getInt("${columnPrefix}discount_month"),
@@ -626,7 +641,7 @@ class VendorRepository @Inject constructor(
 
    private fun mapShipVia(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): ShipViaEntity =
       ShipViaEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          description = rs.getString("${columnPrefix}description"),
          number = rs.getInt("${columnPrefix}number"),
          company = company

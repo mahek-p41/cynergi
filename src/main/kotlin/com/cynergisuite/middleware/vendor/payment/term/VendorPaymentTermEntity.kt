@@ -4,9 +4,10 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
 import java.math.BigDecimal
+import java.util.UUID
 
 data class VendorPaymentTermEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val company: Company,
    val description: String,
    val discountMonth: Int?,
@@ -15,7 +16,7 @@ data class VendorPaymentTermEntity(
    val scheduleRecords: MutableList<VendorPaymentTermScheduleEntity> = mutableListOf()
 ) : Identifiable {
 
-   constructor(id: Long? = null, vo: VendorPaymentTermDTO, company: Company) :
+   constructor(id: UUID? = null, vo: VendorPaymentTermDTO, company: Company) :
       this(
          id = id ?: vo.id,
          company = company,
@@ -40,5 +41,5 @@ data class VendorPaymentTermEntity(
    constructor(source: VendorPaymentTermEntity, updateWith: VendorPaymentTermDTO) :
       this(id = source.id!!, vo = updateWith, company = source.company)
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

@@ -5,9 +5,10 @@ import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.status.AuditStatus
 import com.cynergisuite.middleware.store.Store
 import java.time.OffsetDateTime
+import java.util.UUID
 
 data class AuditEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val store: Store,
@@ -20,7 +21,7 @@ data class AuditEntity(
    val actions: MutableSet<AuditActionEntity> = LinkedHashSet()
 ) : Identifiable {
 
-   constructor(id: Long, audit: AuditEntity) :
+   constructor(id: UUID, audit: AuditEntity) :
       this(
          id = id,
          store = audit.store,
@@ -33,7 +34,7 @@ data class AuditEntity(
          lastUpdated = audit.lastUpdated
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 
    fun currentStatus(): AuditStatus =
       actions.asSequence()

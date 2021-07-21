@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
@@ -18,9 +19,9 @@ import com.cynergisuite.middleware.vendor.rebate.RebateType
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -42,7 +43,6 @@ class RebateRepository @Inject constructor(
          )
          SELECT
             r.id                                                AS r_id,
-            r.uu_row_id                                         AS r_uu_row_id,
             r.time_created                                      AS r_time_created,
             r.time_updated                                      AS r_time_updated,
             r.company_id                                        AS r_comp_id,
@@ -103,7 +103,7 @@ class RebateRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long, company: Company): RebateEntity? {
+   fun findOne(id: UUID, company: Company): RebateEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()}\nWHERE r.id = :id AND r.company_id = :comp_id"
 
@@ -182,9 +182,17 @@ class RebateRepository @Inject constructor(
             "accrual_indicator" to entity.accrualIndicator,
             "general_ledger_debit_account_id" to entity.generalLedgerDebitAccount?.id,
             "general_ledger_credit_account_id" to entity.generalLedgerCreditAccount.id
-         ),
-         RowMapper { rs, _ -> mapRowUpsert(rs, company, entity.status, entity.rebate, entity.generalLedgerDebitAccount, entity.generalLedgerCreditAccount) }
-      )
+         )
+      ) { rs, _ ->
+         mapRowUpsert(
+            rs,
+            company,
+            entity.status,
+            entity.rebate,
+            entity.generalLedgerDebitAccount,
+            entity.generalLedgerCreditAccount
+         )
+      }
    }
 
    @Transactional
@@ -219,9 +227,17 @@ class RebateRepository @Inject constructor(
             "accrual_indicator" to entity.accrualIndicator,
             "general_ledger_debit_account_id" to entity.generalLedgerDebitAccount?.id,
             "general_ledger_credit_account_id" to entity.generalLedgerCreditAccount.id
-         ),
-         RowMapper { rs, _ -> mapRowUpsert(rs, company, entity.status, entity.rebate, entity.generalLedgerDebitAccount, entity.generalLedgerCreditAccount) }
-      )
+         )
+      ) { rs, _ ->
+         mapRowUpsert(
+            rs,
+            company,
+            entity.status,
+            entity.rebate,
+            entity.generalLedgerDebitAccount,
+            entity.generalLedgerCreditAccount
+         )
+      }
    }
 
    @Transactional
@@ -256,7 +272,7 @@ class RebateRepository @Inject constructor(
    }
 
    private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): RebateEntity {
-      val id = rs.getLong("${columnPrefix}id")
+      val id = rs.getUuid("${columnPrefix}id")
       val vendors = vendorRepository.findVendorIdsByRebate(id, company)
 
       return RebateEntity(
@@ -274,7 +290,7 @@ class RebateRepository @Inject constructor(
    }
 
    private fun mapRowUpsert(rs: ResultSet, company: Company, status: AccountStatusType, rebate: RebateType, generalLedgerDebitAccount: AccountEntity?, generalLedgerCreditAccount: AccountEntity, columnPrefix: String = EMPTY): RebateEntity {
-      val id = rs.getLong("${columnPrefix}id")
+      val id = rs.getUuid("${columnPrefix}id")
       val vendors = vendorRepository.findVendorIdsByRebate(id, company)
 
       return RebateEntity(

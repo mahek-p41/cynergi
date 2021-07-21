@@ -14,6 +14,7 @@ import com.cynergisuite.middleware.vendor.rebate.infrastructure.RebateTypeReposi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -32,7 +33,7 @@ class RebateValidator @Inject constructor(
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: Long, dto: RebateDTO, company: Company): RebateEntity {
+   fun validateUpdate(id: UUID, dto: RebateDTO, company: Company): RebateEntity {
       logger.debug("Validating Update Rebate {}", dto)
 
       return doSharedValidation(dto, company)
@@ -84,7 +85,7 @@ class RebateValidator @Inject constructor(
          }
 
          generalLedgerCreditAccount
-            ?: errors.add(ValidationError("generalLedgerCreditAccount.id", NotFound(generalLedgerCreditAccount!!.id!!)))
+            ?: errors.add(ValidationError("generalLedgerCreditAccount.id", NotFound(dto.generalLedgerCreditAccount!!.id!!)))
       }
 
       return RebateEntity(

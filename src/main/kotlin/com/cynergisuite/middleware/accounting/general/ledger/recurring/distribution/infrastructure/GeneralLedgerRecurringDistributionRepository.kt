@@ -1,12 +1,14 @@
 package com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.infrastructure
 
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionEntity
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
 import com.cynergisuite.middleware.company.Company
@@ -16,6 +18,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -23,6 +26,7 @@ import javax.transaction.Transactional
 @Singleton
 class GeneralLedgerRecurringDistributionRepository @Inject constructor(
    private val jdbc: NamedParameterJdbcTemplate,
+   private val accountRepository: AccountRepository,
    private val generalLedgerRecurringRepository: GeneralLedgerRecurringRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerRecurringDistributionRepository::class.java)
@@ -31,6 +35,9 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       return """
          WITH general_ledger_recurring AS (
             ${generalLedgerRecurringRepository.selectBaseQuery()}
+         ),
+         account AS (
+            ${accountRepository.selectBaseQuery()}
          )
          SELECT
             glRecurringDist.id                                                AS glRecurringDist_id,
@@ -51,13 +58,32 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
             glRecurring.glRecurring_type_value                                AS glRecurringDist_glRecurring_type_value,
             glRecurring.glRecurring_type_description                          AS glRecurringDist_glRecurring_type_description,
             glRecurring.glRecurring_type_localization_code                    AS glRecurringDist_glRecurring_type_localization_code,
+            account.account_id                                                AS glRecurringDist_account_id,
+            account.account_number                                            AS glRecurringDist_account_number,
+            account.account_name                                              AS glRecurringDist_account_name,
+            account.account_form_1099_field                                   AS glRecurringDist_account_form_1099_field,
+            account.account_corporate_account_indicator                       AS glRecurringDist_account_corporate_account_indicator,
+            account.account_comp_id                                           AS glRecurringDist_account_comp_id,
+            account.account_type_id                                           AS glRecurringDist_account_type_id,
+            account.account_type_value                                        AS glRecurringDist_account_type_value,
+            account.account_type_description                                  AS glRecurringDist_account_type_description,
+            account.account_type_localization_code                            AS glRecurringDist_account_type_localization_code,
+            account.account_balance_type_id                                   AS glRecurringDist_account_balance_type_id,
+            account.account_balance_type_value                                AS glRecurringDist_account_balance_type_value,
+            account.account_balance_type_description                          AS glRecurringDist_account_balance_type_description,
+            account.account_balance_type_localization_code                    AS glRecurringDist_account_balance_type_localization_code,
+            account.account_status_id                                         AS glRecurringDist_account_status_id,
+            account.account_status_value                                      AS glRecurringDist_account_status_value,
+            account.account_status_description                                AS glRecurringDist_account_status_description,
+            account.account_status_localization_code                          AS glRecurringDist_account_status_localization_code,
             count(*) OVER() AS total_elements
          FROM general_ledger_recurring_distribution glRecurringDist
             JOIN general_ledger_recurring glRecurring ON glRecurringDist.general_ledger_recurring_id = glRecurring.glRecurring_id
+            JOIN account ON glRecurringDist.general_ledger_distribution_account_id = account.account_id
       """
    }
 
-   fun findOne(id: Long, company: Company): GeneralLedgerRecurringDistributionEntity? {
+   fun findOne(id: UUID, company: Company): GeneralLedgerRecurringDistributionEntity? {
       val params = mutableMapOf<String, Any?>("id" to id)
       val query = "${selectBaseQuery()} WHERE glRecurringDist.id = :id"
       val found = jdbc.findFirstOrNull(
@@ -90,7 +116,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       }
    }
 
-   fun findAllByRecurringId(glRecurringId: Long, company: Company, page: PageRequest): RepositoryPage<GeneralLedgerRecurringDistributionEntity, PageRequest> {
+   fun findAllByRecurringId(glRecurringId: UUID, company: Company, page: PageRequest): RepositoryPage<GeneralLedgerRecurringDistributionEntity, PageRequest> {
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
@@ -172,7 +198,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: Long) {
+   fun delete(id: UUID) {
       logger.debug("Deleting GeneralLedgerRecurringDistribution with id={}", id)
 
       val rowsAffected = jdbc.update(
@@ -189,17 +215,17 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): GeneralLedgerRecurringDistributionEntity {
       return GeneralLedgerRecurringDistributionEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          generalLedgerRecurring = generalLedgerRecurringRepository.mapRow(rs, "${columnPrefix}glRecurring_"),
-         generalLedgerDistributionAccount = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}account_id")),
-         generalLedgerDistributionProfitCenter = SimpleIdentifiableEntity(rs.getLong("${columnPrefix}profit_center_id_sfk")),
+         generalLedgerDistributionAccount = accountRepository.mapRow(rs, company, "${columnPrefix}account_"),
+         generalLedgerDistributionProfitCenter = SimpleLegacyIdentifiableEntity(rs.getLong("${columnPrefix}profit_center_id_sfk")),
          generalLedgerDistributionAmount = rs.getBigDecimal("${columnPrefix}general_ledger_distribution_amount")
       )
    }
 
    private fun mapRow(rs: ResultSet, entity: GeneralLedgerRecurringDistributionEntity, columnPrefix: String = EMPTY): GeneralLedgerRecurringDistributionEntity {
       return GeneralLedgerRecurringDistributionEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          generalLedgerRecurring = entity.generalLedgerRecurring,
          generalLedgerDistributionAccount = entity.generalLedgerDistributionAccount,
          generalLedgerDistributionProfitCenter = entity.generalLedgerDistributionProfitCenter,

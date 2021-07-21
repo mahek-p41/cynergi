@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.purchase.order.detail.infrastructure.PurchaseOrderDetailRepository
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -12,7 +13,7 @@ class PurchaseOrderDetailService @Inject constructor(
    private val purchaseOrderDetailRepository: PurchaseOrderDetailRepository,
    private val purchaseOrderDetailValidator: PurchaseOrderDetailValidator
 ) {
-   fun fetchById(id: Long, company: Company): PurchaseOrderDetailDTO? =
+   fun fetchById(id: UUID, company: Company): PurchaseOrderDetailDTO? =
       purchaseOrderDetailRepository.findOne(id, company)?.let { transformEntity(it) }
 
    fun create(dto: PurchaseOrderDetailDTO, company: Company): PurchaseOrderDetailDTO {
@@ -29,13 +30,13 @@ class PurchaseOrderDetailService @Inject constructor(
       }
    }
 
-   fun update(id: Long, dto: PurchaseOrderDetailDTO, company: Company): PurchaseOrderDetailDTO {
+   fun update(id: UUID, dto: PurchaseOrderDetailDTO, company: Company): PurchaseOrderDetailDTO {
       val toUpdate = purchaseOrderDetailValidator.validateUpdate(id, dto, company)
 
       return transformEntity(purchaseOrderDetailRepository.update(toUpdate, company))
    }
 
-   fun delete(id: Long, company: Company) {
+   fun delete(id: UUID, company: Company) {
       purchaseOrderDetailRepository.delete(id, company)
    }
 

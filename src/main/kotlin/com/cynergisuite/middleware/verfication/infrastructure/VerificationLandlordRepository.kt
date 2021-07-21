@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.verfication.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
@@ -137,6 +137,6 @@ private class VerificationLandlordRowMapper(
          phone = rs.getBoolean("${columnPrefix}phone"),
          reliable = rs.getBoolean("${columnPrefix}reliable"),
          rent = rs.getBigDecimal("${columnPrefix}rent"),
-         verification = SimpleIdentifiableEntity(id = rs.getLong("${columnPrefix}verification_id"))
+         verification = SimpleLegacyIdentifiableEntity(id = rs.getLong("${columnPrefix}verification_id"))
       )
 }

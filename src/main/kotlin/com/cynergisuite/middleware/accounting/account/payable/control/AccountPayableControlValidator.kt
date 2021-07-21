@@ -75,6 +75,7 @@ class AccountPayableControlValidator @Inject constructor(
       }
 
       return AccountPayableControlEntity(
+         entity?.id,
          dto,
          checkFormType = checkFormType!!,
          printCurrencyIndicatorType = printCurrencyIndicatorType!!,

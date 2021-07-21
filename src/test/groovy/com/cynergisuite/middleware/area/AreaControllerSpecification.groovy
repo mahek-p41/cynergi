@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.area
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -8,6 +9,7 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 @MicronautTest(transactional = false)
 class AreaControllerSpecification extends ControllerSpecificationBase {
@@ -66,9 +68,9 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       and: 'assert nested menus'
       def purchaseOrderArea = response[3]
       def purchaseOrderMenus = menuDataLoaderService.predefined().findAll { it.areaType.id == 4 }.collect { new MenuDTO(it) }
-      def poMaintenanceMenu = purchaseOrderMenus[1]
-      def poReportMenu = purchaseOrderMenus[2]
-      def stockReorderMenu = purchaseOrderMenus[4]
+      def poMaintenanceMenu = purchaseOrderMenus[0]
+      def poReportMenu = purchaseOrderMenus[1]
+      def stockReorderMenu = purchaseOrderMenus[3]
 
       with(purchaseOrderArea) {
          def predefinedArea = predefinedAreas[3]
@@ -78,6 +80,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
          enabled == true
 
          menus.size() == 2
+         menus.sort { o1, o2 -> o1.id <=> o2.id}
 
          with(menus[0]) {
             id == poMaintenanceMenu.id
@@ -118,7 +121,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       response.find { it.id == 3 }.enabled == false
 
       when:
-      post("/area", new SimpleIdentifiableDTO(3))
+      post("/area", new SimpleLegacyIdentifiableDTO(3))
 
       then: 'Area 3 is enabled'
       notThrown(HttpClientResponseException)
@@ -147,27 +150,27 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "enable/disable an invalid area" () {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      post("/area", new SimpleIdentifiableDTO(99))
+      post("/area", new SimpleIdentifiableDTO(nonExistentId))
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].message == '99 was unable to be found'
-      response[0].path == 'areaTypeId'
+      response.message == "Failed to convert argument [id] for value [$nonExistentId]"
+      response.path == "id"
 
       when:
       delete("/area/99")
 
       then:
       final exception2 = thrown(HttpClientResponseException)
-      exception2.response.status == BAD_REQUEST
+      exception2.response.status == NOT_FOUND
       def response2 = exception.response.bodyAsJson()
-      response2.size() == 1
-      response2[0].message == '99 was unable to be found'
-      response2[0].path == 'areaTypeId'
+      response2.message == "Failed to convert argument [id] for value [$nonExistentId]"
+      response2.path == "id"
    }
-
 }

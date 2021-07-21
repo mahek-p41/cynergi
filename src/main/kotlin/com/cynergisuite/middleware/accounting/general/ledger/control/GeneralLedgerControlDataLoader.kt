@@ -1,22 +1,24 @@
 package com.cynergisuite.middleware.accounting.general.ledger.control
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure.GeneralLedgerControlRepository
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.store.Store
 import io.micronaut.context.annotation.Requires
+import java.util.UUID
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.random.Random
 
 object GeneralLedgerControlDataLoader {
 
    @JvmStatic
    fun stream(
       numberIn: Int = 1,
+      company: Company,
       defaultProfitCenter: Store,
       defaultAccountPayableAccount: AccountEntity,
       defaultAccountPayableDiscountAccount: AccountEntity,
@@ -31,7 +33,8 @@ object GeneralLedgerControlDataLoader {
 
       return IntStream.range(0, number).mapToObj {
          GeneralLedgerControlEntity(
-            id = Random.nextLong(),
+            id = UUID.randomUUID(),
+            company = company,
             defaultProfitCenter = defaultProfitCenter,
             defaultAccountPayableAccount = defaultAccountPayableAccount,
             defaultAccountPayableDiscountAccount = defaultAccountPayableDiscountAccount,
@@ -48,7 +51,7 @@ object GeneralLedgerControlDataLoader {
    @JvmStatic
    fun streamDTO(
       numberIn: Int = 1,
-      defaultProfitCenter: SimpleIdentifiableDTO,
+      defaultProfitCenter: SimpleLegacyIdentifiableDTO,
       defaultAccountPayableAccount: SimpleIdentifiableDTO,
       defaultAccountPayableDiscountAccount: SimpleIdentifiableDTO,
       defaultAccountReceivableAccount: SimpleIdentifiableDTO,
@@ -96,6 +99,7 @@ class GeneralLedgerControlDataLoaderService @Inject constructor(
    ): Stream<GeneralLedgerControlEntity> {
       return GeneralLedgerControlDataLoader.stream(
          numberIn,
+         company,
          store,
          defaultAccountPayableAccount,
          defaultAccountPayableDiscountAccount,
@@ -138,7 +142,7 @@ class GeneralLedgerControlDataLoaderService @Inject constructor(
    }
 
    fun singleDTO(
-      defaultProfitCenter: SimpleIdentifiableDTO,
+      defaultProfitCenter: SimpleLegacyIdentifiableDTO,
       defaultAccountPayableAccount: SimpleIdentifiableDTO,
       defaultAccountPayableDiscountAccount: SimpleIdentifiableDTO,
       defaultAccountReceivableAccount: SimpleIdentifiableDTO,

@@ -50,6 +50,6 @@ class AreaDataLoaderService(
 ) {
    fun predefined() = AreaDataLoader.areaTypes()
 
-   fun enableArea(id: Long, company: Company) =
+   fun enableArea(id: Int, company: Company) =
       repository.insert(company, predefined().first { it.id == id })
 }

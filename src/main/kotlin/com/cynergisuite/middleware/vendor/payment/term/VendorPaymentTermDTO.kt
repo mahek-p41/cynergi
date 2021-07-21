@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.Digits
 import javax.validation.constraints.NotNull
@@ -16,9 +17,8 @@ import javax.validation.constraints.Size
 @Schema(name = "VendorPaymentTerm", title = "Vendor payment term definition", description = "Descibes a vendor payment term that can be associated with one or more vendors")
 data class VendorPaymentTermDTO(
 
-   @field:Positive
    @field:Schema(name = "id", minimum = "1", required = false, description = "System generated ID")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Size(min = 3, max = 30)
@@ -55,5 +55,5 @@ data class VendorPaymentTermDTO(
          scheduleRecords = entity.scheduleRecords.asSequence().map { VendorPaymentTermScheduleDTO(it) }.toMutableList()
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

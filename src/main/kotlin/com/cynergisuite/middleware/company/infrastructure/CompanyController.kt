@@ -28,6 +28,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -49,7 +50,7 @@ class CompanyController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): CompanyDTO {
@@ -127,7 +128,7 @@ class CompanyController @Inject constructor(
       ]
    )
    fun update(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       @Body @Valid
       companyDTO: CompanyDTO,
       authentication: Authentication,

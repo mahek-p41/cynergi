@@ -32,7 +32,6 @@ class LocationRepository @Inject constructor(
             location.number               AS number,
             location.name                 AS name,
             comp.id                       AS comp_id,
-            comp.uu_row_id                AS comp_uu_row_id,
             comp.time_created             AS comp_time_created,
             comp.time_updated             AS comp_time_updated,
             comp.name                     AS comp_name,

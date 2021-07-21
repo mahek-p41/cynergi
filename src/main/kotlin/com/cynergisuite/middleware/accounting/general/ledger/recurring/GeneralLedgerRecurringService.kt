@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
 import com.cynergisuite.middleware.company.Company
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,7 +14,7 @@ class GeneralLedgerRecurringService @Inject constructor(
    private val generalLedgerRecurringValidator: GeneralLedgerRecurringValidator
 ) {
 
-   fun fetchById(id: Long, company: Company): GeneralLedgerRecurringDTO? =
+   fun fetchById(id: UUID, company: Company): GeneralLedgerRecurringDTO? =
       generalLedgerRecurringRepository.findOne(id, company)?.let { GeneralLedgerRecurringDTO(it) }
 
    fun create(dto: GeneralLedgerRecurringDTO, company: Company): GeneralLedgerRecurringDTO {
@@ -30,13 +31,13 @@ class GeneralLedgerRecurringService @Inject constructor(
       }
    }
 
-   fun update(id: Long, dto: GeneralLedgerRecurringDTO, company: Company): GeneralLedgerRecurringDTO {
+   fun update(id: UUID, dto: GeneralLedgerRecurringDTO, company: Company): GeneralLedgerRecurringDTO {
       val toUpdate = generalLedgerRecurringValidator.validateUpdate(id, dto, company)
 
       return transformEntity(generalLedgerRecurringRepository.update(toUpdate, company))
    }
 
-   fun delete(id: Long, company: Company) {
+   fun delete(id: UUID, company: Company) {
       generalLedgerRecurringRepository.delete(id, company)
    }
 

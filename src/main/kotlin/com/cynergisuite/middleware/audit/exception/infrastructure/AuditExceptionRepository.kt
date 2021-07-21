@@ -7,6 +7,7 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
@@ -32,6 +33,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -57,7 +59,6 @@ class AuditExceptionRepository @Inject constructor(
       )
       SELECT
          auditException.id                                          AS auditException_id,
-         auditException.uu_row_id                                   AS auditException_uu_row_id,
          auditException.time_created                                AS auditException_time_created,
          auditException.time_updated                                AS auditException_time_updated,
          auditException.barcode                                     AS auditException_barcode,
@@ -77,7 +78,6 @@ class AuditExceptionRepository @Inject constructor(
          store.number                                               AS store_number,
          store.name                                                 AS store_name,
          comp.id                                                    AS comp_id,
-         comp.uu_row_id                                             AS comp_uu_row_id,
          comp.time_created                                          AS comp_time_created,
          comp.time_updated                                          AS comp_time_updated,
          comp.name                                                  AS comp_name,
@@ -132,7 +132,6 @@ class AuditExceptionRepository @Inject constructor(
          approvedBy.store_number                                    AS approvedBy_store_number,
          approvedBy.store_name                                      AS approvedBy_store_name,
          auditExceptionNote.id                                      AS auditExceptionNote_id,
-         auditExceptionNote.uu_row_id                               AS auditExceptionNote_uu_row_id,
          auditExceptionNote.time_created                            AS auditExceptionNote_time_created,
          auditExceptionNote.time_updated                            AS auditExceptionNote_time_updated,
          auditExceptionNote.note                                    AS auditExceptionNote_note,
@@ -163,7 +162,7 @@ class AuditExceptionRepository @Inject constructor(
            LEFT OUTER JOIN employees auditExceptionNoteEmployee ON auditExceptionNote.entered_by = auditExceptionNoteEmployee.emp_number AND comp.id = auditExceptionNoteEmployee.comp_id
       """.trimIndent()
 
-   fun findOne(id: Long, company: Company): AuditExceptionEntity? {
+   fun findOne(id: UUID, company: Company): AuditExceptionEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${findOneQuery()}\nWHERE auditException.id = :id AND comp.id = :comp_id"
 
@@ -174,7 +173,7 @@ class AuditExceptionRepository @Inject constructor(
          val scannedBy = mapEmployeeNotNull(rs, address, "scannedBy_")
          val approvedBy = mapEmployee(rs, address, "approvedBy_")
          val scanArea = auditScanAreaRepository.mapRow(rs, company, "auditScanArea_")
-         val exception = mapRow(rs, scanArea, scannedBy, approvedBy, SimpleIdentifiableEntity(rs.getLong("auditException_audit_id")), "auditException_")
+         val exception = mapRow(rs, scanArea, scannedBy, approvedBy, SimpleIdentifiableEntity(rs.getUuid("auditException_audit_id")), "auditException_")
 
          do {
             val enteredBy = mapEmployee(rs, address, "auditExceptionNoteEmployee_")
@@ -192,7 +191,7 @@ class AuditExceptionRepository @Inject constructor(
       return found
    }
 
-   fun isApproved(auditExceptionId: Long): Boolean {
+   fun isApproved(auditExceptionId: UUID): Boolean {
       val approved = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_exception WHERE id = :id AND approved = TRUE)", mapOf("id" to auditExceptionId), Boolean::class.java)!!
 
       logger.trace("Checking if AuditException: {} has been approved resulted in {}", auditExceptionId, approved)
@@ -213,7 +212,6 @@ class AuditExceptionRepository @Inject constructor(
             )
             SELECT
                auditException.id                           AS auditException_id,
-               auditException.uu_row_id                    AS auditException_uu_row_id,
                auditException.time_created                 AS auditException_time_created,
                auditException.time_updated                 AS auditException_time_updated,
                auditException.barcode                      AS auditException_barcode,
@@ -233,7 +231,6 @@ class AuditExceptionRepository @Inject constructor(
                store.number                                AS store_number,
                store.name                                  AS store_name,
                comp.id                                     AS comp_id,
-               comp.uu_row_id                              AS comp_uu_row_id,
                comp.time_created                           AS comp_time_created,
                comp.time_updated                           AS comp_time_updated,
                comp.name                                   AS comp_name,
@@ -302,7 +299,6 @@ class AuditExceptionRepository @Inject constructor(
          SELECT
             p.*,
             auditExceptionNote.id                                      AS auditExceptionNote_id,
-            auditExceptionNote.uu_row_id                               AS auditExceptionNote_uu_row_id,
             auditExceptionNote.time_created                            AS auditExceptionNote_time_created,
             auditExceptionNote.time_updated                            AS auditExceptionNote_time_updated,
             auditExceptionNote.note                                    AS auditExceptionNote_note,
@@ -332,18 +328,18 @@ class AuditExceptionRepository @Inject constructor(
 
       return jdbc.queryPaged(sql, params, page) { rs, elements ->
          val address = addressRepository.mapAddressOrNull(rs, "address_")
-         var currentId = -1L
+         var currentId: UUID? = null
          var currentParentEntity: AuditExceptionEntity? = null
 
          do {
-            val tempId = rs.getLong("auditException_id")
+            val tempId = rs.getUuid("auditException_id")
             val tempParentEntity: AuditExceptionEntity = if (tempId != currentId) {
                val scannedBy = mapEmployeeNotNull(rs, address, "scannedBy_")
                val approvedBy = mapEmployee(rs, address, "approvedBy_")
                val scanArea = auditScanAreaRepository.mapRow(rs, company, "auditScanArea_")
 
                currentId = tempId
-               currentParentEntity = mapRow(rs, scanArea, scannedBy, approvedBy, SimpleIdentifiableEntity(rs.getLong("auditException_audit_id")), "auditException_")
+               currentParentEntity = mapRow(rs, scanArea, scannedBy, approvedBy, SimpleIdentifiableEntity(rs.getUuid("auditException_audit_id")), "auditException_")
                elements.add(currentParentEntity)
                currentParentEntity
             } else {
@@ -374,7 +370,7 @@ class AuditExceptionRepository @Inject constructor(
       }
    }
 
-   fun exists(id: Long): Boolean {
+   fun exists(id: UUID): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_exception WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if AuditException: {} exists resulted in {}", id, exists)
@@ -382,7 +378,7 @@ class AuditExceptionRepository @Inject constructor(
       return exists
    }
 
-   fun doesNotExist(id: Long): Boolean = !exists(id)
+   fun doesNotExist(id: UUID): Boolean = !exists(id)
 
    @Transactional
    fun insert(entity: AuditExceptionEntity): AuditExceptionEntity {
@@ -466,7 +462,7 @@ class AuditExceptionRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, approvedBy: EmployeeEntity?, audit: Identifiable, columnPrefix: String): AuditExceptionEntity =
       AuditExceptionEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          scanArea = scanArea,
@@ -486,7 +482,7 @@ class AuditExceptionRepository @Inject constructor(
 
    private fun mapCompany(rs: ResultSet, address: AddressEntity?): CompanyEntity {
       return CompanyEntity(
-         id = rs.getLong("comp_id"),
+         id = rs.getUuid("comp_id"),
          name = rs.getString("comp_name"),
          doingBusinessAs = rs.getString("comp_doing_business_as"),
          clientCode = rs.getString("comp_client_code"),
@@ -553,12 +549,12 @@ class AuditExceptionRepository @Inject constructor(
    private fun mapRowAuditExceptionNote(rs: ResultSet, enteredBy: EmployeeEntity): AuditExceptionNote? =
       if (rs.getString("auditExceptionNote_id") != null) {
          AuditExceptionNote(
-            id = rs.getLong("auditExceptionNote_id"),
+            id = rs.getUuid("auditExceptionNote_id"),
             timeCreated = rs.getOffsetDateTime("auditExceptionNote_time_created"),
             timeUpdated = rs.getOffsetDateTime("auditExceptionNote_time_updated"),
             note = rs.getString("auditExceptionNote_note"),
             enteredBy = enteredBy,
-            auditException = SimpleIdentifiableEntity(rs.getLong("auditException_id"))
+            auditException = SimpleIdentifiableEntity(rs.getUuid("auditException_id"))
          )
       } else {
          null

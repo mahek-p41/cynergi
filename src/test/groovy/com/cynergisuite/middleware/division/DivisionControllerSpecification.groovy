@@ -53,15 +53,18 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "fetch one division by id not found" () {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      get("$path/0")
+      get("$path/$nonExistentId")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == '0 was unable to be found'
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "fetch all" () {
@@ -159,9 +162,8 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id != null
          number > 0
-         number == id
          name == division.name
          description == division.description
          divisionalManager.id == division.divisionalManager.id
@@ -176,7 +178,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       jsonDivision.remove('name')
 
       when:
-      def result = post("$path/", jsonDivision)
+      post("$path/", jsonDivision)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -249,46 +251,25 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
 
    void "update a division with non-existing division id"() {
       given:
-      final def divisionDTO = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
-      def jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(divisionDTO))
-      jsonDivision.id = 99
+      final nonExistentId = UUID.randomUUID()
+      final divisionDTO = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+      final jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(divisionDTO))
 
       when:
-      put("$path/99", jsonDivision)
+      put("$path/$nonExistentId", jsonDivision)
 
       then:
       def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
+      exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
 
-      response[0].path == 'dto.id'
-      response[0].message == '99 was unable to be found'
-   }
-
-   void "update an invalid division without division id"() {
-      given:
-      final def divisionDTO = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
-      def jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(divisionDTO))
-      jsonDivision.remove('id')
-
-      when:
-      put("$path/$divisionDTO.id", jsonDivision)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-
-      response[0].path == 'dto.id'
-      response[0].message == 'Id must match path variable'
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "update an invalid division with un-match id in payload"() {
       given:
-      final def divisionDTO = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
-      def jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(divisionDTO))
+      final divisionDTO = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+      final jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(divisionDTO))
       jsonDivision.id = 99
 
       when:
@@ -298,16 +279,15 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       def exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.size() == 1
 
-      response[0].path == 'dto.id'
-      response[0].message == 'Id must match path variable'
+      response.path == 'id'
+      response.message == 'Failed to convert argument [id] for value [99]'
    }
 
    void "update an invalid division without division description"() {
       given:
-      final def divisionDTO = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
-      def jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(divisionDTO))
+      final divisionDTO = divisionFactoryService.single(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+      final jsonDivision = jsonSlurper.parseText(jsonOutput.toJson(divisionDTO))
       jsonDivision.description = ''
 
       when:
@@ -361,15 +341,18 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "delete an invalid division"() {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      delete("$path/0")
+      delete("$path/$nonExistentId")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == '0 was unable to be found'
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "delete a division with region assigned"() {

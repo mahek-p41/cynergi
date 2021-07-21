@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.verfication
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -51,7 +51,7 @@ data class VerificationValueObject(
    @field:JsonProperty("checklist_references")
    var references: MutableList<VerificationReferenceValueObject> = mutableListOf()
 
-) : Identifiable {
+) : LegacyIdentifiable {
    constructor(entity: Verification) :
       this(
          id = entity.id,

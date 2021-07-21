@@ -5,7 +5,9 @@ import org.apache.commons.lang3.builder.CompareToBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
 import java.util.Locale
 
-interface TypeDomainEntity<ENTITY> : Comparable<TypeDomainEntity<ENTITY>>, Identifiable {
+interface TypeDomainEntity<ENTITY> : Comparable<TypeDomainEntity<ENTITY>> {
+
+   fun myId(): Int
 
    fun myValue(): String
 

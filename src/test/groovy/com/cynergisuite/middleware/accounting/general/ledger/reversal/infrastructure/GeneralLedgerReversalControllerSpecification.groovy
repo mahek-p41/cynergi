@@ -46,15 +46,18 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
    }
 
    void "fetch one not found" () {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      get("$path/0")
+      get("$path/$nonExistentId")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == "0 was unable to be found"
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "fetch all" () {
@@ -157,7 +160,7 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id != null
          source.id == generalLedgerReversal.source.id
          date == generalLedgerReversal.date.toString()
          reversalDate == generalLedgerReversal.reversalDate.toString()
@@ -181,7 +184,7 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
       notThrown(HttpClientResponseException)
 
       with(result) {
-         id > 0
+         id != null
          source.id == generalLedgerReversalDTO.source.id
          date == generalLedgerReversalDTO.date.toString()
          reversalDate == generalLedgerReversalDTO.reversalDate.toString()
@@ -221,10 +224,11 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
 
    void "create invalid general ledger reversal with non-existing source id" () {
       given:
+      final nonExistentId = UUID.randomUUID()
       final company = nineNineEightEmployee.company
       final sourceCode = sourceCodeDataLoaderService.single(company)
       def generalLedgerReversalDTO = generalLedgerReversalDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(sourceCode))
-      generalLedgerReversalDTO.source.id = 0
+      generalLedgerReversalDTO.source.id = nonExistentId
 
       when:
       post("$path/", generalLedgerReversalDTO)
@@ -235,7 +239,7 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "source.id"
-      response[0].message == "0 was unable to be found"
+      response[0].message == "$nonExistentId was unable to be found"
    }
 
    void "update one" () {
@@ -321,12 +325,13 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
 
    void "update invalid general ledger reversal with non-existing source id" () {
       given:
+      final nonExistentId = UUID.randomUUID()
       final company = nineNineEightEmployee.company
       final sourceCode = sourceCodeDataLoaderService.single(company)
       final def existingGLReversal = generalLedgerReversalDataLoaderService.single(company, sourceCode)
       def updatedGLReversal = generalLedgerReversalDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(sourceCode))
       updatedGLReversal.id = existingGLReversal.id
-      updatedGLReversal.source.id = 0
+      updatedGLReversal.source.id = nonExistentId
 
       when:
       put("$path/${existingGLReversal.id}", updatedGLReversal)
@@ -337,6 +342,6 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == "source.id"
-      response[0].message == "0 was unable to be found"
+      response[0].message == "$nonExistentId was unable to be found"
    }
 }

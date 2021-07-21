@@ -7,19 +7,18 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.Digits
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "Rebate", title = "An entity containing rebate information", description = "An entity containing rebate information.")
 data class RebateDTO(
 
-   @field:Positive
    @field:Schema(name = "id", minimum = "1", required = false, description = "System generated ID")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:Valid
    @field:Schema(name = "vendors", description = "List of vendors", required = false)
@@ -77,5 +76,5 @@ data class RebateDTO(
          generalLedgerCreditAccount = SimpleIdentifiableDTO(entity.generalLedgerCreditAccount)
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

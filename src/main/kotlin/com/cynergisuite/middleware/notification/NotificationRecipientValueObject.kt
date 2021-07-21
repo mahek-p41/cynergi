@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.notification
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import com.cynergisuite.middleware.store.Store
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -23,7 +23,7 @@ data class NotificationRecipientValueObject(
    @field:NotNull
    var recipient: String
 
-) : Identifiable {
+) : LegacyIdentifiable {
 
    constructor(entity: NotificationRecipient) :
       this(

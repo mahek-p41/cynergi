@@ -103,7 +103,7 @@ class ScheduleTypeRepository(
 
    fun mapRow(rs: ResultSet, columnPrefix: String = "std_"): ScheduleTypeEntity =
       ScheduleTypeEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getInt("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")

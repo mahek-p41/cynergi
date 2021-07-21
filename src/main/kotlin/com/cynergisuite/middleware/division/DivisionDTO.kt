@@ -1,8 +1,9 @@
 package com.cynergisuite.middleware.division
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import io.swagger.v3.oas.annotations.media.Schema
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
@@ -10,9 +11,8 @@ import javax.validation.constraints.Positive
 @Schema(name = "Division", title = "Division", description = "A division of a company.")
 data class DivisionDTO(
 
-   @field:Positive
    @field:Schema(name = "id", minimum = "1", description = "System generated ID")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:Positive
    @field:Schema(name = "id", minimum = "1", description = "System Z external number")
@@ -29,10 +29,10 @@ data class DivisionDTO(
    @field:Valid
    @field:NotNull
    @field:Schema(name = "divisionalManager", description = "Divisional manager id")
-   var divisionalManager: SimpleIdentifiableDTO? = null,
+   var divisionalManager: SimpleLegacyIdentifiableDTO? = null,
 
 ) : Identifiable {
-   override fun myId() = id
+   override fun myId(): UUID? = id
 
    constructor(entity: DivisionEntity) :
       this(
@@ -40,6 +40,6 @@ data class DivisionDTO(
          number = entity.number,
          name = entity.name,
          description = entity.description,
-         divisionalManager = SimpleIdentifiableDTO(entity.divisionalManager?.id),
+         divisionalManager = SimpleLegacyIdentifiableDTO(entity.divisionalManager?.id),
       )
 }

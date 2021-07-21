@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,7 +14,7 @@ class DivisionService @Inject constructor(
    private val divisionValidator: DivisionValidator
 ) {
 
-   fun fetchById(id: Long, company: Company): DivisionDTO? =
+   fun fetchById(id: UUID, company: Company): DivisionDTO? =
       divisionRepository.findOne(id, company)?.let { DivisionDTO(it) }
 
    fun fetchAll(company: Company, pageRequest: PageRequest): Page<DivisionDTO> {
@@ -30,13 +31,13 @@ class DivisionService @Inject constructor(
       return DivisionDTO(divisionRepository.insert(toCreate))
    }
 
-   fun update(id: Long, dto: DivisionDTO, company: Company): DivisionDTO {
+   fun update(id: UUID, dto: DivisionDTO, company: Company): DivisionDTO {
       val toUpdate = divisionValidator.validateUpdate(id, dto, company)
 
       return DivisionDTO(divisionRepository.update(id, toUpdate))
    }
 
-   fun delete(id: Long, company: Company): DivisionDTO? {
+   fun delete(id: UUID, company: Company): DivisionDTO? {
       return divisionRepository.delete(id, company)?.let { DivisionDTO(it) }
    }
 }

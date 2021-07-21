@@ -5,6 +5,7 @@ import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.isNumber
 import com.cynergisuite.extensions.queryPaged
@@ -18,9 +19,9 @@ import com.cynergisuite.middleware.error.NotFoundException
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -64,16 +65,15 @@ class AccountRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long, company: Company): AccountEntity? {
+   fun findOne(id: UUID, company: Company): AccountEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE account.id = :id AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
-         params,
-         RowMapper { rs, _ ->
-            mapRow(rs, company, "account_")
-         }
-      )
+         params
+      ) { rs, _ ->
+         mapRow(rs, company, "account_")
+      }
 
       logger.trace("Searching for Account id {}: \nQuery {} \nResulted in {}", id, query, found)
 
@@ -85,11 +85,10 @@ class AccountRepository @Inject constructor(
       val query = "${selectBaseQuery()} WHERE account.number = :number AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
-         params,
-         RowMapper { rs, _ ->
-            mapRow(rs, company, "account_")
-         }
-      )
+         params
+      ) { rs, _ ->
+         mapRow(rs, company, "account_")
+      }
 
       logger.trace("Searching for Account number {}: \nQuery {} \nResulted in {}", number, query, found)
 
@@ -201,11 +200,10 @@ class AccountRepository @Inject constructor(
             "status_type_id" to account.status.id,
             "form_1099_field" to account.form1099Field,
             "corporate_account_indicator" to account.corporateAccountIndicator
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, account)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, account)
+      }
    }
 
    @Transactional
@@ -238,15 +236,14 @@ class AccountRepository @Inject constructor(
             "status_type_id" to account.status.id,
             "form_1099_field" to account.form1099Field,
             "corporate_account_indicator" to account.corporateAccountIndicator
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, account)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, account)
+      }
    }
 
    @Transactional
-   fun delete(id: Long, company: Company) {
+   fun delete(id: UUID, company: Company) {
       logger.debug("Deleting account with id={}", id)
 
       val rowsAffected = jdbc.update(
@@ -264,7 +261,7 @@ class AccountRepository @Inject constructor(
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): AccountEntity {
       return AccountEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          type = mapAccountType(rs, "${columnPrefix}type_"),
@@ -284,7 +281,7 @@ class AccountRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet, account: AccountEntity, columnPrefix: String = EMPTY): AccountEntity {
       return AccountEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
          type = account.type,
@@ -297,7 +294,7 @@ class AccountRepository @Inject constructor(
 
    private fun mapAccountType(rs: ResultSet, columnPrefix: String): AccountType =
       AccountType(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getInt("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
@@ -305,7 +302,7 @@ class AccountRepository @Inject constructor(
 
    private fun mapNormalAccountBalanceType(rs: ResultSet, columnPrefix: String): NormalAccountBalanceType =
       NormalAccountBalanceType(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getInt("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
@@ -313,7 +310,7 @@ class AccountRepository @Inject constructor(
 
    private fun mapAccountStatusType(rs: ResultSet, columnPrefix: String): AccountStatusType =
       AccountStatusType(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getInt("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")

@@ -1,13 +1,12 @@
 package com.cynergisuite.middleware.schedule.type
 
-import com.cynergisuite.domain.Identifiable
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
 data class ScheduleTypeValueObject(
 
    @field:Positive
-   var id: Long? = null,
+   var id: Int? = null,
 
    @field:NotNull
    var value: String? = null,
@@ -15,7 +14,7 @@ data class ScheduleTypeValueObject(
    @field:NotNull
    var description: String? = null
 
-) : Identifiable {
+) {
 
    constructor(entity: ScheduleType, localizedDescription: String) :
       this(
@@ -24,5 +23,5 @@ data class ScheduleTypeValueObject(
          description = localizedDescription
       )
 
-   override fun myId(): Long? = id
+   fun myId(): Int? = id
 }

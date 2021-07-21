@@ -75,15 +75,18 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "fetch one not found" () {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      get("$path/0")
+      get("$path/$nonExistentId")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.message == "0 was unable to be found"
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "fetch all" () {
@@ -205,7 +208,6 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
       with(result) {
          id == rebateDTO.id
          vendors == []
@@ -249,7 +251,6 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
       with(result) {
          id == rebateDTO.id
          vendors == []
@@ -327,6 +328,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "create invalid rebate with non-existing vendor" () {
       given:
+      final invalidVendorId = UUID.randomUUID()
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
@@ -338,7 +340,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final glDebitAcct = accountDataLoaderService.single(company)
       final glCreditAcct = accountDataLoaderService.single(company)
       final rebate = rebateDataLoaderService.singleDTO(vendorListDTO, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
-      rebate.vendors.add(new SimpleIdentifiableDTO(999999))
+      rebate.vendors.add(new SimpleIdentifiableDTO(invalidVendorId))
 
       when:
       post("$path/", rebate)
@@ -349,7 +351,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == 'vendors[1].id'
-      response[0].message == '999,999 was unable to be found'
+      response[0].message == "${invalidVendorId} was unable to be found"
    }
 
    void "create invalid rebate with percent greater than one" () {
@@ -417,12 +419,15 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "create invalid rebate with non-existing general ledger debit account and general ledger credit account ids" () {
       given:
+      final generalLedgerDebitAccountNonExistentId = UUID.fromString('72bab362-2399-4884-8614-de144273e16e')
+      final generalLedgerCreditAccountNonExistentId = UUID.fromString('42686b2e-5379-4f13-9889-5871261f724c')
       final company = companyFactoryService.forDatasetCode('tstds1')
       final glDebitAcct = accountDataLoaderService.single(company)
       final glCreditAcct = accountDataLoaderService.single(company)
       final rebate = rebateDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
-      rebate.generalLedgerDebitAccount.id = 0
-      rebate.generalLedgerCreditAccount.id = 0
+      rebate.accrualIndicator = false
+      rebate.generalLedgerDebitAccount.id = generalLedgerDebitAccountNonExistentId
+      rebate.generalLedgerCreditAccount.id = generalLedgerCreditAccountNonExistentId
 
       when:
       post("$path/", rebate)
@@ -433,9 +438,9 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson().collect().sort { a,b -> a.path <=> b.path }
       response.size() == 2
       response[0].path == "generalLedgerCreditAccount.id"
-      response[0].message == "generalLedgerCreditAccount.id must be greater than zero"
+      response[0].message == "$generalLedgerCreditAccountNonExistentId was unable to be found"
       response[1].path == "generalLedgerDebitAccount.id"
-      response[1].message == "generalLedgerDebitAccount.id must be greater than zero"
+      response[1].message == "$generalLedgerDebitAccountNonExistentId was unable to be found"
    }
 
    void "update one" () {
@@ -497,7 +502,6 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
       with(result) {
          id == updatedRebateDTO.id
 
@@ -580,6 +584,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "update invalid rebate with non-existing vendor" () {
       given:
+      final nonExistentVendorId = UUID.randomUUID()
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
@@ -592,7 +597,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final glCreditAcct = accountDataLoaderService.single(company)
       def existingRebate = rebateDataLoaderService.single(company, vendorList, glDebitAcct, glCreditAcct)
       def updatedRebateDTO = rebateDataLoaderService.singleDTO(vendorListDTO, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
-      updatedRebateDTO.vendors.add(new SimpleIdentifiableDTO(999999))
+      updatedRebateDTO.vendors.add(new SimpleIdentifiableDTO(nonExistentVendorId))
 
       when:
       updatedRebateDTO.id = existingRebate.id
@@ -604,7 +609,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == 'vendors[1].id'
-      response[0].message == '999,999 was unable to be found'
+      response[0].message == "${nonExistentVendorId} was unable to be found"
    }
 
    void "update invalid rebate with percent greater than one" () {
@@ -678,13 +683,16 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "update invalid rebate with non-existing general ledger debit account and general ledger credit account ids" () {
       given:
+      final generalLedgerDebitAccountNonExistentId = UUID.fromString('72bab362-2399-4884-8614-de144273e16e')
+      final generalLedgerCreditAccountNonExistentId = UUID.fromString('42686b2e-5379-4f13-9889-5871261f724c')
       final company = companyFactoryService.forDatasetCode('tstds1')
       final glDebitAcct = accountDataLoaderService.single(company)
       final glCreditAcct = accountDataLoaderService.single(company)
       def existingRebate = rebateDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
       def updatedRebateDTO = rebateDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
-      updatedRebateDTO.generalLedgerDebitAccount.id = 0
-      updatedRebateDTO.generalLedgerCreditAccount.id = 0
+      updatedRebateDTO.accrualIndicator = false
+      updatedRebateDTO.generalLedgerDebitAccount.id = generalLedgerDebitAccountNonExistentId
+      updatedRebateDTO.generalLedgerCreditAccount.id = generalLedgerCreditAccountNonExistentId
 
       when:
       updatedRebateDTO.id = existingRebate.id
@@ -696,9 +704,9 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson().collect().sort { a,b -> a.path <=> b.path }
       response.size() == 2
       response[0].path == "generalLedgerCreditAccount.id"
-      response[0].message == "generalLedgerCreditAccount.id must be greater than zero"
+      response[0].message == "$generalLedgerCreditAccountNonExistentId was unable to be found"
       response[1].path == "generalLedgerDebitAccount.id"
-      response[1].message == "generalLedgerDebitAccount.id must be greater than zero"
+      response[1].message == "$generalLedgerDebitAccountNonExistentId was unable to be found"
    }
 
    void "assign vendors to rebate" () {
@@ -723,7 +731,6 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
 
       when: // assign vendors to rebate
       vendorListDTO.eachWithIndex{ vendorDTO, index ->
@@ -794,7 +801,6 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       result != null
       result.id != null
-      result.id > 0
 
       when: // assign vendors to rebate
       vendorListDTO.eachWithIndex{ vendorDTO, index ->

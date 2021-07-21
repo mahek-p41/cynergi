@@ -4,6 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDateOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -60,7 +62,6 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             apRecurringInvoice.next_invoice_date                        AS apRecurringInvoice_next_invoice_date,
             apRecurringInvoice.next_expense_date                        AS apRecurringInvoice_next_expense_date,
             vendor.v_id                                                 AS apRecurringInvoice_vendor_id,
-            vendor.v_uu_row_id                                          AS apRecurringInvoice_vendor_uu_row_id,
             vendor.v_time_created                                       AS apRecurringInvoice_vendor_time_created,
             vendor.v_time_updated                                       AS apRecurringInvoice_vendor_time_updated,
             vendor.v_company_id                                         AS apRecurringInvoice_vendor_company_id,
@@ -70,11 +71,11 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             vendor.v_account_number                                     AS apRecurringInvoice_vendor_account_number,
             vendor.v_pay_to_id                                          AS apRecurringInvoice_vendor_pay_to_id,
             vendor.v_freight_on_board_type_id                           AS apRecurringInvoice_vendor_freight_on_board_type_id,
-            vendor.v_payment_terms_id                                   AS apRecurringInvoice_vendor_payment_terms_id,
+            vendor.v_vendor_payment_term_id                             AS apRecurringInvoice_vendor_vendor_payment_term_id,
             vendor.v_normal_days                                        AS apRecurringInvoice_vendor_normal_days,
             vendor.v_return_policy                                      AS apRecurringInvoice_vendor_return_policy,
             vendor.v_ship_via_id                                        AS apRecurringInvoice_vendor_ship_via_id,
-            vendor.v_group_id                                           AS apRecurringInvoice_vendor_group_id,
+            vendor.v_vendor_group_id                                    AS apRecurringInvoice_vendor_group_id,
             vendor.v_minimum_quantity                                   AS apRecurringInvoice_vendor_minimum_quantity,
             vendor.v_minimum_amount                                     AS apRecurringInvoice_vendor_minimum_amount,
             vendor.v_free_ship_quantity                                 AS apRecurringInvoice_vendor_free_ship_quantity,
@@ -100,7 +101,6 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             vendor.v_note                                               AS apRecurringInvoice_vendor_note,
             vendor.v_phone_number                                       AS apRecurringInvoice_vendor_phone_number,
             vendor.v_comp_id                                            AS apRecurringInvoice_vendor_comp_id,
-            vendor.v_comp_uu_row_id                                     AS apRecurringInvoice_vendor_comp_uu_row_id,
             vendor.v_comp_time_created                                  AS apRecurringInvoice_vendor_comp_time_created,
             vendor.v_comp_time_updated                                  AS apRecurringInvoice_vendor_comp_time_updated,
             vendor.v_comp_name                                          AS apRecurringInvoice_vendor_comp_name,
@@ -131,7 +131,6 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             vendor.v_method_description                                 AS apRecurringInvoice_vendor_method_description,
             vendor.v_method_localization_code                           AS apRecurringInvoice_vendor_method_localization_code,
             vendor.v_address_id                                         AS apRecurringInvoice_vendor_address_id,
-            vendor.v_address_uu_row_id                                  AS apRecurringInvoice_vendor_address_uu_row_id,
             vendor.v_address_time_created                               AS apRecurringInvoice_vendor_address_time_created,
             vendor.v_address_time_updated                               AS apRecurringInvoice_vendor_address_time_updated,
             vendor.v_address_number                                     AS apRecurringInvoice_vendor_address_number,
@@ -148,7 +147,6 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             vendor.v_address_phone                                      AS apRecurringInvoice_vendor_address_phone,
             vendor.v_address_fax                                        AS apRecurringInvoice_vendor_address_fax,
             vendor.v_vpt_id                                             AS apRecurringInvoice_vendor_vpt_id,
-            vendor.v_vpt_uu_row_id                                      AS apRecurringInvoice_vendor_vpt_uu_row_id,
             vendor.v_vpt_time_created                                   AS apRecurringInvoice_vendor_vpt_time_created,
             vendor.v_vpt_time_updated                                   AS apRecurringInvoice_vendor_vpt_time_updated,
             vendor.v_vpt_company_id                                     AS apRecurringInvoice_vendor_vpt_company_id,
@@ -159,20 +157,17 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             vendor.v_vpt_discount_days                                  AS apRecurringInvoice_vendor_vpt_discount_days,
             vendor.v_vpt_discount_percent                               AS apRecurringInvoice_vendor_vpt_discount_percent,
             vendor.v_shipVia_id                                         AS apRecurringInvoice_vendor_shipVia_id,
-            vendor.v_shipVia_uu_row_id                                  AS apRecurringInvoice_vendor_shipVia_uu_row_id,
             vendor.v_shipVia_time_created                               AS apRecurringInvoice_vendor_shipVia_time_created,
             vendor.v_shipVia_time_updated                               AS apRecurringInvoice_vendor_shipVia_time_updated,
             vendor.v_shipVia_description                                AS apRecurringInvoice_vendor_shipVia_description,
             vendor.v_shipVia_number                                     AS apRecurringInvoice_vendor_shipVia_number,
             vendor.v_vgrp_id                                            AS apRecurringInvoice_vendor_vgrp_id,
-            vendor.v_vgrp_uu_row_id                                     AS apRecurringInvoice_vendor_vgrp_uu_row_id,
             vendor.v_vgrp_time_created                                  AS apRecurringInvoice_vendor_vgrp_time_created,
             vendor.v_vgrp_time_updated                                  AS apRecurringInvoice_vendor_vgrp_time_updated,
             vendor.v_vgrp_company_id                                    AS apRecurringInvoice_vendor_vgrp_company_id,
             vendor.v_vgrp_value                                         AS apRecurringInvoice_vendor_vgrp_value,
             vendor.v_vgrp_description                                   AS apRecurringInvoice_vendor_vgrp_description,
             payTo.v_id                                                  AS apRecurringInvoice_payTo_id,
-            payTo.v_uu_row_id                                           AS apRecurringInvoice_payTo_uu_row_id,
             payTo.v_time_created                                        AS apRecurringInvoice_payTo_time_created,
             payTo.v_time_updated                                        AS apRecurringInvoice_payTo_time_updated,
             payTo.v_company_id                                          AS apRecurringInvoice_payTo_company_id,
@@ -182,11 +177,11 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             payTo.v_account_number                                      AS apRecurringInvoice_payTo_account_number,
             payTo.v_pay_to_id                                           AS apRecurringInvoice_payTo_pay_to_id,
             payTo.v_freight_on_board_type_id                            AS apRecurringInvoice_payTo_freight_on_board_type_id,
-            payTo.v_payment_terms_id                                    AS apRecurringInvoice_payTo_payment_terms_id,
+            payTo.v_vendor_payment_term_id                              AS apRecurringInvoice_payTo_vendor_payment_term_id,
             payTo.v_normal_days                                         AS apRecurringInvoice_payTo_normal_days,
             payTo.v_return_policy                                       AS apRecurringInvoice_payTo_return_policy,
             payTo.v_ship_via_id                                         AS apRecurringInvoice_payTo_ship_via_id,
-            payTo.v_group_id                                            AS apRecurringInvoice_payTo_group_id,
+            payTo.v_vendor_group_id                                     AS apRecurringInvoice_payTo_group_id,
             payTo.v_minimum_quantity                                    AS apRecurringInvoice_payTo_minimum_quantity,
             payTo.v_minimum_amount                                      AS apRecurringInvoice_payTo_minimum_amount,
             payTo.v_free_ship_quantity                                  AS apRecurringInvoice_payTo_free_ship_quantity,
@@ -212,7 +207,6 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             payTo.v_note                                                AS apRecurringInvoice_payTo_note,
             payTo.v_phone_number                                        AS apRecurringInvoice_payTo_phone_number,
             payTo.v_comp_id                                             AS apRecurringInvoice_payTo_comp_id,
-            payTo.v_comp_uu_row_id                                      AS apRecurringInvoice_payTo_comp_uu_row_id,
             payTo.v_comp_time_created                                   AS apRecurringInvoice_payTo_comp_time_created,
             payTo.v_comp_time_updated                                   AS apRecurringInvoice_payTo_comp_time_updated,
             payTo.v_comp_name                                           AS apRecurringInvoice_payTo_comp_name,
@@ -243,7 +237,6 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             payTo.v_method_description                                  AS apRecurringInvoice_payTo_method_description,
             payTo.v_method_localization_code                            AS apRecurringInvoice_payTo_method_localization_code,
             payTo.v_address_id                                          AS apRecurringInvoice_payTo_address_id,
-            payTo.v_address_uu_row_id                                   AS apRecurringInvoice_payTo_address_uu_row_id,
             payTo.v_address_time_created                                AS apRecurringInvoice_payTo_address_time_created,
             payTo.v_address_time_updated                                AS apRecurringInvoice_payTo_address_time_updated,
             payTo.v_address_number                                      AS apRecurringInvoice_payTo_address_number,
@@ -260,7 +253,6 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             payTo.v_address_phone                                       AS apRecurringInvoice_payTo_address_phone,
             payTo.v_address_fax                                         AS apRecurringInvoice_payTo_address_fax,
             payTo.v_vpt_id                                              AS apRecurringInvoice_payTo_vpt_id,
-            payTo.v_vpt_uu_row_id                                       AS apRecurringInvoice_payTo_vpt_uu_row_id,
             payTo.v_vpt_time_created                                    AS apRecurringInvoice_payTo_vpt_time_created,
             payTo.v_vpt_time_updated                                    AS apRecurringInvoice_payTo_vpt_time_updated,
             payTo.v_vpt_company_id                                      AS apRecurringInvoice_payTo_vpt_company_id,
@@ -271,13 +263,11 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             payTo.v_vpt_discount_days                                   AS apRecurringInvoice_payTo_vpt_discount_days,
             payTo.v_vpt_discount_percent                                AS apRecurringInvoice_payTo_vpt_discount_percent,
             payTo.v_shipVia_id                                          AS apRecurringInvoice_payTo_shipVia_id,
-            payTo.v_shipVia_uu_row_id                                   AS apRecurringInvoice_payTo_shipVia_uu_row_id,
             payTo.v_shipVia_time_created                                AS apRecurringInvoice_payTo_shipVia_time_created,
             payTo.v_shipVia_time_updated                                AS apRecurringInvoice_payTo_shipVia_time_updated,
             payTo.v_shipVia_description                                 AS apRecurringInvoice_payTo_shipVia_description,
             payTo.v_shipVia_number                                      AS apRecurringInvoice_payTo_shipVia_number,
             payTo.v_vgrp_id                                             AS apRecurringInvoice_payTo_vgrp_id,
-            payTo.v_vgrp_uu_row_id                                      AS apRecurringInvoice_payTo_vgrp_uu_row_id,
             payTo.v_vgrp_time_created                                   AS apRecurringInvoice_payTo_vgrp_time_created,
             payTo.v_vgrp_time_updated                                   AS apRecurringInvoice_payTo_vgrp_time_updated,
             payTo.v_vgrp_company_id                                     AS apRecurringInvoice_payTo_vgrp_company_id,
@@ -301,29 +291,29 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long, company: Company): AccountPayableRecurringInvoiceEntity? {
+   fun findOne(id: UUID, company: Company): AccountPayableRecurringInvoiceEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE apRecurringInvoice.id = :id AND apRecurringInvoice.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
-         params,
-         RowMapper { rs, _ ->
-            val vendor = vendorRepository.mapRow(rs, company, "apRecurringInvoice_vendor_")
-            val payTo = vendorRepository.mapRow(rs, company, "apRecurringInvoice_payTo_")
-            val status = statusTypeRepository.mapRow(rs, "apRecurringInvoice_status_")
-            val expenseMonthCreationType = expenseMonthCreationTypeRepository.mapRow(rs, "apRecurringInvoice_creation_type_")
+         params
+      ) { rs, _ ->
+         val vendor = vendorRepository.mapRow(rs, company, "apRecurringInvoice_vendor_")
+         val payTo = vendorRepository.mapRow(rs, company, "apRecurringInvoice_payTo_")
+         val status = statusTypeRepository.mapRow(rs, "apRecurringInvoice_status_")
+         val expenseMonthCreationType =
+            expenseMonthCreationTypeRepository.mapRow(rs, "apRecurringInvoice_creation_type_")
 
-            mapRow(
-               rs,
-               vendor,
-               payTo,
-               status,
-               expenseMonthCreationType,
-               null,
-               "apRecurringInvoice_"
-            )
-         }
-      )
+         mapRow(
+            rs,
+            vendor,
+            payTo,
+            status,
+            expenseMonthCreationType,
+            null,
+            "apRecurringInvoice_"
+         )
+      }
 
       logger.trace("Searching for AccountPayableRecurringInvoice: {} resulted in {}", company, found)
 
@@ -508,18 +498,17 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             "next_creation_date" to entity.nextCreationDate,
             "next_invoice_date" to entity.nextInvoiceDate,
             "next_expense_date" to entity.nextExpenseDate
-         ),
-         RowMapper { rs, _ ->
-            mapRow(
-               rs,
-               entity.vendor,
-               entity.payTo,
-               entity.status,
-               entity.expenseMonthCreationIndicator,
-               entity.schedule
-            )
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(
+            rs,
+            entity.vendor,
+            entity.payTo,
+            entity.status,
+            entity.expenseMonthCreationIndicator,
+            entity.schedule
+         )
+      }
    }
 
    private fun mapRow(
@@ -532,7 +521,7 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
       columnPrefix: String = EMPTY
    ): AccountPayableRecurringInvoiceEntity {
       return AccountPayableRecurringInvoiceEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          vendor = vendor,
          invoice = rs.getString("${columnPrefix}invoice"),
          invoiceAmount = rs.getBigDecimal("${columnPrefix}invoice_amount"),
@@ -564,7 +553,7 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
       columnPrefix: String = EMPTY
    ): AccountPayableRecurringInvoiceEntity {
       return AccountPayableRecurringInvoiceEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          vendor = vendorRepository.mapRow(rs, company, "${columnPrefix}vendor_"),
          invoice = rs.getString("${columnPrefix}invoice"),
          invoiceAmount = rs.getBigDecimal("${columnPrefix}invoice_amount"),

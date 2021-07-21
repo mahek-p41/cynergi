@@ -8,16 +8,15 @@ import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumbe
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
+import java.util.UUID
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AccountPayableControl", title = "Account payable control", description = "Account payable control entity")
 data class AccountPayableControlDTO(
 
-   @field:Positive
    @field:Schema(description = "Account payable control id")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Schema(description = "Account payable check form type")
@@ -80,5 +79,5 @@ data class AccountPayableControlDTO(
          generalLedgerInventoryAccount = entity.generalLedgerInventoryAccount.let { SimpleIdentifiableDTO(it) }
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

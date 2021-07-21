@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.localization.LocalizationService
 import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.ValidationException
@@ -18,7 +19,7 @@ class AuditPermissionService @Inject constructor(
    private val localizationService: LocalizationService
 ) {
 
-   fun fetchById(id: Long, company: Company, locale: Locale): AuditPermissionValueObject? {
+   fun fetchById(id: UUID, company: Company, locale: Locale): AuditPermissionValueObject? {
       return auditPermissionRepository.findById(id, company)?.let { AuditPermissionValueObject(it, locale, localizationService) }
    }
 
@@ -54,7 +55,7 @@ class AuditPermissionService @Inject constructor(
       )
    }
 
-   fun deleteById(id: Long, company: Company, locale: Locale): AuditPermissionValueObject? {
+   fun deleteById(id: UUID, company: Company, locale: Locale): AuditPermissionValueObject? {
       return auditPermissionRepository.deleteById(id, company)?.let { AuditPermissionValueObject(it, locale, localizationService) }
    }
 }

@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.infrastructure.GeneralLedgerReversalRepository
 import com.cynergisuite.middleware.company.Company
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -12,7 +13,7 @@ class GeneralLedgerReversalService @Inject constructor(
    private val generalLedgerReversalRepository: GeneralLedgerReversalRepository,
    private val generalLedgerReversalValidator: GeneralLedgerReversalValidator
 ) {
-   fun fetchOne(id: Long, company: Company): GeneralLedgerReversalDTO? {
+   fun fetchOne(id: UUID, company: Company): GeneralLedgerReversalDTO? {
       return generalLedgerReversalRepository.findOne(id, company)?.let { transformEntity(it) }
    }
 
@@ -30,8 +31,8 @@ class GeneralLedgerReversalService @Inject constructor(
       return transformEntity(generalLedgerReversalRepository.insert(toCreate, company))
    }
 
-   fun update(dto: GeneralLedgerReversalDTO, company: Company): GeneralLedgerReversalDTO {
-      val toUpdate = generalLedgerReversalValidator.validateUpdate(dto, company)
+   fun update(id: UUID, dto: GeneralLedgerReversalDTO, company: Company): GeneralLedgerReversalDTO {
+      val toUpdate = generalLedgerReversalValidator.validateUpdate(id, dto, company)
 
       return transformEntity(generalLedgerReversalRepository.update(toUpdate, company))
    }

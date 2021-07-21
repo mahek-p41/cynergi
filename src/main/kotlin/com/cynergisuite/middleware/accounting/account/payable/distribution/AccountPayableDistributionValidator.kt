@@ -12,6 +12,8 @@ import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
+import java.math.BigDecimal.ONE
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,14 +31,14 @@ class AccountPayableDistributionValidator @Inject constructor(
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: Long, dto: AccountPayableDistributionDTO, company: Company): AccountPayableDistributionEntity {
+   fun validateUpdate(id: UUID, dto: AccountPayableDistributionDTO, company: Company): AccountPayableDistributionEntity {
       logger.debug("Validating Update AccountPayableDistribution {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
    private fun doSharedValidation(dto: AccountPayableDistributionDTO, company: Company): AccountPayableDistributionEntity {
-      val profitCenter = dto.profitCenter?.id?.let { storeRepository.findOne(it, company) }
+      val profitCenter = dto.profitCenter?.id?.let { storeRepository.findOne(it, company) } // FIXME change to loading using the id provided via the URL on update
       val account = dto.account?.id?.let { accountRepository.findOne(it, company) }
       val percent = dto.percent
       val percentTotal = accountPayableDistributionRepository.percentTotalForGroup(company, dto.name!!)
@@ -48,7 +50,7 @@ class AccountPayableDistributionValidator @Inject constructor(
          account
             ?: errors.add(ValidationError("account.id", NotFound(dto.account!!.id!!)))
 
-         if ((percent != null) && (percent < BigDecimal.ZERO || percent > BigDecimal.ONE)) {
+         if ((percent != null) && (percent < BigDecimal.ZERO || percent > ONE)) {
             errors.add(ValidationError("percent", MustBeInRangeOf("[0, 1]")))
          }
 

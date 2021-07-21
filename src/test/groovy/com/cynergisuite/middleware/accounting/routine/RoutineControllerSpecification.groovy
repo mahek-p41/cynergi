@@ -108,7 +108,7 @@ class RoutineControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       result != null
       with(result) {
-         id > 0
+         id != null
          period == routine.period
          periodFrom == routine.periodFrom.toString()
          periodTo == routine.periodTo.toString()
@@ -184,7 +184,7 @@ class RoutineControllerSpecification extends ControllerSpecificationBase {
       notThrown(Exception)
       result != null
       with(result) {
-         id > 0
+         id != null
          period == routine.period
          periodFrom == routine.periodFrom.toString()
          periodTo == routine.periodTo.toString()
@@ -259,7 +259,7 @@ class RoutineControllerSpecification extends ControllerSpecificationBase {
       result != null
       result.eachWithIndex { routine, index ->
          with(routine) {
-            id > 0
+            id != null
             period == routines[index].period
             periodFrom == routines[index].periodFrom.toString()
             periodTo == routines[index].periodTo.toString()

@@ -4,9 +4,10 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.store.Store
 import java.math.BigDecimal
+import java.util.UUID
 
 data class AccountPayableDistributionEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val name: String,
    val profitCenter: Store,
    val account: AccountEntity,
@@ -22,5 +23,5 @@ data class AccountPayableDistributionEntity(
          percent = dto.percent!!
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.vendor.group.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
@@ -12,9 +13,9 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -32,14 +33,12 @@ class VendorGroupRepository @Inject constructor(
       )
       SELECT
          vgrp.id                     AS vgrp_id,
-         vgrp.uu_row_id              AS vgrp_uu_row_id,
          vgrp.time_created           AS vgrp_time_created,
          vgrp.time_updated           AS vgrp_time_updated,
          vgrp.company_id             AS vgrp_company_id,
          vgrp.value                  AS vgrp_value,
          vgrp.description            AS vgrp_description,
          comp.id                     AS comp_id,
-         comp.uu_row_id              AS comp_uu_row_id,
          comp.time_created           AS comp_time_created,
          comp.time_updated           AS comp_time_updated,
          comp.name                   AS comp_name,
@@ -74,7 +73,7 @@ class VendorGroupRepository @Inject constructor(
       return exists
    }
 
-   fun findOne(id: Long, company: Company): VendorGroupEntity? {
+   fun findOne(id: UUID, company: Company): VendorGroupEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${baseSelectQuery()}\nWHERE vgrp.id = :id AND comp.id = :comp_id"
 
@@ -148,9 +147,8 @@ class VendorGroupRepository @Inject constructor(
             "company_id" to company.myId(),
             "value" to entity.value,
             "description" to entity.description
-         ),
-         RowMapper { rs, _ -> mapDdlRow(rs, company) }
-      )
+         )
+      ) { rs, _ -> mapDdlRow(rs, company) }
    }
 
    @Transactional
@@ -173,9 +171,8 @@ class VendorGroupRepository @Inject constructor(
             "companyId" to entity.company.myId(),
             "value" to entity.value,
             "description" to entity.description
-         ),
-         RowMapper { rs, _ -> mapDdlRow(rs, entity.company) }
-      )
+         )
+      ) { rs, _ -> mapDdlRow(rs, entity.company) }
 
       logger.debug("Updated VendorGroup {}", updated)
 
@@ -183,7 +180,7 @@ class VendorGroupRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: Long, company: Company) {
+   fun delete(id: UUID, company: Company) {
       logger.debug("Deleting vendor group with id={}", id)
 
       val affectedRows = jdbc.update(
@@ -202,7 +199,7 @@ class VendorGroupRepository @Inject constructor(
    fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String): VendorGroupEntity? {
       return if (rs.getString("${columnPrefix}id") != null) {
          VendorGroupEntity(
-            id = rs.getLong("${columnPrefix}id"),
+            id = rs.getUuid("${columnPrefix}id"),
             company = company,
             value = rs.getString("${columnPrefix}value"),
             description = rs.getString("${columnPrefix}description")
@@ -214,7 +211,7 @@ class VendorGroupRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet): VendorGroupEntity {
       return VendorGroupEntity(
-         id = rs.getLong("vgrp_id"),
+         id = rs.getUuid("vgrp_id"),
          company = companyRepository.mapRow(rs, "comp_"),
          value = rs.getString("vgrp_value"),
          description = rs.getString("vgrp_description")
@@ -223,7 +220,7 @@ class VendorGroupRepository @Inject constructor(
 
    private fun mapDdlRow(rs: ResultSet, company: Company): VendorGroupEntity {
       return VendorGroupEntity(
-         id = rs.getLong("id"),
+         id = rs.getUuid("id"),
          company = company,
          value = rs.getString("value"),
          description = rs.getString("description")

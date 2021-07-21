@@ -7,17 +7,16 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.Locale
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AuditPermission", title = "Single Audit Permission", description = "A single audit permission defining access to endpoints of the auditing system")
 data class AuditPermissionValueObject(
 
-   @field:Positive
    @field:Schema(name = "id", minimum = "1", required = false, description = "System generated ID")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:Valid
    @field:NotNull
@@ -38,5 +37,5 @@ data class AuditPermissionValueObject(
          department = DepartmentDTO(entity.department)
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

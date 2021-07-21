@@ -10,17 +10,16 @@ import com.cynergisuite.middleware.purchase.order.type.UpdatePurchaseOrderCostTy
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 
 @JsonInclude(NON_NULL)
 @Schema(name = "PurchaseOrderControl", title = "Purchase order control", description = "Purchase order control entity")
 data class PurchaseOrderControlDTO(
 
-   @field:Positive
    @field:Schema(description = "Purchase order control id")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Schema(description = "Drop five characters on model number")
@@ -52,7 +51,7 @@ data class PurchaseOrderControlDTO(
    var updateCostOnModel: Boolean? = null,
 
    @field:Schema(description = "Default vendor")
-   var defaultVendor: SimpleIdentifiableDTO?,
+   var defaultVendor: SimpleIdentifiableDTO? = null,
 
    @field:NotNull
    @field:Valid
@@ -77,7 +76,7 @@ data class PurchaseOrderControlDTO(
    var validateInventory: Boolean? = null,
 
    @field:Schema(description = "Default approver")
-   var defaultApprover: EmployeeValueObject?,
+   var defaultApprover: EmployeeValueObject? = null,
 
    @field:NotNull
    @field:Schema(description = "Approval required flag type")
@@ -111,5 +110,5 @@ data class PurchaseOrderControlDTO(
          approvalRequiredFlagType = approvalRequiredFlagType
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

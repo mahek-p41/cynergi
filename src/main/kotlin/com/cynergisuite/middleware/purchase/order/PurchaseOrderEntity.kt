@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.purchase.order
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.purchase.order.type.ExceptionIndicatorType
 import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderStatusType
@@ -16,9 +15,10 @@ import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.OffsetDateTime
+import java.util.UUID
 
 data class PurchaseOrderEntity(
-   val id: Long?,
+   val id: UUID?,
    val number: Long,
    val vendor: VendorEntity,
    val statusType: PurchaseOrderStatusType,
@@ -43,11 +43,10 @@ data class PurchaseOrderEntity(
    val vendorSubmittedTime: OffsetDateTime?,
    val vendorSubmittedEmployee: EmployeeEntity?,
    val ecommerceIndicator: Boolean,
-   val customerAccount: AccountEntity?
-
 ) : Identifiable {
 
    constructor(
+      existingEntity: PurchaseOrderEntity?,
       dto: PurchaseOrderDTO,
       vendor: VendorEntity,
       statusType: PurchaseOrderStatusType,
@@ -62,10 +61,9 @@ data class PurchaseOrderEntity(
       paymentTermType: VendorPaymentTermEntity,
       exceptionIndicatorType: ExceptionIndicatorType,
       vendorSubmittedEmployee: EmployeeEntity?,
-      customerAccount: AccountEntity?
    ) :
       this(
-         id = dto.id,
+         id = existingEntity?.id,
          number = dto.number!!,
          vendor = vendor,
          statusType = statusType,
@@ -90,8 +88,7 @@ data class PurchaseOrderEntity(
          vendorSubmittedTime = dto.vendorSubmittedTime,
          vendorSubmittedEmployee = vendorSubmittedEmployee,
          ecommerceIndicator = dto.ecommerceIndicator!!,
-         customerAccount = customerAccount
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

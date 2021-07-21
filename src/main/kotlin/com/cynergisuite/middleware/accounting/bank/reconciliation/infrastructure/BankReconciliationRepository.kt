@@ -6,6 +6,7 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
@@ -15,9 +16,9 @@ import com.cynergisuite.middleware.company.Company
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -79,16 +80,15 @@ class BankReconciliationRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long, company: Company): BankReconciliationEntity? {
+   fun findOne(id: UUID, company: Company): BankReconciliationEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE bankRecon.id = :id AND bankRecon.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
-         params,
-         RowMapper { rs, _ ->
-            mapRow(rs, company, "bankRecon_")
-         }
-      )
+         params
+      ) { rs, _ ->
+         mapRow(rs, company, "bankRecon_")
+      }
 
       logger.trace("Searching for BankReconciliation id {}: \nQuery {} \nResulted in {}", id, query, found)
 
@@ -165,11 +165,10 @@ class BankReconciliationRepository @Inject constructor(
             "amount" to entity.amount,
             "description" to entity.description,
             "document" to entity.document
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity)
+      }
    }
 
    @Transactional
@@ -202,16 +201,15 @@ class BankReconciliationRepository @Inject constructor(
             "amount" to entity.amount,
             "description" to entity.description,
             "document" to entity.document
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity)
+      }
    }
 
    private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): BankReconciliationEntity {
       return BankReconciliationEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          bank = bankRepository.mapRow(rs, company, "bank_"),
          type = bankReconciliationTypeRepository.mapRow(rs, "bankReconType_"),
          date = rs.getLocalDate("${columnPrefix}transaction_date"),
@@ -224,7 +222,7 @@ class BankReconciliationRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet, entity: BankReconciliationEntity, columnPrefix: String = EMPTY): BankReconciliationEntity {
       return BankReconciliationEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          bank = entity.bank,
          type = entity.type,
          date = rs.getLocalDate("${columnPrefix}transaction_date"),

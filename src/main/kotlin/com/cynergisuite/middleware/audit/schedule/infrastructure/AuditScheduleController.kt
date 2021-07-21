@@ -33,6 +33,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -46,7 +47,7 @@ class AuditScheduleController @Inject constructor(
 
    @Throws(NotFoundException::class)
    @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
-   @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Fetch a single Audit Schedule", description = "Fetch a single Audit Schedule by it's system generated primary key", operationId = "auditSchedule-fetchOne")
    @ApiResponses(
       value = [
@@ -58,7 +59,7 @@ class AuditScheduleController @Inject constructor(
    )
    fun fetchOne(
       @Parameter(description = "Primary Key to lookup the Audit Schedule with", `in` = PATH) @QueryValue("id")
-      id: Long,
+      id: UUID,
       authentication: Authentication
    ): AuditScheduleDTO {
       logger.info("Fetching Audit Schedule by {}", id)

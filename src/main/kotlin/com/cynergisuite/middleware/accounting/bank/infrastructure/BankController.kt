@@ -31,6 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -43,7 +44,7 @@ class BankController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(BankController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["BankEndpoints"], summary = "Fetch a single Bank", description = "Fetch a single Bank by ID", operationId = "bank-fetchOne")
    @ApiResponses(
       value = [
@@ -53,7 +54,7 @@ class BankController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): BankDTO {
@@ -118,7 +119,7 @@ class BankController @Inject constructor(
       return response
    }
 
-   @Put(uri = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
+   @Put(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["BankEndpoints"], summary = "Create a single bank", description = "Create a single bank.", operationId = "bank-update")
    @ApiResponses(
@@ -130,7 +131,7 @@ class BankController @Inject constructor(
       ]
    )
    fun update(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       @Body @Valid
       dto: BankDTO,
       authentication: Authentication
@@ -145,7 +146,7 @@ class BankController @Inject constructor(
       return response
    }
 
-   @Delete(uri = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
+   @Delete(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @AccessControl
    @Operation(tags = ["BankEndpoints"], summary = "Delete a bank", description = "Delete a single bank", operationId = "bank-delete")
    @ApiResponses(
@@ -157,7 +158,7 @@ class BankController @Inject constructor(
       ]
    )
    fun delete(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ) {

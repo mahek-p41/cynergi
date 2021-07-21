@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Identifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
@@ -12,8 +13,7 @@ import javax.validation.constraints.Positive
 @Schema(name = "Account", title = "A data transfer object containing account information", description = "An data transfer object containing a account information.")
 data class AccountDTO(
 
-   @field:Positive
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Schema(name = "name", description = "Description for an account.")
@@ -76,5 +76,5 @@ data class AccountDTO(
          corporateAccountIndicator = accountEntity.corporateAccountIndicator
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

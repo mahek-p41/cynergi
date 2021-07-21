@@ -7,17 +7,16 @@ import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
+import java.util.UUID
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AuditDetail", title = "Single item associated with an Audit", description = "Single line item that has been successfully found during the audit process")
 data class AuditDetailValueObject(
 
-   @field:Positive
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Schema(required = true)
@@ -86,5 +85,5 @@ data class AuditDetailValueObject(
          audit = audit
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

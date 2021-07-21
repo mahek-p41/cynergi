@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.Digits
 import javax.validation.constraints.Email
@@ -22,9 +23,8 @@ import javax.validation.constraints.Size
 @Schema(name = "Vendor", title = "An entity containing vendor information", description = "An entity containing vendor information.")
 data class VendorDTO(
 
-   @field:Positive
    @field:Schema(name = "id", minimum = "1", required = false, description = "System generated ID")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:NotNull
    @field:NotBlank
@@ -215,5 +215,5 @@ data class VendorDTO(
          phone = entity.phone
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

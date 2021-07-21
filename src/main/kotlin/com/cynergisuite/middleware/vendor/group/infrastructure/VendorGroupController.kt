@@ -31,6 +31,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -43,7 +44,7 @@ class VendorGroupController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(VendorGroupController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Fetch a single VendorGroup", description = "Fetch a single VendorGroup by it's system generated primary key", operationId = "vendorGroup-fetchOne")
    @ApiResponses(
       value = [
@@ -54,7 +55,7 @@ class VendorGroupController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): VendorGroupDTO {
@@ -125,7 +126,7 @@ class VendorGroupController @Inject constructor(
       return response
    }
 
-   @Put(value = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
+   @Put(value = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Update a single VendorGroup", description = "Update a single VendorGroup where the update is the addition of a note", operationId = "vendorGroup-update")
    @ApiResponses(
@@ -139,7 +140,7 @@ class VendorGroupController @Inject constructor(
    )
    fun update(
       @Parameter(name = "id", `in` = PATH, description = "The id for the VendorGroup being updated") @QueryValue("id")
-      id: Long,
+      id: UUID,
       @Body @Valid
       vo: VendorGroupDTO,
       authentication: Authentication,
@@ -155,7 +156,7 @@ class VendorGroupController @Inject constructor(
       return response
    }
 
-   @Delete(uri = "/{id:[0-9]+}", processes = [APPLICATION_JSON])
+   @Delete(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @AccessControl
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Delete a vendor group", description = "Delete a single vendor group", operationId = "vendorGroup-delete")
    @ApiResponses(
@@ -167,7 +168,7 @@ class VendorGroupController @Inject constructor(
       ]
    )
    fun delete(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ) {

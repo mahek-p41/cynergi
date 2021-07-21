@@ -4,6 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.deleteReturning
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.Company
@@ -15,6 +16,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -49,7 +51,6 @@ class DivisionRepository @Inject constructor(
             emp.emp_alternative_store_indicator    AS emp_alternative_store_indicator,
             emp.emp_alternative_area               AS emp_alternative_area,
             emp.comp_id                            AS comp_id,
-            emp.comp_uu_row_id                     AS comp_uu_row_id,
             emp.comp_time_created                  AS comp_time_created,
             emp.comp_time_updated                  AS comp_time_updated,
             emp.comp_name                          AS comp_name,
@@ -79,7 +80,7 @@ class DivisionRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long, company: Company): DivisionEntity? {
+   fun findOne(id: UUID, company: Company): DivisionEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId(), "comp_dataset_code" to company.myDataset())
       val query =
          """${selectBaseQuery()} WHERE div.id = :id
@@ -146,7 +147,7 @@ class DivisionRepository @Inject constructor(
             RETURNING *
          """.trimIndent(),
          mapOf(
-            "company_id" to entity.company.id,
+            "company_id" to entity.company.myId(),
             "name" to entity.name,
             "description" to entity.description,
             "manager_number" to entity.divisionalManager?.number,
@@ -155,7 +156,7 @@ class DivisionRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(id: Long, entity: DivisionEntity): DivisionEntity {
+   fun update(id: UUID, entity: DivisionEntity): DivisionEntity {
       logger.debug("Updating division {}", entity)
 
       return jdbc.updateReturning(
@@ -183,7 +184,7 @@ class DivisionRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: Long, company: Company): DivisionEntity? {
+   fun delete(id: UUID, company: Company): DivisionEntity? {
       logger.debug("Deleting Division using {}/{}", id, company)
 
       val division = findOne(id, company)
@@ -238,7 +239,7 @@ class DivisionRepository @Inject constructor(
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): DivisionEntity =
       DivisionEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          company = CompanyEntity.create(company)!!, // Fix unsafe type cast by Factory method, as sequence of constructor with interface as an input doesn't work
          number = rs.getLong("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
@@ -248,7 +249,7 @@ class DivisionRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet, division: DivisionEntity, columnPrefix: String = EMPTY): DivisionEntity =
       DivisionEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          company = division.company,
          number = rs.getLong("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),

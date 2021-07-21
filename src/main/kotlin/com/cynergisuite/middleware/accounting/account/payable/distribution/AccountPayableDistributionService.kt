@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.account.payable.distribution.infrastructure.AccountPayableDistributionRepository
 import com.cynergisuite.middleware.company.Company
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -12,7 +13,7 @@ class AccountPayableDistributionService @Inject constructor(
    private val accountPayableDistributionRepository: AccountPayableDistributionRepository,
    private val accountPayableDistributionValidator: AccountPayableDistributionValidator
 ) {
-   fun fetchOne(id: Long, company: Company): AccountPayableDistributionDTO? =
+   fun fetchOne(id: UUID, company: Company): AccountPayableDistributionDTO? =
       accountPayableDistributionRepository.findOne(id, company)?.let { transformEntity(it) }
 
    fun fetchAll(company: Company, pageRequest: PageRequest): Page<AccountPayableDistributionDTO> {
@@ -43,13 +44,13 @@ class AccountPayableDistributionService @Inject constructor(
       return transformEntity(accountPayableDistributionRepository.insert(toCreate, company))
    }
 
-   fun update(id: Long, dto: AccountPayableDistributionDTO, company: Company): AccountPayableDistributionDTO {
+   fun update(id: UUID, dto: AccountPayableDistributionDTO, company: Company): AccountPayableDistributionDTO {
       val toUpdate = accountPayableDistributionValidator.validateUpdate(id, dto, company)
 
       return transformEntity(accountPayableDistributionRepository.update(toUpdate, company))
    }
 
-   fun delete(id: Long, company: Company) {
+   fun delete(id: UUID, company: Company) {
       accountPayableDistributionRepository.delete(id, company)
    }
 

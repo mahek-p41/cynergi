@@ -2,9 +2,10 @@ package com.cynergisuite.middleware.vendor.group
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.company.Company
+import java.util.UUID
 
 data class VendorGroupEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val company: Company,
    val value: String,
    val description: String
@@ -18,5 +19,5 @@ data class VendorGroupEntity(
          description = dto.description!!
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

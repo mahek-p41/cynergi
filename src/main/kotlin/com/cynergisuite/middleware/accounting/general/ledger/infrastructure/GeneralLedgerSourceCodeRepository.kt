@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
@@ -12,9 +13,9 @@ import com.cynergisuite.middleware.error.NotFoundException
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -43,7 +44,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
       return exists
    }
 
-   fun findOne(id: Long, company: Company): GeneralLedgerSourceCodeEntity? {
+   fun findOne(id: UUID, company: Company): GeneralLedgerSourceCodeEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()}\nWHERE glSrcCodes.id = :id AND glSrcCodes.company_id = :comp_id"
 
@@ -96,9 +97,8 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
             "company_id" to company.myId(),
             "value" to entity.value,
             "description" to entity.description
-         ),
-         RowMapper { rs, _ -> mapRow(rs) }
-      )
+         )
+      ) { rs, _ -> mapRow(rs) }
    }
 
    @Transactional
@@ -121,9 +121,8 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
             "companyId" to company.myId(),
             "value" to entity.value,
             "description" to entity.description
-         ),
-         RowMapper { rs, _ -> mapRow(rs) }
-      )
+         )
+      ) { rs, _ -> mapRow(rs) }
 
       logger.debug("Updated GeneralLedgerSourceCode {}", updated)
 
@@ -131,7 +130,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: Long, company: Company) {
+   fun delete(id: UUID, company: Company) {
       logger.debug("Deleting GeneralLedgerSourceCode with id={}", id)
 
       val rowsAffected = jdbc.update(
@@ -148,7 +147,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
 
    fun mapRow(rs: ResultSet, columnPrefix: String? = EMPTY): GeneralLedgerSourceCodeEntity {
       return GeneralLedgerSourceCodeEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description")
       )

@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.purchase.order
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.middleware.accounting.account.AccountEntity
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeValueObject
@@ -48,7 +48,6 @@ object PurchaseOrderDataLoader {
       shipToIn: Store,
       paymentTermTypeIn: VendorPaymentTermEntity,
       vendorSubmittedEmployeeIn: EmployeeEntity? = null,
-      customerAccountIn: AccountEntity? = null
    ): Stream<PurchaseOrderEntity> {
       val number = if (numberIn < 0) 1 else numberIn
       val faker = Faker()
@@ -83,7 +82,6 @@ object PurchaseOrderDataLoader {
             vendorSubmittedTime = OffsetDateTime.now(),
             vendorSubmittedEmployee = vendorSubmittedEmployeeIn,
             ecommerceIndicator = random.nextBoolean(),
-            customerAccount = customerAccountIn
          )
       }
    }
@@ -95,10 +93,9 @@ object PurchaseOrderDataLoader {
       approvedByIn: EmployeeEntity,
       purchaseAgentIn: EmployeeEntity,
       shipViaIn: SimpleIdentifiableDTO,
-      shipToIn: SimpleIdentifiableDTO,
+      shipToIn: SimpleLegacyIdentifiableDTO,
       paymentTermTypeIn: SimpleIdentifiableDTO,
       vendorSubmittedEmployeeIn: EmployeeEntity? = null,
-      customerAccountIn: SimpleIdentifiableDTO? = null
    ): Stream<PurchaseOrderDTO> {
       val number = if (numberIn < 0) 1 else numberIn
       val faker = Faker()
@@ -133,7 +130,6 @@ object PurchaseOrderDataLoader {
             vendorSubmittedTime = OffsetDateTime.now(),
             vendorSubmittedEmployee = vendorSubmittedEmployeeIn?.let { it -> EmployeeValueObject(it) },
             ecommerceIndicator = random.nextBoolean(),
-            customerAccount = customerAccountIn
          )
       }
    }
@@ -155,9 +151,8 @@ class PurchaseOrderDataLoaderService @Inject constructor(
       shipToIn: Store,
       paymentTermTypeIn: VendorPaymentTermEntity,
       vendorSubmittedEmployeeIn: EmployeeEntity? = null,
-      customerAccountIn: AccountEntity? = null
    ): Stream<PurchaseOrderEntity> {
-      return PurchaseOrderDataLoader.stream(numberIn, vendorIn, approvedByIn, purchaseAgentIn, shipViaIn, shipToIn, paymentTermTypeIn, vendorSubmittedEmployeeIn, customerAccountIn)
+      return PurchaseOrderDataLoader.stream(numberIn, vendorIn, approvedByIn, purchaseAgentIn, shipViaIn, shipToIn, paymentTermTypeIn, vendorSubmittedEmployeeIn)
          .map { purchaseOrderRepository.insert(it, companyIn) }
    }
 
@@ -170,9 +165,8 @@ class PurchaseOrderDataLoaderService @Inject constructor(
       shipToIn: Store,
       paymentTermTypeIn: VendorPaymentTermEntity,
       vendorSubmittedEmployeeIn: EmployeeEntity? = null,
-      customerAccountIn: AccountEntity? = null
    ): PurchaseOrderEntity {
-      return stream(1, companyIn, vendorIn, approvedByIn, purchaseAgentIn, shipViaIn, shipToIn, paymentTermTypeIn, vendorSubmittedEmployeeIn, customerAccountIn)
+      return stream(1, companyIn, vendorIn, approvedByIn, purchaseAgentIn, shipViaIn, shipToIn, paymentTermTypeIn, vendorSubmittedEmployeeIn)
          .findFirst().orElseThrow { Exception("Unable to create PurchaseOrderEntity") }
    }
 
@@ -181,12 +175,11 @@ class PurchaseOrderDataLoaderService @Inject constructor(
       approvedByIn: EmployeeEntity,
       purchaseAgentIn: EmployeeEntity,
       shipViaIn: SimpleIdentifiableDTO,
-      shipToIn: SimpleIdentifiableDTO,
+      shipToIn: SimpleLegacyIdentifiableDTO,
       paymentTermTypeIn: SimpleIdentifiableDTO,
       vendorSubmittedEmployeeIn: EmployeeEntity? = null,
-      customerAccountIn: SimpleIdentifiableDTO? = null
    ): PurchaseOrderDTO {
-      return PurchaseOrderDataLoader.streamDTO(1, vendorIn, approvedByIn, purchaseAgentIn, shipViaIn, shipToIn, paymentTermTypeIn, vendorSubmittedEmployeeIn, customerAccountIn)
+      return PurchaseOrderDataLoader.streamDTO(1, vendorIn, approvedByIn, purchaseAgentIn, shipViaIn, shipToIn, paymentTermTypeIn, vendorSubmittedEmployeeIn)
          .findFirst().orElseThrow { Exception("Unable to create PurchaseOrder") }
    }
 }

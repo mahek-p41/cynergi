@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.routine.infrastructure.RoutineRepository
 import com.cynergisuite.middleware.company.Company
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,7 +14,7 @@ class RoutineService @Inject constructor(
    private val routineValidator: RoutineValidator
 ) {
 
-   fun fetchById(id: Long, company: Company): RoutineDTO? =
+   fun fetchById(id: UUID, company: Company): RoutineDTO? =
       routineRepository.findOne(id, company)?.let { RoutineDTO(it) }
 
    fun fetchAll(company: Company, pageRequest: PageRequest): Page<RoutineDTO> {
@@ -30,7 +31,7 @@ class RoutineService @Inject constructor(
       return transformEntity(routineRepository.insert(toCreate, company))
    }
 
-   fun update(id: Long, dto: RoutineDTO, company: Company): RoutineDTO {
+   fun update(id: UUID, dto: RoutineDTO, company: Company): RoutineDTO {
       val toUpdate = routineValidator.validateUpdate(id, dto, company)
 
       return transformEntity(routineRepository.update(toUpdate, company))

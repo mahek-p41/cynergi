@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.distribution.infr
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.math.BigDecimal
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -36,7 +38,6 @@ class AccountPayableDistributionRepository @Inject constructor(
          )
          SELECT
             apDist.id                                                      AS apDist_id,
-            apDist.uu_row_id                                               AS apDist_uu_row_id,
             apDist.time_created                                            AS apDist_time_created,
             apDist.time_updated                                            AS apDist_time_updated,
             apDist.name                                                    AS apDist_name,
@@ -73,7 +74,7 @@ class AccountPayableDistributionRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long, company: Company): AccountPayableDistributionEntity? {
+   fun findOne(id: UUID, company: Company): AccountPayableDistributionEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${selectBaseQuery()} WHERE apDist.id = :id AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
@@ -243,7 +244,7 @@ class AccountPayableDistributionRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: Long, company: Company) {
+   fun delete(id: UUID, company: Company) {
       logger.debug("Deleting AccountPayableDistribution with id={}", id)
 
       val rowsAffected = jdbc.update(
@@ -277,7 +278,7 @@ class AccountPayableDistributionRepository @Inject constructor(
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): AccountPayableDistributionEntity {
       return AccountPayableDistributionEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          name = rs.getString("${columnPrefix}name"),
          profitCenter = storeRepository.mapRow(rs, company, "${columnPrefix}profitCenter_"),
          account = accountRepository.mapRow(rs, company, "${columnPrefix}account_"),
@@ -287,7 +288,7 @@ class AccountPayableDistributionRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet, entity: AccountPayableDistributionEntity, columnPrefix: String = EMPTY): AccountPayableDistributionEntity {
       return AccountPayableDistributionEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          name = rs.getString("${columnPrefix}name"),
          profitCenter = entity.profitCenter,
          account = entity.account,

@@ -4,12 +4,13 @@ import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.employee.infrastructure.SimpleEmployeeRepository
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.localization.MustMatchPathVariable
 import com.cynergisuite.middleware.localization.NotFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,20 +30,19 @@ class DivisionValidator @Inject constructor(
          divisionalManager ?: errors.add(ValidationError("dto.divisionalManager.id", NotFound(divisionDTO.divisionalManager?.id!!)))
       }
 
-      return DivisionEntity(divisionDTO, company, divisionalManager)
+      return DivisionEntity(dto = divisionDTO, company = company, divisionalManager = divisionalManager)
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: Long, divisionDTO: DivisionDTO, company: Company): DivisionEntity {
+   fun validateUpdate(id: UUID, divisionDTO: DivisionDTO, company: Company): DivisionEntity {
       logger.trace("Validating Update Division {}", divisionDTO)
       val divisionalManager = simpleEmployeeRepository.findOne(divisionDTO.divisionalManager?.id!!, company)
+      val existingDivision = divisionRepository.findOne(id, company) ?: throw NotFoundException(id)
 
       doValidation { errors ->
-         if (id != divisionDTO.myId()) errors.add(ValidationError("dto.id", MustMatchPathVariable("Id")))
-         divisionRepository.findOne(id, company) ?: errors.add(ValidationError("dto.id", NotFound(id)))
          divisionalManager ?: errors.add(ValidationError("dto.divisionalManager.id", NotFound(divisionDTO.divisionalManager?.id!!)))
       }
 
-      return DivisionEntity(divisionDTO, company, divisionalManager)
+      return DivisionEntity(existingDivision.id, divisionDTO, company, divisionalManager)
    }
 }

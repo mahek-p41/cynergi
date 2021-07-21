@@ -3,9 +3,10 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import java.time.LocalDate
+import java.util.UUID
 
 data class GeneralLedgerRecurringEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val source: GeneralLedgerSourceCodeEntity,
    val type: GeneralLedgerRecurringType,
    val reverseIndicator: Boolean,
@@ -17,12 +18,13 @@ data class GeneralLedgerRecurringEntity(
 ) : Identifiable {
 
    constructor(
+      id: UUID?,
       dto: GeneralLedgerRecurringDTO,
       source: GeneralLedgerSourceCodeEntity,
       type: GeneralLedgerRecurringType
    ) :
       this(
-         id = dto.id,
+         id = id,
          source = source,
          type = type,
          reverseIndicator = dto.reverseIndicator!!,
@@ -32,5 +34,5 @@ data class GeneralLedgerRecurringEntity(
          lastTransferDate = dto.lastTransferDate
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

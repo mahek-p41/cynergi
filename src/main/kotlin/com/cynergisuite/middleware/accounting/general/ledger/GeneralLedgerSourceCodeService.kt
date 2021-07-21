@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.company.Company
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,7 +14,7 @@ class GeneralLedgerSourceCodeService @Inject constructor(
    private val generalLedgerSourceCodeValidator: GeneralLedgerSourceCodeValidator
 ) {
 
-   fun fetchById(id: Long, company: Company): GeneralLedgerSourceCodeDTO? =
+   fun fetchById(id: UUID, company: Company): GeneralLedgerSourceCodeDTO? =
       generalLedgerSourceCodeRepository.findOne(id, company)?.let { GeneralLedgerSourceCodeDTO(entity = it) }
 
    fun fetchAll(company: Company, pageRequest: PageRequest): Page<GeneralLedgerSourceCodeDTO> {
@@ -32,7 +33,7 @@ class GeneralLedgerSourceCodeService @Inject constructor(
       )
    }
 
-   fun update(id: Long, dto: GeneralLedgerSourceCodeDTO, company: Company): GeneralLedgerSourceCodeDTO {
+   fun update(id: UUID, dto: GeneralLedgerSourceCodeDTO, company: Company): GeneralLedgerSourceCodeDTO {
       val toUpdate = generalLedgerSourceCodeValidator.validateUpdate(id, dto, company)
 
       return GeneralLedgerSourceCodeDTO(
@@ -40,7 +41,7 @@ class GeneralLedgerSourceCodeService @Inject constructor(
       )
    }
 
-   fun delete(id: Long, company: Company) {
+   fun delete(id: UUID, company: Company) {
       generalLedgerSourceCodeRepository.delete(id, company)
    }
 }

@@ -1,6 +1,5 @@
 package com.cynergisuite.domain.infrastructure
 
-import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import org.springframework.jdbc.core.ResultSetExtractor
 import java.sql.ResultSet

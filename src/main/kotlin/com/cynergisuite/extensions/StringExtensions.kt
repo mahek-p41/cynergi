@@ -2,6 +2,7 @@ package com.cynergisuite.extensions
 
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.math.NumberUtils
+import java.util.UUID
 
 fun String?.trimToNull(): String? =
    StringUtils.trimToNull(this)
@@ -26,3 +27,6 @@ fun String.isAllSameCase(): Boolean =
 
 fun String?.truncate(maxWidth: Int): String? =
    StringUtils.truncate(this, maxWidth)
+
+fun String?.toUuid(): UUID? =
+   this?.let { UUID.fromString(this) }

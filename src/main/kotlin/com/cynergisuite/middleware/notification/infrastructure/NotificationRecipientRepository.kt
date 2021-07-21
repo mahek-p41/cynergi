@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.notification.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
@@ -121,6 +121,6 @@ private class NotificationRecipientRowMapper(
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          description = rs.getString("${columnPrefix}description"),
          recipient = rs.getString("${columnPrefix}recipient"),
-         notification = SimpleIdentifiableEntity(id = rs.getLong("${columnPrefix}notification_id"))
+         notification = SimpleLegacyIdentifiableEntity(id = rs.getLong("${columnPrefix}notification_id"))
       )
 }

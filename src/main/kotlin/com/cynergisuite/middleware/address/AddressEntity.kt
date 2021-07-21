@@ -1,9 +1,10 @@
 package com.cynergisuite.middleware.address
 
 import com.cynergisuite.domain.Identifiable
+import java.util.UUID
 
 data class AddressEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val name: String,
    val address1: String,
    val address2: String?,
@@ -35,5 +36,5 @@ data class AddressEntity(
          fax = address.fax
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

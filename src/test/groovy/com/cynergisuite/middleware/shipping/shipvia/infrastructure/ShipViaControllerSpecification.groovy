@@ -34,15 +34,18 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "fetch one shipvia by id not found" () {
+      given:
+      final nonExistentId = UUID.randomUUID()
+
       when:
-      get("$path/0")
+      get("$path/$nonExistentId")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.size()== 1
-      response.message == "0 was unable to be found"
+      response.message == "$nonExistentId was unable to be found"
    }
 
    void "fetch all" () {
@@ -148,10 +151,8 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
       then:
       response.id != null
-      response.id > 0
       response.description == shipVia.description
-      response.number != null
-      response.number == response.id
+      response.number > 0
    }
 
    void "post null values to shipVia" () {
@@ -174,16 +175,15 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "put valid shipVia" () {
       given:
-      final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with { new ShipViaDTO(it.id, "test description", null) }
+      final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with { new ShipViaDTO(it.id, "test description", it.number) }
 
       when:
       def response = put("$path/", shipVia)
 
       then:
       response.id != null
-      response.id > 0
       response.description == "test description"
-      response.number == shipVia.id
+      response.number == shipVia.number
    }
 
    void "put invalid shipVia" () {

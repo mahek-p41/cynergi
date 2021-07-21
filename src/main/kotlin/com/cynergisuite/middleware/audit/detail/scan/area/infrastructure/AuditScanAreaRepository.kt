@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.audit.detail.scan.area.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaEntity
@@ -15,9 +16,9 @@ import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -46,7 +47,7 @@ class AuditScanAreaRepository @Inject constructor(
       """
    }
 
-   fun exists(id: Long): Boolean {
+   fun exists(id: UUID): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS (SELECT id FROM audit_scan_area WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.info("Checking if Scan Area: {} exists resulted in {}", id, exists)
@@ -74,12 +75,11 @@ class AuditScanAreaRepository @Inject constructor(
       return exists
    }
 
-   fun findOne(id: Long, company: Company): AuditScanAreaEntity? =
+   fun findOne(id: UUID, company: Company): AuditScanAreaEntity? =
       jdbc.findFirstOrNull(
          "${selectBaseQuery()} WHERE area.id = :id",
-         mapOf("id" to id),
-         RowMapper { rs, _ -> mapRow(rs, company) }
-      )
+         mapOf("id" to id)
+      ) { rs, _ -> mapRow(rs, company) }
 
    fun findAll(user: User): List<AuditScanAreaEntity> {
       val elements = mutableListOf<AuditScanAreaEntity>()
@@ -144,9 +144,8 @@ class AuditScanAreaRepository @Inject constructor(
             "name" to entity.name,
             "store_number" to entity.store!!.number,
             "company_id" to entity.company.myId()
-         ),
-         RowMapper { rs, _ -> mapRow(rs, entity.company, entity.store) }
-      )
+         )
+      ) { rs, _ -> mapRow(rs, entity.company, entity.store) }
    }
 
    @Transactional
@@ -169,16 +168,15 @@ class AuditScanAreaRepository @Inject constructor(
             "name" to entity.name,
             "store_number" to entity.store!!.number,
             "comp_id" to entity.company.myId()
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity.company, entity.store)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity.company, entity.store)
+      }
    }
 
    fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY, storePrefix: String = "store_"): AuditScanAreaEntity =
       AuditScanAreaEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          name = rs.getString("${columnPrefix}name"),
          store = storeRepository.mapRowOrNull(rs, company, storePrefix) as? StoreEntity,
          company = company as CompanyEntity
@@ -186,7 +184,7 @@ class AuditScanAreaRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet, company: Company, store: StoreEntity, columnPrefix: String? = EMPTY): AuditScanAreaEntity =
       AuditScanAreaEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          name = rs.getString("${columnPrefix}name"),
          store = store,
          company = company as CompanyEntity

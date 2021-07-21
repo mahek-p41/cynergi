@@ -52,7 +52,7 @@ class UserAuthenticationProvider @Inject constructor(
                   credentialsAssociatedWithAdmin(employee, fallbackStore)
                } else if (chosenStore == null) {
                   if (storeNumber != null) {
-                     logger.info("Employee {} did not provide matching credentials or invalid chosen store", authenticationRequest?.identity)
+                     logger.warn("Employee {} did not provide matching credentials or invalid chosen store", authenticationRequest?.identity)
 
                      credentialsProvidedDidNotMatch()
                   } else {
@@ -76,7 +76,7 @@ class UserAuthenticationProvider @Inject constructor(
             }
             .defaultIfEmpty(AuthenticationFailed(CREDENTIALS_DO_NOT_MATCH))
       } else {
-         logger.debug("Employee {} was unable to be authenticated", userNumber)
+         logger.warn("Employee {} was unable to be authenticated", userNumber)
 
          just(AuthenticationFailed(CREDENTIALS_DO_NOT_MATCH))
       }

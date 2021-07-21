@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.purchase.order.control.infrastructure
 
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusType
@@ -21,9 +22,9 @@ import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -50,7 +51,6 @@ class PurchaseOrderControlRepository @Inject constructor(
          )
          SELECT
             purchaseOrderControl.id                                              AS purchaseOrderControl_id,
-            purchaseOrderControl.uu_row_id                                       AS purchaseOrderControl_uu_row_id,
             purchaseOrderControl.time_created                                    AS purchaseOrderControl_time_created,
             purchaseOrderControl.time_updated                                    AS purchaseOrderControl_time_updated,
             purchaseOrderControl.company_id                                      AS purchaseOrderControl_company_id,
@@ -68,7 +68,6 @@ class PurchaseOrderControlRepository @Inject constructor(
             defaultAPStatusType.description                                      AS defaultAPStatusType_description,
             defaultAPStatusType.localization_code                                AS defaultAPStatusType_localization_code,
             defVen.v_id                                                          AS defVen_id,
-            defVen.v_uu_row_id                                                   AS defVen_uu_row_id,
             defVen.v_time_created                                                AS defVen_time_created,
             defVen.v_time_updated                                                AS defVen_time_updated,
             defVen.v_company_id                                                  AS defVen_company_id,
@@ -78,11 +77,11 @@ class PurchaseOrderControlRepository @Inject constructor(
             defVen.v_account_number                                              AS defVen_account_number,
             defVen.v_pay_to_id                                                   AS defVen_pay_to_id,
             defVen.v_freight_on_board_type_id                                    AS defVen_freight_on_board_type_id,
-            defVen.v_payment_terms_id                                            AS defVen_payment_terms_id,
+            defVen.v_vendor_payment_term_id                                            AS defVen_vendor_payment_term_id,
             defVen.v_normal_days                                                 AS defVen_normal_days,
             defVen.v_return_policy                                               AS defVen_return_policy,
             defVen.v_ship_via_id                                                 AS defVen_ship_via_id,
-            defVen.v_group_id                                                    AS defVen_group_id,
+            defVen.v_vendor_group_id                                             AS defVen_group_id,
             defVen.v_minimum_quantity                                            AS defVen_minimum_quantity,
             defVen.v_minimum_amount                                              AS defVen_minimum_amount,
             defVen.v_free_ship_quantity                                          AS defVen_free_ship_quantity,
@@ -108,7 +107,6 @@ class PurchaseOrderControlRepository @Inject constructor(
             defVen.v_note                                                        AS defVen_note,
             defVen.v_phone_number                                                AS defVen_phone_number,
             defVen.v_comp_id                                                     AS defVen_comp_id,
-            defVen.v_comp_uu_row_id                                              AS defVen_comp_uu_row_id,
             defVen.v_comp_time_created                                           AS defVen_comp_time_created,
             defVen.v_comp_time_updated                                           AS defVen_comp_time_updated,
             defVen.v_comp_name                                                   AS defVen_comp_name,
@@ -139,7 +137,6 @@ class PurchaseOrderControlRepository @Inject constructor(
             defVen.v_method_description                                          AS defVen_method_description,
             defVen.v_method_localization_code                                    AS defVen_method_localization_code,
             defVen.v_address_id                                                  AS defVen_address_id,
-            defVen.v_address_uu_row_id                                           AS defVen_address_uu_row_id,
             defVen.v_address_time_created                                        AS defVen_address_time_created,
             defVen.v_address_time_updated                                        AS defVen_address_time_updated,
             defVen.v_address_number                                              AS defVen_address_number,
@@ -156,7 +153,6 @@ class PurchaseOrderControlRepository @Inject constructor(
             defVen.v_address_phone                                               AS defVen_address_phone,
             defVen.v_address_fax                                                 AS defVen_address_fax,
             defVen.v_vpt_id                                                      AS defVen_vpt_id,
-            defVen.v_vpt_uu_row_id                                               AS defVen_vpt_uu_row_id,
             defVen.v_vpt_time_created                                            AS defVen_vpt_time_created,
             defVen.v_vpt_time_updated                                            AS defVen_vpt_time_updated,
             defVen.v_vpt_company_id                                              AS defVen_vpt_company_id,
@@ -167,13 +163,11 @@ class PurchaseOrderControlRepository @Inject constructor(
             defVen.v_vpt_discount_days                                           AS defVen_vpt_discount_days,
             defVen.v_vpt_discount_percent                                        AS defVen_vpt_discount_percent,
             defVen.v_shipVia_id                                                  AS defVen_shipVia_id,
-            defVen.v_shipVia_uu_row_id                                           AS defVen_shipVia_uu_row_id,
             defVen.v_shipVia_time_created                                        AS defVen_shipVia_time_created,
             defVen.v_shipVia_time_updated                                        AS defVen_shipVia_time_updated,
             defVen.v_shipVia_description                                         AS defVen_shipVia_description,
             defVen.v_shipVia_number                                              AS defVen_shipVia_number,
             defVen.v_vgrp_id                                                     AS defVen_vgrp_id,
-            defVen.v_vgrp_uu_row_id                                              AS defVen_vgrp_uu_row_id,
             defVen.v_vgrp_time_created                                           AS defVen_vgrp_time_created,
             defVen.v_vgrp_time_updated                                           AS defVen_vgrp_time_updated,
             defVen.v_vgrp_company_id                                             AS defVen_vgrp_company_id,
@@ -205,7 +199,6 @@ class PurchaseOrderControlRepository @Inject constructor(
             defApp.dept_code                                                     AS defApp_dept_code,
             defApp.dept_description                                              AS defApp_dept_description,
             defApp.comp_id                                                       AS defApp_comp_id,
-            defApp.comp_uu_row_id                                                AS defApp_comp_uu_row_id,
             defApp.comp_time_created                                             AS defApp_comp_time_created,
             defApp.comp_time_updated                                             AS defApp_comp_time_updated,
             defApp.comp_name                                                     AS defApp_comp_name,
@@ -249,25 +242,24 @@ class PurchaseOrderControlRepository @Inject constructor(
 
       val found = jdbc.findFirstOrNull(
          query,
-         params,
-         RowMapper { rs, _ ->
-            val defaultAccountPayableStatusType = defaultAccountPayableStatusTypeRepository.mapRow(rs, "defaultAPStatusType_")
-            val defaultVendor = vendorRepository.mapRowOrNull(rs, company, "defVen_")
-            val updatePurchaseOrderCostType = updatePurchaseOrderCostTypeRepository.mapRow(rs, "updatePOCostType_")
-            val defaultPurchaseOrderType = defaultPurchaseOrderTypeRepository.mapRow(rs, "defaultPOType_")
-            val defaultApprover = employeeRepository.mapRowOrNull(rs, "defApp_", "defApp_comp_", "defApp_comp_address_", "defApp_dept_", "defApp_store_")
-            val approvalRequiredFlagType = approvalRequiredFlagTypeRepository.mapRow(rs, "appReqFlagType_")
+         params
+      ) { rs, _ ->
+         val defaultAccountPayableStatusType = defaultAccountPayableStatusTypeRepository.mapRow(rs, "defaultAPStatusType_")
+         val defaultVendor = vendorRepository.mapRowOrNull(rs, company, "defVen_")
+         val updatePurchaseOrderCostType = updatePurchaseOrderCostTypeRepository.mapRow(rs, "updatePOCostType_")
+         val defaultPurchaseOrderType = defaultPurchaseOrderTypeRepository.mapRow(rs, "defaultPOType_")
+         val defaultApprover = employeeRepository.mapRowOrNull(rs, "defApp_", "defApp_comp_", "defApp_comp_address_", "defApp_dept_", "defApp_store_")
+         val approvalRequiredFlagType = approvalRequiredFlagTypeRepository.mapRow(rs, "appReqFlagType_")
 
-            mapRow(rs, defaultAccountPayableStatusType, defaultVendor, updatePurchaseOrderCostType, defaultPurchaseOrderType, defaultApprover, approvalRequiredFlagType, "purchaseOrderControl_")
-         }
-      )
+         mapRow(rs, defaultAccountPayableStatusType, defaultVendor, updatePurchaseOrderCostType, defaultPurchaseOrderType, defaultApprover, approvalRequiredFlagType, "purchaseOrderControl_")
+      }
 
       logger.trace("Searching for PurchaseOrderControl resulted in {}", found)
 
       return found
    }
 
-   fun exists(id: Long): Boolean {
+   fun exists(id: UUID): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS (SELECT id FROM purchase_order_control WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if PurchaseOrderControl: {} exists resulted in {}", id, exists)
@@ -345,19 +337,18 @@ class PurchaseOrderControlRepository @Inject constructor(
             "validate_inventory" to entity.validateInventory,
             "default_approver_id_sfk" to entity.defaultApprover?.number,
             "approval_required_flag_type_id" to entity.approvalRequiredFlagType.id
-         ),
-         RowMapper { rs, _ ->
-            mapRow(
-               rs,
-               entity.defaultAccountPayableStatusType,
-               entity.defaultVendor,
-               entity.updatePurchaseOrderCost,
-               entity.defaultPurchaseOrderType,
-               entity.defaultApprover,
-               entity.approvalRequiredFlagType
-            )
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(
+            rs,
+            entity.defaultAccountPayableStatusType,
+            entity.defaultVendor,
+            entity.updatePurchaseOrderCost,
+            entity.defaultPurchaseOrderType,
+            entity.defaultApprover,
+            entity.approvalRequiredFlagType
+         )
+      }
    }
 
    @Transactional
@@ -406,19 +397,18 @@ class PurchaseOrderControlRepository @Inject constructor(
             "validate_inventory" to entity.validateInventory,
             "default_approver_id_sfk" to entity.defaultApprover?.number,
             "approval_required_flag_type_id" to entity.approvalRequiredFlagType.id
-         ),
-         RowMapper { rs, _ ->
-            mapRow(
-               rs,
-               entity.defaultAccountPayableStatusType,
-               entity.defaultVendor,
-               entity.updatePurchaseOrderCost,
-               entity.defaultPurchaseOrderType,
-               entity.defaultApprover,
-               entity.approvalRequiredFlagType
-            )
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(
+            rs,
+            entity.defaultAccountPayableStatusType,
+            entity.defaultVendor,
+            entity.updatePurchaseOrderCost,
+            entity.defaultPurchaseOrderType,
+            entity.defaultApprover,
+            entity.approvalRequiredFlagType
+         )
+      }
    }
 
    private fun mapRow(
@@ -432,7 +422,7 @@ class PurchaseOrderControlRepository @Inject constructor(
       columnPrefix: String = EMPTY
    ): PurchaseOrderControlEntity {
       return PurchaseOrderControlEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          dropFiveCharactersOnModelNumber = rs.getBoolean("${columnPrefix}drop_five_characters_on_model_number"),
