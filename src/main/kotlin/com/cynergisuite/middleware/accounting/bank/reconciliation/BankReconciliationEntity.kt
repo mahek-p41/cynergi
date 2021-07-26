@@ -15,7 +15,7 @@ data class BankReconciliationEntity(
    var clearedDate: LocalDate?,
    var amount: BigDecimal,
    var description: String,
-   var document: Int?
+   var document: String?
 ) : Identifiable {
 
    constructor(dto: BankReconciliationDTO, bank: BankEntity, type: BankReconciliationType) :

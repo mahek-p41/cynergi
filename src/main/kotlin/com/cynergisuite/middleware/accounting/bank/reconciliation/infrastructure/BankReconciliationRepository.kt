@@ -216,7 +216,7 @@ class BankReconciliationRepository @Inject constructor(
          clearedDate = rs.getLocalDateOrNull("${columnPrefix}cleared_date"),
          amount = rs.getBigDecimal("${columnPrefix}amount"),
          description = rs.getString("${columnPrefix}description"),
-         document = rs.getIntOrNull("${columnPrefix}document")
+         document = rs.getString("${columnPrefix}document")
       )
    }
 
@@ -229,7 +229,7 @@ class BankReconciliationRepository @Inject constructor(
          clearedDate = rs.getLocalDateOrNull("${columnPrefix}cleared_date"),
          amount = rs.getBigDecimal("${columnPrefix}amount"),
          description = rs.getString("${columnPrefix}description"),
-         document = rs.getIntOrNull("${columnPrefix}document")
+         document = rs.getString("${columnPrefix}document")
       )
    }
 }
