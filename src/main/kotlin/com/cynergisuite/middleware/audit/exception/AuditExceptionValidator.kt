@@ -19,7 +19,9 @@ import com.cynergisuite.middleware.localization.AuditExceptionMustHaveInventoryO
 import com.cynergisuite.middleware.localization.AuditHasBeenApprovedNoNewNotesAllowed
 import com.cynergisuite.middleware.localization.AuditMustBeInProgressDiscrepancy
 import com.cynergisuite.middleware.localization.AuditUpdateRequiresApprovedOrNote
+import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
+import com.fasterxml.jackson.databind.ObjectMapper
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -30,12 +32,13 @@ class AuditExceptionValidator @Inject constructor (
    private val auditExceptionRepository: AuditExceptionRepository,
    private val auditScanAreaRepository: AuditScanAreaRepository,
    private val employeeRepository: EmployeeRepository,
-   private val inventoryRepository: InventoryRepository
+   private val inventoryRepository: InventoryRepository,
+   private val objectMapper: ObjectMapper
 ) : ValidatorBase() {
 
    @Throws(ValidationException::class, NotFoundException::class)
    fun validateCreate(auditId: UUID, auditException: AuditExceptionCreateDTO, enteredBy: User): AuditExceptionEntity {
-      doValidation { errors ->
+      return doValidationWithResult { errors ->
          doSharedValidation(auditId)
 
          val inventoryId = auditException.inventory?.id
@@ -60,20 +63,30 @@ class AuditExceptionValidator @Inject constructor (
             )
          }
 
-         if (auditException.scanArea?.id != null && scanArea == null) errors.add(ValidationError("audit.scanArea.id", NotFound(auditException.scanArea?.id!!)))
+         if (auditException.scanArea?.id != null && scanArea == null) {
+            errors.add(ValidationError("audit.scanArea.id", NotFound(auditException.scanArea?.id!!)))
+         }
 
          if (employeeRepository.doesNotExist(enteredBy)) {
             errors.add(
                ValidationError("scannedBy", NotFound(enteredBy))
             )
          }
+
+         if (errors.isEmpty()) {
+            val toReturn = createAuditException(auditId, enteredBy, scanArea, auditException.exceptionCode!!, inventoryId, barcode)
+
+            if (auditExceptionRepository.existsForAudit(toReturn)) {
+               errors.add(ValidationError(objectMapper.writeValueAsString(auditException), Duplicate(null)))
+
+               null
+            } else {
+               toReturn
+            }
+         } else {
+            null
+         }
       }
-
-      val scanArea = auditException.scanArea?.id?.let { auditScanAreaRepository.findOne(it, enteredBy.myCompany()) }
-      val inventoryId = auditException.inventory?.id
-      val barcode = auditException.barcode
-
-      return createAuditException(auditId, enteredBy, scanArea, auditException.exceptionCode!!, inventoryId, barcode)
    }
 
    private fun createAuditException(auditId: UUID, enteredBy: User, scanArea: AuditScanAreaEntity?, exceptionCode: String, inventoryId: Long?, barcode: String?): AuditExceptionEntity {

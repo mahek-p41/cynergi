@@ -22,11 +22,16 @@ import org.apache.commons.lang3.RandomUtils
 
 import javax.inject.Inject
 
-import static io.micronaut.http.HttpStatus.*
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NOT_MODIFIED
+import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static java.util.Locale.US
 
 @MicronautTest(transactional = false)
 class AuditDetailControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/audit/detail"
+   private static final Locale locale = US
 
    @Inject AuditDetailFactoryService auditDetailFactoryService
    @Inject AuditFactoryService auditFactoryService
@@ -68,8 +73,9 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
       final storeWarehouse = auditScanAreaFactoryService.warehouse(store, company)
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 3, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
 
-      final twentyAuditDetails = auditDetailFactoryService.stream(20, audit, storeWarehouse, employee).sorted { o1, o2 -> o1.id <=> o2.id }.map { new AuditDetailValueObject(it, new AuditScanAreaDTO(storeWarehouse)) }.toList()
+      final twentyAuditDetails = auditDetailFactoryService.stream(20, audit, storeWarehouse, employee, inventoryListing).sorted { o1, o2 -> o1.id <=> o2.id }.map { new AuditDetailValueObject(it, new AuditScanAreaDTO(storeWarehouse)) }.toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       final pageFive = new StandardPageRequest(5, 5, "id", "ASC")
@@ -120,9 +126,10 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final audit = audits[0]
       final secondAudit = audits[1]
       final storeShowroom = auditScanAreaFactoryService.showroom(store, company)
-      final twelveAuditDetails = auditDetailFactoryService.stream(12, audit, storeShowroom, employee).sorted { o1, o2 -> o1.id <=> o2.id }.map { new AuditDetailValueObject(it, new AuditScanAreaDTO(storeShowroom)) }.toList()
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 3, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final twelveAuditDetails = auditDetailFactoryService.stream(12, audit, storeShowroom, employee, inventoryListing[0..24]).sorted { o1, o2 -> o1.id <=> o2.id }.map { new AuditDetailValueObject(it, new AuditScanAreaDTO(storeShowroom)) }.toList()
       final firstTenDetails = twelveAuditDetails[0..9]
-      auditDetailFactoryService.stream(12, secondAudit, storeShowroom, employee).sorted { o1, o2 -> o1.id <=> o2.id }.map { new AuditDetailValueObject(it, new AuditScanAreaDTO(storeShowroom)) }.toList()
+      auditDetailFactoryService.generate(12, secondAudit, employee, storeShowroom, inventoryListing[25..49])
 
       when:
       def result = get("/audit/${audit.id}/detail")
@@ -146,9 +153,10 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final showroom = auditScanAreaFactoryService.showroom(store, company)
       final storeroom = auditScanAreaFactoryService.storeroom(store, company)
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created()] as Set)
-      final auditDetailsWarehouse = auditDetailFactoryService.stream(11, audit, warehouse, employee).map { new AuditDetailValueObject(it, new AuditScanAreaDTO(warehouse)) }.toList()
-      final auditDetailsShowroom = auditDetailFactoryService.stream(5, audit, showroom, employee).map { new AuditDetailValueObject(it, new AuditScanAreaDTO(showroom)) }.toList()
-      final auditDetailsStoreroom = auditDetailFactoryService.stream(5, audit, storeroom, employee).map { new AuditDetailValueObject(it, new AuditScanAreaDTO(storeroom)) }.toList()
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 1, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final auditDetailsWarehouse = auditDetailFactoryService.stream(11, audit, warehouse, employee, inventoryListing[0..19]).map { new AuditDetailValueObject(it, new AuditScanAreaDTO(warehouse)) }.toList()
+      final auditDetailsShowroom = auditDetailFactoryService.stream(5, audit, showroom, employee, inventoryListing[20..30]).map { new AuditDetailValueObject(it, new AuditScanAreaDTO(showroom)) }.toList()
+      final auditDetailsStoreroom = auditDetailFactoryService.stream(5, audit, storeroom, employee, inventoryListing[30..40]).map { new AuditDetailValueObject(it, new AuditScanAreaDTO(storeroom)) }.toList()
 
       when:
       def result = get("/audit/${audit.id}/detail${pageOne}")
@@ -172,8 +180,10 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       final response = exception.response.bodyAsJson()
-      response.size() == 1
-      response.message == "$nonExistentId was unable to be found"
+      with(response) {
+         message == "$nonExistentId was unable to be found"
+         code == "system.not.found"
+      }
    }
 
    void "create audit detail" () {
@@ -282,8 +292,8 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       final def response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDTO(it.message, it.path) } == [
-         new ErrorDTO("Audit ${audit.id} must be In Progress to modify its details", "audit.status")
+      response.collect { new ErrorDTO(it.message, it.code, it.path) } == [
+         new ErrorDTO("Audit ${audit.id} must be In Progress to modify its details", "cynergi.audit.must.be.in.progress.details", "audit.status")
       ]
    }
 

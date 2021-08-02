@@ -50,8 +50,10 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.status == NOT_FOUND
       final response = exception.response.bodyAsJson()
-      response.size() == 1
-      response.message == "110 was unable to be found"
+      with(response) {
+         message == "110 was unable to be found"
+         code == "system.not.found"
+      }
    }
 
    void "fetch all departments" () {

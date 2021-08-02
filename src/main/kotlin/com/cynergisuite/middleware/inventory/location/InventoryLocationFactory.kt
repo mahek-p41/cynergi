@@ -36,4 +36,7 @@ object InventoryLocationFactory {
 
    @JvmStatic
    fun chargoff(): InventoryLocationType = locations.first { it.value == "CHARGEOFF" }
+
+   @JvmStatic
+   fun findByValue(value: String) = locations.first { it.value == value }
 }

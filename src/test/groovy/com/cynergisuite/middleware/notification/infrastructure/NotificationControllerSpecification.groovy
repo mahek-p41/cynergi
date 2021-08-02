@@ -301,13 +301,13 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       final json = exception.response.bodyAsJson()
       json.size() == 6
-      json.collect { new ErrorDTO(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
-         new ErrorDTO("Is required", "notification.company"),
-         new ErrorDTO("Is required", "notification.expirationDate"),
-         new ErrorDTO("Is required", "notification.message"),
-         new ErrorDTO("Is required", "notification.notificationType"),
-         new ErrorDTO("Is required", "notification.sendingEmployee"),
-         new ErrorDTO("Is required", "notification.startDate")
+      json.collect { new ErrorDTO(it.message, it.code, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "notification.company"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "notification.expirationDate"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "notification.message"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "notification.notificationType"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "notification.sendingEmployee"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "notification.startDate")
       ].sort { o1, o2 -> o1 <=> o2 }
    }
 
@@ -405,13 +405,13 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final errors = exception.response.bodyAsJson()
       errors.size() == 6
 
-      errors.collect { new ErrorDTO(it.message, it.path) }.sort {o1, o2 -> o1 <=> o2 } == [
-         new ErrorDTO("Is required", "notification.company"),
-         new ErrorDTO("Is required", "notification.expirationDate"),
-         new ErrorDTO("Is required", "notification.message"),
-         new ErrorDTO("Is required", "notification.notificationType"),
-         new ErrorDTO("Is required", "notification.sendingEmployee"),
-         new ErrorDTO("Is required", "notification.startDate"),
+      errors.collect { new ErrorDTO(it.message,it.code, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "notification.company"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "notification.expirationDate"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "notification.message"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "notification.notificationType"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "notification.sendingEmployee"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "notification.startDate"),
       ].sort { o1, o2 -> o1 <=> o2 }
    }
 
@@ -426,7 +426,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
       then:
       final exception = thrown(HttpClientResponseException)
-      final errors = exception.response.getBody(ErrorDTO[]).get().sort {o1, o2 -> (o1.message <=> o2.message) }
+      final errors = exception.response.getBody(ErrorDTO[]).get().sort { o1, o2 -> (o1.message <=> o2.message) }
       errors.size() == 1
       errors[0].message == "Failed to convert argument [id] for value [null]"
       errors[0].path == "id"

@@ -31,8 +31,7 @@ import io.micronaut.http.HttpResponse.badRequest
 import io.micronaut.http.HttpResponse.noContent
 import io.micronaut.http.HttpResponse.notFound
 import io.micronaut.http.HttpResponse.serverError
-import io.micronaut.http.HttpResponseFactory
-import io.micronaut.http.HttpStatus
+import io.micronaut.http.HttpStatus.CONFLICT
 import io.micronaut.http.HttpStatus.FORBIDDEN
 import io.micronaut.http.HttpStatus.NOT_IMPLEMENTED
 import io.micronaut.http.HttpStatus.UNAUTHORIZED
@@ -63,10 +62,12 @@ class ErrorHandlerController @Inject constructor(
       logger.warn("Unable to parse request body", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
+      val localizationCode = UnableToParseJson(exception.localizedMessage)
 
       return badRequest(
          ErrorDTO(
-            message = localizationService.localize(localizationCode = UnableToParseJson(exception.localizedMessage), locale = locale)
+            message = localizationService.localize(localizationCode = localizationCode, locale = locale),
+            code = localizationCode.getCode()
          )
       )
    }
@@ -79,7 +80,7 @@ class ErrorHandlerController @Inject constructor(
 
       return HttpResponse
          .status<ErrorDTO>(NOT_IMPLEMENTED)
-         .body(ErrorDTO(localizationService.localize(localizationCode = NotImplemented(httpRequest.path), locale = locale)))
+         .body(localizationService.localizeError(NotImplemented(httpRequest.path), locale))
    }
 
    @Error(global = true, exception = ConversionErrorException::class)
@@ -98,8 +99,9 @@ class ErrorHandlerController @Inject constructor(
 
          conversionErrorCause is JsonMappingException -> {
             badRequest(
-               ErrorDTO(
-                  message = localizationService.localize(ConversionError(argument.name, conversionError.originalValue.orElse(null)), locale),
+               localizationService.localizeError(
+                  localizationCode = ConversionError(argument.name, conversionError.originalValue.orElse(null)),
+                  locale = locale,
                   path = conversionErrorCause.path.joinToString(".") { it.fieldName }
                )
             )
@@ -120,17 +122,15 @@ class ErrorHandlerController @Inject constructor(
       return badRequest(
          ErrorDTO(
             message = localizationService.localize(messageKey = exception.messageTemplate, locale = locale, arguments = emptyArray()),
-            path = exception.path
+            path = exception.path,
+            code = exception.messageTemplate
          )
       )
    }
 
    private fun processBadRequest(argumentName: String, argumentValue: Any?, locale: Locale): HttpResponse<ErrorDTO> {
       return badRequest(
-         ErrorDTO(
-            message = localizationService.localize(ConversionError(argumentName, argumentValue), locale),
-            path = argumentName
-         )
+         localizationService.localizeError(ConversionError(argumentName, argumentValue), locale, argumentName)
       )
    }
 
@@ -141,9 +141,7 @@ class ErrorHandlerController @Inject constructor(
       val locale = httpRequest.findLocaleWithDefault()
 
       return badRequest(
-         ErrorDTO(
-            localizationService.localize(localizationCode = RouteError(exception.argument.name), locale = locale)
-         )
+         localizationService.localizeError(localizationCode = RouteError(exception.argument.name), locale = locale)
       )
    }
 
@@ -161,9 +159,7 @@ class ErrorHandlerController @Inject constructor(
       val locale = httpRequest.findLocaleWithDefault()
 
       return notFound(
-         ErrorDTO(
-            localizationService.localize(localizationCode = NotFound(notFoundException.notFound), locale = locale)
-         )
+         localizationService.localizeError(localizationCode = NotFound(notFoundException.notFound), locale = locale)
       )
    }
 
@@ -175,7 +171,7 @@ class ErrorHandlerController @Inject constructor(
 
       return badRequest(
          validationException.errors.map { validationError: ValidationError ->
-            ErrorDTO(message = localizationService.localize(validationError.localizationCode, locale), path = validationError.path)
+            localizationService.localizeError(validationError.localizationCode, locale, validationError.path)
          }
       )
    }
@@ -187,10 +183,14 @@ class ErrorHandlerController @Inject constructor(
       // Return a brief message to client
       val detail = dataIntegrityViolationException.localizedMessage.substringAfterLast("Detail:").trim()
 
-      return HttpResponseFactory.INSTANCE.status(
-         HttpStatus.CONFLICT,
-         ErrorDTO(message = detail)
-      )
+      return HttpResponse
+         .status<ErrorDTO>(CONFLICT)
+         .body(
+            ErrorDTO(
+               message = detail,
+               code = "system.data.access.exception"
+            )
+         )
    }
 
    @Error(global = true, exception = ConstraintViolationException::class)
@@ -204,7 +204,11 @@ class ErrorHandlerController @Inject constructor(
             val field = buildPropertyPath(rootPath = it.propertyPath)
             val value = if (it.invalidValue != null) it.invalidValue else EMPTY // just use the empty string if invalidValue is null to make the varargs call to localize happy
 
-            ErrorDTO(message = localizationService.localize(it.constraintDescriptor.messageTemplate, locale, arguments = arrayOf(field, value.toString())), path = field)
+            ErrorDTO(
+               message = localizationService.localize(it.constraintDescriptor.messageTemplate, locale, arguments = arrayOf(field, value.toString())),
+               path = field,
+               code = it.messageTemplate.removeSurrounding("{", "}")
+            )
          }
       )
    }
@@ -217,23 +221,17 @@ class ErrorHandlerController @Inject constructor(
       val locale = httpRequest.findLocaleWithDefault()
 
       return if (authenticationException.message.isDigits()) { // most likely store should have been provided
-         val message = localizationService.localize(AccessDeniedStore(authenticationException.message!!), locale)
+         val message = localizationService.localizeError(AccessDeniedStore(authenticationException.message!!), locale)
 
-         HttpResponse
-            .status<ErrorDTO>(UNAUTHORIZED)
-            .body(ErrorDTO(message))
+         HttpResponse.status<ErrorDTO>(UNAUTHORIZED).body(message)
       } else if (!authenticationException.message.isNullOrBlank() && authenticationException.message == "Credentials Do Not Match" && userName != null) {
-         val message = localizationService.localize(AccessDeniedCredentialsDoNotMatch(userName), locale)
+         val message = localizationService.localizeError(AccessDeniedCredentialsDoNotMatch(userName), locale)
 
-         HttpResponse
-            .status<ErrorDTO>(UNAUTHORIZED)
-            .body(ErrorDTO(message))
+         HttpResponse.status<ErrorDTO>(UNAUTHORIZED).body(message)
       } else {
-         val message = localizationService.localize(AccessDenied(), locale)
+         val message = localizationService.localizeError(AccessDenied(), locale)
 
-         HttpResponse
-            .status<ErrorDTO>(FORBIDDEN)
-            .body(ErrorDTO(message))
+         HttpResponse.status<ErrorDTO>(FORBIDDEN).body(message)
       }
    }
 
@@ -244,17 +242,17 @@ class ErrorHandlerController @Inject constructor(
       val locale = httpRequest.findLocaleWithDefault()
 
       return if (authorizationException.isForbidden) {
-         val message = localizationService.localize(AccessDenied(), locale)
+         val message = localizationService.localizeError(AccessDenied(), locale)
 
          HttpResponse
             .status<ErrorDTO>(FORBIDDEN)
-            .body(ErrorDTO(message))
+            .body(message)
       } else {
-         val message = localizationService.localize(NotLoggedIn(), locale)
+         val message = localizationService.localizeError(NotLoggedIn(), locale)
 
          HttpResponse
             .status<ErrorDTO>(UNAUTHORIZED)
-            .body(ErrorDTO(message))
+            .body(message)
       }
    }
 
@@ -266,7 +264,7 @@ class ErrorHandlerController @Inject constructor(
 
       return HttpResponse
          .status<ErrorDTO>(FORBIDDEN)
-         .body(ErrorDTO(localizationService.localize(localizationCode = accessException.error, locale = locale)))
+         .body(localizationService.localizeError(localizationCode = accessException.error, locale = locale))
    }
 
    @Error(global = true, exception = IOException::class)
@@ -287,7 +285,15 @@ class ErrorHandlerController @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return serverError(ErrorDTO(localizationService.localize(localizationCode = InternalError(), locale = locale)))
+      return serverError(
+         ErrorDTO(
+            localizationService.localize(
+               localizationCode = InternalError(),
+               locale = locale
+            ),
+            "system.data.access.exception"
+         )
+      )
    }
 
    @Error(global = true, exception = Throwable::class)
@@ -296,7 +302,7 @@ class ErrorHandlerController @Inject constructor(
 
       val locale = httpRequest.findLocaleWithDefault()
 
-      return serverError(ErrorDTO(localizationService.localize(localizationCode = InternalError(), locale = locale)))
+      return serverError(localizationService.localizeError(localizationCode = InternalError(), locale = locale))
    }
 
    private fun buildPropertyPath(rootPath: Path): String =

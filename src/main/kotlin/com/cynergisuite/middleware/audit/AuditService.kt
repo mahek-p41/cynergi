@@ -394,7 +394,7 @@ class AuditService @Inject constructor(
 
          table.addCell(Phrase(exception.scanArea?.name ?: EMPTY, rowFont))
          table.addCell(Phrase(exception.inventoryModel ?: EMPTY, rowFont))
-         table.addCell(Phrase(exception.barcode, rowFont))
+         table.addCell(Phrase(exception.lookupKey, rowFont))
          table.addCell(Phrase(exception.altId ?: EMPTY, rowFont))
          table.addCell(Phrase(exception.serialNumber ?: EMPTY, rowFont))
          table.addCell(Phrase(exception.scannedBy.displayName(), rowFont))

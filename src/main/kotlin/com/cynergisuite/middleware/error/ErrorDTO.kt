@@ -7,6 +7,7 @@ import org.apache.commons.lang3.builder.CompareToBuilder
 @JsonInclude(NON_NULL)
 data class ErrorDTO(
    var message: String,
+   var code: String,
    var path: String? = null
 ) : Comparable<ErrorDTO> {
    override fun compareTo(other: ErrorDTO): Int =

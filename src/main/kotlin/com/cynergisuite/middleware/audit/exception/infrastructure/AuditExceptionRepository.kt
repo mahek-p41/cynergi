@@ -166,7 +166,7 @@ class AuditExceptionRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
       val query = "${findOneQuery()}\nWHERE auditException.id = :id AND comp.id = :comp_id"
 
-      logger.debug("Searching for AuditExceptions using {} {}", query, params)
+      logger.trace("Searching for AuditExceptions using {} {}", query, params)
 
       val found = jdbc.findFirstOrNull(query, params) { rs ->
          val address = addressRepository.mapAddressOrNull(rs, "address_")
@@ -189,6 +189,39 @@ class AuditExceptionRepository @Inject constructor(
       logger.trace("Searching for AuditException: {} resulted in {}", id, found)
 
       return found
+   }
+
+   /**
+    * This method used for validation does not check against the ID column, so if it is set in the provided entity
+    * it will be ignored.
+    */
+   fun existsForAudit(auditExceptionEntity: AuditExceptionEntity): Boolean {
+      logger.trace("Checking if audit exception exists for {}", auditExceptionEntity)
+
+      return jdbc.queryForObject(
+         """
+         SELECT EXISTS(
+             SELECT id
+             FROM audit_exception
+             WHERE exception_code = :exception_code
+                   AND audit_id = :audit_id
+                   AND lookup_key = :lookup_key
+         )
+         """.trimIndent(),
+         mapOf<String, Any?>(
+            "barcode" to auditExceptionEntity.barcode,
+            "serial_number" to auditExceptionEntity.serialNumber,
+            "inventory_brand" to auditExceptionEntity.inventoryBrand,
+            "inventory_model" to auditExceptionEntity.inventoryModel,
+            "exception_code" to auditExceptionEntity.exceptionCode,
+            "audit_id" to auditExceptionEntity.audit.myId(),
+            "product_code" to auditExceptionEntity.productCode,
+            "alt_id" to auditExceptionEntity.altId,
+            "lookup_key" to auditExceptionEntity.lookupKey,
+            "scan_area_id" to auditExceptionEntity.scanArea?.myId()
+         ),
+         Boolean::class.java
+      )!!
    }
 
    fun isApproved(auditExceptionId: UUID): Boolean {
@@ -324,7 +357,7 @@ class AuditExceptionRepository @Inject constructor(
          ORDER BY auditException_${page.snakeSortBy()}, auditExceptionNote.id ${page.sortDirection()}
       """
 
-      logger.debug("find all audit exceptions {}/{}", sql, params)
+      logger.trace("find all audit exceptions {}/{}", sql, params)
 
       return jdbc.queryPaged(sql, params, page) { rs, elements ->
          val address = addressRepository.mapAddressOrNull(rs, "address_")
@@ -382,7 +415,7 @@ class AuditExceptionRepository @Inject constructor(
 
    @Transactional
    fun insert(entity: AuditExceptionEntity): AuditExceptionEntity {
-      logger.debug("Inserting audit_exception {}", entity)
+      logger.trace("Inserting audit_exception {}", entity)
 
       return jdbc.insertReturning(
          """
@@ -413,7 +446,7 @@ class AuditExceptionRepository @Inject constructor(
 
    @Transactional
    fun approveAllExceptions(audit: AuditEntity, employee: User): Int {
-      logger.debug("Updating audit_exception {}", audit)
+      logger.trace("Updating audit_exception {}", audit)
 
       return jdbc.update(
          """
@@ -432,7 +465,7 @@ class AuditExceptionRepository @Inject constructor(
 
    @Transactional
    fun update(entity: AuditExceptionEntity): AuditExceptionEntity {
-      logger.debug("Updating audit_exception {}", entity)
+      logger.trace("Updating audit_exception {}", entity)
 
       jdbc.updateReturning(
          """

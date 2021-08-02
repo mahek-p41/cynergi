@@ -14,7 +14,7 @@ data class AuditExceptionEntity(
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val scanArea: AuditScanAreaEntity?,
-   val barcode: String,
+   val barcode: String?,
    val productCode: String?,
    val altId: String?,
    val serialNumber: String?,
@@ -24,7 +24,7 @@ data class AuditExceptionEntity(
    val exceptionCode: String,
    val approved: Boolean = false,
    val approvedBy: EmployeeEntity? = null,
-   val lookupKey: String?,
+   val lookupKey: String,
    val notes: MutableList<AuditExceptionNote> = mutableListOf(),
    val audit: Identifiable
 ) : Identifiable {
@@ -44,10 +44,10 @@ data class AuditExceptionEntity(
          audit = SimpleIdentifiableEntity(audit)
       )
 
-   constructor(audit: UUID, barcode: String, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, exceptionCode: String) :
+   constructor(audit: UUID, lookupKey: String, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, exceptionCode: String) :
       this(
          scanArea = scanArea,
-         barcode = barcode,
+         barcode = null,
          productCode = null,
          altId = null,
          serialNumber = null,
@@ -55,7 +55,7 @@ data class AuditExceptionEntity(
          inventoryModel = null,
          scannedBy = scannedBy,
          exceptionCode = exceptionCode,
-         lookupKey = null,
+         lookupKey = lookupKey,
          audit = SimpleIdentifiableEntity(audit)
       )
 

@@ -58,8 +58,10 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response.message == "0 was unable to be found"
+      with(response) {
+         message == "0 was unable to be found"
+         code == "system.not.found"
+      }
    }
 
    void "fetch one store from different dataset than one associated with authenticated user" () {

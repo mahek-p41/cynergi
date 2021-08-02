@@ -2,10 +2,12 @@ package com.cynergisuite.middleware.audit.exception.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateDTO
+import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.AuditExceptionService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionUpdateValueObject
+import com.cynergisuite.middleware.audit.exception.AuditExceptionValidator
 import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
@@ -40,6 +42,7 @@ import javax.validation.Valid
 @Controller("/api/audit")
 class AuditExceptionController @Inject constructor(
    private val auditExceptionService: AuditExceptionService,
+   private val auditExceptionValidator: AuditExceptionValidator,
    private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionController::class.java)
@@ -63,12 +66,11 @@ class AuditExceptionController @Inject constructor(
       logger.info("Fetching AuditException by {}", id)
 
       val user = userService.findUser(authentication)
-      val locale = httpRequest.findLocaleWithDefault()
-      val response = auditExceptionService.fetchById(id, user.myCompany(), locale) ?: throw NotFoundException(id)
+      val response = auditExceptionService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditException by {} resulted in", id, response)
 
-      return response
+      return transformEntity(response)
    }
 
    @Throws(PageOutOfBoundsException::class)
@@ -83,24 +85,21 @@ class AuditExceptionController @Inject constructor(
       ]
    )
    fun fetchAll(
-      @Parameter(name = "auditId", `in` = PATH, description = "The audit for which the listing of exceptions is to be loaded") @QueryValue("auditId")
-      auditId: UUID,
+      @Parameter(name = "auditId", `in` = PATH, description = "The audit for which the listing of exceptions is to be loaded") @QueryValue("auditId") auditId: UUID,
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
-      pageRequest: StandardPageRequest,
-      authentication: Authentication,
-      httpRequest: HttpRequest<*>
+      @Valid pageRequest: StandardPageRequest,
+      authentication: Authentication
    ): Page<AuditExceptionValueObject> {
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
 
       val user = userService.findUser(authentication)
-      val locale = httpRequest.findLocaleWithDefault()
-      val page = auditExceptionService.fetchAll(auditId, user.myCompany(), pageRequest, locale)
+      val page = auditExceptionService.fetchAll(auditId, user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
       }
 
-      return page
+      return page.toPage { transformEntity(it) }
    }
 
    @Post(value = "/{auditId}/exception", processes = [APPLICATION_JSON])
@@ -116,22 +115,20 @@ class AuditExceptionController @Inject constructor(
       ]
    )
    fun create(
-      @Parameter(name = "auditId", `in` = PATH, description = "The audit that is the parent of the exception being created") @QueryValue("auditId")
-      auditId: UUID,
-      @Body @Valid
+      @Parameter(name = "auditId", `in` = PATH, description = "The audit that is the parent of the exception being created") @QueryValue("auditId") auditId: UUID,
+      @Valid @Body
       vo: AuditExceptionCreateDTO,
-      authentication: Authentication,
-      httpRequest: HttpRequest<*>
+      authentication: Authentication
    ): AuditExceptionValueObject {
       logger.info("Requested Create AuditException {}", vo)
 
-      val locale = httpRequest.findLocaleWithDefault()
       val user = userService.findUser(authentication)
-      val response = auditExceptionService.create(auditId, vo, user, locale)
+      val auditException = auditExceptionValidator.validateCreate(auditId, vo, user)
+      val response = auditExceptionService.create(auditException)
 
       logger.debug("Requested Create AuditException {} resulted in {}", vo, response)
 
-      return response
+      return transformEntity(response)
    }
 
    @Put(value = "/{auditId}/exception", processes = [APPLICATION_JSON])
@@ -147,21 +144,23 @@ class AuditExceptionController @Inject constructor(
       ]
    )
    fun update(
-      @Parameter(name = "auditId", `in` = PATH, description = "The audit that is the parent of the exception being updated") @QueryValue("auditId")
-      auditId: UUID,
-      @Body @Valid
+      @Parameter(name = "auditId", `in` = PATH, description = "The audit that is the parent of the exception being updated") @QueryValue("auditId") auditId: UUID,
+      @Valid @Body
       vo: AuditExceptionUpdateValueObject,
-      authentication: Authentication,
-      httpRequest: HttpRequest<*>
+      authentication: Authentication
    ): AuditExceptionValueObject {
       logger.info("Requested Update AuditException {}", vo)
 
-      val locale = httpRequest.findLocaleWithDefault()
       val user = userService.findUser(authentication)
-      val response = auditExceptionService.update(auditId, vo, user, locale)
+      val auditException = auditExceptionValidator.validateUpdate(auditId, vo, user)
+      val response = auditExceptionService.update(auditException)
 
       logger.debug("Requested Update AuditException {} resulted in {}", vo, response)
 
-      return response
+      return transformEntity(response)
+   }
+
+   private fun transformEntity(auditException: AuditExceptionEntity): AuditExceptionValueObject {
+      return AuditExceptionValueObject(auditException, auditException.scanArea?.let { AuditScanAreaDTO(it) })
    }
 }

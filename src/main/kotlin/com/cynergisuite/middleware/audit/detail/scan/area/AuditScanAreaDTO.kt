@@ -18,11 +18,12 @@ data class AuditScanAreaDTO(
    var id: UUID? = null,
 
    @field:NotNull
+   @field:Size(min = 3, max = 50)
    @field:Schema(description = "Scan area name")
    var name: String? = null,
 
    @field:Nullable
-   @field:Size(min = 3, max = 15)
+   @field:Size(min = 3, max = 50)
    @field:Schema(description = "This is a database driven with the original values being SHOWROOM, STOREROOM and WAREHOUSE")
    var value: String? = null,
 

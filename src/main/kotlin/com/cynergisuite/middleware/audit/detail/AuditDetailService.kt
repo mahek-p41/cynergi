@@ -8,7 +8,6 @@ import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.error.NotFoundException
 import io.micronaut.validation.Validated
-import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,21 +18,21 @@ class AuditDetailService @Inject constructor(
    private val auditRepository: AuditRepository,
    private val auditDetailRepository: AuditDetailRepository
 ) {
-   fun fetchById(id: UUID, company: Company, locale: Locale): AuditDetailEntity? =
+   fun fetchById(id: UUID, company: Company): AuditDetailEntity? =
       auditDetailRepository.findOne(id, company)
 
    @Validated
-   fun fetchAll(auditId: UUID, company: Company, @Valid pageRequest: PageRequest, locale: Locale): RepositoryPage<AuditDetailEntity, PageRequest> {
+   fun fetchAll(auditId: UUID, company: Company, @Valid pageRequest: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
       val audit = auditRepository.findOne(auditId, company) ?: throw NotFoundException(auditId)
 
       return auditDetailRepository.findAll(audit, company, pageRequest)
    }
 
    @Validated
-   fun create(@Valid auditDetail: AuditDetailEntity, scannedBy: User, locale: Locale) =
+   fun create(@Valid auditDetail: AuditDetailEntity, scannedBy: User) =
       auditDetailRepository.insert(auditDetail)
 
    @Validated
-   fun update(@Valid auditDetail: AuditDetailEntity, scannedBy: User, locale: Locale): AuditDetailEntity =
+   fun update(@Valid auditDetail: AuditDetailEntity, scannedBy: User): AuditDetailEntity =
       auditDetailRepository.update(auditDetail)
 }

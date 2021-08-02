@@ -25,6 +25,8 @@ import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ErrorDTO
+import com.cynergisuite.middleware.inventory.InventoryService
+import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.core.type.Argument
@@ -54,6 +56,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditExceptionNoteFactoryService auditExceptionNoteFactoryService
    @Inject AuditFactoryService auditFactoryService
    @Inject AuditRepository auditRepository
+   @Inject InventoryService inventoryService
    @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
    @Inject NamedParameterJdbcTemplate jdbc
    @Inject LocalizationService localizationService
@@ -237,8 +240,10 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response.message == "$nonExistentId was unable to be found"
+      with(response) {
+         message == "$nonExistentId was unable to be found"
+         code == "system.not.found"
+      }
    }
 
    void "fetch all audits for store 1" () {
@@ -640,19 +645,21 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final storeThreeWarehouse = auditScanAreaFactoryService.warehouse(storeThree, company)
       final storeThreeShowroom = auditScanAreaFactoryService.showroom(storeThree, company)
       final storeThreeStoreroom = auditScanAreaFactoryService.storeroom(storeThree, company)
+      final storeOneInventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 1, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final storeThreeInventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 3, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
 
       // setup store one open audit
       final openStoreOneAudit = auditFactoryService.single(storeOne, storeOneEmployee)
-      auditDetailFactoryService.generate(11, openStoreOneAudit, storeOneEmployee, storeOneWarehouse)
-      auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, storeOneStoreroom)
-      auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, storeOneShowroom)
+      auditDetailFactoryService.generate(11, openStoreOneAudit, storeOneEmployee, storeOneWarehouse, storeOneInventoryListing[0..19])
+      auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, storeOneStoreroom, storeOneInventoryListing[20..30])
+      auditDetailFactoryService.generate(5, openStoreOneAudit, storeOneEmployee, storeOneShowroom, storeOneInventoryListing[30..40])
       auditExceptionFactoryService.generate(25, openStoreOneAudit, storeOneWarehouse, storeOneEmployee)
 
       // setup store three open audit
       final openStoreThreeAudit = auditFactoryService.single(storeThree, storeThreeEmployee)
-      auditDetailFactoryService.generate(9, openStoreThreeAudit, storeThreeEmployee, storeThreeWarehouse)
-      auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, storeThreeShowroom)
-      auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, storeThreeStoreroom)
+      auditDetailFactoryService.generate(9, openStoreThreeAudit, storeThreeEmployee, storeThreeWarehouse, storeThreeInventoryListing[0..19])
+      auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, storeThreeShowroom, storeThreeInventoryListing[20..30])
+      auditDetailFactoryService.generate(5, openStoreThreeAudit, storeThreeEmployee, storeThreeStoreroom, storeThreeInventoryListing[30..40])
       auditExceptionFactoryService.generate(26, openStoreThreeAudit, storeThreeShowroom, storeThreeEmployee)
 
       // setup store one canceled audit
@@ -948,7 +955,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDTO(it.message, it.path) } == [new ErrorDTO("Store 1 has an audit already in progress", "storeNumber")]
+      response.collect { new ErrorDTO(it.message, it.code, it.path) } == [new ErrorDTO("Store 1 has an audit already in progress", "cynergi.audit.open.at.store", "storeNumber")]
    }
 
    void "update opened audit to in progress" () {
