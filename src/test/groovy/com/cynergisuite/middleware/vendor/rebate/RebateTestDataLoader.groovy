@@ -111,4 +111,8 @@ class RebateTestDataLoaderService {
    def assignVendorsToRebate(RebateEntity rebate, List<VendorEntity> vendors) {
       vendors.forEach { rebateRepository.assignVendorToRebate(rebate, new SimpleIdentifiableDTO(it)) }
    }
+
+   def disassociateVendorFromRebate(RebateEntity rebate, List<VendorEntity> vendors) {
+      vendors.forEach { rebateRepository.disassociateVendorFromRebate(rebate, new SimpleIdentifiableDTO(it)) }
+   }
 }
