@@ -39,8 +39,8 @@ class LocationControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "0 was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "fetch one location from different dataset than one associated with authenticated user" () {
@@ -55,8 +55,8 @@ class LocationControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "${location.myId()} was unable to be found"
+      response.message == "system.not.found"
    }
 
    void "fetch all locations" () {
