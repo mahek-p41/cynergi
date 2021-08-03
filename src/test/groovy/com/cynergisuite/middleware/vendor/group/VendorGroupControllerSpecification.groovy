@@ -299,7 +299,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "${vendorGroup[0].id} was unable to be found"
-      response.message == "system.not.found"
+      response.code == "system.not.found"
    }
 
    void "delete vendor group from other company is not allowed" () {
@@ -315,7 +315,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "${vendorGroup[0].id} was unable to be found"
-      response.message == "system.not.found"
+      response.code == "system.not.found"
    }
 
    void "delete vendor group still has reference" () {
@@ -334,6 +334,6 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == CONFLICT
       def response = exception.response.bodyAsJson()
       response.message == "Key (id)=($vendorGroup.id) is still referenced from table \"vendor\"."
-      response.message == "system.data.access.exception"
+      response.code == "system.data.access.exception"
    }
 }

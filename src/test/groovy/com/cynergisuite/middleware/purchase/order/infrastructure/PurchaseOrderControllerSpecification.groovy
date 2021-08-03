@@ -109,7 +109,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
             description == purchaseOrder.exceptionIndicatorType.description
          }
 
-         vendorSubmittedTime.with { OffsetDateTime.parse(it) } == purchaseOrder.vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
+         vendorSubmittedTime == purchaseOrder.vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
          vendorSubmittedEmployee.number == purchaseOrder.vendorSubmittedEmployee.number
          ecommerceIndicator == purchaseOrder.ecommerceIndicator
       }
@@ -126,8 +126,8 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size()== 1
       response.message == "$nonExistentId was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "fetch all" () {
@@ -225,7 +225,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
                   description == firstPage[index].exceptionIndicatorType.description
                }
 
-               vendorSubmittedTime.with { OffsetDateTime.parse(it) } == firstPage[index].vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
+               vendorSubmittedTime == firstPage[index].vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
                vendorSubmittedEmployee.number == firstPage[index].vendorSubmittedEmployee.number
                ecommerceIndicator == firstPage[index].ecommerceIndicator
             }
@@ -295,7 +295,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
                   description == secondPage[index].exceptionIndicatorType.description
                }
 
-               vendorSubmittedTime.with { OffsetDateTime.parse(it) } == secondPage[index].vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
+               vendorSubmittedTime == secondPage[index].vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
                vendorSubmittedEmployee.number == secondPage[index].vendorSubmittedEmployee.number
                ecommerceIndicator == secondPage[index].ecommerceIndicator
             }
@@ -365,7 +365,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
                   description == lastPage[index].exceptionIndicatorType.description
                }
 
-               vendorSubmittedTime.with { OffsetDateTime.parse(it) } == lastPage[index].vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
+               vendorSubmittedTime == lastPage[index].vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
                vendorSubmittedEmployee.number == lastPage[index].vendorSubmittedEmployee.number
                ecommerceIndicator == lastPage[index].ecommerceIndicator
             }
@@ -460,7 +460,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
             description == purchaseOrder.exceptionIndicatorType.description
          }
 
-         vendorSubmittedTime.with { OffsetDateTime.parse(it) } == purchaseOrder.vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
+         vendorSubmittedTime.toInstant().toEpochMilli() == purchaseOrder.vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC).toInstant().toEpochMilli()
          vendorSubmittedEmployee.number == purchaseOrder.vendorSubmittedEmployee.number
          ecommerceIndicator == purchaseOrder.ecommerceIndicator
       }
@@ -705,7 +705,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
             description == updatedPurchaseOrderDTO.exceptionIndicatorType.description
          }
 
-         vendorSubmittedTime.with { OffsetDateTime.parse(it) } == updatedPurchaseOrderDTO.vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC)
+         vendorSubmittedTime.toInstant().toEpochMilli() == updatedPurchaseOrderDTO.vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC).toInstant().toEpochMilli()
          vendorSubmittedEmployee.number == updatedPurchaseOrderDTO.vendorSubmittedEmployee.number
          ecommerceIndicator == updatedPurchaseOrderDTO.ecommerceIndicator
       }
@@ -918,7 +918,7 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "${purchaseOrder.id} was unable to be found"
+      response.code == "system.not.found"
    }
 }

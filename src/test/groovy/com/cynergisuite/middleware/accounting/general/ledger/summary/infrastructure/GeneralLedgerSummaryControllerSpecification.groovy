@@ -75,8 +75,8 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       final exception = thrown(HttpClientResponseException)
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "$nonExistentId was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "fetch all" () {
@@ -367,7 +367,8 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == 'id'
-      response[0].message == "${newGLSummary.id} already exists"
+      response[0].message == " already exists"
+      response[0].code == "cynergi.validation.duplicate"
    }
 
    void "update one" () {

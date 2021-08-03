@@ -63,8 +63,8 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       final exception = thrown(HttpClientResponseException)
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "$nonExistentId was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "fetch all" () {
@@ -386,7 +386,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "${glRecurringDistribution.id} was unable to be found"
+      response.code == "system.not.found"
    }
 }

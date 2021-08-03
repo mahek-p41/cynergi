@@ -74,8 +74,8 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       final exception = thrown(HttpClientResponseException)
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "General ledger control record of the company was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "create valid general ledger control" () {

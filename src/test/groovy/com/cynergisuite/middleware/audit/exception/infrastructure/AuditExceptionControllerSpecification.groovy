@@ -61,8 +61,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       then:
       notThrown(HttpClientException)
       result.id == auditException.id
-      result.timeCreated.with { OffsetDateTime.parse(it) } == auditException.timeCreated
-      result.timeUpdated.with { OffsetDateTime.parse(it) } == auditException.timeUpdated
+      result.timeCreated == auditException.timeCreated
+      result.timeUpdated == auditException.timeUpdated
       result.barcode == auditException.barcode
       result.serialNumber == auditException.serialNumber
       result.exceptionCode == auditException.exceptionCode
@@ -100,8 +100,8 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.notes[0].id == auditNote.id
       result.notes[0].note == auditNote.note
       result.notes[0].enteredBy.number == auditNote.enteredBy.number
-      result.notes[0].timeCreated.with { OffsetDateTime.parse(it) } == auditNote.timeCreated
-      result.notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == auditNote.timeUpdated
+      result.notes[0].timeCreated == auditNote.timeCreated
+      result.notes[0].timeUpdated == auditNote.timeUpdated
    }
 
    void "fetch one audit exception with a two attached notes" () {
@@ -124,10 +124,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.notes.size() == 2
       result.id == auditException.id
       result.audit.id == auditException.audit.myId()
-      result.notes
-         .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
-         .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
-         .collect { new AuditExceptionNoteValueObject(it) }.sort { o1, o2 -> o1.id <=> o2.id } == auditNotes
+      result.notes.collect { new AuditExceptionNoteValueObject(it) }.sort { o1, o2 -> o1.id <=> o2.id } == auditNotes
    }
 
    void "fetch all exceptions for a single audit with default paging" () {
@@ -154,8 +151,6 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       pageOneResult.elements != null
       pageOneResult.elements.size() == 10
       pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
-         .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
-         .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect { new AuditExceptionValueObject(it) } == firstTenDiscrepancies
    }
 
@@ -189,8 +184,6 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
-         .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
-         .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect { new AuditExceptionValueObject(it) } == firstFiveDiscrepancies
 
       when:
@@ -202,8 +195,6 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       pageTwoResult.elements != null
       pageTwoResult.elements.size() == 5
       pageTwoResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
-         .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
-         .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect { new AuditExceptionValueObject(it) } == secondFiveDiscrepancies
 
       when:
@@ -250,67 +241,65 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       final pageOneAuditExceptions = pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
-         .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
-         .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect { new AuditExceptionValueObject(it) }
       pageOneAuditExceptions[0].notes.size() == 2
       pageOneAuditExceptions[0].notes[0].id == firstFiveDiscrepancies[0].notes[0].id
       pageOneAuditExceptions[0].notes[0].note == firstFiveDiscrepancies[0].notes[0].note
-      pageOneAuditExceptions[0].notes[0].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[0].notes[0].timeCreated
-      pageOneAuditExceptions[0].notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[0].notes[0].timeUpdated
+      pageOneAuditExceptions[0].notes[0].timeCreated == firstFiveDiscrepancies[0].notes[0].timeCreated
+      pageOneAuditExceptions[0].notes[0].timeUpdated == firstFiveDiscrepancies[0].notes[0].timeUpdated
       pageOneAuditExceptions[0].notes[0].enteredBy.number == employee.number
       pageOneAuditExceptions[0].notes[1].id == firstFiveDiscrepancies[0].notes[1].id
       pageOneAuditExceptions[0].notes[1].note == firstFiveDiscrepancies[0].notes[1].note
-      pageOneAuditExceptions[0].notes[1].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[0].notes[1].timeCreated
-      pageOneAuditExceptions[0].notes[1].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[0].notes[1].timeUpdated
+      pageOneAuditExceptions[0].notes[1].timeCreated == firstFiveDiscrepancies[0].notes[1].timeCreated
+      pageOneAuditExceptions[0].notes[1].timeUpdated == firstFiveDiscrepancies[0].notes[1].timeUpdated
       pageOneAuditExceptions[0].notes[1].enteredBy.number == employee.number
 
       pageOneAuditExceptions[1].notes.size() == 2
       pageOneAuditExceptions[1].notes[0].id == firstFiveDiscrepancies[1].notes[0].id
       pageOneAuditExceptions[1].notes[0].note == firstFiveDiscrepancies[1].notes[0].note
-      pageOneAuditExceptions[1].notes[0].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[1].notes[0].timeCreated
-      pageOneAuditExceptions[1].notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[1].notes[0].timeUpdated
+      pageOneAuditExceptions[1].notes[0].timeCreated == firstFiveDiscrepancies[1].notes[0].timeCreated
+      pageOneAuditExceptions[1].notes[0].timeUpdated == firstFiveDiscrepancies[1].notes[0].timeUpdated
       pageOneAuditExceptions[1].notes[0].enteredBy.number == employee.number
       pageOneAuditExceptions[1].notes[1].id == firstFiveDiscrepancies[1].notes[1].id
       pageOneAuditExceptions[1].notes[1].note == firstFiveDiscrepancies[1].notes[1].note
-      pageOneAuditExceptions[1].notes[1].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[1].notes[1].timeCreated
-      pageOneAuditExceptions[1].notes[1].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[1].notes[1].timeUpdated
+      pageOneAuditExceptions[1].notes[1].timeCreated == firstFiveDiscrepancies[1].notes[1].timeCreated
+      pageOneAuditExceptions[1].notes[1].timeUpdated == firstFiveDiscrepancies[1].notes[1].timeUpdated
       pageOneAuditExceptions[1].notes[1].enteredBy.number == employee.number
 
       pageOneAuditExceptions[2].notes.size() == 2
       pageOneAuditExceptions[2].notes[0].id == firstFiveDiscrepancies[2].notes[0].id
       pageOneAuditExceptions[2].notes[0].note == firstFiveDiscrepancies[2].notes[0].note
-      pageOneAuditExceptions[2].notes[0].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[2].notes[0].timeCreated
-      pageOneAuditExceptions[2].notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[2].notes[0].timeUpdated
+      pageOneAuditExceptions[2].notes[0].timeCreated == firstFiveDiscrepancies[2].notes[0].timeCreated
+      pageOneAuditExceptions[2].notes[0].timeUpdated == firstFiveDiscrepancies[2].notes[0].timeUpdated
       pageOneAuditExceptions[2].notes[0].enteredBy.number == employee.number
       pageOneAuditExceptions[2].notes[1].id == firstFiveDiscrepancies[2].notes[1].id
       pageOneAuditExceptions[2].notes[1].note == firstFiveDiscrepancies[2].notes[1].note
-      pageOneAuditExceptions[2].notes[1].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[2].notes[1].timeCreated
-      pageOneAuditExceptions[2].notes[1].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[2].notes[1].timeUpdated
+      pageOneAuditExceptions[2].notes[1].timeCreated == firstFiveDiscrepancies[2].notes[1].timeCreated
+      pageOneAuditExceptions[2].notes[1].timeUpdated == firstFiveDiscrepancies[2].notes[1].timeUpdated
       pageOneAuditExceptions[2].notes[1].enteredBy.number == employee.number
 
       pageOneAuditExceptions[3].notes.size() == 2
       pageOneAuditExceptions[3].notes[0].id == firstFiveDiscrepancies[3].notes[0].id
       pageOneAuditExceptions[3].notes[0].note == firstFiveDiscrepancies[3].notes[0].note
-      pageOneAuditExceptions[3].notes[0].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[3].notes[0].timeCreated
-      pageOneAuditExceptions[3].notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[3].notes[0].timeUpdated
+      pageOneAuditExceptions[3].notes[0].timeCreated == firstFiveDiscrepancies[3].notes[0].timeCreated
+      pageOneAuditExceptions[3].notes[0].timeUpdated == firstFiveDiscrepancies[3].notes[0].timeUpdated
       pageOneAuditExceptions[3].notes[0].enteredBy.number == employee.number
       pageOneAuditExceptions[3].notes[1].id == firstFiveDiscrepancies[3].notes[1].id
       pageOneAuditExceptions[3].notes[1].note == firstFiveDiscrepancies[3].notes[1].note
-      pageOneAuditExceptions[3].notes[1].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[3].notes[1].timeCreated
-      pageOneAuditExceptions[3].notes[1].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[3].notes[1].timeUpdated
+      pageOneAuditExceptions[3].notes[1].timeCreated == firstFiveDiscrepancies[3].notes[1].timeCreated
+      pageOneAuditExceptions[3].notes[1].timeUpdated == firstFiveDiscrepancies[3].notes[1].timeUpdated
       pageOneAuditExceptions[3].notes[1].enteredBy.number == employee.number
 
       pageOneAuditExceptions[4].notes.size() == 2
       pageOneAuditExceptions[4].notes[0].id == firstFiveDiscrepancies[4].notes[0].id
       pageOneAuditExceptions[4].notes[0].note == firstFiveDiscrepancies[4].notes[0].note
-      pageOneAuditExceptions[4].notes[0].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[4].notes[0].timeCreated
-      pageOneAuditExceptions[4].notes[0].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[4].notes[0].timeUpdated
+      pageOneAuditExceptions[4].notes[0].timeCreated == firstFiveDiscrepancies[4].notes[0].timeCreated
+      pageOneAuditExceptions[4].notes[0].timeUpdated == firstFiveDiscrepancies[4].notes[0].timeUpdated
       pageOneAuditExceptions[4].notes[0].enteredBy.number == employee.number
       pageOneAuditExceptions[4].notes[1].id == firstFiveDiscrepancies[4].notes[1].id
       pageOneAuditExceptions[4].notes[1].note == firstFiveDiscrepancies[4].notes[1].note
-      pageOneAuditExceptions[4].notes[1].timeCreated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[4].notes[1].timeCreated
-      pageOneAuditExceptions[4].notes[1].timeUpdated.with { OffsetDateTime.parse(it) } == firstFiveDiscrepancies[4].notes[1].timeUpdated
+      pageOneAuditExceptions[4].notes[1].timeCreated == firstFiveDiscrepancies[4].notes[1].timeCreated
+      pageOneAuditExceptions[4].notes[1].timeUpdated == firstFiveDiscrepancies[4].notes[1].timeUpdated
       pageOneAuditExceptions[4].notes[1].enteredBy.number == employee.number
    }
 
@@ -334,8 +323,6 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       auditTwo.number == 2
       pageOneResult.elements.size() == 3
       pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableDTO(it.audit.id)}
-         .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
-         .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect { new AuditExceptionValueObject(it) }.toSorted {o1, o2 -> o2.id <=> o2.id } == threeAuditDiscrepanciesAuditTwo
    }
 
@@ -488,7 +475,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
       response.size() == 1
-      new ErrorDTO(response[0].message, response[0].path) == new ErrorDTO("$nonExistentAreaId was unable to be found", "audit.scanArea.id")
+      new ErrorDTO(response[0].message, response[0].code, response[0].path) == new ErrorDTO("$nonExistentAreaId was unable to be found", "system.not.found", "audit.scanArea.id")
    }
 
    void "create invalid audit exception" () {
@@ -532,7 +519,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NOT_FOUND
       final notFoundResponse = notFoundException.response.bodyAsJson()
-      new ErrorDTO(notFoundResponse.message, notFoundResponse.path) == new ErrorDTO("$nonExistentAuditId was unable to be found", null)
+      new ErrorDTO(notFoundResponse.message, notFoundResponse.code, notFoundResponse.path) == new ErrorDTO("$nonExistentAuditId was unable to be found", "system.not.found", null)
    }
 
    void "create audit exception where inventory id is null" () {
@@ -648,7 +635,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final exceptionCode = AuditExceptionFactory.randomExceptionCode()
       final auditException = auditExceptionRepository.insert(new AuditExceptionEntity(audit.id, new InventoryEntity(inventoryItem, store, store, inventoryLocationType), null, employee, exceptionCode))
-      final exception = new AuditExceptionCreateDTO([inventory: new SimpleIdentifiableDTO(inventoryItem), exceptionCode: exceptionCode])
+      final exception = new AuditExceptionCreateDTO([inventory: new SimpleLegacyIdentifiableDTO(inventoryItem), exceptionCode: exceptionCode])
 
       when:
       post("/audit/${audit.id}/exception", exception)

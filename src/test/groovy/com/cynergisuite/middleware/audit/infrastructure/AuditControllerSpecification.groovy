@@ -74,7 +74,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.inventoryCount == 260
       result.id == savedAudit.id
-      result.timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.timeCreated
+      result.timeCreated == savedAudit.timeCreated
       result.lastUpdated == null
       result.currentStatus.value == 'CREATED'
       result.totalDetails == 0
@@ -86,8 +86,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.actions[0].status.value == 'CREATED'
       result.actions[0].status.description == 'Created'
       result.actions[0].changedBy.number == savedAudit.actions[0].changedBy.number
-      result.actions[0].timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.actions[0].timeCreated
-      result.actions[0].timeUpdated.with { OffsetDateTime.parse(it) } == savedAudit.actions[0].timeUpdated
+      result.actions[0].timeCreated == savedAudit.actions[0].timeCreated
+      result.actions[0].timeUpdated == savedAudit.actions[0].timeUpdated
    }
 
    void "fetch one audit by id with superfluous URL parameters" () {
@@ -103,7 +103,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.inventoryCount == 260
       result.id == savedAudit.id
-      result.timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.timeCreated
+      result.timeCreated == savedAudit.timeCreated
       result.lastUpdated == null
       result.currentStatus.value == 'CREATED'
       result.totalDetails == 0
@@ -115,8 +115,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.actions[0].status.value == 'CREATED'
       result.actions[0].status.description == 'Created'
       result.actions[0].changedBy.number == savedAudit.actions[0].changedBy.number
-      result.actions[0].timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.actions[0].timeCreated
-      result.actions[0].timeUpdated.with { OffsetDateTime.parse(it) } == savedAudit.actions[0].timeUpdated
+      result.actions[0].timeCreated == savedAudit.actions[0].timeCreated
+      result.actions[0].timeUpdated == savedAudit.actions[0].timeUpdated
    }
 
    void "fetch one audit by id that has associated exceptions" () {
@@ -134,7 +134,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id == savedAudit.id
       result.inventoryCount == 423
-      result.timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.timeCreated
+      result.timeCreated == savedAudit.timeCreated
       result.lastUpdated != null
       result.currentStatus.value == 'CREATED'
       result.totalDetails == 0
@@ -147,10 +147,10 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.actions[0].status.value == 'CREATED'
       result.actions[0].status.description == 'Created'
       result.actions[0].changedBy.number == savedAudit.actions[0].changedBy.number
-      result.actions[0].timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.actions[0].timeCreated
-      result.actions[0].timeUpdated.with { OffsetDateTime.parse(it) } == savedAudit.actions[0].timeUpdated
+      result.actions[0].timeCreated == savedAudit.actions[0].timeCreated
+      result.actions[0].timeUpdated == savedAudit.actions[0].timeUpdated
       result.lastUpdated != null
-      result.lastUpdated.with { OffsetDateTime.parse(it) } == auditExceptions.last().timeUpdated
+      result.lastUpdated == auditExceptions.last().timeUpdated
    }
 
    void "fetch one audit by id that has associated exceptions and notes" () {
@@ -171,7 +171,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.id == savedAudit.id
       result.inventoryCount == 423
-      result.timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.timeCreated
+      result.timeCreated == savedAudit.timeCreated
       result.lastUpdated != null
       result.currentStatus.value == 'CREATED'
       result.totalDetails == 0
@@ -184,8 +184,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.actions[0].status.value == 'CREATED'
       result.actions[0].status.description == 'Created'
       result.actions[0].changedBy.number == savedAudit.actions[0].changedBy.number
-      result.actions[0].timeCreated.with { OffsetDateTime.parse(it) } == savedAudit.actions[0].timeCreated
-      result.actions[0].timeUpdated.with { OffsetDateTime.parse(it) } == savedAudit.actions[0].timeUpdated
+      result.actions[0].timeCreated == savedAudit.actions[0].timeCreated
+      result.actions[0].timeUpdated == savedAudit.actions[0].timeUpdated
    }
 
    void "fetch one audit by id that has associated details" () {
@@ -205,7 +205,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.totalDetails == 20
       result.totalExceptions == 0
       result.lastUpdated != null
-      result.lastUpdated.with { OffsetDateTime.parse(it) } == auditDetails.last().timeUpdated
+      result.lastUpdated == auditDetails.last().timeUpdated
    }
 
    void "fetch one audit by id that has associated details and exceptions" () {
@@ -226,7 +226,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.totalExceptions == 20
       result.inventoryCount == 423
       result.lastUpdated != null
-      result.lastUpdated.with { OffsetDateTime.parse(it) } == auditExceptions.last().timeUpdated
+      result.lastUpdated == auditExceptions.last().timeUpdated
    }
 
    void "fetch one audit by id not found" () {
@@ -607,7 +607,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       updated == 1 // just a sanity check on the query I just wrote to fudge the db into a state I want
       openedResult.elements != null
       openedResult.elements.collect { it.id } == [storeOneOpenAuditOne.id]
-      openedResult.elements[0].timeCreated.with { OffsetDateTime.parse(it) } == storeOneOpenAuditOne.timeCreated.minusDays(8)
+      openedResult.elements[0].timeCreated == storeOneOpenAuditOne.timeCreated.minusDays(8)
    }
 
    void "fetch in-progress audits from last week" () {
@@ -626,7 +626,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       updated == 1 // just a sanity check on the query I just wrote to fudge the db into a state I want
       inProgressResult.elements != null
       inProgressResult.elements.collect { it.id } == [storeOneInProgressAuditOne.id]
-      inProgressResult.elements[0].timeCreated.with { OffsetDateTime.parse(it) } == storeOneInProgressAuditOne.timeCreated.minusDays(8)
+      inProgressResult.elements[0].timeCreated == storeOneInProgressAuditOne.timeCreated.minusDays(8)
    }
 
    void "fetch all opened audits with from thru" () {
@@ -973,8 +973,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.store.storeNumber == store.myNumber()
       result.actions.size() == 2
       final resultActions = result.actions
-         .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
-         .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       resultActions[0].id != null
@@ -1006,8 +1004,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.store.storeNumber == audit.store.myNumber()
       result.actions.size() == 2
       final resultActions = result.actions
-         .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
-         .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       resultActions[0].id != null
@@ -1145,8 +1141,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       openedResult.store.storeNumber == 3
       openedResult.actions.size() == 1
       final openActions = openedResult.actions
-         .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
-         .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       openActions[0].id != null
@@ -1163,8 +1157,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       inProgressResult.store.storeNumber == 3
       inProgressResult.actions.size() == 2
       final inProgressActions = inProgressResult.actions
-         .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
-         .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       inProgressActions[0].id != null
@@ -1186,8 +1178,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       completedResult.store.storeNumber == 3
       completedResult.actions.size() == 3
       final completedActions = completedResult.actions
-         .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
-         .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       completedActions[0].id != null
@@ -1254,8 +1244,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.store.storeNumber == store.number
       result.actions.size() == 4
       final resultActions = result.actions
-         .each{ it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
-         .each{ it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
       resultActions[0].id != null
@@ -1288,8 +1276,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       audit.number == 1
       pageOneResult.elements.size() == 3
       pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableDTO(it.audit.id)}
-         .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
-         .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
          .each { it['approved'] = true }
 
       when: 'Test Audit Exception Report'
@@ -1330,10 +1316,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       auditOne.number > 0
       pageOneResult.elements != null
       pageOneResult.elements.size() == 3
-      pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
-         .each { it['timeCreated'] = OffsetDateTime.parse(it['timeCreated']) }
-         .each { it['timeUpdated'] = OffsetDateTime.parse(it['timeUpdated']) }
-         .each { it['approved'] = true }
+      pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }.each { it['approved'] = true }
    }
 
    void "approve all audit exceptions" () {

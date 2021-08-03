@@ -44,8 +44,8 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size()== 1
       response.message == "$nonExistentId was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "fetch all" () {
@@ -168,8 +168,8 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
       def result = exception.response.bodyAsJson()
       result.size() == 1
-      result.collect { new ErrorDTO(it.message, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorDTO("Is required", "description")
+      result.collect { new ErrorDTO(it.message, it.code, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "description")
       ]
    }
 
@@ -199,8 +199,8 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
       def result = exception.response.bodyAsJson()
       result.size() == 1
-      result.collect { new ErrorDTO(it.message, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorDTO("Is required", "description")
+      result.collect { new ErrorDTO(it.message, it.code, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "description")
       ]
    }
 
@@ -216,7 +216,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
 
       def result = exception.response.bodyAsJson()
-      new ErrorDTO(result.message, result.path) == new ErrorDTO(" was unable to be found", null)
+      new ErrorDTO(result.message, result.code, result.path) == new ErrorDTO(" was unable to be found", "system.not.found", null)
    }
 
    void "delete ship via" () {
@@ -236,8 +236,8 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "$shipVia.id was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "delete ship via from other company is not allowed" () {
@@ -253,7 +253,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "$shipVia.id was unable to be found"
+      response.code == "system.not.found"
    }
 }

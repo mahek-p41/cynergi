@@ -61,8 +61,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "$nonExistentId was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "fetch all" () {
@@ -179,8 +179,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDTO(it.message, it.path) } == [
-         new ErrorDTO("${account.id} was unable to be found", "generalLedgerAccount.id")
+      response.collect { new ErrorDTO(it.message, it.code, it.path) } == [
+         new ErrorDTO("${account.id} was unable to be found", "system.not.found", "generalLedgerAccount.id")
       ]
    }
 
@@ -199,8 +199,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDTO(it.message, it.path) } == [
-         new ErrorDTO("${String.format('%,d', store.id)} was unable to be found", "generalLedgerProfitCenter.id")
+      response.collect { new ErrorDTO(it.message, it.code, it.path) } == [
+         new ErrorDTO("${String.format('%,d', store.id)} was unable to be found", "system.not.found", "generalLedgerProfitCenter.id")
       ]
    }
 
@@ -392,8 +392,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "$bank.id was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "delete bank from other company is not allowed" () {
@@ -414,8 +414,8 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "$bankStore4Tstds2.id was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "delete bank still has reference" () {
@@ -433,7 +433,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == CONFLICT
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "Key (id)=($bank.id) is still referenced from table \"bank_reconciliation\"."
+      response.code == "system.data.access.exception"
    }
 }

@@ -118,8 +118,8 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size()== 1
       response.message == "$nonExistentId was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "fetch all" () {
@@ -808,7 +808,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "${poDetail.id} was unable to be found"
+      response.code == "system.not.found"
    }
 }

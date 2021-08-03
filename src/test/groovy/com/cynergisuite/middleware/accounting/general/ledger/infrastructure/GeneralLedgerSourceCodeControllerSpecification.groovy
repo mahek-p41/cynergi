@@ -275,8 +275,8 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "$glSourceCode.id was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "delete source code from other company is not allowed" () {
@@ -291,7 +291,7 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "$glSourceCode.id was unable to be found"
+      response.code == "system.not.found"
    }
  }

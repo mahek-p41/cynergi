@@ -166,8 +166,8 @@ class RoutineControllerSpecification extends ControllerSpecificationBase {
       def exception = thrown(HttpClientResponseException)
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == 'invalid was unable to be found'
+      response.code == "system.not.found"
    }
 
    void "update one" () {
@@ -215,8 +215,8 @@ class RoutineControllerSpecification extends ControllerSpecificationBase {
       def exception = thrown(HttpClientResponseException)
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == 'invalid was unable to be found'
+      response.code == "system.not.found"
    }
 
    void "open gl account" () {

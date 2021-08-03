@@ -44,7 +44,7 @@ class GeneralLedgerSummaryValidator @Inject constructor(
       val overallPeriod = overallPeriodTypeRepository.findOne(dto.overallPeriod!!.value) ?: throw NotFoundException(dto.overallPeriod!!.value)
       val glSummaryByBusinessKey = generalLedgerSummaryRepository.findOneByBusinessKey(company, account.id!!, profitCenter.id, overallPeriod.id)
 
-      doValidation { errors ->
+      doValidation { errors -> // FIXME the checks below seem suspect.  How is this checking for duplicates?
          if ((existingGLSummary == null && glSummaryByBusinessKey != null) || (existingGLSummary != null && glSummaryByBusinessKey != null && (existingGLSummary.id != dto.id || existingGLSummary.id != glSummaryByBusinessKey.id))) {
             errors.add(ValidationError("id", Duplicate(dto.id)))
          }

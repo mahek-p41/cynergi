@@ -35,7 +35,7 @@ class HttpResponseExtension {
                   if (key == "id" && value instanceof String && uuidRegex.matcher(value).matches()) {
                      element[key] = UUID.fromString(value)
                   } else if (value instanceof String && dateFormatRegex.matcher(value).matches()) {
-                     element[key] == OffsetDateTime.parse(value)
+                     element[key] = OffsetDateTime.parse(value)
                   } else {
                      deque.push(value)
                   }

@@ -73,8 +73,8 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final exception = thrown(HttpClientResponseException)
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "Account payable control record of the company was unable to be found"
+      response.code == "system.not.found"
 
    }
 

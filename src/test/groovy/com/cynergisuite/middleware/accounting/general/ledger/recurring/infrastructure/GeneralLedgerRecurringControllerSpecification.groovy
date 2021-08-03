@@ -367,8 +367,8 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "${glRecurring.id} was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "delete GL recurring from other company is not allowed" () {
@@ -384,7 +384,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "${glRecurring.id} was unable to be found"
+      response.code == "system.not.found"
    }
 }

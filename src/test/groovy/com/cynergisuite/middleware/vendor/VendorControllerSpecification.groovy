@@ -224,24 +224,24 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
       response.size() == 16
-      response.collect { new ErrorDTO(it.message, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorDTO("Cannot be blank", "name"),
-         new ErrorDTO("Is required", "allowDropShipToCustomer"),
-         new ErrorDTO("Is required", "autoSubmitPurchaseOrder"),
-         new ErrorDTO("Is required", "chargeInventoryTax1"),
-         new ErrorDTO("Is required", "chargeInventoryTax2"),
-         new ErrorDTO("Is required", "chargeInventoryTax3"),
-         new ErrorDTO("Is required", "chargeInventoryTax4"),
-         new ErrorDTO("Is required", "federalIdNumberVerification"),
-         new ErrorDTO("Is required", "freightCalcMethodType"),
-         new ErrorDTO("Is required", "freightOnboardType"),
-         new ErrorDTO("Is required", "name"),
-         new ErrorDTO("Is required", "paymentTerm"),
-         new ErrorDTO("Is required", "returnPolicy"),
-         new ErrorDTO("Is required", "separateCheck"),
-         new ErrorDTO("Is required", "shipVia"),
-         new ErrorDTO("Is required", "vendor1099"),
-      ]
+      response.collect { new ErrorDTO(it.message, it.code, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorDTO("Cannot be blank", "javax.validation.constraints.NotNull.message", "name"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "allowDropShipToCustomer"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "autoSubmitPurchaseOrder"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "chargeInventoryTax1"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "chargeInventoryTax2"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "chargeInventoryTax3"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "chargeInventoryTax4"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "federalIdNumberVerification"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "freightCalcMethodType"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "freightOnboardType"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "name"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "paymentTerm"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "returnPolicy"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "separateCheck"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "shipVia"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "vendor1099"),
+      ].sort { o1, o2 -> o1 <=> o2 }
    }
 
    void "create with payTo" () {
@@ -284,9 +284,9 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
       response.size() == 2
-      response.collect { new ErrorDTO(it.message, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorDTO("${vendorPaymentTerm.id} was unable to be found", "paymentTerm.id"),
-         new ErrorDTO("${shipVia.id} was unable to be found", "shipVia.id"),
+      response.collect { new ErrorDTO(it.message, it.code, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
+         new ErrorDTO("${vendorPaymentTerm.id} was unable to be found", "system.not.found", "paymentTerm.id"),
+         new ErrorDTO("${shipVia.id} was unable to be found", "system.not.found", "shipVia.id"),
       ].sort { o1, o2 -> o1 <=> o2 }
    }
 
@@ -1046,8 +1046,8 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
       response.size() == 1
-      response.collect { new ErrorDTO(it.message, it.path) } == [
-         new ErrorDTO("accountNumber must be greater than zero", "accountNumber")
+      response.collect { new ErrorDTO(it.message, it.code, it.path) } == [
+         new ErrorDTO("accountNumber must be greater than zero", "javax.validation.constraints.Positive.message", "accountNumber")
       ]
    }
 

@@ -57,8 +57,8 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "$nonExistentAccountPayableDistribution was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "fetch all" () {
@@ -473,8 +473,8 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "${apDistribution.id} was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "delete account payable distribution from other company is not allowed" () {
@@ -491,7 +491,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "${apDistribution.id} was unable to be found"
+      response.code == "system.not.found"
    }
 }

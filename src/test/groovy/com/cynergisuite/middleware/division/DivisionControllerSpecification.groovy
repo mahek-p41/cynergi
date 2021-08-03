@@ -63,8 +63,8 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "$nonExistentId was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "fetch all" () {
@@ -222,9 +222,9 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       def exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.size() == 2
       response.path == 'divisionalManager'
       response.message == 'Failed to convert argument [divisionalManager] for value [Invalid]'
+      response.code == "cynergi.validation.conversion.error"
    }
 
    void "update a valid division"() {
@@ -316,9 +316,9 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       def exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.size() == 2
       response.path == 'divisionalManager'
       response.message == 'Failed to convert argument [divisionalManager] for value [Z]'
+      response.code == "cynergi.validation.conversion.error"
    }
 
    void "delete a valid division"() {
@@ -351,8 +351,8 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "$nonExistentId was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "delete a division with region assigned"() {
@@ -382,8 +382,8 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "${divisions[1].id} was unable to be found"
+      response.code == "system.not.found"
    }
 
 

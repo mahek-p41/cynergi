@@ -66,8 +66,8 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final exception = thrown(HttpClientResponseException)
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.size() == 1
       response.message == "$nonExistentId was unable to be found"
+      response.code == "system.not.found"
    }
 
    void "create valid general ledger detail" () {
