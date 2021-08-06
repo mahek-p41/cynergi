@@ -82,7 +82,8 @@ class AuditPermissionRepository @Inject constructor(
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
               JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
          WHERE ap.id = :ap_id
-               AND comp.id = :comp_id""",
+               AND comp.id = :comp_id
+               AND ap.deleted = FALSE""",
          mapOf("ap_id" to id, "comp_id" to company.id)
       ) { rs, _ ->
          processFindRow(rs, company)
@@ -141,7 +142,7 @@ class AuditPermissionRepository @Inject constructor(
               JOIN company comp ON ap.company_id = comp.id
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
               JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
-         WHERE comp.id = :comp_id
+         WHERE comp.id = :comp_id AND ap.deleted = FALSE
          ORDER BY ap_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset""",
          mapOf(
@@ -212,7 +213,7 @@ class AuditPermissionRepository @Inject constructor(
             JOIN company comp ON ap.company_id = comp.id
             JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
             JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
-         WHERE comp.id = :comp_id AND ap.type_id = :typeId
+         WHERE comp.id = :comp_id AND ap.type_id = :typeId AND ap.deleted = FALSE
          ORDER BY ap_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset""",
          mapOf(
@@ -252,7 +253,8 @@ class AuditPermissionRepository @Inject constructor(
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
               JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
          WHERE aptd.value = :asset
-               AND comp.id = :comp_id""",
+               AND comp.id = :comp_id
+               AND ap.deleted = FALSE""",
          mapOf("asset" to asset, "comp_id" to company.id)
       ) { rs, _ ->
          val dept = departmentRepository.mapRow(rs, company, "dept_")
@@ -375,7 +377,8 @@ class AuditPermissionRepository @Inject constructor(
       return if (existingPermission != null) {
          jdbc.deleteReturning(
             """
-            DELETE FROM audit_permission
+            UPDATE audit_permission
+            SET deleted = TRUE
             WHERE id = :id
             RETURNING
                *""",

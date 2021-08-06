@@ -35,6 +35,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
          glSrcCodes.company_id       AS glSrcCodes_company_id,
          glSrcCodes.value            AS glSrcCodes_value,
          glSrcCodes.description      AS glSrcCodes_description,
+         glSrcCodes.deleted          AS glSrcCodes_deleted,
          count(*) OVER()             AS total_elements
       FROM general_ledger_source_codes glSrcCodes
    """
@@ -42,7 +43,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
    @ReadOnly
    fun exists(value: String, company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
-         "SELECT EXISTS (SELECT * FROM general_ledger_source_codes WHERE value = :value AND company_id = :company_id)",
+         "SELECT EXISTS (SELECT * FROM general_ledger_source_codes WHERE value = :value AND company_id = :company_id AND deleted = FALSE)",
          mapOf("value" to value, "company_id" to company.id),
          Boolean::class.java
       )
@@ -55,7 +56,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): GeneralLedgerSourceCodeEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${selectBaseQuery()}\nWHERE glSrcCodes.id = :id AND glSrcCodes.company_id = :comp_id"
+      val query = "${selectBaseQuery()}\nWHERE glSrcCodes.id = :id AND glSrcCodes.company_id = :comp_id AND glSrcCodes.deleted = FALSE"
 
       logger.debug("Searching for GeneralLedgerSourceCode using {} {}", query, params)
 
@@ -74,7 +75,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
       return jdbc.queryPaged(
          """
          ${selectBaseQuery()}
-         WHERE glSrcCodes.company_id = :comp_id
+         WHERE glSrcCodes.company_id = :comp_id AND glSrcCodes.deleted = FALSE
          ORDER BY glSrcCodes.${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
@@ -148,7 +149,8 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
 
       val rowsAffected = jdbc.update(
          """
-         DELETE FROM general_ledger_source_codes
+         UPDATE general_ledger_source_codes
+         SET deleted = TRUE
          WHERE id = :id AND company_id = :company_id
          """,
          mapOf("id" to id, "company_id" to company.id)

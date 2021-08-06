@@ -41,6 +41,7 @@ CREATE TABLE audit_permission
     department   VARCHAR(3)  CHECK ( length(trim(department)) > 1 )       NOT NULL,
     type_id      INTEGER     REFERENCES audit_permission_type_domain (id) NOT NULL,
     company_id   BIGINT      REFERENCES company (id)                      NOT NULL,
+    deleted      BOOLEAN     DEFAULT FALSE                                NOT NULL,
     UNIQUE (department, type_id, company_id)
 );
 CREATE TRIGGER update_audit_permission_trg

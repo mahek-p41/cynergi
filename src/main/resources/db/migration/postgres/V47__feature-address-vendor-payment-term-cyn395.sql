@@ -15,7 +15,8 @@ CREATE TABLE address
     country      VARCHAR(50) CHECK (CHAR_LENGTH(TRIM(city)) > 1)     NOT NULL,
     county       VARCHAR(50),
     phone        VARCHAR(21),
-    fax          VARCHAR(21)
+    fax          VARCHAR(21),
+    deleted      BOOLEAN      DEFAULT FALSE                          NOT NULL
 );
 
 CREATE INDEX address_name_idx ON address(name);

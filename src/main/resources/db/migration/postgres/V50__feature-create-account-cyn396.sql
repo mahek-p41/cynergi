@@ -56,6 +56,7 @@ CREATE TABLE account
     form_1099_field                INTEGER, -- field # on the 1099 form for this account
     corporate_account_indicator    BOOLEAN     DEFAULT FALSE                                  NOT NULL,
     search_vector                  TSVECTOR                                                   NOT NULL,
+    deleted                        BOOLEAN      DEFAULT FALSE                                 NOT NULL,
     UNIQUE (company_id, number)
 );
 
@@ -103,6 +104,7 @@ CREATE TABLE bank
     name                             VARCHAR(50) CHECK ( CHAR_LENGTH(TRIM(name)) > 1)       NOT NULL,
     general_ledger_profit_center_sfk INTEGER CHECK ( general_ledger_profit_center_sfk > 0 ) NOT NULL, --profit center is store or possibly home office
     general_ledger_account_id        UUID REFERENCES account (id)                           NOT NULL,
+    deleted                          BOOLEAN     DEFAULT FALSE                              NOT NULL,
     UNIQUE (company_id, number)
 );
 CREATE TRIGGER update_bank_trg

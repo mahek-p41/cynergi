@@ -8,6 +8,7 @@ CREATE TABLE account_payable_distribution_template
     account_id        UUID REFERENCES account (id)           NOT NULL,
     company_id        UUID REFERENCES company (id)           NOT NULL,
     percent           NUMERIC(8, 7)                          NOT NULL,
+    deleted           BOOLEAN     DEFAULT FALSE              NOT NULL,
     UNIQUE (company_id, name, profit_center_sfk, account_id)
 );
 CREATE TRIGGER account_payable_distribution_template_trg

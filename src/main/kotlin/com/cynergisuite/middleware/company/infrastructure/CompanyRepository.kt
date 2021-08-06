@@ -57,7 +57,7 @@ class CompanyRepository @Inject constructor(
          address.phone            AS address_phone,
          address.fax              AS address_fax
       FROM company comp
-         LEFT JOIN address ON comp.address_id = address.id
+         LEFT JOIN address ON comp.address_id = address.id AND address.deleted = FALSE
    """
 
    @ReadOnly
@@ -92,7 +92,7 @@ class CompanyRepository @Inject constructor(
          FROM company comp
             JOIN fastinfo_prod_import.store_vw s
                ON comp.dataset_code = s.dataset
-            LEFT JOIN address ON comp.address_id = address.id
+            LEFT JOIN address ON comp.address_id = address.id AND address.deleted = FALSE
          WHERE s.id = :store_id
                AND s.dataset = :dataset
          """,

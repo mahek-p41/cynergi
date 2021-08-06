@@ -25,7 +25,8 @@ CREATE TABLE general_ledger_recurring
     message            TEXT,
     begin_date         DATE                                                         NOT NULL,
     end_date           DATE,
-    last_transfer_date DATE
+    last_transfer_date DATE,
+    deleted            BOOLEAN     DEFAULT FALSE                                    NOT NULL
 );
 CREATE TRIGGER update_general_ledger_recurring_trg
     BEFORE UPDATE
@@ -45,7 +46,8 @@ CREATE TABLE general_ledger_recurring_distribution
     general_ledger_recurring_id                      UUID REFERENCES general_ledger_recurring (id) NOT NULL,
     general_ledger_distribution_account_id           UUID REFERENCES account (id)                  NOT NULL,
     general_ledger_distribution_profit_center_id_sfk INTEGER                                       NOT NULL,
-    general_ledger_distribution_amount               NUMERIC(11, 2)                                NOT NULL
+    general_ledger_distribution_amount               NUMERIC(11, 2)                                NOT NULL,
+    deleted                                          BOOLEAN     DEFAULT FALSE                     NOT NULL
 );
 CREATE TRIGGER update_general_ledger_recurring_distribution_trg
     BEFORE UPDATE

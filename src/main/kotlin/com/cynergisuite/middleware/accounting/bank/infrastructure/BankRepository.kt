@@ -42,13 +42,15 @@ class BankRepository @Inject constructor(
             bank.id                                                        AS bank_id,
             bank.name                                                      AS bank_name,
             bank.number                                                    AS bank_number,
-            bank.company_id                                                AS comp_id,
+            bank.company_id                                                AS bank_comp_id,
+            bank.deleted                                                   AS bank_deleted,
             account.account_id                                             AS bank_account_id,
             account.account_number                                         AS bank_account_number,
             account.account_name                                           AS bank_account_name,
             account.account_form_1099_field                                AS bank_account_form_1099_field,
             account.account_corporate_account_indicator                    AS bank_account_corporate_account_indicator,
             account.account_comp_id                                        AS bank_account_comp_id,
+            account.account_deleted                                        AS bank_account_deleted,
             account.account_type_id                                        AS bank_account_type_id,
             account.account_type_value                                     AS bank_account_type_value,
             account.account_type_description                               AS bank_account_type_description,
@@ -70,14 +72,14 @@ class BankRepository @Inject constructor(
                JOIN fastinfo_prod_import.store_vw glProfitCenter
                     ON glProfitCenter.dataset = comp.dataset_code
                        AND glProfitCenter.number = bank.general_ledger_profit_center_sfk
-               JOIN account ON account.account_id = bank.general_ledger_account_id
+               JOIN account ON account.account_id = bank.general_ledger_account_id AND account.account_deleted = FALSE
       """
    }
 
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): BankEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE bank.id = :id AND bank.company_id = :comp_id"
+      val query = "${selectBaseQuery()} WHERE bank.id = :id AND bank.company_id = :comp_id AND bank.deleted = FALSE"
       val found = jdbc.findFirstOrNull(
          query,
          params
@@ -93,7 +95,7 @@ class BankRepository @Inject constructor(
    @ReadOnly
    fun findByNumber(number: Long, company: CompanyEntity): BankEntity? {
       val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE bank.number = :number AND comp.id = :comp_id"
+      val query = "${selectBaseQuery()} WHERE bank.number = :number AND comp.id = :comp_id AND bank.deleted = FALSE"
       val found = jdbc.findFirstOrNull(
          query,
          params
@@ -113,7 +115,7 @@ class BankRepository @Inject constructor(
          """
          WITH paged AS (
             ${selectBaseQuery()}
-            WHERE bank.company_id = :comp_id
+            WHERE bank.company_id = :comp_id AND bank.deleted = FALSE
          )
          SELECT
             p.*,
@@ -142,7 +144,7 @@ class BankRepository @Inject constructor(
    @ReadOnly
    fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject(
-         "SELECT EXISTS(SELECT id FROM bank WHERE id = :id)",
+         "SELECT EXISTS(SELECT id FROM bank WHERE id = :id AND bank.deleted = FALSE)",
          mapOf("id" to id),
          Boolean::class.java
       )
@@ -211,7 +213,8 @@ class BankRepository @Inject constructor(
 
       val affectedRows = jdbc.update(
          """
-         DELETE FROM bank
+         UPDATE bank
+         SET deleted = TRUE
          WHERE id = :id AND company_id = :company_id
          """,
          mapOf("id" to id, "company_id" to company.id)

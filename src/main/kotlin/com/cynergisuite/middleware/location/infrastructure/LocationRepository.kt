@@ -55,7 +55,7 @@ class LocationRepository @Inject constructor(
             address.fax                   AS address_fax
          FROM fastinfo_prod_import.location_vw location
               JOIN company comp ON comp.dataset_code = location.dataset
-              LEFT JOIN address ON comp.address_id = address.id
+              LEFT JOIN address ON comp.address_id = address.id AND address.deleted = FALSE
       """
    }
 

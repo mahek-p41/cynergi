@@ -73,6 +73,7 @@ class PurchaseOrderDetailRepository @Inject constructor(
             poDetail.landed_cost                                      AS poDetail_landed_cost,
             poDetail.converted_purchase_order_number                  AS poDetail_converted_purchase_order_number,
             poDetail.approved_ind                                     AS poDetail_approved_ind,
+            poDetail.deleted                                          AS poDetail_deleted,
             po.po_id                                                  AS poDetail_po_id,
             po.po_time_created                                        AS poDetail_po_time_created,
             po.po_time_updated                                        AS poDetail_po_time_updated,
@@ -88,6 +89,7 @@ class PurchaseOrderDetailRepository @Inject constructor(
             po.po_total_freight_amount                                AS poDetail_po_total_freight_amount,
             po.po_vendor_submitted_time                               AS poDetail_po_vendor_submitted_time,
             po.po_ecommerce_indicator                                 AS poDetail_po_ecommerce_indicator,
+            po.po_deleted                                             AS poDetail_po_deleted,
             po.po_vendor_id                                           AS poDetail_po_vendor_id,
             po.po_vendor_time_created                                 AS poDetail_po_vendor_time_created,
             po.po_vendor_time_updated                                 AS poDetail_po_vendor_time_updated,
@@ -524,7 +526,7 @@ class PurchaseOrderDetailRepository @Inject constructor(
             count(*) OVER()                                           AS total_elements
          FROM purchase_order_detail poDetail
             JOIN company comp                                                  ON poDetail.company_id = comp.id
-            JOIN purchase_order_header po                                      ON poDetail.purchase_order_header_id = po.po_id
+            JOIN purchase_order_header po                                      ON poDetail.purchase_order_header_id = po.po_id AND po.po_deleted = FALSE
             JOIN vendor                                                        ON poDetail.vendor_id = vendor.v_id
             JOIN purchase_order_status_type_domain statusType                  ON poDetail.status_type_id = statusType.id
             JOIN purchase_order_requisition_indicator_type_domain poReqIndType ON poDetail.purchase_order_requisition_indicator_type_id = poReqIndType.id
@@ -534,7 +536,7 @@ class PurchaseOrderDetailRepository @Inject constructor(
 
    @ReadOnly fun findOne(id: UUID, company: CompanyEntity): PurchaseOrderDetailEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${selectBaseQuery()}\nWHERE poDetail.id = :id AND poDetail.company_id = :comp_id"
+      val query = "${selectBaseQuery()}\nWHERE poDetail.id = :id AND poDetail.company_id = :comp_id AND poDetail.deleted = FALSE"
 
       logger.debug("Searching for PurchaseOrderDetail using {} {}", query, params)
 
@@ -554,7 +556,7 @@ class PurchaseOrderDetailRepository @Inject constructor(
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
-            WHERE poDetail.company_id = :comp_id
+            WHERE poDetail.company_id = :comp_id AND poDetail.deleted = FALSE
             ORDER BY poDetail_${page.snakeSortBy()} ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
@@ -738,7 +740,8 @@ class PurchaseOrderDetailRepository @Inject constructor(
 
       val rowsAffected = jdbc.update(
          """
-         DELETE FROM purchase_order_detail
+         UPDATE purchase_order_detail
+         SET deleted = TRUE
          WHERE id = :id AND company_id = :company_id
          """,
          mapOf("id" to id, "company_id" to company.id)

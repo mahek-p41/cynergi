@@ -162,8 +162,8 @@ class VendorRepository @Inject constructor(
             JOIN freight_calc_method_type_domain method  ON method.id = v.freight_calc_method_type_id
             JOIN vendor_payment_term vpt                 ON vpt.id = v.vendor_payment_term_id
             JOIN ship_via shipVia                        ON shipVia.id = v.ship_via_id
-            LEFT OUTER JOIN address                      ON address.id = v.address_id
-            LEFT OUTER JOIN vendor_group vgrp            ON vgrp.id = v.vendor_group_id
+            LEFT OUTER JOIN address                      ON address.id = v.address_id AND address.deleted = FALSE
+            LEFT OUTER JOIN vendor_group vgrp            ON vgrp.id = v.vendor_group_id AND vgrp.deleted = FALSE
       """
 
    @ReadOnly

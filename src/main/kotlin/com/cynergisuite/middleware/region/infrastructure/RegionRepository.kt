@@ -89,7 +89,7 @@ class RegionRepository @Inject constructor(
                emp.dept_code                          AS dept_code,
                emp.dept_description                   AS dept_description
 	      FROM region AS reg
-            JOIN division AS div ON div.id = reg.division_id
+            JOIN division AS div ON div.id = reg.division_id AND div.deleted = FALSE
             LEFT JOIN emp ON emp.emp_number = reg.manager_number
       """
    }
@@ -99,7 +99,8 @@ class RegionRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id, "comp_dataset_code" to company.datasetCode)
       val query = """${selectBaseQuery()} WHERE reg.id = :id
                                                 AND div.company_id = :comp_id
-                                                AND (reg.manager_number IS null OR comp_dataset_code = :comp_dataset_code)"""
+                                                AND (reg.manager_number IS null OR comp_dataset_code = :comp_dataset_code)
+                                                AND reg.deleted = FALSE"""
 
       logger.trace("Searching for Region params {}: \nQuery {}", params, query)
 
@@ -124,6 +125,7 @@ class RegionRepository @Inject constructor(
             ${selectBaseQuery()}
             WHERE div.company_id = :comp_id
                   AND (reg.manager_number IS null OR comp_dataset_code = :comp_dataset_code)
+                  AND reg.deleted = FALSE
          )
          SELECT
             p.*,
@@ -209,7 +211,8 @@ class RegionRepository @Inject constructor(
 
          jdbc.deleteReturning(
             """
-            DELETE FROM region
+            UPDATE region
+            SET deleted = TRUE
             WHERE id = :id
             RETURNING
                *""",

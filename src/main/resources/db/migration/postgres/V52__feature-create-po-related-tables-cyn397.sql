@@ -79,7 +79,8 @@ CREATE TABLE purchase_order_header
     vendor_submitted_time         TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP(), -- Z column POH-VENDOR-SUBMITTAL-DATE, POH-VENDOR-SUBMITTAL-TIME, POH-VENDOR-SUBMITTAL-HOUR, POH-VENDOR-SUBMITTAL-MINUTE, POH-VENDOR-SUBMITTAL-SECOND
     vendor_submitted_employee_sfk INTEGER,
     ecommerce_indicator           BOOLEAN     DEFAULT FALSE                                NOT NULL,
-    customer_account_number_sfk   INTEGER
+    customer_account_number_sfk   INTEGER,
+    deleted                       BOOLEAN     DEFAULT FALSE                                NOT NULL
 );
 CREATE TRIGGER update_purchase_order_header_trg
     BEFORE UPDATE
@@ -129,7 +130,8 @@ CREATE TABLE purchase_order_detail
     purchase_order_requisition_indicator_type_id BIGINT REFERENCES purchase_order_requisition_indicator_type_domain (id)  NOT NULL,
     exception_ind_type_id                        BIGINT REFERENCES exception_ind_type_domain (id)                         NOT NULL,
     converted_purchase_order_number              INTEGER     DEFAULT 0                                                    NOT NULL,
-    approved_ind                                 BOOLEAN     DEFAULT FALSE                                                NOT NULL
+    approved_ind                                 BOOLEAN     DEFAULT FALSE                                                NOT NULL,
+    deleted                                      BOOLEAN     DEFAULT FALSE                                                NOT NULL
 );
 CREATE TRIGGER update_purchase_order_detail_trg
     BEFORE UPDATE

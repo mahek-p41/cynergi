@@ -18,7 +18,8 @@ CREATE TABLE ship_via
     time_updated TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()                   NOT NULL,
     number       BIGINT      DEFAULT NEXTVAL('ship_via_number_seq')      NOT NULL,
     description  VARCHAR(30) CHECK ( CHAR_LENGTH(TRIM(description)) > 1) NOT NULL,
-    company_id   UUID REFERENCES company (id)                            NOT NULL
+    company_id   UUID REFERENCES company (id)                            NOT NULL,
+    deleted      BOOLEAN     DEFAULT FALSE                               NOT NULL
 );
 CREATE TRIGGER update_shipvia_trg
     BEFORE UPDATE

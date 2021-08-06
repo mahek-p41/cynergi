@@ -71,7 +71,7 @@ class ShipViaRepository @Inject constructor(
    @ReadOnly fun findOne(id: UUID, company: CompanyEntity): ShipViaEntity? {
       logger.debug("Searching for ShipVia by id {}", id)
 
-      val found = jdbc.findFirstOrNull("${baseSelectQuery()} WHERE shipVia.id = :id AND comp.id = :comp_id", mapOf("id" to id, "comp_id" to company.id)) { rs, _ -> mapRow(rs) }
+      val found = jdbc.findFirstOrNull("${baseSelectQuery()} WHERE shipVia.id = :id AND comp.id = :comp_id AND shipVia.deleted = FALSE", mapOf("id" to id, "comp_id" to company.id)) { rs, _ -> mapRow(rs) }
 
       logger.trace("Searching for ShipVia: {} resulted in {}", id, found)
 
@@ -83,7 +83,7 @@ class ShipViaRepository @Inject constructor(
       return jdbc.queryPaged(
          """
          ${baseSelectQuery()}
-         WHERE comp.id = :comp_id
+         WHERE comp.id = :comp_id AND shipVia.deleted = FALSE
          ORDER BY shipVia.${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
@@ -101,7 +101,8 @@ class ShipViaRepository @Inject constructor(
    }
 
    @ReadOnly fun exists(id: Long, company: CompanyEntity): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM ship_via WHERE id = :id AND company_id = :comp_id)", mapOf("id" to id, "comp_id" to company.id), Boolean::class.java)
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM ship_via WHERE id = :id AND company_id = :comp_id AND shipVia.deleted = FALSE)",
+            mapOf("id" to id, "comp_id" to company.id), Boolean::class.java)
 
       logger.trace("Checking if ShipVia: {}/{} exists resulted in {}", id, company, exists)
 
@@ -109,7 +110,10 @@ class ShipViaRepository @Inject constructor(
    }
 
    @ReadOnly fun exists(description: String, company: CompanyEntity): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM ship_via WHERE UPPER(description) = UPPER(:description) AND company_id = :comp_id)", mapOf("description" to description, "comp_id" to company.id), Boolean::class.java)
+      val exists = jdbc.queryForObject("""
+            SELECT EXISTS(SELECT id FROM ship_via
+            WHERE UPPER(description) = UPPER(:description) AND company_id = :comp_id AND deleted = FALSE)""",
+            mapOf("description" to description, "comp_id" to company.id), Boolean::class.java)
 
       logger.trace("Checking if ShipVia: {}/{} exists resulted in {}", description, company, exists)
 
@@ -150,7 +154,8 @@ class ShipViaRepository @Inject constructor(
 
       val rowsAffected = jdbc.update(
          """
-         DELETE FROM ship_via
+         UPDATE ship_via
+         SET deleted = TRUE
          WHERE id = :id AND company_id = :company_id
          """,
          mapOf("id" to id, "company_id" to company.id)

@@ -62,6 +62,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
             acct.account_form_1099_field                              AS glSummary_acct_form_1099_field,
             acct.account_corporate_account_indicator                  AS glSummary_acct_corporate_account_indicator,
             acct.account_comp_id                                      AS glSummary_acct_comp_id,
+            acct.account_deleted                                      AS glSummary_acct_deleted,
             acct.account_type_id                                      AS glSummary_acct_type_id,
             acct.account_type_value                                   AS glSummary_acct_type_value,
             acct.account_type_description                             AS glSummary_acct_type_description,
@@ -88,7 +89,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
             JOIN fastinfo_prod_import.store_vw profitCenter
                     ON profitCenter.dataset = comp.dataset_code
                        AND profitCenter.id = glSummary.profit_center_id_sfk
-            JOIN account acct ON glSummary.account_id = acct.account_id
+            JOIN account acct ON glSummary.account_id = acct.account_id AND acct.account_deleted = FALSE
             JOIN overall_period_type_domain overallPeriod ON glSummary.overall_period_id = overallPeriod.id
       """
    }

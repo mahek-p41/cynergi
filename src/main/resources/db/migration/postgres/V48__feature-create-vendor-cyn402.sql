@@ -35,9 +35,10 @@ CREATE TABLE vendor_group
     id           UUID        DEFAULT uuid_generate_v1()                 NOT NULL PRIMARY KEY,
     time_created TIMESTAMPTZ DEFAULT clock_timestamp()                  NOT NULL,
     time_updated TIMESTAMPTZ DEFAULT clock_timestamp()                  NOT NULL,
-    company_id   UUID REFERENCES company (id)                         NOT NULL,
+    company_id   UUID REFERENCES company (id)                           NOT NULL,
     value        VARCHAR(10) CHECK (char_length(trim(value)) > 1)       NOT NULL,
     description  VARCHAR(50) CHECK (char_length(trim(description)) > 1) NOT NULL,
+    deleted      BOOLEAN     DEFAULT FALSE                              NOT NULL,
     UNIQUE (company_id, value)
 );
 CREATE TRIGGER update_vendor_group_trg
