@@ -7,17 +7,16 @@ CREATE TABLE bank_reconciliation_type_domain
     UNIQUE (value)
 );
 INSERT INTO bank_reconciliation_type_domain(id, value, description, localization_code)
-VALUES (1, 'C', 'Check', 'check'),
-       (2, 'D', 'Deposit', 'deposit'),
-       (3, 'F', 'Fee', 'fee'),
-       (4, 'I', 'Interest', 'interest'),
-       (5, 'M', 'Miscellaneous', 'miscellaneous'),
-       (6, 'S', 'Service Charge', 'service.charge'),
-       (7, 'T', 'Transfer', 'transfer'),
-       (8, 'R', 'Return Check', 'return.check'),
-       (9, 'V', 'Void', 'void');
-
-
+VALUES (1, 'A', 'ACH', 'ach'),
+       (2, 'C', 'Check', 'check'),
+       (3, 'D', 'Deposit', 'deposit'),
+       (4, 'F', 'Fee', 'fee'),
+       (5, 'I', 'Interest', 'interest'),
+       (6, 'M', 'Miscellaneous', 'miscellaneous'),
+       (7, 'S', 'Service Charge', 'service.charge'),
+       (8, 'T', 'Transfer', 'transfer'),
+       (9, 'R', 'Return Check', 'return.check'),
+       (10, 'V', 'Void', 'void');
 
 CREATE TABLE bank_reconciliation
 (
@@ -34,7 +33,7 @@ CREATE TABLE bank_reconciliation
     description      VARCHAR(15)                                             NOT NULL,
     search_vector    TSVECTOR                                                NOT NULL,
     -- tsv_description will allow for faster search allowing the use of index below due to what is stored in this field
-    document         INTEGER --- This holds the check number in relation to AP Check, system date for SUMGLINT and GLJE
+    document         VARCHAR(20)
 );
 CREATE TRIGGER bank_reconciliation_trg
     BEFORE UPDATE

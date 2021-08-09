@@ -43,9 +43,8 @@ data class BankReconciliationDTO(
    @field:Schema(description = "Bank reconciliation description")
    var description: String? = null,
 
-   @field:Valid
-   @field:Schema(required = false, description = "The check number in relation to AP Check, system date for SUMGLINT and GLJE.")
-   var document: Int? = null
+   @field:Schema(required = false, description = "The payment number is relation to AP payments (ACH or check), system date for SUMGLINT and GLJE.")
+   var document: String? = null
 
 ) : Identifiable {
    override fun myId(): UUID? = id

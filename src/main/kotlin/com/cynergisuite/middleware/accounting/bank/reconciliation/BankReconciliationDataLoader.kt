@@ -32,7 +32,7 @@ object BankReconciliationDataLoader {
             clearedDate = clearedDateIn,
             amount = numbers.numberBetween(1, 10_000).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
             description = lorem.word(),
-            document = numbers.numberBetween(1, 999)
+            document = lorem.sentence(1,2)
          )
       }
    }
@@ -52,7 +52,7 @@ object BankReconciliationDataLoader {
             clearedDate = clearedDateIn,
             amount = numbers.numberBetween(1, 10_000).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
             description = lorem.word(),
-            document = numbers.numberBetween(1, 999)
+            document = lorem.sentence(1,2)
          )
       }
    }
