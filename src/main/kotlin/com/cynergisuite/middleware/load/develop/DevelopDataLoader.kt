@@ -2,6 +2,8 @@ package com.cynergisuite.middleware.load.develop
 
 import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.payment.*
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.accounting.routine.RoutineDataLoaderService
 import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeDataLoader
@@ -20,6 +22,7 @@ import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.division.DivisionFactoryService
 import com.cynergisuite.middleware.employee.EmployeeFactoryService
+import com.cynergisuite.middleware.purchase.order.PurchaseOrderDataLoaderService
 import com.cynergisuite.middleware.region.RegionFactoryService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.store.StoreFactoryService
@@ -34,6 +37,7 @@ import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.random.Random
+import kotlin.streams.toList
 
 @Singleton
 @Requires(env = ["develop"])
@@ -58,7 +62,11 @@ class DevelopDataLoader @Inject constructor(
    private val vendorPaymentTermDataLoaderService: VendorPaymentTermTestDataLoaderService,
    private val vendorDataLoaderService: VendorTestDataLoaderService,
    private val accountPayableControlDataLoaderService: AccountPayableControlDataLoaderService,
-   private val routineDataLoaderService: RoutineDataLoaderService
+   private val routineDataLoaderService: RoutineDataLoaderService,
+   private val poDataLoaderService: PurchaseOrderDataLoaderService,
+   private val apInvoiceDataLoaderService: AccountPayableInvoiceDataLoaderService,
+   private val apPaymentDataLoaderService: AccountPayablePaymentDataLoaderService,
+   private val apPaymentDetailDataLoaderService: AccountPayablePaymentDetailDataLoaderService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(DevelopDataLoader::class.java)
 
@@ -175,8 +183,8 @@ class DevelopDataLoader @Inject constructor(
       // setup account & bank
       val corrtoAccount = accountDataLoaderService.single(corrto)
       accountDataLoaderService.stream(2, corrto).forEach { }
-      bankFactoryService.stream(3, corrtoStore1, corrtoAccount).forEach { }
-      bankFactoryService.stream(3, corrtoStore3, corrtoAccount).forEach { }
+      val corrtoStore1Banks = bankFactoryService.stream(3, corrtoStore1, corrtoAccount).toList()
+      val corrtoStore3Banks = bankFactoryService.stream(3, corrtoStore3, corrtoAccount).toList()
 
       val corptpAccount = accountDataLoaderService.single(corptp)
       bankFactoryService.stream(3, corptpStore1, corptpAccount).forEach { }
@@ -229,7 +237,7 @@ class DevelopDataLoader @Inject constructor(
 
       val shipVia = shipViaDataLoaderService.single(corrto)
       val vendorPaymentTerm = vendorPaymentTermDataLoaderService.singleWithSingle90DaysPayment(corrto)
-      vendorDataLoaderService.stream(3, corrto, vendorPaymentTerm, shipVia).forEach {}
+      val corrtoVendors = vendorDataLoaderService.stream(3, corrto, vendorPaymentTerm, shipVia).toList()
 
       accountPayableControlDataLoaderService.single(corrto, corrtoAccount, corrtoAccount)
 
@@ -243,6 +251,18 @@ class DevelopDataLoader @Inject constructor(
       routineDataLoaderService.streamFiscalYear(companies[1], OverallPeriodTypeDataLoader.predefined().first { it.value == "P" }, startingDate.minusYears(1)).forEach {}
       routineDataLoaderService.streamFiscalYear(companies[1], OverallPeriodTypeDataLoader.predefined().first { it.value == "C" }, startingDate).forEach {}
       routineDataLoaderService.streamFiscalYear(companies[1], OverallPeriodTypeDataLoader.predefined().first { it.value == "N" }, startingDate.plusYears(1)).forEach {}
+
+      val purchaseOrderIn = poDataLoaderService.single(corrto, corrtoVendors[0], corrtoStore1StoreManager, corrtoStore1StoreManager, shipVia, corrtoStore1, vendorPaymentTerm, corrtoStore1StoreManager)
+      val apInvoice = apInvoiceDataLoaderService.single(corrto, corrtoVendors[0], purchaseOrderIn, corrtoStore1StoreManager, corrtoVendors[1], corrtoStore1)
+      val paidPaymentStatus = AccountPayablePaymentStatusTypeDataLoader.predefined().first { it.value == "P"}
+      val achPaymentType = AccountPayablePaymentTypeTypeDataLoader.predefined().first { it.value == "A"}
+      val apPayments = apPaymentDataLoaderService.stream(2, corrto, corrtoStore1Banks[1], corrtoVendors[0], paidPaymentStatus, achPaymentType).toList()
+      apPaymentDataLoaderService.single(corrto, corrtoStore1Banks[1], corrtoVendors[1], paidPaymentStatus, achPaymentType)
+      apPaymentDataLoaderService.single(corrto, corrtoStore1Banks[2], corrtoVendors[1], paidPaymentStatus, achPaymentType)
+      val apPaymentDetails = mutableListOf<AccountPayablePaymentDetailEntity>()
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, corrto, corrtoVendors[0], apInvoice, apPayments[0]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(10, corrto, corrtoVendors[1], apInvoice, apPayments[0]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(10, corrto, corrtoVendors[2], apInvoice, apPayments[1]).toList())
 
       logger.info("Finished loading develop data")
       logger.info("Store 1 corrto employee {} / {} -> Store Number {} -> Department {}", corrtoStore1StoreManager.number, corrtoStore1StoreManager.passCode, corrtoStore1StoreManager.store?.myNumber(), corrtoStore1StoreManager.department?.myCode())

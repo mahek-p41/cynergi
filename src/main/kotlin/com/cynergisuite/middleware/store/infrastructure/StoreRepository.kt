@@ -274,7 +274,6 @@ class StoreRepository @Inject constructor(
             null
          }
       } catch (e: SQLException) {
-         logger.error("Unable to map Store", e)
          null
       }
 }

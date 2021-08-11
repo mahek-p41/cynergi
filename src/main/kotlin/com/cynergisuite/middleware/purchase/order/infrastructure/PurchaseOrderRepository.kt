@@ -118,7 +118,7 @@ class PurchaseOrderRepository @Inject constructor(
             vendor.v_charge_inventory_tax_4                     AS po_vendor_charge_inventory_tax_4,
             vendor.v_federal_id_number_verification             AS po_vendor_federal_id_number_verification,
             vendor.v_email_address                              AS po_vendor_email_address,
-            vendor.v_purchase_order_submit_email_address        AS po_vendor_purchase_order_submit_email_address,
+            vendor.v_purchase_order_submit_email                AS po_vendor_purchase_order_submit_email,
             vendor.v_allow_drop_ship_to_customer                AS po_vendor_allow_drop_ship_to_customer,
             vendor.v_auto_submit_purchase_order                 AS po_vendor_auto_submit_purchase_order,
             vendor.v_note                                       AS po_vendor_note,

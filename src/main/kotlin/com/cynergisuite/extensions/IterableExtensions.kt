@@ -9,3 +9,11 @@ fun Sequence<BigDecimal>.sum(): BigDecimal {
    }
    return sum
 }
+
+fun <E> Iterable<E>.sumByBigDecimal(selector: (E) -> BigDecimal): BigDecimal {
+   var sum: BigDecimal = BigDecimal.ZERO
+   for (element in this) {
+      sum += selector(element)
+   }
+   return sum
+}
