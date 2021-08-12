@@ -101,7 +101,15 @@ data class AccountPayableRecurringInvoiceDTO(
    var nextInvoiceDate: LocalDate? = null,
 
    @field:Schema(description = "Account payable recurring invoice next expense date", required = false)
-   var nextExpenseDate: LocalDate? = null
+   var nextExpenseDate: LocalDate? = null,
+
+   @field:NotNull
+   @field:Schema(description = "Account payable recurring invoice start date")
+   var startDate: LocalDate? = null,
+
+   @field:NotNull
+   @field:Schema(description = "Account payable recurring invoice end date")
+   var endDate: LocalDate? = null
 
 ) : Identifiable {
    constructor(
@@ -131,7 +139,9 @@ data class AccountPayableRecurringInvoiceDTO(
          lastCreatedInPeriod = entity.lastCreatedInPeriod,
          nextCreationDate = entity.nextCreationDate,
          nextInvoiceDate = entity.nextInvoiceDate,
-         nextExpenseDate = entity.nextExpenseDate
+         nextExpenseDate = entity.nextExpenseDate,
+         startDate = entity.startDate,
+         endDate = entity.endDate
       )
 
    override fun myId(): UUID? = id

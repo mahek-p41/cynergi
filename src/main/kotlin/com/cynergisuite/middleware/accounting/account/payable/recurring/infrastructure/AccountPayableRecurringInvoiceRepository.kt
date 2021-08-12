@@ -2,12 +2,7 @@ package com.cynergisuite.middleware.accounting.account.payable.recurring.infrast
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getLocalDateOrNull
-import com.cynergisuite.extensions.getUuid
-import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableRecurringInvoiceStatusType
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableRecurringInvoiceStatusTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceEntity
@@ -61,6 +56,8 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             apRecurringInvoice.next_creation_date                       AS apRecurringInvoice_next_creation_date,
             apRecurringInvoice.next_invoice_date                        AS apRecurringInvoice_next_invoice_date,
             apRecurringInvoice.next_expense_date                        AS apRecurringInvoice_next_expense_date,
+            apRecurringInvoice.start_date                               AS apRecurringInvoice_start_date,
+            apRecurringInvoice.end_date                                 AS apRecurringInvoice_end_date,
             vendor.v_id                                                 AS apRecurringInvoice_vendor_id,
             vendor.v_time_created                                       AS apRecurringInvoice_vendor_time_created,
             vendor.v_time_updated                                       AS apRecurringInvoice_vendor_time_updated,
@@ -378,7 +375,9 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             last_created_in_period,
             next_creation_date,
             next_invoice_date,
-            next_expense_date
+            next_expense_date,
+            start_date,
+            end_date
          )
          VALUES (
             :company_id,
@@ -403,7 +402,9 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             :last_created_in_period,
             :next_creation_date,
             :next_invoice_date,
-            :next_expense_date
+            :next_expense_date,
+            :start_date,
+            :end_date
          )
          RETURNING
             *
@@ -431,7 +432,9 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             "last_created_in_period" to entity.lastCreatedInPeriod,
             "next_creation_date" to entity.nextCreationDate,
             "next_invoice_date" to entity.nextInvoiceDate,
-            "next_expense_date" to entity.nextExpenseDate
+            "next_expense_date" to entity.nextExpenseDate,
+            "start_date" to entity.startDate,
+            "end_date" to entity.endDate
          )
       ) { rs, _ ->
          mapRow(
@@ -478,7 +481,9 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             last_created_in_period = :last_created_in_period,
             next_creation_date = :next_creation_date,
             next_invoice_date = :next_invoice_date,
-            next_expense_date = :next_expense_date
+            next_expense_date = :next_expense_date,
+            start_date = :start_date,
+            end_date = :end_date
          WHERE id = :id
          RETURNING
             *
@@ -507,7 +512,9 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             "last_created_in_period" to entity.lastCreatedInPeriod,
             "next_creation_date" to entity.nextCreationDate,
             "next_invoice_date" to entity.nextInvoiceDate,
-            "next_expense_date" to entity.nextExpenseDate
+            "next_expense_date" to entity.nextExpenseDate,
+            "start_date" to entity.startDate,
+            "end_date" to entity.endDate
          )
       ) { rs, _ ->
          mapRow(
@@ -553,7 +560,9 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
          lastCreatedInPeriod = rs.getLocalDateOrNull("${columnPrefix}last_created_in_period"),
          nextCreationDate = rs.getLocalDateOrNull("${columnPrefix}next_creation_date"),
          nextInvoiceDate = rs.getLocalDateOrNull("${columnPrefix}next_invoice_date"),
-         nextExpenseDate = rs.getLocalDateOrNull("${columnPrefix}next_expense_date")
+         nextExpenseDate = rs.getLocalDateOrNull("${columnPrefix}next_expense_date"),
+         startDate = rs.getLocalDate("${columnPrefix}start_date"),
+         endDate = rs.getLocalDate("${columnPrefix}end_date")
       )
    }
 
@@ -585,7 +594,9 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
          lastCreatedInPeriod = rs.getLocalDateOrNull("${columnPrefix}last_created_in_period"),
          nextCreationDate = rs.getLocalDateOrNull("${columnPrefix}next_creation_date"),
          nextInvoiceDate = rs.getLocalDateOrNull("${columnPrefix}next_invoice_date"),
-         nextExpenseDate = rs.getLocalDateOrNull("${columnPrefix}next_expense_date")
+         nextExpenseDate = rs.getLocalDateOrNull("${columnPrefix}next_expense_date"),
+         startDate = rs.getLocalDate("${columnPrefix}start_date"),
+         endDate = rs.getLocalDate("${columnPrefix}end_date")
       )
    }
 }

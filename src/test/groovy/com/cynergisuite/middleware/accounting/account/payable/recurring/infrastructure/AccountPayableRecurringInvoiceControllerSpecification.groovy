@@ -76,6 +76,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
          nextCreationDate == accountPayableRecurringInvoiceEntity.nextCreationDate.toString()
          nextInvoiceDate == accountPayableRecurringInvoiceEntity.nextInvoiceDate.toString()
          nextExpenseDate == accountPayableRecurringInvoiceEntity.nextExpenseDate.toString()
+         startDate == accountPayableRecurringInvoiceEntity.startDate.toString()
+         endDate == accountPayableRecurringInvoiceEntity.endDate.toString()
       }
    }
 
@@ -140,6 +142,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
                nextCreationDate == firstPageAccountPayableRecurringInvoice[index].nextCreationDate.toString()
                nextInvoiceDate == firstPageAccountPayableRecurringInvoice[index].nextInvoiceDate.toString()
                nextExpenseDate == firstPageAccountPayableRecurringInvoice[index].nextExpenseDate.toString()
+               startDate == firstPageAccountPayableRecurringInvoice[index].startDate.toString()
+               endDate == firstPageAccountPayableRecurringInvoice[index].endDate.toString()
             }
          }
       }
@@ -192,6 +196,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
                nextCreationDate == lastPageAccountPayableRecurringInvoice[index].nextCreationDate.toString()
                nextInvoiceDate == lastPageAccountPayableRecurringInvoice[index].nextInvoiceDate.toString()
                nextExpenseDate == lastPageAccountPayableRecurringInvoice[index].nextExpenseDate.toString()
+               startDate == lastPageAccountPayableRecurringInvoice[index].startDate.toString()
+               endDate == lastPageAccountPayableRecurringInvoice[index].endDate.toString()
             }
          }
       }
@@ -249,6 +255,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
          nextCreationDate == accountPayableRecurringInvoiceDTO.nextCreationDate.toString()
          nextInvoiceDate == accountPayableRecurringInvoiceDTO.nextInvoiceDate.toString()
          nextExpenseDate == accountPayableRecurringInvoiceDTO.nextExpenseDate.toString()
+         startDate == accountPayableRecurringInvoiceDTO.startDate.toString()
+         endDate == accountPayableRecurringInvoiceDTO.endDate.toString()
       }
    }
 
@@ -311,6 +319,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
          nextCreationDate == null
          nextInvoiceDate == null
          nextExpenseDate == null
+         startDate == accountPayableRecurringInvoiceDTO.startDate.toString()
+         endDate == accountPayableRecurringInvoiceDTO.endDate.toString()
       }
    }
 
@@ -352,6 +362,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       'expenseMonthCreationIndicator'  || 'expenseMonthCreationIndicator'
       'invoiceDay'                     || 'invoiceDay'
       'expenseDay'                     || 'expenseDay'
+      'startDate'                      || 'startDate'
+      'endDate'                        || 'endDate'
    }
 
    @Unroll
@@ -437,6 +449,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
          nextCreationDate == accountPayableRecurringInvoiceDTO.nextCreationDate.toString()
          nextInvoiceDate == accountPayableRecurringInvoiceDTO.nextInvoiceDate.toString()
          nextExpenseDate == accountPayableRecurringInvoiceDTO.nextExpenseDate.toString()
+         startDate == accountPayableRecurringInvoiceDTO.startDate.toString()
+         endDate == accountPayableRecurringInvoiceDTO.endDate.toString()
       }
    }
 
@@ -501,6 +515,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
          nextCreationDate == null
          nextInvoiceDate == null
          nextExpenseDate == null
+         startDate == accountPayableRecurringInvoiceDTO.startDate.toString()
+         endDate == accountPayableRecurringInvoiceDTO.endDate.toString()
       }
    }
 
