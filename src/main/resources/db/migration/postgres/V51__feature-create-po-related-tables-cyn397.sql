@@ -108,7 +108,7 @@ CREATE TABLE purchase_order_detail
     number                                       BIGINT CHECK ( number > 0 ),
     purchase_order_header_id                     UUID REFERENCES purchase_order_header (id)                               NOT NULL,
     company_id                                   UUID REFERENCES company (id)                                             NOT NULL,
-    itemfile_number_sfk                          CHARACTER VARYING(18) CHECK (CHAR_LENGTH(TRIM(itemfile_number_sfk)) > 1) NOT NULL,
+    itemfile_number_sfk                          CHARACTER VARYING(25) CHECK (CHAR_LENGTH(TRIM(itemfile_number_sfk)) > 1) NOT NULL,
     order_quantity                               INTEGER                                                                  NOT NULL,
     received_quantity                            INTEGER                                                                  NOT NULL,
     cost                                         NUMERIC(11, 3)                                                           NOT NULL,

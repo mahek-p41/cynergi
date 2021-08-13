@@ -36,7 +36,7 @@ data class PurchaseOrderDetailDTO(
    var purchaseOrder: PurchaseOrderDTO? = null,
 
    @field:NotNull
-   @field:Schema(name = "itemfileNumber", description = "Itemfile number")
+   @field:Schema(name = "itemfileNumber", description = "Itemfile number", minLength = 1, maxLength = 25)
    var itemfileNumber: String? = null,
 
    @field:NotNull
