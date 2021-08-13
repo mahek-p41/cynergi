@@ -17,8 +17,8 @@ CREATE TRIGGER account_payable_distribution_template_trg
     FOR EACH ROW
 EXECUTE PROCEDURE update_user_table_fn();
 
-CREATE INDEX account_payable_distribution_account_idx ON account_payable_distribution_template (account_id);
+CREATE INDEX account_payable_distribution_account_idx ON account_payable_distribution_template (account_id) WHERE deleted is FALSE;
 
-CREATE INDEX account_payable_distribution_company_idx ON account_payable_distribution_template (company_id);
+CREATE INDEX account_payable_distribution_company_idx ON account_payable_distribution_template (company_id) WHERE deleted is FALSE;
 
 COMMENT ON TABLE account_payable_distribution_template IS 'Table holds the template values which can be used in the account payable invoice and journal entry creation processes';

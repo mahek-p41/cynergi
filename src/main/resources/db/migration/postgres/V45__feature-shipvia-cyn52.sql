@@ -28,3 +28,4 @@ CREATE TRIGGER update_shipvia_trg
 EXECUTE PROCEDURE update_user_table_fn();
 
 CREATE UNIQUE INDEX ship_via_desc_id_idx ON ship_via USING btree (company_id, (UPPER(description)));
+CREATE INDEX ship_via_deleted_idx ON ship_via (deleted);

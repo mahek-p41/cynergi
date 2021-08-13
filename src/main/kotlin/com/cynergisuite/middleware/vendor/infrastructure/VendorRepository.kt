@@ -525,7 +525,7 @@ class VendorRepository @Inject constructor(
          )
       }
 
-      addressToDelete?.let { addressRepository.delete(it) } // delete address if it exists, done this way because it avoids the race condition compilation error
+      addressToDelete?.let { addressRepository.deleteById(it.id!!) } // delete address if it exists, done this way because it avoids the race condition compilation error
 
       return updatedVendor
    }

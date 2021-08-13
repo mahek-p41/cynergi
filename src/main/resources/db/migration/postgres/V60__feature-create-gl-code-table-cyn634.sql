@@ -16,4 +16,4 @@ CREATE TRIGGER general_ledger_source_codes_trg
 EXECUTE PROCEDURE update_user_table_fn();
 
 
-CREATE INDEX general_ledger_source_codes_company_idx ON general_ledger_source_codes (company_id);
+CREATE INDEX general_ledger_source_codes_company_idx ON general_ledger_source_codes (company_id) WHERE deleted is FALSE;

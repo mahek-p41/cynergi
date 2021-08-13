@@ -41,6 +41,9 @@ CREATE TABLE vendor_group
     deleted      BOOLEAN     DEFAULT FALSE                              NOT NULL,
     UNIQUE (company_id, value)
 );
+
+CREATE INDEX vendor_group_deleted_idx ON vendor_group(deleted);
+
 CREATE TRIGGER update_vendor_group_trg
     BEFORE UPDATE
     ON vendor_group

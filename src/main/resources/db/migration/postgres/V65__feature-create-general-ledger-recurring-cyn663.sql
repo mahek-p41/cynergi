@@ -34,9 +34,9 @@ CREATE TRIGGER update_general_ledger_recurring_trg
     FOR EACH ROW
 EXECUTE PROCEDURE update_user_table_fn();
 
-CREATE INDEX general_ledger_recurring_company_id_idx ON general_ledger_recurring(company_id);
-CREATE INDEX general_ledger_recurring_source_id_idx ON general_ledger_recurring(source_id);
-CREATE INDEX general_ledger_recurring_type_id_idx ON general_ledger_recurring(type_id);
+CREATE INDEX general_ledger_recurring_company_id_idx ON general_ledger_recurring(company_id) WHERE deleted is FALSE;
+CREATE INDEX general_ledger_recurring_source_id_idx ON general_ledger_recurring(source_id) WHERE deleted is FALSE;
+CREATE INDEX general_ledger_recurring_type_id_idx ON general_ledger_recurring(type_id) WHERE deleted is FALSE;
 
 CREATE TABLE general_ledger_recurring_distribution
 (
@@ -56,8 +56,8 @@ CREATE TRIGGER update_general_ledger_recurring_distribution_trg
 EXECUTE PROCEDURE update_user_table_fn();
 
 
-CREATE INDEX general_ledger_recurring_id_idx ON general_ledger_recurring_distribution (general_ledger_recurring_id);
-CREATE INDEX general_ledger_recurring_dist_account_idx ON general_ledger_recurring_distribution (general_ledger_distribution_account_id);
+CREATE INDEX general_ledger_recurring_id_idx ON general_ledger_recurring_distribution (general_ledger_recurring_id) WHERE deleted is FALSE;
+CREATE INDEX general_ledger_recurring_dist_account_idx ON general_ledger_recurring_distribution (general_ledger_distribution_account_id) WHERE deleted is FALSE;
 
 COMMENT ON TABLE  general_ledger_recurring IS 'Table holds the defaults/values to allow manual creation of general ledger journal entries.';
 COMMENT ON TABLE  general_ledger_recurring_distribution IS 'Table holds the general ledger recurring distributions associated with general_ledger_recurring table.';

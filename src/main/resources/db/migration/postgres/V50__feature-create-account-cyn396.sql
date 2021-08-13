@@ -76,11 +76,11 @@ END;
 $$
     LANGUAGE plpgsql STRICT;
 
-CREATE INDEX account_company_id_idx ON account (company_id);
-CREATE INDEX account_type_id_idx ON account (type_id);
-CREATE INDEX account_status_type_id_idx ON account (status_type_id);
-CREATE INDEX account_search_idx ON account USING gist(name gist_trgm_ops);
-CREATE INDEX account_vector_idx ON account USING gin(search_vector);
+CREATE INDEX account_company_id_idx ON account (company_id) WHERE deleted is FALSE;
+CREATE INDEX account_type_id_idx ON account (type_id) WHERE deleted is FALSE;
+CREATE INDEX account_status_type_id_idx ON account (status_type_id) WHERE deleted is FALSE;
+CREATE INDEX account_search_idx ON account USING gist(name gist_trgm_ops) WHERE deleted is FALSE;
+CREATE INDEX account_vector_idx ON account USING gin(search_vector) WHERE deleted is FALSE;
 
 CREATE TRIGGER account_search_update_trg
     BEFORE INSERT OR UPDATE
@@ -112,5 +112,5 @@ CREATE TRIGGER update_bank_trg
     ON bank
     FOR EACH ROW
 EXECUTE PROCEDURE update_user_table_fn();
-CREATE INDEX bank_company_id_idx ON bank (company_id);
+CREATE INDEX bank_company_id_idx ON bank (company_id) WHERE deleted is FALSE;
 -- end bank setup
