@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.purchase.order
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
@@ -42,13 +42,13 @@ class PurchaseOrderValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(PurchaseOrderValidator::class.java)
 
-   fun validateCreate(dto: PurchaseOrderDTO, company: Company): PurchaseOrderEntity {
+   fun validateCreate(dto: PurchaseOrderDTO, company: CompanyEntity): PurchaseOrderEntity {
       logger.trace("Validating Create PurchaseOrder {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: UUID, dto: PurchaseOrderDTO, company: Company): PurchaseOrderEntity {
+   fun validateUpdate(id: UUID, dto: PurchaseOrderDTO, company: CompanyEntity): PurchaseOrderEntity {
       logger.debug("Validating Update PurchaseOrder {}", dto)
 
       val existingEntity = purchaseOrderRepository.findOne(id, company) ?: throw NotFoundException(id)
@@ -56,7 +56,7 @@ class PurchaseOrderValidator @Inject constructor(
       return doSharedValidation(dto, company, existingEntity)
    }
 
-   private fun doSharedValidation(dto: PurchaseOrderDTO, company: Company, existingEntity: PurchaseOrderEntity? = null): PurchaseOrderEntity {
+   private fun doSharedValidation(dto: PurchaseOrderDTO, company: CompanyEntity, existingEntity: PurchaseOrderEntity? = null): PurchaseOrderEntity {
       val vendor = vendorRepository.findOne(dto.vendor!!.id!!, company)
       val statusType = statusTypeRepository.findOne(dto.statusType!!.value)
       val type = typeRepository.findOne(dto.type!!.value)

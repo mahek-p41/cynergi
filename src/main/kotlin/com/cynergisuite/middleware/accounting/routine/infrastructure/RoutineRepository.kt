@@ -6,17 +6,20 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.routine.RoutineDateRangeDTO
 import com.cynergisuite.middleware.accounting.routine.RoutineEntity
 import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodType
 import com.cynergisuite.middleware.accounting.routine.type.infrastructure.OverallPeriodTypeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -25,7 +28,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class RoutineRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val overallPeriodTypeRepository: OverallPeriodTypeRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(RoutineRepository::class.java)
@@ -54,8 +57,9 @@ class RoutineRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): RoutineEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): RoutineEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()} WHERE r.id = :id AND r.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
@@ -72,7 +76,8 @@ class RoutineRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<RoutineEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<RoutineEntity, PageRequest> {
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
@@ -81,7 +86,7 @@ class RoutineRepository @Inject constructor(
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to page.size(),
             "offset" to page.offset()
          ),
@@ -93,8 +98,9 @@ class RoutineRepository @Inject constructor(
       }
    }
 
-   fun exists(company: Company, overallPeriodTypeId: Int, period: Int): Boolean {
-      val params = mutableMapOf("comp_id" to company.myId(), "overallPeriodId" to overallPeriodTypeId, "period" to period)
+   @ReadOnly
+   fun exists(company: CompanyEntity, overallPeriodTypeId: Int, period: Int): Boolean {
+      val params = mutableMapOf("comp_id" to company.id, "overallPeriodId" to overallPeriodTypeId, "period" to period)
       val exists = jdbc.queryForObject(
          """
          SELECT EXISTS (SELECT id
@@ -103,7 +109,7 @@ class RoutineRepository @Inject constructor(
          """.trimIndent(),
          params,
          Boolean::class.java
-      )!!
+      )
 
       logger.trace("Checking if financial_calendar: {} exists resulted in {}", params, exists)
 
@@ -111,7 +117,7 @@ class RoutineRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: RoutineEntity, company: Company): RoutineEntity {
+   fun insert(entity: RoutineEntity, company: CompanyEntity): RoutineEntity {
       logger.debug("Inserting financial_calendar {}", company)
 
       return jdbc.insertReturning(
@@ -140,7 +146,7 @@ class RoutineRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "overall_period_id" to entity.overallPeriod.id,
             "period" to entity.period,
             "period_from" to entity.periodFrom,
@@ -155,7 +161,7 @@ class RoutineRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: RoutineEntity, company: Company): RoutineEntity {
+   fun update(entity: RoutineEntity, company: CompanyEntity): RoutineEntity {
       logger.debug("Updating financial_calendar {}", entity)
 
       return jdbc.updateReturning(
@@ -176,7 +182,7 @@ class RoutineRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "overall_period_id" to entity.overallPeriod.id,
             "period" to entity.period,
             "period_from" to entity.periodFrom,
@@ -191,7 +197,7 @@ class RoutineRepository @Inject constructor(
    }
 
    @Transactional
-   fun openGLAccountsForPeriods(dateRangeDTO: RoutineDateRangeDTO, company: Company) {
+   fun openGLAccountsForPeriods(dateRangeDTO: RoutineDateRangeDTO, company: CompanyEntity) {
       logger.debug("Set GLAccounts to false")
 
       val affectedRowCount = jdbc.update(
@@ -206,7 +212,7 @@ class RoutineRepository @Inject constructor(
             AND overallPeriod.value = :financial_period
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "financial_period" to "C",
             "general_ledger_open" to false
          )
@@ -228,7 +234,7 @@ class RoutineRepository @Inject constructor(
             AND finCal.period_from BETWEEN :from_date AND :to_date
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "financial_period" to "C",
             "general_ledger_open" to true,
             "from_date" to dateRangeDTO.periodFrom,
@@ -240,7 +246,7 @@ class RoutineRepository @Inject constructor(
    }
 
    @Transactional
-   fun openAPAccountsForPeriods(dateRangeDTO: RoutineDateRangeDTO, company: Company) {
+   fun openAPAccountsForPeriods(dateRangeDTO: RoutineDateRangeDTO, company: CompanyEntity) {
       logger.debug("Set APAccounts to false")
 
       val affectedRowCount = jdbc.update(
@@ -255,7 +261,7 @@ class RoutineRepository @Inject constructor(
             AND overallPeriod.value = :financial_period
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "financial_period" to "C",
             "account_payable_open" to false
          )
@@ -277,7 +283,7 @@ class RoutineRepository @Inject constructor(
             AND finCal.period_from BETWEEN :from_date AND :to_date
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "financial_period" to "C",
             "account_payable_open" to true,
             "from_date" to dateRangeDTO.periodFrom,
@@ -289,7 +295,7 @@ class RoutineRepository @Inject constructor(
    }
 
    @Transactional
-   fun insertFinancialCalendar(entity: RoutineEntity, company: Company): RoutineEntity {
+   fun insertFinancialCalendar(entity: RoutineEntity, company: CompanyEntity): RoutineEntity {
       logger.debug("Creating entire financial_calendar {}", company)
 
       return jdbc.insertReturning(
@@ -318,7 +324,7 @@ class RoutineRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "overall_period_id" to entity.overallPeriod.id,
             "period" to entity.period,
             "period_from" to entity.periodFrom,

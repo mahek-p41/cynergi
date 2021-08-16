@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.purchase.order.detail
 
 import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.domain.ValidatorBase
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.purchase.order.infrastructure.PurchaseOrderRepository
@@ -28,19 +28,19 @@ class PurchaseOrderDetailValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(PurchaseOrderDetailValidator::class.java)
 
-   fun validateCreate(dto: PurchaseOrderDetailDTO, company: Company): PurchaseOrderDetailEntity {
+   fun validateCreate(dto: PurchaseOrderDetailDTO, company: CompanyEntity): PurchaseOrderDetailEntity {
       logger.trace("Validating Create PurchaseOrderDetail {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: UUID, dto: PurchaseOrderDetailDTO, company: Company): PurchaseOrderDetailEntity {
+   fun validateUpdate(id: UUID, dto: PurchaseOrderDetailDTO, company: CompanyEntity): PurchaseOrderDetailEntity {
       logger.debug("Validating Update PurchaseOrderDetail {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   private fun doSharedValidation(dto: PurchaseOrderDetailDTO, company: Company): PurchaseOrderDetailEntity {
+   private fun doSharedValidation(dto: PurchaseOrderDetailDTO, company: CompanyEntity): PurchaseOrderDetailEntity {
       val purchaseOrder = purchaseOrderRepository.findOne(dto.purchaseOrder!!.id!!, company)
       val shipTo = storeRepository.findOne(dto.shipTo!!.id!!, company)
       val vendor = vendorRepository.findOne(dto.vendor!!.id!!, company)

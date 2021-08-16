@@ -8,9 +8,10 @@ import com.cynergisuite.extensions.getOffsetDateTimeOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderEntity
@@ -24,10 +25,11 @@ import com.cynergisuite.middleware.shipping.shipvia.infrastructure.ShipViaReposi
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -36,7 +38,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class PurchaseOrderRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val accountRepository: AccountRepository,
    private val employeeRepository: EmployeeRepository,
    private val exceptionIndicatorTypeRepository: ExceptionIndicatorTypeRepository,
@@ -423,13 +425,14 @@ class PurchaseOrderRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): PurchaseOrderEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): PurchaseOrderEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()}\nWHERE po.id = :id AND po.company_id = :comp_id"
 
       logger.debug("Searching for PurchaseOrder using {} {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs ->
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ ->
          val purchaseOrder = mapRow(rs, company, "po_")
 
          purchaseOrder
@@ -440,7 +443,8 @@ class PurchaseOrderRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<PurchaseOrderEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<PurchaseOrderEntity, PageRequest> {
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
@@ -449,7 +453,7 @@ class PurchaseOrderRepository @Inject constructor(
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to page.size(),
             "offset" to page.offset()
          ),
@@ -462,7 +466,7 @@ class PurchaseOrderRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: PurchaseOrderEntity, company: Company): PurchaseOrderEntity {
+   fun insert(entity: PurchaseOrderEntity, company: CompanyEntity): PurchaseOrderEntity {
       logger.debug("Inserting PurchaseOrder {}", entity)
 
       return jdbc.insertReturning(
@@ -526,7 +530,7 @@ class PurchaseOrderRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "number" to entity.number,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "vendor_id" to entity.vendor.id,
             "status_type_id" to entity.statusType.id,
             "order_date" to entity.orderDate,
@@ -555,7 +559,7 @@ class PurchaseOrderRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: PurchaseOrderEntity, company: Company): PurchaseOrderEntity {
+   fun update(entity: PurchaseOrderEntity, company: CompanyEntity): PurchaseOrderEntity {
       logger.debug("Updating PurchaseOrder {}", entity)
 
       return jdbc.updateReturning(
@@ -594,7 +598,7 @@ class PurchaseOrderRepository @Inject constructor(
          mapOf(
             "id" to entity.id,
             "number" to entity.number,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "vendor_id" to entity.vendor.id,
             "status_type_id" to entity.statusType.id,
             "order_date" to entity.orderDate,
@@ -623,7 +627,7 @@ class PurchaseOrderRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: UUID, company: Company) {
+   fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting PurchaseOrder with id={}", id)
 
       val rowsAffected = jdbc.update(
@@ -631,7 +635,7 @@ class PurchaseOrderRepository @Inject constructor(
          DELETE FROM purchase_order_header
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.myId())
+         mapOf("id" to id, "company_id" to company.id)
       )
 
       logger.info("Row affected {}", rowsAffected)
@@ -641,7 +645,7 @@ class PurchaseOrderRepository @Inject constructor(
       }
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): PurchaseOrderEntity {
+   fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): PurchaseOrderEntity {
       return PurchaseOrderEntity(
          id = rs.getUuid("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
@@ -671,7 +675,7 @@ class PurchaseOrderRepository @Inject constructor(
       )
    }
 
-   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): PurchaseOrderEntity? =
+   fun mapRowOrNull(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): PurchaseOrderEntity? =
       if (rs.getString("${columnPrefix}id") != null) {
          mapRow(rs, company, columnPrefix)
       } else {

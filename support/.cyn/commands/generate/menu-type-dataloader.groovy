@@ -5,15 +5,18 @@
 import groovy.sql.Sql
 
 Sql.newInstance('jdbc:postgresql://localhost:7432/cynergitestdb', 'postgres', 'password', 'org.postgresql.Driver').withCloseable {sql ->
-   sql.eachRow("SELECT id, value, description, localization_code, area_type_id, order_number FROM menu_type_domain") { row ->
+   sql.eachRow("SELECT id, parent_id, value, description, localization_code, area_type_id, order_number FROM menu_type_domain") { row ->
       print """
-MenuType(
-   id = ${row.id},
-   value = "${row.value}",
-   description = "${row.description}",
-   localizationCode = "${row.localization_code}",
-   orderNumber = ${row.order_number},
-   areaType = AreaDataLoader.areaTypes().first { it.id == ${row.area_type_id} }
+new MenuType(
+   ${row.id},
+   ${row.parent_id},
+   "${row.value}",
+   "${row.description}",
+   "${row.localization_code}",
+   ${row.order_number},
+   AreaDataLoader.areaTypes().find { it.id == ${row.area_type_id} },
+   [],
+   []
 ),"""
    }
 }

@@ -109,7 +109,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
-      final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
+      final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
 
       when:
       def result = post(path, glRecurring)
@@ -140,7 +140,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
-      final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
+      final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       glRecurring.message = null
       glRecurring.endDate = null
       glRecurring.lastTransferDate = null
@@ -176,7 +176,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
-      final recurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
+      final recurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       recurringDTO["$nonNullableProp"] = null
 
       when:
@@ -203,7 +203,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
-      final recurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
+      final recurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       recurringDTO["$testProp"] = invalidValue
 
       when:
@@ -228,7 +228,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
       final glRecurringEntity = generalLedgerRecurringDataLoaderService.single(tstds1, glSourceCode)
-      final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
+      final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       glRecurring.id = glRecurringEntity.id
 
       when:
@@ -261,7 +261,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
       final glRecurringEntity = generalLedgerRecurringDataLoaderService.single(tstds1, glSourceCode)
-      final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
+      final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       glRecurring.id = glRecurringEntity.id
       glRecurring.message = null
       glRecurring.endDate = null
@@ -299,7 +299,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
       final glRecurringEntity = generalLedgerRecurringDataLoaderService.single(tstds1, glSourceCode)
-      final glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
+      final glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       glRecurringDTO.id = glRecurringEntity.id
       glRecurringDTO["$nonNullableProp"] = null
 
@@ -328,7 +328,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
       final recurringEntity = generalLedgerRecurringDataLoaderService.single(tstds1, glSourceCode)
-      final recurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(tstds1, glSourceCode)
+      final recurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       recurringDTO["$testProp"] = invalidValue
 
       when:

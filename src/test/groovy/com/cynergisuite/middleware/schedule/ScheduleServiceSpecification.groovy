@@ -1,9 +1,9 @@
 package com.cynergisuite.middleware.schedule
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
-import com.cynergisuite.middleware.audit.AuditFactoryService
+import com.cynergisuite.middleware.audit.AuditTestDataLoaderService
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
-import com.cynergisuite.middleware.audit.schedule.AuditScheduleFactoryService
+import com.cynergisuite.middleware.audit.schedule.AuditScheduleTestDataLoaderService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -16,21 +16,21 @@ import static java.time.DayOfWeek.WEDNESDAY
 @MicronautTest(transactional = false)
 class ScheduleServiceSpecification extends ServiceSpecificationBase {
    @Inject AuditRepository auditRepository
-   @Inject AuditScheduleFactoryService auditScheduleFactoryService
-   @Inject AuditFactoryService auditFactoryService
+   @Inject AuditScheduleTestDataLoaderService auditScheduleTestDataLoaderService
+   @Inject AuditTestDataLoaderService auditTestDataLoaderService
    @Inject ScheduleService scheduleService
 
    void "execute daily Tuesday audit job on Tuesday dataset 1" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
-      auditFactoryService.single(storeOne, [AuditStatusFactory.created()] as Set)
-      auditFactoryService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      auditFactoryService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created()] as Set)
+      auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       final employee = employeeFactoryService.single(storeOne)
       final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, false) // make ourselves a user who can see all audits
 
-      auditScheduleFactoryService.single(TUESDAY, [storeOne], user, company)
+      auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company)
 
       when:
       def result = scheduleService.runDaily(TUESDAY)
@@ -50,12 +50,12 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       given: 'One past due audit in status open'
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
-      auditFactoryService.single(storeOne, [AuditStatusFactory.created()] as Set)
-      auditFactoryService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created()] as Set)
+      auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       final employee = employeeFactoryService.single(storeOne)
       final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, false) // make ourselves a user who can see all audits
 
-      auditScheduleFactoryService.single(TUESDAY, [storeOne], user, company)
+      auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company)
 
       when:
       def result = scheduleService.runDaily(TUESDAY)
@@ -76,9 +76,9 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(storeOne)
-      auditFactoryService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, false) // make ourselves a user who can see all audits
-      auditScheduleFactoryService.single(TUESDAY, [storeOne], user, company)
+      auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company)
 
       when:
       def result = scheduleService.runDaily(WEDNESDAY)

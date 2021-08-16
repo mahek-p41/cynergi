@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.UUID
-import javax.annotation.Nullable
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
@@ -22,14 +21,12 @@ data class AuditScanAreaDTO(
    @field:Schema(description = "Scan area name")
    var name: String? = null,
 
-   @field:Nullable
    @field:Size(min = 3, max = 50)
    @field:Schema(description = "This is a database driven with the original values being SHOWROOM, STOREROOM and WAREHOUSE")
    var value: String? = null,
 
-   @field:Nullable
    @field:Size(min = 3, max = 50)
-   @field:Schema(description = "A localized description suitable for showing the user")
+   @field:Schema(description = "Long form explanation of where the area is in the Store")
    var description: String? = null,
 
    @field:NotNull

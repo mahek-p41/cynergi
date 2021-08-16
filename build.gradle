@@ -1,13 +1,13 @@
 import java.text.SimpleDateFormat
 
 plugins {
-   id "io.spring.dependency-management" version "1.0.6.RELEASE"
-   id "com.github.johnrengelman.shadow" version "5.2.0"
    id "org.jetbrains.kotlin.jvm" version "${kotlinVersion}"
    id "org.jetbrains.kotlin.kapt" version "${kotlinVersion}"
+   id "com.github.johnrengelman.shadow" version "7.0.0"
+   id "io.micronaut.application" version "1.5.0"
    id "org.jetbrains.kotlin.plugin.allopen" version "${kotlinVersion}"
+
    id "jacoco"
-   id "application"
    id "groovy"
    id "org.flywaydb.flyway" version "${flywayVersion}"
    id "org.openapi.generator" version "4.3.0"
@@ -15,27 +15,18 @@ plugins {
 }
 
 version "${releaseVersion}"
-group "com.hightouchinc.cynergi"
+group "com.cynergisuite"
 
 repositories {
    mavenCentral()
-   jcenter()
 }
 
-dependencyManagement {
-   imports {
-      mavenBom "io.micronaut:micronaut-bom:${micronautVersion}"
-   }
-}
-
-configurations {
-   // for dependencies that are needed for development only
-   developmentOnly
-}
-
-kapt {
-   arguments {
-      arg("micronaut.processing.incremental", true)
+micronaut {
+   runtime("undertow")
+   testRuntime("spock2")
+   processing {
+      incremental(true)
+      annotations("com.cynergisuite.middleware.*")
    }
 }
 
@@ -43,99 +34,64 @@ kotlinter {
    experimentalRules = false
 }
 
-sourceSets {
-   test {
-      groovy {
-         srcDirs += 'src/test/groovy'
-      }
-   }
-}
-
 dependencies {
-   implementation platform("io.micronaut:micronaut-bom:$micronautVersion")
-   implementation "io.micronaut.sql:micronaut-jdbc-tomcat"
-   implementation ("io.micronaut.flyway:micronaut-flyway") {
-      version {
-         strictly("2.0.1")
-      }
-   }
-   implementation("org.flywaydb:flyway-core") {
-      version {
-         strictly("${flywayVersion}")
-      }
-   }
-   implementation "io.micronaut.sql:micronaut-vertx-pg-client"
-   implementation "io.micronaut:micronaut-http-server-netty"
-   implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
-   implementation "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
-   implementation "io.micronaut:micronaut-runtime"
-   implementation "io.micronaut.spring:micronaut-spring"
-   implementation "io.micronaut.security:micronaut-security-annotations"
-   implementation "io.micronaut.security:micronaut-security-jwt"
-   implementation "io.micronaut:micronaut-management"
-   implementation "io.micronaut.cache:micronaut-cache-core"
-   implementation "io.micronaut.cache:micronaut-cache-caffeine"
-   implementation "io.micronaut.beanvalidation:micronaut-hibernate-validator"
-   implementation "io.swagger.core.v3:swagger-annotations"
-   implementation "org.springframework:spring-jdbc"
+   kapt("io.micronaut.data:micronaut-data-processor")
+   kapt("io.micronaut.security:micronaut-security-annotations")
+   kapt("io.micronaut.openapi:micronaut-openapi:2.6.0")
+   implementation("io.micronaut:micronaut-http-client")
+   implementation("io.micronaut:micronaut-runtime")
+   implementation("io.micronaut.cache:micronaut-cache-caffeine")
+   implementation("io.micronaut.data:micronaut-data-jdbc")
+   implementation("io.micronaut.flyway:micronaut-flyway")
+   implementation("io.micronaut.kotlin:micronaut-kotlin-extension-functions")
+   implementation("io.micronaut.kotlin:micronaut-kotlin-runtime")
+   implementation("io.micronaut.security:micronaut-security")
+   implementation("io.micronaut.security:micronaut-security-jwt")
+   implementation("io.micronaut.sql:micronaut-jdbc-hikari")
+   implementation("io.micronaut.sql:micronaut-jdbi")
+   implementation("io.micronaut.beanvalidation:micronaut-hibernate-validator")
+   implementation("javax.annotation:javax.annotation-api")
+   implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
+   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
+   runtimeOnly("ch.qos.logback:logback-classic")
+   implementation("org.postgresql:postgresql")
+   compileOnly("org.graalvm.nativeimage:svm")
 
-   implementation "com.github.javafaker:javafaker:1.0.2" // used for testing
-   implementation "org.apache.commons:commons-lang3:3.8.1"
-   implementation "commons-io:commons-io:2.6"
-   implementation "commons-codec:commons-codec:1.14"
-   implementation("com.google.guava:guava:28.2-jre") { transitive = false }
-   implementation "com.github.librepdf:openpdf:1.3.13"
-   implementation "org.bouncycastle:bcprov-jdk15on:1.65"
-   implementation "org.bouncycastle:bcpkix-jdk15on:1.65"
-   implementation "org.springframework.security:spring-security-crypto:5.3.1.RELEASE"
-   implementation "org.eclipse.collections:eclipse-collections:10.2.0"
-   implementation "io.micronaut.data:micronaut-data-processor"
-   implementation("io.micronaut:micronaut-inject")
+   implementation("io.micronaut:micronaut-validation")
 
-   kapt platform("io.micronaut:micronaut-bom:$micronautVersion")
-   kapt "io.micronaut.openapi:micronaut-openapi"
-   kapt "io.micronaut:micronaut-inject-java"
-   kapt "io.micronaut:micronaut-validation"
+   runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
+   implementation("io.swagger.core.v3:swagger-annotations")
+   implementation("org.jdbi:jdbi3-kotlin:${jdbiVersion}")
+   implementation("org.jdbi:jdbi3-kotlin-sqlobject:${jdbiVersion}")
 
-   runtimeOnly "ch.qos.logback:logback-classic"
-   runtimeOnly "com.fasterxml.jackson.module:jackson-module-kotlin"
-   compile "org.postgresql:postgresql"
+   implementation("org.apache.commons:commons-lang3:3.12.0")
+   implementation("commons-io:commons-io:2.6")
+   implementation("commons-codec:commons-codec:1.14")
+   implementation("com.google.guava:guava:30.1.1-jre") { transitive = false }
+   implementation("com.github.librepdf:openpdf:1.3.13")
+   implementation("org.eclipse.collections:eclipse-collections:10.4.0")
 
-   kaptTest platform("io.micronaut:micronaut-bom:$micronautVersion")
-   kaptTest "io.micronaut:micronaut-inject-java"
-
-   testImplementation platform("io.micronaut:micronaut-bom:$micronautVersion")
-   testImplementation "io.micronaut:micronaut-http-client"
-   testImplementation "org.spockframework:spock-core"
-   testImplementation "io.micronaut:micronaut-inject-groovy"
-   testImplementation "org.codehaus.groovy:groovy-json"
-   testImplementation "io.micronaut.test:micronaut-test-spock"
    testImplementation "io.micronaut.test:micronaut-test-junit5"
-   testCompile "org.junit.jupiter:junit-jupiter"
-   testCompile "org.junit.vintage:junit-vintage-engine"
-   testRuntime "net.bytebuddy:byte-buddy:1.10.10"
-   testRuntime "org.objenesis:objenesis:3.1"
-   testCompile "org.assertj:assertj-core:3.16.1"
+   testImplementation("io.micronaut:micronaut-http-client")
+   testImplementation("org.codehaus.groovy:groovy-json")
+   testImplementation("org.codehaus.groovy:groovy-sql")
+   testImplementation("com.github.javafaker:javafaker:1.0.2")
 }
 
 test.classpath += configurations.developmentOnly
 
 mainClassName = "com.cynergisuite.middleware.Application"
 
-shadowJar {
-   mergeServiceFiles()
-}
-
 run.classpath += configurations.developmentOnly
 run.jvmArgs("-noverify", "-XX:TieredStopAtLevel=1", "-Dcom.sun.management.jmxremote", "-Dmicronaut.environments=local")
 
 test {
    useJUnitPlatform()
-   maxHeapSize = "2048m"
+   maxHeapSize = "4096m"
 }
 
 jacoco {
-   toolVersion = "0.8.5"
+   toolVersion = "0.8.7"
 }
 
 allOpen {
@@ -144,31 +100,33 @@ allOpen {
    annotation("javax.inject.Singleton")
 }
 
-compileKotlin {
-   kotlinOptions {
-      jvmTarget = "1.8"
-      //Will retain parameter names for Java reflection
-      javaParameters = true
-   }
+java {
+   sourceCompatibility = JavaVersion.toVersion("11")
 }
 
-compileTestKotlin {
-   kotlinOptions {
-      jvmTarget = "1.8"
-      javaParameters = true
+tasks {
+   compileKotlin {
+      kotlinOptions {
+         jvmTarget = "11"
+      }
+   }
+   compileTestKotlin {
+      kotlinOptions {
+         jvmTarget = "11"
+      }
    }
 }
 
 task flywayMigrateCynergiDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
    url = "jdbc:postgresql://localhost:6432/cynergidb"
-   user = "postgres"
+   user = "cynergiuser"
    password = "password"
    locations = ["filesystem:src/main/resources/db/migration/postgres"]
 }
 
 task flywayMigrateCynergiDevelopDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
    url = "jdbc:postgresql://localhost:6432/cynergidevelopdb"
-   user = "postgres"
+   user = "cynergiuser"
    password = "password"
    locations = ["filesystem:src/main/resources/db/migration/postgres"]
    cleanDisabled = false

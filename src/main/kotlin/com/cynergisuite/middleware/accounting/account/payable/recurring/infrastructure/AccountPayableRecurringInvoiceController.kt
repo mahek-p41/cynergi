@@ -60,7 +60,7 @@ class AccountPayableRecurringInvoiceController @Inject constructor(
    ): AccountPayableRecurringInvoiceDTO {
       logger.info("Fetching Account Payable Recurring Invoice by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = accountPayableRecurringInvoiceService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Account Payable Recurring Invoice by {} resulted in", id, response)
@@ -88,7 +88,7 @@ class AccountPayableRecurringInvoiceController @Inject constructor(
    ): Page<AccountPayableRecurringInvoiceDTO> {
       logger.info("Fetching all Account Payable Recurring Invoices {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = accountPayableRecurringInvoiceService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -118,7 +118,7 @@ class AccountPayableRecurringInvoiceController @Inject constructor(
    ): AccountPayableRecurringInvoiceDTO {
       logger.debug("Requested Create Account Payable Recurring Invoice {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = accountPayableRecurringInvoiceService.create(dto, user.myCompany())
 
       logger.debug("Requested Create Account Payable Recurring Invoice {} resulted in {}", dto, response)
@@ -149,7 +149,7 @@ class AccountPayableRecurringInvoiceController @Inject constructor(
    ): AccountPayableRecurringInvoiceDTO {
       logger.info("Requested Update Account Payable Recurring Invoice {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = accountPayableRecurringInvoiceService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update Account Payable Recurring Invoice {} resulted in {}", dto, response)

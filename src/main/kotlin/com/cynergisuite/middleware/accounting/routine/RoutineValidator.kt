@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.accounting.routine
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.routine.infrastructure.RoutineRepository
 import com.cynergisuite.middleware.accounting.routine.type.infrastructure.OverallPeriodTypeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.Duplicate
@@ -20,13 +20,13 @@ class RoutineValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(RoutineValidator::class.java)
 
-   fun validateCreate(dto: RoutineDTO, company: Company): RoutineEntity {
+   fun validateCreate(dto: RoutineDTO, company: CompanyEntity): RoutineEntity {
       logger.trace("Validating Create Routine{}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: UUID, dto: RoutineDTO, company: Company): RoutineEntity {
+   fun validateUpdate(id: UUID, dto: RoutineDTO, company: CompanyEntity): RoutineEntity {
       logger.debug("Validating Update Routine{}", dto)
 
       val existingRoutine = routineRepository.findOne(id, company) ?: throw NotFoundException(id)
@@ -34,7 +34,7 @@ class RoutineValidator @Inject constructor(
       return doSharedValidation(dto, company, existingRoutine)
    }
 
-   private fun doSharedValidation(dto: RoutineDTO, company: Company, existingRoutine: RoutineEntity? = null): RoutineEntity {
+   private fun doSharedValidation(dto: RoutineDTO, company: CompanyEntity, existingRoutine: RoutineEntity? = null): RoutineEntity {
       val overallPeriodEntity = overallPeriodTypeRepository.findOne(dto.overallPeriod!!.value) ?: throw NotFoundException(dto.overallPeriod!!.value)
       val routineExists = routineRepository.exists(company, overallPeriodEntity.id, dto.period!!)
 

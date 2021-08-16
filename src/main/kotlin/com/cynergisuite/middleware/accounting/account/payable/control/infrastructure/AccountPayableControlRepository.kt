@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.control.infrastru
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
@@ -13,11 +14,12 @@ import com.cynergisuite.middleware.accounting.account.payable.control.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableCheckFormTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.PrintCurrencyIndicatorTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.PurchaseOrderNumberRequiredIndicatorTypeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,7 +27,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class AccountPayableControlRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val accountRepository: AccountRepository,
    private val accountPayableCheckFormTypeRepository: AccountPayableCheckFormTypeRepository,
    private val printCurrencyIndicatorTypeRepository: PrintCurrencyIndicatorTypeRepository,
@@ -105,16 +107,18 @@ class AccountPayableControlRepository @Inject constructor(
       """
    }
 
-   fun exists(company: Company): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT company_id FROM account_payable_control WHERE company_id = :company_id)", mapOf("company_id" to company.myId()), Boolean::class.java)!!
+   @ReadOnly
+   fun exists(company: CompanyEntity): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT company_id FROM account_payable_control WHERE company_id = :company_id)", mapOf("company_id" to company.id), Boolean::class.java)!!
 
       logger.trace("Checking if AccountPayableControl: {} exists resulted in {}", company, exists)
 
       return exists
    }
 
-   fun findOne(company: Company): AccountPayableControlEntity? {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(company: CompanyEntity): AccountPayableControlEntity? {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val query = "${selectBaseQuery()} WHERE accountPayableControl.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
@@ -144,7 +148,7 @@ class AccountPayableControlRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: AccountPayableControlEntity, company: Company): AccountPayableControlEntity {
+   fun insert(entity: AccountPayableControlEntity, company: CompanyEntity): AccountPayableControlEntity {
       logger.debug("Inserting account_payable_control {}", company)
 
       return jdbc.insertReturning(
@@ -179,7 +183,7 @@ class AccountPayableControlRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "check_form_type_id" to entity.checkFormType.id,
             "pay_after_discount_date" to entity.payAfterDiscountDate,
             "reset_expense" to entity.resetExpense,
@@ -204,7 +208,7 @@ class AccountPayableControlRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: AccountPayableControlEntity, company: Company): AccountPayableControlEntity {
+   fun update(entity: AccountPayableControlEntity, company: CompanyEntity): AccountPayableControlEntity {
       logger.debug("Updating account_payable_control {}", entity)
 
       return jdbc.updateReturning(
@@ -228,7 +232,7 @@ class AccountPayableControlRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "check_form_type_id" to entity.checkFormType.id,
             "pay_after_discount_date" to entity.payAfterDiscountDate,
             "reset_expense" to entity.resetExpense,

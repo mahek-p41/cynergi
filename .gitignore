@@ -658,3 +658,5 @@ support/development/gradleCache/*
 Snap.*
 heapdump.*
 javacore.*
+gradleCache
+gradleWrapper

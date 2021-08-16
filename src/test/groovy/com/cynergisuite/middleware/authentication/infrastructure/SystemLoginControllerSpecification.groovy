@@ -29,7 +29,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.myDataset())),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -75,13 +75,13 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
-      final department = departmentFactoryService.random(store.myCompany())
+      final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
 
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.myDataset())),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -133,7 +133,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       httpClient.toBlocking()
          .exchange(
-            POST("/login",new LoginCredentials(validEmployee.number.toString(), validEmployee.passCode, 75, validEmployee.company.myDataset())),
+            POST("/login",new LoginCredentials(validEmployee.number.toString(), validEmployee.passCode, 75, validEmployee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          )
@@ -252,7 +252,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login?extraOne=1&extraTwo=two", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.myDataset())),
+            POST("/login?extraOne=1&extraTwo=two", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -304,7 +304,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, null, employee.company.myDataset())),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, null, employee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -326,7 +326,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, store.myNumber(), employee.company.myDataset())),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, store.myNumber(), employee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -408,7 +408,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, otherStore.myNumber(), employee.company.myDataset())),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, otherStore.myNumber(), employee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()

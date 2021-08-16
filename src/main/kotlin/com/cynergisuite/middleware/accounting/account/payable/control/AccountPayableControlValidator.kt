@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.accounting.account.payable.control.infrastruc
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableCheckFormTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.PrintCurrencyIndicatorTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.PurchaseOrderNumberRequiredIndicatorTypeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -28,24 +28,24 @@ class AccountPayableControlValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableControlValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(dto: AccountPayableControlDTO, company: Company): AccountPayableControlEntity {
+   fun validateCreate(dto: AccountPayableControlDTO, company: CompanyEntity): AccountPayableControlEntity {
       logger.debug("Validating Create AccountPayableControl {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(dto: AccountPayableControlDTO, company: Company): AccountPayableControlEntity {
+   fun validateUpdate(dto: AccountPayableControlDTO, company: CompanyEntity): AccountPayableControlEntity {
       logger.debug("Validating Update AccountPayableControl {}", dto)
 
-      val accountPayableControlEntity = accountPayableControlRepository.findOne(company) ?: throw NotFoundException(company.myId()!!)
+      val accountPayableControlEntity = accountPayableControlRepository.findOne(company) ?: throw NotFoundException(company.id!!)
 
       return doSharedValidation(dto, company, accountPayableControlEntity)
    }
 
    private fun doSharedValidation(
       dto: AccountPayableControlDTO,
-      company: Company,
+      company: CompanyEntity,
       entity: AccountPayableControlEntity? = null
    ): AccountPayableControlEntity {
       val checkFormType = accountPayableCheckFormTypeRepository.findOne(dto.checkFormType!!.value)
@@ -56,7 +56,7 @@ class AccountPayableControlValidator @Inject constructor(
 
       doValidation { errors ->
          if (accountPayableControlRepository.exists(company) && entity == null) { // tried to create an Account Payable Control record, but one already existed, basically they did a post when they should have done a put.
-            errors.add(ValidationError("company", ConfigAlreadyExist(company.myDataset())))
+            errors.add(ValidationError("company", ConfigAlreadyExist(company.datasetCode)))
          }
          checkFormType
             ?: errors.add(ValidationError("checkFormType.value", NotFound(dto.checkFormType!!.value)))

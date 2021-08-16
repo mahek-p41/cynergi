@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.localization.LocalizationService
 import java.util.Locale
 import java.util.UUID
@@ -17,10 +17,10 @@ class AccountService @Inject constructor(
    private val accountValidator: AccountValidator,
    private val localizationService: LocalizationService
 ) {
-   fun fetchById(id: UUID, company: Company, locale: Locale): AccountDTO? =
+   fun fetchById(id: UUID, company: CompanyEntity, locale: Locale): AccountDTO? =
       accountRepository.findOne(id, company)?.let { transformEntity(it, locale) }
 
-   fun fetchAll(company: Company, pageRequest: PageRequest, locale: Locale): Page<AccountDTO> {
+   fun fetchAll(company: CompanyEntity, pageRequest: PageRequest, locale: Locale): Page<AccountDTO> {
       val found = accountRepository.findAll(company, pageRequest)
 
       return found.toPage { account: AccountEntity ->
@@ -28,7 +28,7 @@ class AccountService @Inject constructor(
       }
    }
 
-   fun search(company: Company, pageRequest: SearchPageRequest, locale: Locale): Page<AccountDTO> {
+   fun search(company: CompanyEntity, pageRequest: SearchPageRequest, locale: Locale): Page<AccountDTO> {
       val found = accountRepository.search(company, pageRequest)
 
       return found.toPage { account: AccountEntity ->
@@ -36,13 +36,13 @@ class AccountService @Inject constructor(
       }
    }
 
-   fun create(dto: AccountDTO, company: Company, locale: Locale): AccountDTO {
+   fun create(dto: AccountDTO, company: CompanyEntity, locale: Locale): AccountDTO {
       val toCreate = accountValidator.validateCreate(dto, company)
 
       return transformEntity(accountRepository.insert(toCreate, company), locale)
    }
 
-   fun update(id: UUID, dto: AccountDTO, company: Company, locale: Locale): AccountDTO {
+   fun update(id: UUID, dto: AccountDTO, company: CompanyEntity, locale: Locale): AccountDTO {
       val toUpdate = accountValidator.validateUpdate(id, dto, company)
 
       return transformEntity(accountRepository.update(toUpdate, company), locale)
@@ -61,7 +61,7 @@ class AccountService @Inject constructor(
       )
    }
 
-   fun delete(id: UUID, company: Company) {
+   fun delete(id: UUID, company: CompanyEntity) {
       accountRepository.delete(id, company)
    }
 }

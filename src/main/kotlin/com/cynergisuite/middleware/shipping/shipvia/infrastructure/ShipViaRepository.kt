@@ -5,19 +5,20 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.address.AddressRepository
-import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -28,7 +29,7 @@ import javax.transaction.Transactional
 class ShipViaRepository @Inject constructor(
    private val addressRepository: AddressRepository,
    private val companyRepository: CompanyRepository,
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ShipViaRepository::class.java)
    fun baseSelectQuery() =
@@ -67,17 +68,18 @@ class ShipViaRepository @Inject constructor(
            JOIN company comp ON shipVia.company_id = comp.id
    """
 
-   fun findOne(id: UUID, company: Company): ShipViaEntity? {
+   @ReadOnly fun findOne(id: UUID, company: CompanyEntity): ShipViaEntity? {
       logger.debug("Searching for ShipVia by id {}", id)
 
-      val found = jdbc.findFirstOrNull("${baseSelectQuery()} WHERE shipVia.id = :id AND comp.id = :comp_id", mapOf("id" to id, "comp_id" to company.myId()), RowMapper { rs, _ -> mapRow(rs) })
+      val found = jdbc.findFirstOrNull("${baseSelectQuery()} WHERE shipVia.id = :id AND comp.id = :comp_id", mapOf("id" to id, "comp_id" to company.id)) { rs, _ -> mapRow(rs) }
 
       logger.trace("Searching for ShipVia: {} resulted in {}", id, found)
 
       return found
    }
 
-   fun findAll(pageRequest: PageRequest, company: Company): RepositoryPage<ShipViaEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(pageRequest: PageRequest, company: CompanyEntity): RepositoryPage<ShipViaEntity, PageRequest> {
       return jdbc.queryPaged(
          """
          ${baseSelectQuery()}
@@ -86,7 +88,7 @@ class ShipViaRepository @Inject constructor(
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to pageRequest.size(),
             "offset" to pageRequest.offset()
          ),
@@ -98,16 +100,16 @@ class ShipViaRepository @Inject constructor(
       }
    }
 
-   fun exists(id: Long, company: Company): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM ship_via WHERE id = :id AND company_id = :comp_id)", mapOf("id" to id, "comp_id" to company.myId()), Boolean::class.java)!!
+   @ReadOnly fun exists(id: Long, company: CompanyEntity): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM ship_via WHERE id = :id AND company_id = :comp_id)", mapOf("id" to id, "comp_id" to company.id), Boolean::class.java)
 
       logger.trace("Checking if ShipVia: {}/{} exists resulted in {}", id, company, exists)
 
       return exists
    }
 
-   fun exists(description: String, company: Company): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM ship_via WHERE UPPER(description) = UPPER(:description) AND company_id = :comp_id)", mapOf("description" to description, "comp_id" to company.myId()), Boolean::class.java)!!
+   @ReadOnly fun exists(description: String, company: CompanyEntity): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM ship_via WHERE UPPER(description) = UPPER(:description) AND company_id = :comp_id)", mapOf("description" to description, "comp_id" to company.id), Boolean::class.java)
 
       logger.trace("Checking if ShipVia: {}/{} exists resulted in {}", description, company, exists)
 
@@ -118,7 +120,7 @@ class ShipViaRepository @Inject constructor(
    fun insert(entity: ShipViaEntity): ShipViaEntity {
       logger.debug("Inserting shipVia {}", entity)
 
-      val result = jdbc.insertReturning(
+      return jdbc.insertReturning(
          """
          INSERT INTO ship_via(description, company_id)
          VALUES (
@@ -128,9 +130,9 @@ class ShipViaRepository @Inject constructor(
          RETURNING
             *
          """.trimIndent(),
-         mapOf(
+         mapOf<String, Any?>(
             "description" to entity.description,
-            "comp_id" to entity.company.myId()
+            "comp_id" to entity.company.id
          )
       ) { rs, _ ->
          ShipViaEntity(
@@ -140,12 +142,10 @@ class ShipViaRepository @Inject constructor(
             company = entity.company
          )
       }
-
-      return result
    }
 
    @Transactional
-   fun delete(id: UUID, company: Company) {
+   fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting account with id={}", id)
 
       val rowsAffected = jdbc.update(
@@ -153,7 +153,7 @@ class ShipViaRepository @Inject constructor(
          DELETE FROM ship_via
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.myId())
+         mapOf("id" to id, "company_id" to company.id)
       )
 
       logger.info("Row affected {}", rowsAffected)

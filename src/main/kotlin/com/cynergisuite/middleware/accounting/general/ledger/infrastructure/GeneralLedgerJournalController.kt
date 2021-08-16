@@ -60,7 +60,7 @@ class GeneralLedgerJournalController @Inject constructor(
    ): GeneralLedgerJournalDTO {
       logger.info("Fetching GeneralLedgerJournal by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = generalLedgerJournalService.fetchOne(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching GeneralLedgerJournal by {} resulted in", id, response)
@@ -87,7 +87,7 @@ class GeneralLedgerJournalController @Inject constructor(
    ): Page<GeneralLedgerJournalDTO> {
       logger.info("Fetching all GeneralLedgerJournals {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = generalLedgerJournalService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -117,7 +117,7 @@ class GeneralLedgerJournalController @Inject constructor(
    ): GeneralLedgerJournalDTO {
       logger.debug("Requested Create GeneralLedgerJournal {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = generalLedgerJournalService.create(dto, user.myCompany())
 
       logger.debug("Requested Create GeneralLedgerJournal {} resulted in {}", dto, response)
@@ -147,7 +147,7 @@ class GeneralLedgerJournalController @Inject constructor(
    ): GeneralLedgerJournalDTO {
       logger.info("Requested Update GeneralLedgerJournal {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = generalLedgerJournalService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update GeneralLedgerJournal {} resulted in {}", dto, response)

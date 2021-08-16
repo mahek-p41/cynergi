@@ -3,17 +3,19 @@ package com.cynergisuite.middleware.audit.action.infrastructure
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import io.micronaut.transaction.annotation.ReadOnly
 import org.eclipse.collections.api.multimap.Multimap
 import org.eclipse.collections.impl.factory.Multimaps
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -25,10 +27,11 @@ class AuditActionRepository @Inject constructor(
    private val auditStatusRepository: AuditStatusRepository,
    private val companyRepository: CompanyRepository,
    private val employeeRepository: EmployeeRepository,
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditActionRepository::class.java)
 
+   @ReadOnly
    fun findAll(parents: Collection<UUID>): Multimap<UUID, AuditActionEntity> {
       val result = Multimaps.mutable.list.empty<UUID, AuditActionEntity>()
 
@@ -93,10 +96,10 @@ class AuditActionRepository @Inject constructor(
            JOIN company comp ON audits.company_id = comp.id
            JOIN audit_status_type_domain astd ON auditActions.status_id = astd.id
            JOIN employees auditActionEmployee ON comp.dataset_code = auditActionEmployee.comp_dataset_code AND auditActions.changed_by = auditActionEmployee.emp_number
-      WHERE auditActions.audit_id IN (:auditAction_id)
+      WHERE auditActions.audit_id IN (<auditAction_id>)
             """.trimIndent(),
             mapOf("auditAction_id" to parents)
-         ) { rs ->
+         ) { rs, _ ->
             val action = mapAuditAction(rs)
             val auditId = rs.getUuid("audit_id")
 

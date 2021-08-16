@@ -70,7 +70,7 @@ class AuditController @Inject constructor(
    ): AuditValueObject {
       logger.info("Fetching Audit by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = auditService.fetchById(id = id, company = user.myCompany(), locale = httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Audit by {} resulted in {}", id, response)
@@ -97,7 +97,7 @@ class AuditController @Inject constructor(
    ): Page<AuditValueObject> {
       logger.info("Fetching all audits {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = auditService.fetchAll(pageRequest, user, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
@@ -125,7 +125,7 @@ class AuditController @Inject constructor(
    ): List<AuditStatusCountDTO> {
       logger.debug("Fetching Audit status counts {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
 
       return auditService.findAuditStatusCounts(pageRequest, user, locale)
@@ -151,7 +151,7 @@ class AuditController @Inject constructor(
    ): AuditValueObject {
       logger.info("Requested Create Audit {}", audit)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val defaultStore = user.myLocation()
       val auditToCreate = if (audit.store != null) audit else audit.copy(store = StoreDTO(defaultStore))
 
@@ -182,7 +182,7 @@ class AuditController @Inject constructor(
    ): AuditValueObject {
       logger.info("Requested Audit status change or note  {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = auditService.update(dto, user, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Update Audit {} resulted in {}", dto, response)
@@ -211,7 +211,7 @@ class AuditController @Inject constructor(
    ): AuditValueObject {
       logger.info("Requested approval of audit {}", audit)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = auditService.approve(audit, user, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested approval of audit {} resulted in {}", audit, response)
@@ -235,7 +235,7 @@ class AuditController @Inject constructor(
       id: UUID,
       authentication: Authentication
    ): HttpResponse<*> {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       logger.info("Audit Exception Report requested by user: {}", user)
 
@@ -268,7 +268,7 @@ class AuditController @Inject constructor(
       id: UUID,
       authentication: Authentication
    ): HttpResponse<*> {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       logger.info("Unscanned Idle Inventory Report requested by user: {}", user)
 
@@ -298,7 +298,7 @@ class AuditController @Inject constructor(
    ): AuditApproveAllExceptionsDTO {
       logger.info("Requested approval on all audit exceptions associated with audit {}", audit)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return auditService.approveAllExceptions(audit, user)
    }

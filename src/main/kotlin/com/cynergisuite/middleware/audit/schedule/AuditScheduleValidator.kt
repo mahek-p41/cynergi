@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotNull
@@ -141,7 +141,7 @@ class AuditScheduleValidator(
       }
    }
 
-   private fun doSharedValidation(dto: AuditScheduleCreateUpdateDTO, company: Company, errors: MutableSet<ValidationError>) {
+   private fun doSharedValidation(dto: AuditScheduleCreateUpdateDTO, company: CompanyEntity, errors: MutableSet<ValidationError>) {
       for ((i, store) in dto.stores.withIndex()) {
          if (storeRepository.doesNotExist(store.id!!, company)) {
             errors.add(ValidationError("store[$i].id", NotFound(store.id!!)))

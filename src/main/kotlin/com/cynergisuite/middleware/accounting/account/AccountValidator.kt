@@ -5,7 +5,7 @@ import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepo
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountStatusTypeRepository
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountTypeRepository
 import com.cynergisuite.middleware.accounting.account.infrastructure.NormalAccountBalanceTypeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
@@ -24,7 +24,7 @@ class AccountValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(AccountValidator::class.java)
 
-   fun validateCreate(accountDTO: AccountDTO, company: Company): AccountEntity {
+   fun validateCreate(accountDTO: AccountDTO, company: CompanyEntity): AccountEntity {
       logger.trace("Validating Save Account {}", accountDTO)
       val accountType = accountTypeRepository.findOne(value = accountDTO.type?.value!!)
       val balanceType = balanceTypeRepository.findOne(value = accountDTO.normalAccountBalance?.value!!)
@@ -41,7 +41,7 @@ class AccountValidator @Inject constructor(
       return AccountEntity(accountDTO, accountType!!, balanceType!!, statusType!!)
    }
 
-   fun validateUpdate(id: UUID, accountDTO: AccountDTO, company: Company): AccountEntity {
+   fun validateUpdate(id: UUID, accountDTO: AccountDTO, company: CompanyEntity): AccountEntity {
       logger.trace("Validating Update Account {}", accountDTO)
       val accountType = accountTypeRepository.findOne(value = accountDTO.type?.value!!)
       val balanceType = balanceTypeRepository.findOne(value = accountDTO.normalAccountBalance?.value!!)

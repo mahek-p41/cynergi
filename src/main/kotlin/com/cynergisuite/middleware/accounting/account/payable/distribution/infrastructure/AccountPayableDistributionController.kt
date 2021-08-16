@@ -37,7 +37,6 @@ import javax.validation.Valid
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/accounting/account-payable/distribution")
 class AccountPayableDistributionController @Inject constructor(
-   private val accountPayableDistributionRepository: AccountPayableDistributionRepository,
    private val accountPayableDistributionService: AccountPayableDistributionService,
    private val userService: UserService
 ) {
@@ -58,7 +57,7 @@ class AccountPayableDistributionController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AccountPayableDistributionDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
 
       logger.info("Fetching AccountPayableDistribution by id {}", id)
@@ -84,7 +83,7 @@ class AccountPayableDistributionController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<AccountPayableDistributionDTO> {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val apDistributions = accountPayableDistributionService.fetchAll(user.myCompany(), pageRequest)
 
       if (apDistributions.elements.isEmpty()) {
@@ -110,7 +109,7 @@ class AccountPayableDistributionController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<String> {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val apDistributionGroups = accountPayableDistributionService.fetchAllGroups(user.myCompany(), pageRequest)
 
       if (apDistributionGroups.elements.isEmpty()) {
@@ -138,7 +137,7 @@ class AccountPayableDistributionController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<AccountPayableDistributionDTO> {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val apDistributions = accountPayableDistributionService.fetchAllRecordsByGroup(user.myCompany(), name, pageRequest)
 
       if (apDistributions.elements.isEmpty()) {
@@ -165,7 +164,7 @@ class AccountPayableDistributionController @Inject constructor(
       dto: AccountPayableDistributionDTO,
       authentication: Authentication
    ): AccountPayableDistributionDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Requested Create AccountPayableDistribution {}", dto)
 
@@ -194,7 +193,7 @@ class AccountPayableDistributionController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AccountPayableDistributionDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Requested Update AccountPayableDistribution {}", dto)
 
@@ -223,7 +222,7 @@ class AccountPayableDistributionController @Inject constructor(
    ) {
       logger.debug("User {} requested delete AccountPayableDistribution", authentication)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return accountPayableDistributionService.delete(id, user.myCompany())
    }

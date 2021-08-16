@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.account
 import com.cynergisuite.domain.Identifiable
 import java.util.UUID
 
+// FIXME add company here rather than passing it in through the repository method
 data class AccountEntity(
    val id: UUID? = null,
    val number: Long,

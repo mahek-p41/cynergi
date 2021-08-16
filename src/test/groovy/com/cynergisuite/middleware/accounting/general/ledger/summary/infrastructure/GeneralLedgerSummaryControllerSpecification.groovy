@@ -4,7 +4,7 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
+import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -22,7 +22,7 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
    private static final String path = "/general-ledger/summary"
 
    @Inject GeneralLedgerSummaryDataLoaderService dataLoaderService
-   @Inject AccountDataLoaderService accountDataLoaderService
+   @Inject AccountTestDataLoaderService accountDataLoaderService
 
    void "fetch one" () {
       given:
@@ -222,7 +222,7 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       get("$path/${pageFour}")
 
       then:
-      final def notFoundException = thrown(HttpClientResponseException)
+      final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
    }
 
@@ -353,8 +353,8 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       final acct1 = accountDataLoaderService.single(company)
       final acct2 = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(1, company)
-      final def existingGLSummary = dataLoaderService.single(company, acct1, store)
-      final def newGLSummary = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(acct2), new SimpleLegacyIdentifiableDTO(store.myId()))
+      final existingGLSummary = dataLoaderService.single(company, acct1, store)
+      final newGLSummary = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(acct2), new SimpleLegacyIdentifiableDTO(store.myId()))
       newGLSummary.account.id = existingGLSummary.account.id
       newGLSummary.overallPeriod.value = existingGLSummary.overallPeriod.value
 
@@ -376,8 +376,8 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       final company = companyFactoryService.forDatasetCode('tstds1')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
-      final def existingGLSummary = dataLoaderService.single(company, acct, store)
-      final def updatedGLSummary = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(acct), new SimpleLegacyIdentifiableDTO(store.myId()))
+      final existingGLSummary = dataLoaderService.single(company, acct, store)
+      final updatedGLSummary = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(acct), new SimpleLegacyIdentifiableDTO(store.myId()))
       updatedGLSummary.id = existingGLSummary.id
 
       when:
@@ -418,8 +418,8 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       final company = companyFactoryService.forDatasetCode('tstds1')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
-      final def existingGLSummary = dataLoaderService.single(company, acct, store)
-      final def updatedGLSummary = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(acct), new SimpleLegacyIdentifiableDTO(store.myId()))
+      final existingGLSummary = dataLoaderService.single(company, acct, store)
+      final updatedGLSummary = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(acct), new SimpleLegacyIdentifiableDTO(store.myId()))
       updatedGLSummary.id = existingGLSummary.id
       updatedGLSummary.netActivityPeriod1 = null
       updatedGLSummary.netActivityPeriod2 = null
@@ -474,8 +474,8 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       final company = companyFactoryService.forDatasetCode('tstds1')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(1, company)
-      final def glSummaryToUpdate = dataLoaderService.single(company, acct, store)
-      final def updatedGLSummary = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(acct), new SimpleLegacyIdentifiableDTO(store.myId()))
+      final glSummaryToUpdate = dataLoaderService.single(company, acct, store)
+      final updatedGLSummary = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(acct), new SimpleLegacyIdentifiableDTO(store.myId()))
       updatedGLSummary.id = glSummaryToUpdate.id
       updatedGLSummary.overallPeriod.value = glSummaryToUpdate.overallPeriod.value
       updatedGLSummary.overallPeriod.description = glSummaryToUpdate.overallPeriod.description
@@ -519,8 +519,8 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       final company = companyFactoryService.forDatasetCode('tstds1')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
-      final def existingGLSummary = dataLoaderService.single(company, acct, store)
-      final def updatedGLSummary = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(acct), new SimpleLegacyIdentifiableDTO(store.myId()))
+      final existingGLSummary = dataLoaderService.single(company, acct, store)
+      final updatedGLSummary = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(acct), new SimpleLegacyIdentifiableDTO(store.myId()))
       updatedGLSummary.id = existingGLSummary.id
       updatedGLSummary["$nonNullableProp"] = null
 
@@ -548,9 +548,9 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       final acct = accountDataLoaderService.single(company)
       final store1 = storeFactoryService.store(1, company)
       final store3 = storeFactoryService.store(3, company)
-      final def glSummaryToUpdate = dataLoaderService.single(company, acct, store1)
-      final def duplicateGlSummary = dataLoaderService.single(company, acct, store3)
-      final def updatedGLSummary = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(acct), new SimpleLegacyIdentifiableDTO(store3.myId()))
+      final glSummaryToUpdate = dataLoaderService.single(company, acct, store1)
+      final duplicateGlSummary = dataLoaderService.single(company, acct, store3)
+      final updatedGLSummary = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(acct), new SimpleLegacyIdentifiableDTO(store3.myId()))
       updatedGLSummary.id = glSummaryToUpdate.id
       updatedGLSummary.overallPeriod.value = duplicateGlSummary.overallPeriod.value
 

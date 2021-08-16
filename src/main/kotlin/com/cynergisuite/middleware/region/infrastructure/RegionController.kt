@@ -61,7 +61,7 @@ class RegionController @Inject constructor(
    ): RegionDTO {
       logger.info("Fetching Region by ID {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = regionService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditDetail by {} resulted in", id, response)
@@ -83,7 +83,7 @@ class RegionController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<RegionDTO> {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val regions = regionService.fetchAll(user.myCompany(), pageRequest)
 
       if (regions.elements.isEmpty()) {
@@ -114,7 +114,7 @@ class RegionController @Inject constructor(
    ): RegionDTO {
       logger.info("Requested Save Region {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = regionService.create(dto, user.myCompany())
 
       logger.debug("Requested Save Region {} resulted in {}", dto, response)
@@ -143,7 +143,7 @@ class RegionController @Inject constructor(
    ): RegionDTO {
       logger.info("Requested Update Region {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = regionService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update Region {} resulted in {}", dto, response)
@@ -170,7 +170,7 @@ class RegionController @Inject constructor(
    ): RegionDTO {
       logger.debug("User {} requested Region Deletion by ID {}", authentication, id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return regionService.delete(id, user.myCompany()) ?: throw NotFoundException(id)
    }
@@ -194,7 +194,7 @@ class RegionController @Inject constructor(
    ) {
       logger.info("Requested assign a Store to Region {}", storeDTO)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       regionService.assignStoreToRegion(regionId, storeDTO, user.myCompany())
    }
@@ -218,7 +218,7 @@ class RegionController @Inject constructor(
    ) {
       logger.info("Requested disassociate a Store {} from Region {}", storeId, regionId)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       regionService.disassociateStoreFromRegion(regionId, storeId, user.myCompany())
    }

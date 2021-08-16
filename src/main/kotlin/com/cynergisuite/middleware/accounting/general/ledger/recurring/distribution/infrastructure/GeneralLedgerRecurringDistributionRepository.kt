@@ -7,16 +7,18 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionEntity
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -25,7 +27,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class GeneralLedgerRecurringDistributionRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val accountRepository: AccountRepository,
    private val generalLedgerRecurringRepository: GeneralLedgerRecurringRepository
 ) {
@@ -83,7 +85,8 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): GeneralLedgerRecurringDistributionEntity? {
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): GeneralLedgerRecurringDistributionEntity? {
       val params = mutableMapOf<String, Any?>("id" to id)
       val query = "${selectBaseQuery()} WHERE glRecurringDist.id = :id"
       val found = jdbc.findFirstOrNull(
@@ -97,7 +100,11 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<GeneralLedgerRecurringDistributionEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(
+      company: CompanyEntity,
+      page: PageRequest
+   ): RepositoryPage<GeneralLedgerRecurringDistributionEntity, PageRequest> {
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
@@ -116,7 +123,12 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       }
    }
 
-   fun findAllByRecurringId(glRecurringId: UUID, company: Company, page: PageRequest): RepositoryPage<GeneralLedgerRecurringDistributionEntity, PageRequest> {
+   @ReadOnly
+   fun findAllByRecurringId(
+      glRecurringId: UUID,
+      company: CompanyEntity,
+      page: PageRequest
+   ): RepositoryPage<GeneralLedgerRecurringDistributionEntity, PageRequest> {
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
@@ -213,7 +225,11 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       if (rowsAffected == 0) throw NotFoundException(id)
    }
 
-   private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): GeneralLedgerRecurringDistributionEntity {
+   private fun mapRow(
+      rs: ResultSet,
+      company: CompanyEntity,
+      columnPrefix: String = EMPTY
+   ): GeneralLedgerRecurringDistributionEntity {
       return GeneralLedgerRecurringDistributionEntity(
          id = rs.getUuid("${columnPrefix}id"),
          generalLedgerRecurring = generalLedgerRecurringRepository.mapRow(rs, "${columnPrefix}glRecurring_"),
@@ -223,7 +239,11 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       )
    }
 
-   private fun mapRow(rs: ResultSet, entity: GeneralLedgerRecurringDistributionEntity, columnPrefix: String = EMPTY): GeneralLedgerRecurringDistributionEntity {
+   private fun mapRow(
+      rs: ResultSet,
+      entity: GeneralLedgerRecurringDistributionEntity,
+      columnPrefix: String = EMPTY
+   ): GeneralLedgerRecurringDistributionEntity {
       return GeneralLedgerRecurringDistributionEntity(
          id = rs.getUuid("${columnPrefix}id"),
          generalLedgerRecurring = entity.generalLedgerRecurring,

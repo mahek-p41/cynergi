@@ -2,13 +2,12 @@ package com.cynergisuite.middleware.accounting.bank.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
+import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankDTO
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDataLoaderService
 import com.cynergisuite.middleware.error.ErrorDTO
 import groovy.json.JsonOutput
-import groovy.json.JsonSlurper
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
@@ -17,7 +16,6 @@ import java.time.LocalDate
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CONFLICT
-import static io.micronaut.http.HttpStatus.INTERNAL_SERVER_ERROR
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
@@ -26,7 +24,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
    private static String path = '/accounting/bank'
    private JsonOutput jsonOutput = new JsonOutput()
    @Inject BankFactoryService bankFactoryService
-   @Inject AccountDataLoaderService accountFactoryService
+   @Inject AccountTestDataLoaderService accountFactoryService
    @Inject BankReconciliationDataLoaderService bankReconciliationDataLoaderService
 
    void "fetch one bank by id" () {
@@ -302,9 +300,9 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "update invalid bank without non-nullable properties"() {
       given:
-      final def account = accountFactoryService.single(nineNineEightEmployee.company)
-      final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       def updatedBankDTO = bankFactoryService.singleDTO(store, account)
       updatedBankDTO.id = existingBank.id
       updatedBankDTO.number = null
@@ -352,10 +350,10 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "update a valid bank with no id"() {
       given: 'Update existingBank in DB with all new data'
-      final def account = accountFactoryService.single(nineNineEightEmployee.company)
-      final def store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final def existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      final def updatedBankDTO = new BankDTO(existingBank)
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final updatedBankDTO = new BankDTO(existingBank)
       updatedBankDTO.id = existingBank.id
 
       when:
@@ -433,7 +431,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == CONFLICT
       def response = exception.response.bodyAsJson()
-      response.message == "Key (id)=($bank.id) is still referenced from table \"bank_reconciliation\"."
-      response.code == "system.data.access.exception"
+      response.message == "Requested operation violates data integrity"
+      response.code == "cynergi.data.constraint.violated"
    }
 }

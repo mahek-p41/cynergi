@@ -4,31 +4,120 @@ pipeline {
    options {
       buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '10'))
       disableConcurrentBuilds()
-      lock resource: 'cynergitestdeploydb'
    }
 
    environment {
       NEXUS_JENKINS_CREDENTIALS = credentials('NEXUS_JENKINS_CREDENTIALS')
       CYNERGI_DEPLOY_JENKINS = credentials('CYNERGI_DEPLOY_JENKINS_USER')
+      def buildVersion = readProperties(file: 'gradle.properties')['releaseVersion'].trim()
+      def networkId = UUID.randomUUID().toString()
+      def jenkinsUid = sh(script: 'id -u', returnStdout: true).trim()
+      def jenkinsGid = sh(script: 'id -g', returnStdout: true).trim()
+      def micronautEnv = 'prod'
    }
 
    stages {
-      stage('Start Postgres Database') {
+      stage('Setup Docker') {
          steps {
-            dir('./support/deployment') {
-               sh 'docker-compose rm -f'
-               sh 'docker-compose build cynergibasedb'
-               sh 'docker-compose build cynergitestdeploydb'
-               sh 'docker-compose up -d cynergitestdeploydb'
-               sh 'docker-compose build --force-rm --quiet cynergidbready && docker-compose run --rm cynergidbready'
+            script {
+               sh 'docker network create ${networkId}'
+               sh 'mkdir -p gradleCache gradleWrapper'
             }
          }
       }
 
-      stage('Build Deployment') {
+      stage('Test') {
          steps {
-            dir('./support/deployment') {
-               sh './build-cynergi-middleware.sh'
+            script {
+               def cynergibasedb = docker.build("cynergibasedb:${env.BRANCH_NAME}", "-f ./support/development/cynergibasedb/cynergibasedb.dockerfile ./support/development/cynergibasedb")
+               def cynergitestdb = docker.build("cynergitestdb:${env.BRANCH_NAME}", "-f ./support/development/cynergitestdb/cynergitestdb.dockerfile --build-arg DB_IMAGE=cynergibasedb:${env.BRANCH_NAME} ./support/development/cynergitestdb")
+               def cynmid = docker.build("middleware:${env.BRANCH_NAME}", "-f ./support/deployment/cynmid/cynmid.dockerfile --build-arg USER_ID=$jenkinsUid --build-arg GROUP_ID=$jenkinsGid ./support/deployment/cynmid")
+
+               cynergitestdb.withRun("--network ${networkId} --name cynergitestdb${env.BRANCH_NAME} -e POSTGRES_PASSWORD=password --tmpfs /var/lib/postgresql/data:rw -v ${workspace}/support/development/cynergitestdb/fastinfo:/tmp/fastinfo") { cdbt ->
+                  script {
+                     sh "docker run -i --rm --network ${networkId} cynergibasedb:${env.BRANCH_NAME} /tmp/db-ready.sh cynergitestdb${env.BRANCH_NAME}"
+
+                     cynmid.inside(
+                        "--rm " +
+                        "--network ${networkId} "+
+                        "-v ${workspace}/gradleCache:/home/jenkins/caches " +
+                        "-v ${workspace}/gradleWrapper:/home/jenkins/wrapper " +
+                        "-e DATASOURCES_DEFAULT_URL=jdbc:postgresql://cynergitestdb${env.BRANCH_NAME}:5432/postgres "
+                     ) {
+                        sh '''#!/usr/bin/env bash
+                        set -x
+                        set -o errexit -o pipefail -o noclobber -o nounset
+                        export JAVA_OPTS="-Xms2048m -Xmx2048m -Xgcpolicy:gencon"
+
+                        ./gradlew --no-daemon --stacktrace clean buildApiDocs test jacocoTestReport
+                        '''
+                     }
+                  }
+               }
+            }
+         }
+      }
+
+      stage('Setup environment') {
+         when {
+            branch 'develop'
+         }
+
+         steps {
+            script {
+               micronautEnv = 'cstdevelop'
+            }
+         }
+      }
+
+      stage('Build tarball') {
+         when { anyOf { branch 'master'; branch 'staging'; branch 'develop'; } }
+
+         steps {
+            script {
+               def cynmidtar = docker.build("middlewaretar:${env.BRANCH_NAME}", "-f ./support/deployment/cynmid/cynmid.dockerfile --build-arg USER_ID=$jenkinsUid --build-arg GROUP_ID=$jenkinsGid ./support/deployment/cynmid")
+
+               cynmidtar.inside(
+                  "--rm " +
+                  "-v ${workspace}/gradleCache:/home/jenkins/caches " +
+                  "-v ${workspace}/gradleWrapper:/home/jenkins/wrapper " +
+                  "-v ${workspace}:/home/jenkins/cynergi-middleware " +
+                  "-e BUILD_VERSION=${buildVersion} " +
+                  "-e MICRONAUT_ENV=${micronautEnv}"
+               ) {
+                  sh '''#!/usr/bin/env bash
+                  set -x
+                  set -o errexit -o pipefail -o noclobber -o nounset
+                  export JAVA_OPTS="-Xms1024m -Xmx1024m -Xgcpolicy:gencon"
+                  VER_BUILD=$(java -version 2>&1 | awk '/build/ {gsub("\\)","") ; print $NF}' | head -n 1)
+
+                  ./gradlew --no-daemon --stacktrace shadowJar
+
+                  mkdir -p /opt/cyn/v01/cynmid/data/
+                  ls -al /home/jenkins/cynergi-middleware/support/deployment/
+                  cp /home/jenkins/cynergi-middleware/support/deployment/cyndsets-parse.sh /opt/cyn/v01/cynmid/data/cyndsets-parse.sh
+                  chmod u+x /opt/cyn/v01/cynmid/data/cyndsets-parse.sh
+
+                  mkdir -p /opt/cyn/v01/cynmid/scripts/
+                  cp /home/jenkins/cynergi-middleware/support/deployment/cynergi-postgres-check.sh /opt/cyn/v01/cynmid/scripts/cynergi-postgres-check.sh
+                  chmod u+x /opt/cyn/v01/cynmid/scripts/cynergi-postgres-check.sh
+                  jlink --module-path "$JAVA_HOME\\jmods" \\
+                     --compress 2 \\
+                     --no-header-files \\
+                     --no-man-pages \\
+                     --add-modules java.base,java.sql,openj9.jvm,openj9.sharedclasses,jdk.net,java.naming,java.management,jdk.unsupported,java.desktop \\
+                     --strip-debug \\
+                     --output /opt/cyn/v01/cynmid/java/openj9/${VER_BUILD}
+                  mkdir -p /opt/cyn/v01/cynmid/java/openj9/${VER_BUILD}/jitcache
+
+                  cp /home/jenkins/cynergi-middleware/support/deployment/cynergi-middleware.httpd.conf /opt/cyn/v01/cynmid/cynergi-middleware.httpd.conf
+                  sed "s/@@JAVA_VER_BUILD@@/${VER_BUILD}/g; s/@@MICRONAUT_ENV@@/${MICRONAUT_ENV}/g" /home/jenkins/cynergi-middleware/support/deployment/cynergi-middleware.conf > /opt/cyn/v01/cynmid/cynergi-middleware.conf
+                  cp /home/jenkins/cynergi-middleware/support/development/cynergidb/setup-database.sql /opt/cyn/v01/cynmid/data/
+                  cp /home/jenkins/cynergi-middleware/build/libs/*-$BUILD_VERSION-all.jar /opt/cyn/v01/cynmid/cynergi-middleware.jar
+                  mkdir -p /opt/cyn/v01/cynmid/java/openj9/${VER_BUILD}/jitcache
+                  tar -c --owner=0 --group=0 --to-stdout /opt/cyn | xz -6 - > /home/jenkins/cynergi-middleware/build/libs/cynergi-middleware.tar.xz
+                  '''
+               }
             }
          }
       }
@@ -81,8 +170,8 @@ pipeline {
 
    post {
       always {
-         dir('./support/deployment') {
-            sh 'docker-compose down && docker-compose rm -f'
+         script {
+            sh "docker network rm ${networkId}"
          }
          dir('./build/reports/tests/test') {
             sh "rm -rf /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/test-results"
@@ -97,7 +186,7 @@ pipeline {
          dir('./build/reports/jacoco/test/html') {
             sh "rm -rf /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/code-coverage"
             sh "mkdir -p /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/code-coverage"
-            sh "cp -rv * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/code-coverage"
+            sh "cp -r * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/code-coverage"
          }
          junit 'build/test-results/**/*.xml'
       }

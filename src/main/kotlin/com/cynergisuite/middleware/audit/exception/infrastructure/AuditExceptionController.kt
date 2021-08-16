@@ -65,7 +65,7 @@ class AuditExceptionController @Inject constructor(
    ): AuditExceptionValueObject {
       logger.info("Fetching AuditException by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = auditExceptionService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditException by {} resulted in", id, response)
@@ -92,7 +92,7 @@ class AuditExceptionController @Inject constructor(
    ): Page<AuditExceptionValueObject> {
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = auditExceptionService.fetchAll(auditId, user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -122,7 +122,7 @@ class AuditExceptionController @Inject constructor(
    ): AuditExceptionValueObject {
       logger.info("Requested Create AuditException {}", vo)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val auditException = auditExceptionValidator.validateCreate(auditId, vo, user)
       val response = auditExceptionService.create(auditException)
 
@@ -151,7 +151,7 @@ class AuditExceptionController @Inject constructor(
    ): AuditExceptionValueObject {
       logger.info("Requested Update AuditException {}", vo)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val auditException = auditExceptionValidator.validateUpdate(auditId, vo, user)
       val response = auditExceptionService.update(auditException)
 

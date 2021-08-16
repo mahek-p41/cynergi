@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.accounting.bank
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.Duplicate
@@ -23,14 +23,14 @@ class BankValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(BankValidator::class.java)
 
-   fun validateCreate(bankDTO: BankDTO, company: Company): BankEntity {
+   fun validateCreate(bankDTO: BankDTO, company: CompanyEntity): BankEntity {
       logger.trace("Validating Save Bank {}", bankDTO)
       val existingBankByNumber = bankRepository.findByNumber(bankDTO.number!!, company)
 
       return doValidation(existingBankByNumber = existingBankByNumber, bankDTO = bankDTO, company = company)
    }
 
-   fun validateUpdate(id: UUID, bankDTO: BankDTO, company: Company): BankEntity {
+   fun validateUpdate(id: UUID, bankDTO: BankDTO, company: CompanyEntity): BankEntity {
       logger.trace("Validating Update Bank {}", bankDTO)
 
       val existingBank = bankRepository.findOne(id, company) ?: throw NotFoundException(id)
@@ -39,7 +39,7 @@ class BankValidator @Inject constructor(
       return doValidation(existingBank = existingBank, existingBankByNumber = existingBankByNumber, bankDTO = bankDTO, company = company)
    }
 
-   private fun doValidation(existingBank: BankEntity? = null, existingBankByNumber: BankEntity? = null, bankDTO: BankDTO, company: Company): BankEntity {
+   private fun doValidation(existingBank: BankEntity? = null, existingBankByNumber: BankEntity? = null, bankDTO: BankDTO, company: CompanyEntity): BankEntity {
       val generalProfitCenter = storeRepository.findOne(bankDTO.generalLedgerProfitCenter!!.id!!, company)
       val generalLedgerAccount = accountRepository.findOne(bankDTO.generalLedgerAccount!!.id!!, company)
 

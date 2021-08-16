@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.purchase.order.control
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.DefaultAccountPayableStatusTypeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -32,14 +32,14 @@ class PurchaseOrderControlValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(PurchaseOrderControlValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(dto: PurchaseOrderControlDTO, company: Company): PurchaseOrderControlEntity {
+   fun validateCreate(dto: PurchaseOrderControlDTO, company: CompanyEntity): PurchaseOrderControlEntity {
       logger.debug("Validating Create PurchaseOrderControl {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: UUID, dto: PurchaseOrderControlDTO, company: Company): Pair<PurchaseOrderControlEntity, PurchaseOrderControlEntity> {
+   fun validateUpdate(id: UUID, dto: PurchaseOrderControlDTO, company: CompanyEntity): Pair<PurchaseOrderControlEntity, PurchaseOrderControlEntity> {
       logger.debug("Validating Update PurchaseOrderControl {}", dto)
 
       doValidation { errors ->
@@ -55,7 +55,7 @@ class PurchaseOrderControlValidator @Inject constructor(
 
    private fun doSharedValidation(
       dto: PurchaseOrderControlDTO,
-      company: Company,
+      company: CompanyEntity,
       entity: PurchaseOrderControlEntity? = null
    ): PurchaseOrderControlEntity {
       val defaultAccountPayableStatusType = defaultAccountPayableStatusTypeRepository.findOne(dto.defaultAccountPayableStatusType!!.value)
@@ -67,7 +67,7 @@ class PurchaseOrderControlValidator @Inject constructor(
 
       doValidation { errors ->
          if (purchaseOrderControlRepository.exists(company) && entity == null) {
-            errors.add(ValidationError("company", ConfigAlreadyExist(company.myDataset())))
+            errors.add(ValidationError("company", ConfigAlreadyExist(company.datasetCode)))
          }
 
          defaultAccountPayableStatusType

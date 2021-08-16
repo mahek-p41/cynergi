@@ -4,7 +4,7 @@ import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.infrastructure.GeneralLedgerRecurringDistributionRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
@@ -24,13 +24,13 @@ class GeneralLedgerRecurringDistributionValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerRecurringDistributionValidator::class.java)
 
-   fun validateCreate(dto: GeneralLedgerRecurringDistributionDTO, company: Company): GeneralLedgerRecurringDistributionEntity {
+   fun validateCreate(dto: GeneralLedgerRecurringDistributionDTO, company: CompanyEntity): GeneralLedgerRecurringDistributionEntity {
       logger.trace("Validating Create {}", dto)
 
       return doSharedValidation(dto, company, null)
    }
 
-   fun validateUpdate(id: UUID, dto: GeneralLedgerRecurringDistributionDTO, company: Company): GeneralLedgerRecurringDistributionEntity {
+   fun validateUpdate(id: UUID, dto: GeneralLedgerRecurringDistributionDTO, company: CompanyEntity): GeneralLedgerRecurringDistributionEntity {
       logger.debug("Validating Update {}", dto)
 
       val existingGlRecurringDistribution = generalLedgerRecurringDistributionRepository.findOne(id, company) ?: throw NotFoundException(id)
@@ -40,7 +40,7 @@ class GeneralLedgerRecurringDistributionValidator @Inject constructor(
 
    private fun doSharedValidation(
       dto: GeneralLedgerRecurringDistributionDTO,
-      company: Company,
+      company: CompanyEntity,
       existingGlRecurringDistribution: GeneralLedgerRecurringDistributionEntity?
    ): GeneralLedgerRecurringDistributionEntity {
       val glRecurring = generalLedgerRecurringRepository.findOne(dto.generalLedgerRecurring!!.id!!, company)

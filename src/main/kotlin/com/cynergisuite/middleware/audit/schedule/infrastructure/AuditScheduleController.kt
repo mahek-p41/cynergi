@@ -64,7 +64,7 @@ class AuditScheduleController @Inject constructor(
    ): AuditScheduleDTO {
       logger.info("Fetching Audit Schedule by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = auditScheduleService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Audit Schedule by {} resulted in {}", id, response)
@@ -91,7 +91,7 @@ class AuditScheduleController @Inject constructor(
    ): Page<AuditScheduleDTO> {
       logger.info("Fetching all audit schedules {} {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = auditScheduleService.fetchAll(pageRequest, user.myCompany())
 
       if (page.elements.isEmpty()) {
@@ -122,7 +122,7 @@ class AuditScheduleController @Inject constructor(
       logger.info("Requested Create Audit Schedule {}", dto)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = auditScheduleService.create(dto, user, locale)
 
       logger.debug("Requested creation of audit schedule using {} resulted in {}", dto, response)
@@ -152,7 +152,7 @@ class AuditScheduleController @Inject constructor(
       logger.info("Requested update audit schedule {}", auditSchedule)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = auditScheduleService.update(auditSchedule, user, locale)
 
       logger.debug("Requested update of audit schedule {} resulted in {}", auditSchedule, response)

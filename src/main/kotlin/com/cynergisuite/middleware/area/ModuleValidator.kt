@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.area
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.area.infrastructure.ModuleRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.ConfigAlreadyExist
@@ -19,7 +19,7 @@ class ModuleValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(ModuleValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(company: Company, moduleDTO: ModuleDTO): ModuleType {
+   fun validateCreate(company: CompanyEntity, moduleDTO: ModuleDTO): ModuleType {
       val moduleTypeId = moduleDTO.id!!
       val moduleEntity = moduleRepository.findOne(moduleTypeId, company)
       val configExists = moduleRepository.configExists(moduleTypeId, company)
@@ -33,7 +33,7 @@ class ModuleValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(company: Company, moduleDTO: ModuleDTO): ModuleType {
+   fun validateUpdate(company: CompanyEntity, moduleDTO: ModuleDTO): ModuleType {
       val moduleTypeId = moduleDTO.id!!
       val moduleEntity = moduleRepository.findOne(moduleTypeId, company)
       val configExists = moduleRepository.configExists(moduleTypeId, company)

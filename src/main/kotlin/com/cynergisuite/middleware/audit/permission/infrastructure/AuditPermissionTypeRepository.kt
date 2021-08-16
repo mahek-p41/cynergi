@@ -1,18 +1,21 @@
 package com.cynergisuite.middleware.audit.permission.infrastructure
 
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.audit.permission.AuditPermissionType
+import io.micronaut.transaction.annotation.ReadOnly
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import javax.inject.Singleton
 
 @Singleton
 class AuditPermissionTypeRepository(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditPermissionTypeRepository::class.java)
 
+   @ReadOnly
    fun findOne(id: Int): AuditPermissionType? {
       logger.debug("Searching for AuditPermissionType by ID {}", id)
 
@@ -36,8 +39,13 @@ class AuditPermissionTypeRepository(
       }
    }
 
+   @ReadOnly
    fun exists(id: Int): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_permission_type_domain WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject(
+         "SELECT EXISTS(SELECT id FROM audit_permission_type_domain WHERE id = :id)",
+         mapOf("id" to id),
+         Boolean::class.java
+      )!!
 
       logger.trace("Checking if AuditPermissionType: {} exists resulted in {}", id, exists)
 

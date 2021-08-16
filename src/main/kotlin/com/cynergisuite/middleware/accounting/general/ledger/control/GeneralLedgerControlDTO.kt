@@ -21,28 +21,28 @@ data class GeneralLedgerControlDTO(
    var defaultProfitCenter: SimpleLegacyIdentifiableDTO? = null,
 
    @field:Schema(nullable = true, description = "Default account payable account")
-   var defaultAccountPayableAccount: SimpleIdentifiableDTO?,
+   var defaultAccountPayableAccount: SimpleIdentifiableDTO? = null,
 
    @field:Schema(nullable = true, description = "Default account payable discount account")
-   var defaultAccountPayableDiscountAccount: SimpleIdentifiableDTO?,
+   var defaultAccountPayableDiscountAccount: SimpleIdentifiableDTO? = null,
 
    @field:Schema(nullable = true, description = "Default account receivable account")
-   var defaultAccountReceivableAccount: SimpleIdentifiableDTO?,
+   var defaultAccountReceivableAccount: SimpleIdentifiableDTO? = null,
 
    @field:Schema(nullable = true, description = "Default account receivable discount account")
-   var defaultAccountReceivableDiscountAccount: SimpleIdentifiableDTO?,
+   var defaultAccountReceivableDiscountAccount: SimpleIdentifiableDTO? = null,
 
    @field:Schema(nullable = true, description = "Default account misc inventory account")
-   var defaultAccountMiscInventoryAccount: SimpleIdentifiableDTO?,
+   var defaultAccountMiscInventoryAccount: SimpleIdentifiableDTO? = null,
 
    @field:Schema(nullable = true, description = "Default account serialized inventory account")
-   var defaultAccountSerializedInventoryAccount: SimpleIdentifiableDTO?,
+   var defaultAccountSerializedInventoryAccount: SimpleIdentifiableDTO? = null,
 
    @field:Schema(nullable = true, description = "Default account unbilled inventory account")
-   var defaultAccountUnbilledInventoryAccount: SimpleIdentifiableDTO?,
+   var defaultAccountUnbilledInventoryAccount: SimpleIdentifiableDTO? = null,
 
    @field:Schema(nullable = true, description = "Default account freight account")
-   var defaultAccountFreightAccount: SimpleIdentifiableDTO?
+   var defaultAccountFreightAccount: SimpleIdentifiableDTO? = null
 
 ) : Identifiable {
    constructor(

@@ -14,8 +14,8 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one store by id with the a region assigned" () {
       given: 'store number 1 is assigned to a region of company tstds1'
-      final def company = companyFactoryService.forDatasetCode('tstds1')
-      final def store1 = storeFactoryService.store(1, company)
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store1 = storeFactoryService.store(1, company)
 
       when:
       def result = get("$path/$store1.id")
@@ -31,10 +31,10 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one store by id without region assigned" () {
       given: 'store store3Tstds1 is not assigned to any region, store store3Tstds2 is assigned to a region'
-      final def tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final def tstds2 = companyFactoryService.forDatasetCode('tstds2')
-      final def store3Tstds1 = storeFactoryService.store(3, tstds1)
-      final def store3Tstds2 = storeFactoryService.store(3, tstds2)
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final store3Tstds1 = storeFactoryService.store(3, tstds1)
+      final store3Tstds2 = storeFactoryService.store(3, tstds2)
       final region2Tstds2 = regions[1]
       // this make the test failed (no store return) if there are no company_id column in region_to_store
       storeFactoryService.companyStoresToRegion(region2Tstds2, store3Tstds2)
@@ -106,7 +106,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       get("${path}${pageTwo}")
 
       then:
-      final def notFoundException = thrown(HttpClientResponseException)
+      final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
    }
 

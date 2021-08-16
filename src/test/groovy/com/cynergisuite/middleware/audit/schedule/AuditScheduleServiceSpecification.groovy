@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
-import com.cynergisuite.middleware.audit.AuditFactoryService
+import com.cynergisuite.middleware.audit.AuditTestDataLoaderService
 import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.AuditUpdateValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
@@ -20,8 +20,8 @@ import static java.time.DayOfWeek.WEDNESDAY
 @MicronautTest(transactional = false)
 class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
    @Inject AuditService auditService
-   @Inject AuditFactoryService auditFactoryService
-   @Inject AuditScheduleFactoryService auditScheduleFactoryService
+   @Inject AuditTestDataLoaderService auditFactoryService
+   @Inject AuditScheduleTestDataLoaderService auditScheduleFactoryService
    @Inject AuditScheduleService auditScheduleService
 
    void "one store test"() {

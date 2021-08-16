@@ -5,17 +5,21 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionEntity
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.math.BigDecimal
 import java.sql.ResultSet
 import java.util.UUID
@@ -25,7 +29,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class AccountPayableDistributionRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val accountRepository: AccountRepository,
    private val storeRepository: StoreRepository
 ) {
@@ -74,8 +78,9 @@ class AccountPayableDistributionRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): AccountPayableDistributionEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): AccountPayableDistributionEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()} WHERE apDist.id = :id AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
@@ -89,7 +94,11 @@ class AccountPayableDistributionRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<AccountPayableDistributionEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(
+      company: CompanyEntity,
+      page: PageRequest
+   ): RepositoryPage<AccountPayableDistributionEntity, PageRequest> {
       var totalElements: Long? = null
       val resultList: MutableList<AccountPayableDistributionEntity> = mutableListOf()
 
@@ -107,11 +116,11 @@ class AccountPayableDistributionRepository @Inject constructor(
          LIMIT :limit OFFSET :offset
          """,
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to page.size(),
             "offset" to page.offset()
          )
-      ) { rs ->
+      ) { rs, _ ->
          resultList.add(mapRow(rs, company, "apDist_"))
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
@@ -125,7 +134,8 @@ class AccountPayableDistributionRepository @Inject constructor(
       )
    }
 
-   fun findAllGroups(company: Company, page: PageRequest): RepositoryPage<String, PageRequest> {
+   @ReadOnly
+   fun findAllGroups(company: CompanyEntity, page: PageRequest): RepositoryPage<String, PageRequest> {
       return jdbc.queryPaged(
          """
             WITH paged AS (
@@ -141,7 +151,7 @@ class AccountPayableDistributionRepository @Inject constructor(
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to page.size(),
             "offset" to page.offset()
          ),
@@ -153,7 +163,12 @@ class AccountPayableDistributionRepository @Inject constructor(
       }
    }
 
-   fun findAllRecordsByGroup(company: Company, name: String, page: PageRequest): RepositoryPage<AccountPayableDistributionEntity, PageRequest> {
+   @ReadOnly
+   fun findAllRecordsByGroup(
+      company: CompanyEntity,
+      name: String,
+      page: PageRequest
+   ): RepositoryPage<AccountPayableDistributionEntity, PageRequest> {
       var totalElements: Long? = null
       val resultList: MutableList<AccountPayableDistributionEntity> = mutableListOf()
 
@@ -171,12 +186,12 @@ class AccountPayableDistributionRepository @Inject constructor(
          LIMIT :limit OFFSET :offset
          """,
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "name" to name,
             "limit" to page.size(),
             "offset" to page.offset()
          )
-      ) { rs ->
+      ) { rs, _ ->
          resultList.add(mapRow(rs, company, "apDist_"))
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
@@ -191,7 +206,7 @@ class AccountPayableDistributionRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: AccountPayableDistributionEntity, company: Company): AccountPayableDistributionEntity {
+   fun insert(entity: AccountPayableDistributionEntity, company: CompanyEntity): AccountPayableDistributionEntity {
       logger.debug("Inserting AccountPayableDistribution {}", entity)
 
       return jdbc.insertReturning(
@@ -205,7 +220,7 @@ class AccountPayableDistributionRepository @Inject constructor(
             "name" to entity.name,
             "profit_center_sfk" to entity.profitCenter.myNumber(),
             "account_id" to entity.account.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "percent" to entity.percent
          )
       ) { rs, _ ->
@@ -214,7 +229,7 @@ class AccountPayableDistributionRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: AccountPayableDistributionEntity, company: Company): AccountPayableDistributionEntity {
+   fun update(entity: AccountPayableDistributionEntity, company: CompanyEntity): AccountPayableDistributionEntity {
       logger.debug("Updating AccountPayableDistribution {}", entity)
 
       return jdbc.updateReturning(
@@ -235,7 +250,7 @@ class AccountPayableDistributionRepository @Inject constructor(
             "name" to entity.name,
             "profit_center_sfk" to entity.profitCenter.myNumber(),
             "account_id" to entity.account.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "percent" to entity.percent
          )
       ) { rs, _ ->
@@ -244,7 +259,7 @@ class AccountPayableDistributionRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: UUID, company: Company) {
+   fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting AccountPayableDistribution with id={}", id)
 
       val rowsAffected = jdbc.update(
@@ -252,31 +267,31 @@ class AccountPayableDistributionRepository @Inject constructor(
          DELETE FROM account_payable_distribution_template
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.myId())
+         mapOf("id" to id, "company_id" to company.id)
       )
       logger.info("Row affected {}", rowsAffected)
 
       if (rowsAffected == 0) throw NotFoundException(id)
    }
 
-   fun percentTotalForGroup(company: Company, name: String): BigDecimal? {
+   @ReadOnly
+   fun percentTotalForGroup(company: CompanyEntity, name: String): BigDecimal {
       logger.debug("Percent total for account payable distribution group with name={}", name)
 
       return jdbc.queryForObject(
-         """
-            SELECT SUM(percent)
+         """SELECT COALESCE(SUM(percent), 0)
             FROM account_payable_distribution_template
             WHERE company_id = :company_id AND name = :name
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "name" to name
          ),
          BigDecimal::class.java
       )
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): AccountPayableDistributionEntity {
+   fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): AccountPayableDistributionEntity {
       return AccountPayableDistributionEntity(
          id = rs.getUuid("${columnPrefix}id"),
          name = rs.getString("${columnPrefix}name"),
@@ -286,7 +301,11 @@ class AccountPayableDistributionRepository @Inject constructor(
       )
    }
 
-   private fun mapRow(rs: ResultSet, entity: AccountPayableDistributionEntity, columnPrefix: String = EMPTY): AccountPayableDistributionEntity {
+   private fun mapRow(
+      rs: ResultSet,
+      entity: AccountPayableDistributionEntity,
+      columnPrefix: String = EMPTY
+   ): AccountPayableDistributionEntity {
       return AccountPayableDistributionEntity(
          id = rs.getUuid("${columnPrefix}id"),
          name = rs.getString("${columnPrefix}name"),

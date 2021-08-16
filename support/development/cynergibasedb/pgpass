@@ -2,4 +2,4 @@ cynergidb:5432:cynergidb:cynergiuser:password
 cynergidb:5432:cynergidevelopdb:cynergiuser:password
 cynergidb:5432:fastinfo_production:postgres:password
 cynergitestdb:5432:cynergitestdb:postgres:password
-cynergitestdeploydb:5432:cynergitestdb:postgres:password
+localhost:5432:cynergitestdb:postgres:password

@@ -4,7 +4,7 @@ import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
+import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.address.AddressDTO
@@ -24,8 +24,8 @@ import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
-import com.cynergisuite.middleware.vendor.rebate.RebateDataLoader
-import com.cynergisuite.middleware.vendor.rebate.RebateDataLoaderService
+import com.cynergisuite.middleware.vendor.rebate.RebateTestDataLoader
+import com.cynergisuite.middleware.vendor.rebate.RebateTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -39,12 +39,12 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class VendorControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/vendor"
 
-   @Inject AccountDataLoaderService accountDataLoaderService
+   @Inject AccountTestDataLoaderService accountTestDataLoaderService
    @Inject AddressTestDataLoaderService addressTestDataLoaderService
    @Inject FreightOnboardTypeRepository freightOnboardTypeRepository
    @Inject FreightCalcMethodTypeRepository freightCalcMethodTypeRepository
-   @Inject RebateDataLoaderService rebateDataLoaderService
-   @Inject ShipViaTestDataLoaderService shipViaFactoryService
+   @Inject RebateTestDataLoaderService rebateTestDataLoaderService
+   @Inject ShipViaTestDataLoaderService shipViaTestDataLoaderService
    @Inject VendorRepository vendorRepository
    @Inject VendorGroupRepository vendorGroupRepository
    @Inject VendorGroupTestDataLoaderService vendorGroupTestDataLoaderService
@@ -55,7 +55,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "fetch one with a single vendor payment term schedule" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
 
@@ -103,7 +103,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "fetch one with a two vendor payment term schedule" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
 
@@ -151,7 +151,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "fetch all" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendors = vendorTestDataLoaderService.stream(7, company, vendorPaymentTerm, shipVia).toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
@@ -194,7 +194,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "create one" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
 
@@ -247,7 +247,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "create with payTo" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final payToVendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
@@ -272,7 +272,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final company2 = companyFactoryService.forDatasetCode('tstds2')
-      final shipVia = shipViaFactoryService.single(company2)
+      final shipVia = shipViaTestDataLoaderService.single(company2)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company2)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
 
@@ -293,7 +293,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "create valid vendor with vendor group" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
       List<VendorGroupEntity> vendorGroups = new ArrayList<VendorGroupEntity>()
@@ -321,7 +321,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "create valid vendor without vendor group" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
       List<VendorGroupEntity> vendorGroups = new ArrayList<VendorGroupEntity>()
@@ -349,7 +349,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "create valid vendor without address and our account number" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
       vendor.address = null
@@ -371,7 +371,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "create valid vendor with allow drop ship to customer and auto submit purchase order set to true" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
       List<VendorGroupEntity> vendorGroups = new ArrayList<VendorGroupEntity>()
@@ -404,7 +404,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "create valid vendor with allow drop ship to customer and auto submit purchase order set to false" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
       List<VendorGroupEntity> vendorGroups = new ArrayList<VendorGroupEntity>()
@@ -437,7 +437,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "create invalid vendor with non-existing vendor group" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
       List<VendorGroupEntity> vendorGroups = new ArrayList<VendorGroupEntity>()
@@ -461,7 +461,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "create invalid vendor with null email address" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
       vendor.autoSubmitPurchaseOrder = true
@@ -482,7 +482,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "create invalid vendor with invalid email address" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
       vendor.autoSubmitPurchaseOrder = true
@@ -503,7 +503,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "create invalid vendor with null po submit email address" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
       vendor.autoSubmitPurchaseOrder = true
@@ -524,7 +524,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "create invalid vendor with invalid po submit email address" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
       vendor.autoSubmitPurchaseOrder = true
@@ -545,7 +545,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "create invalid vendor with null allow drop ship to customer" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
       vendor.allowDropShipToCustomer = null
@@ -565,7 +565,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "create invalid vendor with null auto submit purchase order" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
       vendor.autoSubmitPurchaseOrder = null
@@ -586,7 +586,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final address = addressTestDataLoaderService.single()
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, address, vendorPaymentTerm, shipVia)
       final newVendorAddress = AddressTestDataLoader.single()
@@ -610,7 +610,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "update only address" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
       final newVendorAddress = AddressTestDataLoader.single().with { new AddressDTO(it) }
@@ -634,7 +634,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "update invalid vendor that assigns itself as pay to vendor" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final vendorUpdate = new VendorDTO(VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia))
@@ -657,7 +657,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "update vendor with null email address" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
@@ -681,7 +681,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "update vendor with invalid email address" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
@@ -705,7 +705,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "update vendor with null po submit email address" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
@@ -729,7 +729,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "update vendor with invalid po submit email address" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
@@ -753,7 +753,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "update vendor and toggle allow drop ship to customer and auto submit purchase order fields" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final newVendorAddress = AddressTestDataLoader.single().with { new AddressDTO(it) }
@@ -785,7 +785,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "update invalid vendor with null allow drop ship to customer field" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
@@ -808,7 +808,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "update invalid vendor with null auto submit purchase order field" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
@@ -840,7 +840,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final VPT = new VendorPaymentTermEntity(null, company, "test1", null, null, null, schedules)
       final vendorPaymentTerm = vendorPaymentTermRepository.insert(VPT)
 
-      final shipVia = shipViaFactoryService.single(nineNineEightEmployee.company)
+      final shipVia = shipViaTestDataLoaderService.single(nineNineEightEmployee.company)
 
       final groupEntity = new VendorGroupEntity(null, company, "Test Group", "Group used for testing!")
       final vendorGroup = vendorGroupRepository.insert(groupEntity, company)
@@ -900,14 +900,14 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientException)
-      searchSqlInjectionResult.requested.query == ' or 1=1'
+      searchSqlInjectionResult.requested.query == ' or 1=1;drop table account;--'
       searchSqlInjectionResult.totalElements < 5
    }
 
    void "search vendors by name not fuzzy" () {
       given: "Three vendors 2 with similar names"
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendorOne = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, "Vendor One")
       final vendorTwo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, "Vendor Two")
@@ -959,7 +959,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "search vendors by number" () {
       given: "A random collection of 20 vendors with a target vendor"
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final randomVendors = vendorTestDataLoaderService.stream(20, company, vendorPaymentTerm, shipVia)
       final targetVendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, "Super Awesome Company")
@@ -1026,7 +1026,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final VPT = new VendorPaymentTermEntity(null, company, "test1", null, null, null, schedules)
       final vendorPaymentTerm = vendorPaymentTermRepository.insert(VPT)
 
-      final shipVia = shipViaFactoryService.single(nineNineEightEmployee.company)
+      final shipVia = shipViaTestDataLoaderService.single(nineNineEightEmployee.company)
 
       final VGRP = new VendorGroupEntity(null, company, "Test Group", "Group used for testing!")
       final vendorGroup = vendorGroupRepository.insert(VGRP, company)
@@ -1063,7 +1063,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final VPT = new VendorPaymentTermEntity(null, company, "test1", null, null, null, schedules)
       final vendorPaymentTerm = vendorPaymentTermRepository.insert(VPT)
 
-      final shipVia = shipViaFactoryService.single(nineNineEightEmployee.company)
+      final shipVia = shipViaTestDataLoaderService.single(nineNineEightEmployee.company)
 
       final VGRP = new VendorGroupEntity(null, company, "Test Group", "Group used for testing!")
       final vendorGroup = vendorGroupRepository.insert(VGRP, company)
@@ -1090,14 +1090,14 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "assign rebates to vendor" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
 
-      final glDebitAcct = accountDataLoaderService.single(company)
-      final glCreditAcct = accountDataLoaderService.single(company)
-      def rebateList = rebateDataLoaderService.stream(5, company, [], glDebitAcct, glCreditAcct).toList()
-      def rebateDTOList = RebateDataLoader.streamDTO(5, [], new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct)).toList()
+      final glDebitAcct = accountTestDataLoaderService.single(company)
+      final glCreditAcct = accountTestDataLoaderService.single(company)
+      def rebateList = rebateTestDataLoaderService.stream(5, company, [], glDebitAcct, glCreditAcct).toList()
+      def rebateDTOList = RebateTestDataLoader.streamDTO(5, [], new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct)).toList()
 
       when: // create vendor
       def result = post(path, vendor)
@@ -1163,14 +1163,14 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
    void "disassociate rebate from vendor" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(company)
+      final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
 
-      final glDebitAcct = accountDataLoaderService.single(company)
-      final glCreditAcct = accountDataLoaderService.single(company)
-      def rebateList = rebateDataLoaderService.stream(5, company, [], glDebitAcct, glCreditAcct).toList()
-      def rebateDTOList = RebateDataLoader.streamDTO(5, [], new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct)).toList()
+      final glDebitAcct = accountTestDataLoaderService.single(company)
+      final glCreditAcct = accountTestDataLoaderService.single(company)
+      def rebateList = rebateTestDataLoaderService.stream(5, company, [], glDebitAcct, glCreditAcct).toList()
+      def rebateDTOList = RebateTestDataLoader.streamDTO(5, [], new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct)).toList()
 
       when: // create vendor
       def result = post(path, vendor)

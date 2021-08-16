@@ -9,7 +9,9 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
@@ -20,7 +22,6 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.company.Company
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.DepartmentEntity
@@ -28,10 +29,11 @@ import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -45,7 +47,7 @@ class AuditExceptionRepository @Inject constructor(
    private val auditExceptionNoteRepository: AuditExceptionNoteRepository,
    private val companyRepository: CompanyRepository,
    private val employeeRepository: EmployeeRepository,
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionRepository::class.java)
 
@@ -162,13 +164,14 @@ class AuditExceptionRepository @Inject constructor(
            LEFT OUTER JOIN employees auditExceptionNoteEmployee ON auditExceptionNote.entered_by = auditExceptionNoteEmployee.emp_number AND comp.id = auditExceptionNoteEmployee.comp_id
       """.trimIndent()
 
-   fun findOne(id: UUID, company: Company): AuditExceptionEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): AuditExceptionEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${findOneQuery()}\nWHERE auditException.id = :id AND comp.id = :comp_id"
 
       logger.trace("Searching for AuditExceptions using {} {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs ->
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ ->
          val address = addressRepository.mapAddressOrNull(rs, "address_")
          val scannedBy = mapEmployeeNotNull(rs, address, "scannedBy_")
          val approvedBy = mapEmployee(rs, address, "approvedBy_")
@@ -191,10 +194,20 @@ class AuditExceptionRepository @Inject constructor(
       return found
    }
 
+   @ReadOnly
+   fun isApproved(auditExceptionId: UUID): Boolean {
+      val approved = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_exception WHERE id = :id AND approved = TRUE)", mapOf("id" to auditExceptionId), Boolean::class.java)
+
+      logger.trace("Checking if AuditException: {} has been approved resulted in {}", auditExceptionId, approved)
+
+      return approved
+   }
+
    /**
     * This method used for validation does not check against the ID column, so if it is set in the provided entity
     * it will be ignored.
     */
+   @ReadOnly
    fun existsForAudit(auditExceptionEntity: AuditExceptionEntity): Boolean {
       logger.trace("Checking if audit exception exists for {}", auditExceptionEntity)
 
@@ -224,16 +237,9 @@ class AuditExceptionRepository @Inject constructor(
       )!!
    }
 
-   fun isApproved(auditExceptionId: UUID): Boolean {
-      val approved = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_exception WHERE id = :id AND approved = TRUE)", mapOf("id" to auditExceptionId), Boolean::class.java)!!
-
-      logger.trace("Checking if AuditException: {} has been approved resulted in {}", auditExceptionId, approved)
-
-      return approved
-   }
-
-   fun findAll(audit: AuditEntity, company: Company, page: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
-      val compId = company.myId()
+   @ReadOnly
+   fun findAll(audit: AuditEntity, company: CompanyEntity, page: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
+      val compId = company.id
       val params = mutableMapOf("audit_id" to audit.id, "comp_id" to compId, "limit" to page.size(), "offset" to page.offset())
       val sql =
          """
@@ -403,8 +409,9 @@ class AuditExceptionRepository @Inject constructor(
       }
    }
 
+   @ReadOnly
    fun exists(id: UUID): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_exception WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM audit_exception WHERE id = :id)", mapOf("id" to id), Boolean::class.java)
 
       logger.trace("Checking if AuditException: {} exists resulted in {}", id, exists)
 
@@ -446,7 +453,7 @@ class AuditExceptionRepository @Inject constructor(
 
    @Transactional
    fun approveAllExceptions(audit: AuditEntity, employee: User): Int {
-      logger.trace("Updating audit_exception {}", audit)
+      logger.trace("Updating audit_exception {}/{}", audit, employee)
 
       return jdbc.update(
          """
@@ -454,7 +461,7 @@ class AuditExceptionRepository @Inject constructor(
          SET approved = true,
              approved_by = :approved_by
          WHERE audit_id = :audit_id
-         AND approved = false
+               AND approved = false
          """,
          mapOf(
             "audit_id" to audit.myId(),

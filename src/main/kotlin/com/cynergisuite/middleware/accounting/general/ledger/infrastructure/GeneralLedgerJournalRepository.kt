@@ -12,13 +12,14 @@ import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalEntity
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -27,7 +28,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class GeneralLedgerJournalRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val accountRepository: AccountRepository,
    private val generalLedgerSourceCodeRepository: GeneralLedgerSourceCodeRepository,
    private val storeRepository: StoreRepository
@@ -86,13 +87,14 @@ class GeneralLedgerJournalRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): GeneralLedgerJournalEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): GeneralLedgerJournalEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()}\nWHERE glJournal.id = :id AND glJournal.company_id = :comp_id"
 
       logger.debug("Searching for GeneralLedgerJournal using {} {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs ->
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ ->
          val generalLedgerJournal = mapRow(rs, company, "glJournal_")
 
          generalLedgerJournal
@@ -103,7 +105,11 @@ class GeneralLedgerJournalRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: PageRequest, company: Company): RepositoryPage<GeneralLedgerJournalEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(
+      pageRequest: PageRequest,
+      company: CompanyEntity
+   ): RepositoryPage<GeneralLedgerJournalEntity, PageRequest> {
       return jdbc.queryPaged(
          """
          ${selectBaseQuery()}
@@ -112,7 +118,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to pageRequest.size(),
             "offset" to pageRequest.offset()
          ),
@@ -125,7 +131,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: GeneralLedgerJournalEntity, company: Company): GeneralLedgerJournalEntity {
+   fun insert(entity: GeneralLedgerJournalEntity, company: CompanyEntity): GeneralLedgerJournalEntity {
       logger.debug("Inserting GeneralLedgerJournal {}", entity)
 
       return jdbc.insertReturning(
@@ -152,7 +158,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "account_id" to entity.account.id,
             "profit_center_id_sfk" to entity.profitCenter.myId(),
             "date" to entity.date,
@@ -164,7 +170,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: GeneralLedgerJournalEntity, company: Company): GeneralLedgerJournalEntity {
+   fun update(entity: GeneralLedgerJournalEntity, company: CompanyEntity): GeneralLedgerJournalEntity {
       logger.debug("Updating GeneralLedgerJournal {}", entity)
 
       val updated = jdbc.updateReturning(
@@ -184,7 +190,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "account_id" to entity.account.id,
             "profit_center_id_sfk" to entity.profitCenter.myId(),
             "date" to entity.date,
@@ -199,7 +205,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
       return updated
    }
 
-   private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): GeneralLedgerJournalEntity {
+   private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): GeneralLedgerJournalEntity {
       return GeneralLedgerJournalEntity(
          id = rs.getUuid("${columnPrefix}id"),
          account = accountRepository.mapRow(rs, company, "${columnPrefix}account_"),
@@ -211,7 +217,13 @@ class GeneralLedgerJournalRepository @Inject constructor(
       )
    }
 
-   private fun mapRowUpsert(rs: ResultSet, account: AccountEntity, profitCenter: Store, source: GeneralLedgerSourceCodeEntity, columnPrefix: String = EMPTY): GeneralLedgerJournalEntity {
+   private fun mapRowUpsert(
+      rs: ResultSet,
+      account: AccountEntity,
+      profitCenter: Store,
+      source: GeneralLedgerSourceCodeEntity,
+      columnPrefix: String = EMPTY
+   ): GeneralLedgerJournalEntity {
       return GeneralLedgerJournalEntity(
          id = rs.getUuid("${columnPrefix}id"),
          account = account,

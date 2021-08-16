@@ -51,7 +51,7 @@ class LocationController @Inject constructor(
    ): LocationDTO {
       logger.info("Fetching Location by id {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = locationService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Location by {} resulted in {}", id, response)
@@ -76,7 +76,7 @@ class LocationController @Inject constructor(
    ): Page<LocationDTO> {
       logger.info("Fetching all locations {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = locationService.fetchAll(pageRequest, user.myCompany())
 
       if (page.elements.isEmpty()) {

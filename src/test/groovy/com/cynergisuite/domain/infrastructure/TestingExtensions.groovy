@@ -77,3 +77,15 @@ class HttpResponseExtension {
       }
    }
 }
+
+class ListExtension {
+   static randomness = new Random()
+
+   static <T> T random(final List self) {
+      if (!self.isEmpty()) {
+         return self[randomness.nextInt() % self.size()] as T
+      } else {
+         throw new IndexOutOfBoundsException("List is empty")
+      }
+   }
+}

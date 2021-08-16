@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.control
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure.GeneralLedgerControlRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -24,24 +24,24 @@ class GeneralLedgerControlValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerControlValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(dto: GeneralLedgerControlDTO, company: Company): GeneralLedgerControlEntity {
+   fun validateCreate(dto: GeneralLedgerControlDTO, company: CompanyEntity): GeneralLedgerControlEntity {
       logger.debug("Validating Create GeneralLedgerControl {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(dto: GeneralLedgerControlDTO, company: Company): GeneralLedgerControlEntity {
+   fun validateUpdate(dto: GeneralLedgerControlDTO, company: CompanyEntity): GeneralLedgerControlEntity {
       logger.debug("Validating Update GeneralLedgerControl {}", dto)
 
-      val generalLedgerControlEntity = generalLedgerControlRepository.findOne(company) ?: throw NotFoundException(company.myId()!!)
+      val generalLedgerControlEntity = generalLedgerControlRepository.findOne(company) ?: throw NotFoundException(company.id!!)
 
       return doSharedValidation(dto, company, generalLedgerControlEntity)
    }
 
    private fun doSharedValidation(
       dto: GeneralLedgerControlDTO,
-      company: Company,
+      company: CompanyEntity,
       entity: GeneralLedgerControlEntity? = null
    ): GeneralLedgerControlEntity {
       val defaultProfitCenter = dto.defaultProfitCenter?.id?.let { storeRepository.findOne(it, company) }
@@ -56,7 +56,7 @@ class GeneralLedgerControlValidator @Inject constructor(
 
       doValidation { errors ->
          if (generalLedgerControlRepository.exists(company) && entity == null) { // tried to create a General Ledger Control record, but one already existed, basically they did a post when they should have done a put.
-            errors.add(ValidationError("company", ConfigAlreadyExist(company.myDataset())))
+            errors.add(ValidationError("company", ConfigAlreadyExist(company.datasetCode)))
          }
 
          // defaultProfitCenter is not nullable

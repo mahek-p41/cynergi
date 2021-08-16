@@ -1,12 +1,15 @@
 package com.cynergisuite.middleware.area.infrastructure
 
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.update
 import com.cynergisuite.middleware.area.ModuleType
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -14,7 +17,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class ModuleRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ModuleRepository::class.java)
 
@@ -42,7 +45,7 @@ class ModuleRepository @Inject constructor(
    }
 
    @Transactional
-   fun insertConfig(moduleType: ModuleType, company: Company): ModuleType {
+   fun insertConfig(moduleType: ModuleType, company: CompanyEntity): ModuleType {
       logger.debug("Inserting module level {}", moduleType)
 
       jdbc.update(
@@ -51,7 +54,7 @@ class ModuleRepository @Inject constructor(
          VALUES (:company_id, :module_type_id, :level)
          """,
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "module_type_id" to moduleType.myId(),
             "level" to moduleType.level
          )
@@ -61,7 +64,7 @@ class ModuleRepository @Inject constructor(
    }
 
    @Transactional
-   fun updateConfig(moduleType: ModuleType, company: Company): ModuleType {
+   fun updateConfig(moduleType: ModuleType, company: CompanyEntity): ModuleType {
       logger.debug("Updating module level {}", moduleType)
 
       jdbc.update(
@@ -72,7 +75,7 @@ class ModuleRepository @Inject constructor(
          WHERE company_id = :company_id AND module_type_id = :module_type_id
          """,
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "module_type_id" to moduleType.myId(),
             "level" to moduleType.level
          )
@@ -81,7 +84,8 @@ class ModuleRepository @Inject constructor(
       return moduleType.copy(level = moduleType.level)
    }
 
-   fun findOne(moduleTypeId: Int, company: Company): ModuleType? {
+   @ReadOnly
+   fun findOne(moduleTypeId: Int, company: CompanyEntity): ModuleType? {
       val found = jdbc.findFirstOrNull(
          "${selectBaseQuery()} WHERE module.id = :type_id",
          mapOf("type_id" to moduleTypeId)
@@ -92,21 +96,22 @@ class ModuleRepository @Inject constructor(
       return found
    }
 
-   fun configExists(moduleTypeId: Int, company: Company): Boolean {
+   @ReadOnly
+   fun configExists(moduleTypeId: Int, company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
          """
          SELECT EXISTS (SELECT * FROM module WHERE module_type_id = :module_type_id AND company_id = :company_id)
          """,
-         mapOf("module_type_id" to moduleTypeId, "company_id" to company.myId()),
+         mapOf("module_type_id" to moduleTypeId, "company_id" to company.id),
          Boolean::class.java
-      )!!
+      )
 
       logger.trace("Checking if Module config exists {}")
 
       return exists
    }
 
-   fun mapSimpleModule(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): ModuleType =
+   fun mapSimpleModule(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): ModuleType =
       ModuleType(
          id = rs.getInt("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),

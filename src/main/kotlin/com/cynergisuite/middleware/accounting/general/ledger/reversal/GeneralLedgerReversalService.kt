@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.reversal
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.infrastructure.GeneralLedgerReversalRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -13,11 +13,11 @@ class GeneralLedgerReversalService @Inject constructor(
    private val generalLedgerReversalRepository: GeneralLedgerReversalRepository,
    private val generalLedgerReversalValidator: GeneralLedgerReversalValidator
 ) {
-   fun fetchOne(id: UUID, company: Company): GeneralLedgerReversalDTO? {
+   fun fetchOne(id: UUID, company: CompanyEntity): GeneralLedgerReversalDTO? {
       return generalLedgerReversalRepository.findOne(id, company)?.let { transformEntity(it) }
    }
 
-   fun fetchAll(company: Company, pageRequest: PageRequest): Page<GeneralLedgerReversalDTO> {
+   fun fetchAll(company: CompanyEntity, pageRequest: PageRequest): Page<GeneralLedgerReversalDTO> {
       val found = generalLedgerReversalRepository.findAll(pageRequest, company)
 
       return found.toPage { generalLedgerReversal: GeneralLedgerReversalEntity ->
@@ -25,13 +25,13 @@ class GeneralLedgerReversalService @Inject constructor(
       }
    }
 
-   fun create(dto: GeneralLedgerReversalDTO, company: Company): GeneralLedgerReversalDTO {
+   fun create(dto: GeneralLedgerReversalDTO, company: CompanyEntity): GeneralLedgerReversalDTO {
       val toCreate = generalLedgerReversalValidator.validateCreate(dto, company)
 
       return transformEntity(generalLedgerReversalRepository.insert(toCreate, company))
    }
 
-   fun update(id: UUID, dto: GeneralLedgerReversalDTO, company: Company): GeneralLedgerReversalDTO {
+   fun update(id: UUID, dto: GeneralLedgerReversalDTO, company: CompanyEntity): GeneralLedgerReversalDTO {
       val toUpdate = generalLedgerReversalValidator.validateUpdate(id, dto, company)
 
       return transformEntity(generalLedgerReversalRepository.update(toUpdate, company))

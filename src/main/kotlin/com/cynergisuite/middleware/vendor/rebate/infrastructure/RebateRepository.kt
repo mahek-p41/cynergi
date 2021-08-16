@@ -7,19 +7,21 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.AccountStatusType
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountStatusTypeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.rebate.RebateEntity
 import com.cynergisuite.middleware.vendor.rebate.RebateType
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -28,7 +30,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class RebateRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val accountRepository: AccountRepository,
    private val accountStatusTypeRepository: AccountStatusTypeRepository,
    private val rebateTypeRepository: RebateTypeRepository,
@@ -103,13 +105,14 @@ class RebateRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): RebateEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): RebateEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()}\nWHERE r.id = :id AND r.company_id = :comp_id"
 
       logger.debug("Searching for Rebate using {} {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs ->
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ ->
          val rebate = mapRow(rs, company, "r_")
 
          rebate
@@ -120,7 +123,8 @@ class RebateRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<RebateEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<RebateEntity, PageRequest> {
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
@@ -129,7 +133,7 @@ class RebateRepository @Inject constructor(
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to page.size(),
             "offset" to page.offset()
          ),
@@ -142,7 +146,7 @@ class RebateRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: RebateEntity, company: Company): RebateEntity {
+   fun insert(entity: RebateEntity, company: CompanyEntity): RebateEntity {
       logger.debug("Inserting rebate {}", entity)
 
       return jdbc.insertReturning(
@@ -173,7 +177,7 @@ class RebateRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "status_type_id" to entity.status.id,
             "description" to entity.description,
             "rebate_type_id" to entity.rebate.id,
@@ -196,7 +200,7 @@ class RebateRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: RebateEntity, company: Company): RebateEntity {
+   fun update(entity: RebateEntity, company: CompanyEntity): RebateEntity {
       logger.debug("Updating rebate {}", entity)
 
       return jdbc.updateReturning(
@@ -218,7 +222,7 @@ class RebateRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "status_type_id" to entity.status.id,
             "description" to entity.description,
             "rebate_type_id" to entity.rebate.id,
@@ -256,6 +260,7 @@ class RebateRepository @Inject constructor(
       )
    }
 
+   @Transactional
    fun assignVendorToRebate(rebate: RebateEntity, vendor: Identifiable) {
       logger.trace("Assigning Vendor {} to Rebate {}", vendor, rebate)
 
@@ -271,7 +276,7 @@ class RebateRepository @Inject constructor(
       )
    }
 
-   private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): RebateEntity {
+   private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): RebateEntity {
       val id = rs.getUuid("${columnPrefix}id")
       val vendors = vendorRepository.findVendorIdsByRebate(id, company)
 
@@ -289,7 +294,7 @@ class RebateRepository @Inject constructor(
       )
    }
 
-   private fun mapRowUpsert(rs: ResultSet, company: Company, status: AccountStatusType, rebate: RebateType, generalLedgerDebitAccount: AccountEntity?, generalLedgerCreditAccount: AccountEntity, columnPrefix: String = EMPTY): RebateEntity {
+   private fun mapRowUpsert(rs: ResultSet, company: CompanyEntity, status: AccountStatusType, rebate: RebateType, generalLedgerDebitAccount: AccountEntity?, generalLedgerCreditAccount: AccountEntity, columnPrefix: String = EMPTY): RebateEntity {
       val id = rs.getUuid("${columnPrefix}id")
       val vendors = vendorRepository.findVendorIdsByRebate(id, company)
 

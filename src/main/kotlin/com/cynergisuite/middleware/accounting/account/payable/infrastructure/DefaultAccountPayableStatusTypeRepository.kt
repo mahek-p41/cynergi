@@ -1,30 +1,41 @@
 package com.cynergisuite.middleware.accounting.account.payable.infrastructure
 
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusType
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.mapper.RowMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class DefaultAccountPayableStatusTypeRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(DefaultAccountPayableStatusTypeRepository::class.java)
 
+   @ReadOnly
    fun exists(value: String): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM default_account_payable_status_type_domain WHERE UPPER(value) = :value)", mapOf("value" to value.toUpperCase()), Boolean::class.java)!!
+      val exists = jdbc.queryForObject(
+         "SELECT EXISTS(SELECT id FROM default_account_payable_status_type_domain WHERE UPPER(value) = :value)",
+         mapOf(
+            "value" to value.uppercase()
+         ),
+         Boolean::class.java
+      )
 
       logger.trace("Checking if DefaultAccountPayableStatusType: {} exists resulted in {}", value, exists)
 
       return exists
    }
 
+   @ReadOnly
    fun findOne(id: Long): DefaultAccountPayableStatusType? {
       val params = mutableMapOf<String, Any?>("id" to id)
       val query = "SELECT * FROM default_account_payable_status_type_domain WHERE id = :id"
@@ -32,23 +43,35 @@ class DefaultAccountPayableStatusTypeRepository @Inject constructor(
 
       val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs) })
 
-      logger.trace("Searching for DefaultAccountPayableStatusTypeDomain {}: \nQuery {} \nResulted in {}", params, query, found)
+      logger.trace(
+         "Searching for DefaultAccountPayableStatusTypeDomain {}: \nQuery {} \nResulted in {}",
+         params,
+         query,
+         found
+      )
 
       return found
    }
 
+   @ReadOnly
    fun findOne(value: String): DefaultAccountPayableStatusType? {
-      val params = mutableMapOf<String, Any?>("value" to value.toUpperCase())
+      val params = mutableMapOf<String, Any?>("value" to value.uppercase())
       val query = "SELECT * FROM default_account_payable_status_type_domain WHERE UPPER(value) = :value"
       logger.trace("Searching for DefaultAccountPayableStatusTypeDomain {}: \nQuery {}", params, query)
 
       val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs) })
 
-      logger.trace("Searching for DefaultAccountPayableStatusTypeDomain {}: \nQuery {} \nResulted in {}", params, query, found)
+      logger.trace(
+         "Searching for DefaultAccountPayableStatusTypeDomain {}: \nQuery {} \nResulted in {}",
+         params,
+         query,
+         found
+      )
 
       return found
    }
 
+   @ReadOnly
    fun findAll(): List<DefaultAccountPayableStatusType> =
       jdbc.query("SELECT * FROM default_account_payable_status_type_domain ORDER BY id") { rs, _ -> mapRow(rs) }
 

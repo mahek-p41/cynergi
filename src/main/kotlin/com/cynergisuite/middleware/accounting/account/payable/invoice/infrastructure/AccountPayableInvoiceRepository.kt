@@ -17,13 +17,14 @@ import com.cynergisuite.middleware.accounting.account.payable.infrastructure.Acc
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceEntity
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -32,7 +33,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class AccountPayableInvoiceRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val vendorRepository: VendorRepository,
    private val employeeRepository: EmployeeRepository,
    private val selectedRepository: AccountPayableInvoiceSelectedTypeRepository,
@@ -178,57 +179,57 @@ class AccountPayableInvoiceRepository @Inject constructor(
             vend.v_vgrp_company_id                                    AS apInvoice_vendor_vgrp_company_id,
             vend.v_vgrp_value                                         AS apInvoice_vendor_vgrp_value,
             vend.v_vgrp_description                                   AS apInvoice_vendor_vgrp_description,
-            employee.emp_id                                             AS apInvoice_employee_id,
-            employee.emp_number                                         AS apInvoice_employee_number,
-            employee.emp_last_name                                      AS apInvoice_employee_last_name,
-            employee.emp_first_name_mi                                  AS apInvoice_employee_first_name_mi,
-            employee.emp_type                                           AS apInvoice_employee_type,
-            employee.emp_pass_code                                      AS apInvoice_employee_pass_code,
-            employee.emp_active                                         AS apInvoice_employee_active,
-            employee.emp_cynergi_system_admin                           AS apInvoice_employee_cynergi_system_admin,
-            employee.emp_alternative_store_indicator                    AS apInvoice_employee_alternative_store_indicator,
-            employee.emp_alternative_area                               AS apInvoice_employee_alternative_area,
-            employee.store_id                                           AS apInvoice_employee_store_id,
-            employee.store_number                                       AS apInvoice_employee_store_number,
-            employee.store_name                                         AS apInvoice_employee_store_name,
-            employee.comp_id                                            AS apInvoice_employee_comp_id,
-            employee.comp_time_created                                  AS apInvoice_employee_comp_time_created,
-            employee.comp_time_updated                                  AS apInvoice_employee_comp_time_updated,
-            employee.comp_name                                          AS apInvoice_employee_comp_name,
-            employee.comp_doing_business_as                             AS apInvoice_employee_comp_doing_business_as,
-            employee.comp_client_code                                   AS apInvoice_employee_comp_client_code,
-            employee.comp_client_id                                     AS apInvoice_employee_comp_client_id,
-            employee.comp_dataset_code                                  AS apInvoice_employee_comp_dataset_code,
-            employee.comp_federal_id_number                             AS apInvoice_employee_comp_federal_id_number,
-            employee.address_id                                         AS apInvoice_employee_comp_address_id,
-            employee.address_name                                       AS apInvoice_employee_comp_address_name,
-            employee.address_address1                                   AS apInvoice_employee_comp_address_address1,
-            employee.address_address2                                   AS apInvoice_employee_comp_address_address2,
-            employee.address_city                                       AS apInvoice_employee_comp_address_city,
-            employee.address_state                                      AS apInvoice_employee_comp_address_state,
-            employee.address_postal_code                                AS apInvoice_employee_comp_address_postal_code,
-            employee.address_latitude                                   AS apInvoice_employee_comp_address_latitude,
-            employee.address_longitude                                  AS apInvoice_employee_comp_address_longitude,
-            employee.address_country                                    AS apInvoice_employee_comp_address_country,
-            employee.address_county                                     AS apInvoice_employee_comp_address_county,
-            employee.address_phone                                      AS apInvoice_employee_comp_address_phone,
-            employee.address_fax                                        AS apInvoice_employee_comp_address_fax,
-            employee.dept_id                                            AS apInvoice_employee_dept_id,
-            employee.dept_code                                          AS apInvoice_employee_dept_code,
-            employee.dept_description                                   AS apInvoice_employee_dept_description,
-            selected.id                                                 AS apInvoice_selected_id,
-            selected.value                                              AS apInvoice_selected_value,
-            selected.description                                        AS apInvoice_selected_description,
-            selected.localization_code                                  AS apInvoice_selected_localization_code,
-            type.id                                                     AS apInvoice_type_id,
-            type.value                                                  AS apInvoice_type_value,
-            type.description                                            AS apInvoice_type_description,
-            type.localization_code                                      AS apInvoice_type_localization_code,
-            status.id                                                   AS apInvoice_status_id,
-            status.value                                                AS apInvoice_status_value,
-            status.description                                          AS apInvoice_status_description,
-            status.localization_code                                    AS apInvoice_status_localization_code,
-            count(*) OVER()                                             AS total_elements
+            employee.emp_id                                           AS apInvoice_employee_id,
+            employee.emp_number                                       AS apInvoice_employee_number,
+            employee.emp_last_name                                    AS apInvoice_employee_last_name,
+            employee.emp_first_name_mi                                AS apInvoice_employee_first_name_mi,
+            employee.emp_type                                         AS apInvoice_employee_type,
+            employee.emp_pass_code                                    AS apInvoice_employee_pass_code,
+            employee.emp_active                                       AS apInvoice_employee_active,
+            employee.emp_cynergi_system_admin                         AS apInvoice_employee_cynergi_system_admin,
+            employee.emp_alternative_store_indicator                  AS apInvoice_employee_alternative_store_indicator,
+            employee.emp_alternative_area                             AS apInvoice_employee_alternative_area,
+            employee.store_id                                         AS apInvoice_employee_store_id,
+            employee.store_number                                     AS apInvoice_employee_store_number,
+            employee.store_name                                       AS apInvoice_employee_store_name,
+            employee.comp_id                                          AS apInvoice_employee_comp_id,
+            employee.comp_time_created                                AS apInvoice_employee_comp_time_created,
+            employee.comp_time_updated                                AS apInvoice_employee_comp_time_updated,
+            employee.comp_name                                        AS apInvoice_employee_comp_name,
+            employee.comp_doing_business_as                           AS apInvoice_employee_comp_doing_business_as,
+            employee.comp_client_code                                 AS apInvoice_employee_comp_client_code,
+            employee.comp_client_id                                   AS apInvoice_employee_comp_client_id,
+            employee.comp_dataset_code                                AS apInvoice_employee_comp_dataset_code,
+            employee.comp_federal_id_number                           AS apInvoice_employee_comp_federal_id_number,
+            employee.address_id                                       AS apInvoice_employee_comp_address_id,
+            employee.address_name                                     AS apInvoice_employee_comp_address_name,
+            employee.address_address1                                 AS apInvoice_employee_comp_address_address1,
+            employee.address_address2                                 AS apInvoice_employee_comp_address_address2,
+            employee.address_city                                     AS apInvoice_employee_comp_address_city,
+            employee.address_state                                    AS apInvoice_employee_comp_address_state,
+            employee.address_postal_code                              AS apInvoice_employee_comp_address_postal_code,
+            employee.address_latitude                                 AS apInvoice_employee_comp_address_latitude,
+            employee.address_longitude                                AS apInvoice_employee_comp_address_longitude,
+            employee.address_country                                  AS apInvoice_employee_comp_address_country,
+            employee.address_county                                   AS apInvoice_employee_comp_address_county,
+            employee.address_phone                                    AS apInvoice_employee_comp_address_phone,
+            employee.address_fax                                      AS apInvoice_employee_comp_address_fax,
+            employee.dept_id                                          AS apInvoice_employee_dept_id,
+            employee.dept_code                                        AS apInvoice_employee_dept_code,
+            employee.dept_description                                 AS apInvoice_employee_dept_description,
+            selected.id                                               AS apInvoice_selected_id,
+            selected.value                                            AS apInvoice_selected_value,
+            selected.description                                      AS apInvoice_selected_description,
+            selected.localization_code                                AS apInvoice_selected_localization_code,
+            type.id                                                   AS apInvoice_type_id,
+            type.value                                                AS apInvoice_type_value,
+            type.description                                          AS apInvoice_type_description,
+            type.localization_code                                    AS apInvoice_type_localization_code,
+            status.id                                                 AS apInvoice_status_id,
+            status.value                                              AS apInvoice_status_value,
+            status.description                                        AS apInvoice_status_description,
+            status.localization_code                                  AS apInvoice_status_localization_code,
+            count(*) OVER()                                           AS total_elements
          FROM account_payable_invoice apInvoice
             JOIN company comp                                           ON apInvoice.company_id = comp.id
             JOIN vend                                                   ON apInvoice.vendor_id = vend.v_id
@@ -239,13 +240,14 @@ class AccountPayableInvoiceRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): AccountPayableInvoiceEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): AccountPayableInvoiceEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()} WHERE apInvoice.id = :id AND apInvoice.company_id = :comp_id"
-      val found = jdbc.findFirstOrNull(
-         query,
-         params
-      ) { rs, _ ->
+
+      logger.trace("Querying for a single account payable invoice {}/{}", query, params)
+
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ ->
          mapRow(rs, company, "apInvoice_")
       }
 
@@ -254,7 +256,8 @@ class AccountPayableInvoiceRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<AccountPayableInvoiceEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<AccountPayableInvoiceEntity, PageRequest> {
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
@@ -263,7 +266,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to page.size(),
             "offset" to page.offset()
          ),
@@ -276,7 +279,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: AccountPayableInvoiceEntity, company: Company): AccountPayableInvoiceEntity {
+   fun insert(entity: AccountPayableInvoiceEntity, company: CompanyEntity): AccountPayableInvoiceEntity {
       logger.debug("Inserting account_payable_invoice {}", company)
 
       return jdbc.insertReturning(
@@ -345,7 +348,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "vendor_id" to entity.vendor.myId(),
             "invoice" to entity.invoice,
             "purchase_order_id" to entity.purchaseOrder?.myId(),
@@ -380,7 +383,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: AccountPayableInvoiceEntity, company: Company): AccountPayableInvoiceEntity {
+   fun update(entity: AccountPayableInvoiceEntity, company: CompanyEntity): AccountPayableInvoiceEntity {
       logger.debug("Updating account_payable_invoice {}", entity)
 
       return jdbc.updateReturning(
@@ -421,7 +424,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "vendor_id" to entity.vendor.myId(),
             "invoice" to entity.invoice,
             "purchase_order_id" to entity.purchaseOrder?.myId(),
@@ -455,9 +458,20 @@ class AccountPayableInvoiceRepository @Inject constructor(
       }
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): AccountPayableInvoiceEntity {
+   fun mapRow(
+      rs: ResultSet,
+      company: CompanyEntity,
+      columnPrefix: String = EMPTY
+   ): AccountPayableInvoiceEntity {
       val vendor = vendorRepository.mapRow(rs, company, "${columnPrefix}vendor_")
-      val employee = employeeRepository.mapRow(rs, "${columnPrefix}employee_", "${columnPrefix}employee_comp_", "${columnPrefix}employee_comp_address_", "${columnPrefix}employee_dept_", "${columnPrefix}employee_store_")
+      val employee = employeeRepository.mapRow(
+         rs,
+         "${columnPrefix}employee_",
+         "${columnPrefix}employee_comp_",
+         "${columnPrefix}employee_comp_address_",
+         "${columnPrefix}employee_dept_",
+         "${columnPrefix}employee_store_"
+      )
       val selected = selectedRepository.mapRow(rs, "${columnPrefix}selected_")
       val type = typeRepository.mapRow(rs, "${columnPrefix}type_")
       val status = statusRepository.mapRow(rs, "${columnPrefix}status_")
@@ -494,7 +508,11 @@ class AccountPayableInvoiceRepository @Inject constructor(
       )
    }
 
-   private fun mapRow(rs: ResultSet, entity: AccountPayableInvoiceEntity, columnPrefix: String = EMPTY): AccountPayableInvoiceEntity {
+   private fun mapRow(
+      rs: ResultSet,
+      entity: AccountPayableInvoiceEntity,
+      columnPrefix: String = EMPTY
+   ): AccountPayableInvoiceEntity {
       return AccountPayableInvoiceEntity(
          id = rs.getUuid("${columnPrefix}id"),
          vendor = entity.vendor,

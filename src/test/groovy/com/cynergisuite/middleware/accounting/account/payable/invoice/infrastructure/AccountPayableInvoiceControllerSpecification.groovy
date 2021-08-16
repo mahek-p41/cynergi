@@ -10,7 +10,7 @@ import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvo
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDataLoaderService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderDataLoaderService
+import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
@@ -29,7 +29,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    private static final String path = "/accounting/account-payable/invoice"
 
    @Inject AccountPayableInvoiceDataLoaderService dataLoaderService
-   @Inject PurchaseOrderDataLoaderService purchaseOrderDataLoaderService
+   @Inject PurchaseOrderTestDataLoaderService purchaseOrderDataLoaderService
    @Inject ShipViaTestDataLoaderService shipViaFactoryService
    @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
    @Inject VendorTestDataLoaderService vendorTestDataLoaderService
@@ -354,7 +354,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       get("$path/${pageFive}")
 
       then:
-      final def notFoundException = thrown(HttpClientResponseException)
+      final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
    }
 

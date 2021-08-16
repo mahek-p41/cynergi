@@ -4,7 +4,7 @@ import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentStatusTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentTypeTypeRepository
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
@@ -23,19 +23,19 @@ class AccountPayablePaymentValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayablePaymentValidator::class.java)
 
-   fun validateCreate(dto: AccountPayablePaymentDTO, company: Company): AccountPayablePaymentEntity {
+   fun validateCreate(dto: AccountPayablePaymentDTO, company: CompanyEntity): AccountPayablePaymentEntity {
       logger.trace("Validating Create AccountPayablePayment {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: UUID, dto: AccountPayablePaymentDTO, company: Company): AccountPayablePaymentEntity {
+   fun validateUpdate(id: UUID, dto: AccountPayablePaymentDTO, company: CompanyEntity): AccountPayablePaymentEntity {
       logger.debug("Validating Update AccountPayablePayment {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   private fun doSharedValidation(dto: AccountPayablePaymentDTO, company: Company): AccountPayablePaymentEntity {
+   private fun doSharedValidation(dto: AccountPayablePaymentDTO, company: CompanyEntity): AccountPayablePaymentEntity {
       val bank = bankRepository.findOne(dto.bank!!.id!!, company)
       val vendor = vendorRepository.findOne(dto.vendor!!.id!!, company)
       val type = typeRepository.findOne(dto.type!!.value)

@@ -8,15 +8,16 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.infrastructure.VendorPaymentTermScheduleRepository
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -26,10 +27,11 @@ import javax.transaction.Transactional
 @Singleton
 class VendorPaymentTermRepository @Inject constructor(
    private val companyRepository: CompanyRepository,
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val vendorPaymentTermScheduleRepository: VendorPaymentTermScheduleRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorPaymentTermRepository::class.java)
+
    fun findOneQuery() =
       """
       WITH company AS (
@@ -82,13 +84,14 @@ class VendorPaymentTermRepository @Inject constructor(
            LEFT OUTER JOIN vendor_payment_term_schedule vpts ON vpt.id = vpts.vendor_payment_term_id
    """
 
-   fun findOne(id: UUID, company: Company): VendorPaymentTermEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): VendorPaymentTermEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${findOneQuery()}\nWHERE vpt.id = :id AND comp.id = :comp_id"
 
       logger.debug("Searching for VendorPaymentTerm using {} {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs ->
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ ->
          val vendorPaymentTerm = mapRow(rs)
 
          do {
@@ -103,8 +106,9 @@ class VendorPaymentTermRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<VendorPaymentTermEntity, PageRequest> {
-      val compId = company.myId()
+   @ReadOnly
+   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<VendorPaymentTermEntity, PageRequest> {
+      val compId = company.id
       val params = mutableMapOf<String, Any?>("comp_id" to compId, "limit" to page.size(), "offset" to page.offset())
       val sql =
          """
@@ -207,7 +211,7 @@ class VendorPaymentTermRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to entity.company.myId(),
+            "company_id" to entity.company.id,
             "description" to entity.description,
             "number_of_payments" to entity.scheduleRecords.size,
             "discount_month" to entity.discountMonth,
@@ -251,7 +255,7 @@ class VendorPaymentTermRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "companyId" to entity.company.myId(),
+            "companyId" to entity.company.id,
             "description" to entity.description,
             "numberOfPayments" to entity.scheduleRecords.size,
             "discountMonth" to entity.discountMonth,
@@ -293,7 +297,7 @@ class VendorPaymentTermRepository @Inject constructor(
       )
    }
 
-   private fun mapDdlRow(rs: ResultSet, company: Company): VendorPaymentTermEntity {
+   private fun mapDdlRow(rs: ResultSet, company: CompanyEntity): VendorPaymentTermEntity {
       return VendorPaymentTermEntity(
          id = rs.getUuid("id"),
          company = company,

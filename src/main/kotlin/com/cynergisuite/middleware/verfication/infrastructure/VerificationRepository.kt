@@ -4,15 +4,18 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.verfication.Verification
 import com.cynergisuite.middleware.verfication.VerificationReference
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils
 import org.intellij.lang.annotations.Language
+import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.mapper.RowMapper
+import org.jdbi.v3.core.statement.StatementContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,7 +23,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class VerificationRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val verificationAutoRepository: VerificationAutoRepository,
    private val verificationEmploymentRepository: VerificationEmploymentRepository,
    private val verificationLandlordRepository: VerificationLandlordRepository,
@@ -123,12 +126,12 @@ class VerificationRepository @Inject constructor(
            ON v.id = vr.verification_id
       """.trimIndent()
 
-   fun findOne(id: Long): Verification? {
-      val found = jdbc.findFirstOrNull("$selectAllBase \nWHERE v.id = :id", mapOf("id" to id)) { rs ->
-         val verification = selectAllRowMapper.mapRow(rs, 0)
+   @ReadOnly fun findOne(id: Long): Verification? {
+      val found = jdbc.findFirstOrNull("$selectAllBase \nWHERE v.id = :id", mapOf("id" to id)) { rs, ctx ->
+         val verification = selectAllRowMapper.map(rs, ctx)
 
          do {
-            verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
+            verificationReferenceRepository.mapRowPrefixedRow(rs, ctx)?.also { verification.references.add(it) }
          } while (rs.next())
 
          verification
@@ -139,12 +142,13 @@ class VerificationRepository @Inject constructor(
       return found
    }
 
+   @ReadOnly
    fun findByCustomerAccount(customerAccount: String): Verification? {
-      val found = jdbc.findFirstOrNull("$selectAllBase \nWHERE v.customer_account = :customer_account", mapOf("customer_account" to customerAccount)) { rs ->
-         val verification = selectAllRowMapper.mapRow(rs, 0)
+      val found = jdbc.findFirstOrNull("$selectAllBase \nWHERE v.customer_account = :customer_account", mapOf("customer_account" to customerAccount)) { rs, ctx ->
+         val verification = selectAllRowMapper.map(rs, ctx)
 
          do {
-            verificationReferenceRepository.mapRowPrefixedRow(rs)?.also { verification.references.add(it) }
+            verificationReferenceRepository.mapRowPrefixedRow(rs, ctx)?.also { verification.references.add(it) }
          } while (rs.next())
 
          verification
@@ -155,16 +159,17 @@ class VerificationRepository @Inject constructor(
       return found
    }
 
-   fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+   @ReadOnly fun exists(id: Long): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification WHERE id = :id)", mapOf("id" to id), Boolean::class.java)
 
       logger.trace("Searching for existence of Verification through ID: {} resulted in {}", id, exists)
 
       return exists
    }
 
+   @ReadOnly
    fun exists(customerAccount: String): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT customer_account FROM verification WHERE customer_account = :customer_account)", mapOf("customer_account" to customerAccount), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT customer_account FROM verification WHERE customer_account = :customer_account)", mapOf("customer_account" to customerAccount), Boolean::class.java)
 
       logger.debug("Searching for existence of Verification through Customer Account: {} resulted in {}", customerAccount, exists)
 
@@ -269,10 +274,10 @@ private class VerificationRowMapper(
    private val verificationEmploymentRepository: VerificationEmploymentRepository? = null,
    private val verificationLandlordRepository: VerificationLandlordRepository? = null
 ) : RowMapper<Verification> {
-   override fun mapRow(rs: ResultSet, row: Int): Verification {
-      val auto = verificationAutoRepository?.mapRowPrefixedRow(rs = rs, row = row)
-      val employment = verificationEmploymentRepository?.mapRowPrefixedRow(rs = rs, row = row)
-      val landlord = verificationLandlordRepository?.mapRowPrefixedRow(rs = rs, row = row)
+   override fun map(rs: ResultSet, ctx: StatementContext): Verification {
+      val auto = verificationAutoRepository?.mapRowPrefixedRow(rs = rs, ctx = ctx)
+      val employment = verificationEmploymentRepository?.mapRowPrefixedRow(rs = rs, ctx = ctx)
+      val landlord = verificationLandlordRepository?.mapRowPrefixedRow(rs = rs, ctx = ctx)
 
       return Verification(
          id = rs.getLong("${columnPrefix}id"),

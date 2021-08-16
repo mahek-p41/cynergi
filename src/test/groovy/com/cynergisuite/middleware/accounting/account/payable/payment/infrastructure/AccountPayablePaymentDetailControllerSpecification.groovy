@@ -2,15 +2,14 @@ package com.cynergisuite.middleware.accounting.account.payable.payment.infrastru
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
+import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDetailDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderDataLoaderService
+import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
-import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -26,24 +25,15 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 class AccountPayablePaymentDetailControllerSpecification extends ControllerSpecificationBase {
    private static String path = "/accounting/account-payable/payment/detail"
 
-   @Inject
-   AccountPayablePaymentDataLoaderService dataLoaderService
-   @Inject
-   ShipViaTestDataLoaderService shipViaFactoryService
-   @Inject
-   VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
-   @Inject
-   VendorTestDataLoaderService vendorTestDataLoaderService
-   @Inject
-   BankFactoryService bankFactoryService
-   @Inject
-   AccountDataLoaderService accountFactoryService
-   @Inject
-   PurchaseOrderDataLoaderService poDataLoaderService
-   @Inject
-   AccountPayablePaymentDetailDataLoaderService apPaymentDetailDataLoaderService
-   @Inject
-   AccountPayableInvoiceDataLoaderService payableInvoiceDataLoaderService
+   @Inject AccountPayablePaymentDataLoaderService dataLoaderService
+   @Inject ShipViaTestDataLoaderService shipViaFactoryService
+   @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
+   @Inject VendorTestDataLoaderService vendorTestDataLoaderService
+   @Inject BankFactoryService bankFactoryService
+   @Inject AccountTestDataLoaderService accountFactoryService
+   @Inject PurchaseOrderTestDataLoaderService poDataLoaderService
+   @Inject AccountPayablePaymentDetailDataLoaderService apPaymentDetailDataLoaderService
+   @Inject AccountPayableInvoiceDataLoaderService payableInvoiceDataLoaderService
 
    void "fetch one"() {
       given:
@@ -310,9 +300,9 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
       response[0].message == errorMessage
 
       where:
-      testProp  | invalidValue                                                                       || errorResponsePath | errorMessage
-      'vendor'  | new VendorDTO([id: UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')])       || 'vendor.id'       | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
-      'payment' | new SimpleIdentifiableDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')) || 'payment.id'      | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
+      testProp  | invalidValue                                                                             || errorResponsePath | errorMessage
+      'vendor'  | new SimpleIdentifiableDTO([id: UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')]) || 'vendor.id'       | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
+      'payment' | new SimpleIdentifiableDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702'))       || 'payment.id'      | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
    }
 
    void "update one"() {
@@ -518,9 +508,9 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
       response[0].message == errorMessage
 
       where:
-      testProp  | invalidValue                                                                       || errorResponsePath | errorMessage
-      'vendor'  | new VendorDTO([id: UUID.fromString("ee2359b6-c88c-11eb-8098-02420a4d0702")])       || 'vendor.id'       | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
-      'payment' | new SimpleIdentifiableDTO(UUID.fromString("ee2359b6-c88c-11eb-8098-02420a4d0702")) || 'payment.id'      | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
+      testProp  | invalidValue                                                                             || errorResponsePath | errorMessage
+      'vendor'  | new SimpleIdentifiableDTO([id: UUID.fromString("ee2359b6-c88c-11eb-8098-02420a4d0702")]) || 'vendor.id'       | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
+      'payment' | new SimpleIdentifiableDTO(UUID.fromString("ee2359b6-c88c-11eb-8098-02420a4d0702"))       || 'payment.id'      | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
    }
 
    void "delete one account payable payment detail"() {

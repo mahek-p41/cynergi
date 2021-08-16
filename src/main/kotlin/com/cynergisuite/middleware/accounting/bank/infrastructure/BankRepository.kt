@@ -5,16 +5,20 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.bank.BankEntity
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -23,7 +27,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class BankRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val accountRepository: AccountRepository,
    private val storeRepository: StoreRepository
 ) {
@@ -70,8 +74,9 @@ class BankRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): BankEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): BankEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()} WHERE bank.id = :id AND bank.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
@@ -85,8 +90,9 @@ class BankRepository @Inject constructor(
       return found
    }
 
-   fun findByNumber(number: Long, company: Company): BankEntity? {
-      val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.myId())
+   @ReadOnly
+   fun findByNumber(number: Long, company: CompanyEntity): BankEntity? {
+      val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.id)
       val query = "${selectBaseQuery()} WHERE bank.number = :number AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
@@ -100,8 +106,9 @@ class BankRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<BankEntity, PageRequest> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
+   @ReadOnly
+   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<BankEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val query =
          """
          WITH paged AS (
@@ -118,7 +125,7 @@ class BankRepository @Inject constructor(
       var totalElements: Long? = null
       val resultList: MutableList<BankEntity> = mutableListOf()
 
-      jdbc.query(query, params) { rs ->
+      jdbc.query(query, params) { rs, _ ->
          resultList.add(mapRow(rs, company, "bank_"))
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
@@ -132,8 +139,13 @@ class BankRepository @Inject constructor(
       )
    }
 
+   @ReadOnly
    fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM bank WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject(
+         "SELECT EXISTS(SELECT id FROM bank WHERE id = :id)",
+         mapOf("id" to id),
+         Boolean::class.java
+      )
 
       logger.trace("Checking if Bank: {} exists resulted in {}", id, exists)
 
@@ -153,7 +165,7 @@ class BankRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "number" to bank.number,
-            "company_id" to bank.generalLedgerProfitCenter.myCompany().myId(),
+            "company_id" to bank.generalLedgerProfitCenter.myCompany().id,
             "name" to bank.name,
             "general_ledger_profit_center_sfk" to bank.generalLedgerProfitCenter.myNumber(),
             "general_ledger_account_id" to bank.generalLedgerAccount.id
@@ -183,7 +195,7 @@ class BankRepository @Inject constructor(
          mapOf(
             "id" to bank.id,
             "number" to bank.number,
-            "company_id" to bank.generalLedgerProfitCenter.myCompany().myId(),
+            "company_id" to bank.generalLedgerProfitCenter.myCompany().id,
             "name" to bank.name,
             "general_ledger_profit_center_sfk" to bank.generalLedgerProfitCenter.myNumber(),
             "general_ledger_account_id" to bank.generalLedgerAccount.id
@@ -194,7 +206,7 @@ class BankRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: UUID, company: Company) {
+   fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting bank with id={}", id)
 
       val affectedRows = jdbc.update(
@@ -202,7 +214,7 @@ class BankRepository @Inject constructor(
          DELETE FROM bank
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.myId())
+         mapOf("id" to id, "company_id" to company.id)
       )
 
       logger.info("Affected rows: {}", affectedRows)
@@ -210,7 +222,7 @@ class BankRepository @Inject constructor(
       if (affectedRows == 0) throw NotFoundException(id)
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): BankEntity {
+   fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): BankEntity {
       return BankEntity(
          id = rs.getUuid("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),

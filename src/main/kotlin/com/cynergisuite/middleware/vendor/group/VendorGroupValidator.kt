@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.vendor.group
 
 import com.cynergisuite.domain.ValidatorBase
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -21,7 +21,7 @@ class VendorGroupValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(VendorGroupValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(dto: VendorGroupDTO, company: Company): VendorGroupEntity {
+   fun validateCreate(dto: VendorGroupDTO, company: CompanyEntity): VendorGroupEntity {
       logger.trace("Validating Save VendorGroup {}", dto)
 
       doValidation { errors -> doSharedValidation(errors, dto, company) }
@@ -30,7 +30,7 @@ class VendorGroupValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateUpdate(id: UUID, vo: VendorGroupDTO, company: Company): VendorGroupEntity {
+   fun validateUpdate(id: UUID, vo: VendorGroupDTO, company: CompanyEntity): VendorGroupEntity {
       logger.trace("Validating Update VendorGroup {}", vo)
 
       val existing = vendorGroupRepository.findOne(id, company) ?: throw NotFoundException(id)
@@ -40,7 +40,7 @@ class VendorGroupValidator @Inject constructor(
       return existing.copy(value = vo.value!!, description = vo.description!!)
    }
 
-   private fun doSharedValidation(errors: MutableSet<ValidationError>, dto: VendorGroupDTO, company: Company, existing: VendorGroupEntity? = null) {
+   private fun doSharedValidation(errors: MutableSet<ValidationError>, dto: VendorGroupDTO, company: CompanyEntity, existing: VendorGroupEntity? = null) {
       if (dto.value == null) {
          errors.add(ValidationError("value", NotNull("value")))
       }

@@ -47,7 +47,7 @@ class GeneralLedgerDetailController @Inject constructor(
       @QueryValue("id") id: UUID,
       authentication: Authentication
    ): GeneralLedgerDetailDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Fetching GeneralLedgerDetail by ID {}", id)
 
@@ -73,7 +73,7 @@ class GeneralLedgerDetailController @Inject constructor(
       dto: GeneralLedgerDetailDTO,
       authentication: Authentication
    ): GeneralLedgerDetailDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Requested Create GeneralLedgerDetail {}", dto)
 
@@ -101,7 +101,7 @@ class GeneralLedgerDetailController @Inject constructor(
       dto: GeneralLedgerDetailDTO,
       authentication: Authentication
    ): GeneralLedgerDetailDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Requested Update GeneralLedgerDetail {}", dto)
 

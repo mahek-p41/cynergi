@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.shipping.shipvia
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.shipping.shipvia.infrastructure.ShipViaRepository
 import java.util.UUID
@@ -15,10 +15,10 @@ class ShipViaService @Inject constructor(
    private val shipViaValidator: ShipViaValidator
 ) {
 
-   fun fetchById(id: UUID, company: Company): ShipViaDTO? =
+   fun fetchById(id: UUID, company: CompanyEntity): ShipViaDTO? =
       shipViaRepository.findOne(id, company)?.let { ShipViaDTO(entity = it) }
 
-   fun fetchAll(pageRequest: PageRequest, company: Company): Page<ShipViaDTO> {
+   fun fetchAll(pageRequest: PageRequest, company: CompanyEntity): Page<ShipViaDTO> {
       val found = shipViaRepository.findAll(pageRequest, company)
 
       return found.toPage { shipVia: ShipViaEntity ->
@@ -26,7 +26,7 @@ class ShipViaService @Inject constructor(
       }
    }
 
-   fun create(dto: ShipViaDTO, company: Company): ShipViaDTO {
+   fun create(dto: ShipViaDTO, company: CompanyEntity): ShipViaDTO {
       val toCreate = shipViaValidator.validateCreate(dto, company)
 
       return ShipViaDTO(
@@ -34,11 +34,11 @@ class ShipViaService @Inject constructor(
       )
    }
 
-   fun delete(id: UUID, company: Company) {
+   fun delete(id: UUID, company: CompanyEntity) {
       shipViaRepository.delete(id, company)
    }
 
-   fun update(dto: ShipViaDTO, company: Company): ShipViaDTO {
+   fun update(dto: ShipViaDTO, company: CompanyEntity): ShipViaDTO {
       val id = dto.id ?: throw NotFoundException(dto.id?.toString() ?: "") // FIXME need to better handle getting ID.  Should alter the UI to pass id as a path param
       val toUpdate = shipViaValidator.validateUpdate(id, dto, company)
 

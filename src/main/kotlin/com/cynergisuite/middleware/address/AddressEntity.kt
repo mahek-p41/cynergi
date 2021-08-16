@@ -1,9 +1,16 @@
 package com.cynergisuite.middleware.address
 
 import com.cynergisuite.domain.Identifiable
+import io.micronaut.data.annotation.GeneratedValue
+import io.micronaut.data.annotation.Id
+import io.micronaut.data.annotation.MappedEntity
 import java.util.UUID
 
+@MappedEntity("address")
 data class AddressEntity(
+
+   @field:Id
+   @field:GeneratedValue
    val id: UUID? = null,
    val name: String,
    val address1: String,

@@ -28,7 +28,7 @@ class CompanyAccessControlProvider @Inject constructor(
    }
 
    private fun processFetchOne(user: User, parameters: MutableMap<String, MutableArgumentValue<*>>): Boolean {
-      val authenticatedUserClientId = user.myCompany().myClientId()
+      val authenticatedUserClientId = user.myCompany().clientId
       val id = parameters
          .filter { it.value.isAnnotationPresent(QueryValue::class.java) }
          .filter { it.value.name == "id" }
@@ -36,6 +36,7 @@ class CompanyAccessControlProvider @Inject constructor(
          .map { it.value.value as UUID }
          .first()
       val company = companyRepository.findOne(id)
-      return authenticatedUserClientId == company?.myClientId()
+
+      return authenticatedUserClientId == company?.clientId
    }
 }

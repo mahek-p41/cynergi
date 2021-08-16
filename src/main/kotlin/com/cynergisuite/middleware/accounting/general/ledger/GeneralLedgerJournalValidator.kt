@@ -4,7 +4,7 @@ import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerJournalRepository
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
@@ -24,13 +24,13 @@ class GeneralLedgerJournalValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerJournalValidator::class.java)
 
-   fun validateCreate(dto: GeneralLedgerJournalDTO, company: Company): GeneralLedgerJournalEntity {
+   fun validateCreate(dto: GeneralLedgerJournalDTO, company: CompanyEntity): GeneralLedgerJournalEntity {
       logger.trace("Validating Save GeneralLedgerJournal {}", dto)
 
       return doSharedValidation(dto, company, null)
    }
 
-   fun validateUpdate(id: UUID, dto: GeneralLedgerJournalDTO, company: Company): GeneralLedgerJournalEntity {
+   fun validateUpdate(id: UUID, dto: GeneralLedgerJournalDTO, company: CompanyEntity): GeneralLedgerJournalEntity {
       logger.trace("Validating Update GeneralLedgerJournal {}", dto)
 
       val existingGeneralLedgerJournal = generalLedgerJournalRepository.findOne(id, company) ?: throw NotFoundException(id)
@@ -40,7 +40,7 @@ class GeneralLedgerJournalValidator @Inject constructor(
 
    private fun doSharedValidation(
       dto: GeneralLedgerJournalDTO,
-      company: Company,
+      company: CompanyEntity,
       existingGeneralLedgerJournal: GeneralLedgerJournalEntity?
    ): GeneralLedgerJournalEntity {
       val account = dto.account?.id?.let { accountRepository.findOne(it, company) }

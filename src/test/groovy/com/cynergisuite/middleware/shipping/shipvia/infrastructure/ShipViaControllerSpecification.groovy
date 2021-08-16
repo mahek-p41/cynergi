@@ -23,7 +23,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one shipVia by id" (){
       given:
-      final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company)
+      final shipVia = shipViaFactoryService.single(nineNineEightEmployee.company)
 
       when:
       def result = get("$path/${shipVia.id}")
@@ -99,7 +99,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       get("$path/${pageFive}")
 
       then:
-      final def notFoundException = thrown(HttpClientResponseException)
+      final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
    }
 
@@ -157,7 +157,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "post null values to shipVia" () {
       given:
-      final def shipVia = new ShipViaDTO(null as String, 5)
+      final shipVia = new ShipViaDTO(null as String, 5)
 
       when:
       post("$path/", shipVia)
@@ -175,7 +175,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "put valid shipVia" () {
       given:
-      final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with { new ShipViaDTO(it.id, "test description", it.number) }
+      final shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with { new ShipViaDTO(it.id, "test description", it.number) }
 
       when:
       def response = put("$path/", shipVia)
@@ -188,7 +188,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "put invalid shipVia" () {
       given:
-      final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with {new ShipViaDTO(it.id, null, 5)}
+      final shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with {new ShipViaDTO(it.id, null, 5)}
 
       when:
       put("$path/", shipVia)
@@ -206,7 +206,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "put invalid shipVia missing Id" () {
       given:
-      final def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with {new ShipViaDTO(null, "Gary was here", 5)}
+      final shipVia = shipViaFactoryService.single(nineNineEightEmployee.company).with {new ShipViaDTO(null, "Gary was here", 5)}
 
       when:
       put("$path/", shipVia)

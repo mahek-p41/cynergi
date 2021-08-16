@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionRepository
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.localization.LocalizationService
 import java.util.Locale
 import java.util.UUID
@@ -19,7 +19,7 @@ class AuditPermissionService @Inject constructor(
    private val localizationService: LocalizationService
 ) {
 
-   fun fetchById(id: UUID, company: Company, locale: Locale): AuditPermissionValueObject? {
+   fun fetchById(id: UUID, company: CompanyEntity, locale: Locale): AuditPermissionValueObject? {
       return auditPermissionRepository.findById(id, company)?.let { AuditPermissionValueObject(it, locale, localizationService) }
    }
 
@@ -55,7 +55,7 @@ class AuditPermissionService @Inject constructor(
       )
    }
 
-   fun deleteById(id: UUID, company: Company, locale: Locale): AuditPermissionValueObject? {
+   fun deleteById(id: UUID, company: CompanyEntity, locale: Locale): AuditPermissionValueObject? {
       return auditPermissionRepository.deleteById(id, company)?.let { AuditPermissionValueObject(it, locale, localizationService) }
    }
 }

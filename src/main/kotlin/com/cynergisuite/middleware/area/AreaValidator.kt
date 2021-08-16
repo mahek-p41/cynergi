@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.area
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.area.infrastructure.AreaRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationException
 import org.slf4j.Logger
@@ -17,7 +17,7 @@ class AreaValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AreaValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateAreaTypeId(company: Company, areaId: Int) {
+   fun validateAreaTypeId(company: CompanyEntity, areaId: Int) {
       logger.trace("Validating AreaTypeId {}", areaId)
 
       doValidation { errors ->

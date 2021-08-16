@@ -57,7 +57,7 @@ class AuditScanAreaController @Inject constructor(
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): AuditScanAreaDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val found = auditScanAreaService.fetchOne(user.myCompany(), id) ?: throw NotFoundException(id)
 
       logger.debug("Fetch Audit Scan Areas by ID resulted in {}", found)
@@ -79,7 +79,7 @@ class AuditScanAreaController @Inject constructor(
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): List<AuditScanAreaDTO> {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val areas = auditScanAreaService.fetchAll(user)
 
       logger.debug("Listing of Audit Scan Areas resulted in {}", areas)
@@ -107,7 +107,7 @@ class AuditScanAreaController @Inject constructor(
    ): Page<AuditScanAreaDTO> {
       logger.info("Fetching all Scan Areas by store {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = auditScanAreaService.fetchAll(user.myCompany(), storeId!!, pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -137,7 +137,7 @@ class AuditScanAreaController @Inject constructor(
    ): AuditScanAreaDTO {
       logger.info("Requested Save AuditScanArea {}", auditScanAreaDTO)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = auditScanAreaService.create(auditScanAreaDTO, user.myCompany())
 
       logger.debug("Requested Save AuditScanArea {} resulted in {}", auditScanAreaDTO, response)
@@ -165,7 +165,7 @@ class AuditScanAreaController @Inject constructor(
    ): AuditScanAreaDTO {
       logger.info("Requested Update AuditScanArea {}", auditScanAreaDTO)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = auditScanAreaService.update(id, auditScanAreaDTO, user.myCompany())
 
       logger.debug("Requested Update AuditScanArea {} resulted in {}", auditScanAreaDTO, response)

@@ -4,13 +4,13 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.audit.AuditFactoryService
+import com.cynergisuite.middleware.audit.AuditTestDataLoaderService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateDTO
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
-import com.cynergisuite.middleware.audit.exception.AuditExceptionFactory
-import com.cynergisuite.middleware.audit.exception.AuditExceptionFactoryService
+import com.cynergisuite.middleware.audit.exception.AuditExceptionTestDataLoader
+import com.cynergisuite.middleware.audit.exception.AuditExceptionTestDataLoaderService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionUpdateValueObject
 import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteFactoryService
@@ -39,9 +39,9 @@ import static org.apache.commons.lang3.StringUtils.EMPTY
 class AuditExceptionControllerSpecification extends ControllerSpecificationBase {
 
    @Inject AuditExceptionRepository auditExceptionRepository
-   @Inject AuditExceptionFactoryService auditExceptionFactoryService
+   @Inject AuditExceptionTestDataLoaderService auditExceptionFactoryService
    @Inject AuditExceptionNoteFactoryService auditExceptionNoteFactoryService
-   @Inject AuditFactoryService auditFactoryService
+   @Inject AuditTestDataLoaderService auditFactoryService
    @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
    @Inject InventoryService inventoryService
 
@@ -354,7 +354,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final warehouse = auditScanAreaFactoryService.warehouse(store, company)
-      final exceptionCode = AuditExceptionFactory.randomExceptionCode()
+      final exceptionCode = AuditExceptionTestDataLoader.randomExceptionCode()
       final exception = new AuditExceptionCreateDTO([inventory: new SimpleLegacyIdentifiableDTO(inventoryItem), scanArea: new SimpleIdentifiableDTO(warehouse), exceptionCode: exceptionCode])
 
       when:
@@ -393,7 +393,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final scanArea = auditScanAreaFactoryService.single('Custom Area', store, company)
-      final exceptionCode = AuditExceptionFactory.randomExceptionCode()
+      final exceptionCode = AuditExceptionTestDataLoader.randomExceptionCode()
       final exception = new AuditExceptionCreateDTO([inventory: new SimpleLegacyIdentifiableDTO(inventoryItem), scanArea: new SimpleIdentifiableDTO(scanArea), exceptionCode: exceptionCode])
 
       when:
@@ -429,7 +429,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final exceptionCode = AuditExceptionFactory.randomExceptionCode()
+      final exceptionCode = AuditExceptionTestDataLoader.randomExceptionCode()
       final exception = new AuditExceptionCreateDTO([inventory: new SimpleLegacyIdentifiableDTO(inventoryItem), exceptionCode: exceptionCode])
 
       when:
@@ -464,7 +464,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final exceptionCode = AuditExceptionFactory.randomExceptionCode()
+      final exceptionCode = AuditExceptionTestDataLoader.randomExceptionCode()
       final exception = new AuditExceptionCreateDTO([inventory: new SimpleLegacyIdentifiableDTO(inventoryItem), scanArea: new SimpleIdentifiableDTO(nonExistentAreaId), exceptionCode: exceptionCode])
 
       when:
@@ -509,7 +509,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final store = storeFactoryService.store(3, company)
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
-      final exceptionCode = AuditExceptionFactory.randomExceptionCode()
+      final exceptionCode = AuditExceptionTestDataLoader.randomExceptionCode()
       final scanArea = auditScanAreaFactoryService.single('Custom Area', store, company)
 
       when:
@@ -529,7 +529,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final exceptionCode = AuditExceptionFactory.randomExceptionCode()
+      final exceptionCode = AuditExceptionTestDataLoader.randomExceptionCode()
 
       when:
       post("/audit/${audit.id}/exception", new AuditExceptionCreateDTO([inventory: new SimpleLegacyIdentifiableDTO(null as Long), exceptionCode: exceptionCode]))
@@ -553,7 +553,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
-      final exceptionCode = AuditExceptionFactory.randomExceptionCode()
+      final exceptionCode = AuditExceptionTestDataLoader.randomExceptionCode()
 
       when:
       post("/audit/${audit.id}/exception", new AuditExceptionCreateDTO([inventory: new SimpleLegacyIdentifiableDTO(inventoryItem), scanArea: new SimpleIdentifiableDTO(scanArea), exceptionCode: exceptionCode]))
@@ -633,7 +633,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final inventoryLocationType = InventoryLocationFactory.findByValue(inventoryItem.locationType.value)
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final exceptionCode = AuditExceptionFactory.randomExceptionCode()
+      final exceptionCode = AuditExceptionTestDataLoader.randomExceptionCode()
       final auditException = auditExceptionRepository.insert(new AuditExceptionEntity(audit.id, new InventoryEntity(inventoryItem, store, store, inventoryLocationType), null, employee, exceptionCode))
       final exception = new AuditExceptionCreateDTO([inventory: new SimpleLegacyIdentifiableDTO(inventoryItem), exceptionCode: exceptionCode])
 

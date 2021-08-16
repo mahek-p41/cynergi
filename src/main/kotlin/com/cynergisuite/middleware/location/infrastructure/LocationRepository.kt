@@ -3,16 +3,17 @@ package com.cynergisuite.middleware.location.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.location.LocationEntity
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,7 +21,7 @@ import javax.inject.Singleton
 @Singleton
 class LocationRepository @Inject constructor(
    private val companyRepository: CompanyRepository,
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(LocationRepository::class.java)
 
@@ -59,8 +60,9 @@ class LocationRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: Long, company: Company): LocationEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: Long, company: CompanyEntity): LocationEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query =
          """
          ${selectBaseQuery()}
@@ -70,15 +72,16 @@ class LocationRepository @Inject constructor(
 
       logger.trace("{} / {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs, companyRepository.mapRow(rs, "comp_")) })
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ -> mapRow(rs, companyRepository.mapRow(rs, "comp_")) }
 
       logger.trace("Searching for Location with params {} resulted in {}", params, found)
 
       return found
    }
 
-   fun findOne(locationNumber: Int, company: Company): LocationEntity? {
-      val params = mutableMapOf("location_number" to locationNumber, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(locationNumber: Int, company: CompanyEntity): LocationEntity? {
+      val params = mutableMapOf("location_number" to locationNumber, "comp_id" to company.id)
       val query =
          """
             ${selectBaseQuery()}
@@ -88,15 +91,17 @@ class LocationRepository @Inject constructor(
 
       logger.debug("Searching for Location by number {}/{}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params, RowMapper { rs, _ -> mapRow(rs, companyRepository.mapRow(rs, "comp_")) })
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ -> mapRow(rs, companyRepository.mapRow(rs, "comp_")) }
 
       logger.trace("Search for location by number with params resulted in {}", params, found)
 
       return found
    }
 
-   fun findAll(pageRequest: PageRequest, company: Company): RepositoryPage<LocationEntity, PageRequest> {
-      val params = mutableMapOf("comp_id" to company.myId(), "limit" to pageRequest.size(), "offset" to pageRequest.offset())
+   @ReadOnly
+   fun findAll(pageRequest: PageRequest, company: CompanyEntity): RepositoryPage<LocationEntity, PageRequest> {
+      val params =
+         mutableMapOf("comp_id" to company.id, "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       var totalElements: Long? = null
       val elements = mutableListOf<LocationEntity>()
       val pagedQuery = StringBuilder("${selectBaseQuery()} WHERE comp.id = :comp_id")
@@ -116,7 +121,7 @@ class LocationRepository @Inject constructor(
 
       logger.trace("Fetching all locations using {} / {}", query, params)
 
-      jdbc.query(query, params) { rs ->
+      jdbc.query(query, params) { rs, _ ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
          }
@@ -131,7 +136,8 @@ class LocationRepository @Inject constructor(
       )
    }
 
-   fun exists(id: Long, company: Company): Boolean {
+   @ReadOnly
+   fun exists(id: Long, company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
          """
             SELECT count(location.id) > 0
@@ -139,16 +145,17 @@ class LocationRepository @Inject constructor(
                JOIN company comp ON comp.dataset_code = location.dataset
             WHERE location.id = :location_id
          """.trimIndent(),
-         mapOf("location_id" to id, "comp_id" to company.myId()),
+         mapOf("location_id" to id, "comp_id" to company.id),
          Boolean::class.java
-      )!!
+      )
 
       logger.trace("Checking if Location: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
-   fun exists(number: Int, company: Company): Boolean {
+   @ReadOnly
+   fun exists(number: Int, company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
          """
             SELECT count(location.id) > 0
@@ -157,9 +164,9 @@ class LocationRepository @Inject constructor(
             WHERE location.number = :location_number
                AND comp.id = :comp_id
          """.trimIndent(),
-         mapOf("location_number" to number, "comp_id" to company.myId()),
+         mapOf("location_number" to number, "comp_id" to company.id),
          Boolean::class.java
-      )!!
+      )
 
       logger.trace("Checking if Location: {} exists resulted in {}", number, exists)
 
@@ -173,11 +180,11 @@ class LocationRepository @Inject constructor(
          null
       }
 
-   private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY) =
+   private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY) =
       LocationEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
-         company = company
+         // company = company
       )
 }

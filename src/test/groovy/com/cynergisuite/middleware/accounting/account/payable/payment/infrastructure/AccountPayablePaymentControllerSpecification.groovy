@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.payment.infrastru
 import com.cynergisuite.domain.PaymentReportFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountDataLoaderService
+import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDetailDataLoaderService
@@ -12,7 +12,7 @@ import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeTypeDataLoader
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderDataLoaderService
+import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
@@ -31,24 +31,15 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 class AccountPayablePaymentControllerSpecification extends ControllerSpecificationBase {
    private static String path = "/accounting/account-payable/payment"
 
-   @Inject
-   AccountPayablePaymentDataLoaderService dataLoaderService
-   @Inject
-   ShipViaTestDataLoaderService shipViaFactoryService
-   @Inject
-   VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
-   @Inject
-   VendorTestDataLoaderService vendorTestDataLoaderService
-   @Inject
-   BankFactoryService bankFactoryService
-   @Inject
-   AccountDataLoaderService accountFactoryService
-   @Inject
-   PurchaseOrderDataLoaderService poDataLoaderService
-   @Inject
-   AccountPayablePaymentDetailDataLoaderService apPaymentDetailDataLoaderService
-   @Inject
-   AccountPayableInvoiceDataLoaderService payableInvoiceDataLoaderService
+   @Inject AccountPayablePaymentDataLoaderService dataLoaderService
+   @Inject ShipViaTestDataLoaderService shipViaFactoryService
+   @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
+   @Inject VendorTestDataLoaderService vendorTestDataLoaderService
+   @Inject BankFactoryService bankFactoryService
+   @Inject AccountTestDataLoaderService accountFactoryService
+   @Inject PurchaseOrderTestDataLoaderService poDataLoaderService
+   @Inject AccountPayablePaymentDetailDataLoaderService apPaymentDetailDataLoaderService
+   @Inject AccountPayableInvoiceDataLoaderService payableInvoiceDataLoaderService
 
    void "fetch one"() {
       given:
@@ -932,7 +923,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
       def exception = thrown(HttpClientResponseException)
       exception.response.status == CONFLICT
       def response = exception.response.bodyAsJson()
-      response.message == "Key (id)=($apPayment.id) is still referenced from table \"account_payable_payment_detail\"."
-      response.code == "system.data.access.exception"
+      response.message == "Requested operation violates data integrity"
+      response.code == "cynergi.data.constraint.violated"
    }
 }

@@ -6,16 +6,20 @@ import com.cynergisuite.extensions.deleteReturning
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.employee.infrastructure.SimpleEmployeeRepository
 import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.store.Store
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.UUID
@@ -25,7 +29,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class RegionRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val divisionRepository: DivisionRepository,
    private val simpleEmployeeRepository: SimpleEmployeeRepository
 ) {
@@ -90,10 +94,10 @@ class RegionRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): RegionEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId(), "comp_dataset_code" to company.myDataset())
-      val query =
-         """${selectBaseQuery()} WHERE reg.id = :id
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): RegionEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id, "comp_dataset_code" to company.datasetCode)
+      val query = """${selectBaseQuery()} WHERE reg.id = :id
                                                 AND div.company_id = :comp_id
                                                 AND (reg.manager_number IS null OR comp_dataset_code = :comp_dataset_code)"""
 
@@ -111,8 +115,9 @@ class RegionRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<RegionEntity, PageRequest> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.myId(), "comp_dataset_code" to company.myDataset())
+   @ReadOnly
+   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<RegionEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "comp_dataset_code" to company.datasetCode)
       val query =
          """
          WITH paged AS (
@@ -130,7 +135,7 @@ class RegionRepository @Inject constructor(
       var totalElements: Long? = null
       val resultList: MutableList<RegionEntity> = mutableListOf()
 
-      jdbc.query(query, params) { rs ->
+      jdbc.query(query, params) { rs, _ ->
          resultList.add(mapRow(rs, company, "reg_"))
 
          if (totalElements == null) {
@@ -193,7 +198,7 @@ class RegionRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: UUID, company: Company): RegionEntity? {
+   fun delete(id: UUID, company: CompanyEntity): RegionEntity? {
       logger.debug("Deleting Region using {}/{}", id, company)
 
       val region = findOne(id, company)
@@ -215,7 +220,6 @@ class RegionRepository @Inject constructor(
       }
    }
 
-   @Transactional
    private fun deleteRegionToStore(region: RegionEntity) {
       logger.debug("Deleting Region To Store belong to region {}", region)
 
@@ -229,7 +233,7 @@ class RegionRepository @Inject constructor(
    }
 
    @Transactional
-   fun disassociateStoreFromRegion(region: RegionEntity, store: Store, company: Company) {
+   fun disassociateStoreFromRegion(region: RegionEntity, store: Store, company: CompanyEntity) {
       logger.debug("Deleting Region To Store region id {}, store number {}", region, store)
 
       jdbc.update(
@@ -244,7 +248,8 @@ class RegionRepository @Inject constructor(
       )
    }
 
-   fun assignStoreToRegion(region: RegionEntity, store: Store, company: Company) {
+   @Transactional
+   fun assignStoreToRegion(region: RegionEntity, store: Store, company: CompanyEntity) {
       logger.trace("Assigning Store {} to Region {}", region, store)
 
       jdbc.update(
@@ -255,12 +260,13 @@ class RegionRepository @Inject constructor(
          mapOf(
             "region_id" to region.myId(),
             "store_number" to store.myNumber(),
-            "company_id" to company.myId()
+            "company_id" to company.id
          )
       )
    }
 
-   fun reassignStoreToRegion(region: RegionEntity, store: Store, company: Company) {
+   @Transactional
+   fun reassignStoreToRegion(region: RegionEntity, store: Store, company: CompanyEntity) {
       logger.trace("Re-assigning Store {} to Region {}", region, store)
 
       jdbc.update(
@@ -273,26 +279,27 @@ class RegionRepository @Inject constructor(
          mapOf(
             "region_id" to region.myId(),
             "store_number" to store.myNumber(),
-            "company_id" to company.myId()
+            "company_id" to company.id
          )
       )
    }
 
-   fun isStoreAssignedToRegion(store: Store, company: Company): Boolean {
+   @ReadOnly
+   fun isStoreAssignedToRegion(store: Store, company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
          """
          SELECT EXISTS (SELECT * FROM region_to_store WHERE store_number = :store_number AND company_id = :company_id)
          """,
-         mapOf("store_number" to store.myNumber(), "company_id" to company.myId()),
+         mapOf("store_number" to store.myNumber(), "company_id" to company.id),
          Boolean::class.java
-      )!!
+      )
 
       logger.trace("Checking if a store is assigned to a region")
 
       return exists
    }
 
-   private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = "reg_"): RegionEntity =
+   private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = "reg_"): RegionEntity =
       RegionEntity(
          id = rs.getUuid("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),
@@ -302,7 +309,14 @@ class RegionRepository @Inject constructor(
          regionalManager = simpleEmployeeRepository.mapRowOrNull(rs),
       )
 
-   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String = "reg_", companyPrefix: String = "comp_", departmentPrefix: String = "dept_", storePrefix: String = "store_"): RegionEntity? =
+   fun mapRowOrNull(
+      rs: ResultSet,
+      company: CompanyEntity,
+      columnPrefix: String = "reg_",
+      companyPrefix: String = "comp_",
+      departmentPrefix: String = "dept_",
+      storePrefix: String = "store_"
+   ): RegionEntity? =
       try {
          if (rs.getString("${columnPrefix}id") != null) {
             mapRow(rs, company)
@@ -310,6 +324,7 @@ class RegionRepository @Inject constructor(
             null
          }
       } catch (e: SQLException) {
+         logger.warn("Unable to map Region {}", e.message)
          null
       }
 

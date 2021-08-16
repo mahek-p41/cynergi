@@ -4,7 +4,7 @@ import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -27,14 +27,14 @@ class GeneralLedgerDetailValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerDetailValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(dto: GeneralLedgerDetailDTO, company: Company): GeneralLedgerDetailEntity {
+   fun validateCreate(dto: GeneralLedgerDetailDTO, company: CompanyEntity): GeneralLedgerDetailEntity {
       logger.debug("Validating Create GeneralLedgerDetail {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(id: UUID, dto: GeneralLedgerDetailDTO, company: Company): GeneralLedgerDetailEntity {
+   fun validateUpdate(id: UUID, dto: GeneralLedgerDetailDTO, company: CompanyEntity): GeneralLedgerDetailEntity {
       logger.debug("Validating Update GeneralLedgerDetail {}", dto)
 
       val generalLedgerDetailEntity = generalLedgerDetailRepository.findOne(id, company) ?: throw NotFoundException(id)
@@ -44,7 +44,7 @@ class GeneralLedgerDetailValidator @Inject constructor(
 
    private fun doSharedValidation(
       dto: GeneralLedgerDetailDTO,
-      company: Company,
+      company: CompanyEntity,
       entity: GeneralLedgerDetailEntity? = null
    ): GeneralLedgerDetailEntity {
       val account = dto.account?.id?.let { accountRepository.findOne(it, company) }
@@ -53,7 +53,7 @@ class GeneralLedgerDetailValidator @Inject constructor(
 
       doValidation { errors ->
          if (generalLedgerDetailRepository.exists(company) && entity == null) {
-            errors.add(ValidationError("company", ConfigAlreadyExist(company.myDataset())))
+            errors.add(ValidationError("company", ConfigAlreadyExist(company.datasetCode)))
          }
 
          // account is not nullable

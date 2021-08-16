@@ -5,17 +5,20 @@ import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObjectOrNull
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentEntity
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.dao.EmptyResultDataAccessException
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.time.OffsetDateTime
 import java.util.*
@@ -25,7 +28,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class AccountPayablePaymentRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val bankRepository: BankRepository,
    private val vendorRepository: VendorRepository,
    private val apPaymentStatusRepository: AccountPayablePaymentStatusTypeRepository,
@@ -484,52 +487,50 @@ class AccountPayablePaymentRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): AccountPayablePaymentEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): AccountPayablePaymentEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = """
          ${selectBaseQuery()}
          WHERE apPayment.id = :id AND apPayment.company_id = :comp_id
          ORDER BY apPaymentDetail_id
          """.trimIndent()
-      return try {
-         jdbc.queryForObject(query, params) { rs, _ ->
-              var found: AccountPayablePaymentEntity? = null
-              do {
-                 found = found ?: mapRow(rs, company, "apPayment_")
-                 apPaymentDetailRepository.mapRowOrNull(rs, company, "apPaymentDetail_")?.let { found.paymentDetails?.add(it) }
-              } while (rs.next())
-              logger.trace("Searching for Account Payable Payment {} resulted in {}", id, found)
-              found
-         }
-      } catch (e: EmptyResultDataAccessException) {
-         null
+      return jdbc.queryForObjectOrNull(query, params) { rs, _ ->
+           var found: AccountPayablePaymentEntity? = null
+           do {
+              found = found ?: mapRow(rs, company, "apPayment_")
+              apPaymentDetailRepository.mapRowOrNull(rs, company, "apPaymentDetail_")?.let { found.paymentDetails?.add(it) }
+           } while (rs.next())
+           logger.trace("Searching for Account Payable Payment {} resulted in {}", id, found)
+           found
       }
    }
 
-   fun findAll(company: Company, filterRequest: PaymentReportFilterRequest): List<AccountPayablePaymentEntity> {
+   @ReadOnly
+   fun findAll(company: CompanyEntity, filterRequest: PaymentReportFilterRequest): List<AccountPayablePaymentEntity> {
       val payments = mutableListOf<AccountPayablePaymentEntity>()
       var currentPayments: AccountPayablePaymentEntity? = null
-      val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder(" WHERE apPayment.company_id = :comp_id ")
 
       if (!filterRequest.pmtNums.isNullOrEmpty()) {
          params["pmtNums"] = filterRequest.pmtNums
-         whereClause.append(" AND apPayment.payment_number IN (:pmtNums) ")
+         whereClause.append(" AND apPayment.payment_number IN (<pmtNums>) ")
       }
 
       if (!filterRequest.banks.isNullOrEmpty()) {
          params["banks"] = filterRequest.banks
-         whereClause.append(" AND bnk.bank_id IN (:banks) ")
+         whereClause.append(" AND bnk.bank_id IN (<banks>) ")
       }
 
       if (!filterRequest.vendors.isNullOrEmpty()) {
          params["vendors"] = filterRequest.vendors
-         whereClause.append(" AND vend.v_id IN (:vendors) ")
+         whereClause.append(" AND vend.v_id IN (<vendors>) ")
       }
 
       if (!filterRequest.vendorGroups.isNullOrEmpty()) {
          params["vendorGroups"] = filterRequest.vendorGroups
-         whereClause.append(" AND vend.v_vgrp_id IN (:vendorGroups) ")
+         whereClause.append(" AND vend.v_vgrp_id IN (<vendorGroups>) ")
       }
 
       filterRequest.status?.let {
@@ -590,7 +591,7 @@ class AccountPayablePaymentRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: AccountPayablePaymentEntity, company: Company): AccountPayablePaymentEntity {
+   fun insert(entity: AccountPayablePaymentEntity, company: CompanyEntity): AccountPayablePaymentEntity {
       logger.debug("Inserting Account Payable Payment {}", company)
 
       return jdbc.insertReturning(
@@ -623,7 +624,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "bank_id" to entity.bank.id,
             "vendor_id" to entity.vendor.id,
             "account_payable_payment_status_id" to entity.status.id,
@@ -639,7 +640,7 @@ class AccountPayablePaymentRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: AccountPayablePaymentEntity, company: Company): AccountPayablePaymentEntity {
+   fun update(entity: AccountPayablePaymentEntity, company: CompanyEntity): AccountPayablePaymentEntity {
       logger.debug("Updating Account Payable Payment {}", entity)
 
       return jdbc.updateReturning(
@@ -662,7 +663,7 @@ class AccountPayablePaymentRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "bank_id" to entity.bank.id,
             "vendor_id" to entity.vendor.id,
             "account_payable_payment_status_id" to entity.status.id,
@@ -679,7 +680,7 @@ class AccountPayablePaymentRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: UUID, company: Company) {
+   fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting Account Payable Payment with id={}", id)
 
       val rowsAffected = jdbc.update(
@@ -687,7 +688,7 @@ class AccountPayablePaymentRepository @Inject constructor(
          DELETE FROM account_payable_payment
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.myId())
+         mapOf("id" to id, "company_id" to company.id)
       )
       logger.info("Row affected {}", rowsAffected)
 
@@ -696,7 +697,7 @@ class AccountPayablePaymentRepository @Inject constructor(
 
    private fun mapRow(
       rs: ResultSet,
-      company: Company,
+      company: CompanyEntity,
       columnPrefix: String = EMPTY
    ): AccountPayablePaymentEntity {
       return AccountPayablePaymentEntity(

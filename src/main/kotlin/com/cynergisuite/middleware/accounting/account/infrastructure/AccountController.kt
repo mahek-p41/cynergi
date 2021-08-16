@@ -61,7 +61,7 @@ class AccountController @Inject constructor(
    ): AccountDTO {
       logger.info("Fetching Account by ID {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = accountService.fetchById(id, user.myCompany(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditDetail by {} resulted in", id, response)
@@ -84,7 +84,7 @@ class AccountController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<AccountDTO> {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val accounts = accountService.fetchAll(user.myCompany(), pageRequest, httpRequest.findLocaleWithDefault())
 
       if (accounts.elements.isEmpty()) {
@@ -116,7 +116,7 @@ class AccountController @Inject constructor(
    ): Page<AccountDTO> {
       logger.info("Search for accounts {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = accountService.search(user.myCompany(), pageRequest, httpRequest.findLocaleWithDefault())
 
       if (page.elements.isEmpty()) {
@@ -144,7 +144,7 @@ class AccountController @Inject constructor(
    ): AccountDTO {
       logger.info("Requested Save Account {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = accountService.create(dto, user.myCompany(), httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Save Account {} resulted in {}", dto, response)
@@ -172,7 +172,7 @@ class AccountController @Inject constructor(
    ): AccountDTO {
       logger.info("Requested Update Account {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = accountService.update(id, dto, user.myCompany(), httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Update Account {} resulted in {}", dto, response)
@@ -197,7 +197,7 @@ class AccountController @Inject constructor(
    ) {
       logger.debug("User {} requested delete account", authentication)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return accountService.delete(id, user.myCompany())
    }

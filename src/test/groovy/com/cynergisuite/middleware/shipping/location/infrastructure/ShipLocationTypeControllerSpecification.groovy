@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.shipping.location.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.shipping.location.ShipLocationTypeDTO
-import com.cynergisuite.middleware.shipping.location.ShipLocationTypeDataLoaderService
+import com.cynergisuite.middleware.shipping.location.ShipLocationTypeTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
@@ -11,7 +11,7 @@ import javax.inject.Inject
 @MicronautTest(transactional = false)
 class ShipLocationTypeControllerSpecification extends ControllerSpecificationBase {
 
-   @Inject ShipLocationTypeDataLoaderService dataLoaderService
+   @Inject ShipLocationTypeTestDataLoaderService dataLoaderService
 
    void "fetch all ship location types" () {
       given:

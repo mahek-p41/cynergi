@@ -5,15 +5,18 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
+import io.micronaut.transaction.annotation.ReadOnly
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -23,7 +26,7 @@ import javax.transaction.Transactional
 @Singleton
 class VendorGroupRepository @Inject constructor(
    private val companyRepository: CompanyRepository,
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorGroupRepository::class.java)
    private fun baseSelectQuery() =
@@ -65,21 +68,21 @@ class VendorGroupRepository @Inject constructor(
            JOIN company comp ON vgrp.company_id = comp.id
    """
 
-   fun exists(value: String, company: Company): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT * FROM vendor_group WHERE value = :value AND company_id = :company_id)", mapOf("value" to value, "company_id" to company.myId()), Boolean::class.java)!!
+   @ReadOnly fun exists(value: String, company: CompanyEntity): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT * FROM vendor_group WHERE value = :value AND company_id = :company_id)", mapOf("value" to value, "company_id" to company.id), Boolean::class.java)
 
       logger.trace("Checking if VendorGroup: {} exists resulted in {}", value, exists)
 
       return exists
    }
 
-   fun findOne(id: UUID, company: Company): VendorGroupEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly fun findOne(id: UUID, company: CompanyEntity): VendorGroupEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${baseSelectQuery()}\nWHERE vgrp.id = :id AND comp.id = :comp_id"
 
       logger.debug("Searching for VendorGroup using {} {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs ->
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ ->
          val vendorGroup = mapRow(rs)
 
          vendorGroup
@@ -90,13 +93,13 @@ class VendorGroupRepository @Inject constructor(
       return found
    }
 
-   fun findOne(value: String, company: Company): VendorGroupEntity? {
-      val params = mutableMapOf("value" to value, "comp_id" to company.myId())
+   @ReadOnly fun findOne(value: String, company: CompanyEntity): VendorGroupEntity? {
+      val params = mutableMapOf("value" to value, "comp_id" to company.id)
       val query = "${baseSelectQuery()}\nWHERE vgrp.value = :value AND comp.id = :comp_id"
 
       logger.debug("Searching for VendorGroup using {} {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs ->
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ ->
          val vendorGroup = mapRow(rs)
 
          vendorGroup
@@ -107,7 +110,8 @@ class VendorGroupRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: PageRequest, company: Company): RepositoryPage<VendorGroupEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(pageRequest: PageRequest, company: CompanyEntity): RepositoryPage<VendorGroupEntity, PageRequest> {
       return jdbc.queryPaged(
          """
          ${baseSelectQuery()}
@@ -116,7 +120,7 @@ class VendorGroupRepository @Inject constructor(
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to pageRequest.size(),
             "offset" to pageRequest.offset()
          ),
@@ -129,7 +133,7 @@ class VendorGroupRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: VendorGroupEntity, company: Company): VendorGroupEntity {
+   fun insert(entity: VendorGroupEntity, company: CompanyEntity): VendorGroupEntity {
       logger.debug("Inserting VendorGroup {}", entity)
 
       return jdbc.insertReturning(
@@ -144,7 +148,7 @@ class VendorGroupRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "value" to entity.value,
             "description" to entity.description
          )
@@ -168,7 +172,7 @@ class VendorGroupRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "companyId" to entity.company.myId(),
+            "companyId" to entity.company.id,
             "value" to entity.value,
             "description" to entity.description
          )
@@ -180,7 +184,7 @@ class VendorGroupRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: UUID, company: Company) {
+   fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting vendor group with id={}", id)
 
       val affectedRows = jdbc.update(
@@ -188,7 +192,7 @@ class VendorGroupRepository @Inject constructor(
          DELETE FROM vendor_group
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.myId())
+         mapOf("id" to id, "company_id" to company.id)
       )
 
       logger.info("Affected rows: {}", affectedRows)
@@ -196,7 +200,7 @@ class VendorGroupRepository @Inject constructor(
       if (affectedRows == 0) throw NotFoundException(id)
    }
 
-   fun mapRowOrNull(rs: ResultSet, company: Company, columnPrefix: String): VendorGroupEntity? {
+   fun mapRowOrNull(rs: ResultSet, company: CompanyEntity, columnPrefix: String): VendorGroupEntity? {
       return if (rs.getString("${columnPrefix}id") != null) {
          VendorGroupEntity(
             id = rs.getUuid("${columnPrefix}id"),
@@ -218,7 +222,7 @@ class VendorGroupRepository @Inject constructor(
       )
    }
 
-   private fun mapDdlRow(rs: ResultSet, company: Company): VendorGroupEntity {
+   private fun mapDdlRow(rs: ResultSet, company: CompanyEntity): VendorGroupEntity {
       return VendorGroupEntity(
          id = rs.getUuid("id"),
          company = company,

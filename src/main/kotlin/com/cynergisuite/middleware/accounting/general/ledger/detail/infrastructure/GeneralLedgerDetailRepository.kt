@@ -5,19 +5,21 @@ import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailEntity
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -26,7 +28,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class GeneralLedgerDetailRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val accountRepository: AccountRepository,
    private val storeRepository: StoreRepository,
    private val sourceCodeRepository: GeneralLedgerSourceCodeRepository
@@ -83,16 +85,22 @@ class GeneralLedgerDetailRepository @Inject constructor(
       """
    }
 
-   fun exists(company: Company): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT company_id FROM general_ledger_detail WHERE company_id = :company_id)", mapOf("company_id" to company.myId()), Boolean::class.java)!!
+   @ReadOnly
+   fun exists(company: CompanyEntity): Boolean {
+      val exists = jdbc.queryForObject(
+         "SELECT EXISTS (SELECT company_id FROM general_ledger_detail WHERE company_id = :company_id)",
+         mapOf("company_id" to company.id),
+         Boolean::class.java
+      )!!
 
       logger.trace("Checking if GeneralLedgerDetail: {} exists resulted in {}", company, exists)
 
       return exists
    }
 
-   fun findOne(id: UUID, company: Company): GeneralLedgerDetailEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): GeneralLedgerDetailEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()} WHERE glDetail.id = :id AND glDetail.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
@@ -117,7 +125,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: GeneralLedgerDetailEntity, company: Company): GeneralLedgerDetailEntity {
+   fun insert(entity: GeneralLedgerDetailEntity, company: CompanyEntity): GeneralLedgerDetailEntity {
       logger.debug("Inserting general_ledger_detail {}", company)
 
       return jdbc.insertReturning(
@@ -148,7 +156,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "account_id" to entity.account.myId(),
             "profit_center_id_sfk" to entity.profitCenter.myNumber(),
             "date" to entity.date,
@@ -169,7 +177,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: GeneralLedgerDetailEntity, company: Company): GeneralLedgerDetailEntity {
+   fun update(entity: GeneralLedgerDetailEntity, company: CompanyEntity): GeneralLedgerDetailEntity {
       logger.debug("Updating general_ledger_detail {}", entity)
 
       return jdbc.updateReturning(
@@ -191,7 +199,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "account_id" to entity.account.myId(),
             "profit_center_id_sfk" to entity.profitCenter.myNumber(),
             "date" to entity.date,

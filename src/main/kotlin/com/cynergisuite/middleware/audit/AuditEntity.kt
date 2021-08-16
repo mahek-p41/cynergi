@@ -38,7 +38,7 @@ data class AuditEntity(
 
    fun currentStatus(): AuditStatus =
       actions.asSequence()
-         .sortedBy { it.id }
+         .sortedBy { it.timeCreated }
          .map { it.status }
          .last()
 

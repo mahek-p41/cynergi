@@ -4,19 +4,23 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryFullList
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.notification.Notification
 import com.cynergisuite.middleware.notification.NotificationRecipient
 import com.cynergisuite.middleware.notification.NotificationType
 import io.micronaut.cache.annotation.CacheInvalidate
 import io.micronaut.cache.annotation.Cacheable
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
+import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.mapper.RowMapper
+import org.jdbi.v3.core.statement.StatementContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -24,12 +28,12 @@ import javax.transaction.Transactional
 
 @Singleton
 class NotificationRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val notificationTypeDomainRepository: NotificationTypeDomainRepository,
    private val notificationRecipientRepository: NotificationRecipientRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(NotificationRepository::class.java)
-   private val fullNotificationRowMapper = NotificationRowMapper("n_", RowMapper { rs, rowNum -> notificationTypeDomainRepository.mapPrefixedRow(rs = rs, rowNum = rowNum)!! })
+   private val fullNotificationRowMapper = NotificationRowMapper("n_", RowMapper { rs, ctx -> notificationTypeDomainRepository.mapPrefixedRow(rs = rs, ctx = ctx)!! })
 
    @Language("PostgreSQL")
    private val baseFindQuery =
@@ -61,12 +65,12 @@ class NotificationRepository @Inject constructor(
       """.trimIndent()
 
    @Cacheable("notifications-cache")
-   fun findOne(id: Long): Notification? {
-      return jdbc.findFirstOrNull("$baseFindQuery\nWHERE n.id = :id", mapOf("id" to id)) { rs ->
-         val notification = fullNotificationRowMapper.mapRow(rs, 0)
+   @ReadOnly fun findOne(id: Long): Notification? {
+      return jdbc.findFirstOrNull("$baseFindQuery\nWHERE n.id = :id", mapOf("id" to id)) { rs, ctx ->
+         val notification = fullNotificationRowMapper.map(rs, ctx)
 
          do {
-            notificationRecipientRepository.mapRowPrefixedRow(rs)?.also { notification.recipients.add(it) }
+            notificationRecipientRepository.mapRowPrefixedRow(rs, ctx)?.also { notification.recipients.add(it) }
          } while (rs.next())
 
          notification
@@ -74,8 +78,8 @@ class NotificationRepository @Inject constructor(
    }
 
    @Cacheable("notifications-cache")
-   fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM notification WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+   @ReadOnly fun exists(id: Long): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM notification WHERE id = :id)", mapOf("id" to id), Boolean::class.java)
 
       logger.trace("Checking if Notification: {} exists resulted in {}", id, exists)
 
@@ -83,7 +87,7 @@ class NotificationRepository @Inject constructor(
    }
 
    @Cacheable("notifications-cache")
-   fun findAllByCompany(companyId: String, type: String): List<Notification> {
+   @ReadOnly fun findAllByCompany(companyId: String, type: String): List<Notification> {
       return jdbc.queryFullList(
          """
          $baseFindQuery
@@ -101,8 +105,9 @@ class NotificationRepository @Inject constructor(
    }
 
    @Cacheable("notifications-cache")
+   @ReadOnly
    fun findAllByRecipient(companyId: String, recipientId: String, type: String): List<Notification> {
-      return jdbc.queryFullList<Notification>(
+      return jdbc.queryFullList(
          """
          $baseFindQuery
          WHERE n.company_id = :company_id
@@ -118,10 +123,12 @@ class NotificationRepository @Inject constructor(
       )
    }
 
+   @ReadOnly
    @Cacheable("notifications-cache")
    fun findAllTypes(): List<NotificationType> =
       notificationTypeDomainRepository.findAll()
 
+   @ReadOnly
    @Cacheable("notifications-cache")
    fun findAllBySendingEmployee(companyId: String, sendingEmployee: String): List<Notification> =
       jdbc.queryFullList(
@@ -158,7 +165,7 @@ class NotificationRepository @Inject constructor(
             "expiration_date" to entity.expirationDate,
             "notification_type_id" to entity.notificationDomainType.myId()
          ),
-         NotificationRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
+         NotificationRowMapper(notificationDomainTypeRowMapper = { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
 
       entity.recipients.asSequence()
@@ -198,7 +205,7 @@ class NotificationRepository @Inject constructor(
             "sending_employee" to entity.sendingEmployee,
             "notification_type_id" to entity.notificationDomainType.myId()
          ),
-         NotificationRowMapper(notificationDomainTypeRowMapper = RowMapper { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
+         NotificationRowMapper(notificationDomainTypeRowMapper = { _, _ -> entity.notificationDomainType.copy() }) // making a copy here to guard against the possibility of the instance of notificationDomainType changing outside of this code
       )
 
       val recipients = doRecipientUpdates(entity, existing)
@@ -239,7 +246,7 @@ class NotificationRepository @Inject constructor(
          .map { notificationRecipientRepository.upsert(entity = it) }
          .toMutableSet()
 
-   private fun mapNotifications(rs: ResultSet, notifications: MutableList<Notification>) {
+   private fun mapNotifications(rs: ResultSet, ctx: StatementContext, notifications: MutableList<Notification>) {
       var currentId: Long = -1
       var currentParentEntity: Notification? = null
 
@@ -247,14 +254,14 @@ class NotificationRepository @Inject constructor(
          val tempId = rs.getLong("n_id")
          val tempParentEntity: Notification = if (tempId != currentId) {
             currentId = tempId
-            currentParentEntity = fullNotificationRowMapper.mapRow(rs, 0)
+            currentParentEntity = fullNotificationRowMapper.map(rs, ctx)
             notifications.add(currentParentEntity)
             currentParentEntity
          } else {
             currentParentEntity!!
          }
 
-         notificationRecipientRepository.mapRowPrefixedRow(rs = rs)?.also {
+         notificationRecipientRepository.mapRowPrefixedRow(rs = rs, ctx)?.also {
             tempParentEntity.recipients.add(it)
          }
       } while (rs.next())
@@ -265,7 +272,7 @@ private class NotificationRowMapper(
    private val columnPrefix: String = EMPTY,
    private val notificationDomainTypeRowMapper: RowMapper<NotificationType>
 ) : RowMapper<Notification> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): Notification =
+   override fun map(rs: ResultSet, ctx: StatementContext): Notification =
       Notification(
          id = rs.getLong("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
@@ -275,6 +282,6 @@ private class NotificationRowMapper(
          message = rs.getString("${columnPrefix}message"),
          sendingEmployee = rs.getString("${columnPrefix}sending_employee"),
          startDate = rs.getLocalDate("${columnPrefix}start_date"),
-         notificationDomainType = notificationDomainTypeRowMapper.mapRow(rs, rowNum)!!
+         notificationDomainType = notificationDomainTypeRowMapper.map(rs, ctx)!!
       )
 }

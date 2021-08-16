@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.recurring
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableRecurringInvoiceStatusTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure.ExpenseMonthCreationTypeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
@@ -21,19 +21,19 @@ class AccountPayableRecurringInvoiceValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableRecurringInvoiceValidator::class.java)
 
-   fun validateCreate(dto: AccountPayableRecurringInvoiceDTO, company: Company): AccountPayableRecurringInvoiceEntity {
+   fun validateCreate(dto: AccountPayableRecurringInvoiceDTO, company: CompanyEntity): AccountPayableRecurringInvoiceEntity {
       logger.trace("Validating Create AccountPayableRecurringInvoice {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   fun validateUpdate(id: UUID, dto: AccountPayableRecurringInvoiceDTO, company: Company): AccountPayableRecurringInvoiceEntity {
+   fun validateUpdate(id: UUID, dto: AccountPayableRecurringInvoiceDTO, company: CompanyEntity): AccountPayableRecurringInvoiceEntity {
       logger.debug("Validating Update AccountPayableRecurringInvoice {}", dto)
 
       return doSharedValidation(dto, company)
    }
 
-   private fun doSharedValidation(dto: AccountPayableRecurringInvoiceDTO, company: Company): AccountPayableRecurringInvoiceEntity {
+   private fun doSharedValidation(dto: AccountPayableRecurringInvoiceDTO, company: CompanyEntity): AccountPayableRecurringInvoiceEntity {
       val vendor = vendorRepository.findOne(dto.vendor!!.id!!, company)
       val payTo = vendorRepository.findOne(dto.payTo!!.id!!, company)
       val status = statusTypeRepository.findOne(dto.status!!.value)

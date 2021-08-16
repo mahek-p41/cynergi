@@ -3,12 +3,11 @@ package com.cynergisuite.middleware.accounting.account.payable.payment
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
-import com.cynergisuite.middleware.vendor.VendorDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
-import java.util.*
+import java.util.UUID
 import javax.validation.constraints.NotNull
 
 @JsonInclude(NON_NULL)
@@ -19,7 +18,7 @@ data class AccountPayablePaymentDetailDTO(
    var id: UUID? = null,
 
    @field:Schema(description = "Vendor dto")
-   var vendor: VendorDTO? = null,
+   var vendor: SimpleIdentifiableDTO? = null,
 
    @field:NotNull
    @field:Schema(description = "Account payable invoice dto")
@@ -40,7 +39,7 @@ data class AccountPayablePaymentDetailDTO(
    constructor(entity: AccountPayablePaymentDetailEntity) :
       this(
          id = entity.id,
-         vendor = entity.vendor?.let { VendorDTO(it) },
+         vendor = entity.vendor?.let { SimpleIdentifiableDTO(it) },
          invoice = AccountPayableInvoiceDTO(entity.invoice),
          payment = entity.payment?.let { SimpleIdentifiableDTO(it) },
          invoiceAmount = entity.amount,

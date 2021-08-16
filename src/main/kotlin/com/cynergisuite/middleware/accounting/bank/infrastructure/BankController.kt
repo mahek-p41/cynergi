@@ -60,7 +60,7 @@ class BankController @Inject constructor(
    ): BankDTO {
       logger.info("Fetching Bank by ID {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = bankService.fetchById(id, user.myCompany(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Bank by {} resulted in", id, response)
@@ -82,7 +82,7 @@ class BankController @Inject constructor(
       pageRequest: StandardPageRequest,
       authentication: Authentication
    ): Page<BankDTO> {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val banks = bankService.fetchAll(user.myCompany(), pageRequest)
 
       if (banks.elements.isEmpty()) {
@@ -111,7 +111,7 @@ class BankController @Inject constructor(
    ): BankDTO {
       logger.info("Requested Save Bank {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = bankService.create(dto, user.myCompany())
 
       logger.debug("Requested Save Bank {} resulted in {}", dto, response)
@@ -138,7 +138,7 @@ class BankController @Inject constructor(
    ): BankDTO {
       logger.info("Requested Update Bank {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = bankService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update Bank {} resulted in {}", dto, response)
@@ -164,7 +164,7 @@ class BankController @Inject constructor(
    ) {
       logger.debug("User {} requested delete bank", authentication)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return bankService.delete(id, user.myCompany())
    }

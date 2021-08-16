@@ -5,9 +5,9 @@ import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.AuditEntity
-import com.cynergisuite.middleware.audit.AuditFactoryService
+import com.cynergisuite.middleware.audit.AuditTestDataLoaderService
 import com.cynergisuite.middleware.audit.detail.AuditDetailCreateUpdateDTO
-import com.cynergisuite.middleware.audit.detail.AuditDetailFactoryService
+import com.cynergisuite.middleware.audit.detail.AuditDetailTestDataLoaderService
 import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
@@ -18,9 +18,9 @@ import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import javax.inject.Inject
 import org.apache.commons.lang3.RandomUtils
 
-import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -33,8 +33,8 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/audit/detail"
    private static final Locale locale = US
 
-   @Inject AuditDetailFactoryService auditDetailFactoryService
-   @Inject AuditFactoryService auditFactoryService
+   @Inject AuditDetailTestDataLoaderService auditDetailFactoryService
+   @Inject AuditTestDataLoaderService auditFactoryService
    @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
    @Inject InventoryService inventoryService
 
@@ -193,7 +193,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.myNumber(), locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
@@ -223,12 +223,12 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.myNumber(), locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
       final storeWarehouse = auditScanAreaFactoryService.warehouse(store, company)
-      final savedAuditDetail = auditDetailFactoryService.single(audit, storeWarehouse, employee, inventoryItem)
+      final savedAuditDetail = auditDetailFactoryService.single(audit, storeWarehouse, employee, [inventoryItem])
 
       when:
       def response = postForResponse("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleLegacyIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
@@ -278,8 +278,8 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
-      final def audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created()] as Set)
-      final locale = Locale.US
+      final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created()] as Set)
+      final locale = US
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
@@ -288,9 +288,9 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       post("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleLegacyIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
 
       then:
-      final def exception = thrown(HttpClientResponseException)
+      final exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
-      final def response = exception.response.bodyAsJson()
+      final response = exception.response.bodyAsJson()
       response.size() == 1
       response.collect { new ErrorDTO(it.message, it.code, it.path) } == [
          new ErrorDTO("Audit ${audit.id} must be In Progress to modify its details", "cynergi.audit.must.be.in.progress.details", "audit.status")
@@ -299,7 +299,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
 
    void "update audit detail" () {
       given:
-      final locale = Locale.US
+      final locale = US
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
@@ -309,7 +309,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final showroom = auditScanAreaFactoryService.showroom(store, company)
       final warehouse = auditScanAreaFactoryService.warehouse(store, company)
-      final existingAuditDetail = auditDetailFactoryService.single(audit, showroom)
+      final existingAuditDetail = auditDetailFactoryService.single(audit, showroom, null)
 
       when:
       def result = put("/audit/${audit.id}/detail/${existingAuditDetail.id}", new AuditDetailCreateUpdateDTO(existingAuditDetail.myId(), new SimpleLegacyIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(warehouse)))

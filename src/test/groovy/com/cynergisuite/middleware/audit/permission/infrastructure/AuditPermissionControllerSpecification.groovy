@@ -3,10 +3,10 @@ package com.cynergisuite.middleware.audit.permission.infrastructure
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.audit.AuditFactoryService
+import com.cynergisuite.middleware.audit.AuditTestDataLoaderService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateDTO
-import com.cynergisuite.middleware.audit.permission.AuditPermissionFactoryService
-import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
+import com.cynergisuite.middleware.audit.permission.AuditPermissionTestDataLoaderService
+import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeTestDataLoader
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -19,8 +19,8 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class AuditPermissionControllerSpecification extends ControllerSpecificationBase {
-   @Inject AuditFactoryService auditFactoryService
-   @Inject AuditPermissionFactoryService auditPermissionFactoryService
+   @Inject AuditTestDataLoaderService auditFactoryService
+   @Inject AuditPermissionTestDataLoaderService auditPermissionFactoryService
 
    void "fetch all permission types" () {
       given:
@@ -52,7 +52,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       given:
       def company = companyFactoryService.forDatasetCode("tstds1")
       def department = departmentFactoryService.random(company)
-      def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
+      def permissionType = AuditPermissionTypeTestDataLoader.findByValue("audit-fetchOne")
       def permission = auditPermissionFactoryService.single(department, permissionType, company)
 
       when:
@@ -68,7 +68,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       final nonExistentId = UUID.randomUUID()
       def company = companyFactoryService.forDatasetCode("tstds1")
       def department = departmentFactoryService.random(company)
-      def permissionType = AuditPermissionTypeFactory.findByValue("audit-fetchOne")
+      def permissionType = AuditPermissionTypeTestDataLoader.findByValue("audit-fetchOne")
       def permission = auditPermissionFactoryService.single(department, permissionType, company)
 
       when:
@@ -86,8 +86,8 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       final assistantManager = departmentFactoryService.department('AM', company)
       final accountRep = departmentFactoryService.department('AR', company)
       final deliveryDriver = departmentFactoryService.department('DE', company)
-      final auditApprover = AuditPermissionTypeFactory.findByValue('audit-approver')
-      final auditPermissionManager = AuditPermissionTypeFactory.findByValue('audit-permission-manager')
+      final auditApprover = AuditPermissionTypeTestDataLoader.findByValue('audit-approver')
+      final auditPermissionManager = AuditPermissionTypeTestDataLoader.findByValue('audit-permission-manager')
       final assistantManagerAuditApprover = auditPermissionFactoryService.single(assistantManager, auditApprover, company)
       final assistantManagerAuditPermissionManager = auditPermissionFactoryService.single(assistantManager, auditPermissionManager, company)
       final accountRepAuditApprover = auditPermissionFactoryService.single(accountRep, auditApprover, company)
@@ -129,8 +129,8 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       final assistantManager = departmentFactoryService.department('AM', company)
       final accountRep = departmentFactoryService.department('AR', company)
       final deliveryDriver = departmentFactoryService.department('DE', company)
-      final auditApprover = AuditPermissionTypeFactory.findByValue('audit-approver')
-      final auditPermissionManager = AuditPermissionTypeFactory.findByValue('audit-permission-manager')
+      final auditApprover = AuditPermissionTypeTestDataLoader.findByValue('audit-approver')
+      final auditPermissionManager = AuditPermissionTypeTestDataLoader.findByValue('audit-permission-manager')
       final assistantManagerAuditApprover = auditPermissionFactoryService.single(assistantManager, auditApprover, company)
       final assistantManagerAuditPermissionManager = auditPermissionFactoryService.single(assistantManager, auditPermissionManager, company)
       final accountRepAuditApprover = auditPermissionFactoryService.single(accountRep, auditApprover, company)
@@ -161,7 +161,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       final store = storeFactoryService.random(company)
       final assistantManager = departmentFactoryService.department('AM', company)
       final deliveryDriver = departmentFactoryService.department('DE', company)
-      final auditApprover = AuditPermissionTypeFactory.findByValue('audit-approver')
+      final auditApprover = AuditPermissionTypeTestDataLoader.findByValue('audit-approver')
       final assistantManagerAuditApprover = auditPermissionFactoryService.single(assistantManager, auditApprover, company)
       final assistantManagerEmployee = employeeFactoryService.singleAuthenticated(company, store, assistantManager)
       final deliveryDriverEmployee = employeeFactoryService.singleAuthenticated(company, store, deliveryDriver)
@@ -195,7 +195,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       final deliveryDriver = employeeFactoryService.singleAuthenticated(company, store, deliveryDriverDepartment)
       final salesAssociateLogin = loginEmployee(salesAssociate)
       final deliveryDriverLogin = loginEmployee(deliveryDriver)
-      final permissionType = AuditPermissionTypeFactory.findByValue("audit-approver")
+      final permissionType = AuditPermissionTypeTestDataLoader.findByValue("audit-approver")
       final auditOne = auditFactoryService.single(store, salesAssociate, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       final auditTwo = auditFactoryService.single(store, salesAssociate, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
 
@@ -233,7 +233,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       final deliveryDriverDepartment = departmentFactoryService.department("DE", company)
       final salesAssociate = employeeFactoryService.singleAuthenticated(company, store, salesAssociateDepartment)
       final salesAssociateLogin = loginEmployee(salesAssociate)
-      final permissionType = AuditPermissionTypeFactory.findByValue("audit-approver")
+      final permissionType = AuditPermissionTypeTestDataLoader.findByValue("audit-approver")
       final permission = auditPermissionFactoryService.single(deliveryDriverDepartment, permissionType, company)
       final audit = auditFactoryService.single(store, salesAssociate, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
 
@@ -268,7 +268,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       final nonExistentId = UUID.randomUUID()
       final company = companyFactoryService.forDatasetCode("tstds1")
       final department = departmentFactoryService.random(company)
-      final permissionType = AuditPermissionTypeFactory.findByValue("audit-approver")
+      final permissionType = AuditPermissionTypeTestDataLoader.findByValue("audit-approver")
       final permission = auditPermissionFactoryService.single(department, permissionType, company)
 
       when:

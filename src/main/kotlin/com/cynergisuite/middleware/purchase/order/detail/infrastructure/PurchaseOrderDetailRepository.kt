@@ -9,8 +9,9 @@ import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.purchase.order.detail.PurchaseOrderDetailEntity
 import com.cynergisuite.middleware.purchase.order.infrastructure.PurchaseOrderRepository
@@ -18,10 +19,11 @@ import com.cynergisuite.middleware.purchase.order.type.infrastructure.ExceptionI
 import com.cynergisuite.middleware.purchase.order.type.infrastructure.PurchaseOrderRequisitionIndicatorTypeRepository
 import com.cynergisuite.middleware.purchase.order.type.infrastructure.PurchaseOrderStatusTypeRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -30,7 +32,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class PurchaseOrderDetailRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val purchaseOrderRepository: PurchaseOrderRepository,
    private val vendorRepository: VendorRepository,
    private val statusTypeRepository: PurchaseOrderStatusTypeRepository,
@@ -530,13 +532,13 @@ class PurchaseOrderDetailRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): PurchaseOrderDetailEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly fun findOne(id: UUID, company: CompanyEntity): PurchaseOrderDetailEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()}\nWHERE poDetail.id = :id AND poDetail.company_id = :comp_id"
 
       logger.debug("Searching for PurchaseOrderDetail using {} {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs ->
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ ->
          val purchaseOrderDetail = mapRow(rs, company, "poDetail_")
 
          purchaseOrderDetail
@@ -547,7 +549,8 @@ class PurchaseOrderDetailRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<PurchaseOrderDetailEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<PurchaseOrderDetailEntity, PageRequest> {
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
@@ -556,7 +559,7 @@ class PurchaseOrderDetailRepository @Inject constructor(
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "limit" to page.size(),
             "offset" to page.offset()
          ),
@@ -569,7 +572,7 @@ class PurchaseOrderDetailRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: PurchaseOrderDetailEntity, company: Company): PurchaseOrderDetailEntity {
+   fun insert(entity: PurchaseOrderDetailEntity, company: CompanyEntity): PurchaseOrderDetailEntity {
       logger.debug("Inserting PurchaseOrderDetail {}", entity)
 
       return jdbc.insertReturning(
@@ -634,7 +637,7 @@ class PurchaseOrderDetailRepository @Inject constructor(
          mapOf(
             "number" to entity.number,
             "purchase_order_header_id" to entity.purchaseOrder.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "itemfile_number_sfk" to entity.itemfileNumber,
             "order_quantity" to entity.orderQuantity,
             "received_quantity" to entity.receivedQuantity,
@@ -662,7 +665,7 @@ class PurchaseOrderDetailRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: PurchaseOrderDetailEntity, company: Company): PurchaseOrderDetailEntity {
+   fun update(entity: PurchaseOrderDetailEntity, company: CompanyEntity): PurchaseOrderDetailEntity {
       logger.debug("Updating PurchaseOrderDetail {}", entity)
 
       return jdbc.updateReturning(
@@ -702,7 +705,7 @@ class PurchaseOrderDetailRepository @Inject constructor(
             "id" to entity.id,
             "number" to entity.number,
             "purchase_order_header_id" to entity.purchaseOrder.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "itemfile_number_sfk" to entity.itemfileNumber,
             "order_quantity" to entity.orderQuantity,
             "received_quantity" to entity.receivedQuantity,
@@ -730,7 +733,7 @@ class PurchaseOrderDetailRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: UUID, company: Company) {
+   fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting PurchaseOrderDetail with id={}", id)
 
       val rowsAffected = jdbc.update(
@@ -738,7 +741,7 @@ class PurchaseOrderDetailRepository @Inject constructor(
          DELETE FROM purchase_order_detail
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.myId())
+         mapOf("id" to id, "company_id" to company.id)
       )
 
       logger.info("Row affected {}", rowsAffected)
@@ -748,7 +751,7 @@ class PurchaseOrderDetailRepository @Inject constructor(
       }
    }
 
-   fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): PurchaseOrderDetailEntity {
+   fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): PurchaseOrderDetailEntity {
       return PurchaseOrderDetailEntity(
          id = rs.getUuid("${columnPrefix}id"),
          number = rs.getLong("${columnPrefix}number"),

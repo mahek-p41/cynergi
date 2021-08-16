@@ -59,7 +59,7 @@ class BankReconciliationController @Inject constructor(
    ): BankReconciliationDTO {
       logger.info("Fetching BankReconciliation by ID {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = bankReconciliationService.fetchById(id, user.myCompany(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching BankReconciliation by {} resulted in", id, response)
@@ -81,7 +81,7 @@ class BankReconciliationController @Inject constructor(
       pageRequest: StandardPageRequest,
       authentication: Authentication
    ): Page<BankReconciliationDTO> {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val bankRecons = bankReconciliationService.fetchAll(user.myCompany(), pageRequest)
 
       if (bankRecons.elements.isEmpty()) {
@@ -110,7 +110,7 @@ class BankReconciliationController @Inject constructor(
    ): BankReconciliationDTO {
       logger.info("Requested Save BankReconciliation {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = bankReconciliationService.create(dto, user.myCompany())
 
       logger.debug("Requested Save BankReconciliation {} resulted in {}", dto, response)
@@ -137,7 +137,7 @@ class BankReconciliationController @Inject constructor(
    ): BankReconciliationDTO {
       logger.info("Requested Update BankReconciliation {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = bankReconciliationService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update BankReconciliation {} resulted in {}", dto, response)

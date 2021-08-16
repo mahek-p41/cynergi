@@ -61,7 +61,7 @@ class VendorGroupController @Inject constructor(
    ): VendorGroupDTO {
       logger.info("Fetching VendorGroup by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = vendorGroupService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching VendorGroup by {} resulted in", id, response)
@@ -88,7 +88,7 @@ class VendorGroupController @Inject constructor(
    ): Page<VendorGroupDTO> {
       logger.info("Fetching all VendorGroups {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = vendorGroupService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -118,7 +118,7 @@ class VendorGroupController @Inject constructor(
    ): VendorGroupDTO {
       logger.debug("Requested Create VendorGroup {}", vo)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = vendorGroupService.create(vo, user.myCompany())
 
       logger.debug("Requested Create VendorGroup {} resulted in {}", vo, response)
@@ -148,7 +148,7 @@ class VendorGroupController @Inject constructor(
    ): VendorGroupDTO {
       logger.info("Requested Update VendorGroup {}", vo)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = vendorGroupService.update(id, vo, user.myCompany())
 
       logger.debug("Requested Update VendorGroup {} resulted in {}", vo, response)
@@ -174,7 +174,7 @@ class VendorGroupController @Inject constructor(
    ) {
       logger.debug("User {} requested delete vendor group", authentication)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return vendorGroupService.delete(id, user.myCompany())
    }

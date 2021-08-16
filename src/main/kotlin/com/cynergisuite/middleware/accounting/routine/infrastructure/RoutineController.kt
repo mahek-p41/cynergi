@@ -61,7 +61,7 @@ class RoutineController @Inject constructor(
    ): RoutineDTO {
       logger.info("Fetching Routine by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = routineService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Routine by {} resulted in", id, response)
@@ -89,7 +89,7 @@ class RoutineController @Inject constructor(
    ): Page<RoutineDTO> {
       logger.info("Fetching all Routines {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = routineService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -119,7 +119,7 @@ class RoutineController @Inject constructor(
    ): RoutineDTO {
       logger.debug("Requested Create Routine {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = routineService.create(dto, user.myCompany())
 
       logger.debug("Requested Create Routine {} resulted in {}", dto, response)
@@ -129,7 +129,7 @@ class RoutineController @Inject constructor(
 
    @Post(uri = "/year", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["RoutineEndpoints"], summary = "Create a single Routine", description = "Create a single Routine", operationId = "routine-create")
+   @Operation(tags = ["RoutineEndpoints"], summary = "Create a single Routine", description = "Create a single Routine", operationId = "routine-create-financial-year")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = List::class))]),
@@ -147,7 +147,7 @@ class RoutineController @Inject constructor(
    ): List<RoutineDTO> {
       logger.debug("Requested Create Routine {}", routineList)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = routineList.map { routineService.create(it, user.myCompany()) }.toList()
 
       logger.debug("Requested Create Routine {} resulted in {}", routineList, response)
@@ -178,7 +178,7 @@ class RoutineController @Inject constructor(
    ): RoutineDTO {
       logger.info("Requested Update Routine {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = routineService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update Routine {} resulted in {}", dto, response)
@@ -205,7 +205,7 @@ class RoutineController @Inject constructor(
    ) {
       logger.info("Requested set GLAccounts Open for periods in date range {}", dateRangeDTO)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = routineService.openGLAccountsForPeriods(dateRangeDTO, user.myCompany())
 
       logger.debug("Requested set GLAccounts Open for periods in date range {} resulted in {}", dateRangeDTO, response)
@@ -230,7 +230,7 @@ class RoutineController @Inject constructor(
    ) {
       logger.info("Requested set APAccounts Open for periods in date range {}", dateRangeDTO)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = routineService.openAPAccountsForPeriods(dateRangeDTO, user.myCompany())
 
       logger.debug("Requested set APAccounts Open for periods in date range {} resulted in {}", dateRangeDTO, response)

@@ -61,7 +61,7 @@ class PurchaseOrderDetailController @Inject constructor(
    ): PurchaseOrderDetailDTO {
       logger.info("Fetching PurchaseOrderDetail by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = purchaseOrderDetailService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching PurchaseOrderDetail by {} resulted in", id, response)
@@ -89,7 +89,7 @@ class PurchaseOrderDetailController @Inject constructor(
    ): Page<PurchaseOrderDetailDTO> {
       logger.info("Fetching all PurchaseOrderDetails {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = purchaseOrderDetailService.fetchAll(user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -119,7 +119,7 @@ class PurchaseOrderDetailController @Inject constructor(
    ): PurchaseOrderDetailDTO {
       logger.debug("Requested Create PurchaseOrderDetail {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = purchaseOrderDetailService.create(dto, user.myCompany())
 
       logger.debug("Requested Create PurchaseOrderDetail {} resulted in {}", dto, response)
@@ -150,7 +150,7 @@ class PurchaseOrderDetailController @Inject constructor(
    ): PurchaseOrderDetailDTO {
       logger.info("Requested Update PurchaseOrderDetail {}", dto)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = purchaseOrderDetailService.update(id, dto, user.myCompany())
 
       logger.debug("Requested Update PurchaseOrderDetail {} resulted in {}", dto, response)
@@ -174,7 +174,7 @@ class PurchaseOrderDetailController @Inject constructor(
    ) {
       logger.debug("User {} requested delete purchase order detail", authentication)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return purchaseOrderDetailService.delete(id, user.myCompany())
    }

@@ -34,7 +34,7 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
       get("$path/${pageFour}")
 
       then:
-      final def notFoundException = thrown(HttpClientResponseException)
+      final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
    }
 

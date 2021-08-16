@@ -5,8 +5,6 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
-import com.cynergisuite.middleware.department.DepartmentFactoryService
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -30,7 +28,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
       final storeThree = storeFactoryService.store(3, company)
       def department = departmentFactoryService.random(storeThree.myCompany())
       def employee = employeeFactoryService.single(storeThree, department)
-      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(employee.number, employee.passCode, tstds1.myDataset(), employee.store.number).blockingGet().with { new AuthenticatedEmployee(it, employee.passCode) }
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(employee.number, employee.passCode, tstds1.datasetCode, employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, employee.passCode) }
       final regionalManagerEmployeeAuth = loginEmployee(store1Tstds1AuthenticatedEmployee)
 
       auditScanAreaFactoryService.warehouse(storeOne, company)
@@ -67,7 +65,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
       final storeThree = storeFactoryService.store(3, company)
       def department = departmentFactoryService.random(storeThree.myCompany())
       def employee = employeeFactoryService.single(storeThree, department)
-      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(employee.number, employee.passCode, tstds1.myDataset(), employee.store.number).blockingGet().with { new AuthenticatedEmployee(it, employee.passCode) }
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(employee.number, employee.passCode, tstds1.datasetCode, employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, employee.passCode) }
       final regionalManagerEmployeeAuth = loginEmployee(store1Tstds1AuthenticatedEmployee)
 
       auditScanAreaFactoryService.warehouse(storeOne, company)
@@ -173,7 +171,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
       final storeThree = storeFactoryService.store(3, company)
       def department = departmentFactoryService.random(storeThree.myCompany())
       def employee = employeeFactoryService.single(storeThree, department)
-      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(employee.number, employee.passCode, tstds1.myDataset(), employee.store.number).blockingGet().with { new AuthenticatedEmployee(it, employee.passCode) }
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(employee.number, employee.passCode, tstds1.datasetCode, employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, employee.passCode) }
       final regionalManagerEmployeeAuth = loginEmployee(store1Tstds1AuthenticatedEmployee)
 
       final warehouse = auditScanAreaFactoryService.warehouse(storeOne, company)
@@ -202,7 +200,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
       final storeThree = storeFactoryService.store(3, company)
       def department = departmentFactoryService.random(storeThree.myCompany())
       def employee = employeeFactoryService.single(storeThree, department)
-      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(employee.number, employee.passCode, tstds1.myDataset(), employee.store.number).blockingGet().with { new AuthenticatedEmployee(it, employee.passCode) }
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(employee.number, employee.passCode, tstds1.datasetCode, employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, employee.passCode) }
       final regionalManagerEmployeeAuth = loginEmployee(store1Tstds1AuthenticatedEmployee)
 
       final warehouse = auditScanAreaFactoryService.warehouse(storeOne, company)
@@ -228,7 +226,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
       final storeThree = storeFactoryService.store(3, company)
       def department = departmentFactoryService.random(storeThree.myCompany())
       def employee = employeeFactoryService.single(storeThree, department)
-      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(employee.number, employee.passCode, tstds1.myDataset(), employee.store.number).blockingGet().with { new AuthenticatedEmployee(it, employee.passCode) }
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(employee.number, employee.passCode, tstds1.datasetCode, employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, employee.passCode) }
       final regionalManagerEmployeeAuth = loginEmployee(store1Tstds1AuthenticatedEmployee)
 
       final warehouse = auditScanAreaFactoryService.warehouse(storeOne, company)

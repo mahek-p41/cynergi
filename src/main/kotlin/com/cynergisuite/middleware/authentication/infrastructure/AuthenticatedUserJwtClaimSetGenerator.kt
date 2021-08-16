@@ -52,7 +52,7 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
          builder
             ?.claim(EMPLOYEE_ID.key, userDetails.myId())
             ?.claim(EMPLOYEE_TYPE.key, userDetails.myEmployeeType())
-            ?.claim(COMPANY_ID.key, userDetails.myCompany().myId().toString())
+            ?.claim(COMPANY_ID.key, userDetails.myCompany().id.toString())
             ?.claim(STORE_NUMBER.key, userDetails.myLocation().myNumber())
       }
 
@@ -62,7 +62,7 @@ class AuthenticatedUserJwtClaimSetGenerator @Inject constructor(
    fun reversePopulateWithUserDetails(authentication: Authentication): User {
       val employeeId = authentication.attributes[EMPLOYEE_ID.key]?.let { Objects.toString(it).toLong() } ?: throw Exception("Unable to find employee ID")
       val employeeType = authentication.attributes[EMPLOYEE_TYPE.key]?.let { Objects.toString(it) } ?: throw Exception("Unable to find employee type")
-      val employeeNumber = authentication.attributes["sub"]?.let { Objects.toString(it).toInt() } ?: throw Exception("Uanble to find employee number")
+      val employeeNumber = authentication.attributes["sub"]?.let { Objects.toString(it).toInt() } ?: throw Exception("Unable to find employee number")
       val companyId = authentication.attributes[COMPANY_ID.key]?.let { Objects.toString(it).toUuid() } ?: throw Exception("Unable to find company ID")
       val storeNumber = authentication.attributes[STORE_NUMBER.key]?.let { Objects.toString(it).toInt() } ?: throw Exception("Unable to find store number")
 

@@ -2,18 +2,20 @@ package com.cynergisuite.middleware.schedule.command.infrastructure
 
 import com.cynergisuite.extensions.findFirst
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
+import io.micronaut.transaction.annotation.ReadOnly
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Singleton
 
 @Singleton
 class ScheduleCommandTypeRepository(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ScheduleCommandTypeRepository::class.java)
 
+   @ReadOnly
    fun findByValue(value: String): ScheduleCommandTypeEntity {
       logger.debug("Searching for schedule command by {}", value)
 

@@ -36,7 +36,7 @@ services:
          - cynergidb
       stdin_open: true
       tty: true
-      command: [ "/root/db-ready.sh", "cynergidb" ]
+      command: [ "/tmp/db-ready.sh", "cynergidb" ]
    cynergidbpsql:
       container_name: cynergidbpsql
       image: cynergibasedb
@@ -115,7 +115,7 @@ services:
          - cynerginet
       stdin_open: true
       tty: true
-      command: [ "/root/db-ready.sh", "cynergitestdb" ]
+      command: [ "/tmp/db-ready.sh", "cynergitestdb" ]
    cynergitestdbpsql:
       container_name: cynergitestdbpsql
       image: cynergibasedb

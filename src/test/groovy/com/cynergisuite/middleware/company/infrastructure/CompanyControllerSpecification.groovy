@@ -33,7 +33,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one company by id" () {
       given:
-      final def company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('tstds1')
 
       when:
       def result = get("$path/$company.id")
@@ -164,7 +164,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
 
    void "create a valid company without address" () {
       given:
-      final def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
+      final jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
       jsonCompany.remove('id')
       jsonCompany.name = 'HTI'
       def clientId = new Random().nextInt(1000)
@@ -212,7 +212,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
 
    void "create an invalid company with clientId < 0" () {
       given:
-      final def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
+      final jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
       jsonCompany.remove('id')
       jsonCompany.name = 'HTI'
       jsonCompany.clientId = -100
@@ -330,7 +330,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.message == 'Required argument authentication not specified'
+      response.message == 'Required argument [Authentication authentication] not specified'
    }
 
    void "update a valid company" () {
@@ -641,7 +641,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
          it.id == company.id
          it.address == null
       }
-      addressRepository.findOne(addressId) == null
+      addressRepository.findById(addressId).orElse(null) == null
    }
 
    void "update a company's address name" () {
@@ -661,6 +661,6 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
          it.address.id == addressId
          it.address.name == "Test update name"
       }
-      addressRepository.findOne(addressId).name == "Test update name"
+      addressRepository.findById(addressId).get().name == "Test update name"
    }
 }

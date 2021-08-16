@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.localization
 
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.apache.commons.lang3.builder.ToStringBuilder
 import java.math.BigDecimal
@@ -37,7 +37,7 @@ class Max : Validation("javax.validation.constraints.Max.message", emptyArray())
 class Pattern : Validation("javax.validation.constraints.Pattern.message", emptyArray())
 
 abstract class Cynergi(code: String, arguments: Array<Any?>) : LocalizationCodeImpl(code, arguments)
-class Duplicate(duplicateValue: Any?) : Cynergi("cynergi.validation.duplicate", if (duplicateValue != null) arrayOf(duplicateValue) else arrayOf(EMPTY))
+class Duplicate(duplicateValue: Any?) : Cynergi("cynergi.validation.duplicate", if (duplicateValue != null) arrayOf(duplicateValue ?: EMPTY) else arrayOf(EMPTY))
 class NotUpdatable(notUpdatableValue: Any?) : Cynergi("cynergi.validation.not.updatable", arrayOf(notUpdatableValue))
 class MustBeInRangeOf(value: Any?) : Cynergi("cynergi.validation.must.be.in.range.of", arrayOf(value))
 class EndDateBeforeStart(endDate: String, startDate: String) : Cynergi("cynergi.validation.end.date.before.start", arrayOf(endDate, startDate))
@@ -45,7 +45,7 @@ class NotificationRecipientsRequiredAll(notificationType: String) : Cynergi("cyn
 class NotificationRecipientsRequired(notificationType: String?) : Cynergi("cynergi.validation.notification.recipients.required", arrayOf(notificationType))
 class ConversionError(valueOne: String, valueTwo: Any?) : Cynergi("cynergi.validation.conversion.error", arrayOf(valueOne, valueTwo))
 class ThruDateIsBeforeFrom(from: OffsetDateTime, thru: OffsetDateTime) : Cynergi("cynergi.validation.thru.before.from", arrayOf(from, thru))
-class InvalidCompany(company: Company) : Cynergi("cynergi.validation.invalid.company", arrayOf(company.myDataset()))
+class InvalidCompany(company: CompanyEntity) : Cynergi("cynergi.validation.invalid.company", arrayOf(company.datasetCode))
 class ConfigAlreadyExist(value: Any?) : Cynergi("cynergi.validation.config.exists", arrayOf(value))
 class AddressNeedsUpdated : Cynergi("cynergi.validation.address.needs.updated", emptyArray())
 class InvalidPayToVendor(id: UUID?) : Cynergi("cynergi.validation.invalid.pay.to.vendor", arrayOf(id))
@@ -67,6 +67,7 @@ class AuditDueToday(auditNumber: Int) : Cynergi("cynergi.audit.due.today", array
 class AuditPastDue(auditNumber: Int) : Cynergi("cynergi.audit.past.due", arrayOf(auditNumber))
 
 class VendorPaymentTermDuePercentDoesNotAddUp(percent: String) : Cynergi("vendor.payment.term.does.not.add.up", arrayOf(percent))
+class DataConstraintIntegrityViolation : Cynergi("cynergi.data.constraint.violated", emptyArray())
 
 abstract class SystemCode(code: String, arguments: Array<Any?>) : LocalizationCodeImpl(code, arguments)
 class NotFound(unfindable: Any) : SystemCode("system.not.found", arrayOf(unfindable)) {
@@ -78,7 +79,9 @@ class RouteError(routeArgument: String) : SystemCode("system.route.error", array
 class NotImplemented(pathNotImplemented: String) : SystemCode("system.not.implemented", arrayOf(pathNotImplemented))
 class NotLoggedIn : SystemCode("system.not.logged.in", emptyArray())
 class AccessDenied : SystemCode("system.access.denied", emptyArray())
-class AccessDeniedCredentialsDoNotMatch(user: String) : SystemCode("system.access.denied.creds.do.not.match", arrayOf(user))
+class AccessDeniedCredentialsDoNotMatch(user: String) : SystemCode("system.access.denied.creds.do.not.match", arrayOf(user)) {
+   constructor(user: Int) : this(user.toString())
+}
 class AccessDeniedStore(user: String) : SystemCode("system.access.denied.store", arrayOf(user))
 class Unknown : SystemCode("system.word.unknown", arrayOf())
 class UnableToParseJson(jsonParseErrorMessage: String) : SystemCode("system.json.unable.parse", arrayOf(jsonParseErrorMessage))

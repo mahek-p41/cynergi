@@ -3,20 +3,21 @@ package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructur
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationEntity
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastructure.BankReconciliationTypeRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import java.util.UUID
 import javax.inject.Inject
@@ -25,7 +26,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class BankReconciliationRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val bankRepository: BankRepository,
    private val bankReconciliationTypeRepository: BankReconciliationTypeRepository
 ) {
@@ -80,8 +81,9 @@ class BankReconciliationRepository @Inject constructor(
       """
    }
 
-   fun findOne(id: UUID, company: Company): BankReconciliationEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.myId())
+   @ReadOnly
+   fun findOne(id: UUID, company: CompanyEntity): BankReconciliationEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()} WHERE bankRecon.id = :id AND bankRecon.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
@@ -95,8 +97,9 @@ class BankReconciliationRepository @Inject constructor(
       return found
    }
 
-   fun findAll(company: Company, page: PageRequest): RepositoryPage<BankReconciliationEntity, PageRequest> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.myId())
+   @ReadOnly
+   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<BankReconciliationEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val query =
          """
          WITH paged AS (
@@ -113,7 +116,7 @@ class BankReconciliationRepository @Inject constructor(
       var totalElements: Long? = null
       val resultList: MutableList<BankReconciliationEntity> = mutableListOf()
 
-      jdbc.query(query, params) { rs ->
+      jdbc.query(query, params) { rs, _ ->
          resultList.add(mapRow(rs, company, "bankRecon_"))
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
@@ -128,7 +131,7 @@ class BankReconciliationRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: BankReconciliationEntity, company: Company): BankReconciliationEntity {
+   fun insert(entity: BankReconciliationEntity, company: CompanyEntity): BankReconciliationEntity {
       logger.debug("Inserting bank_reconciliation {}", entity)
 
       return jdbc.insertReturning(
@@ -157,7 +160,7 @@ class BankReconciliationRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "bank_id" to entity.bank.id,
             "type_id" to entity.type.id,
             "transaction_date" to entity.date,
@@ -172,7 +175,7 @@ class BankReconciliationRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: BankReconciliationEntity, company: Company): BankReconciliationEntity {
+   fun update(entity: BankReconciliationEntity, company: CompanyEntity): BankReconciliationEntity {
       logger.debug("Updating bank reconciliation {}", entity)
 
       return jdbc.updateReturning(
@@ -193,7 +196,7 @@ class BankReconciliationRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "company_id" to company.myId(),
+            "company_id" to company.id,
             "bank_id" to entity.bank.id,
             "type_id" to entity.type.id,
             "transaction_date" to entity.date,
@@ -207,7 +210,7 @@ class BankReconciliationRepository @Inject constructor(
       }
    }
 
-   private fun mapRow(rs: ResultSet, company: Company, columnPrefix: String = EMPTY): BankReconciliationEntity {
+   private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): BankReconciliationEntity {
       return BankReconciliationEntity(
          id = rs.getUuid("${columnPrefix}id"),
          bank = bankRepository.mapRow(rs, company, "bank_"),
@@ -220,7 +223,11 @@ class BankReconciliationRepository @Inject constructor(
       )
    }
 
-   private fun mapRow(rs: ResultSet, entity: BankReconciliationEntity, columnPrefix: String = EMPTY): BankReconciliationEntity {
+   private fun mapRow(
+      rs: ResultSet,
+      entity: BankReconciliationEntity,
+      columnPrefix: String = EMPTY
+   ): BankReconciliationEntity {
       return BankReconciliationEntity(
          id = rs.getUuid("${columnPrefix}id"),
          bank = entity.bank,

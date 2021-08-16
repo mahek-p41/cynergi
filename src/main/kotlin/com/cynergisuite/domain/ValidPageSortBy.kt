@@ -26,12 +26,12 @@ class ValidPageSortByValidator : ConstraintValidator<ValidPageSortBy, String> {
    private lateinit var columns: Set<String>
 
    override fun initialize(constraintAnnotation: ValidPageSortBy) {
-      this.columns = constraintAnnotation.columns.map { it.toUpperCase() }.toSet()
+      this.columns = constraintAnnotation.columns.map { it.uppercase() }.toSet()
    }
 
    override fun isValid(value: String?, context: ConstraintValidatorContext): Boolean {
       return if (value != null) {
-         val check = value.toUpperCase()
+         val check = value.uppercase()
 
          columns.contains(check)
       } else {

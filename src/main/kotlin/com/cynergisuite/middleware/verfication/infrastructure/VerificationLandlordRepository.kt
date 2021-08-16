@@ -4,25 +4,29 @@ import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.verfication.VerificationLandlord
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.mapper.RowMapper
+import org.jdbi.v3.core.statement.StatementContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
 class VerificationLandlordRepository(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VerificationLandlordRepository::class.java)
    private val simpleVerificationLandlordRowMapper = VerificationLandlordRowMapper()
    private val prefixedVerificationLandlordRowMapper = VerificationLandlordRowMapper(columnPrefix = "vl_")
 
+   @ReadOnly
    fun findOne(id: Long): VerificationLandlord? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_landlord WHERE id = :id", mapOf("id" to id), simpleVerificationLandlordRowMapper)
 
@@ -32,7 +36,7 @@ class VerificationLandlordRepository(
    }
 
    fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_landlord WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_landlord WHERE id = :id)", mapOf("id" to id), Boolean::class.java)
 
       logger.trace("Checking if VerificationLandlord: {} exists resulted in {}", id, exists)
 
@@ -115,14 +119,14 @@ class VerificationLandlordRepository(
       }
    }
 
-   fun mapRowPrefixedRow(rs: ResultSet, row: Int = 0): VerificationLandlord? =
-      rs.getString("vl_id")?.let { prefixedVerificationLandlordRowMapper.mapRow(rs, row) }
+   fun mapRowPrefixedRow(rs: ResultSet, ctx: StatementContext): VerificationLandlord? =
+      rs.getString("vl_id")?.let { prefixedVerificationLandlordRowMapper.map(rs, ctx) }
 }
 
 private class VerificationLandlordRowMapper(
    private val columnPrefix: String = EMPTY
 ) : RowMapper<VerificationLandlord> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): VerificationLandlord =
+   override fun map(rs: ResultSet, ctx: StatementContext): VerificationLandlord =
       VerificationLandlord(
          id = rs.getLong("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),

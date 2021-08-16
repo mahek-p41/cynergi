@@ -4,7 +4,7 @@ import com.cynergisuite.middleware.accounting.account.payable.AccountPayableChec
 import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndicatorTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumberRequiredIndicatorTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.control.infrastructure.AccountPayableControlRepository
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,17 +13,17 @@ class AccountPayableControlService @Inject constructor(
    private val accountPayableControlValidator: AccountPayableControlValidator,
    private val accountPayableControlRepository: AccountPayableControlRepository
 ) {
-   fun fetchOne(company: Company): AccountPayableControlDTO? {
+   fun fetchOne(company: CompanyEntity): AccountPayableControlDTO? {
       return accountPayableControlRepository.findOne(company)?.let { transformEntity(it) }
    }
 
-   fun create(dto: AccountPayableControlDTO, company: Company): AccountPayableControlDTO {
+   fun create(dto: AccountPayableControlDTO, company: CompanyEntity): AccountPayableControlDTO {
       val toCreate = accountPayableControlValidator.validateCreate(dto, company)
 
       return transformEntity(accountPayableControlRepository.insert(toCreate, company))
    }
 
-   fun update(dto: AccountPayableControlDTO, company: Company): AccountPayableControlDTO {
+   fun update(dto: AccountPayableControlDTO, company: CompanyEntity): AccountPayableControlDTO {
       val toUpdate = accountPayableControlValidator.validateUpdate(dto, company)
 
       return transformEntity(accountPayableControlRepository.update(toUpdate, company))
