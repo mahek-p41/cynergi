@@ -75,7 +75,7 @@ pipeline {
 
          steps {
             script {
-               def cynmidtar = docker.build("middlewaretar:${env.BRANCH_NAME}", "-f ./support/deployment/cynmid/cynmid.dockerfile --build-arg USER_ID=$jenkinsUid --build-arg GROUP_ID=$jenkinsGid ./support/deployment/cynmid")
+               def cynmidtar = docker.build("middlewaretar:${env.BRANCH_NAME}", "-f ./support/deployment/cynmid/cynmid.dockerfile --build-arg USER_ID=$jenkinsUid --build-arg GROUP_ID=$jenkinsGid --build-arg GROOVY_VER=3.0.8 ./support/deployment/cynmid")
 
                cynmidtar.inside(
                   "--rm " +
@@ -94,12 +94,14 @@ pipeline {
                   ./gradlew --no-daemon --stacktrace shadowJar
 
                   mkdir -p /opt/cyn/v01/cynmid/data/
-                  ls -al /home/jenkins/cynergi-middleware/support/deployment/
                   cp /home/jenkins/cynergi-middleware/support/deployment/cyndsets-parse.sh /opt/cyn/v01/cynmid/data/cyndsets-parse.sh
                   chmod u+x /opt/cyn/v01/cynmid/data/cyndsets-parse.sh
 
                   mkdir -p /opt/cyn/v01/cynmid/scripts/
+                  mkdir -p /opt/cyn/v01/cynmid/groovy/bin/
                   cp /home/jenkins/cynergi-middleware/support/deployment/cynergi-postgres-check.sh /opt/cyn/v01/cynmid/scripts/cynergi-postgres-check.sh
+                  cp /home/jenkins/cynergi-middleware/support/deployment/*.groovy /opt/cyn/v01/cynmid/scripts/
+                  chmod u+x /opt/cyn/v01/cynmid/scripts/*.groovy
                   chmod u+x /opt/cyn/v01/cynmid/scripts/cynergi-postgres-check.sh
                   jlink --module-path "$JAVA_HOME\\jmods" \\
                      --compress 2 \\
@@ -112,6 +114,8 @@ pipeline {
 
                   cp /home/jenkins/cynergi-middleware/support/deployment/cynergi-middleware.httpd.conf /opt/cyn/v01/cynmid/cynergi-middleware.httpd.conf
                   sed "s/@@JAVA_VER_BUILD@@/${VER_BUILD}/g; s/@@MICRONAUT_ENV@@/${MICRONAUT_ENV}/g" /home/jenkins/cynergi-middleware/support/deployment/cynergi-middleware.conf > /opt/cyn/v01/cynmid/cynergi-middleware.conf
+                  sed "s/@@JAVA_VER_BUILD@@/${VER_BUILD}/g; s/@@GROOVY_VER@@/${GROOVY_VERSON}/g" /home/jenkins/cynergi-middleware/support/deployment/groovy-proxy.sh > /opt/cyn/v01/cynmid/groovy/bin/groovy
+                  chmod u+x /opt/cyn/v01/cynmid/groovy/bin/groovy
                   cp /home/jenkins/cynergi-middleware/support/development/cynergidb/setup-database.sql /opt/cyn/v01/cynmid/data/
                   cp /home/jenkins/cynergi-middleware/build/libs/*-$BUILD_VERSION-all.jar /opt/cyn/v01/cynmid/cynergi-middleware.jar
                   mkdir -p /opt/cyn/v01/cynmid/java/openj9/${VER_BUILD}/jitcache
