@@ -100,8 +100,8 @@ class RebateRepository @Inject constructor(
          FROM rebate r
             JOIN account_status_type_domain status ON r.status_type_id = status.id
             JOIN rebate_type_domain rebate         ON r.rebate_type_id = rebate.id
-            LEFT JOIN account glDebitAcct          ON r.general_ledger_debit_account_id = glDebitAcct.account_id
             JOIN account glCreditAcct              ON r.general_ledger_credit_account_id = glCreditAcct.account_id
+            LEFT JOIN account glDebitAcct          ON r.general_ledger_debit_account_id = glDebitAcct.account_id
       """
    }
 
@@ -125,18 +125,20 @@ class RebateRepository @Inject constructor(
 
    @ReadOnly
    fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<RebateEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to page.size(), "offset" to page.offset())
+      var whereClause = StringBuilder(" WHERE r.company_id = :comp_id ")
+      if (page is RebatePageRequest && !page.vendorIds.isNullOrEmpty()) {
+         params["vendor_ids"] = page.vendorIds
+         whereClause.append(" AND r.id IN (SELECT DISTINCT rebate_id FROM rebate_to_vendor WHERE vendor_id in (<vendor_ids>)) ")
+      }
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
-            WHERE r.company_id = :comp_id
+            $whereClause
             ORDER BY r_${page.snakeSortBy()} ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
-         mapOf(
-            "comp_id" to company.id,
-            "limit" to page.size(),
-            "offset" to page.offset()
-         ),
+         params,
          page
       ) { rs, elements ->
          do {

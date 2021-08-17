@@ -85,7 +85,7 @@ class RebateController @Inject constructor(
    fun fetchAll(
       @Parameter(name = "pageRequest", `in` = QUERY, required = false)
       @Valid @QueryValue("pageRequest")
-      pageRequest: StandardPageRequest,
+      pageRequest: RebatePageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<RebateDTO> {

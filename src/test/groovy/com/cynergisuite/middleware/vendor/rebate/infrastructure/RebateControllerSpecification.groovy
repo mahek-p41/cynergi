@@ -16,6 +16,7 @@ import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class RebateControllerSpecification extends ControllerSpecificationBase {
@@ -191,6 +192,123 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
             }
          }
       }
+   }
+
+   void "fetch by vendors" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaTestDataLoaderService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
+      final vendorList = vendorTestDataLoaderService.stream(4, company, vendorPaymentTerm, shipVia).toList()
+      final glDebitAcct = accountTestDataLoaderService.single(company)
+      final glCreditAcct = accountTestDataLoaderService.single(company)
+      final rebates = rebateTestDataLoaderService.stream(7, company, vendorList, glDebitAcct, glCreditAcct).toList()
+      final filterRequest = new RebatePageRequest(['page': 1, 'size': 10, 'sortBy': "id", 'sortDirection': "ASC", 'vendorIds': [vendorList.get(1).myId()]])
+      rebates.eachWithIndex{ rebate, _ ->
+         rebateTestDataLoaderService.assignVendorsToRebate(rebate, vendorList)
+      }
+
+      when:
+      def result = get("$path$filterRequest")
+
+      then:
+      // result should returns all rebases
+      notThrown(Exception)
+      with(result) {
+         totalElements == 7
+         totalPages == 1
+         first == true
+         last == true
+         elements.size() == 7
+         elements.eachWithIndex { pageOneResult, index ->
+            with(pageOneResult) {
+               id == rebates[index].id
+
+               vendors.eachWithIndex{ vendor, i ->
+                  vendor == rebates[index].vendors[i]
+               }
+
+               with(status) {
+                  value == rebates[index].status.value
+                  description == rebates[index].status.description
+               }
+
+               description == rebates[index].description
+
+               with(type) {
+                  value == rebates[index].rebate.value
+                  description == rebates[index].rebate.description
+               }
+
+               percent == rebates[index].percent
+               amountPerUnit == rebates[index].amountPerUnit
+               accrualIndicator == rebates[index].accrualIndicator
+               if (generalLedgerDebitAccount != null) {
+                  generalLedgerDebitAccount.id == rebates[index].generalLedgerDebitAccount.id
+               }
+               generalLedgerCreditAccount.id == rebates[index].generalLedgerCreditAccount.id
+            }
+         }
+      }
+
+//      when:
+//      // disassociate 2 last rebates from the first vendor
+//      rebates[5..6].eachWithIndex{ rebate, _ ->
+//         rebateTestDataLoaderService.disassociateVendorFromRebate(rebate, [vendorList.get(1)])
+//      }
+//      result = get("$path$filterRequest")
+//
+//      then:
+//      // result should returns 5 out of 7 rebases
+//      notThrown(Exception)
+//      with(result) {
+//         totalElements == 5
+//         totalPages == 1
+//         first == true
+//         last == true
+//         elements.size() == 5
+//         elements.eachWithIndex { element, index ->
+//            with(element) {
+//               id == rebates[index].id
+//
+//               vendors.eachWithIndex{ vendor, i ->
+//                  vendor == rebates[index].vendors[i]
+//               }
+//
+//               with(status) {
+//                  value == rebates[index].status.value
+//                  description == rebates[index].status.description
+//               }
+//
+//               description == rebates[index].description
+//
+//               with(type) {
+//                  value == rebates[index].rebate.value
+//                  description == rebates[index].rebate.description
+//               }
+//
+//               percent == rebates[index].percent
+//               amountPerUnit == rebates[index].amountPerUnit
+//               accrualIndicator == rebates[index].accrualIndicator
+//               if (generalLedgerDebitAccount != null) {
+//                  generalLedgerDebitAccount.id == rebates[index].generalLedgerDebitAccount.id
+//               }
+//               generalLedgerCreditAccount.id == rebates[index].generalLedgerCreditAccount.id
+//            }
+//         }
+//      }
+//
+//      when:
+//      // disassociate all rebates from the first vendor
+//      rebates[0..4].eachWithIndex{ rebate, _ ->
+//         rebateTestDataLoaderService.disassociateVendorFromRebate(rebate, [vendorList.get(1)])
+//      }
+//      result = get("$path$filterRequest")
+//
+//      then:
+//      // should throws an HttpClientResponseException
+//      final exception = thrown(HttpClientResponseException)
+//      exception.response.status == NO_CONTENT
    }
 
    void "create one" () {
