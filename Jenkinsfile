@@ -26,7 +26,7 @@ pipeline {
          }
       }
 
-      /* stage('Test') {
+      stage('Test') {
          steps {
             script {
                def cynergibasedb = docker.build("cynergibasedb:${env.BRANCH_NAME}", "-f ./support/development/cynergibasedb/cynergibasedb.dockerfile ./support/development/cynergibasedb")
@@ -56,7 +56,7 @@ pipeline {
                }
             }
          }
-      } */
+      }
 
       stage('Setup environment') {
          when {
@@ -86,7 +86,7 @@ pipeline {
                   "-e MICRONAUT_ENV=${micronautEnv}"
                ) {
                   sh '''#!/usr/bin/env bash
-                  set -o errexit -o pipefail -o nounset #-o noclobber
+                  set -o errexit -o pipefail -o nounset -o noclobber
                   export JAVA_OPTS="-Xms1024m -Xmx1024m -Xgcpolicy:gencon"
                   VER_BUILD=$(java -version 2>&1 | awk '/build/ {gsub("\\)","") ; print $NF}' | head -n 1)
 
@@ -131,8 +131,7 @@ pipeline {
          steps {
             script {
                sh '''#!/usr/bin/env bash
-               set -o errexit -o pipefail -o nounset #-o noclobber
-               set -x
+               set -o errexit -o pipefail -o nounset -o noclobber
 
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep all\\.jar | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.DEVELOP-${releaseVersion}.jar
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.DEVELOP-${releaseVersion}.tar.xz
@@ -150,7 +149,7 @@ pipeline {
          steps {
             script {
                sh '''#!/usr/bin/env bash
-               set -o errexit -o pipefail -o nounset #-o noclobber
+               set -o errexit -o pipefail -o nounset -o noclobber
 
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep all\\.jar | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.STAGING-${releaseVersion}.jar
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.STAGING-${releaseVersion}.tar.xz
@@ -168,7 +167,7 @@ pipeline {
          steps {
             script {
                sh '''#!/usr/bin/env bash
-               set -o errexit -o pipefail -o nounset #-o noclobber
+               set -o errexit -o pipefail -o nounset -o noclobber
 
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep all\\.jar | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-RELEASE/cynergi-middleware.RELEASE-${releaseVersion}.jar
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-RELEASE/cynergi-middleware.RELEASE-${releaseVersion}.tar.xz
