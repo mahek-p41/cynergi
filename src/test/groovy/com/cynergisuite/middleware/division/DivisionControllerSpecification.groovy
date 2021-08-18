@@ -10,6 +10,7 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.FORBIDDEN
+import static io.micronaut.http.HttpStatus.METHOD_NOT_ALLOWED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
@@ -422,7 +423,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
 
       then:
       final exception = thrown(HttpClientResponseException)
-      exception.status == FORBIDDEN
+      exception.status == METHOD_NOT_ALLOWED
    }
 
    void "delete a division with logged in user who is not superuser"() {

@@ -7,7 +7,6 @@ import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.address.AddressTestDataLoaderService
 import com.cynergisuite.middleware.company.CompanyDTO
 import com.cynergisuite.middleware.company.CompanyFactory
-import com.github.javafaker.Address
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import io.micronaut.core.type.Argument
@@ -19,8 +18,8 @@ import javax.inject.Inject
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.POST
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.METHOD_NOT_ALLOWED
 import static io.micronaut.http.HttpStatus.NO_CONTENT
-import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 
 @MicronautTest(transactional = false)
 class CompanyControllerSpecification extends ControllerSpecificationBase {
@@ -430,16 +429,16 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
 
       when:
       client.exchange(
-         POST("/${path}/$tstds1.id", jsonCompany),
+         POST("/${path}/${tstds1.id}", jsonCompany),
          Argument.of(String),
          Argument.of(String)
       ).bodyAsJson()
 
       then:
       def exception = thrown(HttpClientResponseException)
-      exception.status == UNAUTHORIZED
+      exception.status == METHOD_NOT_ALLOWED
       def response = exception.response.bodyAsJson()
-      response.message == 'You are not logged in'
+      response.message == "Method [POST] not allowed for URI [/api/company/${tstds1.id}]. Allowed methods: [HEAD, GET, PUT]"
    }
 
    void "update a valid company by removing address" () {

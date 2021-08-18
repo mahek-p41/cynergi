@@ -182,7 +182,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
 
       then:
       final exception = thrown(HttpClientResponseException)
-      exception.status == FORBIDDEN
+      exception.status == NOT_FOUND
    }
 
    void "associate audit-approver with Sales Associate" () {
@@ -222,7 +222,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
 
       then:
       final exception = thrown(HttpClientResponseException)
-      exception.status == FORBIDDEN
+      exception.status == NOT_FOUND
    }
 
    void "delete association of audit-approver with Sales Associate" () {

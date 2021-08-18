@@ -14,6 +14,7 @@ import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.HEAD
 import static io.micronaut.http.HttpRequest.POST
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.METHOD_NOT_ALLOWED
 import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 
 @MicronautTest(transactional = false)
@@ -394,8 +395,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
       then:
       final e = thrown(HttpClientResponseException)
-      e.response.bodyAsJson().message == 'You are not logged in'
-      e.status == UNAUTHORIZED
+      e.response.bodyAsJson().message == 'Method [GET] not allowed for URI [/api/authenticated/check]. Allowed methods: [HEAD]'
+      e.status == METHOD_NOT_ALLOWED
    }
 
    void "login with user who has a different store than they chose, but also has the alternative store indicator set to A" () {
