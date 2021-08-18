@@ -86,8 +86,7 @@ pipeline {
                   "-e MICRONAUT_ENV=${micronautEnv}"
                ) {
                   sh '''#!/usr/bin/env bash
-                  set -x
-                  set -o errexit -o pipefail -o noclobber -o nounset
+                  set -o errexit -o pipefail -o nounset #-o noclobber
                   export JAVA_OPTS="-Xms1024m -Xmx1024m -Xgcpolicy:gencon"
                   VER_BUILD=$(java -version 2>&1 | awk '/build/ {gsub("\\)","") ; print $NF}' | head -n 1)
 
