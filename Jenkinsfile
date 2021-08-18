@@ -9,7 +9,7 @@ pipeline {
    environment {
       NEXUS_JENKINS_CREDENTIALS = credentials('NEXUS_JENKINS_CREDENTIALS')
       CYNERGI_DEPLOY_JENKINS = credentials('CYNERGI_DEPLOY_JENKINS_USER')
-      def buildVersion = readProperties(file: 'gradle.properties')['releaseVersion'].trim()
+      def releaseVersion = readProperties(file: 'gradle.properties')['releaseVersion'].trim()
       def networkId = UUID.randomUUID().toString()
       def jenkinsUid = sh(script: 'id -u', returnStdout: true).trim()
       def jenkinsGid = sh(script: 'id -g', returnStdout: true).trim()
@@ -26,7 +26,7 @@ pipeline {
          }
       }
 
-      stage('Test') {
+      /* stage('Test') {
          steps {
             script {
                def cynergibasedb = docker.build("cynergibasedb:${env.BRANCH_NAME}", "-f ./support/development/cynergibasedb/cynergibasedb.dockerfile ./support/development/cynergibasedb")
@@ -56,7 +56,7 @@ pipeline {
                }
             }
          }
-      }
+      } */
 
       stage('Setup environment') {
          when {
@@ -82,7 +82,7 @@ pipeline {
                   "-v ${workspace}/gradleCache:/home/jenkins/caches " +
                   "-v ${workspace}/gradleWrapper:/home/jenkins/wrapper " +
                   "-v ${workspace}:/home/jenkins/cynergi-middleware " +
-                  "-e BUILD_VERSION=${buildVersion} " +
+                  "-e BUILD_VERSION=${releaseVersion} " +
                   "-e MICRONAUT_ENV=${micronautEnv}"
                ) {
                   sh '''#!/usr/bin/env bash
@@ -134,8 +134,8 @@ pipeline {
                sh '''#!/usr/bin/env bash
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file $(ls -lrt build/libs | grep all\\.jar | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.DEVELOP-${gradleProps.releaseVersion}.jar
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file $(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.DEVELOP-${gradleProps.releaseVersion}.tar.xz
-               sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' scp -oStrictHostKeyChecking=no ./build/libs/cynergi-middleware.tar.xz $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17:/home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-${gradleProps.releaseVersion}.tar.xz
-               sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'ln -f /home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-${gradleProps.releaseVersion}.tar.xz /home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-current.tar.xz'"
+               sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' scp -oStrictHostKeyChecking=no ./build/libs/cynergi-middleware.tar.xz $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17:/home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-${releaseVersion}.tar.xz
+               sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'ln -f /home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-${releaseVersion}.tar.xz /home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-current.tar.xz'"
                sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'touch /home/jenkins/ELIMINATION/DEVELOP/build.trigger '"
                '''
             }
