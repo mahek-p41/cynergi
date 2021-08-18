@@ -132,6 +132,7 @@ pipeline {
             script {
                sh '''#!/usr/bin/env bash
                set -o errexit -o pipefail -o nounset #-o noclobber
+               set -x
 
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep all\\.jar | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.DEVELOP-${releaseVersion}.jar
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.DEVELOP-${releaseVersion}.tar.xz
