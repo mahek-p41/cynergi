@@ -1,9 +1,9 @@
-package com.cynergisuite.middleware.accounting.routine
+package com.cynergisuite.middleware.accounting.financial.calendar
 
-import com.cynergisuite.middleware.accounting.routine.infrastructure.RoutineRepository
-import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodType
-import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeDTO
-import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeDataLoader
+import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodType
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
@@ -18,9 +18,9 @@ import java.util.stream.IntStream
 import java.util.stream.Stream
 
 @CompileStatic
-class RoutineDataLoader {
+class FinancialCalendarDataLoader {
 
-   static Stream<RoutineEntity> stream(int numberIn = 1) {
+   static Stream<FinancialCalendarEntity> stream(int numberIn = 1) {
       final number = numberIn > 0 ? numberIn : 1
       final overallPeriod = OverallPeriodTypeDataLoader.random()
       final periodCounter = new AtomicInteger(1)
@@ -30,7 +30,7 @@ class RoutineDataLoader {
       final beginDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
 
       return IntStream.range(0, number).mapToObj {
-         new RoutineEntity(
+         new FinancialCalendarEntity(
             null,
             overallPeriod,
             periodCounter.getAndIncrement(),
@@ -43,7 +43,7 @@ class RoutineDataLoader {
       }
    }
 
-   static Stream<RoutineDTO> streamDTO(int numberIn = 1) {
+   static Stream<FinancialCalendarDTO> streamDTO(int numberIn = 1) {
       final number = numberIn > 0 ? numberIn : 1
       final overallPeriod = OverallPeriodTypeDataLoader.random()
       final periodCounter = new AtomicInteger(1)
@@ -53,7 +53,7 @@ class RoutineDataLoader {
       final beginDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
 
       return IntStream.range(0, number).mapToObj {
-         new RoutineDTO([
+         new FinancialCalendarDTO([
             'overallPeriod': new OverallPeriodTypeDTO(overallPeriod),
             'period': periodCounter.getAndIncrement(),
             'periodFrom': beginDate,
@@ -65,7 +65,7 @@ class RoutineDataLoader {
       }
    }
 
-   static Stream<RoutineEntity> streamFiscalYear(OverallPeriodType overallPeriodType, LocalDate startingDate = null) {
+   static Stream<FinancialCalendarEntity> streamFiscalYear(OverallPeriodType overallPeriodType, LocalDate startingDate = null) {
       final number = 12
       final periodCounter = new AtomicInteger(1)
       final faker = new Faker()
@@ -74,7 +74,7 @@ class RoutineDataLoader {
       final beginDate = startingDate ?: date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
 
       return IntStream.range(0, number).mapToObj {
-         new RoutineEntity(
+         new FinancialCalendarEntity(
             null,
             overallPeriodType,
             periodCounter.getAndIncrement(),
@@ -87,7 +87,7 @@ class RoutineDataLoader {
       }
    }
 
-   static Stream<RoutineDTO> streamFiscalYearDTO(int numberIn = 1) {
+   static Stream<FinancialCalendarDTO> streamFiscalYearDTO(int numberIn = 1) {
       final number = numberIn < 0 ? 12 : numberIn * 12
       final overallPeriod = OverallPeriodTypeDataLoader.predefined().find {it.value == "C" }
       final periodCounter = new AtomicInteger(1)
@@ -97,7 +97,7 @@ class RoutineDataLoader {
       final beginDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
 
       return IntStream.range(0, number).mapToObj {
-         new RoutineDTO([
+         new FinancialCalendarDTO([
             'overallPeriod': new OverallPeriodTypeDTO(overallPeriod),
             'period': periodCounter.getAndIncrement(),
             'periodFrom': beginDate.plusMonths(it.toLong()),
@@ -113,28 +113,28 @@ class RoutineDataLoader {
 @Singleton
 @CompileStatic
 @Requires(env = ["develop", "test"])
-class RoutineDataLoaderService {
-   private final RoutineRepository routineRepository
+class FinancialCalendarDataLoaderService {
+   private final FinancialCalendarRepository financialCalendarRepository
 
-   RoutineDataLoaderService(RoutineRepository routineRepository) {
-      this.routineRepository = routineRepository
+   FinancialCalendarDataLoaderService(FinancialCalendarRepository financialCalendarRepository) {
+      this.financialCalendarRepository = financialCalendarRepository
    }
 
-   Stream<RoutineEntity> stream(int numberIn = 1, CompanyEntity company) {
-      return RoutineDataLoader.stream(numberIn)
-         .map { routineRepository.insert(it, company) }
+   Stream<FinancialCalendarEntity> stream(int numberIn = 1, CompanyEntity company) {
+      return FinancialCalendarDataLoader.stream(numberIn)
+         .map { financialCalendarRepository.insert(it, company) }
    }
 
-   RoutineEntity single(CompanyEntity company) {
-      return stream(1, company).findFirst().orElseThrow { new Exception("Unable to create Routine Entity") }
+   FinancialCalendarEntity single(CompanyEntity company) {
+      return stream(1, company).findFirst().orElseThrow { new Exception("Unable to create Financial Calendar Entity") }
    }
 
-   RoutineDTO singleDTO() {
-      return RoutineDataLoader.streamDTO(1).findFirst().orElseThrow { new Exception("Unable to create Routine") }
+   FinancialCalendarDTO singleDTO() {
+      return FinancialCalendarDataLoader.streamDTO(1).findFirst().orElseThrow { new Exception("Unable to create Financial Calendar") }
    }
 
-   Stream<RoutineEntity> streamFiscalYear(CompanyEntity company, OverallPeriodType overallPeriodType, LocalDate startingDate = null) {
-      return RoutineDataLoader.streamFiscalYear(overallPeriodType, startingDate)
-         .map { routineRepository.insert(it, company) }
+   Stream<FinancialCalendarEntity> streamFiscalYear(CompanyEntity company, OverallPeriodType overallPeriodType, LocalDate startingDate = null) {
+      return FinancialCalendarDataLoader.streamFiscalYear(overallPeriodType, startingDate)
+         .map { financialCalendarRepository.insert(it, company) }
    }
 }

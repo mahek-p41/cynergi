@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.summary
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
-import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.util.UUID

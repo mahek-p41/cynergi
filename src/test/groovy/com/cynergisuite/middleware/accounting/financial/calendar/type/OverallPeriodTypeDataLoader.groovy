@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.accounting.routine.type
+package com.cynergisuite.middleware.accounting.financial.calendar.type
 
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires

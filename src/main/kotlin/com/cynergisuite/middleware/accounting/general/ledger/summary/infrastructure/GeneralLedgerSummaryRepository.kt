@@ -10,7 +10,7 @@ import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryEntity
-import com.cynergisuite.middleware.accounting.routine.type.infrastructure.OverallPeriodTypeRepository
+import com.cynergisuite.middleware.accounting.financial.calendar.type.infrastructure.OverallPeriodTypeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.transaction.annotation.ReadOnly

@@ -1,11 +1,11 @@
-package com.cynergisuite.middleware.accounting.routine
+package com.cynergisuite.middleware.accounting.financial.calendar
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodType
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodType
 import java.time.LocalDate
 import java.util.UUID
 
-data class RoutineEntity(
+data class FinancialCalendarEntity(
    val id: UUID? = null,
    val overallPeriod: OverallPeriodType,
    val period: Int,
@@ -16,7 +16,7 @@ data class RoutineEntity(
    val accountPayableOpen: Boolean
 ) : Identifiable {
 
-   constructor(dto: RoutineDTO, overallPeriod: OverallPeriodType) :
+   constructor(dto: FinancialCalendarDTO, overallPeriod: OverallPeriodType) :
       this(
          id = dto.id,
          overallPeriod = overallPeriod,

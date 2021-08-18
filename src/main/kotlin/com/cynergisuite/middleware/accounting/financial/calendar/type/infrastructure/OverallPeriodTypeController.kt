@@ -1,8 +1,8 @@
-package com.cynergisuite.middleware.accounting.routine.type.infrastructure
+package com.cynergisuite.middleware.accounting.financial.calendar.type.infrastructure
 
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeDTO
-import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeService
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeService
 import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
-@Controller("/api/accounting/routine/type/overall-period")
+@Controller("/api/accounting/financial-calendar/type/overall-period")
 class OverallPeriodTypeController @Inject constructor(
    private val overallPeriodTypeService: OverallPeriodTypeService,
    private val localizationService: LocalizationService
