@@ -22,6 +22,7 @@ import com.cynergisuite.middleware.localization.AuditUpdateRequiresApprovedOrNot
 import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import com.fasterxml.jackson.databind.ObjectMapper
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,7 +37,7 @@ class AuditExceptionValidator @Inject constructor (
 ) : ValidatorBase() {
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateCreate(auditId: Long, auditException: AuditExceptionCreateValueObject, enteredBy: User): AuditExceptionEntity {
+   fun validateCreate(auditId: UUID, auditException: AuditExceptionCreateDTO, enteredBy: User): AuditExceptionEntity {
       return doValidationWithResult { errors ->
          doSharedValidation(auditId)
 
@@ -88,7 +89,7 @@ class AuditExceptionValidator @Inject constructor (
       }
    }
 
-   private fun createAuditException(auditId: Long, enteredBy: User, scanArea: AuditScanAreaEntity?, exceptionCode: String, inventoryId: Long?, barcode: String?): AuditExceptionEntity {
+   private fun createAuditException(auditId: UUID, enteredBy: User, scanArea: AuditScanAreaEntity?, exceptionCode: String, inventoryId: Long?, barcode: String?): AuditExceptionEntity {
       val employeeUser = employeeRepository.findOne(enteredBy)!!
 
       return if (inventoryId != null) {
@@ -101,7 +102,7 @@ class AuditExceptionValidator @Inject constructor (
    }
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateUpdate(auditId: Long, auditExceptionUpdate: AuditExceptionUpdateValueObject, enteredBy: User): AuditExceptionEntity {
+   fun validateUpdate(auditId: UUID, auditExceptionUpdate: AuditExceptionUpdateValueObject, enteredBy: User): AuditExceptionEntity {
       doValidation { errors ->
          doSharedValidation(auditId)
 
@@ -156,7 +157,7 @@ class AuditExceptionValidator @Inject constructor (
       )
    }
 
-   private fun doSharedValidation(auditId: Long) {
+   private fun doSharedValidation(auditId: UUID) {
       if (auditRepository.doesNotExist(auditId)) {
          throw NotFoundException(auditId)
       }

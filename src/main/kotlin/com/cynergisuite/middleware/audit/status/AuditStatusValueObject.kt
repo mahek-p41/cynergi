@@ -13,7 +13,7 @@ data class AuditStatusValueObject(
 
    @field:Positive
    @field:Schema(name = "id", description = "This is a database driven primary key value defining the id of the status")
-   var id: Long? = null,
+   var id: Int? = null,
 
    @field:NotNull
    @field:Size(min = 3, max = 15)

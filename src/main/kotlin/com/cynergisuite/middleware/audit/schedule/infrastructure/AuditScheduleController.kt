@@ -4,8 +4,8 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.infrastructure.AuditAccessControlProvider
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
-import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDataTransferObject
-import com.cynergisuite.middleware.audit.schedule.AuditScheduleDataTransferObject
+import com.cynergisuite.middleware.audit.schedule.AuditScheduleCreateUpdateDTO
+import com.cynergisuite.middleware.audit.schedule.AuditScheduleDTO
 import com.cynergisuite.middleware.audit.schedule.AuditScheduleService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -33,7 +33,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
+import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/audit/schedule")
@@ -45,11 +47,11 @@ class AuditScheduleController @Inject constructor(
 
    @Throws(NotFoundException::class)
    @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
-   @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Fetch a single Audit Schedule", description = "Fetch a single Audit Schedule by it's system generated primary key", operationId = "auditSchedule-fetchOne")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", description = "If the Audit Schedule was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditScheduleDataTransferObject::class))]),
+         ApiResponse(responseCode = "200", description = "If the Audit Schedule was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditScheduleDTO::class))]),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "404", description = "The requested Audit Schedule was unable to be found"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
@@ -57,12 +59,12 @@ class AuditScheduleController @Inject constructor(
    )
    fun fetchOne(
       @Parameter(description = "Primary Key to lookup the Audit Schedule with", `in` = PATH) @QueryValue("id")
-      id: Long,
+      id: UUID,
       authentication: Authentication
-   ): AuditScheduleDataTransferObject {
+   ): AuditScheduleDTO {
       logger.info("Fetching Audit Schedule by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = auditScheduleService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Audit Schedule by {} resulted in {}", id, response)
@@ -86,10 +88,10 @@ class AuditScheduleController @Inject constructor(
       @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
       pageRequest: AuditPageRequest,
       authentication: Authentication
-   ): Page<AuditScheduleDataTransferObject> {
+   ): Page<AuditScheduleDTO> {
       logger.info("Fetching all audit schedules {} {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = auditScheduleService.fetchAll(pageRequest, user.myCompany())
 
       if (page.elements.isEmpty()) {
@@ -105,24 +107,25 @@ class AuditScheduleController @Inject constructor(
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Create a single audit schedule", description = "Create a single audit schedule for the provided stores and to be executed by a department", operationId = "auditSchedule-create")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", description = "If successfully able to save audit schedule", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditScheduleDataTransferObject::class))]),
+         ApiResponse(responseCode = "200", description = "If successfully able to save audit schedule", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditScheduleDTO::class))]),
          ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
    fun create(
-      @Body auditSchedule: AuditScheduleCreateUpdateDataTransferObject,
+      @Body @Valid
+      dto: AuditScheduleCreateUpdateDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): AuditScheduleDataTransferObject {
-      logger.info("Requested Create Audit Schedule {}", auditSchedule)
+   ): AuditScheduleDTO {
+      logger.info("Requested Create Audit Schedule {}", dto)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val user = userService.findUser(authentication)
-      val response = auditScheduleService.create(auditSchedule, user, locale)
+      val user = userService.fetchUser(authentication)
+      val response = auditScheduleService.create(dto, user, locale)
 
-      logger.debug("Requested creation of audit schedule using {} resulted in {}", auditSchedule, response)
+      logger.debug("Requested creation of audit schedule using {} resulted in {}", dto, response)
 
       return response
    }
@@ -133,7 +136,7 @@ class AuditScheduleController @Inject constructor(
    @Operation(tags = ["AuditScheduleEndpoints"], summary = "Update a single audit schedule", description = "This operation is useful for changing the state of the audit schedule", operationId = "auditSchedule-update")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditScheduleDataTransferObject::class))]),
+         ApiResponse(responseCode = "200", description = "If successfully able to update Audit", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditScheduleDTO::class))]),
          ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "404", description = "The requested Audit was unable to be found"),
@@ -141,14 +144,15 @@ class AuditScheduleController @Inject constructor(
       ]
    )
    fun update(
-      @Body auditSchedule: AuditScheduleCreateUpdateDataTransferObject,
+      @Body @Valid
+      auditSchedule: AuditScheduleCreateUpdateDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): AuditScheduleDataTransferObject {
+   ): AuditScheduleDTO {
       logger.info("Requested update audit schedule {}", auditSchedule)
 
       val locale = httpRequest.findLocaleWithDefault()
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = auditScheduleService.update(auditSchedule, user, locale)
 
       logger.debug("Requested update of audit schedule {} resulted in {}", auditSchedule, response)

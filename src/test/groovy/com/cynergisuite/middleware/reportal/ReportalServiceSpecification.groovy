@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.reportal
 
 import com.cynergisuite.middleware.company.CompanyFactory
-import com.cynergisuite.middleware.store.StoreFactory
+import com.cynergisuite.middleware.store.StoreTestDataLoader
 import com.cynergisuite.middleware.threading.CynergiExecutor
 import kotlin.Unit
 import kotlin.jvm.functions.Function0
@@ -14,7 +14,7 @@ class ReportalServiceSpecification extends Specification {
    void "store reportal doc generation" () {
       setup:
       final company = CompanyFactory.tstds1()
-      final store = StoreFactory.store(3, company)
+      final store = StoreTestDataLoader.store(3, company)
       final syncLatch = new CountDownLatch(1)
       final reportalDir = File.createTempDir()
       final storeDir = new File(reportalDir.getAbsolutePath(), "store${store.number}")

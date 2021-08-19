@@ -1,18 +1,23 @@
 package com.cynergisuite.middleware.verfication.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.verfication.Verification
 import com.cynergisuite.middleware.verfication.VerificationReference
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.mapper.RowMapper
+import org.jdbi.v3.core.statement.StatementContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,13 +25,13 @@ import javax.transaction.Transactional
 
 @Singleton
 class VerificationReferenceRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VerificationReferenceRepository::class.java)
    private val simpleVerificationReferenceRowMapper = VerificationReferenceRowMapper()
    private val prefixedVerificationReferenceRowMapper = VerificationReferenceRowMapper("vr_")
 
-   fun findOne(id: Long): VerificationReference? {
+   @ReadOnly fun findOne(id: Long): VerificationReference? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_reference WHERE id = :id", mapOf("id" to id), simpleVerificationReferenceRowMapper)
 
       logger.trace("searching for VerificationLandlord: {} resulted in {}", id, found)
@@ -34,6 +39,7 @@ class VerificationReferenceRepository @Inject constructor(
       return found
    }
 
+   @ReadOnly
    fun findAll(verification: Verification): List<VerificationReference> {
       val vid = verification.id
       val result = if (vid != null) {
@@ -47,8 +53,8 @@ class VerificationReferenceRepository @Inject constructor(
       return result
    }
 
-   fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_reference WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+   @ReadOnly fun exists(id: Long): Boolean {
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_reference WHERE id = :id)", mapOf("id" to id), Boolean::class.java)
 
       logger.trace("Checking if VerificationLandlord: {} exists resulted in {}", id, exists)
 
@@ -133,18 +139,18 @@ class VerificationReferenceRepository @Inject constructor(
    @Transactional
    fun deleteAll(entities: Collection<VerificationReference>): Int =
       jdbc.update(
-         "DELETE FROM verification_reference WHERE id IN (:ids)",
+         "DELETE FROM verification_reference WHERE id IN (<ids>)",
          mapOf("ids" to entities.asSequence().filter { it.id != null }.map { it.id }.toSet())
       )
 
-   fun mapRowPrefixedRow(rs: ResultSet, row: Int = 0): VerificationReference? =
-      rs.getString("vr_id")?.let { prefixedVerificationReferenceRowMapper.mapRow(rs, row) }
+   fun mapRowPrefixedRow(rs: ResultSet, ctx: StatementContext): VerificationReference? =
+      rs.getString("vr_id")?.let { prefixedVerificationReferenceRowMapper.map(rs, ctx) }
 }
 
 private class VerificationReferenceRowMapper(
    private val columnPrefix: String = EMPTY
 ) : RowMapper<VerificationReference> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): VerificationReference =
+   override fun map(rs: ResultSet, ctx: StatementContext): VerificationReference =
       VerificationReference(
          id = rs.getLong("${columnPrefix}id"),
          uuRowId = rs.getUuid("${columnPrefix}uu_row_id"),
@@ -159,6 +165,6 @@ private class VerificationReferenceRowMapper(
          reliable = rs.getBoolean("${columnPrefix}reliable"),
          timeFrame = rs.getInt("${columnPrefix}time_frame"),
          verifyPhone = rs.getBoolean("${columnPrefix}verify_phone"),
-         verification = SimpleIdentifiableEntity(id = rs.getLong("${columnPrefix}verification_id"))
+         verification = SimpleLegacyIdentifiableEntity(id = rs.getLong("${columnPrefix}verification_id"))
       )
 }

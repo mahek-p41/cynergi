@@ -1,16 +1,21 @@
 package com.cynergisuite.middleware.notification.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getLongOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.notification.NotificationRecipient
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils
+import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.mapper.RowMapper
+import org.jdbi.v3.core.statement.StatementContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -18,12 +23,13 @@ import javax.transaction.Transactional
 
 @Singleton
 class NotificationRecipientRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(NotificationRecipientRepository::class.java)
    private val simpleNotificationRecipientRowMapper = NotificationRecipientRowMapper()
    private val prefixedNotificationRecipientRowMapper = NotificationRecipientRowMapper(columnPrefix = "nr_")
 
+   @ReadOnly
    fun findOne(id: Long): NotificationRecipient? {
       val found = jdbc.findFirstOrNull("SELECT * FROM notification_recipient WHERE id = :id", mapOf("id" to id), simpleNotificationRecipientRowMapper)
 
@@ -32,6 +38,7 @@ class NotificationRecipientRepository @Inject constructor(
       return found
    }
 
+   @ReadOnly
    fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM notification_recipient WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
@@ -99,7 +106,7 @@ class NotificationRecipientRepository @Inject constructor(
    @Transactional
    fun deleteAll(recipientsToDelete: Collection<NotificationRecipient>): Int =
       jdbc.update(
-         "DELETE FROM notification_recipient WHERE id IN (:ids)",
+         "DELETE FROM notification_recipient WHERE id IN (<ids>)",
          mapOf("ids" to recipientsToDelete.asSequence().filter { it.id != null }.map { it.id }.toSet())
       )
 
@@ -107,20 +114,20 @@ class NotificationRecipientRepository @Inject constructor(
    fun deleteForParent(parentId: Long): Int =
       jdbc.update("DELETE FROM notification_recipient WHERE notification_id = :parentId", mapOf("parentId" to parentId))
 
-   fun mapRowPrefixedRow(rs: ResultSet, row: Int = 0): NotificationRecipient? =
-      rs.getString("nr_id")?.let { prefixedNotificationRecipientRowMapper.mapRow(rs, row) }
+   fun mapRowPrefixedRow(rs: ResultSet, ctx: StatementContext): NotificationRecipient? =
+      rs.getString("nr_id")?.let { prefixedNotificationRecipientRowMapper.map(rs, ctx) }
 }
 
 private class NotificationRecipientRowMapper(
    private val columnPrefix: String = StringUtils.EMPTY
 ) : RowMapper<NotificationRecipient> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): NotificationRecipient =
+   override fun map(rs: ResultSet, ctx: StatementContext): NotificationRecipient =
       NotificationRecipient(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getLongOrNull("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          description = rs.getString("${columnPrefix}description"),
          recipient = rs.getString("${columnPrefix}recipient"),
-         notification = SimpleIdentifiableEntity(id = rs.getLong("${columnPrefix}notification_id"))
+         notification = SimpleLegacyIdentifiableEntity(id = rs.getLong("${columnPrefix}notification_id"))
       )
 }

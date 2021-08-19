@@ -85,16 +85,16 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
          elements[0].modelNumber == "FPGIDFRAMEDART"
          elements[0].description == "MISCELLANEOUS FURNITURE PICT"
          // below this values should be null
-         elements[0].lookupKeyType == null
-         elements[0].originalCost == null
-         elements[0].actualCost == null
-         elements[0].modelCategory == null
-         elements[0].timesRented == null
-         elements[0].totalRevenue == null
-         elements[0].remainingValue == null
-         elements[0].sellPrice == null
-         elements[0].assignedValue == null
-         elements[0].idleDays == null
+         elements[0].lookupKeyType == 'ALT_ID'
+         elements[0].originalCost == 55.03
+         elements[0].actualCost == 55.03
+         elements[0].modelCategory == "F"
+         elements[0].timesRented == 0
+         elements[0].totalRevenue == 0
+         elements[0].remainingValue == 0
+         elements[0].sellPrice == 0
+         elements[0].assignedValue == 0
+         elements[0].idleDays == 0
       }
    }
 

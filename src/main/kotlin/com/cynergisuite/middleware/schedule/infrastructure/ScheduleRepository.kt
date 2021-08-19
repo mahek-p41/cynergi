@@ -1,9 +1,12 @@
 package com.cynergisuite.middleware.schedule.infrastructure
 
 import com.cynergisuite.domain.infrastructure.RepositoryPage
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.infrastructure.ScheduleArgumentRepository
@@ -11,19 +14,20 @@ import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
 import com.cynergisuite.middleware.schedule.command.infrastructure.ScheduleCommandTypeRepository
 import com.cynergisuite.middleware.schedule.type.ScheduleType
 import com.cynergisuite.middleware.schedule.type.infrastructure.ScheduleTypeRepository
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
 class ScheduleRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val companyRepository: CompanyRepository,
    private val scheduleArgumentRepository: ScheduleArgumentRepository,
    private val scheduleCommandTypeRepository: ScheduleCommandTypeRepository,
@@ -31,7 +35,8 @@ class ScheduleRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ScheduleRepository::class.java)
 
-   fun findOne(id: Long): ScheduleEntity? {
+   @ReadOnly
+   fun findOne(id: UUID): ScheduleEntity? {
       logger.trace("Searching for Schedule with id {}", id)
 
       var found: ScheduleEntity? = null
@@ -40,7 +45,6 @@ class ScheduleRepository @Inject constructor(
          """
          SELECT
             sched.id                    AS sched_id,
-            sched.uu_row_id             AS sched_uu_row_id,
             sched.time_created          AS sched_time_created,
             sched.time_updated          AS sched_time_updated,
             sched.title                 AS sched_title,
@@ -56,13 +60,11 @@ class ScheduleRepository @Inject constructor(
             sctd.description            AS sctd_description,
             sctd.localization_code      AS sctd_localization_code,
             sa.id                       AS sa_id,
-            sa.uu_row_id                AS sa_uu_row_id,
             sa.time_created             AS sa_time_created,
             sa.time_updated             AS sa_time_updated,
             sa.value                    AS sa_value,
             sa.description              AS sa_description,
             comp.id                     AS comp_id,
-            comp.uu_row_id              AS comp_uu_row_id,
             comp.time_created           AS comp_time_created,
             comp.time_updated           AS comp_time_updated,
             comp.name                   AS comp_name,
@@ -79,7 +81,7 @@ class ScheduleRepository @Inject constructor(
          WHERE sched.id = :id
          """.trimIndent(),
          mapOf("id" to id)
-      ) { rs: ResultSet ->
+      ) { rs: ResultSet, _ ->
          val localSchedule = found ?: mapRow(
             rs = rs,
             company = companyRepository.mapRow(rs, "comp_"),
@@ -97,7 +99,12 @@ class ScheduleRepository @Inject constructor(
       return found
    }
 
-   fun findAll(pageRequest: SchedulePageRequest, company: Company, type: ScheduleType? = null): RepositoryPage<ScheduleEntity, SchedulePageRequest> {
+   @ReadOnly
+   fun findAll(
+      pageRequest: SchedulePageRequest,
+      company: CompanyEntity,
+      type: ScheduleType? = null
+   ): RepositoryPage<ScheduleEntity, SchedulePageRequest> {
       logger.trace("Fetching All schedules {}", pageRequest)
 
       val command = pageRequest.command
@@ -106,7 +113,11 @@ class ScheduleRepository @Inject constructor(
       var currentSchedule: ScheduleEntity? = null
       var where = "WHERE comp.id = :comp_id"
       val whereClause = StringBuilder()
-      val params = mutableMapOf<String, Any>("limit" to pageRequest.size(), "offset" to pageRequest.offset(), "comp_id" to company.myId()!!)
+      val params = mutableMapOf<String, Any>(
+         "limit" to pageRequest.size(),
+         "offset" to pageRequest.offset(),
+         "comp_id" to company.id!!
+      )
 
       if (command != null) {
          whereClause.append(" $where AND sctd.value = :sctd_value")
@@ -124,7 +135,6 @@ class ScheduleRepository @Inject constructor(
          WITH schedules AS (
             SELECT
                sched.id                                                        AS sched_id,
-               sched.uu_row_id                                                 AS sched_uu_row_id,
                sched.time_created                                              AS sched_time_created,
                sched.time_updated                                              AS sched_time_updated,
                sched.title                                                     AS sched_title,
@@ -140,7 +150,6 @@ class ScheduleRepository @Inject constructor(
                sctd.description                                                AS sctd_description,
                sctd.localization_code                                          AS sctd_localization_code,
                comp.id                                                         AS comp_id,
-               comp.uu_row_id                                                  AS comp_uu_row_id,
                comp.time_created                                               AS comp_time_created,
                comp.time_updated                                               AS comp_time_updated,
                comp.name                                                       AS comp_name,
@@ -162,7 +171,6 @@ class ScheduleRepository @Inject constructor(
          SELECT
             sched.*,
             sa.id                                                              AS sa_id,
-            sa.uu_row_id                                                       AS sa_uu_row_id,
             sa.time_created                                                    AS sa_time_created,
             sa.time_updated                                                    AS sa_time_updated,
             sa.value                                                           AS sa_value,
@@ -171,8 +179,8 @@ class ScheduleRepository @Inject constructor(
               LEFT OUTER JOIN schedule_arg sa ON sched_id = sa.schedule_id
          ORDER BY sched_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}, sa.id
       """
-      jdbc.query(sql.trimIndent(), params) { rs ->
-         val dbScheduleId = rs.getLong("sched_id")
+      jdbc.query(sql.trimIndent(), params) { rs, _ ->
+         val dbScheduleId = rs.getUuid("sched_id")
 
          val localSchedule: ScheduleEntity = if (currentSchedule?.id != dbScheduleId) {
             val created = mapRow(
@@ -206,8 +214,9 @@ class ScheduleRepository @Inject constructor(
       )
    }
 
-   fun forEach(type: ScheduleType, company: Company, callback: (ScheduleEntity) -> Unit) {
-      var result = findAll(SchedulePageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"), company, type)
+   fun forEach(type: ScheduleType, company: CompanyEntity, callback: (ScheduleEntity) -> Unit) {
+      var result =
+         findAll(SchedulePageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"), company, type)
 
       while (result.elements.isNotEmpty()) {
          for (schedule in result.elements) {
@@ -218,15 +227,20 @@ class ScheduleRepository @Inject constructor(
       }
    }
 
-   fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM schedule WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+   @ReadOnly
+   fun exists(id: UUID): Boolean {
+      val exists = jdbc.queryForObject(
+         "SELECT EXISTS(SELECT id FROM schedule WHERE id = :id)",
+         mapOf("id" to id),
+         Boolean::class.java
+      )
 
       logger.trace("Checking if Schedule: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
-   fun doesNotExist(id: Long): Boolean = !exists(id)
+   fun doesNotExist(id: UUID): Boolean = !exists(id)
 
    @Transactional
    fun insert(entity: ScheduleEntity): ScheduleEntity {
@@ -246,12 +260,11 @@ class ScheduleRepository @Inject constructor(
             "command_id" to entity.command.id,
             "enabled" to entity.enabled,
             "type_id" to entity.type.id,
-            "company_id" to entity.company.myId()
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity)
-         }
-      )
+            "company_id" to entity.company.id
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity)
+      }
 
       entity.arguments
          .map { scheduleArgumentRepository.insert(inserted, it) }
@@ -286,11 +299,10 @@ class ScheduleRepository @Inject constructor(
             "command_id" to entity.command.id,
             "enabled" to entity.enabled,
             "type_id" to entity.type.id
-         ),
-         RowMapper { rs, _ ->
-            mapRow(rs, entity)
-         }
-      )
+         )
+      ) { rs, _ ->
+         mapRow(rs, entity)
+      }
 
       entity.arguments.asSequence()
          .map { scheduleArgumentRepository.upsert(updated, it) }
@@ -304,9 +316,15 @@ class ScheduleRepository @Inject constructor(
    private fun mapRow(rs: ResultSet, entity: ScheduleEntity): ScheduleEntity =
       mapRow(rs, entity.company, "", { entity.type }, { entity.command })
 
-   private fun mapRow(rs: ResultSet, company: Company, scheduleColumnPrefix: String = "sched_", scheduleTypeProvider: (rs: ResultSet) -> ScheduleType, scheduleCommandProvider: (rs: ResultSet) -> ScheduleCommandType): ScheduleEntity =
+   private fun mapRow(
+      rs: ResultSet,
+      company: CompanyEntity,
+      scheduleColumnPrefix: String = "sched_",
+      scheduleTypeProvider: (rs: ResultSet) -> ScheduleType,
+      scheduleCommandProvider: (rs: ResultSet) -> ScheduleCommandType
+   ): ScheduleEntity =
       ScheduleEntity(
-         id = rs.getLong("${scheduleColumnPrefix}id"),
+         id = rs.getUuid("${scheduleColumnPrefix}id"),
          title = rs.getString("${scheduleColumnPrefix}title"),
          description = rs.getString("${scheduleColumnPrefix}description"),
          schedule = rs.getString("${scheduleColumnPrefix}schedule"),

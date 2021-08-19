@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.verfication
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -28,10 +28,10 @@ data class VerificationAuto(
    val previousLoan: Boolean?,
    val purchaseDate: LocalDate?,
    val related: String?,
-   val verification: Identifiable
-) : Identifiable {
+   val verification: LegacyIdentifiable
+) : LegacyIdentifiable {
 
-   constructor(dto: VerificationAutoValueObject, verification: Identifiable) :
+   constructor(dto: VerificationAutoValueObject, verification: LegacyIdentifiable) :
       this(
          id = dto.id,
          address = dto.address,

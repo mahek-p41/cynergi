@@ -1,29 +1,33 @@
 package com.cynergisuite.middleware.verfication.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.verfication.VerificationEmployment
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.mapper.RowMapper
+import org.jdbi.v3.core.statement.StatementContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
 class VerificationEmploymentRepository(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VerificationAutoRepository::class.java)
    private val simpleVerificationEmploymentRowMapper: RowMapper<VerificationEmployment> = VerificationEmploymentRowMapper()
    private val prefixedVerificationEmploymentRowMapper: RowMapper<VerificationEmployment> = VerificationEmploymentRowMapper(columnPrefix = "ve_")
 
+   @ReadOnly
    fun findOne(id: Long): VerificationEmployment? {
       val found = jdbc.findFirstOrNull("SELECT * FROM verification_employment WHERE id = :id", mapOf("id" to id), simpleVerificationEmploymentRowMapper)
 
@@ -32,8 +36,9 @@ class VerificationEmploymentRepository(
       return found
    }
 
+   @ReadOnly
    fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_employment WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_employment WHERE id = :id)", mapOf("id" to id), Boolean::class.java)
 
       logger.trace("Checking if VerificationEmployment: {} exists resulted in {}", id, exists)
 
@@ -104,14 +109,14 @@ class VerificationEmploymentRepository(
       }
    }
 
-   fun mapRowPrefixedRow(rs: ResultSet, row: Int = 0): VerificationEmployment? =
-      rs.getString("ve_id")?.let { prefixedVerificationEmploymentRowMapper.mapRow(rs, row) }
+   fun mapRowPrefixedRow(rs: ResultSet, ctx: StatementContext): VerificationEmployment? =
+      rs.getString("ve_id")?.let { prefixedVerificationEmploymentRowMapper.map(rs, ctx) }
 }
 
 private class VerificationEmploymentRowMapper(
    private val columnPrefix: String = EMPTY
 ) : RowMapper<VerificationEmployment> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): VerificationEmployment =
+   override fun map(rs: ResultSet, ctx: StatementContext): VerificationEmployment =
       VerificationEmployment(
          id = rs.getLong("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
@@ -122,6 +127,6 @@ private class VerificationEmploymentRowMapper(
          name = rs.getString("${columnPrefix}name"),
          reliable = rs.getBoolean("${columnPrefix}reliable"),
          title = rs.getString("${columnPrefix}title"),
-         verification = SimpleIdentifiableEntity(id = rs.getLong("${columnPrefix}verification_id"))
+         verification = SimpleLegacyIdentifiableEntity(id = rs.getLong("${columnPrefix}verification_id"))
       )
 }

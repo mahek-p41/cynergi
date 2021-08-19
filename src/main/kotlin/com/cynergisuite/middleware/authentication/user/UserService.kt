@@ -16,7 +16,7 @@ class UserService(
 ) {
 
    @Throws(NotFoundException::class, AccessException::class)
-   fun findUser(authentication: Authentication): User =
+   fun fetchUser(authentication: Authentication): User =
       authenticatedUserJwtClaimSetGenerator.reversePopulateWithUserDetails(authentication)
 
    @Throws(NotFoundException::class, AccessException::class)
@@ -24,7 +24,11 @@ class UserService(
       authenticationRepository.findPermissions(department)
 
    fun fetchUserByAuthentication(number: Int, passCode: String, dataset: String, storeNumber: Int? = null): Maybe<AuthenticatedEmployee> =
-      authenticationRepository.findUserByAuthentication(number, passCode, dataset, storeNumber)
+      if (storeNumber != null) {
+         authenticationRepository.findUserByAuthenticationWithStore(number, passCode, dataset, storeNumber)
+      } else {
+         authenticationRepository.findUserByAuthentication(number, passCode, dataset)
+      }
 
    fun fetchAllPermissions(): Set<String> =
       authenticationRepository.findAllPermissions()

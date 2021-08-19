@@ -1,11 +1,10 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
-import com.cynergisuite.middleware.audit.permission.AuditPermissionFactoryService
-import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeFactory
+import com.cynergisuite.middleware.audit.permission.AuditPermissionTestDataLoaderService
+import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeTestDataLoader
 import com.cynergisuite.middleware.authentication.LoginCredentials
-import com.cynergisuite.middleware.department.DepartmentFactoryService
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
+import com.cynergisuite.middleware.employee.EmployeeTestDataLoaderService
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
@@ -21,9 +20,8 @@ import static io.micronaut.http.HttpRequest.POST
 @MicronautTest(transactional = false)
 class AuthenticatedControllerSpecification extends ServiceSpecificationBase {
    @Inject @Client("/api") RxHttpClient httpClient
-   @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
-   @Inject AuditPermissionFactoryService auditPermissionFactoryService
+   @Inject AuditPermissionTestDataLoaderService auditPermissionFactoryService
+   @Inject EmployeeTestDataLoaderService userSetupEmployeeFactoryService
 
    void "Get user permissions with dataset 1" () {
       given: 'Setup employee with audit-permission-manager permission'
@@ -31,11 +29,11 @@ class AuthenticatedControllerSpecification extends ServiceSpecificationBase {
       def store = storeFactoryService.store(3, company)
       def department = departmentFactoryService.random(store.myCompany())
       def employee = employeeFactoryService.single(store, department)
-      def permissionType = AuditPermissionTypeFactory.findByValue("audit-permission-manager")
+      def permissionType = AuditPermissionTypeTestDataLoader.findByValue("audit-permission-manager")
       auditPermissionFactoryService.single(department, permissionType, company)
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.number, employee.company.myDataset())),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.number, employee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -78,7 +76,7 @@ class AuthenticatedControllerSpecification extends ServiceSpecificationBase {
       given: 'Setup audit-permission-manager permission assigned to other department'
       def tstds1 = companyFactoryService.forDatasetCode('tstds1')
       def tstds2 = companyFactoryService.forDatasetCode('tstds2')
-      def permissionType = AuditPermissionTypeFactory.findByValue("audit-permission-manager")
+      def permissionType = AuditPermissionTypeTestDataLoader.findByValue("audit-permission-manager")
       def otherDepartment = departmentFactoryService.department("AM", tstds2)
       auditPermissionFactoryService.single(otherDepartment, permissionType, tstds2)
 
@@ -89,7 +87,7 @@ class AuthenticatedControllerSpecification extends ServiceSpecificationBase {
 
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.number, employee.company.myDataset())),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.number, employee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()

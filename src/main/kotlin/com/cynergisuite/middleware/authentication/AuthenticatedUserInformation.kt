@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.authentication
 
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.company.CompanyValueObject
+import com.cynergisuite.middleware.company.CompanyDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -17,25 +17,25 @@ data class AuthenticatedUserInformation(
    val storeNumber: Int? = null,
 
    @field:Schema(name = "company", title = "Company currently connected to", description = "Company that data is being loaded from", required = true)
-   val company: CompanyValueObject? = null,
+   val company: CompanyDTO? = null,
 
    @field:Schema(name = "alternativeStoreIndicator", title = "Alternate Store Indicator", description = "Indicates which other stores an employee may access", required = true, allowableValues = ["A N R D"])
    val alternativeStoreIndicator: String? = null,
 
    @field:Schema(name = "alternativeArea", title = "Alternative area to use for user access", description = "Number of the division or region an employee may access depending on alternativeStoreIndicator")
-   val alternativeArea: Int? = null,
+   val alternativeArea: Long? = null,
 
    @field:Schema(name = "permissions", title = "Permissions that user has access to", description = "Listing of permissions of an employee")
-   val permissions: Set<String>? = null
+   val permissions: Set<String>? = null,
 
 ) {
-   constructor(user: User, permissions: Set<String>, companyOverride: CompanyValueObject) :
+   constructor(user: User, permissions: Set<String>, companyOverride: CompanyDTO) :
       this(
          employeeNumber = user.myEmployeeNumber().toString(),
          storeNumber = user.myLocation().myNumber(),
          company = companyOverride,
          alternativeStoreIndicator = user.myAlternativeStoreIndicator(),
          alternativeArea = user.myAlternativeArea(),
-         permissions = permissions
+         permissions = permissions,
       )
 }

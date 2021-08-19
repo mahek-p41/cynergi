@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.inventory
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.inventory.location.InventoryLocationTypeValueObject
@@ -14,7 +14,8 @@ class InventoryService(
    private val inventoryRepository: InventoryRepository,
    private val localizationService: LocalizationService
 ) {
-   fun fetchAll(pageRequest: InventoryPageRequest, company: Company, locale: Locale): Page<InventoryDTO> {
+
+   fun fetchAll(pageRequest: InventoryPageRequest, company: CompanyEntity, locale: Locale): Page<InventoryDTO> {
       val inventory = inventoryRepository.findAll(pageRequest, company)
 
       return inventory.toPage { item ->
@@ -25,7 +26,7 @@ class InventoryService(
       }
    }
 
-   fun fetchByLookupKey(lookupKey: String, company: Company, locale: Locale): InventoryDTO? {
+   fun fetchByLookupKey(lookupKey: String, company: CompanyEntity, locale: Locale): InventoryDTO? {
       return inventoryRepository.findByLookupKey(lookupKey, company)?.let { map(it, locale) }
    }
 

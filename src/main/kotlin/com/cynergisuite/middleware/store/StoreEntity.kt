@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.store
 
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.region.RegionEntity
 
 /**
@@ -11,11 +11,13 @@ data class StoreEntity(
    val number: Int,
    val name: String,
    val region: RegionEntity? = null,
-   val company: Company
+   val company: CompanyEntity,
 ) : Store {
    override fun myId(): Long = id
    override fun myNumber(): Int = number
    override fun myName(): String = name
    override fun myRegion(): RegionEntity? = region
-   override fun myCompany(): Company = region?.division?.company ?: company
+   override fun myCompany(): CompanyEntity = region?.division?.company ?: company
+
+   fun copyWithNewCompany(company: CompanyEntity) = copy(company = company)
 }

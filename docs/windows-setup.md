@@ -1,15 +1,25 @@
 # Basic Windows setup
 1. Install [Chocolatey](https://chocolatey.org/) using their instructions
 2. Install Java from an admin prompt using `choco install adoptopenjdk8openj9`
-3. Install [Docker for Windows](https://www.docker.com/products/docker-desktop)
+3. Install [Docker for Windows](https://www.docker.com/products/docker-desktop) you may need to
+    1. Enable `Expose daemon on tcp://localhost:2375 without TLS`
+    2. Add path `C:\ \` into `Resources` -> `File sharing`
 4. Install [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/about) by following their
    provided instructions.  Just use Ubuntu as it is the most supported by Microsoft at the moment.
+   Run `sudo vim /etc/wsl.conf` & add:
+   ```
+   [automount]
+   root = /
+   options = "metadata,case=off
+   ```
+
 5. Install [Sdkman](https://sdkman.io/) inside of your WSL environment once you have finished step 3.
 6. Install [direnv](https://direnv.net/) inside of your WSL environment once you have finished step 3.
    1. `sudo apt install direnv`
    2. Make sure to add direnv to your shell's profile.
       1. If you are using bash put `eval "$(direnv hook bash)"` at the end of __$HOME/.profile__ file
-      2. If you are using zsh put `eval "$(direnv hook zsh)"` at the end of your __$HOMe/.zshrc__ file
+      2. If you are using zsh put `eval "$(direnv hook zsh)"` at the end of your __$HOMe/.zshrc__ file. The PATH variable may contain some redundant paths like `/mnt/c/WINDOWS...` that cause issues & can be removed.
    3. direnv is used in the cynergi-middleware project to make a collection of tools available to your terminal.
 7. Install Java using Sdkman inside your WSL environment
    1. `sdk install java 8.0.242.j9-adpt`
+   2. If `cyn db migrate test` doesn't work, another version of java 8 should be used.

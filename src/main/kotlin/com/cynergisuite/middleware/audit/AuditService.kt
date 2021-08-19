@@ -16,7 +16,7 @@ import com.cynergisuite.middleware.audit.status.COMPLETED
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.NotFoundException
@@ -24,8 +24,8 @@ import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
 import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreDTO
 import com.cynergisuite.middleware.store.StoreEntity
-import com.cynergisuite.middleware.store.StoreValueObject
 import com.lowagie.text.Document
 import com.lowagie.text.Element
 import com.lowagie.text.Element.ALIGN_CENTER
@@ -42,7 +42,7 @@ import com.lowagie.text.Rectangle
 import com.lowagie.text.pdf.PdfPTable
 import com.lowagie.text.pdf.PdfPageEventHelper
 import com.lowagie.text.pdf.PdfWriter
-import io.micronaut.validation.Validated
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -54,9 +54,10 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.Valid
+import javax.transaction.Transactional
 
 @Singleton
 class AuditService @Inject constructor(
@@ -72,52 +73,54 @@ class AuditService @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditService::class.java)
 
-   fun fetchById(id: Long, company: Company, locale: Locale): AuditValueObject? =
+   fun fetchById(id: UUID, company: CompanyEntity, locale: Locale): AuditValueObject? =
       auditRepository.findOne(id, company)?.let { AuditValueObject(it, locale, localizationService) }
 
-   @Validated
-   fun fetchAll(@Valid pageRequest: AuditPageRequest, user: User, locale: Locale): Page<AuditValueObject> {
+   fun fetchAll(pageRequest: AuditPageRequest, user: User, locale: Locale): Page<AuditValueObject> {
       val validaPageRequest = auditValidator.validationFetchAll(pageRequest, user.myCompany())
       val found: RepositoryPage<AuditEntity, AuditPageRequest> = auditRepository.findAll(validaPageRequest, user)
+
+      logger.trace("FetchAll {} resulted in {}", pageRequest, found)
 
       return found.toPage {
          AuditValueObject(it, locale, localizationService)
       }
    }
 
-   fun fetchAuditExceptionReport(id: Long, company: Company, os: OutputStream) {
+   fun fetchAuditExceptionReport(id: UUID, company: CompanyEntity, os: OutputStream) {
       val audit = auditRepository.findOne(id, company) ?: throw NotFoundException("Unable to find Audit $id")
 
       generateAuditExceptionReport(os, audit, true)
    }
 
-   fun fetchUnscannedIdleInventoryReport(id: Long, company: Company, os: OutputStream) {
+   fun fetchUnscannedIdleInventoryReport(id: UUID, company: CompanyEntity, os: OutputStream) {
       val audit = auditRepository.findOne(id, company) ?: throw NotFoundException("Unable to find Audit $id")
 
       generateUnscannedIdleInventoryReport(os, audit, true)
    }
 
-   fun exists(id: Long): Boolean =
+   fun exists(id: UUID): Boolean =
       auditRepository.exists(id = id)
 
-   fun findAuditStatusCounts(@Valid pageRequest: AuditPageRequest, user: User, locale: Locale): List<AuditStatusCountDataTransferObject> {
+   @ReadOnly
+   fun findAuditStatusCounts(pageRequest: AuditPageRequest, user: User, locale: Locale): List<AuditStatusCountDTO> {
       val validPageRequest = auditValidator.validateFindAuditStatusCounts(pageRequest, user.myCompany())
 
       return auditRepository
          .findAuditStatusCounts(validPageRequest, user)
          .map { auditStatusCount ->
-            AuditStatusCountDataTransferObject(auditStatusCount, locale, localizationService)
+            AuditStatusCountDTO(auditStatusCount, locale, localizationService)
          }
    }
 
-   @Validated
-   fun create(@Valid vo: AuditCreateValueObject, user: User, locale: Locale): AuditValueObject {
+   fun create(vo: AuditCreateValueObject, user: User, locale: Locale): AuditValueObject {
       val validAudit = auditValidator.validateCreate(vo, user)
       val audit = auditRepository.insert(validAudit)
 
       return AuditValueObject(audit, locale, localizationService)
    }
 
+   @Transactional
    fun findOrCreate(store: StoreEntity, user: User, locale: Locale): AuditValueObject {
       val createdOrInProgressAudit = auditRepository.findOneCreatedOrInProgress(store)
 
@@ -126,17 +129,17 @@ class AuditService @Inject constructor(
          AuditValueObject(createdOrInProgressAudit, locale, localizationService)
       } else {
          logger.info("Create a new audit for store {}", store)
-         create(AuditCreateValueObject(StoreValueObject(store)), user, locale)
+         create(AuditCreateValueObject(StoreDTO(store)), user, locale)
       }
    }
 
+   @ReadOnly
    fun findOneCreatedOrInProgress(store: Store, user: User, locale: Locale): AuditValueObject? {
       return auditRepository.findOneCreatedOrInProgress(store)?.let { AuditValueObject(it, locale, localizationService) }
    }
 
-   @Validated
-   fun update(@Valid audit: AuditUpdateValueObject, user: User, locale: Locale): AuditValueObject {
-      val (validAuditAction, existingAudit) = auditValidator.validateUpdate(audit, user, locale)
+   fun update(vo: AuditUpdateDTO, user: User, locale: Locale): AuditValueObject {
+      val (validAuditAction, existingAudit) = auditValidator.validateUpdate(vo, user, locale)
 
       existingAudit.actions.add(validAuditAction)
 
@@ -150,8 +153,7 @@ class AuditService @Inject constructor(
       return AuditValueObject(updated, locale, localizationService)
    }
 
-   @Validated
-   fun approve(@Valid audit: SimpleIdentifiableDTO, user: User, locale: Locale): AuditValueObject {
+   fun approve(audit: SimpleIdentifiableDTO, user: User, locale: Locale): AuditValueObject {
       val existing = auditValidator.validateApproved(audit, user.myCompany(), user, locale)
       val actions = existing.actions.toMutableSet()
       val changedBy = employeeRepository.findOne(user) ?: throw NotFoundException(user)
@@ -195,11 +197,10 @@ class AuditService @Inject constructor(
       }
    }
 
-   @Validated
-   fun approveAllExceptions(@Valid audit: SimpleIdentifiableDTO, user: User): AuditApproveAllExceptionsDataTransferObject {
-      val toApprove = auditValidator.validateApproveAll(audit, user.myCompany())
+   fun approveAllExceptions(dto: SimpleIdentifiableDTO, user: User): AuditApproveAllExceptionsDTO {
+      val toApprove = auditValidator.validateApproveAll(dto, user.myCompany())
 
-      return AuditApproveAllExceptionsDataTransferObject(
+      return AuditApproveAllExceptionsDTO(
          auditExceptionRepository.approveAllExceptions(toApprove, user)
       )
    }
@@ -478,7 +479,7 @@ class AuditService @Inject constructor(
       table.makeCell("Condition", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Status", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
 
-      var unscannedIdleInventory = inventoryRepository.findUnscannedIdleInventory(audit)
+      val unscannedIdleInventory = inventoryRepository.findUnscannedIdleInventory(audit)
 
       unscannedIdleInventory.forEachIndexed { index, it ->
          table.defaultCell.backgroundColor = if (index % 2 == 0) evenColor else oddColor

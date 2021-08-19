@@ -7,9 +7,10 @@ import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.inventory.InventoryEntity
 import java.time.OffsetDateTime
+import java.util.UUID
 
 data class AuditExceptionEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),
    val timeUpdated: OffsetDateTime = timeCreated,
    val scanArea: AuditScanAreaEntity?,
@@ -19,7 +20,7 @@ data class AuditExceptionEntity(
    val serialNumber: String?,
    val inventoryBrand: String?,
    val inventoryModel: String?,
-   val scannedBy: EmployeeEntity, // FIXME convert to Employee
+   val scannedBy: EmployeeEntity,
    val exceptionCode: String,
    val approved: Boolean = false,
    val approvedBy: EmployeeEntity? = null,
@@ -28,7 +29,7 @@ data class AuditExceptionEntity(
    val audit: Identifiable
 ) : Identifiable {
 
-   constructor(audit: Long, inventory: InventoryEntity, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, exceptionCode: String) :
+   constructor(audit: UUID, inventory: InventoryEntity, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, exceptionCode: String) :
       this(
          scanArea = scanArea,
          barcode = inventory.barcode,
@@ -43,7 +44,7 @@ data class AuditExceptionEntity(
          audit = SimpleIdentifiableEntity(audit)
       )
 
-   constructor(audit: Long, lookupKey: String, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, exceptionCode: String) :
+   constructor(audit: UUID, lookupKey: String, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, exceptionCode: String) :
       this(
          scanArea = scanArea,
          barcode = null,
@@ -58,5 +59,5 @@ data class AuditExceptionEntity(
          audit = SimpleIdentifiableEntity(audit)
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

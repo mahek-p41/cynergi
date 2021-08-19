@@ -1,23 +1,28 @@
 package com.cynergisuite.middleware.company
 
+import io.micronaut.data.annotation.GeneratedValue
+import io.micronaut.data.annotation.Id
+import io.micronaut.data.annotation.MappedEntity
 import org.apache.commons.lang3.builder.CompareToBuilder
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
+import java.util.UUID
 
+@MappedEntity("company")
 data class CompanyEntity(
-   val id: Long? = null,
+
+   @field:Id
+   @field:GeneratedValue
+   val id: UUID? = null,
    val name: String,
    val doingBusinessAs: String? = null,
    val clientCode: String,
    val clientId: Int,
    val datasetCode: String,
-   val federalIdNumber: String? = null
-) : Company {
+   val federalIdNumber: String? = null,
+) : Comparable<CompanyEntity> {
 
-   override fun myId(): Long? = id
-   override fun myClientCode(): String = clientCode
-   override fun myClientId(): Int = clientId
-   override fun myDataset(): String = datasetCode
+   fun copyMeWithNewDatasetCode(datasetCode: String) = copy(datasetCode = datasetCode)
 
    override fun hashCode(): Int =
       HashCodeBuilder()
@@ -45,33 +50,14 @@ data class CompanyEntity(
          false
       }
 
-   override fun compareTo(other: Company): Int {
-      val compareToBuilder = CompareToBuilder()
-         .append(this.id, other.myId())
-         .append(this.clientCode, other.myClientCode())
-         .append(this.clientId, other.myClientId())
-         .append(this.datasetCode, other.myDataset())
-
-      return if (other is CompanyEntity) {
-         compareToBuilder
-            .append(this.name, other.name)
-            .append(this.doingBusinessAs, other.doingBusinessAs)
-            .append(this.federalIdNumber, other.federalIdNumber)
-            .toComparison()
-      } else {
-         compareToBuilder.toComparison()
-      }
-   }
-
-   fun toValueObject(): CompanyValueObject {
-      return CompanyValueObject(
-         id = this.id,
-         name = this.name,
-         doingBusinessAs = this.doingBusinessAs,
-         clientCode = this.clientCode,
-         clientId = this.clientId,
-         datasetCode = this.datasetCode,
-         federalTaxNumber = this.federalIdNumber
-      )
-   }
+   override fun compareTo(other: CompanyEntity): Int =
+      CompareToBuilder()
+         .append(this.id, other.id)
+         .append(this.clientCode, other.clientCode)
+         .append(this.clientId, other.clientId)
+         .append(this.datasetCode, other.datasetCode)
+         .append(this.name, other.name)
+         .append(this.doingBusinessAs, other.doingBusinessAs)
+         .append(this.federalIdNumber, other.federalIdNumber)
+         .toComparison()
 }

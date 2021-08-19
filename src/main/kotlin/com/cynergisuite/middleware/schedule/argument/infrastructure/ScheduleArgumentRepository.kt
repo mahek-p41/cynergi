@@ -1,11 +1,12 @@
 package com.cynergisuite.middleware.schedule.argument.infrastructure
 
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -13,7 +14,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class ScheduleArgumentRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
 
    @Transactional
@@ -25,15 +26,14 @@ class ScheduleArgumentRepository @Inject constructor(
          RETURNING
             *
          """.trimIndent(),
-         mapOf("value" to entity.value, "description" to entity.description, "schedule_id" to parent.id),
-         RowMapper { rs, _ ->
-            ScheduleArgumentEntity(
-               id = rs.getLong("id"),
-               value = rs.getString("value"),
-               description = rs.getString("description")
-            )
-         }
-      )
+         mapOf("value" to entity.value, "description" to entity.description, "schedule_id" to parent.id)
+      ) { rs, _ ->
+         ScheduleArgumentEntity(
+            id = rs.getUuid("id"),
+            value = rs.getString("value"),
+            description = rs.getString("description")
+         )
+      }
    }
 
    @Transactional
@@ -51,15 +51,14 @@ class ScheduleArgumentRepository @Inject constructor(
             "id" to entity.id,
             "value" to entity.value,
             "description" to entity.description
-         ),
-         RowMapper { rs, _ ->
-            ScheduleArgumentEntity(
-               id = rs.getLong("id"),
-               value = rs.getString("value"),
-               description = rs.getString("description")
-            )
-         }
-      )
+         )
+      ) { rs, _ ->
+         ScheduleArgumentEntity(
+            id = rs.getUuid("id"),
+            value = rs.getString("value"),
+            description = rs.getString("description")
+         )
+      }
    }
 
    @Transactional
@@ -70,7 +69,7 @@ class ScheduleArgumentRepository @Inject constructor(
          """
          DELETE FROM schedule_arg
          WHERE schedule_id = :schedule_id
-               AND id NOT IN(:ids)
+               AND id NOT IN(<ids>)
          RETURNING
             *
          """.trimIndent(),
@@ -78,10 +77,10 @@ class ScheduleArgumentRepository @Inject constructor(
             "schedule_id" to schedule.id,
             "ids" to arguments.asSequence().map { it.id }.toList()
          )
-      ) { rs ->
+      ) { rs, _ ->
          result.add(
             ScheduleArgumentEntity(
-               id = rs.getLong("id"),
+               id = rs.getUuid("id"),
                value = rs.getString("value"),
                description = rs.getString("description")
             )
@@ -103,7 +102,7 @@ class ScheduleArgumentRepository @Inject constructor(
    fun mapRowOrNull(rs: ResultSet, columnPrefix: String = "sa_"): ScheduleArgumentEntity? {
       return if (rs.getString("${columnPrefix}id") != null) {
          ScheduleArgumentEntity(
-            id = rs.getLong("${columnPrefix}id"),
+            id = rs.getUuid("${columnPrefix}id"),
             value = rs.getString("${columnPrefix}value"),
             description = rs.getString("${columnPrefix}description")
          )

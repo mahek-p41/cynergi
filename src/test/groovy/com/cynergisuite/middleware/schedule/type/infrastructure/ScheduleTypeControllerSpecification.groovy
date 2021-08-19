@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.schedule.type.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.schedule.type.ScheduleTypeFactory
+import com.cynergisuite.middleware.schedule.type.ScheduleTypeTestDataLoader
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeValueObject
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -26,6 +26,6 @@ class ScheduleTypeControllerSpecification extends ControllerSpecificationBase {
       result.last == true
       result.elements != null
       result.elements.size() == 1
-      result.elements[0].with { new ScheduleTypeValueObject(it) } == new ScheduleTypeValueObject(ScheduleTypeFactory.weekly(), ScheduleTypeFactory.weekly().description)
+      result.elements[0].with { new ScheduleTypeValueObject(it) } == new ScheduleTypeValueObject(ScheduleTypeTestDataLoader.weekly(), ScheduleTypeTestDataLoader.weekly().description)
    }
 }

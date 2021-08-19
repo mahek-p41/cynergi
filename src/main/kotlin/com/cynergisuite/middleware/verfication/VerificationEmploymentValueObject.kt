@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.verfication
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -9,7 +9,7 @@ import java.time.LocalDate
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "VerificationEmployment", title = "Employement Verification for a customer", description = "Employment verification for a single customer associated with a Verification")
+@Schema(name = "VerificationEmployment", title = "Employment Verification for a customer", description = "Employment verification for a single customer associated with a Verification")
 data class VerificationEmploymentValueObject(
 
    var id: Long? = null,
@@ -35,7 +35,7 @@ data class VerificationEmploymentValueObject(
    @field:JsonProperty("emp_title")
    var title: String? = null
 
-) : Identifiable {
+) : LegacyIdentifiable {
 
    constructor(entity: VerificationEmployment) :
       this(

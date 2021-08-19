@@ -4,20 +4,17 @@
 \c fastinfo_production
 SET args.datasets TO :'datasets';
 
-DO $$
-DECLARE
-   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
-   r RECORD;
-   sqlToExec VARCHAR;
-   unionAll VARCHAR;
+CREATE OR REPLACE FUNCTION isnumeric(text) RETURNS BOOLEAN AS $$
+DECLARE x NUMERIC;
 BEGIN
-   sqlToExec := 'CREATE OR REPLACE VIEW company_vw AS';
-   unionAll := '';
-
-   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'company_vw') THEN
-      DROP VIEW company_vw CASCADE;
-   END IF;
-END $$;
+    x = $1::NUMERIC;
+    RETURN TRUE;
+EXCEPTION WHEN others THEN
+    RETURN FALSE;
+END;
+$$
+    STRICT
+    LANGUAGE plpgsql IMMUTABLE;
 
 DO $$
 DECLARE
@@ -215,6 +212,7 @@ END $$;
 \c cynergidb
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS postgres_fdw;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE SCHEMA IF NOT EXISTS fastinfo_prod_import;
 
 DROP SERVER IF EXISTS fastinfo CASCADE;

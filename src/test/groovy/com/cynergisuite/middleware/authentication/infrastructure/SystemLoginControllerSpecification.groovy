@@ -2,8 +2,6 @@ package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.authentication.LoginCredentials
-import com.cynergisuite.middleware.department.DepartmentFactoryService
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
@@ -16,13 +14,12 @@ import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.HEAD
 import static io.micronaut.http.HttpRequest.POST
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.METHOD_NOT_ALLOWED
 import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 
 @MicronautTest(transactional = false)
 class SystemLoginControllerSpecification extends ServiceSpecificationBase {
    @Inject @Client("/api") RxHttpClient httpClient
-   @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
 
    void "login successful with user who doesn't have department" () {
       given:
@@ -33,7 +30,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.myDataset())),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -79,13 +76,13 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
-      final department = departmentFactoryService.random(store.myCompany())
+      final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
 
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.myDataset())),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -137,7 +134,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       httpClient.toBlocking()
          .exchange(
-            POST("/login",new LoginCredentials(validEmployee.number.toString(), validEmployee.passCode, 75, validEmployee.company.myDataset())),
+            POST("/login",new LoginCredentials(validEmployee.number.toString(), validEmployee.passCode, 75, validEmployee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          )
@@ -256,7 +253,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login?extraOne=1&extraTwo=two", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.myDataset())),
+            POST("/login?extraOne=1&extraTwo=two", new LoginCredentials(employee.number.toString(), employee.passCode, employee.store.myNumber(), employee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -308,7 +305,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, null, employee.company.myDataset())),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, null, employee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -330,7 +327,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, store.myNumber(), employee.company.myDataset())),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, store.myNumber(), employee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -398,8 +395,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
       then:
       final e = thrown(HttpClientResponseException)
-      e.response.bodyAsJson().message == 'You are not logged in'
-      e.status == UNAUTHORIZED
+      e.response.bodyAsJson().message == 'Method [GET] not allowed for URI [/api/authenticated/check]. Allowed methods: [HEAD]'
+      e.status == METHOD_NOT_ALLOWED
    }
 
    void "login with user who has a different store than they chose, but also has the alternative store indicator set to A" () {
@@ -412,7 +409,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, otherStore.myNumber(), employee.company.myDataset())),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, otherStore.myNumber(), employee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()

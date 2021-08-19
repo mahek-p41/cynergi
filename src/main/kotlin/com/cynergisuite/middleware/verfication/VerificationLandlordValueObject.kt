@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.verfication
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -53,7 +53,7 @@ data class VerificationLandlordValueObject(
    @field:JsonProperty("land_rent")
    var rent: BigDecimal?
 
-) : Identifiable {
+) : LegacyIdentifiable {
 
    constructor(entity: VerificationLandlord) :
       this(

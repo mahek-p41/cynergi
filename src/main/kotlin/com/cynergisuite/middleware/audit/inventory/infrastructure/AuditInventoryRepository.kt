@@ -1,16 +1,17 @@
 package com.cynergisuite.middleware.audit.inventory.infrastructure
 
+import com.cynergisuite.extensions.update
 import com.cynergisuite.middleware.audit.AuditEntity
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
 class AuditInventoryRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditInventoryRepository::class.java)
 
@@ -35,7 +36,7 @@ class AuditInventoryRepository @Inject constructor(
          mapOf(
             "audit_id" to entity.id,
             "store_number" to entity.store.myNumber(),
-            "company_id" to entity.store.myCompany().myId()
+            "company_id" to entity.store.myCompany().id
          )
       )
 

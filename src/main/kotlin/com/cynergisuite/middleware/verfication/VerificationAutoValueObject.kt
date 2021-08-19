@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.verfication
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -86,7 +86,7 @@ data class VerificationAutoValueObject(
    @field:JsonProperty("auto_related")
    var related: String?
 
-) : Identifiable {
+) : LegacyIdentifiable {
    constructor(entity: VerificationAuto) :
       this(
          id = entity.id,

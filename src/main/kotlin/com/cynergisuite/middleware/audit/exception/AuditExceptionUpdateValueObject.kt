@@ -4,9 +4,9 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.v3.oas.annotations.media.Schema
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(
@@ -16,10 +16,9 @@ import javax.validation.constraints.Positive
 )
 data class AuditExceptionUpdateValueObject(
 
-   @field:Positive
    @field:NotNull
    @field:Schema(name = "id", description = "System generated ID of AuditException that is being updated", example = "1")
-   var id: Long? = null,
+   var id: UUID? = null,
 
    @field:Valid
    @field:Schema(name = "note", description = "Note to be added to the AuditException")
@@ -29,5 +28,5 @@ data class AuditExceptionUpdateValueObject(
    var approved: Boolean? = null
 
 ) : Identifiable {
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }
