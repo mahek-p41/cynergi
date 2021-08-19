@@ -97,7 +97,7 @@ class PurchaseOrderDetailRepository @Inject constructor(
             po.po_vendor_account_number                               AS poDetail_po_vendor_account_number,
             po.po_vendor_pay_to_id                                    AS poDetail_po_vendor_pay_to_id,
             po.po_vendor_freight_on_board_type_id                     AS poDetail_po_vendor_freight_on_board_type_id,
-            po.po_vendor_vendor_payment_term_id                             AS poDetail_po_vendor_vendor_payment_term_id,
+            po.po_vendor_vendor_payment_term_id                       AS poDetail_po_vendor_vendor_payment_term_id,
             po.po_vendor_normal_days                                  AS poDetail_po_vendor_normal_days,
             po.po_vendor_return_policy                                AS poDetail_po_vendor_return_policy,
             po.po_vendor_ship_via_id                                  AS poDetail_po_vendor_ship_via_id,
