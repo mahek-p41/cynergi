@@ -26,6 +26,7 @@ class AccountPayableRecurringInvoiceDataLoader {
       final numbers = faker.number()
       final date = faker.date()
       final lastTransferToCreateInvoiceDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+      final startDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
 
       return IntStream.range(0, number).mapToObj {
          new AccountPayableRecurringInvoiceEntity(
@@ -51,7 +52,9 @@ class AccountPayableRecurringInvoiceDataLoader {
             lastTransferToCreateInvoiceDate.plusDays(random.nextInt(10).toLong()),
             lastTransferToCreateInvoiceDate.plusDays(random.nextInt(10, 30).toLong()),
             lastTransferToCreateInvoiceDate.plusDays(random.nextInt(30, 60).toLong()),
-            lastTransferToCreateInvoiceDate.plusDays(random.nextInt(60, 100).toLong())
+            lastTransferToCreateInvoiceDate.plusDays(random.nextInt(60, 100).toLong()),
+            startDate,
+            startDate.plusDays(random.nextInt(10, 30).toLong())
          )
       }
    }
@@ -64,6 +67,7 @@ class AccountPayableRecurringInvoiceDataLoader {
       final numbers = faker.number()
       final date = faker.date()
       final lastTransferToCreateInvoiceDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+      final startDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
 
       return IntStream.range(0, number).mapToObj {
          new AccountPayableRecurringInvoiceDTO(
@@ -89,7 +93,9 @@ class AccountPayableRecurringInvoiceDataLoader {
             lastTransferToCreateInvoiceDate.plusDays(random.nextInt(10).toLong()),
             lastTransferToCreateInvoiceDate.plusDays(random.nextInt(10, 30).toLong()),
             lastTransferToCreateInvoiceDate.plusDays(random.nextInt(30, 60).toLong()),
-            lastTransferToCreateInvoiceDate.plusDays(random.nextInt(60, 100).toLong())
+            lastTransferToCreateInvoiceDate.plusDays(random.nextInt(60, 100).toLong()),
+            startDate,
+            startDate.plusDays(random.nextInt(10, 30).toLong())
          )
       }
    }

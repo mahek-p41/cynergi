@@ -31,7 +31,9 @@ data class AccountPayableRecurringInvoiceEntity(
    val lastCreatedInPeriod: LocalDate? = null,
    val nextCreationDate: LocalDate? = null,
    val nextInvoiceDate: LocalDate? = null,
-   val nextExpenseDate: LocalDate? = null
+   val nextExpenseDate: LocalDate? = null,
+   val startDate: LocalDate,
+   val endDate: LocalDate
 ) : Identifiable {
 
    constructor(
@@ -65,7 +67,9 @@ data class AccountPayableRecurringInvoiceEntity(
          lastCreatedInPeriod = dto.lastCreatedInPeriod,
          nextCreationDate = dto.nextCreationDate,
          nextInvoiceDate = dto.nextInvoiceDate,
-         nextExpenseDate = dto.nextExpenseDate
+         nextExpenseDate = dto.nextExpenseDate,
+         startDate = dto.startDate!!,
+         endDate = dto.endDate!!
       )
 
    override fun myId(): UUID? = id

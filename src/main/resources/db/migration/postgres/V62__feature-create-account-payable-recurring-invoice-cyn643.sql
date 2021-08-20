@@ -50,8 +50,10 @@ CREATE TABLE account_payable_recurring_invoice
     next_creation_date                   DATE,                                                                                  -- This will be the next creation date based on the schedule date and the expense_month_creation_indicator_id display only
     next_invoice_date                    DATE,                                                                                  -- Display Only this will be calculated by the schedule date and the value in
     -- expense_month_creation_indicator_id and the invoice_days.
-    next_expense_date                    DATE                                                                                   -- Display Only This will be the last expense date calculated by the taking the schedule run date and then looking at the
+    next_expense_date                    DATE,                                                                                   -- Display Only This will be the last expense date calculated by the taking the schedule run date and then looking at the
     -- expense_month_creation_indicator_id and adding a month if next month and then selecting the specific day from the value in expense_day field
+    start_date                           DATE                                                                         NOT NULL,
+    end_date                             DATE                                                                         NOT NULL
 );
 CREATE TRIGGER update_account_payable_recurring_invoice_trg
     BEFORE UPDATE
