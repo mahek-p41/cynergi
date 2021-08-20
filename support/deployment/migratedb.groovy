@@ -20,10 +20,13 @@ import org.apache.commons.io.IOUtils
 import org.apache.commons.io.FilenameUtils
 
 def migrate(Path dir, String dbUrl, String username, String password) {
+   final resetDbOnFailure = (InetAddress.getLocalHost().getHostName() == "cst143")
+
    Flyway
       .configure()
       .locations("filesystem:$dir")
-      .cleanDisabled(true)
+      .cleanDisabled(!resetDbOnFailure)
+      .cleanOnValidationError(resetDbOnFailure)
       .table("flyway_schema_history")
       .initSql("SELECT 1")
       .dataSource(dbUrl, username, password)
@@ -33,6 +36,7 @@ def migrate(Path dir, String dbUrl, String username, String password) {
 
 // https://relentlesscoding.com/posts/how-to-use-groovys-clibuilder/
 final cli = new CliBuilder(name: 'migratedb')
+
 
 cli.width = 80
 cli.with {
