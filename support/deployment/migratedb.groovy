@@ -36,10 +36,10 @@ final cli = new CliBuilder(name: 'migratedb')
 
 cli.width = 80
 cli.with {
-   u(longOpt: 'user', required: true, args: 1, 'db username')
-   p(longOpt: 'password', required: true, args: 1, 'db password')
+   u(longOpt: 'user', args: 1, defaultValue: 'cynergiuser', 'db username')
+   p(longOpt: 'password', args: 1, defaultValue: 'cynergiuser2019', 'db password')
    P(longOpt: 'port', args: 1, defaultValue: '5432', 'db port')
-   d(longOpt: 'database', required: true, defaultValue: 'cynergidb', args: 1, 'database to migrate')
+   d(longOpt: 'database', defaultValue: 'cynergidb', args: 1, 'database to migrate')
    H(longOpt: 'host', args: 1, defaultValue: 'localhost', 'Host database is running on')
    m(longOpt: 'migrations', args: 1, defaultValue: '/opt/cyn/v01/cynmid/cynergi-middleware.jar', 'location of migration files')
    h(longOpt: 'help', 'this help message')
