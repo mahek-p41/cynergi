@@ -1,7 +1,7 @@
-package com.cynergisuite.middleware.accounting.routine
+package com.cynergisuite.middleware.accounting.financial.calendar
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -13,14 +13,14 @@ import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 
 @JsonInclude(NON_NULL)
-@Schema(name = "Routine", title = "An entity containing a routine", description = "An entity containing a routine.")
-data class RoutineDTO(
+@Schema(name = "Financial calendar", title = "An entity used to build a financial calendar", description = "An entity used to build a financial calendar.")
+data class FinancialCalendarDTO(
 
    var id: UUID? = null,
 
    @field:Valid
    @field:NotNull
-   @field:Schema(description = "Overall period type the routine is associated with.")
+   @field:Schema(description = "Overall period type in the financial calendar.")
    var overallPeriod: OverallPeriodTypeDTO? = null,
 
    @field:NotNull
@@ -50,7 +50,7 @@ data class RoutineDTO(
    var accountPayableOpen: Boolean? = null
 
 ) : Identifiable {
-   constructor(entity: RoutineEntity) :
+   constructor(entity: FinancialCalendarEntity) :
       this(
          id = entity.id,
          overallPeriod = OverallPeriodTypeDTO(entity.overallPeriod),

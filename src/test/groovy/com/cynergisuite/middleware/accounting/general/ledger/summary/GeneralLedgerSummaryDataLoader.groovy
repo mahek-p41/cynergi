@@ -3,9 +3,9 @@ package com.cynergisuite.middleware.accounting.general.ledger.summary
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository
-import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeDTO
-import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeDataLoader
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
 import com.github.javafaker.Faker

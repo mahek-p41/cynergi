@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.summary
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.account.AccountEntity
-import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodType
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodType
 import com.cynergisuite.middleware.store.Store
 import java.math.BigDecimal
 import java.util.UUID

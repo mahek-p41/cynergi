@@ -1,6 +1,6 @@
-package com.cynergisuite.middleware.accounting.routine.type
+package com.cynergisuite.middleware.accounting.financial.calendar.type
 
-import com.cynergisuite.middleware.accounting.routine.type.infrastructure.OverallPeriodTypeRepository
+import com.cynergisuite.middleware.accounting.financial.calendar.type.infrastructure.OverallPeriodTypeRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 

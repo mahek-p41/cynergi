@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.accounting.routine.type
+package com.cynergisuite.middleware.accounting.financial.calendar.type
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL

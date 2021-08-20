@@ -1,8 +1,8 @@
-package com.cynergisuite.middleware.accounting.routine.type.infrastructure
+package com.cynergisuite.middleware.accounting.financial.calendar.type.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeDTO
-import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodTypeDataLoaderService
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
@@ -18,7 +18,7 @@ class OverallPeriodTypeControllerSpecification extends ControllerSpecificationBa
       def predefinedOverallPeriodType = dataLoaderService.predefined().collect { new OverallPeriodTypeDTO(it) }
 
       when:
-      def response = get("/accounting/routine/type/overall-period")
+      def response = get("/accounting/financial-calendar/type/overall-period")
 
       then:
       notThrown(HttpClientResponseException)

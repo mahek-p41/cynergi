@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.accounting.routine.infrastructure
+package com.cynergisuite.middleware.accounting.financial.calendar.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
@@ -10,10 +10,10 @@ import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.accounting.routine.RoutineDateRangeDTO
-import com.cynergisuite.middleware.accounting.routine.RoutineEntity
-import com.cynergisuite.middleware.accounting.routine.type.OverallPeriodType
-import com.cynergisuite.middleware.accounting.routine.type.infrastructure.OverallPeriodTypeRepository
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarEntity
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodType
+import com.cynergisuite.middleware.accounting.financial.calendar.type.infrastructure.OverallPeriodTypeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -27,11 +27,11 @@ import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
-class RoutineRepository @Inject constructor(
+class FinancialCalendarRepository @Inject constructor(
    private val jdbc: Jdbi,
    private val overallPeriodTypeRepository: OverallPeriodTypeRepository
 ) {
-   private val logger: Logger = LoggerFactory.getLogger(RoutineRepository::class.java)
+   private val logger: Logger = LoggerFactory.getLogger(FinancialCalendarRepository::class.java)
 
    fun selectBaseQuery(): String {
       return """
@@ -42,7 +42,6 @@ class RoutineRepository @Inject constructor(
             r.period                               AS r_period,
             r.period_from                          AS r_period_from,
             r.period_to                            AS r_period_to,
-            r.fiscal_year                          AS r_fiscal_year,
             r.fiscal_year                          AS r_fiscal_year,
             r.general_ledger_open                  AS r_general_ledger_open,
             r.account_payable_open                 AS r_account_payable_open,
@@ -58,7 +57,7 @@ class RoutineRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findOne(id: UUID, company: CompanyEntity): RoutineEntity? {
+   fun findOne(id: UUID, company: CompanyEntity): FinancialCalendarEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()} WHERE r.id = :id AND r.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
@@ -71,13 +70,13 @@ class RoutineRepository @Inject constructor(
          )
       }
 
-      logger.trace("Searching for Routine: {} resulted in {}", company, found)
+      logger.trace("Searching for Financial Calendar: {} resulted in {}", company, found)
 
       return found
    }
 
    @ReadOnly
-   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<RoutineEntity, PageRequest> {
+   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<FinancialCalendarEntity, PageRequest> {
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
@@ -117,7 +116,7 @@ class RoutineRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(entity: RoutineEntity, company: CompanyEntity): RoutineEntity {
+   fun insert(entity: FinancialCalendarEntity, company: CompanyEntity): FinancialCalendarEntity {
       logger.debug("Inserting financial_calendar {}", company)
 
       return jdbc.insertReturning(
@@ -161,7 +160,7 @@ class RoutineRepository @Inject constructor(
    }
 
    @Transactional
-   fun update(entity: RoutineEntity, company: CompanyEntity): RoutineEntity {
+   fun update(entity: FinancialCalendarEntity, company: CompanyEntity): FinancialCalendarEntity {
       logger.debug("Updating financial_calendar {}", entity)
 
       return jdbc.updateReturning(
@@ -197,7 +196,7 @@ class RoutineRepository @Inject constructor(
    }
 
    @Transactional
-   fun openGLAccountsForPeriods(dateRangeDTO: RoutineDateRangeDTO, company: CompanyEntity) {
+   fun openGLAccountsForPeriods(dateRangeDTO: FinancialCalendarDateRangeDTO, company: CompanyEntity) {
       logger.debug("Set GLAccounts to false")
 
       val affectedRowCount = jdbc.update(
@@ -246,7 +245,7 @@ class RoutineRepository @Inject constructor(
    }
 
    @Transactional
-   fun openAPAccountsForPeriods(dateRangeDTO: RoutineDateRangeDTO, company: CompanyEntity) {
+   fun openAPAccountsForPeriods(dateRangeDTO: FinancialCalendarDateRangeDTO, company: CompanyEntity) {
       logger.debug("Set APAccounts to false")
 
       val affectedRowCount = jdbc.update(
@@ -295,7 +294,7 @@ class RoutineRepository @Inject constructor(
    }
 
    @Transactional
-   fun insertFinancialCalendar(entity: RoutineEntity, company: CompanyEntity): RoutineEntity {
+   fun insertFinancialCalendar(entity: FinancialCalendarEntity, company: CompanyEntity): FinancialCalendarEntity {
       logger.debug("Creating entire financial_calendar {}", company)
 
       return jdbc.insertReturning(
@@ -341,8 +340,8 @@ class RoutineRepository @Inject constructor(
    private fun mapRow(
       rs: ResultSet,
       columnPrefix: String = EMPTY
-   ): RoutineEntity {
-      return RoutineEntity(
+   ): FinancialCalendarEntity {
+      return FinancialCalendarEntity(
          id = rs.getUuid("${columnPrefix}id"),
          overallPeriod = overallPeriodTypeRepository.mapRow(rs, "${columnPrefix}overallPeriod_"),
          period = rs.getInt("${columnPrefix}period"),
@@ -358,8 +357,8 @@ class RoutineRepository @Inject constructor(
       rs: ResultSet,
       overallPeriodType: OverallPeriodType,
       columnPrefix: String = EMPTY
-   ): RoutineEntity {
-      return RoutineEntity(
+   ): FinancialCalendarEntity {
+      return FinancialCalendarEntity(
          id = rs.getUuid("${columnPrefix}id"),
          overallPeriod = overallPeriodType,
          period = rs.getInt("${columnPrefix}period"),
