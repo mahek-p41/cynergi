@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- borrowed from this Gist https://gist.github.com/devodo/8b39748d65e8185fbd89
 CREATE OR REPLACE FUNCTION max (uuid, uuid)
     RETURNS uuid AS
@@ -16,6 +18,19 @@ CREATE AGGREGATE max (uuid)
     sfunc = max,
     stype = uuid
 );
+
+-- create wrapper function for hashing passwords
+CREATE OR REPLACE FUNCTION hash_passcode(TEXT)
+   RETURNS TEXT AS
+$$
+BEGIN
+   IF $1 IS NOT NULL AND length($1) > 2 THEN
+      RETURN crypt($1, gen_salt('bf', 10));
+   ELSE
+      RAISE EXCEPTION 'Pass code provided does not meet length requirement of 3';
+   END IF;
+END;
+$$ LANGUAGE plpgsql;
 
 -- Create the replacement for what last_updated_column_fn currently does, but using the new id type of UUID
 CREATE OR REPLACE FUNCTION update_user_table_fn()
