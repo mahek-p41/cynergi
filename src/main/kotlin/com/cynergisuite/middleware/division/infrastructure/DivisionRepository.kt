@@ -7,6 +7,7 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -236,13 +237,14 @@ class DivisionRepository @Inject constructor(
    fun deleteRegions(division: DivisionEntity) {
       logger.debug("Deleting Regions belong to Division {}", division)
 
-      jdbc.update(
+      jdbc.softDelete(
          """
          UPDATE region
          SET deleted = TRUE
          WHERE division_id = :division_id
          """,
-         mapOf("division_id" to division.id)
+         mapOf("division_id" to division.id),
+         "region"
       )
    }
 

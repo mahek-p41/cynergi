@@ -7,6 +7,7 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -188,13 +189,14 @@ class VendorGroupRepository @Inject constructor(
    fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting vendor group with id={}", id)
 
-      val affectedRows = jdbc.update(
+      val affectedRows = jdbc.softDelete(
          """
          UPDATE vendor_group
          SET deleted = TRUE
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.id)
+         mapOf("id" to id, "company_id" to company.id),
+         "vendor_group"
       )
 
       logger.info("Affected rows: {}", affectedRows)

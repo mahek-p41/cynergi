@@ -10,6 +10,7 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.isNumber
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
@@ -254,13 +255,14 @@ class AccountRepository @Inject constructor(
    fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting account with id={}", id)
 
-      val rowsAffected = jdbc.update(
+      val rowsAffected = jdbc.softDelete(
          """
          UPDATE account
          SET deleted = TRUE
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.id)
+         mapOf("id" to id, "company_id" to company.id),
+         "account"
       )
 
       logger.info("Row affected {}", rowsAffected)

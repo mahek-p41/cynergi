@@ -7,6 +7,7 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObjectOrNull
+import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentEntity
@@ -54,7 +55,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             bnk.bank_id                                               AS apPayment_bank_id,
             bnk.bank_name                                             AS apPayment_bank_name,
             bnk.bank_number                                           AS apPayment_bank_number,
-            bnk.comp_id                                               AS apPayment_bank_comp_id,
+            bnk.bank_comp_id                                          AS apPayment_bank_comp_id,
             bnk.bank_account_id                                       AS apPayment_bank_account_id,
             bnk.bank_account_number                                   AS apPayment_bank_account_number,
             bnk.bank_account_name                                     AS apPayment_bank_account_name,
@@ -711,12 +712,13 @@ class AccountPayablePaymentRepository @Inject constructor(
    fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting Account Payable Payment with id={}", id)
 
-      val rowsAffected = jdbc.update(
+      val rowsAffected = jdbc.softDelete(
          """
          DELETE FROM account_payable_payment
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.id)
+         mapOf("id" to id, "company_id" to company.id),
+         "account_payable_payment"
       )
       logger.info("Row affected {}", rowsAffected)
 

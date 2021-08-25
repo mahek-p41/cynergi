@@ -215,7 +215,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
    @Transactional
    fun delete(id: UUID) {
       logger.debug("Deleting GeneralLedgerRecurringDistribution with id={}", id)
-
+//@TODO check what is wrong!
       val rowsAffected = jdbc.update(
          """
          UPDATE general_ledger_recurring_distribution

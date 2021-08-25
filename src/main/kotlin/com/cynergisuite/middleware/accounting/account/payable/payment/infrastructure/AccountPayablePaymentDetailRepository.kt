@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.payment.infrastru
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceRepository
@@ -413,12 +414,13 @@ class AccountPayablePaymentDetailRepository @Inject constructor(
    fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting Account Payable Payment Detail with id={}", id)
 
-      val rowsAffected = jdbc.update(
+      val rowsAffected = jdbc.softDelete(
          """
          DELETE FROM account_payable_payment_detail
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.id)
+         mapOf("id" to id, "company_id" to company.id),
+         "account_payable_payment_detail"
       )
       logger.info("Row affected {}", rowsAffected)
 

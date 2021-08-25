@@ -8,6 +8,7 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
@@ -264,13 +265,14 @@ class AccountPayableDistributionRepository @Inject constructor(
    fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting AccountPayableDistribution with id={}", id)
 
-      val rowsAffected = jdbc.update(
+      val rowsAffected = jdbc.softDelete(
          """
          UPDATE account_payable_distribution_template
          SET deleted = TRUE
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.id)
+         mapOf("id" to id, "company_id" to company.id),
+         "account_payable_distribution_template"
       )
       logger.info("Row affected {}", rowsAffected)
 

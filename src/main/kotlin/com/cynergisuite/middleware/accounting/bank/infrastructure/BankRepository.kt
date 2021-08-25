@@ -7,7 +7,7 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
-import com.cynergisuite.extensions.update
+import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.bank.BankEntity
@@ -211,13 +211,14 @@ class BankRepository @Inject constructor(
    fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting bank with id={}", id)
 
-      val affectedRows = jdbc.update(
+      val affectedRows = jdbc.softDelete(
          """
          UPDATE bank
          SET deleted = TRUE
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.id)
+         mapOf("id" to id, "company_id" to company.id),
+         "bank"
       )
 
       logger.info("Affected rows: {}", affectedRows)

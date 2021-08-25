@@ -5,25 +5,30 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import spock.lang.Unroll
 
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.CONFLICT
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class AccountControllerSpecification extends ControllerSpecificationBase {
    private static String path = '/accounting/account'
-   @Inject AccountTestDataLoaderService accountFactoryService
+
+   @Inject AccountTestDataLoaderService accountDataLoaderService
+   @Inject AccountPayableControlTestDataLoaderService accountPayableControlDataLoaderService
 
    void "fetch one account by id" () {
       given:
-      accountFactoryService.single(nineNineEightEmployee.company)
-      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      accountDataLoaderService.single(nineNineEightEmployee.company)
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
 
       when:
       def result = get("$path/${account.id}")
@@ -74,8 +79,8 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
    void "fetch all" () {
       given:
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      accountFactoryService.stream(5, companyFactoryService.forDatasetCode('tstds2'))
-      final accounts = accountFactoryService.stream(12, nineNineEightEmployee.company).toList()
+      accountDataLoaderService.stream(5, companyFactoryService.forDatasetCode('tstds2'))
+      final accounts = accountDataLoaderService.stream(12, nineNineEightEmployee.company).toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       def pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       def pageLast = new StandardPageRequest(3, 5, "id", "ASC")
@@ -202,7 +207,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
    void "search accounts by number" () {
       given: "A company and a random collection of 50 accounts with a specific account"
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final accounts = accountFactoryService.stream(50, company).collect()
+      final accounts = accountDataLoaderService.stream(50, company).collect()
       final queryString = accounts[20].number
       def pageOne = new SearchPageRequest([page:1, size:5, query:"${ queryString }"])
 
@@ -244,9 +249,9 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
    void "search accounts by name" () {
       given: "A company and 3 accounts 2 of them with bank in the name"
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final account1 = accountFactoryService.single(company, "East Hill Bank")
-      final account2 = accountFactoryService.single(company, "7 Hills Bank and Trust")
-      final account3 = accountFactoryService.single(company, "Bob's Credit Union")
+      final account1 = accountDataLoaderService.single(company, "East Hill Bank")
+      final account2 = accountDataLoaderService.single(company, "7 Hills Bank and Trust")
+      final account3 = accountDataLoaderService.single(company, "Bob's Credit Union")
 
       when: "fuzzy querying for a name with bank"
       def result = get("$path/search?query=bank")
@@ -304,9 +309,9 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
    void "search accounts by number and name" () {
       given: "A company and 3 accounts 2 of them with bank in the name"
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final account1 = accountFactoryService.single(company, "East Hill Bank")
-      final account2 = accountFactoryService.single(company, "7 Hills Bank and Trust")
-      final account3 = accountFactoryService.single(company, "Bob's Credit Union")
+      final account1 = accountDataLoaderService.single(company, "East Hill Bank")
+      final account2 = accountDataLoaderService.single(company, "7 Hills Bank and Trust")
+      final account3 = accountDataLoaderService.single(company, "Bob's Credit Union")
 
       when: "fuzzy querying for number and 'bank'"
       def result = get("$path/search?query=${account1.number}%20bank")
@@ -368,7 +373,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "create a valid account"() {
       given:
-      final account = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      final account = accountDataLoaderService.singleDTO(nineNineEightEmployee.company)
 
       when:
       def result = post("$path/", account)
@@ -405,7 +410,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "create a valid account with null form 1099 field"() {
       given:
-      final account = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      final account = accountDataLoaderService.singleDTO(nineNineEightEmployee.company)
       account.form1099Field = null
 
       when:
@@ -443,7 +448,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "create an invalid account without #nonNullableProp"() {
       given: 'get json account object and make it invalid'
-      final accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      final accountDTO = accountDataLoaderService.singleDTO(nineNineEightEmployee.company)
       accountDTO["$nonNullableProp"] = null
 
       when:
@@ -469,7 +474,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "create an invalid account with non exist type value"() {
       given: 'get json account object and make it invalid'
-      final accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      final accountDTO = accountDataLoaderService.singleDTO(nineNineEightEmployee.company)
       accountDTO.type.value = 'Invalid'
 
       when:
@@ -486,8 +491,8 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "create an invalid account with duplicate account number"() {
       given:
-      final existingAccount = accountFactoryService.single(nineNineEightEmployee.company)
-      final accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      final existingAccount = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final accountDTO = accountDataLoaderService.singleDTO(nineNineEightEmployee.company)
       accountDTO.number = existingAccount.number
 
       when:
@@ -504,8 +509,8 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "update a valid account"() {
       given: 'Update existingAccount in DB with all new data'
-      final existingAccount = accountFactoryService.single(nineNineEightEmployee.company)
-      final updatedAccountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      final existingAccount = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final updatedAccountDTO = accountDataLoaderService.singleDTO(nineNineEightEmployee.company)
       updatedAccountDTO.id = existingAccount.id
       updatedAccountDTO.number = existingAccount.number
 
@@ -544,8 +549,8 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "update a invalid account without non-nullable properties"() {
       given:
-      final existingAccount = accountFactoryService.single(nineNineEightEmployee.company)
-      def accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      final existingAccount = accountDataLoaderService.single(nineNineEightEmployee.company)
+      def accountDTO = accountDataLoaderService.singleDTO(nineNineEightEmployee.company)
       accountDTO.name = null
       accountDTO.type = null
       accountDTO.normalAccountBalance = null
@@ -570,8 +575,8 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "update a invalid account with non exist status id"() {
       given:
-      final existingAccount = accountFactoryService.single(nineNineEightEmployee.company)
-      def accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      final existingAccount = accountDataLoaderService.single(nineNineEightEmployee.company)
+      def accountDTO = accountDataLoaderService.singleDTO(nineNineEightEmployee.company)
       accountDTO.status.value = 'Z'
 
       when:
@@ -588,8 +593,8 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    void "update a invalid account with duplicate account number"() {
       given:
-      final existingAccounts = accountFactoryService.stream(2, nineNineEightEmployee.company).collect()
-      def accountDTO = accountFactoryService.singleDTO(nineNineEightEmployee.company)
+      final existingAccounts = accountDataLoaderService.stream(2, nineNineEightEmployee.company).collect()
+      def accountDTO = accountDataLoaderService.singleDTO(nineNineEightEmployee.company)
       accountDTO.id = existingAccounts[0].id
       accountDTO.number = existingAccounts[1].number
 
@@ -605,11 +610,10 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       response[0].message == "$accountDTO.number already exists"
    }
 
-
    void "delete account" () {
       given:
-      accountFactoryService.single(nineNineEightEmployee.company)
-      def account = accountFactoryService.single(nineNineEightEmployee.company)
+      accountDataLoaderService.single(nineNineEightEmployee.company)
+      def account = accountDataLoaderService.single(nineNineEightEmployee.company)
 
       when:
       delete("$path/$account.id", )
@@ -628,11 +632,39 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       response.code == "system.not.found"
    }
 
+   void "delete account still has references" () {
+      given:
+      accountDataLoaderService.single(nineNineEightEmployee.company)
+      final glInvCleAcct = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final glInvAcct = accountDataLoaderService.single(nineNineEightEmployee.company)
+      accountPayableControlDataLoaderService.single(nineNineEightEmployee.company, glInvCleAcct, glInvAcct)
+
+      when:
+      delete("$path/$glInvCleAcct.id", )
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status == CONFLICT
+      def response = exception.response.bodyAsJson()
+      response.message == "Requested operation violates data integrity"
+      response.code == "cynergi.data.constraint.violated"
+
+      when:
+      delete("$path/$glInvAcct.id", )
+
+      then:
+      def exception2 = thrown(HttpClientResponseException)
+      exception2.response.status == CONFLICT
+      def response2 = exception2.response.bodyAsJson()
+      response2.message == "Requested operation violates data integrity"
+      response2.code == "cynergi.data.constraint.violated"
+   }
+
    void "delete account from other company is not allowed" () {
       given:
       def tstds2 = companies.find { it.datasetCode == "tstds2" }
-      accountFactoryService.single(nineNineEightEmployee.company)
-      def account = accountFactoryService.single(tstds2)
+      accountDataLoaderService.single(nineNineEightEmployee.company)
+      def account = accountDataLoaderService.single(tstds2)
 
       when:
       delete("$path/$account.id")
