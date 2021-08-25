@@ -74,7 +74,7 @@ data class AuditValueObject(
    @Schema(name = "currentStatus", description = "The current AuditStatus of the referenced Audit")
    fun getCurrentStatus(): AuditStatusValueObject? =
       actions.asSequence()
-         .sortedBy { it.id }
+         .sortedBy { it.timeCreated }
          .map { it.status }
          .lastOrNull()
 }
