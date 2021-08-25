@@ -143,7 +143,7 @@ class AccountRepository @Inject constructor(
       val where = StringBuilder(" WHERE comp.id = :comp_id ")
       val sortBy = if (!searchQuery.isNullOrEmpty()) {
          if (page.fuzzy == false) {
-            where.append(" AND (search_vector @@ websearch_to_tsquery(:search_query)) ")
+            where.append(" AND (search_vector @@ to_tsquery(:search_query)) ")
             searchQuery = searchQuery.replace("\\s+".toRegex(), " & ")
             EMPTY
          } else {
