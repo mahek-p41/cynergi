@@ -124,15 +124,6 @@ task flywayMigrateCynergiDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
    locations = ["filesystem:src/main/resources/db/migration/postgres"]
 }
 
-task flywayMigrateCynergiDevelopDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
-   url = "jdbc:postgresql://localhost:6432/cynergidevelopdb"
-   user = "cynergiuser"
-   password = "password"
-   locations = ["filesystem:src/main/resources/db/migration/postgres"]
-   cleanDisabled = false
-   cleanOnValidationError = true
-}
-
 task flywayMigrateCynergiTestDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
    url = "jdbc:postgresql://localhost:7432/cynergitestdb"
    user = "postgres"
@@ -196,6 +187,10 @@ def currentBranch = {
       println("Unable to determine branch")
       return "N/A"
    }
+}
+
+shadowJar {
+   archiveFileName = "cynergi-middleware.jar"
 }
 
 jar {

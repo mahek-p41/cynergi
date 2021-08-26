@@ -116,7 +116,7 @@ pipeline {
                   sed "s/@@JAVA_VER_BUILD@@/${VER_BUILD}/g; s/@@GROOVY_VER@@/${GROOVY_VERSON}/g" /home/jenkins/cynergi-middleware/support/deployment/groovy-proxy.sh > /opt/cyn/v01/cynmid/groovy/bin/groovy
                   chmod u+x /opt/cyn/v01/cynmid/groovy/bin/groovy
                   cp /home/jenkins/cynergi-middleware/support/development/cynergidb/setup-database.sql /opt/cyn/v01/cynmid/data/
-                  cp /home/jenkins/cynergi-middleware/build/libs/*-$BUILD_VERSION-all.jar /opt/cyn/v01/cynmid/cynergi-middleware.jar
+                  cp /home/jenkins/cynergi-middleware/build/libs/cynergi-middleware.jar /opt/cyn/v01/cynmid/cynergi-middleware.jar
                   mkdir -p /opt/cyn/v01/cynmid/java/openj9/${VER_BUILD}/jitcache
                   tar -c --owner=0 --group=0 --to-stdout /opt/cyn | xz -6 - > /home/jenkins/cynergi-middleware/build/libs/cynergi-middleware.tar.xz
                   '''

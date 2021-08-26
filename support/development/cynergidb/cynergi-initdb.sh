@@ -2,9 +2,6 @@
 
 sed -ri "s/#log_statement = 'none'/log_statement = 'all'/g" /var/lib/postgresql/data/postgresql.conf
 
-dropdb --if-exists cynergidevelopdb
-createdb cynergidevelopdb
-
 dropdb --if-exists cynergidb
 createdb cynergidb
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "cynergidb" <<-EOSQL

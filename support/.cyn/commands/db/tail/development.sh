@@ -8,6 +8,6 @@ if [ -z `docker-compose ps -q cynergidb` ] || [ -z `docker ps -q --no-trunc | gr
   exit 1
 else
   echo "Tailing cynergidb"
-  docker-compose logs -f cynergidb
+  docker-compose logs -f --tail 100 cynergidb
   exit $?
 fi

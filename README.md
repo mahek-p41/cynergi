@@ -43,12 +43,6 @@ including a sub-command are unique the `cyn` command will know what script to ex
 ### Local Database
 To start the local database `cyn db start dev`
 
-The Local database runs Postgres 9.3 via docker with 2 databases.  One is the **cynergidb** which is intended to survive
-restarts of the cynergi-middleware application.  The other is the **cynergidevelopdb** and is intended to be refreshed by the
-cynergi-middleware everytime it restarts.  This is as close to running production as can be achieved.  The databases
-require fastinfo dumps from a CST or production machine to operate.
-
-
 #### cynergidb
 Local semi-persistent PostgreSQL database hosted by docker.  States of the database can be
 captured via the pg_dump command.
@@ -60,16 +54,6 @@ captured via the pg_dump command.
    5. password: password
 2. Connecting to the database via psql
    1. `cyn db psql dev cynergidb`
-
-#### cynergidevelopdb
-1. Connection Information
-   1. port: 6432
-   2. host: localhost
-   3. database: cynergidevelopdb
-   4. user: postgres
-   5. password: password
-2. Connecting to the database via psql
-   1. `cyn db psql dev cynergidevelopdb`
 
 #### Dumps
 1. cynergidb.dump
@@ -183,7 +167,5 @@ API is actually fulfilling that contract.
      open with a browser.
 2. Run migrations against the cynergidb database
    * `./gradlew flywayMigrateCynergiDb`
-3. Run migrations against the cynergidevelopdb database
-   * `./gradlew flywayMigrateCynergiDevelopDb`
-2. Run migrations against the cynergitestdb database
+3. Run migrations against the cynergitestdb database
    * `./gradlew flywayMigrateCynergiTestDb`

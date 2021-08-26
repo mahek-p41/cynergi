@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-## description: starts the cynergidb, cynergidevelopdb and the fastinfo_production databases and makes them available on localhost:6432 and returns once they are up and running
+## description: starts the cynergidb and the fastinfo_production databases and makes them available on localhost:6432 and returns once they are up and running
 
 cd ../development
 
@@ -10,13 +10,15 @@ if [ -f "./db/DatabaseDumps/cynergidb.dump" ]; then
       docker-compose build --force-rm --quiet cynergibasedb
       docker-compose build --force-rm --quiet cynergidb
       docker-compose up -d --no-deps cynergidb
-      docker-compose build --force-rm --quiet cynergidbready && docker-compose run --rm cynergidbready
+      if [ $? -eq 0 ]; then
+        docker-compose build --force-rm --quiet cynergidbready && docker-compose run --rm cynergidbready
+      fi
       exit $?
     else
-      echo "cynergidb and cynergidevelopdb are already running checking if it is accepting connections"
+      echo "cynergidb are already running checking if it is accepting connections"
       docker-compose build cynergidbready && docker-compose run --rm cynergidbready
       echo "can be accessed at $(docker-compose port cynergidb 5432)"
-      exit 1
+      exit 0
     fi
   else
     echo "support/development/db/DatabaseDumps/fastinfo.dump is missing!!"

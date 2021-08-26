@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-## description: allows for the tailing of the cynergidb process stdout
+## description: allows for the tailing of the cynergitestdb process stdout
 
 cd ../development
 
@@ -8,6 +8,6 @@ if [ -z `docker-compose ps -q cynergitestdb` ] || [ -z `docker ps -q --no-trunc 
   exit 1
 else
   echo "Tailing cynergitestdb"
-  docker-compose logs -f cynergitestdb
+  docker-compose logs -f --tail 100 cynergitestdb
   exit $?
 fi

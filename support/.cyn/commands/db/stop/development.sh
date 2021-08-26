@@ -4,10 +4,10 @@
 cd ../development
 
 if [ -z `docker-compose ps -q cynergidb` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q cynergidb)` ]; then
-  echo "cynergidb and cynergidevelopdb are not running"
+  echo "cynergidb is not running"
   exit 1
 else
-  echo "stopping cynergidb and cynergidevelopdb"
+  echo "stopping cynergidb"
   docker-compose stop cynergidb && docker-compose rm -f cynergidb
   exit $?
 fi
