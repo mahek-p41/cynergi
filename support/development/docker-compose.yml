@@ -6,6 +6,7 @@ services:
    cynergibasedb:
       image: cynergibasedb
       build:
+         network: host
          context: cynergibasedb
          dockerfile: cynergibasedb.dockerfile
    cynergidb:
