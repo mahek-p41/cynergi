@@ -119,7 +119,7 @@ services:
       command: [ "/usr/local/bin/psql", "--host=cynergitestdb", "--port=5432", "cynergitestdb", "postgres" ]
    cynmid:
       container_name: cynmid
-      image: adoptopenjdk:11.0.11_9-jdk-openj9-0.26.0
+      image: bellsoft/liberica-openjdk-alpine:11.0.12
       logging:
          driver: "json-file"
          options:
@@ -142,7 +142,7 @@ services:
       command: [ "java", "-Dmicronaut.environments=development", "-jar", "/tmp/cynergi-middleware/cynergi-middleware.jar" ]
    cynmidintegration:
       container_name: cynmidintegration
-      image: adoptopenjdk:11.0.11_9-jdk-openj9-0.26.0
+      image: bellsoft/liberica-openjdk-alpine:11.0.12
       logging:
          driver: "json-file"
          options:
