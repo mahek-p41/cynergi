@@ -5,6 +5,7 @@ import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceSelectedTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceSelectedTypeDataLoader
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusType
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDataLoader
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceTypeDTO
@@ -32,7 +33,10 @@ class AccountPayableInvoiceDataLoader {
       int numberIn = 1,
       VendorEntity vendorIn,
       PurchaseOrderEntity purchaseOrderIn = null,
+      BigDecimal invoiceAmountIn = null,
       EmployeeEntity employeeIn,
+      BigDecimal paidAmountIn = null,
+      AccountPayableInvoiceStatusType statusTypeIn = null,
       VendorEntity payToIn,
       Store locationIn = null
    ) {
@@ -41,6 +45,14 @@ class AccountPayableInvoiceDataLoader {
       final random = faker.random()
       final lorem = faker.lorem()
       final numbers = faker.number()
+      final invoiceAmount = invoiceAmountIn ? invoiceAmountIn : numbers.randomDouble(2, 1, 1000000).toBigDecimal()
+      def paidAmount
+      if (paidAmountIn >= BigDecimal.ZERO) {
+         paidAmount = paidAmountIn
+      } else {
+         paidAmount = numbers.randomDouble(2, 1, 1000000).toBigDecimal()
+      }
+      final statusType = statusTypeIn ? statusTypeIn : AccountPayableInvoiceStatusTypeDataLoader.random()
 
       return IntStream.range(0, number).mapToObj {
          new AccountPayableInvoiceEntity(
@@ -49,7 +61,7 @@ class AccountPayableInvoiceDataLoader {
             lorem.characters(3, 20),
             purchaseOrderIn?.with { po -> new SimpleIdentifiableEntity(po) },
             LocalDate.now(),
-            numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
+            invoiceAmount,
             numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
             random.nextInt(1, 100).toBigDecimal().divide(BigDecimal.valueOf(100)).setScale(7, RoundingMode.HALF_EVEN),
             random.nextBoolean(),
@@ -62,10 +74,10 @@ class AccountPayableInvoiceDataLoader {
             lorem.sentence(),
             AccountPayableInvoiceSelectedTypeDataLoader.random(),
             random.nextBoolean(),
-            numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
+            paidAmount,
             numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
             AccountPayableInvoiceTypeDataLoader.random(),
-            AccountPayableInvoiceStatusTypeDataLoader.random(),
+            statusType,
             LocalDate.now(),
             new SimpleIdentifiableEntity(payToIn),
             random.nextBoolean(),
@@ -140,11 +152,14 @@ class AccountPayableInvoiceDataLoaderService {
       CompanyEntity company,
       VendorEntity vendorIn,
       PurchaseOrderEntity purchaseOrderIn = null,
+      BigDecimal invoiceAmountIn = null,
       EmployeeEntity employeeIn,
+      BigDecimal paidAmountIn = null,
+      AccountPayableInvoiceStatusType statusTypeIn = null,
       VendorEntity payToIn,
       Store locationIn = null
    ) {
-      return AccountPayableInvoiceDataLoader.stream(numberIn, vendorIn, purchaseOrderIn, employeeIn, payToIn, locationIn)
+      return AccountPayableInvoiceDataLoader.stream(numberIn, vendorIn, purchaseOrderIn, invoiceAmountIn, employeeIn, paidAmountIn, statusTypeIn, payToIn, locationIn)
          .map { accountPayableInvoiceRepository.insert(it, company) }
    }
 
@@ -152,11 +167,14 @@ class AccountPayableInvoiceDataLoaderService {
       CompanyEntity company,
       VendorEntity vendorIn,
       PurchaseOrderEntity purchaseOrderIn = null,
+      BigDecimal invoiceAmountIn = null,
       EmployeeEntity employeeIn,
+      BigDecimal paidAmountIn = null,
+      AccountPayableInvoiceStatusType statusTypeIn = null,
       VendorEntity payToIn,
       Store locationIn = null
    ) {
-      return stream(1, company, vendorIn, purchaseOrderIn, employeeIn, payToIn, locationIn).findFirst().orElseThrow { new Exception("Unable to create Account Payable Invoice Entity") }
+      return stream(1, company, vendorIn, purchaseOrderIn, invoiceAmountIn, employeeIn, paidAmountIn, statusTypeIn, payToIn, locationIn).findFirst().orElseThrow { new Exception("Unable to create Account Payable Invoice Entity") }
    }
 
    AccountPayableInvoiceDTO singleDTO(
