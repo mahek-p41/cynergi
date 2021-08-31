@@ -28,6 +28,7 @@ class AccountPayablePaymentTestDataLoader {
       final number = numberIn < 0 ? 1 : numberIn
       final faker = new Faker()
       final random = faker.random()
+      final pmtNum = random.nextInt(1000)
 
       return IntStream.range(0, number).mapToObj {
          new AccountPayablePaymentEntity(
@@ -39,7 +40,7 @@ class AccountPayablePaymentTestDataLoader {
             LocalDate.now().minusDays(random.nextLong(15)),
             LocalDate.now().minusDays(random.nextLong(10)),
             LocalDate.now().minusDays(random.nextLong(5)),
-            random.nextInt(1000).toString(),
+            pmtNum.toString() + it,
             random.nextInt(1000).toBigDecimal(),
             Set.of()
          )

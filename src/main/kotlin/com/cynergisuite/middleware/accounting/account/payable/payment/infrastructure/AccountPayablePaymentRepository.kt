@@ -533,6 +533,34 @@ class AccountPayablePaymentRepository @Inject constructor(
          whereClause.append(" AND vend.v_vgrp_id IN (<vendorGroups>) ")
       }
 
+      if (filterRequest.beginPmt != null && filterRequest.endPmt != null) {
+         params["beginningPmt"] = filterRequest.beginPmt
+         params["endingPmt"] = filterRequest.endPmt
+         whereClause.append(" AND apPayment.payment_number ")
+            .append(buildNumberFilterString("beginningPmt", "endingPmt"))
+      }
+
+      if (filterRequest.beginBank != null && filterRequest.endBank != null) {
+         params["beginningBank"] = filterRequest.beginBank
+         params["endingBank"] = filterRequest.endBank
+         whereClause.append(" AND bnk.bank_number ")
+            .append(buildNumberFilterString("beginningBank", "endingBank"))
+      }
+
+      if (filterRequest.beginVendor != null && filterRequest.endVendor != null) {
+         params["beginVendor"] = filterRequest.beginVendor
+         params["endVendor"] = filterRequest.endVendor
+         whereClause.append(" AND vend.v_number ")
+            .append(buildNumberFilterString("beginVendor", "endVendor"))
+      }
+
+      if (filterRequest.beginVendorGroup != null && filterRequest.endVendorGroup != null) {
+         params["beginVendorGroup"] = filterRequest.beginVendorGroup
+         params["endVendorGroup"] = filterRequest.endVendorGroup
+         whereClause.append(" AND vend.v_vgrp_value ")
+            .append(buildNumberFilterString("beginVendorGroup", "endVendorGroup"))
+      }
+
       filterRequest.status?.let {
          params["status"] = filterRequest.status
          whereClause.append(" AND status.value = :status ")
@@ -737,5 +765,9 @@ class AccountPayablePaymentRepository @Inject constructor(
       return if (from != null && thru != null) " BETWEEN :$frmParam AND :$thruParam "
             else if (from != null) " > :$frmParam "
             else " < :$thruParam "
+   }
+
+   private fun buildNumberFilterString(beginningParam: String, endingParam: String): String {
+      return " BETWEEN :$beginningParam AND :$endingParam "
    }
 }

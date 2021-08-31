@@ -95,6 +95,11 @@ class VendorTestDataLoaderService {
          .map { vendorRepository.insert(it) }
    }
 
+   Stream<VendorEntity> stream(int numberIn = 1, CompanyEntity companyIn, VendorPaymentTermEntity paymentTermIn, ShipViaEntity shipViaIn, VendorGroupEntity vendorGroupIn) {
+      return VendorTestDataLoader.stream(numberIn, companyIn, null, paymentTermIn, shipViaIn, vendorGroupIn)
+         .map { vendorRepository.insert(it) }
+   }
+
    VendorEntity single(CompanyEntity companyEntity, VendorPaymentTermEntity vendorPaymentTermEntity, ShipViaEntity shipViaEntity) {
       return stream(1, companyEntity, null, vendorPaymentTermEntity, shipViaEntity, null).findFirst().orElseThrow { new Exception("Unable to create VendorEntity") }
    }

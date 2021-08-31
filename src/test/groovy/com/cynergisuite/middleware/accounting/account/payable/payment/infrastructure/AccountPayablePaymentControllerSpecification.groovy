@@ -15,6 +15,7 @@ import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
+import com.cynergisuite.middleware.vendor.group.VendorGroupTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -40,6 +41,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
    @Inject PurchaseOrderTestDataLoaderService poDataLoaderService
    @Inject AccountPayablePaymentDetailDataLoaderService apPaymentDetailDataLoaderService
    @Inject AccountPayableInvoiceDataLoaderService payableInvoiceDataLoaderService
+   @Inject VendorGroupTestDataLoaderService vendorGroupTestDataLoaderService
 
    void "fetch one"() {
       given:
@@ -219,7 +221,8 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def vendorPmtTerm = vendorPaymentTermList[0]
       def vendorShipVia = shipViaList[0]
-      def vendors = vendorTestDataLoaderService.stream(2, company, vendorPmtTerm, vendorShipVia).toList()
+      def vendorGroups = vendorGroupTestDataLoaderService.stream(company).toList()
+      def vendors = vendorTestDataLoaderService.stream(2, company, vendorPmtTerm, vendorShipVia, vendorGroups[0]).toList()
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
@@ -263,11 +266,27 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
          case 'PmtNumberCase2':
             filterRequest['pmtNums'] = [UUID.randomUUID()]
             break
+         case 'PmtNumberCase3':
+            filterRequest['beginPmt'] = apPayments[0].paymentNumber
+            filterRequest['endPmt'] = apPayments[1].paymentNumber
+            break
+         case 'PmtNumberCase4':
+            filterRequest['beginPmt'] = apPayments[0].paymentNumber
+            filterRequest['endPmt'] = apPayments[0].paymentNumber
+            break
          case 'BankCase1':
             filterRequest['banks'] = [bank.id]
             break
          case 'BankCase2':
             filterRequest['banks'] = [UUID.randomUUID()]
+            break
+         case 'BankCase3':
+            filterRequest['beginBank'] = bank.number
+            filterRequest['endBank'] = bank.number + 100
+            break
+         case 'BankCase4':
+            filterRequest['beginBank'] = 0
+            filterRequest['endBank'] = 0
             break
          case 'VendorCase1':
             filterRequest['vendors'] = [vendors[0].id]
@@ -275,8 +294,21 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
          case 'VendorCase2':
             filterRequest['vendors'] = [UUID.randomUUID()]
             break
-         case 'VendorGroupCase':
-            filterRequest['vendorGroups'] = [UUID.randomUUID()]
+         case 'VendorCase3':
+            filterRequest['beginVendor'] = vendors[1].number
+            filterRequest['endVendor'] = vendors[1].number + 100
+            break
+         case 'VendorCase4':
+            filterRequest['beginVendor'] = 0
+            filterRequest['endVendor'] = 0
+            break
+         case 'VendorGroupCase1':
+            filterRequest['beginVendorGroup'] = vendorGroups[0].value
+            filterRequest['endVendorGroup'] = vendorGroups[1].value
+            break
+         case 'VendorGroupCase2':
+            filterRequest['beginVendorGroup'] = 'non-exist-value-1'
+            filterRequest['endVendorGroup'] = 'non-exist-value-2'
             break
          case 'StatusCase1':
             filterRequest['status'] = 'P'
@@ -325,11 +357,18 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
       criteria          || paymentCount
       'PmtNumberCase1'  || 2
       'PmtNumberCase2'  || 0
+      'PmtNumberCase3'  || 2
+      'PmtNumberCase4'  || 1
       'BankCase1'       || 4
       'BankCase2'       || 0
+      'BankCase3'       || 4
+      'BankCase4'       || 0
       'VendorCase1'     || 2
       'VendorCase2'     || 0
-      'VendorGroupCase' || 0
+      'VendorCase3'     || 2
+      'VendorCase4'     || 0
+      'VendorGroupCase1'|| 4
+      'VendorGroupCase2'|| 0
       'StatusCase1'     || 2
       'StatusCase2'     || 2
       'TypeCase1'       || 2

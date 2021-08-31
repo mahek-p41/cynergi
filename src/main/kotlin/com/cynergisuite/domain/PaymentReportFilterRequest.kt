@@ -24,6 +24,30 @@ class PaymentReportFilterRequest(
    @field:Schema(name = "vendorGroups", description = "The collection of Vendor Group IDs to filter results with")
    var vendorGroups: Set<UUID>? = emptySet(),
 
+   @field:Schema(name = "beginPmt", description = "Beginning Payment number")
+   var beginPmt: String? = null,
+
+   @field:Schema(name = "endPmt", description = "Ending Payment number")
+   var endPmt: String? = null,
+
+   @field:Schema(name = "beginBank", description = "Beginning Bank number")
+   var beginBank: Int? = null,
+
+   @field:Schema(name = "endBank", description = "Ending Bank number")
+   var endBank: Int? = null,
+
+   @field:Schema(name = "beginVendor", description = "Beginning Vendor number")
+   var beginVendor: Int? = null,
+
+   @field:Schema(name = "endVendor", description = "Ending Vendor number")
+   var endVendor: Int? = null,
+
+   @field:Schema(name = "beginVendorGroup", description = "Beginning Vendor Group value")
+   var beginVendorGroup: String? = null,
+
+   @field:Schema(name = "endVendorGroup", description = "Ending Vendor Group value")
+   var endVendorGroup: String? = null,
+
    @field:Schema(name = "status", description = "The Payment Status to filter results with")
    var status: String? = null,
 
@@ -58,6 +82,14 @@ class PaymentReportFilterRequest(
          "banks" to banks,
          "vendors" to vendors,
          "vendorGroups" to vendorGroups,
+         "beginPmt" to beginPmt,
+         "endPmt" to endPmt,
+         "beginBank" to beginBank,
+         "endBank" to endBank,
+         "beginVendor" to beginVendor,
+         "endVendor" to endVendor,
+         "beginVendorGroup" to beginVendorGroup,
+         "endVendorGroup" to endVendorGroup,
          "status" to status,
          "type" to type,
          "frmPmtDt" to frmPmtDt,
