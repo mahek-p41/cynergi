@@ -8,7 +8,6 @@
 @Grab(group='org.slf4j', module='jul-to-slf4j', version='1.7.32')
 @Grab(group='commons-io', module='commons-io', version='2.11.0')
 
-
 import org.flywaydb.core.Flyway
 import groovy.cli.picocli.CliBuilder
 
@@ -19,19 +18,24 @@ import java.util.zip.ZipFile
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.FilenameUtils
 
-def migrate(Path dir, String dbUrl, String username, String password) {
-   final resetDbOnFailure = (InetAddress.getLocalHost().getHostName() == "cst143")
+def migrate(Path dir, String dbUrl, String username, String password, boolean forceClean) {
+   final isCst143 = (InetAddress.getLocalHost().getHostName() == "cst143")
 
-   Flyway
+   final flyway = Flyway
       .configure()
       .locations("filesystem:$dir")
-      .cleanDisabled(!resetDbOnFailure)
-      .cleanOnValidationError(resetDbOnFailure)
+      .cleanDisabled(!isCst143)
+      .cleanOnValidationError(isCst143)
       .table("flyway_schema_history")
       .initSql("SELECT 1")
       .dataSource(dbUrl, username, password)
       .load()
-      .migrate()
+
+   if (forceClean && isCst143) {
+      flyway.clean()
+   }
+
+   flyway.migrate()
 }
 
 // https://relentlesscoding.com/posts/how-to-use-groovys-clibuilder/
@@ -46,15 +50,17 @@ cli.with {
    d(longOpt: 'database', defaultValue: 'cynergidb', args: 1, 'database to migrate')
    H(longOpt: 'host', args: 1, defaultValue: 'localhost', 'Host database is running on')
    m(longOpt: 'migrations', args: 1, defaultValue: '/opt/cyn/v01/cynmid/cynergi-middleware.jar', 'location of migration files')
+   c(longOpt: 'force-clean')
    h(longOpt: 'help', 'this help message')
 }
 
 final options = cli.parse(args)
-final jarPathMatch = FileSystems.getDefault().getPathMatcher("glob:**/*.jar")
 def exitCode = 0
 
-try {
-   if (options != null && !options.h) {
+if (options != null && !options.h) {
+   final jarPathMatch = FileSystems.getDefault().getPathMatcher("glob:**/*.jar")
+
+   try {
       final migrationLocation = Path.of(options.m)
 
       if (Files.exists(migrationLocation)) {
@@ -72,7 +78,7 @@ try {
                }
             }
 
-            migrate(flywayTemp, "jdbc:postgresql://${options.H}:${options.P}/${options.d}", options.u, options.p)
+            migrate(flywayTemp, "jdbc:postgresql://${options.H}:${options.P}/${options.d}", options.u, options.p, options.c)
             flywayTemp.toFile().deleteDir()
          } else {
             exitCode = 2
@@ -82,10 +88,13 @@ try {
 
          exitCode = 1
       }
+   } catch (Throwable e) {
+      println e.getMessage()
+      exitCode = -1
    }
-} catch(Throwable e) {
-   println e.getMessage()
-   exitCode = -1
+} else {
+   println cli.usage()
+   exitCode = -3
 }
 
 System.exit(exitCode)
