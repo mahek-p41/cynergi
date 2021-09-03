@@ -117,7 +117,11 @@ BEGIN
             NULLIF(TRIM(emp_first_name_mi), '''')                                                          AS first_name_mi,
             TRIM(BOTH FROM CONCAT(emp_pass_1, emp_pass_2, emp_pass_3, emp_pass_4, emp_pass_5, emp_pass_6)) AS pass_code,
             emp_store_nbr                                                                                  AS store_number,
-            emp_termination_date IS NULL                                                                   AS active,
+            CASE
+               WHEN emp_termination_date > NOW() THEN true
+               WHEN emp_termination_date is null THEN true
+               ELSE false
+            END                                                                                            AS active,
             dept.loc_dept_code                                                                             AS department,
             FALSE                                                                                          AS cynergi_system_admin,
             emp_alt_store_indr                                                                             AS alternative_store_indicator,
