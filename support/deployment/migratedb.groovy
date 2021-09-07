@@ -18,7 +18,7 @@ import java.util.zip.ZipFile
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.FilenameUtils
 
-def migrate(Path dir, String dbUrl, String username, String password, boolean forceClean) {
+def migrate(Path dir, String dbUrl, String username, String password, boolean forceClean = false) {
    final isCst143 = (InetAddress.getLocalHost().getHostName() == "cst143")
 
    final flyway = Flyway
@@ -32,6 +32,7 @@ def migrate(Path dir, String dbUrl, String username, String password, boolean fo
       .load()
 
    if (forceClean && isCst143) {
+      println "Cleaning db"
       flyway.clean()
    }
 
@@ -40,7 +41,6 @@ def migrate(Path dir, String dbUrl, String username, String password, boolean fo
 
 // https://relentlesscoding.com/posts/how-to-use-groovys-clibuilder/
 final cli = new CliBuilder(name: 'migratedb')
-
 
 cli.width = 80
 cli.with {
@@ -65,7 +65,7 @@ if (options != null && !options.h) {
 
       if (Files.exists(migrationLocation)) {
          if (Files.isDirectory(migrationLocation)) {
-            migrate(migrationLocation, "jdbc:postgresql://${options.H}:${options.P}/${options.d}", options.u, options.p)
+            migrate(migrationLocation, "jdbc:postgresql://${options.H}:${options.P}/${options.d}", options.u, options.p, options.c)
          } else if (jarPathMatch.matches(migrationLocation)) {
             final migrationJar = new ZipFile(migrationLocation.toFile())
             final flywayTemp = Files.createTempDirectory("flywaytemp")
