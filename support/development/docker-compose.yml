@@ -156,6 +156,8 @@ services:
          - cynergitestdb
       volumes:
          - ../../build/libs:/tmp/cynergi-middleware
+      ports:
+         - "8080:8080"
       stdin_open: true
       tty: true
       environment:
