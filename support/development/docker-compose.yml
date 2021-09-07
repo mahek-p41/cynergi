@@ -154,9 +154,6 @@ services:
          - cynerginet
       links:
          - cynergitestdb
-      build:
-         context: cynmidintegration
-         dockerfile: cynmid.dockerfile
       volumes:
          - ../../build/libs:/tmp/cynergi-middleware
       stdin_open: true

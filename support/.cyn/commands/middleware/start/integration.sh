@@ -4,13 +4,13 @@
 ./commands/db/start/test.sh
 
 if [ $? -eq 0 ]; then
-  pushd ../../
+  pushd ../../ > /dev/null 2>&1
 
   ./gradlew clean shadowjar
 
-  popd
+  popd > /dev/null 2>&1
 
-  pushd ../development
+  pushd ../development > /dev/null 2>&1
 
   if [ -z `docker-compose ps -q cynmidintegration` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q cynmidintegration)` ]; then
     docker rm -f cynmidintegration > /dev/null 2>&1
