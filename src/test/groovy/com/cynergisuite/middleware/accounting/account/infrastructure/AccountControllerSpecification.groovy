@@ -618,7 +618,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       when:
       delete("$path/$account.id", )
 
-      then: "account of for user's company is delete"
+      then: "account of for user's company is deleted"
       notThrown(HttpClientResponseException)
 
       when:

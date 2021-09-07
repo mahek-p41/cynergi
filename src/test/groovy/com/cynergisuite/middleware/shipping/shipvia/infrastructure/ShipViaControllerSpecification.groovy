@@ -231,7 +231,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       when:
       delete("$path/$shipVia.id")
 
-      then: "ship via of for user's company is delete"
+      then: "ship via of for user's company is deleted"
       notThrown(HttpClientResponseException)
 
       when:

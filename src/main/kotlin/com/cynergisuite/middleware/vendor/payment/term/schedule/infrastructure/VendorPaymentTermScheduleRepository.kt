@@ -4,13 +4,18 @@ import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.softDelete
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
@@ -84,34 +89,43 @@ class VendorPaymentTermScheduleRepository @Inject constructor(
    }
 
    @Transactional
-   fun deleteNotIn(vpt: VendorPaymentTermEntity, scheduleRecords: List<VendorPaymentTermScheduleEntity>): List<VendorPaymentTermScheduleEntity> {
+   fun deleteNotIn(id: UUID, scheduleRecords: List<VendorPaymentTermScheduleEntity>) {
       val result = mutableListOf<VendorPaymentTermScheduleEntity>()
 
-      jdbc.query(
+      jdbc.update(
          """
-         DELETE FROM vendor_payment_term_schedule
+         UPDATE vendor_payment_term_schedule
+         SET deleted = TRUE
          WHERE vendor_payment_term_id = :vendor_payment_term_id
                AND id NOT IN(<ids>)
          RETURNING
             *
          """.trimIndent(),
          mapOf(
-            "vendor_payment_term_id" to vpt.id,
+            "vendor_payment_term_id" to id,
             "ids" to scheduleRecords.asSequence().map { it.id }.toList()
          )
-      ) { rs, _ ->
-         result.add(
-            VendorPaymentTermScheduleEntity(
-               id = rs.getUuid("id"),
-               dueMonth = rs.getInt("due_month"),
-               dueDays = rs.getInt("due_days"),
-               duePercent = rs.getBigDecimal("due_percent"),
-               scheduleOrderNumber = rs.getInt("schedule_order_number")
-            )
-         )
-      }
+      )
 
-      return result
+   }
+
+   @Transactional
+   fun deleteByVendorPaymentTerm(id: UUID) {
+      logger.debug("Deleting VendorPaymentTermSchedule with id={}", id)
+
+      val affectedRows = jdbc.softDelete(
+         """
+         UPDATE vendor_payment_term_schedule
+         SET deleted = TRUE
+         WHERE vendor_payment_term_id = :vpt AND deleted = FALSE
+         """,
+         mapOf("id" to id, "vpt" to id),
+         "vendor_payment_term_schedule",
+         "vendor_payment_term_id"
+      )
+
+      logger.info("Affected rows: {}", affectedRows)
+
    }
 
    private fun mapDdlRow(rs: ResultSet): VendorPaymentTermScheduleEntity {

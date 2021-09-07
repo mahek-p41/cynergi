@@ -42,7 +42,8 @@ CREATE TABLE vendor_group
     UNIQUE (company_id, value)
 );
 
-CREATE INDEX vendor_group_deleted_idx ON vendor_group(deleted);
+CREATE INDEX vendor_group_deleted_idx ON vendor_group(deleted)
+WHERE deleted = false;
 
 CREATE TRIGGER update_vendor_group_trg
     BEFORE UPDATE

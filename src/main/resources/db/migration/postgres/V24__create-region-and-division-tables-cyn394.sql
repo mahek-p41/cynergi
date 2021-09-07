@@ -9,7 +9,6 @@ CREATE TABLE division
     name               varchar(50) DEFAULT 'Division' NOT NULL,
     employee_number    INTEGER CHECK( employee_number > 0 ),
     description        varchar(50),
-    deleted            BOOLEAN     DEFAULT FALSE                            NOT NULL,
     CONSTRAINT uq_division UNIQUE
     ( id,
       company_id,
@@ -34,7 +33,6 @@ CREATE TABLE region
     name               varchar(50) DEFAULT 'Region' NOT NULL,
     employee_number    INTEGER CHECK( employee_number > 0 ) NOT NULL,
     description        varchar(50),
-    deleted            BOOLEAN     DEFAULT FALSE                            NOT NULL,
     CONSTRAINT uq_region UNIQUE
     ( id,
       division_id,

@@ -38,7 +38,16 @@ fun Jdbi.update(sql: String, params: Map<String, *>): Int {
    }
 }
 
-fun Jdbi.softDelete(sql: String, params: Map<String, *>, tableName: String): Int {
+/**
+ * This method check if referenced data in foreign keys are still referenced and throw an exception
+ * @param sql soft delete queries.
+ * @param params queries params to filter deleted rows.
+ * @param tableName name of the table, is used to find foreign keys.
+ * @param idColumn default value is "id" for delete by id, pass foreign column name if delete by foreign key.
+ * @return deleted row count
+ * @exception UnableToExecuteStatementException
+ */
+fun Jdbi.softDelete(sql: String, params: Map<String, *>, tableName: String, idColumn: String? = "id"): Int {
    return this.withHandle<Int, Exception> { handle ->
       val findReferenceQuery = """
       SELECT conrelid::regclass AS "FK_Table"
@@ -64,8 +73,11 @@ fun Jdbi.softDelete(sql: String, params: Map<String, *>, tableName: String): Int
 
          while (rs.next()) {
             val fkColumn = rs.getString("FK_Column")
+            val pkColumn = rs.getString("PK_Column")
             val fkTable = rs.getString("FK_Table")
-            logger.info("Checking id=${params["id"]} in referenced column: $fkTable.$fkColumn")
+            val pkTable = rs.getString("PK_Table")
+            val isPK = idColumn == pkColumn
+            logger.info("Checking $idColumn=${params["id"]} in referenced column: $fkTable.$fkColumn")
 
             val deletedColumnExistsQuery = handle.createQuery("""
                SELECT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS
@@ -73,13 +85,20 @@ fun Jdbi.softDelete(sql: String, params: Map<String, *>, tableName: String): Int
             """)
             val deletedColumnExists = deletedColumnExistsQuery.mapTo(Boolean::class.java).first()
 
-            val checkExistQuery =
+            val checkExistQuery = if (isPK) {
                if (deletedColumnExists)
                   handle.createQuery("SELECT EXISTS(SELECT * FROM $fkTable WHERE $fkColumn = :id AND deleted = false)")
                else
                   handle.createQuery("SELECT EXISTS(SELECT * FROM $fkTable WHERE $fkColumn = :id)")
+            } else {
+               if (deletedColumnExists)
+                  handle.createQuery("SELECT EXISTS(SELECT * FROM $fkTable WHERE $fkColumn IN (SELECT id FROM $pkTable WHERE $idColumn = :id) AND deleted = false)")
+               else
+                  handle.createQuery("SELECT EXISTS(SELECT * FROM $fkTable WHERE $fkColumn = IN (SELECT id FROM $pkTable WHERE $idColumn = :id))")
+            }
 
             bindParameters(mapOf("id" to params["id"]), checkExistQuery)
+
             val exist = checkExistQuery.mapTo(Boolean::class.java).findFirst().orElseThrow { EmptyResultException() }
 
             if (exist) {

@@ -7,9 +7,11 @@ import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.infrastructure.VendorPaymentTermScheduleRepository
@@ -87,7 +89,7 @@ class VendorPaymentTermRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): VendorPaymentTermEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${findOneQuery()}\nWHERE vpt.id = :id AND comp.id = :comp_id"
+      val query = "${findOneQuery()}\nWHERE vpt.id = :id AND comp.id = :comp_id AND vpt.deleted = false"
 
       logger.debug("Searching for VendorPaymentTerm using {} {}", query, params)
 
@@ -152,7 +154,7 @@ class VendorPaymentTermRepository @Inject constructor(
                count(*) OVER () AS total_elements
             FROM vendor_payment_term vpt
                JOIN company comp ON vpt.company_id = comp.id
-            WHERE comp.id = :comp_id
+            WHERE comp.id = :comp_id AND deleted = false
             ORDER BY vpt_${page.snakeSortBy()} ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
          )
@@ -237,7 +239,7 @@ class VendorPaymentTermRepository @Inject constructor(
 
       val existing = findOne(entity.id!!, entity.company)
 
-      vendorPaymentTermScheduleRepository.deleteNotIn(existing!!, entity.scheduleRecords)
+      vendorPaymentTermScheduleRepository.deleteNotIn(entity.id, entity.scheduleRecords)
 
       val updated = jdbc.updateReturning(
          """
@@ -273,6 +275,28 @@ class VendorPaymentTermRepository @Inject constructor(
       logger.debug("Updated VendorPaymentTerm {}", updated)
 
       return updated
+   }
+
+
+   @Transactional
+   fun delete(id: UUID, company: CompanyEntity) {
+      logger.debug("Deleting VendorPaymentTerm with id={}", id)
+
+      vendorPaymentTermScheduleRepository.deleteByVendorPaymentTerm(id)
+
+      val affectedRows = jdbc.softDelete(
+         """
+         UPDATE vendor_payment_term
+         SET deleted = TRUE
+         WHERE id = :id AND company_id = :company_id AND deleted = FALSE
+         """,
+         mapOf("id" to id, "company_id" to company.id),
+         "vendor_payment_term"
+      )
+
+      logger.info("Affected rows: {}", affectedRows)
+
+      if (affectedRows == 0) throw NotFoundException(id)
    }
 
    private fun mapRow(rs: ResultSet): VendorPaymentTermEntity {
