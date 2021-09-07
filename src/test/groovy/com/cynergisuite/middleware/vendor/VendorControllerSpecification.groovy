@@ -153,7 +153,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
-      final vendors = vendorTestDataLoaderService.stream(7, company, vendorPaymentTerm, shipVia).toList()
+      final vendors = vendorTestDataLoaderService.stream(7, company, vendorPaymentTerm, shipVia).toList().sort { o1, o2 -> o1.id <=> o2.id }
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
 
@@ -168,11 +168,8 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
          totalPages == 2
          first == true
          last == false
-         new VendorDTO(elements[0]) == new VendorDTO(vendors[0])
-         new VendorDTO(elements[1]) == new VendorDTO(vendors[1])
-         new VendorDTO(elements[2]) == new VendorDTO(vendors[2])
-         new VendorDTO(elements[3]) == new VendorDTO(vendors[3])
-         new VendorDTO(elements[4]) == new VendorDTO(vendors[4])
+         elements.collect { new VendorDTO(it) }
+            .sort {o1, o2 -> o1.id <=> o2.id} == vendors[0..4].collect { new VendorDTO(it) }
       }
 
       when:
@@ -186,8 +183,8 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
          totalPages == 2
          first == false
          last == true
-         new VendorDTO(elements[0]) == new VendorDTO(vendors[5])
-         new VendorDTO(elements[1]) == new VendorDTO(vendors[6])
+         elements.collect { new VendorDTO(it) }
+            .sort {o1, o2 -> o1.id <=> o2.id} == vendors[5..6].collect { new VendorDTO(it) }
       }
    }
 
