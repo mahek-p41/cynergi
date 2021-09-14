@@ -50,7 +50,7 @@ cli.with {
    d(longOpt: 'database', defaultValue: 'cynergidb', args: 1, 'database to migrate')
    H(longOpt: 'host', args: 1, defaultValue: 'localhost', 'Host database is running on')
    m(longOpt: 'migrations', args: 1, defaultValue: '/opt/cyn/v01/cynmid/cynergi-middleware.jar', 'location of migration files')
-   c(longOpt: 'force-clean')
+   c(longOpt: 'force-clean', 'Reset the database back to zero')
    h(longOpt: 'help', 'this help message')
 }
 
