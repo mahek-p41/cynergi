@@ -38,7 +38,7 @@ class VendorTestDataLoader {
             companyIn,
             nameIn ?: companyFaker.name().take(30) ?: "Test",
             addressIn ?: AddressTestDataLoader.single(),
-            numbers.digits(10).toString(),
+            "acct-" + numbers.digits(10).toString(),
             null,
             FreightOnboardTypeTestDataLoader.random(),
             paymentTermIn,

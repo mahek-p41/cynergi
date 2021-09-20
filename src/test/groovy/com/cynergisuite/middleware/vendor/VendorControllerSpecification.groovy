@@ -343,7 +343,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       new VendorDTO(result) == vendor
    }
 
-   void "create valid vendor without address and our account number" () {
+   void "create valid vendor without address and account number" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaTestDataLoaderService.single(company)
@@ -1009,43 +1009,6 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       then:
       def ex = thrown(HttpClientResponseException)
       ex.response.status == NO_CONTENT
-   }
-
-   void "Try creating vendor with a negative accountNumber" () {
-      given:
-      final addressId = UUID.randomUUID()
-      final company = companyFactoryService.forDatasetCode('tstds1')
-
-      final addressVO = new AddressDTO(addressId, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
-      final addressEntity = new AddressEntity(addressVO)
-
-      final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
-      final VPT = new VendorPaymentTermEntity(null, company, "test1", null, null, null, schedules)
-      final vendorPaymentTerm = vendorPaymentTermRepository.insert(VPT)
-
-      final shipVia = shipViaTestDataLoaderService.single(nineNineEightEmployee.company)
-
-      final VGRP = new VendorGroupEntity(null, company, "Test Group", "Group used for testing!")
-      final vendorGroup = vendorGroupRepository.insert(VGRP, company)
-
-      final onboard = freightOnboardTypeRepository.findOne(1)
-      final method = freightCalcMethodTypeRepository.findOne(1)
-
-      final vendorEntity = new VendorEntity(null, company, "test1", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, null, null)
-      final vendor = vendorRepository.insert(vendorEntity).with { new VendorDTO(it) }
-
-      when:
-      vendor.accountNumber = -1
-      post(path, vendor)
-
-      then:
-      final ex = thrown(HttpClientResponseException)
-      ex.status == BAD_REQUEST
-      final response = ex.response.bodyAsJson()
-      response.size() == 1
-      response.collect { new ErrorDTO(it.message, it.code, it.path) } == [
-         new ErrorDTO("accountNumber must be greater than zero", "javax.validation.constraints.Positive.message", "accountNumber")
-      ]
    }
 
    void "Create vendor with bumpPercent that has 2 integral and 8 fractional" () {
