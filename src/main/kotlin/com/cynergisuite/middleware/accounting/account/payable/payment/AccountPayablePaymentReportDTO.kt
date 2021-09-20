@@ -16,10 +16,6 @@ data class AccountPayablePaymentReportDTO(
    var id: UUID? = null,
 
    @field:NotNull
-   @field:Schema(description = "Account Payable Payment Number")
-   var number: Long? = null,
-
-   @field:NotNull
    @field:Schema(description = "Bank number")
    var bankNumber: Long? = null,
 

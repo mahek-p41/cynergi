@@ -37,8 +37,7 @@ data class VendorDTO(
    var address: AddressDTO? = null,
 
    @JsonInclude(NON_DEFAULT)
-   @field:Positive
-   @field:Schema(name = "accountNumber", description = "The vendor account number", minimum = "1", required = false)
+   @field:Schema(name = "accountNumber", description = "The vendor account number", required = false)
    var accountNumber: String? = null,
 
    @field:Valid

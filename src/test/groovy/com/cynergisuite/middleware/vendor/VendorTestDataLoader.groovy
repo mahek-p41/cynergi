@@ -38,7 +38,7 @@ class VendorTestDataLoader {
             companyIn,
             nameIn ?: companyFaker.name().take(30) ?: "Test",
             addressIn ?: AddressTestDataLoader.single(),
-            numbers.digits(10).toString(),
+            "acct-" + numbers.digits(10).toString(),
             null,
             FreightOnboardTypeTestDataLoader.random(),
             paymentTermIn,
@@ -92,6 +92,11 @@ class VendorTestDataLoaderService {
 
    Stream<VendorEntity> stream(int numberIn = 1, CompanyEntity companyIn, AddressEntity addressIn = null, VendorPaymentTermEntity paymentTermIn, ShipViaEntity shipViaIn, VendorGroupEntity vendorGroupIn = null, String nameIn = null) {
       return VendorTestDataLoader.stream(numberIn, companyIn, addressIn, paymentTermIn, shipViaIn, vendorGroupIn, nameIn)
+         .map { vendorRepository.insert(it) }
+   }
+
+   Stream<VendorEntity> stream(int numberIn = 1, CompanyEntity companyIn, VendorPaymentTermEntity paymentTermIn, ShipViaEntity shipViaIn, VendorGroupEntity vendorGroupIn) {
+      return VendorTestDataLoader.stream(numberIn, companyIn, null, paymentTermIn, shipViaIn, vendorGroupIn)
          .map { vendorRepository.insert(it) }
    }
 
