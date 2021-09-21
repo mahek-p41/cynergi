@@ -125,7 +125,7 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
       searchOneResult.totalPages == 1
       searchOneResult.first == true
       searchOneResult.last == true
-      searchOneResult.elements.size() == 7 || searchOneResult.elements.size() == 7
+      searchOneResult.elements.size() == 7 || searchOneResult.elements.size() == 8
 
       with(searchOneResult.elements[0]) {
          number == 90003
