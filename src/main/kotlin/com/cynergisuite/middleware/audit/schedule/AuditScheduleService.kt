@@ -16,7 +16,7 @@ import com.cynergisuite.middleware.notification.NotificationRecipientValueObject
 import com.cynergisuite.middleware.notification.NotificationService
 import com.cynergisuite.middleware.notification.NotificationValueObject
 import com.cynergisuite.middleware.notification.STORE
-import com.cynergisuite.middleware.schedule.DailySchedule
+import com.cynergisuite.middleware.schedule.OnceDailyJob
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.ScheduleProcessingException
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
@@ -44,7 +44,7 @@ class AuditScheduleService @Inject constructor(
    private val scheduleRepository: ScheduleRepository,
    private val storeRepository: StoreRepository,
    private val notificationService: NotificationService
-) : DailySchedule {
+) : OnceDailyJob {
    private val logger: Logger = LoggerFactory.getLogger(AuditScheduleService::class.java)
 
    fun fetchById(id: UUID, company: CompanyEntity): AuditScheduleDTO? {

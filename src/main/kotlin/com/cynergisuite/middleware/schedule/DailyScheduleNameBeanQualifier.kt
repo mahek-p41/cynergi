@@ -7,9 +7,9 @@ import javax.inject.Named
 
 class DailyScheduleNameBeanQualifier(
    private val name: String
-) : Qualifier<DailySchedule> {
+) : Qualifier<OnceDailyJob> {
 
-   override fun <BT : BeanType<DailySchedule>?> reduce(beanType: Class<DailySchedule>?, candidates: Stream<BT>?): Stream<BT> {
+   override fun <BT : BeanType<OnceDailyJob>?> reduce(beanType: Class<OnceDailyJob>?, candidates: Stream<BT>?): Stream<BT> {
       return if (beanType != null && candidates != null) {
          candidates
             .filter { candidate -> candidate != null }

@@ -14,12 +14,12 @@ import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
-class ScheduleService @Inject constructor(
+class ScheduleJobExecutorService @Inject constructor(
    private val applicationContext: ApplicationContext,
    private val companyRepository: CompanyRepository,
    private val scheduleRepository: ScheduleRepository
 ) {
-   private val logger: Logger = LoggerFactory.getLogger(ScheduleService::class.java)
+   private val logger: Logger = LoggerFactory.getLogger(ScheduleJobExecutorService::class.java)
 
    @Scheduled(cron = "0 30 5 * * *")
    internal fun runDailyScheduled() { // this is what is called by the scheduler
@@ -36,8 +36,8 @@ class ScheduleService @Inject constructor(
          scheduleRepository.forEach(WEEKLY, company) { schedule ->
             val beanQualifier = DailyScheduleNameBeanQualifier(schedule.command.value)
 
-            if (schedule.enabled && applicationContext.containsBean(DailySchedule::class.java, beanQualifier)) { // TODO look at using javax.inject.Named annotation rather than all this complicated logic to load the scheduler
-               val dailyTask = applicationContext.getBean(DailySchedule::class.java, beanQualifier)
+            if (schedule.enabled && applicationContext.containsBean(OnceDailyJob::class.java, beanQualifier)) {
+               val dailyTask = applicationContext.getBean(OnceDailyJob::class.java, beanQualifier)
 
                if (dailyTask.shouldProcess(schedule, dayOfWeek)) { // check if this job has anything to do for today
                   logger.info("Executing daily task for schedule {} using {}", schedule, dailyTask.javaClass.canonicalName)
@@ -55,5 +55,19 @@ class ScheduleService @Inject constructor(
       }
 
       return jobsRan
+   }
+
+   @Scheduled(cron = "0 0 6 1 JAN-DEC *") // run on the first day of the month
+   internal fun runBeginningOfMonthScheduled() {
+      companyRepository.forEach { company ->
+
+      }
+   }
+
+   @Scheduled(cron = "0 45 5 L * ?") // run on the last day of the month
+   internal fun runEndOfMonthScheduled() {
+      companyRepository.forEach { company ->
+
+      }
    }
 }

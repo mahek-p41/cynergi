@@ -2,10 +2,7 @@ package com.cynergisuite.middleware.schedule
 
 import java.time.DayOfWeek
 
-interface DailySchedule {
-
-   @Throws(ScheduleProcessingException::class)
-   fun shouldProcess(schedule: ScheduleEntity, dayOfWeek: DayOfWeek): Boolean
+interface OnceDailyJob : Job<DayOfWeek> {
 
    @Throws(ScheduleProcessingException::class)
    fun processDaily(schedule: ScheduleEntity, dayOfWeek: DayOfWeek): ScheduleResult
