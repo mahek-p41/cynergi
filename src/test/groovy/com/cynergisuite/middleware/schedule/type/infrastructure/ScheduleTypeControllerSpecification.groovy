@@ -20,12 +20,13 @@ class ScheduleTypeControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       result.requested.with { new StandardPageRequest(it) } == pageOne
-      result.totalElements == 1
+      result.totalElements == 3
       result.totalPages == 1
       result.first == true
       result.last == true
       result.elements != null
-      result.elements.size() == 1
-      result.elements[0].with { new ScheduleTypeValueObject(it) } == new ScheduleTypeValueObject(ScheduleTypeTestDataLoader.weekly(), ScheduleTypeTestDataLoader.weekly().description)
+      result.elements.size() == 3
+      result.elements.collect { new ScheduleTypeValueObject(it) }.sort {o1, o2 -> o1.id <=> o2.id }
+         == ScheduleTypeTestDataLoader.all().collect { new ScheduleTypeValueObject(it, it.description) }
    }
 }

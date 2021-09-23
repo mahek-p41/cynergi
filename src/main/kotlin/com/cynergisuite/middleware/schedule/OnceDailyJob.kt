@@ -5,5 +5,5 @@ import java.time.DayOfWeek
 interface OnceDailyJob : Job<DayOfWeek> {
 
    @Throws(ScheduleProcessingException::class)
-   fun processDaily(schedule: ScheduleEntity, dayOfWeek: DayOfWeek): ScheduleResult
+   override fun process(schedule: ScheduleEntity, time: DayOfWeek): JobResult
 }

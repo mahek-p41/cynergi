@@ -214,16 +214,16 @@ class ScheduleRepository @Inject constructor(
       )
    }
 
-   fun forEach(type: ScheduleType, company: CompanyEntity, callback: (ScheduleEntity) -> Unit) {
-      var result =
-         findAll(SchedulePageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"), company, type)
+   @ReadOnly
+   fun all(type: ScheduleType, company: CompanyEntity): Sequence<ScheduleEntity> {
+      var result = findAll(SchedulePageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"), company, type)
 
-      while (result.elements.isNotEmpty()) {
-         for (schedule in result.elements) {
-            callback(schedule)
+      return sequence {
+         while (result.elements.isNotEmpty()) {
+            yieldAll(result.elements)
+
+            result = findAll(result.requested.nextPage(), company, type)
          }
-
-         result = findAll(result.requested.nextPage(), company, type)
       }
    }
 
