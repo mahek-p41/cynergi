@@ -31,6 +31,7 @@ class VendorTestDataLoader {
       final name = faker.name()
       final phone = faker.phoneNumber()
       final email = faker.internet()
+      final freightCalcMethod = FreightCalcMethodTypeTestDataLoader.random()
 
       return IntStream.range(0, number).mapToObj {
          new VendorEntity(
@@ -56,9 +57,9 @@ class VendorTestDataLoader {
             phone.cellPhone(),
             random.nextBoolean(),
             random.nextBoolean() ? random.nextInt(1, 100).toBigDecimal().divide(new BigDecimal(100)).setScale(7, RoundingMode.HALF_EVEN) : null,
-            FreightCalcMethodTypeTestDataLoader.random(),
+            freightCalcMethod,
             random.nextBoolean() ? random.nextInt(1, 100).toBigDecimal().divide(new BigDecimal(100)).setScale(7, RoundingMode.HALF_EVEN) : null,
-            random.nextBoolean() ? numbers.numberBetween(1, 10_000).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN) : null,
+            freightCalcMethod.value.matches("[ISW]") ? numbers.numberBetween(1, 10_000).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN) : null,
             random.nextBoolean(),
             random.nextBoolean(),
             random.nextBoolean(),

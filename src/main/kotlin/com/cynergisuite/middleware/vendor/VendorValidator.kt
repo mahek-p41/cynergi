@@ -142,5 +142,9 @@ class VendorValidator @Inject constructor(
       if (autoSubmitPurchaseOrder == true && purchaseOrderSubmitEmailAddress == null) {
          errors.add(ValidationError("purchaseOrderSubmitEmailAddress", NotNull("purchaseOrderSubmitEmailAddress")))
       }
+
+      if (freightMethodType!!.value.matches("[ISW]".toRegex()) && dto.freightAmount == null) {
+         errors.add(ValidationError("freightAmount", NotNull("freightAmount")))
+      }
    }
 }

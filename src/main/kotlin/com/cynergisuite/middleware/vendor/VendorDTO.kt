@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.util.UUID
 import javax.validation.Valid
+import javax.validation.constraints.DecimalMax
+import javax.validation.constraints.DecimalMin
 import javax.validation.constraints.Digits
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
@@ -106,7 +108,8 @@ data class VendorDTO(
    @field:Schema(name = "separateCheck", description = "Whether this vendor requires separate checks", example = "true", defaultValue = "false")
    var separateCheck: Boolean? = null,
 
-   @field:Digits(integer = 1, fraction = 7)
+   @field:DecimalMin(value = "0", inclusive = false)
+   @field:Digits(integer = 1, fraction = 8)
    @field:Schema(name = "bumpPercent", description = "Bump percent")
    var bumpPercent: BigDecimal? = null,
 
@@ -115,10 +118,12 @@ data class VendorDTO(
    @field:Schema(name = "freightCalcMethodType", description = "Vendor freight method type")
    var freightCalcMethodType: FreightCalcMethodTypeDTO? = null,
 
-   @field:Digits(integer = 1, fraction = 7)
+   @field:DecimalMin(value = "0", inclusive = false)
+   @field:Digits(integer = 1, fraction = 8)
    @field:Schema(name = "freightPercent", description = "Freight percent")
    var freightPercent: BigDecimal? = null,
 
+   @field:DecimalMin(value = "0", inclusive = false)
    @field:Schema(name = "freightAmount", description = "Freight amount")
    var freightAmount: BigDecimal? = null,
 
