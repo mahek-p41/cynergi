@@ -55,8 +55,6 @@ class VendorPaymentTermValidator @Inject constructor(
          errors.add(ValidationError("discountPercent", NotNull("discountPercent")))
       } else if (vo.discountDays == null && vo.discountMonth == null && vo.discountPercent != null) {
          errors.add(ValidationError("discountPercent", NotUpdatable(vo.discountPercent)))
-      } else if ((vo.discountDays != null || vo.discountMonth != null) && (vo.discountPercent!! > ONE)) {
-         errors.add(ValidationError("discountPercent", MustBeInRangeOf("(0, 1]")))
       }
 
       val entity = VendorPaymentTermEntity(vo = vo, company = company)

@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.util.UUID
 import javax.validation.Valid
+import javax.validation.constraints.DecimalMax
+import javax.validation.constraints.DecimalMin
 import javax.validation.constraints.Digits
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -39,10 +41,13 @@ data class RebateDTO(
    @field:Schema(name = "rebate", description = "Rebate type")
    var type: RebateTypeDTO? = null,
 
+   @field:DecimalMin(value = "0", inclusive = false)
+   @field:DecimalMax("1")
    @field:Digits(integer = 1, fraction = 7)
    @field:Schema(name = "percent", description = "Percent", required = false)
    var percent: BigDecimal? = null,
 
+   @field:DecimalMin(value = "0", inclusive = false)
    @field:Digits(integer = 11, fraction = 2)
    @field:Schema(name = "amountPerUnit", description = "Amount per unit", required = false)
    var amountPerUnit: BigDecimal? = null,

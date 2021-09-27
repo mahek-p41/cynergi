@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTer
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import spock.lang.Unroll
 
 import javax.inject.Inject
 
@@ -176,10 +177,11 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       response[0].path == "discountPercent"
    }
 
-   void "Discount percent is 0" () {
+   @Unroll
+   void "create invalid vendor payment term with invalid #testProp = #invalidValue" () {
       given:
       final schedules = [new VendorPaymentTermScheduleDTO(null, null, 30, 1.0, 1)]
-      final newVPT = new VendorPaymentTermDTO([description: "test8", discountMonth: 3, discountPercent: 0, scheduleRecords: schedules])
+      final newVPT = new VendorPaymentTermDTO([description: "test8", discountMonth: 3, discountPercent: invalidValue, scheduleRecords: schedules])
 
       when:
       post(path, newVPT)
@@ -189,25 +191,16 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       exception.response.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].message == "discountPercent must be greater than zero"
-      response[0].path == "discountPercent"
-   }
+      response[0].path == testProp
+      response[0].code == errorCode
+      response[0].message == errorMessage
 
-   void "Discount percent greater than 1" () {
-      given:
-      final schedules = [new VendorPaymentTermScheduleDTO(null, null, 30, 1.0, 1)]
-      final newVPT = new VendorPaymentTermDTO([description: "test8", discountMonth: 3, discountPercent: 1.5, scheduleRecords: schedules])
-
-      when:
-      post(path, newVPT)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      final response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].message == "Must be in range of (0, 1]"
-      response[0].path == "discountPercent"
+      where:
+      testProp               | invalidValue      || errorCode                                          | errorMessage
+      'discountPercent'      | -0.1212345        || 'javax.validation.constraints.DecimalMin.message'  | 'must be greater than or equal to value'
+      'discountPercent'      | 0.12123456        || 'javax.validation.constraints.Digits.message'      | '0.12123456 is out of range for discountPercent'
+      'discountPercent'      | 2                 || 'javax.validation.constraints.DecimalMax.message'  | 'must be less than or equal to value'
+      'discountPercent'      | 0                 || 'javax.validation.constraints.DecimalMin.message'  | 'must be greater than or equal to value'
    }
 
    void "delete the first of two schedule records" () {
@@ -287,10 +280,14 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      final response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].message == "20.00000008 is out of range for discountPercent"
+      final response = exception.response.bodyAsJson().sort { o1, o2 -> o1.code <=> o2.code }
+      response.size() == 2
+      response[0].code == "javax.validation.constraints.DecimalMax.message"
+      response[0].message == "must be less than or equal to value"
       response[0].path == "discountPercent"
+      response[1].code == "javax.validation.constraints.Digits.message"
+      response[1].message == "20.00000008 is out of range for discountPercent"
+      response[1].path == "discountPercent"
    }
 
    void "post vendor payment term with 0 percent properties" () {
@@ -306,8 +303,10 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       exception.response.status == BAD_REQUEST
       final response = exception.response.bodyAsJson().sort { o1, o2 -> o1.message <=> o2.message }
       response.size() == 2
-      response[0].message == "discountPercent must be greater than zero"
+      response[0].code == "javax.validation.constraints.DecimalMin.message"
+      response[0].message == "must be greater than or equal to value"
       response[0].path == "discountPercent"
+      response[1].code == "javax.validation.constraints.Positive.message"
       response[1].message == "scheduleRecords[0].duePercent must be greater than zero"
       response[1].path == "scheduleRecords[0].duePercent"
    }

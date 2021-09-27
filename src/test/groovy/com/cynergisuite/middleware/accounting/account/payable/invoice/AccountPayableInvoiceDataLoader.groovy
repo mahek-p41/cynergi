@@ -99,7 +99,7 @@ class AccountPayableInvoiceDataLoader {
             LocalDate.now(),
             numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
             numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
-            random.nextInt(1, 100).toBigDecimal().divide(BigDecimal.valueOf(100)).setScale(6, RoundingMode.HALF_EVEN),
+            random.nextInt(1, 99).toBigDecimal().divide(BigDecimal.valueOf(100)).setScale(6, RoundingMode.HALF_EVEN),
             random.nextBoolean(),
             numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
             LocalDate.now(),
