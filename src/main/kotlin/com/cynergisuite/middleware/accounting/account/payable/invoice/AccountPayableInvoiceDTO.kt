@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
+import javax.validation.constraints.DecimalMax
+import javax.validation.constraints.DecimalMin
 import javax.validation.constraints.Digits
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -47,7 +49,9 @@ data class AccountPayableInvoiceDTO(
    @field:Schema(description = "Discount amount", required = false)
    var discountAmount: BigDecimal? = null,
 
-   @field:Digits(integer = 1, fraction = 6)
+   @field:DecimalMin(value = "0", inclusive = false)
+   @field:DecimalMax(value = "1", inclusive = false)
+   @field:Digits(integer = 1, fraction = 7)
    @field:Schema(description = "Discount percent", required = false)
    var discountPercent: BigDecimal? = null,
 

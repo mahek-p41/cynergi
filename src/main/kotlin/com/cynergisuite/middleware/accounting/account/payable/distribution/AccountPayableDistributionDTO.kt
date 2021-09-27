@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.util.UUID
+import javax.validation.constraints.DecimalMax
+import javax.validation.constraints.DecimalMin
 import javax.validation.constraints.Digits
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -31,6 +33,8 @@ data class AccountPayableDistributionDTO(
    var account: SimpleIdentifiableDTO? = null,
 
    @field:NotNull
+   @field:DecimalMin(value = "0", inclusive = false)
+   @field:DecimalMax("1")
    @field:Digits(integer = 1, fraction = 7)
    @field:Schema(name = "percent", description = "Percent")
    var percent: BigDecimal? = null
