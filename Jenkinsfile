@@ -49,7 +49,8 @@ pipeline {
                         set -o errexit -o pipefail -o noclobber -o nounset
                         export JAVA_OPTS="-Xms2048m -Xmx2048m -Xgcpolicy:gencon"
 
-                        ./gradlew --no-daemon --stacktrace clean buildApiDocs test jacocoTestReport
+                        ./gradlew --no-daemon --stacktrace clean buildApiDocs 2>&1 1>/dev/null
+                        ./gradlew test jacocoTestReport
                         '''
                      }
                   }
