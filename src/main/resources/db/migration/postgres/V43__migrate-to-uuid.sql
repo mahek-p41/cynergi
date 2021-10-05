@@ -489,3 +489,8 @@ BEGIN
 
    EXECUTE sqlToExec;
 END $$;
+
+alter table event_schedule rename company_id to old_company_id;
+alter table event_schedule add column company_id UUID;
+alter table event_schedule drop column if exists old_company_id;
+
