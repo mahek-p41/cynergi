@@ -492,6 +492,6 @@ END $$;
 
 -- Fix the event_schudule 
 ALTER table event_schedule RENAME company_id TO old_company_id;
-ALTER table event_schedule ADD COLUMN company_id UUID;
+ALTER TABLE event_schedule ADD COLUMN company_id UUID not null;
 ALTER table event_schedule DROP COLUMN if EXISTS old_company_id;
 
