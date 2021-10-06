@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.recurring
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableRecurringInvoiceStatusTypeDTO
-import com.cynergisuite.middleware.schedule.ScheduleValueObject
+import com.cynergisuite.middleware.schedule.ScheduleDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -89,7 +89,7 @@ data class AccountPayableRecurringInvoiceDTO(
    var expenseDay: Int? = null,
 
    @field:Schema(description = "Account payable recurring invoice schedule", required = false)
-   var schedule: ScheduleValueObject? = null,
+   var schedule: ScheduleDTO? = null,
 
    @field:Schema(description = "Account payable recurring invoice last created in period", required = false)
    var lastCreatedInPeriod: LocalDate? = null,
@@ -114,7 +114,7 @@ data class AccountPayableRecurringInvoiceDTO(
 ) : Identifiable {
    constructor(
       entity: AccountPayableRecurringInvoiceEntity,
-      schedule: ScheduleValueObject? = null
+      schedule: ScheduleDTO? = null
    ) :
       this(
          id = entity.id,

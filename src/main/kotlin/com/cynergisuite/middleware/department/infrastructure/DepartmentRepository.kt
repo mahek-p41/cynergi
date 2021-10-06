@@ -73,7 +73,8 @@ class DepartmentRepository @Inject constructor(
       return found
    }
 
-   @ReadOnly fun findAll(pageRequest: PageRequest, company: CompanyEntity): RepositoryPage<DepartmentEntity, PageRequest> {
+   @ReadOnly
+   fun findAll(pageRequest: PageRequest, company: CompanyEntity): RepositoryPage<DepartmentEntity, PageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<DepartmentEntity>()
 

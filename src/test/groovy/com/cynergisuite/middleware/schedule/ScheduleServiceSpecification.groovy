@@ -18,7 +18,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
    @Inject AuditRepository auditRepository
    @Inject AuditScheduleTestDataLoaderService auditScheduleTestDataLoaderService
    @Inject AuditTestDataLoaderService auditTestDataLoaderService
-   @Inject ScheduleService scheduleService
+   @Inject ScheduleJobExecutorService scheduleService
 
    void "execute daily Tuesday audit job on Tuesday dataset 1" () {
       given:

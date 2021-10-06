@@ -126,7 +126,8 @@ class VerificationRepository @Inject constructor(
            ON v.id = vr.verification_id
       """.trimIndent()
 
-   @ReadOnly fun findOne(id: Long): Verification? {
+   @ReadOnly
+   fun findOne(id: Long): Verification? {
       val found = jdbc.findFirstOrNull("$selectAllBase \nWHERE v.id = :id", mapOf("id" to id)) { rs, ctx ->
          val verification = selectAllRowMapper.map(rs, ctx)
 

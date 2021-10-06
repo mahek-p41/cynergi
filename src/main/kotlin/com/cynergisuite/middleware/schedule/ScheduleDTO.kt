@@ -12,7 +12,7 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @Schema(name = "Schedule", description = "A user managed scheduled job in the system")
-data class ScheduleValueObject(
+data class ScheduleDTO(
 
    @field:Positive
    var id: UUID? = null,

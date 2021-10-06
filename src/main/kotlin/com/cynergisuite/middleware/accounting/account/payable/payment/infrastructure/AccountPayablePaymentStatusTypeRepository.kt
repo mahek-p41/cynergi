@@ -27,7 +27,7 @@ class AccountPayablePaymentStatusTypeRepository @Inject constructor(
             "value" to value.uppercase()
          ),
          Boolean::class.java
-      )!!
+      )
 
       logger.trace("Checking if AccountPayablePaymentStatusType: {} exists resulting in {}", value, exists)
 

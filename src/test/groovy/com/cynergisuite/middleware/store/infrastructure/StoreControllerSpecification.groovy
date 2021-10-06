@@ -67,7 +67,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
    void "fetch one store from different dataset than one associated with authenticated user" () {
       given:
       def company = companyFactoryService.forDatasetCode('tstds2')
-      def store = storeFactoryService.store(3, company)
+      def store = storeFactoryService.store(4, company)
 
       when:
       get("$path/${store.myId()}")

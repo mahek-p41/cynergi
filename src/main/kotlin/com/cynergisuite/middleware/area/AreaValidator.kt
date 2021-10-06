@@ -20,7 +20,7 @@ class AreaValidator @Inject constructor(
    fun validateAreaTypeId(company: CompanyEntity, areaId: Int) {
       logger.trace("Validating AreaTypeId {}", areaId)
 
-      doValidation { errors ->
+      doValidation {
          if (!areaRepository.exists(areaId)) {
             throw NotFoundException(areaId)
          }

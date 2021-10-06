@@ -20,7 +20,6 @@ import javax.inject.Singleton
 
 @Singleton
 class LocationRepository @Inject constructor(
-   private val companyRepository: CompanyRepository,
    private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(LocationRepository::class.java)
@@ -72,7 +71,7 @@ class LocationRepository @Inject constructor(
 
       logger.trace("{} / {}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs, _ -> mapRow(rs, companyRepository.mapRow(rs, "comp_")) }
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ -> mapRow(rs) }
 
       logger.trace("Searching for Location with params {} resulted in {}", params, found)
 
@@ -91,7 +90,7 @@ class LocationRepository @Inject constructor(
 
       logger.debug("Searching for Location by number {}/{}", query, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs, _ -> mapRow(rs, companyRepository.mapRow(rs, "comp_")) }
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ -> mapRow(rs) }
 
       logger.trace("Search for location by number with params resulted in {}", params, found)
 
@@ -126,7 +125,7 @@ class LocationRepository @Inject constructor(
             totalElements = rs.getLong("total_elements")
          }
 
-         elements.add(mapRow(rs, company))
+         elements.add(mapRow(rs))
       }
 
       return RepositoryPage(
@@ -173,18 +172,17 @@ class LocationRepository @Inject constructor(
       return exists
    }
 
-   fun maybeMapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY) =
+   fun maybeMapRow(rs: ResultSet, columnPrefix: String = EMPTY) =
       if (rs.getString("${columnPrefix}id") != null) {
-         mapRow(rs, company, columnPrefix)
+         mapRow(rs, columnPrefix)
       } else {
          null
       }
 
-   private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY) =
+   private fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY) =
       LocationEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getInt("${columnPrefix}number"),
          name = rs.getString("${columnPrefix}name"),
-         // company = company
       )
 }

@@ -29,7 +29,7 @@ class NormalAccountBalanceTypeRepository @Inject constructor(
             "value" to value.uppercase()
          ),
          Boolean::class.java
-      )!!
+      )
 
       logger.trace("Checking if NormalAccountBalanceCode: {} exists resulted in {}", value, exists)
 

@@ -78,7 +78,7 @@ data class AuthenticatedEmployee(
    override fun myId(): Long = id
    override fun myCompany(): CompanyEntity = company
    override fun myDepartment(): Department? = department
-   override fun myLocation(): Location = chosenLocation ?: assignedLocation ?: fallbackLocation!!
+   override fun myLocation(): Location = chosenLocation ?: assignedLocation ?: fallbackLocation
    override fun myEmployeeType(): String = type
    override fun myEmployeeNumber(): Int = number
    override fun myAlternativeStoreIndicator(): String = alternativeStoreIndicator

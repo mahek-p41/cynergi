@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AuditUpdate", title = "Requirements for updating an Audit", description = "Defines the requirements for updating and Audit's status")
-data class AuditUpdateValueObject(
+data class AuditUpdateDTO(
 
    @field:NotNull
    @field:Schema(name = "id", minimum = "1", required = true, description = "System generated ID")

@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.notification.infrastructure
 
 import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getLongOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryForObject
@@ -37,7 +38,8 @@ class NotificationRecipientRepository @Inject constructor(
       return found
    }
 
-   @ReadOnly fun exists(id: Long): Boolean {
+   @ReadOnly
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM notification_recipient WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
 
       logger.trace("Checking if NotificationRecipient: {} exists resulted in {}", id, exists)
@@ -121,7 +123,7 @@ private class NotificationRecipientRowMapper(
 ) : RowMapper<NotificationRecipient> {
    override fun map(rs: ResultSet, ctx: StatementContext): NotificationRecipient =
       NotificationRecipient(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getLongOrNull("${columnPrefix}id"),
          timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
          timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
          description = rs.getString("${columnPrefix}description"),

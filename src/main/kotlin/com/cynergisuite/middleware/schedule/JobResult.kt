@@ -1,5 +1,5 @@
 package com.cynergisuite.middleware.schedule
 
-interface ScheduleResult {
+interface JobResult {
    fun scheduleName(): String
 }
