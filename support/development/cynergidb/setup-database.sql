@@ -4,20 +4,17 @@
 \c fastinfo_production
 SET args.datasets TO :'datasets';
 
-DO $$
-DECLARE
-   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
-   r RECORD;
-   sqlToExec VARCHAR;
-   unionAll VARCHAR;
+CREATE OR REPLACE FUNCTION isnumeric(text) RETURNS BOOLEAN AS $$
+DECLARE x NUMERIC;
 BEGIN
-   sqlToExec := 'CREATE OR REPLACE VIEW company_vw AS';
-   unionAll := '';
-
-   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'company_vw') THEN
-      DROP VIEW company_vw CASCADE;
-   END IF;
-END $$;
+    x = $1::NUMERIC;
+    RETURN TRUE;
+EXCEPTION WHEN others THEN
+    RETURN FALSE;
+END;
+$$
+    STRICT
+    LANGUAGE plpgsql IMMUTABLE;
 
 DO $$
 DECLARE
@@ -213,12 +210,48 @@ BEGIN
 
    EXECUTE sqlToExec;
 END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW location_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'location_vw') THEN
+      DROP VIEW location_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+            id                                AS id,
+            ''' || r.schema_name || '''::text AS dataset,
+            loc_tran_loc                      AS number,
+            loc_transfer_desc                 AS name
+         FROM ' || r.schema_name || '.level2_stores
+         WHERE loc_transfer_desc IS NOT NULL
+      ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY number ASC';
+
+   EXECUTE sqlToExec;
+END $$;
 -- End fastinfo setup
 
 -- Begin cynergidb setup
 \c cynergidb
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS postgres_fdw;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE SCHEMA IF NOT EXISTS fastinfo_prod_import;
 
 DROP SERVER IF EXISTS fastinfo CASCADE;
@@ -290,6 +323,13 @@ CREATE FOREIGN TABLE fastinfo_prod_import.inventory_vw (
     primary_location INTEGER,
     location_type INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'inventory_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.location_vw (
+    id BIGINT,
+    dataset VARCHAR,
+    number INTEGER,
+    name VARCHAR
+) SERVER fastinfo OPTIONS (TABLE_NAME 'location_vw', SCHEMA_NAME 'public');
 
 GRANT USAGE ON SCHEMA fastinfo_prod_import TO cynergiuser;
 GRANT SELECT ON ALL TABLES IN SCHEMA fastinfo_prod_import TO cynergiuser;

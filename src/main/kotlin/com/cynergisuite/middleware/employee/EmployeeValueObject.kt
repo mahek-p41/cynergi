@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.employee
 
-import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.middleware.store.StoreValueObject
-import com.fasterxml.jackson.annotation.JsonIgnore
+import com.cynergisuite.domain.LegacyIdentifiable
+import com.cynergisuite.middleware.store.StoreDTO
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -12,17 +12,17 @@ import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
+@JsonIgnoreProperties(value = ["passCode", "store", "active"], allowSetters = true)
 @Schema(name = "Employee", title = "Employee/User", description = "Describes an employee and user within the system")
 data class EmployeeValueObject(
 
-   @field:JsonIgnore
    @field:Positive
-   @field:Schema(name = "id", description = "System generated ID for the Employee/User", hidden = true)
+   @field:Schema(name = "id", description = "System generated ID for the Employee/User")
    var id: Long? = null,
 
-   @field:JsonIgnore
+   @field:JsonIgnoreProperties(allowSetters = true)
    @field:NotNull
-   @field:Schema(name = "type", description = "Where the employee definition's data came from", required = true, nullable = false, hidden = true)
+   @field:Schema(name = "type", description = "Where the employee definition's data came from")
    var type: String? = null,
 
    @field:NotNull
@@ -39,36 +39,36 @@ data class EmployeeValueObject(
    @field:Schema(name = "firstNameMi", description = "Employee's given name", minLength = 2, maxLength = 15, required = true, nullable = false)
    var firstNameMi: String? = null,
 
-   @field:JsonIgnore
+   @field:JsonIgnoreProperties
    @field:NotNull
    @field:Size(min = 3)
    @field:Schema(name = "passCode", description = "Hidden passcode not visible to calling clients associated with an employee/user", minimum = "3", hidden = true)
    var passCode: String? = null,
 
-   @field:JsonIgnore
+   @field:JsonIgnoreProperties
    @field:Schema(name = "store", description = "Default store Employee is associated with", hidden = true)
-   var store: StoreValueObject? = null,
+   var store: StoreDTO? = null,
 
    @field:NotNull
    @field:Size(min = 1, max = 1)
-   @field:Schema(name = "altStoreIndicator", description = "Employee's alternate store indicator", minLength = 1, maxLength = 1, required = true, nullable = false)
+   @field:Schema(name = "altStoreIndicator", description = "Employee's alternate store indicator, must be N|R|D|A", minLength = 1, maxLength = 1, required = true, nullable = false)
    var alternativeStoreIndicator: String? = null,
 
    @field:NotNull
    @field:Min(value = 1)
    @field:Schema(name = "alternativeArea", description = "Employee's alternate area")
-   var alternativeArea: Int? = null,
+   var alternativeArea: Long? = null,
 
-   @field:JsonIgnore
+   @field:JsonIgnoreProperties
    @field:NotNull
    @field:Schema(name = "active", description = "true|false value describing whether an employee/user is active or not", hidden = true)
    var active: Boolean? = true
 
-) : Identifiable {
+) : LegacyIdentifiable {
 
-   constructor(type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreValueObject, active: Boolean, altStoreIndicator: String, alternativeArea: Int) :
+   constructor(id: Long, type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreDTO, active: Boolean, altStoreIndicator: String, alternativeArea: Long) :
       this(
-         id = null,
+         id = id,
          type = type,
          number = number,
          lastName = lastName,
@@ -88,7 +88,7 @@ data class EmployeeValueObject(
          lastName = entity.lastName,
          firstNameMi = entity.firstNameMi,
          passCode = entity.passCode,
-         store = entity.store?.let { StoreValueObject(it) },
+         store = entity.store?.let { StoreDTO(it) },
          active = entity.active,
          alternativeStoreIndicator = entity.alternativeStoreIndicator,
          alternativeArea = entity.alternativeArea

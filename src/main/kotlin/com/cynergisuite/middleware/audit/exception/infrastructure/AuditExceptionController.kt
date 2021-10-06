@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.audit.exception.infrastructure
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
-import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateValueObject
+import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateDTO
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.AuditExceptionService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionUpdateValueObject
@@ -34,6 +34,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -58,13 +59,13 @@ class AuditExceptionController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditExceptionValueObject {
       logger.info("Fetching AuditException by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = auditExceptionService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditException by {} resulted in", id, response)
@@ -84,14 +85,14 @@ class AuditExceptionController @Inject constructor(
       ]
    )
    fun fetchAll(
-      @Parameter(name = "auditId", `in` = PATH, description = "The audit for which the listing of exceptions is to be loaded") @QueryValue("auditId") auditId: Long,
+      @Parameter(name = "auditId", `in` = PATH, description = "The audit for which the listing of exceptions is to be loaded") @QueryValue("auditId") auditId: UUID,
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
       @Valid pageRequest: StandardPageRequest,
       authentication: Authentication
    ): Page<AuditExceptionValueObject> {
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = auditExceptionService.fetchAll(auditId, user.myCompany(), pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -114,13 +115,14 @@ class AuditExceptionController @Inject constructor(
       ]
    )
    fun create(
-      @Parameter(name = "auditId", `in` = PATH, description = "The audit that is the parent of the exception being created") @QueryValue("auditId")  auditId: Long,
-      @Valid @Body vo: AuditExceptionCreateValueObject,
+      @Parameter(name = "auditId", `in` = PATH, description = "The audit that is the parent of the exception being created") @QueryValue("auditId") auditId: UUID,
+      @Valid @Body
+      vo: AuditExceptionCreateDTO,
       authentication: Authentication
    ): AuditExceptionValueObject {
       logger.info("Requested Create AuditException {}", vo)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val auditException = auditExceptionValidator.validateCreate(auditId, vo, user)
       val response = auditExceptionService.create(auditException)
 
@@ -142,13 +144,14 @@ class AuditExceptionController @Inject constructor(
       ]
    )
    fun update(
-      @Parameter(name = "auditId", `in` = PATH, description = "The audit that is the parent of the exception being updated") @QueryValue("auditId") auditId: Long,
-      @Valid @Body vo: AuditExceptionUpdateValueObject,
+      @Parameter(name = "auditId", `in` = PATH, description = "The audit that is the parent of the exception being updated") @QueryValue("auditId") auditId: UUID,
+      @Valid @Body
+      vo: AuditExceptionUpdateValueObject,
       authentication: Authentication
    ): AuditExceptionValueObject {
       logger.info("Requested Update AuditException {}", vo)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val auditException = auditExceptionValidator.validateUpdate(auditId, vo, user)
       val response = auditExceptionService.update(auditException)
 

@@ -11,7 +11,6 @@ import io.micronaut.http.annotation.Post
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.endpoints.LoginController
 import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
-import io.micronaut.validation.Validated
 import io.reactivex.Single
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -26,7 +25,6 @@ import javax.validation.Valid
  * <br />
  * It consumes a POST body that contains the store number that the user is requesting to login as.
  */
-@Validated
 @Secured(IS_ANONYMOUS)
 @Controller("/api/login")
 class SystemLoginController(

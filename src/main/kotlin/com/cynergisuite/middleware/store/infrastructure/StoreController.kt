@@ -6,8 +6,8 @@ import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
+import com.cynergisuite.middleware.store.StoreDTO
 import com.cynergisuite.middleware.store.StoreService
-import com.cynergisuite.middleware.store.StoreValueObject
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
@@ -38,10 +38,10 @@ class StoreController @Inject constructor(
    @Throws(NotFoundException::class)
    @AccessControl("store-fetchOne", StoreAccessControlProvider::class)
    @Get(value = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["StoreEndpoints"], summary = "Fetch a single Store", description = "Fetch a single Store by it's system generated primary key", operationId = "audit-fetchOne")
+   @Operation(tags = ["StoreEndpoints"], summary = "Fetch a single Store", description = "Fetch a single Store by it's system generated primary key", operationId = "store-fetchOne")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = StoreValueObject::class))]),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = StoreDTO::class))]),
          ApiResponse(responseCode = "404", description = "The requested Store was unable to be found"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
@@ -50,10 +50,10 @@ class StoreController @Inject constructor(
       @Parameter(description = "Primary Key to lookup the Store with", `in` = PATH) @QueryValue("id")
       id: Long,
       authentication: Authentication
-   ): StoreValueObject {
+   ): StoreDTO {
       logger.info("Fetching Store by id {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = storeService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching Store by {} resulted in {}", id, response)
@@ -76,10 +76,10 @@ class StoreController @Inject constructor(
       @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
       pageRequest: StandardPageRequest,
       authentication: Authentication
-   ): Page<StoreValueObject> {
+   ): Page<StoreDTO> {
       logger.info("Fetching all stores {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = storeService.fetchAll(pageRequest, user)
 
       if (page.elements.isEmpty()) {

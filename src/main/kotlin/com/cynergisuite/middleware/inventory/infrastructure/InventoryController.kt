@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/inventory")
@@ -52,14 +53,14 @@ class InventoryController(
       ]
    )
    fun fetchAll(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") @Valid
       pageRequest: InventoryPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<InventoryDTO> {
       logger.info("Fetch all inventory for store")
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       logger.info("Requesting inventory available to user {} for page {}", user, pageRequest)
 
@@ -76,7 +77,7 @@ class InventoryController(
    @JsonView(value = [InventoryApp::class])
    @Throws(AccessException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["InventoryEndpoints"], summary = "Fetch a listing of Stores", description = "Fetch a paginated listing of Inventory", operationId = "inventory-fetchAll")
+   @Operation(tags = ["InventoryEndpoints"], summary = "Fetch a listing of Stores", description = "Fetch a paginated listing of Inventory", operationId = "inventory-fetchAll-v2")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
@@ -86,7 +87,7 @@ class InventoryController(
       ]
    )
    fun fetchAllInventoryApp(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest")
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") @Valid
       pageRequest: InventoryPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
@@ -114,14 +115,14 @@ class InventoryController(
    ): InventoryDTO {
       logger.info("Fetching Inventory by barcode {}", lookupKey)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return inventoryService.fetchByLookupKey(lookupKey, user.myCompany(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(lookupKey)
    }
 
    @Throws(AccessException::class, NotFoundException::class)
    @Get(uri = "/lookup", produces = [APPLICATION_JSON, APPLICATION_FORM_URLENCODED], consumes = [APPLICATION_JSON, APPLICATION_FORM_URLENCODED])
-   @Operation(tags = ["InventoryEndpoints"], summary = "Fetch an Inventory item by lookup key", description = "Fetch an Inventory item by lookup key", operationId = "inventory-fetchByLookupKey")
+   @Operation(tags = ["InventoryEndpoints"], summary = "Fetch an Inventory item by lookup key", description = "Fetch an Inventory item by lookup key", operationId = "inventory-fetchByLookupKey-v2")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = InventoryDTO::class))]),
@@ -138,7 +139,7 @@ class InventoryController(
    ): InventoryDTO {
       logger.info("Fetching Inventory by lookup key {}", lookupKey)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return inventoryService.fetchByLookupKey(lookupKey, user.myCompany(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(lookupKey)
    }

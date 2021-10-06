@@ -3,12 +3,12 @@ package com.cynergisuite.middleware.schedule.command
 import com.cynergisuite.domain.TypeDomainEntity
 
 sealed class ScheduleCommandType(
-   val id: Long,
+   val id: Int,
    val value: String,
    val description: String,
    val localizationCode: String
 ) : TypeDomainEntity<ScheduleCommandType> {
-   override fun myId(): Long = id
+   override fun myId(): Int = id
    override fun myValue(): String = value
    override fun myDescription(): String = description
    override fun myLocalizationCode(): String = localizationCode
@@ -25,7 +25,7 @@ sealed class ScheduleCommandType(
 }
 
 class ScheduleCommandTypeEntity(
-   id: Long,
+   id: Int,
    value: String,
    description: String,
    localizationCode: String

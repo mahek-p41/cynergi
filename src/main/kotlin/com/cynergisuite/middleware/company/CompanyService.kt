@@ -8,12 +8,12 @@ import javax.inject.Singleton
 
 @Singleton
 class CompanyService @Inject constructor(
-   private val companyRepository: CompanyRepository
+   private val companyRepository: CompanyRepository,
 ) {
 
-   fun fetchAll(pageRequest: PageRequest): Page<CompanyValueObject> {
+   fun fetchAll(pageRequest: PageRequest): Page<CompanyDTO> {
       val companies = companyRepository.findAll(pageRequest)
 
-      return companies.toPage { CompanyValueObject(it) }
+      return companies.toPage { CompanyDTO(it) }
    }
 }

@@ -5,16 +5,16 @@ import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(name = "NotificationType", description = "The type describing a Notification")
 sealed class NotificationType(
-   open val id: Long,
+   open val id: Int,
    open val value: String,
    open val description: String,
    open val localizationCode: String
 ) : TypeDomainEntity<NotificationType> {
 
-   override fun myId(): Long = id
-   override fun myValue(): String = value
-   override fun myDescription(): String = description
-   override fun myLocalizationCode(): String = localizationCode
+   override fun myId() = id
+   override fun myValue() = value
+   override fun myDescription() = description
+   override fun myLocalizationCode() = localizationCode
 
    fun copy(): NotificationType =
       NotificationTypeEntity(
@@ -26,7 +26,7 @@ sealed class NotificationType(
 }
 
 data class NotificationTypeEntity(
-   override val id: Long,
+   override val id: Int,
    override val value: String,
    override val description: String,
    override val localizationCode: String

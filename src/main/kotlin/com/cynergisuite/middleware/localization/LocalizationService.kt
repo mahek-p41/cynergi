@@ -1,10 +1,10 @@
 package com.cynergisuite.middleware.localization
 
 import com.cynergisuite.middleware.error.ErrorDTO
+import io.micronaut.context.MessageSource
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.context.MessageSource
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -58,11 +58,29 @@ class LocalizationService @Inject constructor(
     *
     * @param localizationCode the key of the message to be looked up and localized
     * @param locale the [Locale] instance to be used to localize the message or [Locale.US] as a default
-    * @param arguments the arguments to be provided to the messageSource
     * @return [String] that is the localized message with the arguments applied using the provided [Locale] or the Java empty string if an error of some kind occurs
     */
    fun localize(localizationCode: LocalizationCode, locale: Locale = Locale.US, ifNotFound: String = EMPTY): String =
       localize(localizationCode.getCode(), locale, ifNotFound, localizationCode.getArguments())
+
+   /**
+    * localizes a message based on a key using the provided [Locale] or [Locale.US] if one is provided
+    * Prefer the version that takes a map instead of the array.
+    *
+    * @param messageKey the key of the message to be looked up and localized
+    * @param locale the [Locale] instance to be used to localize the message or [Locale.US] as a default
+    * @param arguments the arguments to be provided to the messageSource
+    * @return [String] that is the localized message with the arguments applied using the provided [Locale] or the Java empty string if an error of some kind occurs
+    */
+   fun localize(messageKey: String, locale: Locale = Locale.US, ifNotFound: String = EMPTY, arguments: Array<Any?>): String {
+      return localize(
+         messageKey, locale, ifNotFound,
+         arguments.asSequence()
+            .filter { arg -> arg != null }
+            .mapIndexed { index, arg -> index.toString() to arg }
+            .associate { it }
+      )
+   }
 
    /**
     * localizes a message based on a key using the provided [Locale] or [Locale.US] if one is provided
@@ -72,12 +90,14 @@ class LocalizationService @Inject constructor(
     * @param arguments the arguments to be provided to the messageSource
     * @return [String] that is the localized message with the arguments applied using the provided [Locale] or the Java empty string if an error of some kind occurs
     */
-   fun localize(messageKey: String, locale: Locale = Locale.US, ifNotFound: String = EMPTY, arguments: Array<Any?>): String {
+   fun localize(messageKey: String, locale: Locale = Locale.US, ifNotFound: String = EMPTY, arguments: Map<String, Any?> = emptyMap()): String {
       val cleanMessageKey = messageKey.removeSurrounding("{", "}")
+      val messageContext = MessageSource.MessageContext.of(locale, arguments)
 
       return try {
-         messageSource.getMessage(cleanMessageKey, arguments, locale)
+         messageSource.getMessage(cleanMessageKey, messageContext, ifNotFound)
       } catch (e: Throwable) {
+         logger.trace("Conversion error", e)
          logger.error("Unable to convert message using {} for locale {} with arguments {}", messageKey, locale, arguments)
          ifNotFound // return the Java empty string if an error occurred
       }

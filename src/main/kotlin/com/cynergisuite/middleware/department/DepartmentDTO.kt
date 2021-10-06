@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.department
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
@@ -22,7 +22,7 @@ data class DepartmentDTO(
    @field:Schema(name = "description", description = "Long form of the name of the department")
    var description: String? = null
 
-) : Identifiable {
+) : LegacyIdentifiable {
 
    constructor(entity: DepartmentEntity) :
       this(

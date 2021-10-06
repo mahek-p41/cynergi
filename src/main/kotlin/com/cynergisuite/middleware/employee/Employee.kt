@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.employee
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 
-interface Employee : Identifiable {
+interface Employee : LegacyIdentifiable {
    fun myNumber(): Int
    fun copyMe(): Employee
 }

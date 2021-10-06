@@ -2,20 +2,16 @@ package com.cynergisuite.middleware.department.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.department.DepartmentFactory
-import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.department.DepartmentDTO
+import com.cynergisuite.middleware.department.DepartmentFactory
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
-import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class DepartmentControllerSpecification extends ControllerSpecificationBase {
-   @Inject DepartmentFactoryService departmentFactoryService
 
    void "fetch one by department id" () {
       given:

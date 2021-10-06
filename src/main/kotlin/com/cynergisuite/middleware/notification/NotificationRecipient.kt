@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.notification
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
 import org.apache.commons.lang3.builder.ToStringBuilder
@@ -13,10 +13,10 @@ data class NotificationRecipient(
    val timeUpdated: OffsetDateTime = timeCreated,
    val description: String? = null,
    val recipient: String,
-   val notification: Identifiable
-) : Identifiable {
+   val notification: LegacyIdentifiable
+) : LegacyIdentifiable {
 
-   constructor(dto: NotificationRecipientValueObject, notification: Identifiable) :
+   constructor(dto: NotificationRecipientValueObject, notification: LegacyIdentifiable) :
       this(
          id = dto.id,
          recipient = dto.recipient,

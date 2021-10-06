@@ -2,14 +2,12 @@
 
 sed -ri "s/#log_statement = 'none'/log_statement = 'all'/g" /var/lib/postgresql/data/postgresql.conf
 
-dropdb --if-exists cynergidevelopdb
-createdb cynergidevelopdb
-
 dropdb --if-exists cynergidb
 createdb cynergidb
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "cynergidb" <<-EOSQL
    CREATE USER cynergiuser WITH PASSWORD 'password';
    ALTER ROLE cynergiuser SUPERUSER;
+   DROP SCHEMA IF EXISTS public;
 EOSQL
 
 if [[ -f /tmp/dumps/cynergidb.dump ]]; then
@@ -20,6 +18,9 @@ fi
 
 dropdb --if-exists fastinfo_production
 createdb fastinfo_production
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "fastinfo_production" <<-EOSQL
+   DROP SCHEMA IF EXISTS public;
+EOSQL
 
 if [[ -f /tmp/dumps/fastinfo.dump ]]; then
     echo "Restoring fastinfo_production from snapshot"
@@ -27,4 +28,6 @@ if [[ -f /tmp/dumps/fastinfo.dump ]]; then
     echo "Finished restoring fastinfo_production from snapshot"
 fi
 
+## for production change postgres and password to correct
+# sudo -u postgres psql -f /opt/cyn/v01/cynmid/data/setup-database.sql -v "ON_ERROR_STOP=1" -v fastinfoUserName=postgres -v fastinfoPassword=password -v datasets=$(/opt/cyn/v01/cynmid/data/cyndsets-parse.sh)
 psql -f /tmp/setup-database.sql -v "ON_ERROR_STOP=1" -v fastinfoUserName=postgres -v fastinfoPassword=password -v datasets=corrto,corptp,corrll,cornwv,corrdv,corapw,corrbn

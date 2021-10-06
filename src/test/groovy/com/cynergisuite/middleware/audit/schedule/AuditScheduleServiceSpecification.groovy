@@ -1,13 +1,12 @@
 package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
-import com.cynergisuite.middleware.audit.AuditFactoryService
+import com.cynergisuite.middleware.audit.AuditTestDataLoaderService
 import com.cynergisuite.middleware.audit.AuditService
-import com.cynergisuite.middleware.audit.AuditUpdateValueObject
+import com.cynergisuite.middleware.audit.AuditUpdateDTO
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
@@ -21,10 +20,9 @@ import static java.time.DayOfWeek.WEDNESDAY
 @MicronautTest(transactional = false)
 class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
    @Inject AuditService auditService
-   @Inject AuditFactoryService auditFactoryService
-   @Inject AuditScheduleFactoryService auditScheduleFactoryService
+   @Inject AuditTestDataLoaderService auditFactoryService
+   @Inject AuditScheduleTestDataLoaderService auditScheduleFactoryService
    @Inject AuditScheduleService auditScheduleService
-   @Inject EmployeeFactoryService employeeFactoryService
 
    void "one store test"() {
       given:
@@ -34,7 +32,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final schedule = auditScheduleFactoryService.single(MONDAY, [store], employee, company)
 
       when:
-      def result = auditScheduleService.processDaily(schedule, MONDAY)
+      def result = auditScheduleService.process(schedule, MONDAY)
 
       then:
       notThrown(ValidationException)
@@ -59,7 +57,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final schedule = auditScheduleFactoryService.single(FRIDAY, [store1, store3], employee, company)
 
       when:
-      def result = auditScheduleService.processDaily(schedule, FRIDAY)
+      def result = auditScheduleService.process(schedule, FRIDAY)
 
       then:
       notThrown(ValidationException)
@@ -91,7 +89,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final schedule = auditScheduleFactoryService.single(MONDAY, [store1], new AuthenticatedEmployee(employee.id, employee, store1), company)
 
       when:
-      def result = auditScheduleService.processDaily(schedule, MONDAY)
+      def result = auditScheduleService.process(schedule, MONDAY)
 
       then:
       notThrown(Exception)
@@ -116,7 +114,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final completedStatus = new AuditStatusValueObject(AuditStatusFactory.completed())
 
       when: "schedule is processed on Tuesday"
-      def result = auditScheduleService.processDaily(schedule, TUESDAY)
+      def result = auditScheduleService.process(schedule, TUESDAY)
 
       then: "Past due notification should be created with the associated audit"
       notThrown(Exception)
@@ -130,8 +128,8 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       result.audits[0].id == createdAudit.id
 
       when: "Audit is finally completed with the process running on Wednesday"
-      auditService.update(new AuditUpdateValueObject(createdAudit.id, completedStatus), user, Locale.getDefault())
-      result = auditScheduleService.processDaily(schedule, WEDNESDAY)
+      auditService.update(new AuditUpdateDTO(createdAudit.id, completedStatus), user, Locale.getDefault())
+      result = auditScheduleService.process(schedule, WEDNESDAY)
 
       then: "No notifications or audits should be created"
       notThrown(Exception)

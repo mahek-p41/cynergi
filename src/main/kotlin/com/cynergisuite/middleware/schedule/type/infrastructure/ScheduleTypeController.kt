@@ -33,7 +33,7 @@ class ScheduleTypeController @Inject constructor(
 
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["ScheduleTypeEndpoints"], summary = "Fetch a listing of Audits", description = "Fetch a paginated listing of Audits", operationId = "audit-fetchAll")
+   @Operation(tags = ["ScheduleTypeEndpoints"], summary = "Fetch a listing of Audits", description = "Fetch a paginated listing of Audits", operationId = "scheduleType-fetchAll")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", description = "If there are Audits that can be loaded within the bounds of the provided page", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),

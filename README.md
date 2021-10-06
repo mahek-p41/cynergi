@@ -161,6 +161,14 @@ A simple unit test that the developer will use to individually test out small pa
 scenarios.  In a unit test much of the infrastructure is "mocked" out to better control the inputs and outputs to the
 business logic being testing.  Typically these tests are going to be small and fast.
 
+###### Running from Command-Line
+To run from command line, you can run all the tests by running:
+```gradlew test ```
+
+To run one test, use the following:
+``` gradlew test --tests <NameOfFile>```
+
+This filters tests files by name, you can use wildcards or a path as well.
 ##### Integration Tests
 A second type of test is a functional test that will involve spinning up the entire application pointed at a locally
 running instance of Postgres (and any other 3rd party dependencies), and make real HTTP calls through the HTTP endpoints

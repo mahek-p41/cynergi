@@ -1,32 +1,26 @@
 package com.cynergisuite.middleware
 
+import com.cynergisuite.middleware.localization.PriorityMessageSource
+import io.micronaut.configuration.jdbi.JdbiCustomizer
+import io.micronaut.context.MessageSource
 import io.micronaut.context.annotation.Bean
 import io.micronaut.context.annotation.Factory
-import org.springframework.context.MessageSource
-import org.springframework.context.support.ResourceBundleMessageSource
-import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
+import io.micronaut.context.i18n.ResourceBundleMessageSource
+import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.kotlin.KotlinPlugin
+import org.jdbi.v3.sqlobject.kotlin.KotlinSqlObjectPlugin
 import javax.inject.Singleton
-import javax.sql.DataSource
 
 @Factory
-class ExternalBeanFactory {
-
-   @Bean
-   @Singleton
-   fun jdbcTemplate(dataSource: DataSource) = JdbcTemplate(dataSource)
-
-   @Bean
-   @Singleton
-   fun namedJdbcTemplate(jdbcTemplate: JdbcTemplate) = NamedParameterJdbcTemplate(jdbcTemplate)
+class ExternalBeanFactory : JdbiCustomizer {
+   override fun customize(jdbi: Jdbi) {
+      jdbi.installPlugin(KotlinPlugin())
+      jdbi.installPlugin(KotlinSqlObjectPlugin())
+   }
 
    @Bean
    @Singleton
    fun messageSource(): MessageSource {
-      val resourceBundleMessageSource = ResourceBundleMessageSource()
-
-      resourceBundleMessageSource.setBasename("i18n/messages")
-
-      return resourceBundleMessageSource
+      return PriorityMessageSource(ResourceBundleMessageSource("i18n.messages"), 1)
    }
 }

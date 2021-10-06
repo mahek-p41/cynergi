@@ -1,19 +1,22 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
+import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.authentication.AuthenticationResponseStoreRequired
 import com.cynergisuite.middleware.authentication.LoginCredentials
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.user.UserService
+import com.cynergisuite.middleware.localization.AccessDeniedCredentialsDoNotMatch
+import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.location.Location
 import io.micronaut.http.HttpRequest
 import io.micronaut.security.authentication.AuthenticationFailed
-import io.micronaut.security.authentication.AuthenticationFailureReason.CREDENTIALS_DO_NOT_MATCH
 import io.micronaut.security.authentication.AuthenticationProvider
 import io.micronaut.security.authentication.AuthenticationRequest
 import io.micronaut.security.authentication.AuthenticationResponse
 import io.reactivex.Flowable
 import io.reactivex.Flowable.just
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.reactivestreams.Publisher
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -22,6 +25,7 @@ import javax.inject.Singleton
 
 @Singleton
 class UserAuthenticationProvider @Inject constructor(
+   private val localizationService: LocalizationService,
    private val userService: UserService
 ) : AuthenticationProvider {
    private val logger: Logger = LoggerFactory.getLogger(UserAuthenticationProvider::class.java)
@@ -29,6 +33,7 @@ class UserAuthenticationProvider @Inject constructor(
    override fun authenticate(httpRequest: HttpRequest<*>?, authenticationRequest: AuthenticationRequest<*, *>?): Publisher<AuthenticationResponse> {
       logger.info("Authentication requested for user {}", authenticationRequest?.identity)
 
+      val locale = httpRequest.findLocaleWithDefault()
       val userNumber = (authenticationRequest?.identity as String?)?.toInt()
       val secret = authenticationRequest?.secret as String?
       val storeNumber = if (authenticationRequest is LoginCredentials) authenticationRequest.storeNumber else null
@@ -40,23 +45,23 @@ class UserAuthenticationProvider @Inject constructor(
          userService
             .fetchUserByAuthentication(userNumber, secret, dataset, storeNumber)
             .flatMapPublisher { employee ->
-               logger.info("Employee {} authenticated", authenticationRequest?.identity)
+               logger.info("Matching employee {} found, checking additional login criteria", authenticationRequest?.identity)
 
-               val employeeAssignedStore = employee.location // this can be null which unless user is a cynergi admin you must have a store assigned
+               val employeeAssignedStore = employee.assignedLocation // this can be null which unless user is a cynergi admin you must have a store assigned
                val chosenStore = employee.chosenLocation // this is what the user chose as their store during login
                val fallbackStore = employee.fallbackLocation // use this if user is a cynergi admin and they didn't pick a store to log into
 
                if (employee.cynergiSystemAdmin) {
-                  logger.info("Employee {} is cynergi admin", authenticationRequest?.identity)
+                  logger.info("Employee {} is cynergi admin, authentication successful", authenticationRequest?.identity)
 
                   credentialsAssociatedWithAdmin(employee, fallbackStore)
                } else if (chosenStore == null) {
                   if (storeNumber != null) {
-                     logger.info("Employee {} did not provide matching credentials or invalid chosen store", authenticationRequest?.identity)
+                     logger.warn("Employee {} did not provide matching credentials or invalid chosen store, not authenticated", authenticationRequest?.identity)
 
-                     credentialsProvidedDidNotMatch()
+                     credentialsProvidedDidNotMatch(userNumber, localizationService)
                   } else {
-                     logger.info("Employee {} required choosing a store and they chose {} and are assigned {}", authenticationRequest?.identity, chosenStore, employeeAssignedStore)
+                     logger.info("Employee {} required choosing a store and they chose {} and are assigned {}, not authenticated", authenticationRequest?.identity, chosenStore, employeeAssignedStore)
 
                      credentialsRequireStore(userNumber)
                   }
@@ -64,28 +69,28 @@ class UserAuthenticationProvider @Inject constructor(
                   // cases when chosenStore != null
 
                   if (employeeAssignedStore == chosenStore || employee.alternativeStoreIndicator == "A") {
-                     logger.info("Employee {} has alternative store indicator set to A and chose store {}", employee, chosenStore)
+                     logger.info("Employee {} has alternative store indicator set to A and chose store {}, authentication successful", employee, chosenStore)
 
                      credentialsMatched(chosenStore, employee)
                   } else {
-                     logger.info("Employee {} was allowed to login without choosing a store, using assigned store {}", authenticationRequest?.identity, employeeAssignedStore)
+                     logger.info("Employee {} was allowed to login without choosing a store, using assigned store {}, authentication successful", authenticationRequest?.identity, employeeAssignedStore)
 
                      credentialsMatched(employeeAssignedStore, employee)
                   }
                }
             }
-            .defaultIfEmpty(AuthenticationFailed(CREDENTIALS_DO_NOT_MATCH))
+            .defaultIfEmpty(AuthenticationFailed(localizationService.localize(AccessDeniedCredentialsDoNotMatch(userNumber), locale)))
       } else {
-         logger.debug("Employee {} was unable to be authenticated", userNumber)
+         logger.warn("Employee {} was not authenticated", userNumber)
 
-         just(AuthenticationFailed(CREDENTIALS_DO_NOT_MATCH))
+         just(AuthenticationFailed(localizationService.localize(AccessDeniedCredentialsDoNotMatch(userNumber?.toString() ?: EMPTY))))
       }
    }
 
    private fun credentialsAssociatedWithAdmin(employee: AuthenticatedEmployee, fallbackStore: Location): Flowable<AuthenticatedUser> {
       logger.debug("Employee is system admin")
 
-      return just(AuthenticatedUser(employee, employee.location ?: fallbackStore))
+      return just(AuthenticatedUser(employee, employee.assignedLocation ?: fallbackStore))
    }
 
    private fun credentialsRequireStore(identity: Int): Flowable<AuthenticationResponseStoreRequired> {
@@ -100,9 +105,9 @@ class UserAuthenticationProvider @Inject constructor(
       return just(AuthenticatedUser(employee))
    }
 
-   private fun credentialsProvidedDidNotMatch(): Flowable<AuthenticationFailed> {
+   private fun credentialsProvidedDidNotMatch(userId: Int, localizationService: LocalizationService): Flowable<AuthenticationFailed> {
       logger.debug("Credentials provided did not match any known user/password/company/store combo")
 
-      return just(AuthenticationFailed(CREDENTIALS_DO_NOT_MATCH))
+      return just(AuthenticationFailed(localizationService.localize(AccessDeniedCredentialsDoNotMatch(userId))))
    }
 }

@@ -34,8 +34,8 @@ class DepartmentController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(DepartmentController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["DepartmentEndpoints"], summary = "Fetch a single department", description = "Fetch a single department by it's system generated primary key", operationId = "audit-fetchOne")
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["DepartmentEndpoints"], summary = "Fetch a single department", description = "Fetch a single department by it's system generated primary key", operationId = "department-fetchOne")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", description = "If the department was able to be found", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = DepartmentDTO::class))]),
@@ -50,7 +50,7 @@ class DepartmentController @Inject constructor(
    ): DepartmentDTO {
       logger.info("Fetching department by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = departmentService.fetchOne(id, user) ?: throw NotFoundException(id)
 
       logger.debug("Fetching department by {} resulted in {}", id, response)
@@ -75,7 +75,7 @@ class DepartmentController @Inject constructor(
    ): Page<DepartmentDTO> {
       logger.info("Fetching all departments {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = departmentService.fetchAll(pageRequest, user)
 
       if (page.elements.isEmpty()) {

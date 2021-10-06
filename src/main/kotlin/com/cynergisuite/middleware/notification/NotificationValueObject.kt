@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.notification
 
-import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.LegacyIdentifiable
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -27,7 +27,7 @@ data class NotificationValueObject(
    @field:NotNull
    var expirationDate: LocalDate?,
 
-   @field:JsonProperty("companyId") // FIXME remove this when the front-end for this is rewritten 
+   @field:JsonProperty("companyId") // FIXME remove this when the front-end for this is rewritten
    @field:NotNull
    @field:Size(min = 6, max = 6)
    var company: String?,
@@ -46,7 +46,7 @@ data class NotificationValueObject(
 
    var recipients: List<NotificationRecipientValueObject> = emptyList()
 
-) : Identifiable {
+) : LegacyIdentifiable {
 
    constructor(entity: Notification) :
       this(

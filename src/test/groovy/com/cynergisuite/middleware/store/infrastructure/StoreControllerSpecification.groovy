@@ -2,11 +2,8 @@ package com.cynergisuite.middleware.store.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.department.DepartmentFactoryService
-import com.cynergisuite.middleware.employee.EmployeeFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
@@ -15,22 +12,19 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class StoreControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/store"
 
-   @Inject DepartmentFactoryService departmentFactoryService
-   @Inject EmployeeFactoryService employeeFactoryService
-
-   void "fetch one store by id" () {
-      given:
-      final def company = companyFactoryService.forDatasetCode('tstds1')
-      final def store = storeFactoryService.store(3, company)
+   void "fetch one store by id with the a region assigned" () {
+      given: 'store number 1 is assigned to a region of company tstds1'
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store1 = storeFactoryService.store(1, company)
 
       when:
-      def result = get("$path/$store.id")
+      def result = get("$path/$store1.id")
 
-      then:
+      then: 'store should have a assigned region'
       notThrown(HttpClientResponseException)
-      result.id == store.id
-      result.storeNumber == store.number
-      result.name == store.name
+      result.id == store1.id
+      result.storeNumber == store1.number
+      result.name == store1.name
       result.region.name == regions[0].name
       result.region.division.name == divisions[0].name
    }
@@ -52,7 +46,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
    void "fetch one store from different dataset than one associated with authenticated user" () {
       given:
       def company = companyFactoryService.forDatasetCode('tstds2')
-      def store = storeFactoryService.store(3, company)
+      def store = storeFactoryService.store(4, company)
 
       when:
       get("$path/${store.myId()}")
@@ -76,7 +70,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
-      pageOneResult.elements.size() == 2
+      pageOneResult.elements.size() == 3
       pageOneResult.elements[0].id == 1
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "KANSAS CITY"
@@ -92,7 +86,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       get("${path}${pageTwo}")
 
       then:
-      final def notFoundException = thrown(HttpClientResponseException)
+      final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
    }
 
@@ -133,7 +127,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       when:
       def pageOneResult = get("${path}${pageOne}", singleStoreUserToken)
 
-      then:
+      then: 'Only store 1 assigned to a region'
       notThrown(HttpClientResponseException)
       new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
@@ -164,7 +158,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       when:
       def pageOneResult = get("${path}${pageOne}", singleStoreUserToken)
 
-      then:
+      then: 'Only store 1 assigned to a region'
       notThrown(HttpClientResponseException)
       new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null

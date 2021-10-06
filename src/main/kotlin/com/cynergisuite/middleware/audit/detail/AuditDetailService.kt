@@ -5,10 +5,10 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.middleware.audit.detail.infrastructure.AuditDetailRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.authentication.user.User
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import io.micronaut.validation.Validated
-import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.Valid
@@ -18,21 +18,21 @@ class AuditDetailService @Inject constructor(
    private val auditRepository: AuditRepository,
    private val auditDetailRepository: AuditDetailRepository
 ) {
-   fun fetchById(id: Long, company: Company): AuditDetailEntity? =
+   fun fetchById(id: UUID, company: CompanyEntity): AuditDetailEntity? =
       auditDetailRepository.findOne(id, company)
 
    @Validated
-   fun fetchAll(auditId: Long, company: Company, @Valid pageRequest: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
+   fun fetchAll(auditId: UUID, company: CompanyEntity, @Valid pageRequest: PageRequest): RepositoryPage<AuditDetailEntity, PageRequest> {
       val audit = auditRepository.findOne(auditId, company) ?: throw NotFoundException(auditId)
 
       return auditDetailRepository.findAll(audit, company, pageRequest)
    }
 
    @Validated
-   fun create(auditId: Long, @Valid auditDetail: AuditDetailEntity, scannedBy: User) =
+   fun create(@Valid auditDetail: AuditDetailEntity, scannedBy: User) =
       auditDetailRepository.insert(auditDetail)
 
    @Validated
-   fun update(auditId: Long, @Valid auditDetail: AuditDetailEntity, scannedBy: User): AuditDetailEntity =
+   fun update(@Valid auditDetail: AuditDetailEntity, scannedBy: User): AuditDetailEntity =
       auditDetailRepository.update(auditDetail)
 }

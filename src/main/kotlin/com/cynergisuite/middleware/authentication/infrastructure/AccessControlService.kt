@@ -33,7 +33,7 @@ class AccessControlService @Inject constructor(
    @Throws(AccessException::class)
    override fun intercept(context: MethodInvocationContext<Any, Any?>): Any? {
       val parameters = context.parameters
-      val authenticatedUser: User = securityService.authentication.map { userService.findUser(it) }.orElseThrow { AccessException(AccessDenied(), securityService.username().orElse(null)) }
+      val authenticatedUser: User = securityService.authentication.map { userService.fetchUser(it) }.orElseThrow { AccessException(AccessDenied(), securityService.username().orElse(null)) }
       val accessControl = context.annotationMetadata.getAnnotation(AccessControl::class.java)
       val asset: String = accessControl!!.stringValue()!!.orElse(EMPTY)
       val accessControlProviderClass = accessControl.classValue("accessControlProvider", AccessControlProvider::class.java)?.orElse(DefaultAccessControlProvider::class.java) ?: DefaultAccessControlProvider::class.java

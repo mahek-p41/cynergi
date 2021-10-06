@@ -10,9 +10,9 @@ import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.AccessDenied
-import com.cynergisuite.middleware.localization.AccessDeniedCredentialsDoNotMatch
 import com.cynergisuite.middleware.localization.AccessDeniedStore
 import com.cynergisuite.middleware.localization.ConversionError
+import com.cynergisuite.middleware.localization.DataConstraintIntegrityViolation
 import com.cynergisuite.middleware.localization.InternalError
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.localization.NotFound
@@ -23,7 +23,6 @@ import com.cynergisuite.middleware.localization.UnableToParseJson
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.micronaut.core.convert.exceptions.ConversionErrorException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -31,15 +30,19 @@ import io.micronaut.http.HttpResponse.badRequest
 import io.micronaut.http.HttpResponse.noContent
 import io.micronaut.http.HttpResponse.notFound
 import io.micronaut.http.HttpResponse.serverError
+import io.micronaut.http.HttpStatus.CONFLICT
 import io.micronaut.http.HttpStatus.FORBIDDEN
 import io.micronaut.http.HttpStatus.NOT_IMPLEMENTED
 import io.micronaut.http.HttpStatus.UNAUTHORIZED
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Error
+import io.micronaut.http.codec.CodecException
 import io.micronaut.security.authentication.AuthenticationException
 import io.micronaut.security.authentication.AuthorizationException
 import io.micronaut.web.router.exceptions.UnsatisfiedRouteException
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.statement.UnableToExecuteStatementException
+import org.postgresql.util.PSQLException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -80,6 +83,21 @@ class ErrorHandlerController @Inject constructor(
          .body(localizationService.localizeError(NotImplemented(httpRequest.path), locale))
    }
 
+   @Error(global = true, exception = CodecException::class)
+   fun codecException(httpRequest: HttpRequest<*>, exception: CodecException): HttpResponse<ErrorDTO> {
+      logger.warn("Unable to parse request body", exception)
+
+      val locale = httpRequest.findLocaleWithDefault()
+      val firstLevelCause = exception.cause
+      val secondLevelCause = firstLevelCause?.cause
+
+      return if (firstLevelCause is CodecException && secondLevelCause is InvalidFormatException && secondLevelCause.path.size > 0 && secondLevelCause.value is String) {
+         processBadRequest(secondLevelCause.path[0].fieldName, secondLevelCause.value, locale)
+      } else {
+         return badRequest()
+      }
+   }
+
    @Error(global = true, exception = ConversionErrorException::class)
    fun conversionError(httpRequest: HttpRequest<*>, exception: ConversionErrorException): HttpResponse<ErrorDTO> {
       logger.warn("Unable to parse request body", exception)
@@ -99,7 +117,8 @@ class ErrorHandlerController @Inject constructor(
                localizationService.localizeError(
                   localizationCode = ConversionError(argument.name, conversionError.originalValue.orElse(null)),
                   locale = locale,
-                  path = conversionErrorCause.path.joinToString(".") { it.fieldName })
+                  path = conversionErrorCause.path.joinToString(".") { it.fieldName }
+               )
             )
          }
 
@@ -132,7 +151,7 @@ class ErrorHandlerController @Inject constructor(
 
    @Error(global = true, exception = UnsatisfiedRouteException::class)
    fun unsatisfiedRouteException(httpRequest: HttpRequest<*>, exception: UnsatisfiedRouteException): HttpResponse<ErrorDTO> {
-      logger.trace("Unsatisfied Route Error", exception)
+      logger.warn("Unsatisfied Route Error", exception)
 
       val locale = httpRequest.findLocaleWithDefault()
 
@@ -143,14 +162,14 @@ class ErrorHandlerController @Inject constructor(
 
    @Error(global = true, exception = PageOutOfBoundsException::class)
    fun pageOutOfBoundsExceptionHandler(exception: PageOutOfBoundsException): HttpResponse<ErrorDTO> {
-      logger.error("Page out of bounds was requested {}", exception.toString())
+      logger.warn("Page out of bounds was requested {}", exception.toString())
 
       return noContent()
    }
 
    @Error(global = true, exception = NotFoundException::class)
    fun notFoundExceptionHandler(httpRequest: HttpRequest<*>, notFoundException: NotFoundException): HttpResponse<ErrorDTO> {
-      logger.trace("Not Found Error {}", notFoundException.message)
+      logger.warn("Not Found Error {}", notFoundException.message)
 
       val locale = httpRequest.findLocaleWithDefault()
 
@@ -161,7 +180,7 @@ class ErrorHandlerController @Inject constructor(
 
    @Error(global = true, exception = ValidationException::class)
    fun validationException(httpRequest: HttpRequest<*>, validationException: ValidationException): HttpResponse<List<ErrorDTO>> {
-      logger.trace("Validation Error", validationException)
+      logger.warn("Validation Error", validationException)
 
       val locale = httpRequest.findLocaleWithDefault()
 
@@ -172,9 +191,24 @@ class ErrorHandlerController @Inject constructor(
       )
    }
 
+   @Error(global = true, exception = UnableToExecuteStatementException::class) // do not let internal table structure leak with this handler!!
+   fun constraintViolationException(httpRequest: HttpRequest<*>, dataIntegrityViolationException: UnableToExecuteStatementException): HttpResponse<ErrorDTO> {
+      logger.warn("DataIntegrityViolationException Error", dataIntegrityViolationException)
+
+      val locale = httpRequest.findLocaleWithDefault()
+      val message = dataIntegrityViolationException.localizedMessage
+      val errorPayload = localizationService.localizeError(localizationCode = DataConstraintIntegrityViolation(), locale = locale)
+
+      return if (message.startsWith("org.postgresql.util.PSQLException: ERROR: update or delete")) {
+         return HttpResponse.status<ErrorDTO>(CONFLICT).body(errorPayload)
+      } else {
+         badRequest(errorPayload)
+      }
+   }
+
    @Error(global = true, exception = ConstraintViolationException::class)
    fun constraintViolationException(httpRequest: HttpRequest<*>, constraintViolationException: ConstraintViolationException): HttpResponse<List<ErrorDTO>> {
-      logger.trace("Constraint Violation Error", constraintViolationException)
+      logger.warn("Constraint Violation Error", constraintViolationException)
 
       val locale = httpRequest.findLocaleWithDefault()
 
@@ -196,17 +230,19 @@ class ErrorHandlerController @Inject constructor(
    fun authenticationExceptionHandler(httpRequest: HttpRequest<*>, authenticationException: AuthenticationException): HttpResponse<ErrorDTO> {
       logger.warn("AuthenticationException {}", authenticationException.localizedMessage)
 
-      val userName = httpRequest.body.map { if (it is ObjectNode && it.has("username")) it.get("username").textValue() else null }.orElse(null)
       val locale = httpRequest.findLocaleWithDefault()
+      val exceptionMessage = authenticationException.message
 
-      return if (authenticationException.message.isDigits()) { // most likely store should have been provided
-         val message = localizationService.localizeError(AccessDeniedStore(authenticationException.message!!), locale)
+      return if (exceptionMessage.isDigits()) { // most likely store should have been provided
+         val message = localizationService.localize(AccessDeniedStore(authenticationException.message!!), locale)
 
-         HttpResponse.status<ErrorDTO>(UNAUTHORIZED).body(message)
-      } else if (!authenticationException.message.isNullOrBlank() && authenticationException.message == "Credentials Do Not Match" && userName != null) {
-         val message = localizationService.localizeError(AccessDeniedCredentialsDoNotMatch(userName), locale)
-
-         HttpResponse.status<ErrorDTO>(UNAUTHORIZED).body(message)
+         HttpResponse
+            .status<ErrorDTO>(UNAUTHORIZED)
+            .body(ErrorDTO(message, "system.access.denied"))
+      } else if (!exceptionMessage.isNullOrBlank()) {
+         HttpResponse
+            .status<ErrorDTO>(UNAUTHORIZED)
+            .body(ErrorDTO(exceptionMessage, "system.access.denied"))
       } else {
          val message = localizationService.localizeError(AccessDenied(), locale)
 
@@ -248,14 +284,33 @@ class ErrorHandlerController @Inject constructor(
 
    @Error(global = true, exception = IOException::class)
    fun inputOutputExceptionHandler(httpRequest: HttpRequest<*>, exception: IOException) {
-      logger.trace("InputOutput Exception", exception)
+      logger.warn("InputOutput Exception", exception)
 
-      when (exception.message?.trim()?.toLowerCase()) {
+      val locale = httpRequest.findLocaleWithDefault()
+
+      when (exception.message?.trim()?.lowercase(locale)) {
          "an existing connection was forcibly closed by the remote host", "connection reset by peer" ->
             logger.warn("{} - {}:{}", exception.message, httpRequest.method, httpRequest.path)
          else ->
             logger.error("Unknown IOException occurred during request processing", exception)
       }
+   }
+
+   @Error(global = true, exception = PSQLException::class)
+   fun sqlExceptionHandler(httpRequest: HttpRequest<*>, throwable: PSQLException): HttpResponse<ErrorDTO> {
+      logger.warn("SQL Error", throwable)
+
+      val locale = httpRequest.findLocaleWithDefault()
+
+      return serverError(
+         ErrorDTO(
+            localizationService.localize(
+               localizationCode = InternalError(),
+               locale = locale
+            ),
+            "system.data.access.exception"
+         )
+      )
    }
 
    @Error(global = true, exception = Throwable::class)

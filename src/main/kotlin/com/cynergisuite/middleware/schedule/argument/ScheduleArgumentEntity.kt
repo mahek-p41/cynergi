@@ -1,9 +1,10 @@
 package com.cynergisuite.middleware.schedule.argument
 
 import com.cynergisuite.domain.Identifiable
+import java.util.UUID
 
 data class ScheduleArgumentEntity(
-   val id: Long? = null,
+   val id: UUID? = null,
    val value: String,
    val description: String
 ) : Identifiable {
@@ -15,5 +16,5 @@ data class ScheduleArgumentEntity(
          description = description
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): UUID? = id
 }

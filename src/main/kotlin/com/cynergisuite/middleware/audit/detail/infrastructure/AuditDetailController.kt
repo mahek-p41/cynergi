@@ -33,6 +33,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 
@@ -56,13 +57,13 @@ class AuditDetailController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditDetailValueObject {
       logger.info("Fetching AuditDetail by {}", id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = auditDetailService.fetchById(id = id, company = user.myCompany()) ?: throw NotFoundException(id)
 
       logger.debug("Fetching AuditDetail by {} resulted in", id, response)
@@ -82,7 +83,7 @@ class AuditDetailController @Inject constructor(
    )
    fun fetchAll(
       @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId")
-      auditId: Long,
+      auditId: UUID,
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
       pageRequest: StandardPageRequest,
       authentication: Authentication,
@@ -90,7 +91,7 @@ class AuditDetailController @Inject constructor(
    ): Page<AuditDetailValueObject> {
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = auditDetailService.fetchAll(auditId, user.myCompany(), pageRequest)
          .toPage { transformEntity(it) }
 
@@ -114,7 +115,7 @@ class AuditDetailController @Inject constructor(
    )
    fun create(
       @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId")
-      auditId: Long,
+      auditId: UUID,
       @Valid @Body
       vo: AuditDetailCreateUpdateDTO,
       authentication: Authentication,
@@ -122,14 +123,14 @@ class AuditDetailController @Inject constructor(
    ): HttpResponse<AuditDetailValueObject> {
       logger.info("Requested Create AuditDetail {}", vo)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val existingDetail = auditDetailValidator.validateDuplicateDetail(auditId, vo, user)
 
       return if (existingDetail != null) {
-         HttpResponse.notModified<AuditDetailValueObject>()
+         HttpResponse.notModified()
       } else {
          val detailToCreate = auditDetailValidator.validateCreate(auditId, user, vo)
-         val response = auditDetailService.create(auditId, detailToCreate, user)
+         val response = auditDetailService.create(detailToCreate, user)
 
          logger.debug("Requested Create AuditDetail {} resulted in {}", vo, response)
 
@@ -150,9 +151,9 @@ class AuditDetailController @Inject constructor(
    )
    fun update(
       @Parameter(name = "auditId", `in` = ParameterIn.PATH, description = "The audit for which the listing of details is to be loaded") @QueryValue("auditId")
-      auditId: Long,
+      auditId: UUID,
       @Parameter(name = "auditDetailId", `in` = ParameterIn.PATH, description = "The audit detail id") @QueryValue("auditDetailId")
-      auditDetailId: Long,
+      auditDetailId: UUID,
       @Valid @Body
       vo: AuditDetailCreateUpdateDTO,
       authentication: Authentication,
@@ -160,9 +161,9 @@ class AuditDetailController @Inject constructor(
    ): AuditDetailValueObject {
       logger.info("Requested Update AuditDetail {}", vo)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val existingDetail = auditDetailValidator.validateUpdate(auditId, user, vo)
-      val response = auditDetailService.update(auditId, existingDetail, user)
+      val response = auditDetailService.update(existingDetail, user)
 
       logger.debug("Requested Update AuditDetail {} resulted in {}", existingDetail, response)
 

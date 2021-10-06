@@ -4,32 +4,33 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
+import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
 class CompanyRepository @Inject constructor(
-   private val jdbc: NamedParameterJdbcTemplate
+   private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(CompanyRepository::class.java)
-   private val simpleCompanyRowMapper = CompanyRowMapper()
 
    fun companyBaseQuery() =
       """
       SELECT
          comp.id                  AS id,
-         comp.uu_row_id           AS uu_row_id,
          comp.time_created        AS time_created,
          comp.time_updated        AS time_updated,
          comp.name                AS name,
@@ -41,6 +42,7 @@ class CompanyRepository @Inject constructor(
       FROM company comp
    """
 
+   @ReadOnly
    fun findCompanyByStore(store: Store): CompanyEntity? {
       logger.debug("Search for company using store id {}", store.myId())
 
@@ -48,7 +50,6 @@ class CompanyRepository @Inject constructor(
          """
          SELECT
            comp.id                  AS id,
-           comp.uu_row_id           AS uu_row_id,
            comp.time_created        AS time_created,
            comp.time_updated        AS time_updated,
            comp.name                AS name,
@@ -65,32 +66,38 @@ class CompanyRepository @Inject constructor(
          """,
          mapOf(
             "store_id" to store.myId(),
-            "dataset" to store.myCompany().myDataset()
+            "dataset" to store.myCompany().datasetCode
          ),
-         RowMapper { rs, _ -> mapRow(rs) }
-      )
+      ) { rs, _ -> mapRow(rs) }
 
       logger.debug("Searching for company by store id {} resulted in {}", store.myId(), found)
 
       return found
    }
 
-   fun findOne(id: Long): CompanyEntity? {
-      val found = jdbc.findFirstOrNull("${companyBaseQuery()} WHERE id = :id", mapOf("id" to id), simpleCompanyRowMapper)
+   @ReadOnly
+   fun findOne(id: UUID): CompanyEntity? {
+      val found =
+         jdbc.findFirstOrNull("${companyBaseQuery()} WHERE comp.id = :id", mapOf("id" to id)) { rs, _ -> mapRow(rs) }
 
       logger.trace("Searching for Company: {} resulted in {}", id, found)
 
       return found
    }
 
+   @ReadOnly
    fun findByDataset(datasetCode: String): CompanyEntity? {
-      val found = jdbc.findFirstOrNull("${companyBaseQuery()} WHERE dataset_code = :dataset_code", mapOf("dataset_code" to datasetCode), simpleCompanyRowMapper)
+      val found = jdbc.findFirstOrNull(
+         "${companyBaseQuery()} WHERE dataset_code = :dataset_code",
+         mapOf("dataset_code" to datasetCode)
+      ) { rs, _ -> mapRow(rs) }
 
       logger.trace("Searching for Company: {} resulted in {}", datasetCode, found)
 
       return found
    }
 
+   @ReadOnly
    fun findAll(pageRequest: PageRequest): RepositoryPage<CompanyEntity, PageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<CompanyEntity>()
@@ -109,7 +116,7 @@ class CompanyRepository @Inject constructor(
             OFFSET ${pageRequest.offset()}
          """,
          emptyMap<String, Any>()
-      ) { rs ->
+      ) { rs, _ ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
          }
@@ -124,36 +131,61 @@ class CompanyRepository @Inject constructor(
       )
    }
 
-   fun forEach(callback: (Company) -> Unit) {
+   @ReadOnly
+   fun all(): Sequence<CompanyEntity> {
       var result = findAll(StandardPageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
 
-      while (result.elements.isNotEmpty()) {
-         for (company in result.elements) {
-            callback(company)
-         }
+      return sequence {
+         while (result.elements.isNotEmpty()) {
+            yieldAll(result.elements)
 
-         result = findAll(result.requested.nextPage())
+            result = findAll(result.requested.nextPage())
+         }
       }
    }
 
-   fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM company WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+   @ReadOnly
+   fun exists(id: UUID? = null): Boolean {
+      if (id == null) return false
+
+      val exists = jdbc.queryForObject(
+         "SELECT EXISTS(SELECT id FROM company WHERE id = :id)",
+         mapOf("id" to id),
+         Boolean::class.java
+      )
 
       logger.trace("Checking if Company: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
-   fun doesNotExist(id: Long): Boolean = !exists(id)
+   @ReadOnly
+   fun duplicate(id: UUID? = null, clientId: Int? = null, datasetCode: String? = null): Boolean {
+      if (clientId == null && datasetCode == null) return false
+      var and = EMPTY
+      val params = mapOf("id" to id, "clientId" to clientId, "datasetCode" to datasetCode)
+      val query = StringBuilder("SELECT EXISTS(SELECT id FROM company WHERE ")
 
-   fun doesNotExist(company: Company): Boolean {
-      val companyId = company.myId()
-
-      return if (companyId != null) {
-         !exists(companyId)
-      } else {
-         false
+      if (id != null) {
+         query.append(and).append(" id <> :id ")
+         and = " AND "
       }
+
+      if (clientId != null) {
+         query.append(and).append(" client_id = :clientId ")
+      } else if (datasetCode != null) {
+         query.append(and).append(" dataset_code = :datasetCode ")
+      }
+
+      query.append(")")
+
+      logger.trace("Checking if Company clientId or datasetCode duplicate with query:\n{}\nparams:\n{}", query, params)
+
+      val exists = jdbc.queryForObject(query.toString(), params, Boolean::class.java)
+
+      logger.trace("Checking if Company clientId or datasetCode duplicate, result: {}", exists)
+
+      return exists
    }
 
    @Transactional
@@ -173,23 +205,14 @@ class CompanyRepository @Inject constructor(
             "client_code" to company.clientCode,
             "client_id" to company.clientId,
             "dataset_code" to company.datasetCode,
-            "federal_id_number" to company.federalIdNumber
-         ),
-         RowMapper { rs, _ -> mapRow(rs) }
-      )
+            "federal_id_number" to company.federalIdNumber,
+         )
+      ) { rs, _ -> mapRow(rs) }
    }
 
    fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): CompanyEntity =
-      simpleCompanyRowMapper.mapRow(rs, columnPrefix)
-}
-
-private class CompanyRowMapper : RowMapper<CompanyEntity> {
-   override fun mapRow(rs: ResultSet, rowNum: Int): CompanyEntity =
-      mapRow(rs, EMPTY)
-
-   fun mapRow(rs: ResultSet, columnPrefix: String): CompanyEntity =
       CompanyEntity(
-         id = rs.getLong("${columnPrefix}id"),
+         id = rs.getUuid("${columnPrefix}id"),
          name = rs.getString("${columnPrefix}name"),
          doingBusinessAs = rs.getString("${columnPrefix}doing_business_as"),
          clientCode = rs.getString("${columnPrefix}client_code"),

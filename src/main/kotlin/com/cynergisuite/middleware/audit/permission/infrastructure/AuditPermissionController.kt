@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.audit.infrastructure.AuditAccessControlProvider
-import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateDataTransferObject
+import com.cynergisuite.middleware.audit.permission.AuditPermissionCreateDTO
 import com.cynergisuite.middleware.audit.permission.AuditPermissionService
 import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeValueObject
 import com.cynergisuite.middleware.audit.permission.AuditPermissionValueObject
@@ -34,7 +34,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
+import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/audit/permission")
@@ -45,7 +47,7 @@ class AuditPermissionController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AuditPermissionController::class.java)
 
    @Throws(NotFoundException::class)
-   @Get(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @AccessControl("audit-permission-manager", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Fetch a single Audit Permission", description = "Fetch a single Audit Permission by it's system generated primary key", operationId = "auditPermission-fetchOne")
    @ApiResponses(
@@ -58,13 +60,13 @@ class AuditPermissionController @Inject constructor(
    )
    fun fetchOne(
       @Parameter(description = "Primary Key to lookup the Audit with", `in` = PATH) @QueryValue("id")
-      id: Long,
+      id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): AuditPermissionValueObject {
       logger.debug("User {} requested Audit Permission by ID {}", authentication, id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
 
       return auditPermissionService.fetchById(id, user.myCompany(), locale) ?: throw NotFoundException(id)
@@ -90,7 +92,7 @@ class AuditPermissionController @Inject constructor(
    ): Page<AuditPermissionValueObject> {
       logger.debug("User {} requested Audit Permissions {}", authentication, pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
       val page = auditPermissionService.fetchAll(pageRequest, user, locale)
 
@@ -123,7 +125,7 @@ class AuditPermissionController @Inject constructor(
    ): Page<AuditPermissionValueObject> {
       logger.debug("User {} requested Audit Permissions {} of TypeId {}", authentication, pageRequest, typeId)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
       val page = auditPermissionService.fetchAllByType(typeId, pageRequest, user, locale)
 
@@ -176,19 +178,20 @@ class AuditPermissionController @Inject constructor(
       ]
    )
    fun create(
-      @Body permission: AuditPermissionCreateDataTransferObject,
+      @Body @Valid
+      permission: AuditPermissionCreateDTO,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): AuditPermissionValueObject {
       logger.info("User {} requested creation of audit permission {}", authentication, permission)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
 
       return auditPermissionService.create(permission, user, locale)
    }
 
-   @Delete(uri = "/{id:[0-9]+}", produces = [APPLICATION_JSON])
+   @Delete(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @AccessControl("audit-permission-manager", accessControlProvider = AuditAccessControlProvider::class)
    @Operation(tags = ["AuditPermissionEndpoints"], summary = "Delete a single Audit Permission", description = "Delete a single Audit Permission by it's system generated primary key", operationId = "auditPermission-delete")
    @ApiResponses(
@@ -201,13 +204,13 @@ class AuditPermissionController @Inject constructor(
    )
    fun delete(
       @Parameter(description = "Primary Key to delete the Audit Permission with", `in` = PATH) @QueryValue("id")
-      id: Long,
+      id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): AuditPermissionValueObject {
       logger.debug("User {} requested Audit Permission Deletion by ID {}", authentication, id)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
 
       return auditPermissionService.deleteById(id, user.myCompany(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(id)
    }

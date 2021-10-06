@@ -22,8 +22,13 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.stream.Collectors
 
-import static io.micronaut.http.HttpRequest.*
-import static io.micronaut.http.HttpStatus.*
+import static io.micronaut.http.HttpRequest.DELETE
+import static io.micronaut.http.HttpRequest.GET
+import static io.micronaut.http.HttpRequest.POST
+import static io.micronaut.http.HttpRequest.PUT
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class NotificationControllerSpecification extends ControllerSpecificationBase {
@@ -37,8 +42,8 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one notification by id with no recipients" () {
       given:
-      final def savedNotification = notificationsDataLoaderService.single()
-      final def notificationValueObject = new NotificationResponseValueObject(new NotificationValueObject(savedNotification))
+      final savedNotification = notificationsDataLoaderService.single()
+      final notificationValueObject = new NotificationResponseValueObject(new NotificationValueObject(savedNotification))
 
       when:
       def result = get("$path/${savedNotification.id}")
@@ -57,10 +62,10 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one notification by id with recipients" () {
       given:
-      final def companyId = "testco"
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
-      final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
-      final def recipients = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
+      final companyId = "testco"
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final recipients = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
 
       when:
       def result = client.retrieve(GET("$path/${notification.id}"), NotificationResponseValueObject)
@@ -72,7 +77,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one notification by id not found" () {
       when:
-      client.exchange(GET("$path/0"), Argument.of(NotificationResponseValueObject), Argument.of(ErrorDTO))
+      client.exchange(GET("$path/0").headers(["X-Auth-Company": "testco", "X-Auth-User": "bob"]), Argument.of(NotificationResponseValueObject), Argument.of(ErrorDTO))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -82,10 +87,10 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all by sending employee and company through the admin path" () {
       given:
-      final def companyId = "testco"
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
-      final def sendingEmployee = "bob"
-      final def fiveNotifications = notificationsDataLoaderService.stream(5, companyId, LocalDate.now(), null, notificationType, sendingEmployee).collect(Collectors.toList())
+      final companyId = "testco"
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final sendingEmployee = "bob"
+      final fiveNotifications = notificationsDataLoaderService.stream(5, companyId, LocalDate.now(), null, notificationType, sendingEmployee).collect(Collectors.toList())
       fiveNotifications.each { notification -> notificationRecipientDataLoaderService.stream(2, notification).forEach { notification.recipients.add(it) } }
 
       when:
@@ -102,9 +107,9 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
    @Deprecated
    void "fetch all by company with type All deprecated" () {
       given:
-      final def companyId = "testco"
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
-      final def fiveNotifications = notificationsDataLoaderService.stream(5, companyId, LocalDate.now(), null, notificationType, null).collect(Collectors.toList())
+      final companyId = "testco"
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final fiveNotifications = notificationsDataLoaderService.stream(5, companyId, LocalDate.now(), null, notificationType, null).collect(Collectors.toList())
 
       when:
       def result = client.retrieve(GET("$path?type=${notificationType.value}").headers(["X-Auth-Company": companyId]), NotificationsResponseValueObject)
@@ -116,9 +121,9 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all by company with type All" () {
       given:
-      final def companyId = "testco"
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
-      final def fiveNotifications = notificationsDataLoaderService.stream(5, companyId, LocalDate.now(), null, notificationType, null).collect(Collectors.toList())
+      final companyId = "testco"
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final fiveNotifications = notificationsDataLoaderService.stream(5, companyId, LocalDate.now(), null, notificationType, null).collect(Collectors.toList())
 
       when:
       def result = client.retrieve(GET("$path/company/${companyId}?type=${notificationType.value}"), NotificationValueObject[])
@@ -131,10 +136,10 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
    @Deprecated
    void "fetch all by company with type Employee deprecated" () {
       given:
-      final def companyId = "testco"
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
-      final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
-      final def recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
+      final companyId = "testco"
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
 
       when:
       def recipient = recipientNotifications[0].recipient
@@ -149,10 +154,10 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all by company with type Employee" () {
       given:
-      final def companyId = "testco"
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
-      final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
-      final def recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
+      final companyId = "testco"
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
 
       when:
       def recipient = recipientNotifications[0].recipient
@@ -167,12 +172,12 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
    @Deprecated
    void "fetch all by company without the required X-Auth-Company header deprecated" () {
       when:
-      client.retrieve(GET(path), Argument.of(NotificationsResponseValueObject), Argument.of(ErrorDTO))
+      client.retrieve(GET(path), Argument.of(NotificationsResponseValueObject), Argument.of(HashMap))
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      exception.response.getBody(ErrorDTO).orElse(null)?.message == "Required argument companyId not specified"
+      exception.response.getBody(HashMap).orElse(null)?.message == "Required Header [X-Auth-Company] not specified"
    }
 
    @Deprecated
@@ -189,7 +194,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all types" () {
       when:
-      final def types = client.retrieve(GET("${path}/types"), NotificationTypeValueObject[])
+      final types = client.retrieve(GET("${path}/types"), NotificationTypeValueObject[])
 
       then:
       types.size() == 4
@@ -205,21 +210,21 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "attempt to fetch all types with typo results in bad request status" () {
       when:
-      client.retrieve(GET("${path}/type"), Argument.of(NotificationTypeValueObject[]), Argument.of(ErrorDTO))
+      client.retrieve(GET("${path}/type"), Argument.of(NotificationTypeValueObject[]), Argument.of(HashMap))
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      exception.response.getBody(ErrorDTO).orElse(null)?.message == "Failed to convert argument [id] for value [type]"
+      exception.response.getBody(HashMap).orElse(null)?.message == 'Failed to convert argument [id] for value [type] due to: For input string: "type"'
    }
 
    void "post valid notification of type All" () {
       given:
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
-      final def notification = NotificationTestDataLoader.stream(1, "testco", null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create Notification") }
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final notification = NotificationTestDataLoader.stream(1, "testco", null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create Notification") }
 
       when:
-      final def savedNotification = client.retrieve(POST(path, new NotificationRequestValueObject(new NotificationValueObject(notification))), NotificationResponseValueObject).notification
+      final savedNotification = client.retrieve(POST(path, new NotificationRequestValueObject(new NotificationValueObject(notification))), NotificationResponseValueObject).notification
 
       then:
       savedNotification.id != null
@@ -232,12 +237,12 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "post valid notification of type All with only the 'A'" () {
       given:
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
-      final def notification = NotificationTestDataLoader.stream(1, "testco", null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create Notification") }
-      final def notificationPayload = new NotificationValueObject(notification, "A")
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final notification = NotificationTestDataLoader.stream(1, "testco", null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create Notification") }
+      final notificationPayload = new NotificationValueObject(notification, "A")
 
       when:
-      final def savedNotification = client.retrieve(POST(path, new NotificationRequestValueObject(notificationPayload)), NotificationResponseValueObject).notification
+      final savedNotification = client.retrieve(POST(path, new NotificationRequestValueObject(notificationPayload)), NotificationResponseValueObject).notification
 
       then:
       savedNotification.id != null
@@ -250,12 +255,12 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "post valid notification of type Employee with 1 recipient" () {
       given:
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
-      final def notification = NotificationTestDataLoader.stream(1, "testco", null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create Notification") }
-      final def notificationRecipients = NotificationRecipientTestDataLoader.stream(1, notification).collect(Collectors.toList())
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final notification = NotificationTestDataLoader.stream(1, "testco", null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create Notification") }
+      final notificationRecipients = NotificationRecipientTestDataLoader.stream(1, notification).collect(Collectors.toList())
 
       when:
-      final def savedNotification = client.retrieve(POST(path, new NotificationRequestValueObject(new NotificationValueObject(notification, notificationRecipients))), NotificationResponseValueObject).notification
+      final savedNotification = client.retrieve(POST(path, new NotificationRequestValueObject(new NotificationValueObject(notification, notificationRecipients))), NotificationResponseValueObject).notification
 
       then:
       savedNotification.id != null
@@ -269,8 +274,8 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "post invalid notification of type employee with no recipients" () {
       given:
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
-      final def notification = NotificationTestDataLoader.stream(1, "testco", null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create Notification") }
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final notification = NotificationTestDataLoader.stream(1, "testco", null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create Notification") }
 
       when:
       client.retrieve(POST(path, new NotificationRequestValueObject(new NotificationValueObject(notification))), Argument.of(NotificationResponseValueObject), Argument.of(ErrorDTO[]))
@@ -286,7 +291,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "post invalid notification of type all with nulls" () {
       given:
-      final def notification = new NotificationValueObject(null, null, null, null, null, null, null, null, [])
+      final notification = new NotificationValueObject(null, null, null, null, null, null, null, null, [])
 
       when:
       client.retrieve(POST(path, new NotificationRequestValueObject(notification)), Argument.of(String), Argument.of(String))
@@ -308,8 +313,8 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "put valid notification of type all" () {
       given:
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
-      final def savedNotification = notificationsDataLoaderService.stream(1, "testco", null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final savedNotification = notificationsDataLoaderService.stream(1, "testco", null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
 
       when:
       final updatedNotification = new NotificationValueObject(null, "Updated message", savedNotification)
@@ -322,10 +327,10 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "put valid notification of type employee add recipient" () {
       given:
-      final def companyId = "testco"
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
-      final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
-      final def recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
+      final companyId = "testco"
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
       notification.recipients.addAll(recipientNotifications)
 
       when:
@@ -341,10 +346,10 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "put valid notification of type employee remove recipient with recipient ID's from client" () {
       given:
-      final def companyId = "testco"
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
-      final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
-      final def recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
+      final companyId = "testco"
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
       notification.recipients.add(recipientNotifications[0])
 
       when:
@@ -359,10 +364,10 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "put valid notification of type employee remove recipient without recipient ID's from client" () {
       given:
-      final def companyId = "testco"
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
-      final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
-      final def recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
+      final companyId = "testco"
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final recipientNotifications = notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
       notification.recipients.add(recipientNotifications[0])
 
       when:
@@ -378,8 +383,8 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "put invalid notification with all nulls" () {
       given:
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
-      final def savedNotification = notificationsDataLoaderService.stream(1, "testco", null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final savedNotification = notificationsDataLoaderService.stream(1, "testco", null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
 
       when:
       final updatedNotification = new NotificationValueObject(savedNotification)
@@ -412,28 +417,28 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void "put invalid notification of type all without an ID" () {
       given:
-      final def companyId = "testco"
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
-      final def notification = NotificationTestDataLoader.stream(1, companyId, null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create Notification") }
+      final companyId = "testco"
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final notification = NotificationTestDataLoader.stream(1, companyId, null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create Notification") }
 
       when:
       client.retrieve(PUT("$path/${notification.id}", new NotificationRequestValueObject(new NotificationValueObject(notification))), Argument.of(NotificationResponseValueObject), Argument.of(ErrorDTO[]))
 
       then:
       final exception = thrown(HttpClientResponseException)
-      final errors = exception.response.getBody(ErrorDTO[]).get().sort { o1, o2 -> (o1.message <=> o2.message) }
+      final errors = exception.response.getBody(HashMap[]).get().sort { o1, o2 -> (o1.message <=> o2.message) }
       errors.size() == 1
-      errors[0].message == "Failed to convert argument [id] for value [null]"
-      errors[0].path == "id"
+      errors[0].message == 'Failed to convert argument [id] for value [null] due to: For input string: \"null\"'
+      errors[0].path == "/id"
    }
 
    void "delete notification of type all" () {
       given:
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
-      final def notification = notificationsDataLoaderService.stream(1, "testco", null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "A" }
+      final notification = notificationsDataLoaderService.stream(1, "testco", null, null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
 
       when:
-      final def response = client.exchange(DELETE("$path/${notification.id}"))
+      final response = client.exchange(DELETE("$path/${notification.id}"))
 
       then:
       response.status == NO_CONTENT
@@ -441,13 +446,13 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
    void 'delete notification of type employee with recipients' () {
       given:
-      final def companyId = "testco"
-      final def notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
-      final def notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
+      final companyId = "testco"
+      final notificationType = NotificationTypeDomainTestDataLoader.values().find { it.value == "E" }
+      final notification = notificationsDataLoaderService.stream(1, companyId, LocalDate.now(), null, notificationType, null).findFirst().orElseThrow { new Exception("Unable to create notification") }
       notificationRecipientDataLoaderService.stream(2, notification).collect(Collectors.toList())
 
       when:
-      final def response = client.exchange(DELETE("$path/${notification.id}"))
+      final response = client.exchange(DELETE("$path/${notification.id}"))
 
       then:
       response.status == NO_CONTENT

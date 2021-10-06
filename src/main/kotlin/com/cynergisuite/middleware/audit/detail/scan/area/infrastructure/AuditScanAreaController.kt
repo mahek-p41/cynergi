@@ -28,6 +28,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
 import javax.validation.ValidationException
@@ -41,7 +42,7 @@ class AuditScanAreaController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditScanAreaController::class.java)
 
-   @Get(uri = "/{id:[0-9]+}")
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}")
    @Operation(tags = ["AuditScanAreaEndpoints"], description = "Fetch a Scan Area by ID", operationId = "auditDetailScanArea-fetchOne")
    @ApiResponses(
       value = [
@@ -52,11 +53,11 @@ class AuditScanAreaController @Inject constructor(
    )
    fun fetchOne(
       @Parameter(description = "Primary Key to lookup the Scan Area with", `in` = ParameterIn.PATH) @QueryValue("id")
-      id: Long,
+      id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): AuditScanAreaDTO {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val found = auditScanAreaService.fetchOne(user.myCompany(), id) ?: throw NotFoundException(id)
 
       logger.debug("Fetch Audit Scan Areas by ID resulted in {}", found)
@@ -78,7 +79,7 @@ class AuditScanAreaController @Inject constructor(
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): List<AuditScanAreaDTO> {
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val areas = auditScanAreaService.fetchAll(user)
 
       logger.debug("Listing of Audit Scan Areas resulted in {}", areas)
@@ -106,7 +107,7 @@ class AuditScanAreaController @Inject constructor(
    ): Page<AuditScanAreaDTO> {
       logger.info("Fetching all Scan Areas by store {}", pageRequest)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val page = auditScanAreaService.fetchAll(user.myCompany(), storeId!!, pageRequest)
 
       if (page.elements.isEmpty()) {
@@ -136,7 +137,7 @@ class AuditScanAreaController @Inject constructor(
    ): AuditScanAreaDTO {
       logger.info("Requested Save AuditScanArea {}", auditScanAreaDTO)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = auditScanAreaService.create(auditScanAreaDTO, user.myCompany())
 
       logger.debug("Requested Save AuditScanArea {} resulted in {}", auditScanAreaDTO, response)
@@ -156,7 +157,7 @@ class AuditScanAreaController @Inject constructor(
       ]
    )
    fun update(
-      @QueryValue("id") id: Long,
+      @QueryValue("id") id: UUID,
       @Body @Valid
       auditScanAreaDTO: AuditScanAreaDTO,
       authentication: Authentication,
@@ -164,7 +165,7 @@ class AuditScanAreaController @Inject constructor(
    ): AuditScanAreaDTO {
       logger.info("Requested Update AuditScanArea {}", auditScanAreaDTO)
 
-      val user = userService.findUser(authentication)
+      val user = userService.fetchUser(authentication)
       val response = auditScanAreaService.update(id, auditScanAreaDTO, user.myCompany())
 
       logger.debug("Requested Update AuditScanArea {} resulted in {}", auditScanAreaDTO, response)

@@ -6,26 +6,28 @@ import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDateOrNull
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.status.CREATED
 import com.cynergisuite.middleware.audit.status.IN_PROGRESS
-import com.cynergisuite.middleware.company.Company
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.inventory.InventoryEntity
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
 import com.cynergisuite.middleware.location.infrastructure.LocationRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import io.micronaut.transaction.annotation.ReadOnly
+import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.jdbc.core.RowMapper
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import java.sql.ResultSet
 import javax.inject.Singleton
 
 @Singleton
 class InventoryRepository(
    private val companyRepository: CompanyRepository,
-   private val jdbc: NamedParameterJdbcTemplate,
+   private val jdbc: Jdbi,
    private val locationRepository: LocationRepository,
    private val storeRepository: StoreRepository
 ) : DatasetRequiringRepository {
@@ -59,7 +61,6 @@ class InventoryRepository(
          i.status AS status,
          i.dataset AS dataset,
          comp.id AS comp_id,
-         comp.uu_row_id AS comp_uu_row_id,
          comp.time_created AS comp_time_created,
          comp.time_updated AS comp_time_updated,
          comp.name AS comp_name,
@@ -115,7 +116,6 @@ class InventoryRepository(
          i.status AS status,
          i.dataset AS dataset,
          comp.id AS comp_id,
-         comp.uu_row_id AS comp_uu_row_id,
          comp.time_created AS comp_time_created,
          comp.time_updated AS comp_time_updated,
          comp.name AS comp_name,
@@ -143,7 +143,8 @@ class InventoryRepository(
            JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
       """.trimIndent()
 
-   fun findOne(id: Long, company: Company): InventoryEntity? {
+   @ReadOnly
+   fun findOne(id: Long, company: CompanyEntity): InventoryEntity? {
       logger.debug("Finding Inventory by ID with {}", id)
 
       val inventory = jdbc.findFirstOrNull(
@@ -153,18 +154,18 @@ class InventoryRepository(
                AND i.id = :id
          """.trimIndent(),
          mapOf(
-            "comp_id" to company.myId(),
+            "comp_id" to company.id,
             "id" to id
-         ),
-         RowMapper { rs, _ -> mapRow(rs) }
-      )
+         )
+      ) { rs, _ -> mapRow(rs) }
 
       logger.debug("Search for Inventory by ID {} produced {}", id, inventory)
 
       return inventory
    }
 
-   override fun exists(id: Long, company: Company): Boolean {
+   @ReadOnly
+   override fun exists(id: Long, company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
          """
          SELECT count(i.id) > 0
@@ -172,18 +173,20 @@ class InventoryRepository(
               JOIN fastinfo_prod_import.inventory_vw i ON comp.dataset_code = i.dataset
          WHERE i.id = :i_id AND comp.id = :comp_id
          """.trimIndent(),
-         mapOf("i_id" to id, "comp_id" to company.myId()), Boolean::class.java
-      )!!
+         mapOf("i_id" to id, "comp_id" to company.id),
+         Boolean::class.java
+      )
 
       logger.trace("Checking if Inventory: {} exists resulted in {}", id, exists)
 
       return exists
    }
 
-   fun doesNotExist(id: Long, company: Company): Boolean =
+   fun doesNotExist(id: Long, company: CompanyEntity): Boolean =
       !exists(id, company)
 
-   fun findByLookupKey(lookupKey: String, company: Company): InventoryEntity? {
+   @ReadOnly
+   fun findByLookupKey(lookupKey: String, company: CompanyEntity): InventoryEntity? {
       logger.debug("Finding Inventory by lookup key with {}", lookupKey)
 
       val inventory = jdbc.findFirstOrNull(
@@ -195,23 +198,26 @@ class InventoryRepository(
          """.trimIndent(),
          mapOf(
             "lookup_key" to lookupKey,
-            "comp_id" to company.myId()
-         ),
-         RowMapper { rs, _ -> mapRow(rs) }
-      )
+            "comp_id" to company.id
+         )
+      ) { rs, _ -> mapRow(rs) }
 
       logger.debug("Search for available Inventory by lookup key {} produced {}", lookupKey, inventory)
 
       return inventory
    }
 
-   fun findAll(pageRequest: InventoryPageRequest, company: Company): RepositoryPage<InventoryEntity, InventoryPageRequest> {
+   @ReadOnly
+   fun findAll(
+      pageRequest: InventoryPageRequest,
+      company: CompanyEntity
+   ): RepositoryPage<InventoryEntity, InventoryPageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<InventoryEntity>()
       val statuses: List<String> = pageRequest.inventoryStatus?.toList() ?: emptyList()
-      val params = mutableMapOf<String, Any>(
+      val params = mutableMapOf<String, Any?>(
          "location" to pageRequest.storeNumber!!,
-         "comp_id" to company.myId()!!,
+         "comp_id" to company.id!!,
          "limit" to pageRequest.size(),
          "offset" to pageRequest.offset()
       )
@@ -230,7 +236,7 @@ class InventoryRepository(
          WHERE i.primary_location = :location
                AND i.location = :location
                AND comp.id = :comp_id
-               ${if (params.containsKey("statuses")) "AND i.status IN (:statuses)" else ""}
+               ${if (params.containsKey("statuses")) "AND i.status IN (<statuses>)" else ""}
                ${if (params.containsKey("location_type")) "AND iltd.value = :location_type" else ""}
       )
       SELECT
@@ -244,7 +250,7 @@ class InventoryRepository(
 
       logger.debug("Querying Inventory {} {} {}", pageRequest, params, sql)
 
-      jdbc.query(sql, params) { rs ->
+      jdbc.query(sql, params) { rs, _ ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
          }
@@ -259,8 +265,12 @@ class InventoryRepository(
       )
    }
 
+   @ReadOnly
    fun findUnscannedIdleInventory(audit: AuditEntity): List<InventoryEntity> {
-      var pageResult = findUnscannedIdleInventory(audit, StandardPageRequest(page = 1, size = 1000, sortBy = "id", sortDirection = "ASC"))
+      var pageResult = findUnscannedIdleInventory(
+         audit,
+         StandardPageRequest(page = 1, size = 1000, sortBy = "id", sortDirection = "ASC")
+      )
       val inventories: MutableList<InventoryEntity> = mutableListOf()
 
       while (pageResult.elements.isNotEmpty()) {
@@ -271,13 +281,17 @@ class InventoryRepository(
       return inventories
    }
 
-   fun findUnscannedIdleInventory(audit: AuditEntity, pageRequest: PageRequest): RepositoryPage<InventoryEntity, PageRequest> {
+   @ReadOnly
+   fun findUnscannedIdleInventory(
+      audit: AuditEntity,
+      pageRequest: PageRequest
+   ): RepositoryPage<InventoryEntity, PageRequest> {
       var totalElements: Long? = null
       val company = audit.store.myCompany()
       val elements = mutableListOf<InventoryEntity>()
       val params = mutableMapOf(
          "audit_id" to audit.id,
-         "comp_id" to company.myId(),
+         "comp_id" to company.id,
          "limit" to pageRequest.size(),
          "offset" to pageRequest.offset()
       )
@@ -285,7 +299,8 @@ class InventoryRepository(
       val sql =
          """
       WITH paged AS (
-         ${ if (audit.currentStatus() == CREATED || audit.currentStatus() == IN_PROGRESS) {
+         ${
+         if (audit.currentStatus() == CREATED || audit.currentStatus() == IN_PROGRESS) {
             "$selectBase JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location)"
          } else {
             "$selectFromAuditInventory JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location AND a.id = i.audit_id)"
@@ -310,7 +325,7 @@ class InventoryRepository(
 
       logger.debug("find unscanned idle inventory {}/{}", sql, params)
 
-      jdbc.query(sql, params) { rs ->
+      jdbc.query(sql, params) { rs, _ ->
          if (totalElements == null) {
             totalElements = rs.getLong("total_elements")
          }
@@ -351,11 +366,11 @@ class InventoryRepository(
          idleDays = rs.getInt("idle_days"),
          condition = rs.getString("condition"),
          returnedDate = rs.getLocalDateOrNull("returned_date"),
-         location = locationRepository.maybeMapRow(rs, company, "current_store_"),
+         location = locationRepository.maybeMapRow(rs, "current_store_"),
          status = rs.getString("status"),
          primaryLocation = storeRepository.mapRow(rs, company, "primary_store_"),
          locationType = InventoryLocationType(
-            id = rs.getLong("location_type_id"),
+            id = rs.getInt("location_type_id"),
             value = rs.getString("location_type_value"),
             description = rs.getString("location_type_description"),
             localizationCode = rs.getString("location_type_localization_code")

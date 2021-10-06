@@ -2,8 +2,8 @@ package com.cynergisuite.middleware.company.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.middleware.company.CompanyDTO
 import com.cynergisuite.middleware.company.CompanyService
-import com.cynergisuite.middleware.company.CompanyValueObject
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
@@ -42,7 +42,7 @@ class CompanyController @Inject constructor(
    fun fetchAll(
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
       pageRequestIn: StandardPageRequest
-   ): Page<CompanyValueObject> {
+   ): Page<CompanyDTO> {
       logger.info("Fetching all companies {}", pageRequestIn)
 
       val pageRequest = StandardPageRequest(pageRequestIn)

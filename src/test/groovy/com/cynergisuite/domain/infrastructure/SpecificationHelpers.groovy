@@ -20,7 +20,7 @@ class SpecificationHelpers {
    }
 
    static boolean allPropertiesFullAndNotEmptyExcept(Object obj, String ...except) {
-      final def exceptions = new HashSet(except.collect())
+      final exceptions = new HashSet(except.collect())
 
       return obj.properties.findAll { !exceptions.contains(it.key) }.findAll {
          it.value == null ||
