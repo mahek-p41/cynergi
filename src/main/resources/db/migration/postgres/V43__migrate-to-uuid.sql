@@ -237,6 +237,11 @@ ALTER TABLE schedule_arg ADD COLUMN schedule_id UUID;
 
 UPDATE schedule_arg sa SET schedule_id = sched.id FROM schedule sched WHERE sa.old_schedule_id = sched.old_id;
 
+-- Fix the event_schudule
+ALTER table event_schedule RENAME company_id TO old_company_id;
+ALTER TABLE event_schedule ADD COLUMN company_id UUID;
+UPDATE event_schedule es SET company_id = comp.id FROM company comp WHERE es.old_company_id = comp.old_id;
+
 -- set not null
 ALTER TABLE audit_exception_note ALTER COLUMN audit_exception_id SET NOT NULL;
 ALTER TABLE audit ALTER COLUMN company_id SET NOT NULL;
@@ -253,6 +258,7 @@ ALTER TABLE region_to_store ALTER COLUMN region_id SET NOT NULL;
 ALTER TABLE employee ALTER COLUMN company_id SET NOT NULL;
 ALTER TABLE schedule ALTER COLUMN company_id SET NOT NULL;
 ALTER TABLE schedule_arg ALTER COLUMN schedule_id SET NOT NULL;
+ALTER TABLE event_schedule ALTER COLUMN company_id SET NOT NULL;
 
 -- add foreign keys
 ALTER TABLE audit_exception ADD CONSTRAINT audit_exception_audit_id_fkey FOREIGN KEY (audit_id) REFERENCES audit (id);
@@ -269,6 +275,7 @@ ALTER TABLE division ADD CONSTRAINT division_company_id_fkey FOREIGN KEY (compan
 ALTER TABLE region ADD CONSTRAINT region_division_id_fkey FOREIGN KEY (division_id) REFERENCES division (id);
 ALTER TABLE region_to_store ADD CONSTRAINT region_to_store_region_id_fkey FOREIGN KEY (region_id) REFERENCES region (id);
 ALTER TABLE employee ADD CONSTRAINT employee_company_id_fkey FOREIGN KEY (company_id) REFERENCES company (id);
+ALTER TABLE event_schedule ADD CONSTRAINT event_schedule_company_id_fkey FOREIGN KEY (company_id) REFERENCES company (id);
 
 -- drop old id's
 ALTER TABLE audit DROP COLUMN IF EXISTS old_company_id;
@@ -294,6 +301,7 @@ ALTER TABLE audit_exception_note DROP COLUMN IF EXISTS old_audit_id;
 ALTER TABLE audit_action DROP COLUMN IF EXISTS old_id;
 ALTER TABLE audit_action DROP COLUMN IF EXISTS old_audit_id;
 ALTER TABLE audit_inventory DROP COLUMN IF EXISTS old_audit_id;
+ALTER table event_schedule DROP COLUMN if EXISTS old_company_id;
 
 -- set not null
 
@@ -354,144 +362,4 @@ BEGIN
    END IF;
 END;
 $$ LANGUAGE plpgsql;
-
--- setup a simple view for getting employees that can be authenticated against
-DO $$
-DECLARE
-    sqlToExec VARCHAR;
-BEGIN
-   sqlToExec := 'CREATE OR REPLACE VIEW authenticated_user_vw AS SELECT * FROM (';
-
-   IF EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'employee_vw' AND table_schema = 'fastinfo_prod_import') THEN
-      sqlToExec := sqlToExec || '
-         SELECT
-            1                               AS from_priority,
-            emp.id                          AS id,
-            ''sysz''                        AS type,
-            emp.number                      AS number,
-            emp.active                      AS active,
-            false                           AS cynergi_system_admin,
-            emp.department                  AS department,
-            emp.pass_code                   AS pass_code,
-            emp.alternative_store_indicator AS alternative_store_indicator,
-            emp.alternative_area            AS alternative_area,
-            emp.store_number                AS store_number,
-            comp.id                         AS company_id
-         FROM company comp
-           JOIN fastinfo_prod_import.employee_vw emp ON comp.dataset_code = emp.dataset
-         UNION
-   ';
-   END IF;
-
-   sqlToExec := sqlToExec || '
-      SELECT
-         2                               AS from_priority,
-         emp.id                          AS id,
-         ''eli''                         AS type,
-         emp.number                      AS number,
-         emp.active                      AS active,
-         emp.cynergi_system_admin        AS cynergi_system_admin,
-         emp.department                  AS department,
-         emp.pass_code                   AS pass_code,
-         emp.alternative_store_indicator AS alternative_store_indicator,
-         emp.alternative_area            AS alternative_area,
-         emp.store_number                AS store_number,
-         emp.company_id                  AS company_id
-      FROM company comp
-         JOIN employee emp ON comp.id = emp.company_id
-      WHERE active = true
-      ORDER BY from_priority, id
-   ) AS users ';
-
-   EXECUTE sqlToExec;
-END $$;
-
--- setup view for querying employees
-DO $$
-DECLARE
-    sqlToExec VARCHAR;
-BEGIN
-   sqlToExec := 'CREATE OR REPLACE VIEW system_employees_vw AS SELECT * FROM ( SELECT * FROM (';
-
-   IF EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'employee_vw' AND table_schema = 'fastinfo_prod_import') THEN
-      sqlToExec := sqlToExec || '
-         SELECT
-            1                               AS from_priority,
-            emp.id                          AS emp_id,
-            ''sysz''                        AS emp_type,
-            emp.number                      AS emp_number,
-            emp.last_name                   AS emp_last_name,
-            emp.first_name_mi               AS emp_first_name_mi,
-            emp.pass_code                   AS emp_pass_code,
-            emp.active                      AS emp_active,
-            emp.department                  AS emp_department,
-            false                           AS emp_cynergi_system_admin,
-            emp.alternative_store_indicator AS emp_alternative_store_indicator,
-            emp.alternative_area            AS emp_alternative_area,
-            comp.id                         AS comp_id,
-            comp.time_created               AS comp_time_created,
-            comp.time_updated               AS comp_time_updated,
-            comp.name                       AS comp_name,
-            comp.doing_business_as          AS comp_doing_business_as,
-            comp.client_code                AS comp_client_code,
-            comp.client_id                  AS comp_client_id,
-            comp.dataset_code               AS comp_dataset_code,
-            comp.federal_id_number          AS comp_federal_id_number,
-            dept.id                         AS dept_id,
-            dept.code                       AS dept_code,
-            dept.description                AS dept_description,
-            store.id                        AS store_id,
-            store.number                    AS store_number,
-            store.name                      AS store_name
-         FROM fastinfo_prod_import.employee_vw emp
-            JOIN company comp ON emp.dataset = comp.dataset_code
-            LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
-            LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
-        UNION';
-   END IF;
-
-   sqlToExec := sqlToExec || '
-      SELECT
-         2                               AS from_priority,
-         emp.id                          AS emp_id,
-         ''eli''                         AS emp_type,
-         emp.number                      AS emp_number,
-         emp.last_name                   AS emp_last_name,
-         emp.first_name_mi               AS emp_first_name_mi,
-         emp.pass_code                   AS emp_pass_code,
-         emp.active                      AS emp_active,
-         emp.department                  AS emp_department,
-         emp.cynergi_system_admin        AS emp_cynergi_system_admin,
-         emp.alternative_store_indicator AS emp_alternative_store_indicator,
-         emp.alternative_area            AS emp_alternative_area,
-         comp.id                         AS comp_id,
-         comp.time_created               AS comp_time_created,
-         comp.time_updated               AS comp_time_updated,
-         comp.name                       AS comp_name,
-         comp.doing_business_as          AS comp_doing_business_as,
-         comp.client_code                AS comp_client_code,
-         comp.client_id                  AS comp_client_id,
-         comp.dataset_code               AS comp_dataset_code,
-         comp.federal_id_number          AS comp_federal_id_number,
-         dept.id                         AS dept_id,
-         dept.code                       AS dept_code,
-         dept.description                AS dept_description,
-         store.id                        AS store_id,
-         store.number                    AS store_number,
-         store.name                      AS store_name
-      FROM employee emp
-           JOIN company comp ON emp.company_id = comp.id
-           LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
-           LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
-      ) AS inner_employees
-      ORDER BY from_priority
-  ) AS system_employees';
-
-   EXECUTE sqlToExec;
-END $$;
-
--- Fix the event_schudule 
-ALTER table event_schedule RENAME company_id TO old_company_id;
-ALTER TABLE event_schedule ADD COLUMN company_id UUID not null;
-ALTER table event_schedule DROP COLUMN if EXISTS old_company_id;
 
