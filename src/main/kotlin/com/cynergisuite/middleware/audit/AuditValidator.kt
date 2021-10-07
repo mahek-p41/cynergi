@@ -101,7 +101,7 @@ class AuditValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(audit: AuditUpdateValueObject, user: User, locale: Locale): Pair<AuditActionEntity, AuditEntity> {
+   fun validateUpdate(audit: AuditUpdateDTO, user: User, locale: Locale): Pair<AuditActionEntity, AuditEntity> {
       logger.debug("Validating Update Audit {}", audit)
 
       doValidation { errors ->

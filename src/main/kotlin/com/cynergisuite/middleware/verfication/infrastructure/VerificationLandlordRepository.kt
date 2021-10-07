@@ -35,6 +35,7 @@ class VerificationLandlordRepository(
       return found
    }
 
+   @ReadOnly
    fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_landlord WHERE id = :id)", mapOf("id" to id), Boolean::class.java)
 

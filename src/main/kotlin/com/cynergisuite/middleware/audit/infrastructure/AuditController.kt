@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.audit.AuditApproveAllExceptionsDTO
 import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditService
 import com.cynergisuite.middleware.audit.AuditStatusCountDTO
-import com.cynergisuite.middleware.audit.AuditUpdateValueObject
+import com.cynergisuite.middleware.audit.AuditUpdateDTO
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -104,6 +104,8 @@ class AuditController @Inject constructor(
          throw PageOutOfBoundsException(pageRequest = pageRequest)
       }
 
+      logger.debug("Page: {}", page)
+
       return page
    }
 
@@ -176,7 +178,7 @@ class AuditController @Inject constructor(
    )
    fun update(
       @Body @Valid
-      dto: AuditUpdateValueObject,
+      dto: AuditUpdateDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AuditValueObject {

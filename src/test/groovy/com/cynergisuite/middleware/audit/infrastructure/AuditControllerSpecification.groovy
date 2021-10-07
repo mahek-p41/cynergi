@@ -8,7 +8,7 @@ import com.cynergisuite.middleware.audit.AuditCreateValueObject
 import com.cynergisuite.middleware.audit.AuditTestDataLoader
 import com.cynergisuite.middleware.audit.AuditTestDataLoaderService
 import com.cynergisuite.middleware.audit.AuditStatusCountDTO
-import com.cynergisuite.middleware.audit.AuditUpdateValueObject
+import com.cynergisuite.middleware.audit.AuditUpdateDTO
 import com.cynergisuite.middleware.audit.AuditValueObject
 import com.cynergisuite.middleware.audit.action.AuditActionValueObject
 import com.cynergisuite.middleware.audit.detail.AuditDetailEntity
@@ -872,7 +872,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       when:
       def firstAudit = post(path, new AuditCreateValueObject([store:  new StoreDTO([storeNumber: 3])]))
       post(path, new AuditCreateValueObject([store:  new StoreDTO([storeNumber: 1])]))
-      put(path, new AuditUpdateValueObject([id: firstAudit.id, status: new AuditStatusValueObject([value: "CANCELED"])]))
+      put(path, new AuditUpdateDTO([id: firstAudit.id, status: new AuditStatusValueObject([value: "CANCELED"])]))
       def secondAudit = post(path, new AuditCreateValueObject([store:  new StoreDTO([storeNumber: 3])]))
 
       then:
@@ -967,7 +967,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final audit = auditFactoryService.single(store)
 
       when:
-      def result = put(path, new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject([value: 'IN-PROGRESS'])]))
+      def result = put(path, new AuditUpdateDTO(['id': audit.id, 'status': new AuditStatusValueObject([value: 'IN-PROGRESS'])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -997,7 +997,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final audit = auditFactoryService.single(store)
 
       when:
-      def result = put(path, new AuditUpdateValueObject([id: audit.id, status: new AuditStatusValueObject([value: "CANCELED"])]))
+      def result = put(path, new AuditUpdateDTO([id: audit.id, status: new AuditStatusValueObject([value: "CANCELED"])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -1028,7 +1028,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final audit = auditFactoryService.single(store)
 
       when:
-      put(path, new AuditUpdateValueObject([id: audit.id, status:  new AuditStatusValueObject([value: "COMPLETED"])]))
+      put(path, new AuditUpdateDTO([id: audit.id, status:  new AuditStatusValueObject([value: "COMPLETED"])]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -1047,7 +1047,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
 
       when:
-      put(path, new AuditUpdateValueObject([id: audit.id, status: new AuditStatusValueObject([value: "CREATED"])]))
+      put(path, new AuditUpdateDTO([id: audit.id, status: new AuditStatusValueObject([value: "CREATED"])]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -1066,7 +1066,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
 
       when:
-      put(path, new AuditUpdateValueObject([id: audit.id, status:  new AuditStatusValueObject([value: "CREATED"])]))
+      put(path, new AuditUpdateDTO([id: audit.id, status:  new AuditStatusValueObject([value: "CREATED"])]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -1104,7 +1104,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final missingId = UUID.randomUUID()
 
       when:
-      put(path, new AuditUpdateValueObject([id: missingId, status : new AuditStatusValueObject([value: "IN-PROGRESS"])]))
+      put(path, new AuditUpdateDTO([id: missingId, status: new AuditStatusValueObject([value: "IN-PROGRESS"])]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -1122,7 +1122,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final audit = auditFactoryService.single(store)
 
       when:
-      put(path, new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject(['value': 'INVALID'])]))
+      put(path, new AuditUpdateDTO(['id': audit.id, 'status': new AuditStatusValueObject(['value': 'INVALID'])]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -1151,7 +1151,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       openActions[0].changedBy.number == nineNineEightAuthenticatedEmployee.number
 
       when:
-      def inProgressResult = put(path, new AuditUpdateValueObject([id: openedResult.id, status: new AuditStatusValueObject([value: "IN-PROGRESS"])]))
+      def inProgressResult = put(path, new AuditUpdateDTO([id: openedResult.id, status: new AuditStatusValueObject([value: "IN-PROGRESS"])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -1172,7 +1172,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       inProgressActions[1].changedBy.number == nineNineEightAuthenticatedEmployee.number
 
       when:
-      def completedResult = put(path, new AuditUpdateValueObject([id: openedResult.id, status: new AuditStatusValueObject([value: "COMPLETED"])]))
+      def completedResult = put(path, new AuditUpdateDTO([id: openedResult.id, status: new AuditStatusValueObject([value: "COMPLETED"])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -1207,7 +1207,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final audit = auditFactoryService.single(store1Tstds1, store1Tstds1Employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
 
       when:
-      put(path, new AuditUpdateValueObject([id: audit.id, status:  new AuditStatusValueObject([value: "COMPLETED"])]))
+      put(path, new AuditUpdateDTO([id: audit.id, status:  new AuditStatusValueObject([value: "COMPLETED"])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -1238,7 +1238,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final List<AuditExceptionValueObject> threeAuditExceptions = auditExceptionFactoryService.stream(3, audit, storeThreeStoreroom, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
 
       when:
-      def result = put("$path/approve", new AuditUpdateValueObject(['id': audit.id, 'status': new AuditStatusValueObject([value: 'APPROVED'])]))
+      def result = put("$path/approve", new AuditUpdateDTO(['id': audit.id, 'status': new AuditStatusValueObject([value: 'APPROVED'])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -1310,7 +1310,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditOne = auditExceptionFactoryService.stream(3, auditOne, storeStoreroom, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
 
       when:
-      put("$path/approve", new AuditUpdateValueObject([id: auditOne.id, status: new AuditStatusValueObject([value: "APPROVED"])]))
+      put("$path/approve", new AuditUpdateDTO([id: auditOne.id, status: new AuditStatusValueObject([value: "APPROVED"])]))
       def pageOneResult = get("/audit/${auditOne.id}/exception")
 
       then:

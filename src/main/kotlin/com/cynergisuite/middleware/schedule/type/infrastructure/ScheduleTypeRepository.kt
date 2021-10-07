@@ -73,7 +73,8 @@ class ScheduleTypeRepository(
       )
    }
 
-   @ReadOnly fun exists(id: Long): Boolean {
+   @ReadOnly
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM schedule_type_domain WHERE id = :id)", mapOf("id" to id), Boolean::class.java)
 
       logger.trace("checking if Schedule type: {} exists resulted in {}", id, exists)

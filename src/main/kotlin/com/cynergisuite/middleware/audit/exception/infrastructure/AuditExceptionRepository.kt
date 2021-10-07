@@ -234,7 +234,7 @@ class AuditExceptionRepository @Inject constructor(
             "scan_area_id" to auditExceptionEntity.scanArea?.myId()
          ),
          Boolean::class.java
-      )!!
+      )
    }
 
    @ReadOnly

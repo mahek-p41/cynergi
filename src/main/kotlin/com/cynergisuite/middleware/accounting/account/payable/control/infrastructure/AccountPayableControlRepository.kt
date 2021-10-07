@@ -109,7 +109,7 @@ class AccountPayableControlRepository @Inject constructor(
 
    @ReadOnly
    fun exists(company: CompanyEntity): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT company_id FROM account_payable_control WHERE company_id = :company_id)", mapOf("company_id" to company.id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT company_id FROM account_payable_control WHERE company_id = :company_id)", mapOf("company_id" to company.id), Boolean::class.java)
 
       logger.trace("Checking if AccountPayableControl: {} exists resulted in {}", company, exists)
 

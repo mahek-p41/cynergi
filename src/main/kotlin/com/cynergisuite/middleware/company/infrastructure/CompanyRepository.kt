@@ -117,7 +117,7 @@ class CompanyRepository @Inject constructor(
       return found
    }
 
-   @Transactional
+   @ReadOnly
    fun findByDataset(datasetCode: String): CompanyEntity? {
       val found = jdbc.findFirstOrNull(
          "${companyBaseQuery()} WHERE dataset_code = :dataset_code",
@@ -164,15 +164,15 @@ class CompanyRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun forEach(callback: (CompanyEntity) -> Unit) {
+   fun all(): Sequence<CompanyEntity> {
       var result = findAll(StandardPageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
 
-      while (result.elements.isNotEmpty()) {
-         for (company in result.elements) {
-            callback(company)
-         }
+      return sequence {
+         while (result.elements.isNotEmpty()) {
+            yieldAll(result.elements)
 
-         result = findAll(result.requested.nextPage())
+            result = findAll(result.requested.nextPage())
+         }
       }
    }
 

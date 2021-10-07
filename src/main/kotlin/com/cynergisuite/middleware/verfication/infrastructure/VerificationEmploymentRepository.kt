@@ -36,7 +36,8 @@ class VerificationEmploymentRepository(
       return found
    }
 
-   @ReadOnly fun exists(id: Long): Boolean {
+   @ReadOnly
+   fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_employment WHERE id = :id)", mapOf("id" to id), Boolean::class.java)
 
       logger.trace("Checking if VerificationEmployment: {} exists resulted in {}", id, exists)

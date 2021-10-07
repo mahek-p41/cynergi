@@ -115,8 +115,8 @@ class StoreRepository @Inject constructor(
       return found
    }
 
-   @Transactional
-   @ReadOnly fun findOne(number: Int, company: CompanyEntity): StoreEntity? {
+   @ReadOnly
+   fun findOne(number: Int, company: CompanyEntity): StoreEntity? {
       val params = mutableMapOf("number" to number, "comp_id" to company.id)
       val query =
          """${selectBaseQuery()} WHERE store.number = :number AND comp.id = :comp_id

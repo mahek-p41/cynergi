@@ -237,6 +237,11 @@ ALTER TABLE schedule_arg ADD COLUMN schedule_id UUID;
 
 UPDATE schedule_arg sa SET schedule_id = sched.id FROM schedule sched WHERE sa.old_schedule_id = sched.old_id;
 
+-- Fix the event_schudule
+ALTER table event_schedule RENAME company_id TO old_company_id;
+ALTER TABLE event_schedule ADD COLUMN company_id UUID;
+UPDATE event_schedule es SET company_id = comp.id FROM company comp WHERE es.old_company_id = comp.old_id;
+
 -- set not null
 ALTER TABLE audit_exception_note ALTER COLUMN audit_exception_id SET NOT NULL;
 ALTER TABLE audit ALTER COLUMN company_id SET NOT NULL;
@@ -253,6 +258,7 @@ ALTER TABLE region_to_store ALTER COLUMN region_id SET NOT NULL;
 ALTER TABLE employee ALTER COLUMN company_id SET NOT NULL;
 ALTER TABLE schedule ALTER COLUMN company_id SET NOT NULL;
 ALTER TABLE schedule_arg ALTER COLUMN schedule_id SET NOT NULL;
+ALTER TABLE event_schedule ALTER COLUMN company_id SET NOT NULL;
 
 -- add foreign keys
 ALTER TABLE audit_exception ADD CONSTRAINT audit_exception_audit_id_fkey FOREIGN KEY (audit_id) REFERENCES audit (id);
@@ -269,6 +275,7 @@ ALTER TABLE division ADD CONSTRAINT division_company_id_fkey FOREIGN KEY (compan
 ALTER TABLE region ADD CONSTRAINT region_division_id_fkey FOREIGN KEY (division_id) REFERENCES division (id);
 ALTER TABLE region_to_store ADD CONSTRAINT region_to_store_region_id_fkey FOREIGN KEY (region_id) REFERENCES region (id);
 ALTER TABLE employee ADD CONSTRAINT employee_company_id_fkey FOREIGN KEY (company_id) REFERENCES company (id);
+ALTER TABLE event_schedule ADD CONSTRAINT event_schedule_company_id_fkey FOREIGN KEY (company_id) REFERENCES company (id);
 
 -- drop old id's
 ALTER TABLE audit DROP COLUMN IF EXISTS old_company_id;
@@ -294,6 +301,7 @@ ALTER TABLE audit_exception_note DROP COLUMN IF EXISTS old_audit_id;
 ALTER TABLE audit_action DROP COLUMN IF EXISTS old_id;
 ALTER TABLE audit_action DROP COLUMN IF EXISTS old_audit_id;
 ALTER TABLE audit_inventory DROP COLUMN IF EXISTS old_audit_id;
+ALTER table event_schedule DROP COLUMN if EXISTS old_company_id;
 
 -- set not null
 
@@ -341,3 +349,17 @@ CREATE TRIGGER update_employee_trg
 EXECUTE PROCEDURE update_user_table_fn();
 
 ALTER TABLE company DROP COLUMN old_id;
+
+-- create wrapper function for hashing passwords
+CREATE OR REPLACE FUNCTION hash_passcode(TEXT)
+   RETURNS TEXT AS
+$$
+BEGIN
+   IF $1 IS NOT NULL AND length($1) > 2 THEN
+      RETURN crypt($1, gen_salt('bf', 10));
+   ELSE
+      RAISE EXCEPTION 'Pass code provided does not meet length requirement of 3';
+   END IF;
+END;
+$$ LANGUAGE plpgsql;
+

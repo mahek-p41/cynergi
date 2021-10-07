@@ -55,7 +55,7 @@ class AuditScanAreaRepository @Inject constructor(
          "SELECT EXISTS (SELECT id FROM audit_scan_area WHERE id = :id)",
          mapOf("id" to id),
          Boolean::class.java
-      )!!
+      )
 
       logger.info("Checking if Scan Area: {} exists resulted in {}", id, exists)
 

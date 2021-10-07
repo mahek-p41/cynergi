@@ -16,7 +16,7 @@ import com.cynergisuite.middleware.notification.NotificationRecipientValueObject
 import com.cynergisuite.middleware.notification.NotificationService
 import com.cynergisuite.middleware.notification.NotificationValueObject
 import com.cynergisuite.middleware.notification.STORE
-import com.cynergisuite.middleware.schedule.DailySchedule
+import com.cynergisuite.middleware.schedule.OnceDailyJob
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.ScheduleProcessingException
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
@@ -44,7 +44,7 @@ class AuditScheduleService @Inject constructor(
    private val scheduleRepository: ScheduleRepository,
    private val storeRepository: StoreRepository,
    private val notificationService: NotificationService
-) : DailySchedule {
+) : OnceDailyJob {
    private val logger: Logger = LoggerFactory.getLogger(AuditScheduleService::class.java)
 
    fun fetchById(id: UUID, company: CompanyEntity): AuditScheduleDTO? {
@@ -112,10 +112,10 @@ class AuditScheduleService @Inject constructor(
       )
    }
 
-   override fun shouldProcess(schedule: ScheduleEntity, dayOfWeek: DayOfWeek): Boolean = true // always process as we have possible notifications to send out for past due audits
+   override fun shouldProcess(schedule: ScheduleEntity, time: DayOfWeek): Boolean = true // always process as we have possible notifications to send out for past due audits
 
    @Throws(ScheduleProcessingException::class)
-   override fun processDaily(schedule: ScheduleEntity, dayOfWeek: DayOfWeek): AuditScheduleResult {
+   override fun process(schedule: ScheduleEntity, time: DayOfWeek): AuditScheduleResult {
       val company = schedule.company
       val notifications = mutableListOf<NotificationValueObject>()
       val audits = mutableListOf<AuditValueObject>()
@@ -129,12 +129,11 @@ class AuditScheduleService @Inject constructor(
          .firstOrNull() ?: "sysz" // TODO remove this when employees are all managed by cynergidb
       val employee = schedule.arguments.asSequence()
          .filter { it.description == "employeeNumber" }
-         .filterNotNull()
          .map { it.value.toInt() }
          .map { employeeRepository.findOne(number = it, employeeType = employeeType, company = company) }
          .firstOrNull() ?: throw ScheduleProcessingException("Unable to find employee who scheduled audit")
 
-      for (arg: ScheduleArgumentEntity in schedule.arguments) { // looking for stores who's audits are today
+      for (arg: ScheduleArgumentEntity in schedule.arguments) { // looking for stores whose audits are today
          if (arg.description == "storeNumber") {
             val store = storeRepository.findOne(arg.value.toInt(), company)!!
             val employeeUser = AuthenticatedEmployee(
@@ -152,7 +151,7 @@ class AuditScheduleService @Inject constructor(
                passCode = employee.passCode
             )
 
-            val (audit, existing) = if (schedule.schedule == dayOfWeek.name) {
+            val (audit, existing) = if (schedule.schedule == time.name) {
                logger.info("Find or create an audit")
                auditService.findOrCreate(store, employeeUser, locale) to false
             } else {

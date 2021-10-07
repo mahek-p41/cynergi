@@ -80,6 +80,8 @@ class AuditService @Inject constructor(
       val validaPageRequest = auditValidator.validationFetchAll(pageRequest, user.myCompany())
       val found: RepositoryPage<AuditEntity, AuditPageRequest> = auditRepository.findAll(validaPageRequest, user)
 
+      logger.trace("FetchAll {} resulted in {}", pageRequest, found)
+
       return found.toPage {
          AuditValueObject(it, locale, localizationService)
       }
@@ -136,7 +138,7 @@ class AuditService @Inject constructor(
       return auditRepository.findOneCreatedOrInProgress(store)?.let { AuditValueObject(it, locale, localizationService) }
    }
 
-   fun update(vo: AuditUpdateValueObject, user: User, locale: Locale): AuditValueObject {
+   fun update(vo: AuditUpdateDTO, user: User, locale: Locale): AuditValueObject {
       val (validAuditAction, existingAudit) = auditValidator.validateUpdate(vo, user, locale)
 
       existingAudit.actions.add(validAuditAction)

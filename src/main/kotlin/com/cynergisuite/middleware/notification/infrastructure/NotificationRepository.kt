@@ -65,7 +65,8 @@ class NotificationRepository @Inject constructor(
       """.trimIndent()
 
    @Cacheable("notifications-cache")
-   @ReadOnly fun findOne(id: Long): Notification? {
+   @ReadOnly
+   fun findOne(id: Long): Notification? {
       return jdbc.findFirstOrNull("$baseFindQuery\nWHERE n.id = :id", mapOf("id" to id)) { rs, ctx ->
          val notification = fullNotificationRowMapper.map(rs, ctx)
 

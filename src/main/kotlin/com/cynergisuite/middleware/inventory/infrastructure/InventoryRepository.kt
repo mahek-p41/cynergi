@@ -383,7 +383,7 @@ class InventoryRepository(
          idleDays = rs.getInt("idle_days"),
          condition = rs.getString("condition"),
          returnedDate = rs.getLocalDateOrNull("returned_date"),
-         location = locationRepository.maybeMapRow(rs, company, "current_store_"),
+         location = locationRepository.maybeMapRow(rs, "current_store_"),
          status = rs.getString("status"),
          primaryLocation = storeRepository.mapRow(rs, company, "primary_store_"),
          locationType = InventoryLocationType(
