@@ -140,8 +140,9 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       exception.response.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == "value"
-      response[0].message == "value already exists"
+      response[0].path == 'value'
+      response[0].message == 'value already exists'
+      response[0].code == 'cynergi.validation.duplicate'
    }
 
    void "create valid source code with duplicate value from different company" () {
@@ -281,7 +282,7 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$glSourceCode.id was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
 
@@ -317,6 +318,6 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$glSourceCode.id was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
  }

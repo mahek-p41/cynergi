@@ -58,7 +58,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$nonExistentAccountPayableDistribution was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "fetch all" () {
@@ -235,6 +235,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       response.size() == 1
       response[0].path == errorResponsePath
       response[0].message == 'Is required'
+      response[0].code == 'javax.validation.constraints.NotNull.message'
 
       where:
       nonNullableProp                              || errorResponsePath
@@ -263,6 +264,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       response.size() == 1
       response[0].path == errorResponsePath
       response[0].message == errorMessage
+      response[0].code == 'system.not.found'
       where:
       testProp       | invalidValue                                                                       || errorResponsePath | errorMessage
       'account'      | new SimpleIdentifiableDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')) || 'account.id'      | "ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found"
@@ -289,8 +291,9 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       response[0].path == errorPath
       response[0].code == errorCode
       response[0].message == errorMessage
+
       where:
-      percent      | invalidPercent    || errorPath   | errorCode | errorMessage
+      percent      | invalidPercent    || errorPath   | errorCode                                         | errorMessage
       'percent'    | (-0.1)            || 'percent'   | 'javax.validation.constraints.DecimalMin.message' | 'must be greater than or equal to value'
       'percent'    | 1.2               || 'percent'   | 'javax.validation.constraints.DecimalMax.message' | 'must be less than or equal to value'
    }
@@ -319,6 +322,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       response.size() == 1
       response[0].path == "percent"
       response[0].message == "Percent total cannot exceed 100%"
+      response[0].code == "cynergi.validation.percent.total.greater.than.100"
    }
 
    void "update valid account payable distribution" () {
@@ -393,8 +397,10 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       response.size() == 2
       response[0].path == 'account.id'
       response[0].message == "$nonExistentAccountId was unable to be found"
+      response[0].code == 'system.not.found'
       response[1].path == 'profitCenter.id'
-      response[1].message == "999999 was unable to be found"
+      response[1].message == '999999 was unable to be found'
+      response[1].code == 'system.not.found'
    }
 
    @Unroll
@@ -418,8 +424,9 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       response[0].path == errorPath
       response[0].code == errorCode
       response[0].message == errorMessage
+
       where:
-      percent      | invalidPercent    || errorPath   | errorCode | errorMessage
+      percent      | invalidPercent    || errorPath   | errorCode                                         | errorMessage
       'percent'    | (-0.1)            || 'percent'   | 'javax.validation.constraints.DecimalMin.message' | 'must be greater than or equal to value'
       'percent'    | 1.2               || 'percent'   | 'javax.validation.constraints.DecimalMax.message' | 'must be less than or equal to value'
    }
@@ -453,6 +460,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       response.size() == 1
       response[0].path == "percent"
       response[0].message == "Percent total cannot exceed 100%"
+      response[0].code == "cynergi.validation.percent.total.greater.than.100"
    }
 
    void "delete one account payable distribution" () {
@@ -476,7 +484,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "${apDistribution.id} was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "delete account payable distribution from other company is not allowed" () {
@@ -494,6 +502,6 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "${apDistribution.id} was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 }

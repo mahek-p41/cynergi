@@ -283,8 +283,8 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final response = ex.response.bodyAsJson()
       response.size() == 2
       response.collect { new ErrorDTO(it.message, it.code, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
-         new ErrorDTO("${vendorPaymentTerm.id} was unable to be found", "system.not.found", "paymentTerm.id"),
-         new ErrorDTO("${shipVia.id} was unable to be found", "system.not.found", "shipVia.id"),
+         new ErrorDTO("${vendorPaymentTerm.id} was unable to be found", 'system.not.found', "paymentTerm.id"),
+         new ErrorDTO("${shipVia.id} was unable to be found", 'system.not.found', "shipVia.id"),
       ].sort { o1, o2 -> o1 <=> o2 }
    }
 

@@ -45,6 +45,7 @@ class ModuleControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].message == 'Config for module 1 already exists'
+      response[0].code == 'cynergi.validation.config.exists'
       response[0].path == 'id'
    }
 

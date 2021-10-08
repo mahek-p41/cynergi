@@ -60,6 +60,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       exception.response.getBody(ErrorDTO).orElse(null)?.message == "0 was unable to be found"
+      exception.response.getBody(ErrorDTO).orElse(null)?.code == 'system.not.found'
    }
 
    void "fetch one verification by customer account" () {
@@ -84,6 +85,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       exception.response.getBody(ErrorDTO).orElse(null)?.message == "-1 was unable to be found"
+      exception.response.getBody(ErrorDTO).orElse(null)?.code == 'system.not.found'
    }
 
    void "post verification successfully" () {

@@ -83,6 +83,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       exception.response.getBody(ErrorDTO).orElse(null)?.message == "0 was unable to be found"
+      exception.response.getBody(ErrorDTO).orElse(null)?.code == 'system.not.found'
    }
 
    void "fetch all by sending employee and company through the admin path" () {

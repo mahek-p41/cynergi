@@ -138,6 +138,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == "value"
       response[0].message == "value already exists"
+      response[0].code == 'cynergi.validation.duplicate'
    }
 
    void "create valid vendor group with duplicate value from different company" () {
@@ -257,6 +258,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == "value"
       response[0].message == "value already exists"
+      response[0].code == 'cynergi.validation.duplicate'
    }
 
    void "update vendor with duplicate value from different company" () {
@@ -299,7 +301,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "${vendorGroup[0].id} was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "delete vendor group from other company is not allowed" () {
@@ -315,7 +317,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "${vendorGroup[0].id} was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "delete vendor group still has reference" () {

@@ -237,6 +237,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == "store[0].id"
       response[0].message == "42 was unable to be found"
+      response[0].code == 'system.not.found'
    }
 
    void "create audit schedule with no stores" () {

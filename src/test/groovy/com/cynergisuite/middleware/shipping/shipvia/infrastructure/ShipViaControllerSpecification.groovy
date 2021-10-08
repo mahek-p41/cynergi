@@ -50,7 +50,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$nonExistentId was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "fetch all" () {
@@ -221,7 +221,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
 
       def result = exception.response.bodyAsJson()
-      new ErrorDTO(result.message, result.code, result.path) == new ErrorDTO(" was unable to be found", "system.not.found", null)
+      new ErrorDTO(result.message, result.code, result.path) == new ErrorDTO(" was unable to be found", 'system.not.found', null)
    }
 
    void "delete ship via" () {
@@ -242,7 +242,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$shipVia.id was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "delete ship via still has references" () {
@@ -277,6 +277,6 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$shipVia.id was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 }
