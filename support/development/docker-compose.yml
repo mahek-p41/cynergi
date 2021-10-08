@@ -6,6 +6,7 @@ services:
    cynergibasedb:
       image: cynergibasedb
       build:
+         network: host
          context: cynergibasedb
          dockerfile: cynergibasedb.dockerfile
    cynergidb:
@@ -24,8 +25,11 @@ services:
          - "6432:5432"
       volumes:
          - ./db/DatabaseDumps:/tmp/dumps
+         - ../../src/main/resources/db/migration/postgres/:/tmp/migrations
       environment:
+         - POSTGRES_USER=postgres
          - POSTGRES_PASSWORD=password
+         - POSTGRES_DB=postgres
       restart: 'no'
    cynergidbready:
       container_name: cynergidbready
@@ -36,7 +40,7 @@ services:
          - cynergidb
       stdin_open: true
       tty: true
-      command: [ "/tmp/db-ready.sh", "cynergidb" ]
+      command: [ "/opt/scripts/db-ready.sh", "cynergidb" ]
    cynergidbpsql:
       container_name: cynergidbpsql
       image: cynergibasedb
@@ -51,7 +55,7 @@ services:
             max-size: "10m"
       stdin_open: true
       tty: true
-      command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "cynergidb", "cynergiuser" ]
+      command: [ "psql", "--host=cynergidb", "--port=5432", "cynergidb", "cynergiuser" ]
    fastinfopsql:
       container_name: fastinfopsql
       image: cynergibasedb
@@ -64,7 +68,8 @@ services:
          options:
             max-file: "5"
             max-size: "10m"
-      command: [ "/usr/local/bin/psql", "--host=cynergidb", "--port=5432", "fastinfo_production", "postgres" ]
+      command: [ "psql", "--host=cynergidb", "--port=5432", "fastinfo_production", "fastinfo_dba" ]
+
    cynergitestdb:
       container_name: cynergitestdb
       networks:
@@ -100,7 +105,7 @@ services:
          - cynerginet
       stdin_open: true
       tty: true
-      command: [ "/tmp/db-ready.sh", "cynergitestdb" ]
+      command: [ "/opt/scripts/db-ready.sh", "cynergitestdb" ]
    cynergitestdbpsql:
       container_name: cynergitestdbpsql
       image: cynergibasedb
@@ -115,10 +120,10 @@ services:
          - cynerginet
       stdin_open: true
       tty: true
-      command: [ "/usr/local/bin/psql", "--host=cynergitestdb", "--port=5432", "cynergitestdb", "postgres" ]
+      command: [ "psql", "--host=cynergitestdb", "--port=5432", "cynergitestdb", "postgres" ]
    cynmid:
       container_name: cynmid
-      image: adoptopenjdk:11.0.11_9-jdk-openj9-0.26.0
+      image: bellsoft/liberica-openjdk-alpine:11.0.12
       logging:
          driver: "json-file"
          options:
@@ -141,7 +146,7 @@ services:
       command: [ "java", "-Dmicronaut.environments=development", "-jar", "/tmp/cynergi-middleware/cynergi-middleware.jar" ]
    cynmidintegration:
       container_name: cynmidintegration
-      image: adoptopenjdk:11.0.11_9-jdk-openj9-0.26.0
+      image: bellsoft/liberica-openjdk-alpine:11.0.12
       logging:
          driver: "json-file"
          options:
@@ -153,11 +158,10 @@ services:
          - cynerginet
       links:
          - cynergitestdb
-      build:
-         context: cynmidintegration
-         dockerfile: cynmid.dockerfile
       volumes:
          - ../../build/libs:/tmp/cynergi-middleware
+      ports:
+         - "8080:8080"
       stdin_open: true
       tty: true
       environment:
