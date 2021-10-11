@@ -490,7 +490,8 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == 'percent'
-      response[0].message == 'Must be in range of (0, 1]'
+      response[0].code == 'javax.validation.constraints.DecimalMax.message'
+      response[0].message == 'must be less than or equal to value'
    }
 
    void "create invalid rebate with percent and amountPerUnit both null" () {
@@ -750,7 +751,8 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == 'percent'
-      response[0].message == 'Must be in range of (0, 1]'
+      response[0].code == 'javax.validation.constraints.DecimalMax.message'
+      response[0].message == 'must be less than or equal to value'
    }
 
    void "update invalid rebate with percent and amountPerUnit both null" () {

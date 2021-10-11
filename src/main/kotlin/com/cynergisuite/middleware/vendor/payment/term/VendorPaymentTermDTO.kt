@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.util.UUID
 import javax.validation.Valid
+import javax.validation.constraints.DecimalMax
+import javax.validation.constraints.DecimalMin
 import javax.validation.constraints.Digits
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
@@ -33,7 +35,8 @@ data class VendorPaymentTermDTO(
    @field:Schema(name = "discountDays", minimum = "1", required = false, description = "Vendor Payment Term Discount Days")
    var discountDays: Int? = null,
 
-   @field:Positive
+   @field:DecimalMin(value = "0", inclusive = false)
+   @field:DecimalMax("1")
    @field:Digits(integer = 1, fraction = 7)
    @field:Schema(name = "discountPercent", description = "Vendor Payment Term Discount Percent")
    var discountPercent: BigDecimal? = null,

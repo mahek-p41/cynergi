@@ -13,7 +13,9 @@ import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
+import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermDTO
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
+import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
@@ -661,14 +663,17 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       response[0].message == errorMessage
 
       where:
-      testProp        | invalidValue                                                                       || errorResponsePath  | errorMessage
-      'vendor'        | new SimpleIdentifiableDTO(UUID.fromString('905545bf-3509-4ad3-8ccc-e437b2dbdcb0')) || 'vendor.id'        | "905545bf-3509-4ad3-8ccc-e437b2dbdcb0 was unable to be found"
-      'purchaseOrder' | new SimpleIdentifiableDTO(UUID.fromString('905545bf-3509-4ad3-8ccc-e437b2dbdcb0')) || 'purchaseOrder.id' | "905545bf-3509-4ad3-8ccc-e437b2dbdcb0 was unable to be found"
-      'selected'      | new AccountPayableInvoiceSelectedTypeDTO('Z', 'Invalid DTO')                       || 'selected.value'   | "Z was unable to be found"
-      'type'          | new AccountPayableInvoiceTypeDTO('Z', 'Invalid DTO')                               || 'type.value'       | "Z was unable to be found"
-      'status'        | new AccountPayableInvoiceStatusTypeDTO('Z', 'Invalid DTO')                         || 'status.value'     | "Z was unable to be found"
-      'payTo'         | new SimpleIdentifiableDTO(UUID.fromString('905545bf-3509-4ad3-8ccc-e437b2dbdcb0')) || 'payTo.id'         | "905545bf-3509-4ad3-8ccc-e437b2dbdcb0 was unable to be found"
-      'location'      | new SimpleLegacyIdentifiableDTO(0)                                                 || 'location.id'      | "0 was unable to be found"
+      testProp          | invalidValue                                                                       || errorResponsePath  | errorMessage
+      'vendor'          | new SimpleIdentifiableDTO(UUID.fromString('905545bf-3509-4ad3-8ccc-e437b2dbdcb0')) || 'vendor.id'        | "905545bf-3509-4ad3-8ccc-e437b2dbdcb0 was unable to be found"
+      'purchaseOrder'   | new SimpleIdentifiableDTO(UUID.fromString('905545bf-3509-4ad3-8ccc-e437b2dbdcb0')) || 'purchaseOrder.id' | "905545bf-3509-4ad3-8ccc-e437b2dbdcb0 was unable to be found"
+      'selected'        | new AccountPayableInvoiceSelectedTypeDTO('Z', 'Invalid DTO')                       || 'selected.value'   | "Z was unable to be found"
+      'type'            | new AccountPayableInvoiceTypeDTO('Z', 'Invalid DTO')                               || 'type.value'       | "Z was unable to be found"
+      'status'          | new AccountPayableInvoiceStatusTypeDTO('Z', 'Invalid DTO')                         || 'status.value'     | "Z was unable to be found"
+      'payTo'           | new SimpleIdentifiableDTO(UUID.fromString('905545bf-3509-4ad3-8ccc-e437b2dbdcb0')) || 'payTo.id'         | "905545bf-3509-4ad3-8ccc-e437b2dbdcb0 was unable to be found"
+      'location'        | new SimpleLegacyIdentifiableDTO(0)                                                 || 'location.id'      | "0 was unable to be found"
+      'discountPercent' | -0.1212345                                                                         || 'discountPercent'  | 'must be greater than or equal to value'
+      'discountPercent' | 0.12123456                                                                         || 'discountPercent'  | '0.12123456 is out of range for discountPercent'
+      'discountPercent' | 1                                                                                  || 'discountPercent'  | 'must be less than or equal to value'
    }
 
    void "update one" () {

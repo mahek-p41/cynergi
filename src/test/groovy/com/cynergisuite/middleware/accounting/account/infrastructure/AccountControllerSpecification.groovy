@@ -257,7 +257,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          totalElements == 2
          totalPages == 1
          elements.size() == 2
-         elements.collect { new AccountDTO(it) }.sort{ o1, o2 -> o1.id <=> o2.id } == [
+         elements.collect { new AccountDTO(it) }.sort { o1, o2 -> o1.id <=> o2.id } == [
             new AccountDTO(account1),
             new AccountDTO(account2)
          ]
@@ -272,7 +272,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          totalElements == 2
          totalPages == 1
          elements.size() == 2
-         elements.collect { new AccountDTO(it) }.sort{ o1, o2 -> o1.id <=> o2.id } == [
+         elements.collect { new AccountDTO(it) }.sort { o1, o2 -> o1.id <=> o2.id } == [
             new AccountDTO(account1),
             new AccountDTO(account2)
          ]
@@ -287,7 +287,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          totalElements == 2
          totalPages == 1
          elements.size() == 2
-         elements.collect { new AccountDTO(it) }.sort{ o1, o2 -> o1.id <=> o2.id } == [
+         elements.collect { new AccountDTO(it) }.sort { o1, o2 -> o1.id <=> o2.id } == [
             new AccountDTO(account1),
             new AccountDTO(account2)
          ]

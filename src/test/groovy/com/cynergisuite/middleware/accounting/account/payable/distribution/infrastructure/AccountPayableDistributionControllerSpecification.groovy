@@ -270,7 +270,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
    }
 
    @Unroll
-   void "create invalid account payable distribution with percent as #invalidPercent" () {
+   void "create invalid account payable distribution with percent = #invalidPercent" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
@@ -286,12 +286,13 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == errorResponsePath
+      response[0].path == errorPath
+      response[0].code == errorCode
       response[0].message == errorMessage
       where:
-      percent      | invalidPercent    || errorResponsePath    | errorMessage
-      'percent'    | (-0.1)            || 'percent'            | 'Must be in range of [0, 1]'
-      'percent'    | 1.2               || 'percent'            | 'Must be in range of [0, 1]'
+      percent      | invalidPercent    || errorPath   | errorCode | errorMessage
+      'percent'    | (-0.1)            || 'percent'   | 'javax.validation.constraints.DecimalMin.message' | 'must be greater than or equal to value'
+      'percent'    | 1.2               || 'percent'   | 'javax.validation.constraints.DecimalMax.message' | 'must be less than or equal to value'
    }
 
    void "create invalid account payable distribution group with percent total over 100%" () {
@@ -397,7 +398,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
    }
 
    @Unroll
-   void "update invalid account payable distribution with percent as #invalidPercent" () {
+   void "update invalid account payable distribution with percent = #invalidPercent" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
@@ -414,12 +415,13 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == errorResponsePath
+      response[0].path == errorPath
+      response[0].code == errorCode
       response[0].message == errorMessage
       where:
-      percent      | invalidPercent    || errorResponsePath    | errorMessage
-      'percent'    | (-0.1)            || 'percent'            | 'Must be in range of [0, 1]'
-      'percent'    | 1.2               || 'percent'            | 'Must be in range of [0, 1]'
+      percent      | invalidPercent    || errorPath   | errorCode | errorMessage
+      'percent'    | (-0.1)            || 'percent'   | 'javax.validation.constraints.DecimalMin.message' | 'must be greater than or equal to value'
+      'percent'    | 1.2               || 'percent'   | 'javax.validation.constraints.DecimalMax.message' | 'must be less than or equal to value'
    }
 
    void "update invalid account payable distribution group with percent total over 100%" () {

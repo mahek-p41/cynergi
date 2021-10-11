@@ -69,10 +69,6 @@ class RebateValidator @Inject constructor(
          rebate
             ?: errors.add(ValidationError("rebate.value", NotFound(dto.type!!.value)))
 
-         if ((percent != null) && (percent > BigDecimal.ONE)) {
-            errors.add(ValidationError("percent", MustBeInRangeOf("(0, 1]")))
-         }
-
          if ((percent == null && amountPerUnit == null) || (percent != null && amountPerUnit != null)) {
             errors.add(ValidationError("percent, amountPerUnit", SelectPercentOrPerUnit(percent, amountPerUnit)))
          }

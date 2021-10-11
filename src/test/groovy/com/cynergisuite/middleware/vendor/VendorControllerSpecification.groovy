@@ -29,6 +29,7 @@ import com.cynergisuite.middleware.vendor.rebate.RebateTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import spock.lang.Unroll
 
 import javax.inject.Inject
 
@@ -455,14 +456,15 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       response[0].message == "${vendorGroups[3].id} was unable to be found"
    }
 
-   void "create invalid vendor with null email address" () {
+   @Unroll
+   void "create invalid vendor without #nonNullableProp" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
       vendor.autoSubmitPurchaseOrder = true
-      vendor.emailAddress = null
+      vendor["$nonNullableProp"] = null
 
       when:
       post(path, vendor)
@@ -472,18 +474,25 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == "emailAddress"
+      response[0].path == errorResponsePath
       response[0].message == "Is required"
+
+      where:
+      nonNullableProp                        || errorResponsePath
+      'emailAddress'                         || 'emailAddress'
+      'purchaseOrderSubmitEmailAddress'      || 'purchaseOrderSubmitEmailAddress'
+      'allowDropShipToCustomer'              || 'allowDropShipToCustomer'
+      'autoSubmitPurchaseOrder'              || 'autoSubmitPurchaseOrder'
    }
 
-   void "create invalid vendor with invalid email address" () {
+   @Unroll
+   void "create invalid vendor with invalid #testProp = #invalidValue" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      vendor.autoSubmitPurchaseOrder = true
-      vendor.emailAddress = "invalidEmail"
+      vendor["$testProp"] = invalidValue
 
       when:
       post(path, vendor)
@@ -493,90 +502,49 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == "emailAddress"
-      response[0].message == "invalidEmail is an invalid email address"
+      response[0].path == testProp
+      response[0].code == errorCode
+      response[0].message == errorMessage
+
+      where:
+      testProp                          | invalidValue      || errorCode                                          | errorMessage
+      'bumpPercent'                     | -0.1212345        || 'javax.validation.constraints.DecimalMin.message'  | 'must be greater than or equal to value'
+      'bumpPercent'                     | 0.123123456       || 'javax.validation.constraints.Digits.message'      | '0.123123456 is out of range for bumpPercent'
+      'bumpPercent'                     | 10                || 'javax.validation.constraints.Digits.message'      | '10 is out of range for bumpPercent'
+      'bumpPercent'                     | 0                 || 'javax.validation.constraints.DecimalMin.message'  | 'must be greater than or equal to value'
+      'freightPercent'                  | -0.1212345        || 'javax.validation.constraints.DecimalMin.message'  | 'must be greater than or equal to value'
+      'freightPercent'                  | 0.123123456       || 'javax.validation.constraints.Digits.message'      | '0.123123456 is out of range for freightPercent'
+      'freightPercent'                  | 10                || 'javax.validation.constraints.Digits.message'      | '10 is out of range for freightPercent'
+      'freightPercent'                  | 0                 || 'javax.validation.constraints.DecimalMin.message'  | 'must be greater than or equal to value'
+      'freightAmount'                   | -0.1234567        || 'javax.validation.constraints.DecimalMin.message'  | 'must be greater than or equal to value'
+      'freightAmount'                   | 0                 || 'javax.validation.constraints.DecimalMin.message'  | 'must be greater than or equal to value'
+      'emailAddress'                    | 'invalidEmail'    || 'javax.validation.constraints.Email.message'       | 'invalidEmail is an invalid email address'
+      'purchaseOrderSubmitEmailAddress' | 'invalidEmail'    || 'javax.validation.constraints.Email.message'       | 'invalidEmail is an invalid email address'
    }
 
-   void "create invalid vendor with null po submit email address" () {
+   @Unroll
+   void "create valid vendor with valid #testProp=#testValue" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      vendor.autoSubmitPurchaseOrder = true
-      vendor.purchaseOrderSubmitEmailAddress = null
+      vendor["$testProp"] = testValue
 
       when:
       post(path, vendor)
 
       then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      final response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "purchaseOrderSubmitEmailAddress"
-      response[0].message == "Is required"
-   }
+      notThrown(Exception)
 
-   void "create invalid vendor with invalid po submit email address" () {
-      given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaTestDataLoaderService.single(company)
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
-      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      vendor.autoSubmitPurchaseOrder = true
-      vendor.purchaseOrderSubmitEmailAddress = "invalidEmail"
-
-      when:
-      post(path, vendor)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      final response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "purchaseOrderSubmitEmailAddress"
-      response[0].message == "invalidEmail is an invalid email address"
-   }
-
-   void "create invalid vendor with null allow drop ship to customer" () {
-      given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaTestDataLoaderService.single(company)
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
-      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      vendor.allowDropShipToCustomer = null
-
-      when:
-      post(path, vendor)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      final response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "allowDropShipToCustomer"
-      response[0].message == "Is required"
-   }
-
-   void "create invalid vendor with null auto submit purchase order" () {
-      given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaTestDataLoaderService.single(company)
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
-      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      vendor.autoSubmitPurchaseOrder = null
-
-      when:
-      post(path, vendor)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      final response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "autoSubmitPurchaseOrder"
-      response[0].message == "Is required"
+      where:
+      testProp          | testValue
+      'bumpPercent'     | 0.12345678
+      'bumpPercent'     | 1
+      'freightPercent'  | 0.12345678
+      'freightPercent'  | 1
+      'freightAmount'   | 123456.78
+      'freightAmount'   | 0.99
    }
 
    void "update one" () {
@@ -699,19 +667,20 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       response[0].message == "invalidEmail is an invalid email address"
    }
 
-   void "update vendor with null po submit email address" () {
+   @Unroll
+   void "update invalid vendor without #nonNullableProp" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      vendorUpdate.autoSubmitPurchaseOrder = true
-      vendorUpdate.purchaseOrderSubmitEmailAddress = null
-
-      when:
       vendorUpdate.id = vendor.id
       vendorUpdate.address.id = vendor.address.myId()
+      vendorUpdate.autoSubmitPurchaseOrder = true
+      vendorUpdate["$nonNullableProp"] = null
+
+      when:
       put("$path/${vendor.id}", vendorUpdate)
 
       then:
@@ -719,8 +688,15 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == "purchaseOrderSubmitEmailAddress"
+      response[0].path == errorResponsePath
       response[0].message == "Is required"
+
+      where:
+      nonNullableProp                        || errorResponsePath
+      'emailAddress'                         || 'emailAddress'
+      'purchaseOrderSubmitEmailAddress'      || 'purchaseOrderSubmitEmailAddress'
+      'allowDropShipToCustomer'              || 'allowDropShipToCustomer'
+      'autoSubmitPurchaseOrder'              || 'autoSubmitPurchaseOrder'
    }
 
    void "update vendor with invalid po submit email address" () {
@@ -777,52 +753,6 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       result.allowDropShipToCustomer == !existingAllowDropShipToCustomer
       result.autoSubmitPurchaseOrder == !existingAutoSubmitPurchaseOrder
       new VendorDTO(result) == vendorUpdate
-   }
-
-   void "update invalid vendor with null allow drop ship to customer field" () {
-      given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaTestDataLoaderService.single(company)
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
-      final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      vendorUpdate.allowDropShipToCustomer = null
-
-      when:
-      vendorUpdate.id = vendor.id
-      vendorUpdate.id = vendor.getAddress().myId()
-      put("$path/${vendor.id}", vendorUpdate)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      final response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "allowDropShipToCustomer"
-      response[0].message == "Is required"
-   }
-
-   void "update invalid vendor with null auto submit purchase order field" () {
-      given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaTestDataLoaderService.single(company)
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
-      final vendorUpdate = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
-      vendorUpdate.autoSubmitPurchaseOrder = null
-
-      when:
-      vendorUpdate.id = vendor.id
-      vendorUpdate.id = vendor.getAddress().myId()
-      put("$path/${vendor.id}", vendorUpdate)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      final response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "autoSubmitPurchaseOrder"
-      response[0].message == "Is required"
    }
 
    void "search vendors" () {
@@ -1009,42 +939,6 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       then:
       def ex = thrown(HttpClientResponseException)
       ex.response.status == NO_CONTENT
-   }
-
-   void "Create vendor with bumpPercent that has 2 integral and 8 fractional" () {
-      given:
-      final addressId = UUID.randomUUID()
-      final company = companyFactoryService.forDatasetCode('tstds1')
-
-      final addressVO = new AddressDTO(addressId, "Test Address", "123 Test St", "Suite 1100", "Corpus Christi", "TX", "78418", 11.01, 42.07, "USA", "Nueces", "361777777", "3612222222")
-      final addressEntity = new AddressEntity(addressVO)
-
-      final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
-      final VPT = new VendorPaymentTermEntity(null, company, "test1", null, null, null, schedules)
-      final vendorPaymentTerm = vendorPaymentTermRepository.insert(VPT)
-
-      final shipVia = shipViaTestDataLoaderService.single(nineNineEightEmployee.company)
-
-      final VGRP = new VendorGroupEntity(null, company, "Test Group", "Group used for testing!")
-      final vendorGroup = vendorGroupRepository.insert(VGRP, company)
-
-      final onboard = freightOnboardTypeRepository.findOne(1)
-      final method = freightCalcMethodTypeRepository.findOne(1)
-
-      final vendorEntity = new VendorEntity(null, company, "test1", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, "Note something", null)
-      final vendor = vendorRepository.insert(vendorEntity).with { new VendorDTO(it) }
-
-      when:
-      vendor.bumpPercent = 20.00000008
-      post(path, vendor)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status == BAD_REQUEST
-      final response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].message == "20.00000008 is out of range for bumpPercent"
-      response[0].path == "bumpPercent"
    }
 
    void "assign rebates to vendor" () {
