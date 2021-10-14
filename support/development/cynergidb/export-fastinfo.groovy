@@ -53,6 +53,10 @@ if (options != null && !options.h) {
       tables.add("${schemaName}.level2_manufacturers")
       tables.add("${schemaName}.level2_location_types")
       tables.add("${schemaName}.level2_locations")
+      tables.add("${schemaName}.level2_vendors")
+      tables.add("${schemaName}.level2_customers")
+      tables.add("${schemaName}.level1_operators")
+      tables.add("${schemaName}.level1_furn_cols")
 
       schemas.add("CREATE SCHEMA IF NOT EXISTS ${schemaName};\n")
    }

@@ -1,3 +1,0 @@
-id,uu_row_id,time_created,time_updated,number,last_name,first_name_mi,pass_code,store_number,active,department,cynergi_system_admin,alternative_store_indicator,alternative_area,company_id
-1,5a469932-703c-11ea-b66a-005056bb008d,2020-03-27 15:05:10.314661,2021-10-06 15:47:31.037098,998,admin,,$2a$10$In9GULeJWwz4VcvP.sVMU.ZWOar2HbkMAgoq4AMQnagqdiUkPC/DO,,true,,true,A,0,5652e5c4-703c-11ea-a569-005056bb008d
-2,0f37ca10-735c-11ea-941b-005056bb008d,2020-03-31 14:29:41.772176,2021-10-06 15:47:31.10629,998,admin,,$2a$10$In9GULeJWwz4VcvP.sVMU.ZWOar2HbkMAgoq4AMQnagqdiUkPC/DO,,true,,true,A,0,0e313a16-735c-11ea-b79e-005056bb008d
