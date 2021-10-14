@@ -132,3 +132,18 @@ BEGIN
 
    EXECUTE sqlToExec;
 END $$;
+
+-- This function will take the provided pass_code and determine what TEXT string to return based on the type.
+-- 'eli' get's you the bcypt hashed version
+-- 'sysz' get's you the plain text result trimmed to 6 characters
+CREATE OR REPLACE FUNCTION convert_passcode(TEXT, TEXT, TEXT) -- $1: type, $2: pass_code, $3: pass_code-column
+   RETURNS TEXT AS
+$$
+BEGIN
+   IF $1 IS NOT NULL AND upper($1) = 'ELI' THEN
+      RETURN crypt($2, $3);
+   ELSE
+      RETURN substring($2, 1, 6); -- this is how cynergi currently does it, and we must continue to support that, because some users type in pass_codes that are longer than allowed, and we just drop the extra characters
+   END IF;
+END;
+$$ LANGUAGE plpgsql;
