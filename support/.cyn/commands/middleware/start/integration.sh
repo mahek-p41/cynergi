@@ -13,7 +13,7 @@ if [ $? -eq 0 ]; then
   pushd ../development
 
   if [ -z `docker-compose ps -q cynmidintegration` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q cynmidintegration)` ]; then
-    docker rm -f cynmidintegration > /dev/null 2>&1
+    docker rm -f cynmidintegration >> /tmp/cynergi-dev.log 2>&1
     docker-compose up -d --no-deps cynmidintegration
     exit $?
   else
