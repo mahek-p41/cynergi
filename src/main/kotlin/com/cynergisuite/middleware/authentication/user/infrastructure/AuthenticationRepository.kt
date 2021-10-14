@@ -151,7 +151,7 @@ abstract class AuthenticationRepository @Inject constructor(
            JOIN fastinfo_prod_import.store_vw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
       WHERE comp.dataset_code = :dataset
             AND au.number = :employeeNumber
-            AND (au.pass_code = substring(:passCode, 1, 6) OR au.pass_code = crypt(:passCode, au.pass_code))
+            AND au.pass_code = convert_passcode(au.type, :passCode, au.pass_code)
    """,
       nativeQuery = true
    )
@@ -310,7 +310,7 @@ abstract class AuthenticationRepository @Inject constructor(
            JOIN fastinfo_prod_import.store_vw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
       WHERE comp.dataset_code = :dataset
             AND au.number = :employeeNumber
-            AND (au.pass_code = substring(:passCode, 1, 6) OR au.pass_code = crypt(:passCode, au.pass_code))
+            AND au.pass_code = convert_passcode(au.type, :passCode, au.pass_code)
    """,
       nativeQuery = true
    )
