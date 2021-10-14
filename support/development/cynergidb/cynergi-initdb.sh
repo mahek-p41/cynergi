@@ -1,33 +1,19 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 sed -ri "s/#log_statement = 'none'/log_statement = 'all'/g" /var/lib/postgresql/data/postgresql.conf
 
+dropdb --if-exists fastinfo_production
+createdb fastinfo_production
+
 dropdb --if-exists cynergidb
 createdb cynergidb
+
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "fastinfo_production" <<-EOSQL
+   CREATE USER fastinfo_dba WITH PASSWORD 'password';
+   ALTER ROLE fastinfo_dba SUPERUSER;
+EOSQL
+
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "cynergidb" <<-EOSQL
    CREATE USER cynergiuser WITH PASSWORD 'password';
    ALTER ROLE cynergiuser SUPERUSER;
-   DROP SCHEMA IF EXISTS public;
 EOSQL
-
-if [[ -f /tmp/dumps/cynergidb.dump ]]; then
-    echo "Restoring cynergidb from snapshot"
-    pg_restore -v -O -x --role=postgres --dbname=cynergidb /tmp/dumps/cynergidb.dump
-    echo "Finished restoring cynergidb from snapshot"
-fi
-
-dropdb --if-exists fastinfo_production
-createdb fastinfo_production
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "fastinfo_production" <<-EOSQL
-   DROP SCHEMA IF EXISTS public;
-EOSQL
-
-if [[ -f /tmp/dumps/fastinfo.dump ]]; then
-    echo "Restoring fastinfo_production from snapshot"
-    pg_restore -v -O -x --role=postgres --dbname=fastinfo_production /tmp/dumps/fastinfo.dump
-    echo "Finished restoring fastinfo_production from snapshot"
-fi
-
-## for production change postgres and password to correct
-# sudo -u postgres psql -f /opt/cyn/v01/cynmid/data/setup-database.sql -v "ON_ERROR_STOP=1" -v fastinfoUserName=postgres -v fastinfoPassword=password -v datasets=$(/opt/cyn/v01/cynmid/data/cyndsets-parse.sh)
-psql -f /tmp/setup-database.sql -v "ON_ERROR_STOP=1" -v fastinfoUserName=postgres -v fastinfoPassword=password -v datasets=corrto,corptp,corrll,cornwv,corrdv,corapw,corrbn

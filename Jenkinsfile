@@ -35,7 +35,7 @@ pipeline {
 
                cynergitestdb.withRun("--network ${networkId} --name cynergitestdb${env.BRANCH_NAME} -e POSTGRES_PASSWORD=password --tmpfs /var/lib/postgresql/data:rw -v ${workspace}/support/development/cynergitestdb/fastinfo:/tmp/fastinfo") { cdbt ->
                   script {
-                     sh "docker run -i --rm --network ${networkId} cynergibasedb:${env.BRANCH_NAME} /tmp/db-ready.sh cynergitestdb${env.BRANCH_NAME}"
+                     sh "docker run -i --rm --network ${networkId} cynergibasedb:${env.BRANCH_NAME} /opt/scripts/db-ready.sh cynergitestdb${env.BRANCH_NAME}"
 
                      cynmid.inside(
                         "--rm " +
@@ -76,7 +76,7 @@ pipeline {
 
          steps {
             script {
-               def cynmidtar = docker.build("middlewaretar:${env.BRANCH_NAME}", "-f ./support/deployment/cynmid/cynmid.dockerfile --build-arg USER_ID=$jenkinsUid --build-arg GROUP_ID=$jenkinsGid --build-arg GROOVY_VER=3.0.8 ./support/deployment/cynmid")
+               def cynmidtar = docker.build("middlewaretar:${env.BRANCH_NAME}", "-f ./support/deployment/cynmid/cynmid.dockerfile --build-arg USER_ID=$jenkinsUid --build-arg GROUP_ID=$jenkinsGid --build-arg GROOVY_VER=3.0.9 ./support/deployment/cynmid")
 
                cynmidtar.inside(
                   "--rm " +
@@ -100,7 +100,7 @@ pipeline {
                   mkdir -p /opt/cyn/v01/cynmid/scripts/
                   mkdir -p /opt/cyn/v01/cynmid/groovy/bin/
                   cp /home/jenkins/cynergi-middleware/support/deployment/cynergi-postgres-check.sh /opt/cyn/v01/cynmid/scripts/cynergi-postgres-check.sh
-                  cp /home/jenkins/cynergi-middleware/support/deployment/*.groovy /opt/cyn/v01/cynmid/scripts/
+                  cp /home/jenkins/cynergi-middleware/support/development/cynergidb/*.groovy /opt/cyn/v01/cynmid/scripts/
                   chmod u+x /opt/cyn/v01/cynmid/scripts/*.groovy
                   chmod u+x /opt/cyn/v01/cynmid/scripts/cynergi-postgres-check.sh
                   jlink --module-path "$JAVA_HOME\\jmods" \\

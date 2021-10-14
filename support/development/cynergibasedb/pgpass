@@ -1,4 +1,5 @@
+cynergidb:5432:postgres:postgres:password
 cynergidb:5432:cynergidb:cynergiuser:password
-cynergidb:5432:fastinfo_production:postgres:password
+cynergidb:5432:fastinfo_production:fastinfo_dba:password
 cynergitestdb:5432:cynergitestdb:postgres:password
 localhost:5432:cynergitestdb:postgres:password
