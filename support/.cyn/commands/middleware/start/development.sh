@@ -6,14 +6,16 @@
 if [ $? -eq 0 ]; then
   pushd ../../
 
-  ./gradlew clean shadowjar
+  echo "Building middleware uberjar"
+  ./gradlew clean shadowjar >> /tmp/cynergi-dev.log
 
   popd
 
   pushd ../development
 
   if [ -z `docker-compose ps -q cynmid` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q cynmid)` ]; then
-    docker rm -f cynmid > /dev/null 2>&1
+    echo "Starting middleware"
+    docker rm -f cynmid >> /dev/null 2>&1
     docker-compose up -d --no-deps cynmid
     exit $?
   else
