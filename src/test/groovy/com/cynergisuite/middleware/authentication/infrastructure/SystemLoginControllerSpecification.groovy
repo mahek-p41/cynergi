@@ -1,7 +1,9 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
+import com.cynergisuite.middleware.address.AddressTestDataLoaderService
 import com.cynergisuite.middleware.authentication.LoginCredentials
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
@@ -20,6 +22,8 @@ import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 @MicronautTest(transactional = false)
 class SystemLoginControllerSpecification extends ServiceSpecificationBase {
    @Inject @Client("/api") RxHttpClient httpClient
+   @Inject AddressTestDataLoaderService addressTestDataLoaderService
+   @Inject CompanyRepository companyRepository
 
    void "login successful with user who doesn't have department" () {
       given:
@@ -506,5 +510,26 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       final e = thrown(HttpClientResponseException)
       e.response.bodyAsJson().message == 'Access denied for 106 credentials do not match'
       e.status == UNAUTHORIZED
+   }
+
+   void "login with high touch uber user to a company with an address" () {
+      given:
+      final address = addressTestDataLoaderService.single()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final htUberUser = employeeFactoryService.singleSuperUser(998, company, 'admin', null, 'word')
+
+      when:
+      companyRepository.update(company, company.copyMeWithNewAddress(address))
+
+      def authResponse = httpClient.toBlocking()
+         .exchange(
+            POST("/login",new LoginCredentials('998', 'word', null, company.datasetCode)),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      authResponse.access_token != null
    }
 }

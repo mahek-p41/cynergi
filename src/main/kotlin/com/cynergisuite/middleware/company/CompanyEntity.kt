@@ -54,6 +54,7 @@ data class CompanyEntity(
       )
 
    fun copyMeWithNewDatasetCode(datasetCode: String) = copy(datasetCode = datasetCode)
+   fun copyMeWithNewAddress(address: AddressEntity) = copy(address = address)
 
    override fun hashCode(): Int =
       HashCodeBuilder()
