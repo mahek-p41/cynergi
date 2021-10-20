@@ -40,7 +40,7 @@ class ScheduleJobExecutorService @Inject constructor(
    fun runEndOfMonth(month: Month = OffsetDateTime.now().month) =
       runJob(month, END_OF_MONTH, EndOfMonthJob::class) { EndOfMonthJobQualifier(it) }
 
-   private fun <T: TemporalAccessor, J: Job<T>> runJob(temporalAccessor: T, scheduleType: ScheduleType, jobClazz: KClass<J>, qualifierSupplier: (commandValue: String) -> Qualifier<J>): Int {
+   private fun <T : TemporalAccessor, J : Job<T>> runJob(temporalAccessor: T, scheduleType: ScheduleType, jobClazz: KClass<J>, qualifierSupplier: (commandValue: String) -> Qualifier<J>): Int {
       return companyRepository.all()
          .flatMap { scheduleRepository.all(scheduleType, it) }
          .filter { it.enabled }

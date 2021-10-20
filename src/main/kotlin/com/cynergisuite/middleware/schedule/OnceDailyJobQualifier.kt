@@ -4,7 +4,6 @@ import io.micronaut.context.Qualifier
 import io.micronaut.inject.BeanType
 import org.apache.commons.lang3.builder.ToStringBuilder
 import java.util.stream.Stream
-import javax.inject.Named
 
 class OnceDailyJobQualifier(
    private val name: String
