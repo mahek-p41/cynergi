@@ -26,11 +26,6 @@ import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import javax.transaction.Transactional
 
-/* FIXME
- * Notes for the future
- * 1. Due to current practices in the data for employees first_name_mi can be blank rather than null.  This should be
- *    fixed so that it is more consistent in the database and is not smoothed over by the business logic.
- */
 @Singleton
 class EmployeeRepository @Inject constructor(
    private val companyRepository: CompanyRepository,

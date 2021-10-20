@@ -80,7 +80,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
             vend.v_account_number                                     AS apInvoice_vendor_account_number,
             vend.v_pay_to_id                                          AS apInvoice_vendor_pay_to_id,
             vend.v_freight_on_board_type_id                           AS apInvoice_vendor_freight_on_board_type_id,
-            vend.v_vendor_payment_term_id                           AS apInvoice_vendor_vendor_payment_term_id,
+            vend.v_vendor_payment_term_id                             AS apInvoice_vendor_vendor_payment_term_id,
             vend.v_normal_days                                        AS apInvoice_vendor_normal_days,
             vend.v_return_policy                                      AS apInvoice_vendor_return_policy,
             vend.v_ship_via_id                                        AS apInvoice_vendor_ship_via_id,

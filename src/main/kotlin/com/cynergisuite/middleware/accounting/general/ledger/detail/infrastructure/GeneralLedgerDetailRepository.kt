@@ -179,10 +179,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
    @ReadOnly
    fun findNetChange(company: CompanyEntity, filterRequest: GeneralLedgerDetailFilterRequest): GeneralLedgerNetChangeDTO? {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder("""WHERE glDetail.company_id = :comp_id AND glSummary.overall_period_id =
-         ( SELECT DISTINCT overall_period_id
-           FROM financial_calendar
-           WHERE glDetail.date BETWEEN period_from AND period_to) """.trimIndent())
+      val whereClause = StringBuilder(" WHERE glDetail.company_id = :comp_id ")
       val groupBy = " GROUP BY glDetail.company_id, glDetail.profit_center_id_sfk,acct.account_number,glSummary.beginning_balance "
       if (filterRequest.from != null || filterRequest.thru != null) {
          params["from"] = filterRequest.from
