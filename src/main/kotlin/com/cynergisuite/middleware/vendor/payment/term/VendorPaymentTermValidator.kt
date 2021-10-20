@@ -8,7 +8,6 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.localization.MustBeInRangeOf
 import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.localization.NotUpdatable
 import com.cynergisuite.middleware.localization.VendorPaymentTermDuePercentDoesNotAddUp

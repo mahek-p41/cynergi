@@ -3,12 +3,9 @@ package com.cynergisuite.middleware.vendor.payment.term.schedule.infrastructure
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
 import org.jdbi.v3.core.Jdbi
@@ -106,7 +103,6 @@ class VendorPaymentTermScheduleRepository @Inject constructor(
             "ids" to scheduleRecords.asSequence().map { it.id }.toList()
          )
       )
-
    }
 
    @Transactional
@@ -125,7 +121,6 @@ class VendorPaymentTermScheduleRepository @Inject constructor(
       )
 
       logger.info("Affected rows: {}", affectedRows)
-
    }
 
    private fun mapDdlRow(rs: ResultSet): VendorPaymentTermScheduleEntity {

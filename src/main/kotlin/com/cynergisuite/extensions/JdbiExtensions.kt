@@ -60,7 +60,7 @@ fun Jdbi.softDelete(sql: String, params: Map<String, *>, tableName: String, idCo
       AND pg_get_constraintdef(c.oid) LIKE 'FOREIGN KEY %'
       AND substring(pg_get_constraintdef(c.oid), position(' REFERENCES ' in pg_get_constraintdef(c.oid))+12, position('(' in substring(pg_get_constraintdef(c.oid), 14))-position(' REFERENCES ' in pg_get_constraintdef(c.oid))+1) = :tableName
       ORDER  BY pg_get_constraintdef(c.oid), conrelid::regclass::text, contype DESC;
-   """.trimIndent()
+      """.trimIndent()
 
       val query = handle.createQuery(findReferenceQuery)
 
@@ -79,10 +79,12 @@ fun Jdbi.softDelete(sql: String, params: Map<String, *>, tableName: String, idCo
             val isPK = idColumn == pkColumn
             logger.info("Checking $idColumn=${params["id"]} in referenced column: $fkTable.$fkColumn")
 
-            val deletedColumnExistsQuery = handle.createQuery("""
+            val deletedColumnExistsQuery = handle.createQuery(
+               """
                SELECT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS
 		         WHERE TABLE_NAME = '$fkTable' AND COLUMN_NAME = 'deleted')
-            """)
+            """
+            )
             val deletedColumnExists = deletedColumnExistsQuery.mapTo(Boolean::class.java).first()
 
             val checkExistQuery = if (isPK) {

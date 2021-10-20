@@ -277,7 +277,6 @@ class VendorPaymentTermRepository @Inject constructor(
       return updated
    }
 
-
    @Transactional
    fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting VendorPaymentTerm with id={}", id)

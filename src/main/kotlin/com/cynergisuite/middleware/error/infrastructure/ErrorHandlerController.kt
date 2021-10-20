@@ -199,8 +199,9 @@ class ErrorHandlerController @Inject constructor(
       val message = dataIntegrityViolationException.localizedMessage
       val errorPayload = localizationService.localizeError(localizationCode = DataConstraintIntegrityViolation(), locale = locale)
 
-      return if (message.startsWith("org.postgresql.util.PSQLException: ERROR: update or delete")
-            || message.equals("The deleted row is still referenced from another table")) {
+      return if (message.startsWith("org.postgresql.util.PSQLException: ERROR: update or delete") ||
+         message.equals("The deleted row is still referenced from another table")
+      ) {
          return HttpResponse.status<ErrorDTO>(CONFLICT).body(errorPayload)
       } else {
          badRequest(errorPayload)

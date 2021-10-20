@@ -6,7 +6,6 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.location.LocationEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
