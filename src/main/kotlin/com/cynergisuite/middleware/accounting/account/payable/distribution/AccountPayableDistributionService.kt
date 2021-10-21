@@ -1,11 +1,8 @@
 package com.cynergisuite.middleware.accounting.account.payable.distribution
 
-import com.cynergisuite.domain.DistributionReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.PaymentReportFilterRequest
 import com.cynergisuite.middleware.accounting.account.payable.distribution.infrastructure.AccountPayableDistributionRepository
-import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentReportTemplate
 import com.cynergisuite.middleware.company.CompanyEntity
 import java.util.UUID
 import javax.inject.Inject
@@ -40,11 +37,6 @@ class AccountPayableDistributionService @Inject constructor(
          transformEntity(entity)
       }
    }
-
-//   fun fetchReport(company: CompanyEntity, filterRequest: DistributionReportFilterRequest): AccountPayableDistributionReportTemplate {
-//      val found = accountPayableDistributionRepository.findAll(company, filterRequest)
-//      return AccountPayableDistributionReportTemplate(found)
-//   }
 
    fun create(dto: AccountPayableDistributionDTO, company: CompanyEntity): AccountPayableDistributionDTO {
       val toCreate = accountPayableDistributionValidator.validateCreate(dto, company)
