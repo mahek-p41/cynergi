@@ -18,7 +18,7 @@ class ReportalServiceSpecification extends Specification {
       final syncLatch = new CountDownLatch(1)
       final reportalDir = File.createTempDir()
       final storeDir = new File(reportalDir.getAbsolutePath(), "store${store.number}")
-      final cynergiExecutor = new CynergiExecutor(1)
+      final cynergiExecutor = new CynergiExecutor()
       final executor = Spy(cynergiExecutor)
       executor.execute(_) >> { Function0<Unit> job ->
          cynergiExecutor.executor.execute({
