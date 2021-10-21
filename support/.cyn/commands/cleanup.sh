@@ -3,4 +3,6 @@
 
 cd ../development
 
+rm -rf /tmp/sftpuser/
+
 docker-compose down --rmi all --volumes

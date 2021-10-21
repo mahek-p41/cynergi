@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 ## description: stops the cynmid service
 
-cd ../development
+pushd ../development > /dev/null
 
 if [ -z `docker-compose ps -q cynmid` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q cynmid)` ]; then
   echo "cynmid is not running"
@@ -11,3 +11,5 @@ else
   docker-compose stop cynmid && docker-compose rm -f cynmid
   exit $?
 fi
+
+popd > /dev/null

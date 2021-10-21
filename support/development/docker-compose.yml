@@ -69,6 +69,23 @@ services:
             max-file: "5"
             max-size: "10m"
       command: [ "psql", "--host=cynergidb", "--port=5432", "fastinfo_production", "fastinfo_dba" ]
+   sftpdev:
+      container_name: sftpdev
+      networks:
+         - cynerginet
+      build:
+         context: sftp
+         dockerfile: sftp.dockerfile
+         args:
+            GROUP_ID: $GROUP_ID
+            USER_ID: $USER_ID
+      ports:
+         - "2222:22"
+      logging:
+         driver: "json-file"
+         options:
+            max-file: "5"
+            max-size: "10m"
 
    cynergitestdb:
       container_name: cynergitestdb
@@ -121,6 +138,26 @@ services:
       stdin_open: true
       tty: true
       command: [ "psql", "--host=cynergitestdb", "--port=5432", "cynergitestdb", "postgres" ]
+   sftptest:
+      container_name: sftptest
+      networks:
+         - cynerginet
+      build:
+         context: sftp
+         dockerfile: sftp.dockerfile
+         args:
+            GROUP_ID: $GROUP_ID
+            USER_ID: $USER_ID
+      ports:
+         - "2223:22"
+      volumes:
+         - /tmp/sftpuser:/home/sftpuser
+      logging:
+         driver: "json-file"
+         options:
+            max-file: "5"
+            max-size: "10m"
+
    cynmid:
       container_name: cynmid
       image: bellsoft/liberica-openjdk-alpine:11.0.12
