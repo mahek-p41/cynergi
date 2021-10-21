@@ -1,9 +1,13 @@
 package com.cynergisuite.middleware.accounting.account.payable.distribution.infrastructure
 
+import com.cynergisuite.domain.DistributionReportFilterRequest
 import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.PaymentReportFilterRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDTO
+import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionService
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentReportTemplate
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -67,6 +71,29 @@ class AccountPayableDistributionController @Inject constructor(
       logger.debug("Fetching AccountPayableDistribution by {} resulted in", id, response)
 
       return response
+   }
+
+   @Get(uri = "{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["AccountPayableDistributionEndpoints"], summary = "Fetch an Account Payable Distribution Report", description = "Fetch an Account Payable Distribution Report", operationId = "accountPayableDistribution-fetchReport")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableDistributionReportTemplate::class))]),
+         ApiResponse(responseCode = "204", description = "The requested Account Payable Distribution was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchReport(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: DistributionReportFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): AccountPayableDistributionReportTemplate {
+      logger.info("Fetching all Account Payable Distributions {}")
+
+      val user = userService.fetchUser(authentication)
+      return accountPayableDistributionService.fetchReport(user.myCompany(), filterRequest)
    }
 
    @Throws(PageOutOfBoundsException::class)
