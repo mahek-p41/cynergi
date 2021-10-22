@@ -1,1 +1,1 @@
-"id","time_created","time_updated","name","profit_center_sfk","account_id","company_id","percent"
+"id","time_created","time_updated","name","profit_center_sfk","account_id","company_id","percent","deleted"

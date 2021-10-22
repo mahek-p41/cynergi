@@ -3,6 +3,7 @@ package com.cynergisuite.extensions
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.error.DataAccessException
 import com.cynergisuite.domain.infrastructure.RepositoryPage
+import com.cynergisuite.middleware.error.infrastructure.ErrorHandlerController
 import io.micronaut.data.exceptions.EmptyResultException
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.mapper.RowMapper
@@ -111,7 +112,7 @@ fun Jdbi.softDelete(sql: String, params: Map<String, *>, tableName: String, idCo
 
          if (hasReferences) {
             logger.info("Key id=${params["id"]} is still referenced in $referencedTables")
-            throw UnableToExecuteStatementException("The deleted row is still referenced from another table")
+            throw UnableToExecuteStatementException(ErrorHandlerController.SOFT_DELETE_ERROR)
          }
 
          null

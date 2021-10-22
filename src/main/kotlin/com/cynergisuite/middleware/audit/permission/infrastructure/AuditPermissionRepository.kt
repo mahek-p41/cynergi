@@ -375,7 +375,6 @@ class AuditPermissionRepository @Inject constructor(
       val existingPermission = findById(id, company)
 
       return if (existingPermission != null) {
-         // Todo
          jdbc.deleteReturning(
             """
             UPDATE audit_permission

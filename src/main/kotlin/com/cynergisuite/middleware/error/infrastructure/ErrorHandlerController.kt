@@ -57,6 +57,10 @@ class ErrorHandlerController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ErrorHandlerController::class.java)
 
+   companion object {
+      const val SOFT_DELETE_ERROR = "The deleted row is still referenced from another table"
+   }
+
    @Error(global = true, exception = JsonParseException::class)
    fun jsonParseExceptionHandler(httpRequest: HttpRequest<*>, exception: JsonParseException): HttpResponse<ErrorDTO> {
       logger.warn("Unable to parse request body", exception)
@@ -200,7 +204,7 @@ class ErrorHandlerController @Inject constructor(
       val errorPayload = localizationService.localizeError(localizationCode = DataConstraintIntegrityViolation(), locale = locale)
 
       return if (message.startsWith("org.postgresql.util.PSQLException: ERROR: update or delete") ||
-         message.equals("The deleted row is still referenced from another table")
+         message.equals(Companion.SOFT_DELETE_ERROR)
       ) {
          return HttpResponse.status<ErrorDTO>(CONFLICT).body(errorPayload)
       } else {
