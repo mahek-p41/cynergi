@@ -54,6 +54,9 @@ class PaymentReportFilterRequest(
    @field:Schema(name = "type", description = "The Payment Type to filter results with")
    var type: String? = null,
 
+   @field:Schema(name = "includeOption", description = "The include option to filter results with")
+   var includeOption: String? = null,
+
    @field:Schema(name = "frmPmtDt", description = "Beginning payment date")
    var frmPmtDt: OffsetDateTime? = null,
 
@@ -92,6 +95,7 @@ class PaymentReportFilterRequest(
          "endVendorGroup" to endVendorGroup,
          "status" to status,
          "type" to type,
+         "includeOption" to includeOption,
          "frmPmtDt" to frmPmtDt,
          "thruPmtDt" to thruPmtDt,
          "frmDtClr" to frmDtClr,

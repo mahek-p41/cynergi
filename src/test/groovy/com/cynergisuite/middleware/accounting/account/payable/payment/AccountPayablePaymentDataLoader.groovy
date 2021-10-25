@@ -23,12 +23,12 @@ class AccountPayablePaymentTestDataLoader {
       BankEntity bank,
       VendorEntity vendor,
       AccountPayablePaymentStatusType status,
-      AccountPayablePaymentTypeType type
+      AccountPayablePaymentTypeType type,
+      Boolean isCleared
    ) {
       final number = numberIn < 0 ? 1 : numberIn
       final faker = new Faker()
       final random = faker.random()
-      final pmtNum = random.nextInt(1000)
 
       return IntStream.range(0, number).mapToObj {
          new AccountPayablePaymentEntity(
@@ -38,9 +38,9 @@ class AccountPayablePaymentTestDataLoader {
             status ?: AccountPayablePaymentStatusTypeDataLoader.random(),
             type ?: AccountPayablePaymentTypeTypeDataLoader.random(),
             LocalDate.now().minusDays(random.nextLong(15)),
-            LocalDate.now().minusDays(random.nextLong(10)),
+            isCleared ? LocalDate.now().minusDays(random.nextLong(15)) : null,
             LocalDate.now().minusDays(random.nextLong(5)),
-            pmtNum.toString() + it,
+            faker.lorem().characters(0,2) + random.nextInt(1000) + faker.lorem().characters(0, 2),
             random.nextInt(1000).toBigDecimal(),
             Set.of()
          )
@@ -90,9 +90,10 @@ class AccountPayablePaymentDataLoaderService {
       BankEntity bank,
       VendorEntity vendor,
       AccountPayablePaymentStatusType status = null,
-      AccountPayablePaymentTypeType type = null
+      AccountPayablePaymentTypeType type = null,
+      Boolean isCleared = false
    ) {
-      return AccountPayablePaymentTestDataLoader.stream(numberIn, bank, vendor, status, type)
+      return AccountPayablePaymentTestDataLoader.stream(numberIn, bank, vendor, status, type, isCleared)
          .map { apPaymentRepository.insert(it, company) }
    }
 

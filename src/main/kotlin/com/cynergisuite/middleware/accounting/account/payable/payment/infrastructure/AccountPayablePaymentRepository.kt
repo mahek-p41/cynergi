@@ -571,6 +571,11 @@ class AccountPayablePaymentRepository @Inject constructor(
          whereClause.append(" AND type.value = :type ")
       }
 
+      when (filterRequest.includeOption) {
+         "C" -> whereClause.append(" AND date_cleared IS NOT NULL ")
+         "O" -> whereClause.append(" AND date_cleared IS NULL ")
+      }
+
       if (filterRequest.frmPmtDt != null || filterRequest.thruPmtDt != null) {
          params["frmPmtDt"] = filterRequest.frmPmtDt
          params["thruPmtDt"] = filterRequest.thruPmtDt
@@ -592,11 +597,29 @@ class AccountPayablePaymentRepository @Inject constructor(
             .append(buildDateFilterString(filterRequest.frmDtVoid, filterRequest.thruDtVoid, "frmDtVoid", "thruDtVoid"))
       }
 
+      val sorting = when (filterRequest.snakeSortBy()) {
+         "N" ->  "apPayment_vendor_name ${filterRequest.sortDirection()}"
+         "P" ->  """
+            CASE
+               WHEN apPayment.payment_number ~ '^[0-9]+${'$'}' THEN 1
+               WHEN apPayment.payment_number ~ '^[0-9]+[a-z]+${'$'}' THEN 2
+               WHEN apPayment.payment_number ~ '^[^0-9]+${'$'}' THEN 3
+               WHEN apPayment.payment_number ~ '^[a-z]+[0-9]+' THEN 4
+            END,
+            CASE
+               WHEN apPayment.payment_number ~ '^[0-9]+${'$'}' THEN apPayment.payment_number::integer
+               WHEN apPayment.payment_number ~ '^[0-9]+[a-z]+${'$'}' THEN regexp_replace(apPayment.payment_number, '[^0-9]+', '', 'g')::integer
+               ELSE 0
+            END ${filterRequest.sortDirection()}"""
+         "V" ->  "apPayment_vendor_number ${filterRequest.sortDirection()}"
+         else -> "apPayment.time_created ${filterRequest.sortDirection()}"
+      }
+
       jdbc.query(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY apPayment_id, apPaymentDetail_id
+            ORDER BY $sorting, paymentDetail.apPaymentDetail_apInvoice_invoice_date
          """.trimIndent(),
          params
       ) { rs, _ ->
