@@ -102,8 +102,8 @@ class AccountPayableControlRepository @Inject constructor(
             JOIN account_payable_check_form_type_domain checkFormType ON accountPayableControl.check_form_type_id = checkFormType.id
             JOIN print_currency_indicator_type_domain printCurrencyIndType ON accountPayableControl.print_currency_indicator_type_id = printCurrencyIndType.id
             JOIN purchase_order_number_required_indicator_type_domain poNumReqIndType ON accountPayableControl.purchase_order_number_required_indicator_type_id = poNumReqIndType.id
-            JOIN account glInvCleAcct ON accountPayableControl.general_ledger_inventory_clearing_account_id = glInvCleAcct.account_id
-            JOIN account glInvAcct ON accountPayableControl.general_ledger_inventory_account_id = glInvAcct.account_id
+            JOIN account glInvCleAcct ON accountPayableControl.general_ledger_inventory_clearing_account_id = glInvCleAcct.account_id AND glInvCleAcct.account_deleted = FALSE
+            JOIN account glInvAcct ON accountPayableControl.general_ledger_inventory_account_id = glInvAcct.account_id AND glInvAcct.account_deleted = FALSE
       """
    }
 

@@ -56,6 +56,7 @@ CREATE TABLE account
     form_1099_field                INTEGER, -- field # on the 1099 form for this account
     corporate_account_indicator    BOOLEAN     DEFAULT FALSE                                  NOT NULL,
     search_vector                  TSVECTOR                                                   NOT NULL,
+    deleted                        BOOLEAN      DEFAULT FALSE                                 NOT NULL,
     UNIQUE (company_id, number)
 );
 
@@ -75,11 +76,11 @@ END;
 $$
     LANGUAGE plpgsql STRICT;
 
-CREATE INDEX account_company_id_idx ON account (company_id);
-CREATE INDEX account_type_id_idx ON account (type_id);
-CREATE INDEX account_status_type_id_idx ON account (status_type_id);
-CREATE INDEX account_search_idx ON account USING gist(name gist_trgm_ops);
-CREATE INDEX account_vector_idx ON account USING gin(search_vector);
+CREATE INDEX account_company_id_idx ON account (company_id) WHERE deleted is FALSE;
+CREATE INDEX account_type_id_idx ON account (type_id) WHERE deleted is FALSE;
+CREATE INDEX account_status_type_id_idx ON account (status_type_id) WHERE deleted is FALSE;
+CREATE INDEX account_search_idx ON account USING gist(name gist_trgm_ops) WHERE deleted is FALSE;
+CREATE INDEX account_vector_idx ON account USING gin(search_vector) WHERE deleted is FALSE;
 
 CREATE TRIGGER account_search_update_trg
     BEFORE INSERT OR UPDATE
@@ -103,6 +104,7 @@ CREATE TABLE bank
     name                             VARCHAR(50) CHECK ( CHAR_LENGTH(TRIM(name)) > 1)       NOT NULL,
     general_ledger_profit_center_sfk INTEGER CHECK ( general_ledger_profit_center_sfk > 0 ) NOT NULL, --profit center is store or possibly home office
     general_ledger_account_id        UUID REFERENCES account (id)                           NOT NULL,
+    deleted                          BOOLEAN     DEFAULT FALSE                              NOT NULL,
     UNIQUE (company_id, number)
 );
 CREATE TRIGGER update_bank_trg
@@ -110,5 +112,5 @@ CREATE TRIGGER update_bank_trg
     ON bank
     FOR EACH ROW
 EXECUTE PROCEDURE update_user_table_fn();
-CREATE INDEX bank_company_id_idx ON bank (company_id);
+CREATE INDEX bank_company_id_idx ON bank (company_id) WHERE deleted is FALSE;
 -- end bank setup

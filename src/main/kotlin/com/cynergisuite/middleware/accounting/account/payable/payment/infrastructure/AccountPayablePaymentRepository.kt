@@ -7,7 +7,7 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObjectOrNull
-import com.cynergisuite.extensions.update
+import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentEntity
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
@@ -54,7 +54,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             bnk.bank_id                                               AS apPayment_bank_id,
             bnk.bank_name                                             AS apPayment_bank_name,
             bnk.bank_number                                           AS apPayment_bank_number,
-            bnk.comp_id                                               AS apPayment_bank_comp_id,
+            bnk.bank_comp_id                                          AS apPayment_bank_comp_id,
             bnk.bank_account_id                                       AS apPayment_bank_account_id,
             bnk.bank_account_number                                   AS apPayment_bank_account_number,
             bnk.bank_account_name                                     AS apPayment_bank_account_name,
@@ -494,15 +494,15 @@ class AccountPayablePaymentRepository @Inject constructor(
          ${selectBaseQuery()}
          WHERE apPayment.id = :id AND apPayment.company_id = :comp_id
          ORDER BY apPaymentDetail_id
-         """.trimIndent()
+      """.trimIndent()
       return jdbc.queryForObjectOrNull(query, params) { rs, _ ->
-           var found: AccountPayablePaymentEntity? = null
-           do {
-              found = found ?: mapRow(rs, company, "apPayment_")
-              apPaymentDetailRepository.mapRowOrNull(rs, company, "apPaymentDetail_")?.let { found.paymentDetails?.add(it) }
-           } while (rs.next())
-           logger.trace("Searching for Account Payable Payment {} resulted in {}", id, found)
-           found
+         var found: AccountPayablePaymentEntity? = null
+         do {
+            found = found ?: mapRow(rs, company, "apPayment_")
+            apPaymentDetailRepository.mapRowOrNull(rs, company, "apPaymentDetail_")?.let { found.paymentDetails?.add(it) }
+         } while (rs.next())
+         logger.trace("Searching for Account Payable Payment {} resulted in {}", id, found)
+         found
       }
    }
 
@@ -575,21 +575,21 @@ class AccountPayablePaymentRepository @Inject constructor(
          params["frmPmtDt"] = filterRequest.frmPmtDt
          params["thruPmtDt"] = filterRequest.thruPmtDt
          whereClause.append(" AND apPayment.payment_date ")
-               .append(buildDateFilterString(filterRequest.frmPmtDt, filterRequest.thruPmtDt, "frmPmtDt", "thruPmtDt"))
+            .append(buildDateFilterString(filterRequest.frmPmtDt, filterRequest.thruPmtDt, "frmPmtDt", "thruPmtDt"))
       }
 
       if (filterRequest.frmDtClr != null || filterRequest.thruDtClr != null) {
          params["frmDtClr"] = filterRequest.frmDtClr
          params["thruDtClr"] = filterRequest.thruDtClr
          whereClause.append(" AND apPayment.date_cleared ")
-               .append(buildDateFilterString(filterRequest.frmDtClr, filterRequest.thruDtClr, "frmDtClr", "thruDtClr"))
+            .append(buildDateFilterString(filterRequest.frmDtClr, filterRequest.thruDtClr, "frmDtClr", "thruDtClr"))
       }
 
       if (filterRequest.frmDtVoid != null || filterRequest.thruDtVoid != null) {
          params["frmDtVoid"] = filterRequest.frmDtVoid
          params["thruDtVoid"] = filterRequest.thruDtVoid
          whereClause.append(" AND apPayment.date_voided ")
-               .append(buildDateFilterString(filterRequest.frmDtVoid, filterRequest.thruDtVoid, "frmDtVoid", "thruDtVoid"))
+            .append(buildDateFilterString(filterRequest.frmDtVoid, filterRequest.thruDtVoid, "frmDtVoid", "thruDtVoid"))
       }
 
       jdbc.query(
@@ -662,9 +662,10 @@ class AccountPayablePaymentRepository @Inject constructor(
             "date_cleared" to entity.dateCleared,
             "date_voided" to entity.dateVoided,
             "amount" to entity.amount
-         )) { rs, _ ->
-            mapRowUpsert(rs, entity)
-         }
+         )
+      ) { rs, _ ->
+         mapRowUpsert(rs, entity)
+      }
    }
 
    @Transactional
@@ -711,12 +712,13 @@ class AccountPayablePaymentRepository @Inject constructor(
    fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting Account Payable Payment with id={}", id)
 
-      val rowsAffected = jdbc.update(
+      val rowsAffected = jdbc.softDelete(
          """
          DELETE FROM account_payable_payment
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.id)
+         mapOf("id" to id, "company_id" to company.id),
+         "account_payable_payment"
       )
       logger.info("Row affected {}", rowsAffected)
 
@@ -763,8 +765,8 @@ class AccountPayablePaymentRepository @Inject constructor(
 
    private fun buildDateFilterString(from: OffsetDateTime?, thru: OffsetDateTime?, frmParam: String, thruParam: String): String {
       return if (from != null && thru != null) " BETWEEN :$frmParam AND :$thruParam "
-            else if (from != null) " > :$frmParam "
-            else " < :$thruParam "
+      else if (from != null) " > :$frmParam "
+      else " < :$thruParam "
    }
 
    private fun buildNumberFilterString(beginningParam: String, endingParam: String): String {

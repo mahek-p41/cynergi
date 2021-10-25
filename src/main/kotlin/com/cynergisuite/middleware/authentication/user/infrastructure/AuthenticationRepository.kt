@@ -144,7 +144,7 @@ abstract class AuthenticationRepository @Inject constructor(
          fallbackLoc.name               AS fallback_location_name
       FROM authenticated_user_vw au
            JOIN company comp ON comp.id = au.company_id
-           LEFT JOIN address compAddr on comp.address_id = compAddr.id
+           LEFT JOIN address compAddr on comp.address_id = compAddr.id AND compAddr.deleted = FALSE
            LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND au.department = dept.code
            LEFT OUTER JOIN fastinfo_prod_import.store_vw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND au.store_number = assignedLoc.number
            LEFT OUTER JOIN fastinfo_prod_import.store_vw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number  = :storeNumber
@@ -303,7 +303,7 @@ abstract class AuthenticationRepository @Inject constructor(
          compAddr.fax                   AS fallback_location_company_address_fax
       FROM authenticated_user_vw au
            JOIN company comp ON comp.id = au.company_id
-           LEFT JOIN address compAddr on comp.address_id = compAddr.id
+           LEFT JOIN address compAddr on comp.address_id = compAddr.id AND compAddr.deleted = FALSE
            LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND au.department = dept.code
            LEFT OUTER JOIN fastinfo_prod_import.store_vw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND au.store_number = assignedLoc.number
            LEFT OUTER JOIN fastinfo_prod_import.store_vw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number IS NULL
@@ -363,12 +363,12 @@ abstract class AuthenticationRepository @Inject constructor(
          """
          SELECT aptd.value AS value
          FROM audit_permission_type_domain aptd
-              JOIN audit_permission ap ON ap.type_id = aptd.id
+              JOIN audit_permission ap ON ap.type_id = aptd.id AND ap.deleted = FALSE
          WHERE ap.department = :dept_code AND ap.company_id = :comp_id
          UNION
          SELECT aptd.value AS value
          FROM audit_permission_type_domain aptd
-         WHERE aptd.id NOT IN (SELECT DISTINCT type_id FROM  audit_permission)
+         WHERE aptd.id NOT IN (SELECT DISTINCT type_id FROM audit_permission WHERE deleted = FALSE)
          """.trimIndent()
 
       return processPermissionValues(sql, params)

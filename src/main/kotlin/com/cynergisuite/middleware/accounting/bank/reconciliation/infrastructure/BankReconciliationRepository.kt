@@ -48,7 +48,8 @@ class BankReconciliationRepository @Inject constructor(
             bank.bank_id                                      AS bank_id,
             bank.bank_name                                    AS bank_name,
             bank.bank_number                                  AS bank_number,
-            bank.comp_id                                      AS bank_comp_id,
+            bank.bank_comp_id                                 AS bank_comp_id,
+            bank.bank_deleted                                 AS bank_deleted,
             bank.bank_account_id                              AS bank_account_id,
             bank.bank_account_number                          AS bank_account_number,
             bank.bank_account_name                            AS bank_account_name,
@@ -76,7 +77,7 @@ class BankReconciliationRepository @Inject constructor(
             bankReconType.description                         AS bankReconType_description,
             bankReconType.localization_code                   AS bankReconType_localization_code
          FROM bank_reconciliation bankRecon
-               JOIN bank ON bankRecon.bank_id = bank.bank_id
+               JOIN bank ON bankRecon.bank_id = bank.bank_id AND bank.bank_deleted = FALSE
                JOIN bank_reconciliation_type_domain bankReconType ON bankRecon.type_id = bankReconType.id
       """
    }

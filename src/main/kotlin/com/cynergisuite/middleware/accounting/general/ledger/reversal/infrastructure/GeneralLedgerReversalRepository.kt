@@ -48,7 +48,7 @@ class GeneralLedgerReversalRepository @Inject constructor(
             source.company_id                                               AS glReversal_source_comp_id,
             count(*) OVER()                                                 AS total_elements
          FROM general_ledger_reversal glReversal
-            JOIN general_ledger_source_codes source ON glReversal.source_id = source.id
+            JOIN general_ledger_source_codes source ON glReversal.source_id = source.id AND source.deleted = FALSE
       """
    }
 

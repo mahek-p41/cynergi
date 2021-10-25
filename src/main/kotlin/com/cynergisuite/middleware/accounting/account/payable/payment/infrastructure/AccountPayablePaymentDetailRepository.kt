@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.payment.infrastru
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.update
+import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceRepository
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDetailEntity
@@ -332,8 +332,8 @@ class AccountPayablePaymentDetailRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${baseSelectQuery()} WHERE apPaymentDetail.id = :id AND apPaymentDetail.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(query, params) { rs, _ ->
-            mapRow(rs, company, "apPaymentDetail_")
-         }
+         mapRow(rs, company, "apPaymentDetail_")
+      }
 
       logger.trace("Searching for Account Payable Payment Detail: {} resulted in {}", company, found)
 
@@ -372,9 +372,10 @@ class AccountPayablePaymentDetailRepository @Inject constructor(
             "vendor_id" to entity.vendor?.id,
             "amount" to entity.amount,
             "discount" to entity.discount
-         )) { rs, _ ->
-            mapRowUpsert(rs, entity)
-         }
+         )
+      ) { rs, _ ->
+         mapRowUpsert(rs, entity)
+      }
    }
 
    @Transactional
@@ -403,22 +404,23 @@ class AccountPayablePaymentDetailRepository @Inject constructor(
             "vendor_id" to entity.vendor?.id,
             "amount" to entity.amount,
             "discount" to entity.discount
-         )) { rs, _ ->
-            mapRowUpsert(rs, entity)
-         }
-
+         )
+      ) { rs, _ ->
+         mapRowUpsert(rs, entity)
+      }
    }
 
    @Transactional
    fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting Account Payable Payment Detail with id={}", id)
 
-      val rowsAffected = jdbc.update(
+      val rowsAffected = jdbc.softDelete(
          """
          DELETE FROM account_payable_payment_detail
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.id)
+         mapOf("id" to id, "company_id" to company.id),
+         "account_payable_payment_detail"
       )
       logger.info("Row affected {}", rowsAffected)
 

@@ -53,7 +53,6 @@ abstract class SortableRequestBase<out PAGE : SortableRequest>(
       }
    }
 
-
    override fun equals(other: Any?): Boolean =
       if (other is SortableRequestBase<*>) {
          EqualsBuilder()

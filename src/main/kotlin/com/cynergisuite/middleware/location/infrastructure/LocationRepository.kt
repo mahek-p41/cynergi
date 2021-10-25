@@ -6,7 +6,6 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.location.LocationEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -55,7 +54,7 @@ class LocationRepository @Inject constructor(
             address.fax                   AS address_fax
          FROM fastinfo_prod_import.location_vw location
               JOIN company comp ON comp.dataset_code = location.dataset
-              LEFT JOIN address ON comp.address_id = address.id
+              LEFT JOIN address ON comp.address_id = address.id AND address.deleted = FALSE
       """
    }
 

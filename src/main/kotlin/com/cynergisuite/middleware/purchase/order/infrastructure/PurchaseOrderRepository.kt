@@ -8,7 +8,7 @@ import com.cynergisuite.extensions.getOffsetDateTimeOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.update
+import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -87,6 +87,7 @@ class PurchaseOrderRepository @Inject constructor(
             po.total_freight_amount                             AS po_total_freight_amount,
             po.vendor_submitted_time                            AS po_vendor_submitted_time,
             po.ecommerce_indicator                              AS po_ecommerce_indicator,
+            po.deleted                                          AS po_deleted,
             vendor.v_id                                         AS po_vendor_id,
             vendor.v_time_created                               AS po_vendor_time_created,
             vendor.v_time_updated                               AS po_vendor_time_updated,
@@ -428,7 +429,7 @@ class PurchaseOrderRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): PurchaseOrderEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${selectBaseQuery()}\nWHERE po.id = :id AND po.company_id = :comp_id"
+      val query = "${selectBaseQuery()}\nWHERE po.id = :id AND po.company_id = :comp_id AND po.deleted = FALSE"
 
       logger.debug("Searching for PurchaseOrder using {} {}", query, params)
 
@@ -448,7 +449,7 @@ class PurchaseOrderRepository @Inject constructor(
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
-            WHERE po.company_id = :comp_id
+            WHERE po.company_id = :comp_id AND po.deleted = FALSE
             ORDER BY po_${page.snakeSortBy()} ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
@@ -630,12 +631,14 @@ class PurchaseOrderRepository @Inject constructor(
    fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting PurchaseOrder with id={}", id)
 
-      val rowsAffected = jdbc.update(
+      val rowsAffected = jdbc.softDelete(
          """
-         DELETE FROM purchase_order_header
+         UPDATE purchase_order_header
+         SET deleted = TRUE
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.id)
+         mapOf("id" to id, "company_id" to company.id),
+         "purchase_order_header"
       )
 
       logger.info("Row affected {}", rowsAffected)

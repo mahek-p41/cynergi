@@ -12,6 +12,7 @@ import spock.lang.Unroll
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 @MicronautTest(transactional = false)
 class VendorPaymentTermControllerSpecification extends ControllerSpecificationBase {
@@ -326,5 +327,50 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       response.size() == 1
       response[0].message == "Payment terms percent due does not equal 100, was 98.00000"
       response[0].path == "scheduleRecords.duePercent[*]"
+   }
+
+   void "delete vendorPaymentTerm" () {
+      given:
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.single(nineNineEightAuthenticatedEmployee.myCompany())
+
+      when:
+      delete("$path/$vendorPaymentTerm.id")
+
+      then: "vendorPaymentTerm of for user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("$path/$vendorPaymentTerm.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "$vendorPaymentTerm.id was unable to be found"
+      response.code == "system.not.found"
+   }
+
+   void "delete vendorPaymentTerm still has references (payment schedules)" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
+      final VPT = new VendorPaymentTermEntity(null, company, "test1", null, null, null, schedules)
+      final vendorPaymentTerm = vendorPaymentTermRepository.insert(VPT)
+
+      when:
+      delete("$path/$vendorPaymentTerm.id")
+
+      then: "vendorPaymentTerm of for user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("$path/$vendorPaymentTerm.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "$vendorPaymentTerm.id was unable to be found"
+      response.code == "system.not.found"
    }
 }

@@ -7,7 +7,7 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.update
+import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -35,6 +35,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
          glSrcCodes.company_id       AS glSrcCodes_company_id,
          glSrcCodes.value            AS glSrcCodes_value,
          glSrcCodes.description      AS glSrcCodes_description,
+         glSrcCodes.deleted          AS glSrcCodes_deleted,
          count(*) OVER()             AS total_elements
       FROM general_ledger_source_codes glSrcCodes
    """
@@ -42,7 +43,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
    @ReadOnly
    fun exists(value: String, company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
-         "SELECT EXISTS (SELECT * FROM general_ledger_source_codes WHERE value = :value AND company_id = :company_id)",
+         "SELECT EXISTS (SELECT * FROM general_ledger_source_codes WHERE value = :value AND company_id = :company_id AND deleted = FALSE)",
          mapOf("value" to value, "company_id" to company.id),
          Boolean::class.java
       )
@@ -55,7 +56,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): GeneralLedgerSourceCodeEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${selectBaseQuery()}\nWHERE glSrcCodes.id = :id AND glSrcCodes.company_id = :comp_id"
+      val query = "${selectBaseQuery()}\nWHERE glSrcCodes.id = :id AND glSrcCodes.company_id = :comp_id AND glSrcCodes.deleted = FALSE"
 
       logger.debug("Searching for GeneralLedgerSourceCode using {} {}", query, params)
 
@@ -74,7 +75,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
       return jdbc.queryPaged(
          """
          ${selectBaseQuery()}
-         WHERE glSrcCodes.company_id = :comp_id
+         WHERE glSrcCodes.company_id = :comp_id AND glSrcCodes.deleted = FALSE
          ORDER BY glSrcCodes.${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
@@ -146,12 +147,14 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
    fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting GeneralLedgerSourceCode with id={}", id)
 
-      val rowsAffected = jdbc.update(
+      val rowsAffected = jdbc.softDelete(
          """
-         DELETE FROM general_ledger_source_codes
+         UPDATE general_ledger_source_codes
+         SET deleted = TRUE
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.id)
+         mapOf("id" to id, "company_id" to company.id),
+         "general_ledger_source_codes"
       )
       logger.info("Row affected {}", rowsAffected)
 

@@ -55,6 +55,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
             acct.account_form_1099_field                              AS acct_form_1099_field,
             acct.account_corporate_account_indicator                  AS acct_corporate_account_indicator,
             acct.account_comp_id                                      AS acct_comp_id,
+            acct.account_deleted                                      AS acct_deleted,
             acct.account_type_id                                      AS acct_type_id,
             acct.account_type_value                                   AS acct_type_value,
             acct.account_type_description                             AS acct_type_description,
@@ -74,14 +75,15 @@ class GeneralLedgerDetailRepository @Inject constructor(
             source.id                                                 AS source_id,
             source.company_id                                         AS source_company_id,
             source.value                                              AS source_value,
-            source.description                                        AS source_description
+            source.description                                        AS source_description,
+            source.deleted                                            AS source_deleted
          FROM general_ledger_detail glDetail
             JOIN company comp ON glDetail.company_id = comp.id
             JOIN fastinfo_prod_import.store_vw profitCenter
                     ON profitCenter.dataset = comp.dataset_code
                        AND profitCenter.number = glDetail.profit_center_id_sfk
-            JOIN account acct ON glDetail.account_id = acct.account_id
-            JOIN general_ledger_source_codes source on glDetail.source_id = source.id
+            JOIN account acct ON glDetail.account_id = acct.account_id AND acct.account_deleted = FALSE
+            JOIN general_ledger_source_codes source ON glDetail.source_id = source.id AND source.deleted = FALSE
       """
    }
 
