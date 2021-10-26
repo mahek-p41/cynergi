@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.vendor.rebate.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException

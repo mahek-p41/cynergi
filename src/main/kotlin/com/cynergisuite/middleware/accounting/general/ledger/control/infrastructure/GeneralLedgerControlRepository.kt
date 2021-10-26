@@ -50,7 +50,6 @@ class GeneralLedgerControlRepository @Inject constructor(
             defAPAcct.account_form_1099_field                                 AS defAPAcct_form_1099_field,
             defAPAcct.account_corporate_account_indicator                     AS defAPAcct_corporate_account_indicator,
             defAPAcct.account_comp_id                                         AS defAPAcct_comp_id,
-            defAPAcct.account_deleted                                         AS defAPAcct_deleted,
             defAPAcct.account_type_id                                         AS defAPAcct_type_id,
             defAPAcct.account_type_value                                      AS defAPAcct_type_value,
             defAPAcct.account_type_description                                AS defAPAcct_type_description,
@@ -69,7 +68,6 @@ class GeneralLedgerControlRepository @Inject constructor(
             defAPDiscAcct.account_form_1099_field                             AS defAPDiscAcct_form_1099_field,
             defAPDiscAcct.account_corporate_account_indicator                 AS defAPDiscAcct_corporate_account_indicator,
             defAPDiscAcct.account_comp_id                                     AS defAPDiscAcct_comp_id,
-            defAPDiscAcct.account_deleted                                     AS defAPDiscAcct_deleted,
             defAPDiscAcct.account_type_id                                     AS defAPDiscAcct_type_id,
             defAPDiscAcct.account_type_value                                  AS defAPDiscAcct_type_value,
             defAPDiscAcct.account_type_description                            AS defAPDiscAcct_type_description,
@@ -88,7 +86,6 @@ class GeneralLedgerControlRepository @Inject constructor(
             defARAcct.account_form_1099_field                                 AS defARAcct_form_1099_field,
             defARAcct.account_corporate_account_indicator                     AS defARAcct_corporate_account_indicator,
             defARAcct.account_comp_id                                         AS defARAcct_comp_id,
-            defARAcct.account_deleted                                         AS defARAcct_deleted,
             defARAcct.account_type_id                                         AS defARAcct_type_id,
             defARAcct.account_type_value                                      AS defARAcct_type_value,
             defARAcct.account_type_description                                AS defARAcct_type_description,
@@ -107,7 +104,6 @@ class GeneralLedgerControlRepository @Inject constructor(
             defARDiscAcct.account_form_1099_field                             AS defARDiscAcct_form_1099_field,
             defARDiscAcct.account_corporate_account_indicator                 AS defARDiscAcct_corporate_account_indicator,
             defARDiscAcct.account_comp_id                                     AS defARDiscAcct_comp_id,
-            defARDiscAcct.account_deleted                                     AS defARDiscAcct_deleted,
             defARDiscAcct.account_type_id                                     AS defARDiscAcct_type_id,
             defARDiscAcct.account_type_value                                  AS defARDiscAcct_type_value,
             defARDiscAcct.account_type_description                            AS defARDiscAcct_type_description,
@@ -126,7 +122,6 @@ class GeneralLedgerControlRepository @Inject constructor(
             defAcctMiscInvAcct.account_form_1099_field                        AS defAcctMiscInvAcct_form_1099_field,
             defAcctMiscInvAcct.account_corporate_account_indicator            AS defAcctMiscInvAcct_corporate_account_indicator,
             defAcctMiscInvAcct.account_comp_id                                AS defAcctMiscInvAcct_comp_id,
-            defAcctMiscInvAcct.account_deleted                                AS defAcctMiscInvAcct_deleted,
             defAcctMiscInvAcct.account_type_id                                AS defAcctMiscInvAcct_type_id,
             defAcctMiscInvAcct.account_type_value                             AS defAcctMiscInvAcct_type_value,
             defAcctMiscInvAcct.account_type_description                       AS defAcctMiscInvAcct_type_description,
@@ -145,7 +140,6 @@ class GeneralLedgerControlRepository @Inject constructor(
             defAcctSerializedInvAcct.account_form_1099_field                  AS defAcctSerializedInvAcct_form_1099_field,
             defAcctSerializedInvAcct.account_corporate_account_indicator      AS defAcctSerializedInvAcct_corporate_account_indicator,
             defAcctSerializedInvAcct.account_comp_id                          AS defAcctSerializedInvAcct_comp_id,
-            defAcctSerializedInvAcct.account_deleted                          AS defAcctSerializedInvAcct_deleted,
             defAcctSerializedInvAcct.account_type_id                          AS defAcctSerializedInvAcct_type_id,
             defAcctSerializedInvAcct.account_type_value                       AS defAcctSerializedInvAcct_type_value,
             defAcctSerializedInvAcct.account_type_description                 AS defAcctSerializedInvAcct_type_description,
@@ -164,7 +158,6 @@ class GeneralLedgerControlRepository @Inject constructor(
             defAcctUnbilledInvAcct.account_form_1099_field                    AS defAcctUnbilledInvAcct_form_1099_field,
             defAcctUnbilledInvAcct.account_corporate_account_indicator        AS defAcctUnbilledInvAcct_corporate_account_indicator,
             defAcctUnbilledInvAcct.account_comp_id                            AS defAcctUnbilledInvAcct_comp_id,
-            defAcctUnbilledInvAcct.account_deleted                            AS defAcctUnbilledInvAcct_deleted,
             defAcctUnbilledInvAcct.account_type_id                            AS defAcctUnbilledInvAcct_type_id,
             defAcctUnbilledInvAcct.account_type_value                         AS defAcctUnbilledInvAcct_type_value,
             defAcctUnbilledInvAcct.account_type_description                   AS defAcctUnbilledInvAcct_type_description,
@@ -183,7 +176,6 @@ class GeneralLedgerControlRepository @Inject constructor(
             defAcctFreightAcct.account_form_1099_field                        AS defAcctFreightAcct_form_1099_field,
             defAcctFreightAcct.account_corporate_account_indicator            AS defAcctFreightAcct_corporate_account_indicator,
             defAcctFreightAcct.account_comp_id                                AS defAcctFreightAcct_comp_id,
-            defAcctFreightAcct.account_deleted                                AS defAcctFreightAcct_deleted,
             defAcctFreightAcct.account_type_id                                AS defAcctFreightAcct_type_id,
             defAcctFreightAcct.account_type_value                             AS defAcctFreightAcct_type_value,
             defAcctFreightAcct.account_type_description                       AS defAcctFreightAcct_type_description,
@@ -201,14 +193,14 @@ class GeneralLedgerControlRepository @Inject constructor(
             JOIN fastinfo_prod_import.store_vw profitCenter
                     ON profitCenter.dataset = comp.dataset_code
                        AND profitCenter.number = glCtrl.default_profit_center_sfk
-            LEFT JOIN account defAPAcct ON glCtrl.default_account_payable_account_id = defAPAcct.account_id AND defAPAcct.account_deleted = FALSE
-            LEFT JOIN account defAPDiscAcct ON glCtrl.default_account_payable_discount_account_id = defAPDiscAcct.account_id AND defAPDiscAcct.account_deleted = FALSE
-            LEFT JOIN account defARAcct ON glCtrl.default_account_receivable_account_id = defARAcct.account_id AND defARAcct.account_deleted = FALSE
-            LEFT JOIN account defARDiscAcct ON glCtrl.default_account_receivable_discount_account_id = defARDiscAcct.account_id AND defARDiscAcct.account_deleted = FALSE
-            LEFT JOIN account defAcctMiscInvAcct ON glCtrl.default_account_misc_inventory_account_id = defAcctMiscInvAcct.account_id AND defAcctMiscInvAcct.account_deleted = FALSE
-            LEFT JOIN account defAcctSerializedInvAcct ON glCtrl.default_account_serialized_inventory_account_id = defAcctSerializedInvAcct.account_id AND defAcctSerializedInvAcct.account_deleted = FALSE
-            LEFT JOIN account defAcctUnbilledInvAcct ON glCtrl.default_account_unbilled_inventory_account_id = defAcctUnbilledInvAcct.account_id AND defAcctUnbilledInvAcct.account_deleted = FALSE
-            LEFT JOIN account defAcctFreightAcct ON glCtrl.default_account_freight_account_id = defAcctFreightAcct.account_id AND defAcctFreightAcct.account_deleted = FALSE
+            LEFT JOIN account defAPAcct ON glCtrl.default_account_payable_account_id = defAPAcct.account_id
+            LEFT JOIN account defAPDiscAcct ON glCtrl.default_account_payable_discount_account_id = defAPDiscAcct.account_id
+            LEFT JOIN account defARAcct ON glCtrl.default_account_receivable_account_id = defARAcct.account_id
+            LEFT JOIN account defARDiscAcct ON glCtrl.default_account_receivable_discount_account_id = defARDiscAcct.account_id
+            LEFT JOIN account defAcctMiscInvAcct ON glCtrl.default_account_misc_inventory_account_id = defAcctMiscInvAcct.account_id
+            LEFT JOIN account defAcctSerializedInvAcct ON glCtrl.default_account_serialized_inventory_account_id = defAcctSerializedInvAcct.account_id
+            LEFT JOIN account defAcctUnbilledInvAcct ON glCtrl.default_account_unbilled_inventory_account_id = defAcctUnbilledInvAcct.account_id
+            LEFT JOIN account defAcctFreightAcct ON glCtrl.default_account_freight_account_id = defAcctFreightAcct.account_id
       """
    }
 

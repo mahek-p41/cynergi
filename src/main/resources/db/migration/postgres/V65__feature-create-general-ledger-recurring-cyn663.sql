@@ -25,8 +25,7 @@ CREATE TABLE general_ledger_recurring
     message            TEXT,
     begin_date         DATE                                                         NOT NULL,
     end_date           DATE,
-    last_transfer_date DATE,
-    deleted            BOOLEAN     DEFAULT FALSE                                    NOT NULL
+    last_transfer_date DATE
 );
 CREATE TRIGGER update_general_ledger_recurring_trg
     BEFORE UPDATE
@@ -34,9 +33,9 @@ CREATE TRIGGER update_general_ledger_recurring_trg
     FOR EACH ROW
 EXECUTE PROCEDURE update_user_table_fn();
 
-CREATE INDEX general_ledger_recurring_company_id_idx ON general_ledger_recurring(company_id) WHERE deleted is FALSE;
-CREATE INDEX general_ledger_recurring_source_id_idx ON general_ledger_recurring(source_id) WHERE deleted is FALSE;
-CREATE INDEX general_ledger_recurring_type_id_idx ON general_ledger_recurring(type_id) WHERE deleted is FALSE;
+CREATE INDEX general_ledger_recurring_company_id_idx ON general_ledger_recurring(company_id);
+CREATE INDEX general_ledger_recurring_source_id_idx ON general_ledger_recurring(source_id);
+CREATE INDEX general_ledger_recurring_type_id_idx ON general_ledger_recurring(type_id);
 
 CREATE TABLE general_ledger_recurring_distribution
 (
@@ -46,8 +45,7 @@ CREATE TABLE general_ledger_recurring_distribution
     general_ledger_recurring_id                      UUID REFERENCES general_ledger_recurring (id) NOT NULL,
     general_ledger_distribution_account_id           UUID REFERENCES account (id)                  NOT NULL,
     general_ledger_distribution_profit_center_id_sfk INTEGER                                       NOT NULL,
-    general_ledger_distribution_amount               NUMERIC(11, 2)                                NOT NULL,
-    deleted                                          BOOLEAN     DEFAULT FALSE                     NOT NULL
+    general_ledger_distribution_amount               NUMERIC(11, 2)                                NOT NULL
 );
 CREATE TRIGGER update_general_ledger_recurring_distribution_trg
     BEFORE UPDATE
@@ -56,8 +54,8 @@ CREATE TRIGGER update_general_ledger_recurring_distribution_trg
 EXECUTE PROCEDURE update_user_table_fn();
 
 
-CREATE INDEX general_ledger_recurring_id_idx ON general_ledger_recurring_distribution (general_ledger_recurring_id) WHERE deleted is FALSE;
-CREATE INDEX general_ledger_recurring_dist_account_idx ON general_ledger_recurring_distribution (general_ledger_distribution_account_id) WHERE deleted is FALSE;
+CREATE INDEX general_ledger_recurring_id_idx ON general_ledger_recurring_distribution (general_ledger_recurring_id);
+CREATE INDEX general_ledger_recurring_dist_account_idx ON general_ledger_recurring_distribution (general_ledger_distribution_account_id);
 
 COMMENT ON TABLE  general_ledger_recurring IS 'Table holds the defaults/values to allow manual creation of general ledger journal entries.';
 COMMENT ON TABLE  general_ledger_recurring_distribution IS 'Table holds the general ledger recurring distributions associated with general_ledger_recurring table.';

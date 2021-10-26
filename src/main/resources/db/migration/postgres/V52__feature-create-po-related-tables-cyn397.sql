@@ -79,26 +79,25 @@ CREATE TABLE purchase_order_header
     vendor_submitted_time         TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP(), -- Z column POH-VENDOR-SUBMITTAL-DATE, POH-VENDOR-SUBMITTAL-TIME, POH-VENDOR-SUBMITTAL-HOUR, POH-VENDOR-SUBMITTAL-MINUTE, POH-VENDOR-SUBMITTAL-SECOND
     vendor_submitted_employee_sfk INTEGER,
     ecommerce_indicator           BOOLEAN     DEFAULT FALSE                                NOT NULL,
-    customer_account_number_sfk   INTEGER,
-    deleted                       BOOLEAN     DEFAULT FALSE                                NOT NULL
+    customer_account_number_sfk   INTEGER
 );
 CREATE TRIGGER update_purchase_order_header_trg
     BEFORE UPDATE
     ON purchase_order_header
     FOR EACH ROW
 EXECUTE PROCEDURE update_user_table_fn();
-CREATE INDEX purchase_order_header_company_id_idx ON purchase_order_header (company_id) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_header_vendor_id_idx ON purchase_order_header (vendor_id) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_header_status_type_id_idx ON purchase_order_header (status_type_id) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_header_type_id_idx ON purchase_order_header (type_id) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_header_freight_on_board_type_id_idx ON purchase_order_header (freight_on_board_type_id) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_header_freight_term_type_id_idx ON purchase_order_header (freight_term_type_id) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_header_ship_location_type_id_idx ON purchase_order_header (ship_location_type_id) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_header_ship_via_id_idx ON purchase_order_header (ship_via_id) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_header_payment_term_type_id_idx ON purchase_order_header (vendor_payment_term_id) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_header_exception_ind_type_id_idx ON purchase_order_header (exception_ind_type_id) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_header_vend_submitted_emp_idx ON purchase_order_header (vendor_submitted_employee_sfk) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_header_customer_acct_nbr_idx ON purchase_order_header (customer_account_number_sfk) WHERE deleted is FALSE;
+CREATE INDEX purchase_order_header_company_id_idx ON purchase_order_header (company_id);
+CREATE INDEX purchase_order_header_vendor_id_idx ON purchase_order_header (vendor_id);
+CREATE INDEX purchase_order_header_status_type_id_idx ON purchase_order_header (status_type_id);
+CREATE INDEX purchase_order_header_type_id_idx ON purchase_order_header (type_id);
+CREATE INDEX purchase_order_header_freight_on_board_type_id_idx ON purchase_order_header (freight_on_board_type_id);
+CREATE INDEX purchase_order_header_freight_term_type_id_idx ON purchase_order_header (freight_term_type_id);
+CREATE INDEX purchase_order_header_ship_location_type_id_idx ON purchase_order_header (ship_location_type_id);
+CREATE INDEX purchase_order_header_ship_via_id_idx ON purchase_order_header (ship_via_id);
+CREATE INDEX purchase_order_header_payment_term_type_id_idx ON purchase_order_header (vendor_payment_term_id);
+CREATE INDEX purchase_order_header_exception_ind_type_id_idx ON purchase_order_header (exception_ind_type_id);
+CREATE INDEX purchase_order_header_vend_submitted_emp_idx ON purchase_order_header (vendor_submitted_employee_sfk);
+CREATE INDEX purchase_order_header_customer_acct_nbr_idx ON purchase_order_header (customer_account_number_sfk);
 
 -- Begin purchase_order_detail
 CREATE TABLE purchase_order_detail
@@ -130,19 +129,18 @@ CREATE TABLE purchase_order_detail
     purchase_order_requisition_indicator_type_id BIGINT REFERENCES purchase_order_requisition_indicator_type_domain (id)  NOT NULL,
     exception_ind_type_id                        BIGINT REFERENCES exception_ind_type_domain (id)                         NOT NULL,
     converted_purchase_order_number              INTEGER     DEFAULT 0                                                    NOT NULL,
-    approved_ind                                 BOOLEAN     DEFAULT FALSE                                                NOT NULL,
-    deleted                                      BOOLEAN     DEFAULT FALSE                                                NOT NULL
+    approved_ind                                 BOOLEAN     DEFAULT FALSE                                                NOT NULL
 );
 CREATE TRIGGER update_purchase_order_detail_trg
     BEFORE UPDATE
     ON purchase_order_detail
     FOR EACH ROW
 EXECUTE PROCEDURE update_user_table_fn();
-CREATE INDEX purchase_order_detail_purchase_order_header_id_idx ON purchase_order_detail (purchase_order_header_id) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_detail_number_id_idx ON purchase_order_detail (purchase_order_header_id) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_detail_company_id_idx ON purchase_order_detail (company_id) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_detail_vendor_id_idx ON purchase_order_detail (vendor_id) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_detail_status_type_id_idx ON purchase_order_detail (status_type_id) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_detail_po_requisition_ind_type_id_idx ON purchase_order_detail (purchase_order_requisition_indicator_type_id) WHERE deleted is FALSE;
-CREATE INDEX purchase_order_detail_exception_ind_type_id_idx ON purchase_order_detail (exception_ind_type_id) WHERE deleted is FALSE;
+CREATE INDEX purchase_order_detail_purchase_order_header_id_idx ON purchase_order_detail (purchase_order_header_id);
+CREATE INDEX purchase_order_detail_number_id_idx ON purchase_order_detail (purchase_order_header_id);
+CREATE INDEX purchase_order_detail_company_id_idx ON purchase_order_detail (company_id);
+CREATE INDEX purchase_order_detail_vendor_id_idx ON purchase_order_detail (vendor_id);
+CREATE INDEX purchase_order_detail_status_type_id_idx ON purchase_order_detail (status_type_id);
+CREATE INDEX purchase_order_detail_po_requisition_ind_type_id_idx ON purchase_order_detail (purchase_order_requisition_indicator_type_id);
+CREATE INDEX purchase_order_detail_exception_ind_type_id_idx ON purchase_order_detail (exception_ind_type_id);
 -- End purchase_order_detail

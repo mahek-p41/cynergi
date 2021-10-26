@@ -2,18 +2,15 @@ package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
-import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
-import static io.micronaut.http.HttpStatus.CONFLICT
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
@@ -21,9 +18,7 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/general-ledger/source-code"
 
-   @Inject AccountTestDataLoaderService accountDataLoaderService
    @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
-   @Inject GeneralLedgerDetailDataLoaderService generalLedgerDetailDataLoaderService
 
    void "fetch one" () {
       given:
@@ -282,26 +277,6 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       def response = exception.response.bodyAsJson()
       response.message == "$glSourceCode.id was unable to be found"
       response.code == "system.not.found"
-   }
-
-
-   void "delete source code still has references" () {
-      given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
-      final glAccount = accountDataLoaderService.single(tstds1)
-      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
-      generalLedgerDetailDataLoaderService.single(tstds1, glAccount, profitCenter, glSourceCode)
-
-      when:
-      delete("$path/${glSourceCode.id}")
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status == CONFLICT
-      def response = exception.response.bodyAsJson()
-      response.message == "Requested operation violates data integrity"
-      response.code == "cynergi.data.constraint.violated"
    }
 
    void "delete source code from other company is not allowed" () {

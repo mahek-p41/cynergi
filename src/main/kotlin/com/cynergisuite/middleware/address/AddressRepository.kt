@@ -2,25 +2,14 @@ package com.cynergisuite.middleware.address
 
 import com.cynergisuite.extensions.getDoubleOrNull
 import com.cynergisuite.extensions.getUuid
-import com.cynergisuite.extensions.softDelete
-import com.cynergisuite.middleware.error.NotFoundException
-import io.micronaut.data.annotation.Query
 import io.micronaut.data.jdbc.annotation.JdbcRepository
 import io.micronaut.data.repository.CrudRepository
 import org.apache.commons.lang3.StringUtils.EMPTY
-import org.jdbi.v3.core.Jdbi
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.sql.ResultSet
-import java.util.*
-import javax.inject.Inject
-import javax.transaction.Transactional
+import java.util.UUID
 
 @JdbcRepository
-abstract class AddressRepository @Inject constructor(
-   private val jdbc: Jdbi
-) : CrudRepository<AddressEntity, UUID> {
-   private val logger: Logger = LoggerFactory.getLogger(AddressRepository::class.java)
+abstract class AddressRepository : CrudRepository<AddressEntity, UUID> {
 
    fun upsert(address: AddressEntity): AddressEntity =
       if (address.id != null) {
@@ -28,28 +17,6 @@ abstract class AddressRepository @Inject constructor(
       } else {
          save(address)
       }
-
-   @Query("SELECT * FROM address WHERE id = :id AND deleted = false")
-   abstract override fun findById(id: UUID): Optional<AddressEntity>
-
-   @Transactional
-   override fun deleteById(id: UUID) {
-      logger.debug("Deleting address with id={}", id)
-
-      val rowsAffected = jdbc.softDelete(
-         """
-         UPDATE address
-         SET deleted = TRUE
-         WHERE id = :id
-         """,
-         mapOf("id" to id),
-         "address"
-      )
-
-      logger.info("Row affected {}", rowsAffected)
-
-      if (rowsAffected == 0) throw NotFoundException(id)
-   }
 
    fun mapAddress(rs: ResultSet, columnPrefix: String = EMPTY): AddressEntity =
       AddressEntity(

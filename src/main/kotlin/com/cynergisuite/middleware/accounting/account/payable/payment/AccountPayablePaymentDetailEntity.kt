@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.payment
 
 import com.cynergisuite.domain.Identifiable
+
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceEntity
 import com.cynergisuite.middleware.vendor.VendorEntity
 import java.math.BigDecimal

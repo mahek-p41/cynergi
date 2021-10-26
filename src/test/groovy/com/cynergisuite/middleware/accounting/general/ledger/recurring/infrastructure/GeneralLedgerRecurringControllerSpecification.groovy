@@ -2,12 +2,10 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastr
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringTypeDTO
-import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
@@ -15,7 +13,6 @@ import spock.lang.Unroll
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
-import static io.micronaut.http.HttpStatus.CONFLICT
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
@@ -24,9 +21,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
    private static final String path = "/accounting/general-ledger/recurring"
 
    @Inject GeneralLedgerRecurringDataLoaderService generalLedgerRecurringDataLoaderService
-   @Inject GeneralLedgerRecurringDistributionDataLoaderService generalLedgerRecurringDistributionDataLoaderService
    @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
-   @Inject AccountTestDataLoaderService accountDataLoaderService
 
    void "fetch one" () {
       given:
@@ -374,26 +369,6 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       def response = exception.response.bodyAsJson()
       response.message == "${glRecurring.id} was unable to be found"
       response.code == "system.not.found"
-   }
-
-   void "delete GL recurring still has references" () {
-      given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
-      final glRecurring = generalLedgerRecurringDataLoaderService.single(tstds1, glSourceCode)
-      final account = accountDataLoaderService.single(tstds1)
-      final profitCenter = storeFactoryService.store(3, tstds1)
-      generalLedgerRecurringDistributionDataLoaderService.single(glRecurring, account, profitCenter)
-
-      when:
-      delete("$path/${glRecurring.id}")
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status == CONFLICT
-      def response = exception.response.bodyAsJson()
-      response.message == "Requested operation violates data integrity"
-      response.code == "cynergi.data.constraint.violated"
    }
 
    void "delete GL recurring from other company is not allowed" () {

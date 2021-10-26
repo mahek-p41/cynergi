@@ -7,7 +7,7 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.softDelete
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -41,7 +41,6 @@ class VendorGroupRepository @Inject constructor(
          vgrp.company_id             AS vgrp_company_id,
          vgrp.value                  AS vgrp_value,
          vgrp.description            AS vgrp_description,
-         vgrp.deleted                AS vgrp_deleted,
          comp.id                     AS comp_id,
          comp.time_created           AS comp_time_created,
          comp.time_updated           AS comp_time_updated,
@@ -70,7 +69,7 @@ class VendorGroupRepository @Inject constructor(
    """
 
    @ReadOnly fun exists(value: String, company: CompanyEntity): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT * FROM vendor_group WHERE value = :value AND company_id = :company_id AND deleted = FALSE)", mapOf("value" to value, "company_id" to company.id), Boolean::class.java)
+      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT * FROM vendor_group WHERE value = :value AND company_id = :company_id)", mapOf("value" to value, "company_id" to company.id), Boolean::class.java)
 
       logger.trace("Checking if VendorGroup: {} exists resulted in {}", value, exists)
 
@@ -79,7 +78,7 @@ class VendorGroupRepository @Inject constructor(
 
    @ReadOnly fun findOne(id: UUID, company: CompanyEntity): VendorGroupEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${baseSelectQuery()}\nWHERE vgrp.id = :id AND comp.id = :comp_id AND vgrp.deleted = FALSE"
+      val query = "${baseSelectQuery()}\nWHERE vgrp.id = :id AND comp.id = :comp_id"
 
       logger.debug("Searching for VendorGroup using {} {}", query, params)
 
@@ -96,7 +95,7 @@ class VendorGroupRepository @Inject constructor(
 
    @ReadOnly fun findOne(value: String, company: CompanyEntity): VendorGroupEntity? {
       val params = mutableMapOf("value" to value, "comp_id" to company.id)
-      val query = "${baseSelectQuery()}\nWHERE vgrp.value = :value AND comp.id = :comp_id AND vgrp.deleted = FALSE"
+      val query = "${baseSelectQuery()}\nWHERE vgrp.value = :value AND comp.id = :comp_id"
 
       logger.debug("Searching for VendorGroup using {} {}", query, params)
 
@@ -116,7 +115,7 @@ class VendorGroupRepository @Inject constructor(
       return jdbc.queryPaged(
          """
          ${baseSelectQuery()}
-         WHERE comp.id = :comp_id AND vgrp.deleted = FALSE
+         WHERE comp.id = :comp_id
          ORDER BY vgrp.${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
@@ -188,14 +187,12 @@ class VendorGroupRepository @Inject constructor(
    fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting vendor group with id={}", id)
 
-      val affectedRows = jdbc.softDelete(
+      val affectedRows = jdbc.update(
          """
-         UPDATE vendor_group
-         SET deleted = TRUE
+         DELETE FROM vendor_group
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.id),
-         "vendor_group"
+         mapOf("id" to id, "company_id" to company.id)
       )
 
       logger.info("Affected rows: {}", affectedRows)

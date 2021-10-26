@@ -8,7 +8,7 @@ import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.softDelete
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
@@ -45,7 +45,6 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             glRecurring.begin_date                                AS glRecurring_begin_date,
             glRecurring.end_date                                  AS glRecurring_end_date,
             glRecurring.last_transfer_date                        AS glRecurring_last_transfer_date,
-            glRecurring.deleted                                   AS glRecurring_deleted,
             source.id                                             AS glRecurring_source_id,
             source.value                                          AS glRecurring_source_value,
             source.description                                    AS glRecurring_source_description,
@@ -55,7 +54,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             type.localization_code                                AS glRecurring_type_localization_code,
             count(*) OVER() AS total_elements
          FROM general_ledger_recurring glRecurring
-            JOIN general_ledger_source_codes source ON glRecurring.source_id = source.id AND source.deleted = FALSE
+            JOIN general_ledger_source_codes source ON glRecurring.source_id = source.id
             JOIN general_ledger_recurring_type_domain type ON glRecurring.type_id = type.id
       """
    }
@@ -63,7 +62,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): GeneralLedgerRecurringEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE glRecurring.id = :id AND glRecurring.company_id = :comp_id AND glRecurring.deleted = FALSE"
+      val query = "${selectBaseQuery()} WHERE glRecurring.id = :id AND glRecurring.company_id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
          params
@@ -84,7 +83,7 @@ class GeneralLedgerRecurringRepository @Inject constructor(
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
-            WHERE glRecurring.company_id = :comp_id AND glRecurring.deleted = FALSE
+            WHERE glRecurring.company_id = :comp_id
             ORDER BY glRecurring_${page.snakeSortBy()} ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
@@ -180,14 +179,12 @@ class GeneralLedgerRecurringRepository @Inject constructor(
    fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting GeneralLedgerRecurring with id={}", id)
 
-      val rowsAffected = jdbc.softDelete(
+      val rowsAffected = jdbc.update(
          """
-         UPDATE general_ledger_recurring
-         SET deleted = TRUE
+         DELETE FROM general_ledger_recurring
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.id),
-         "general_ledger_recurring"
+         mapOf("id" to id, "company_id" to company.id)
       )
       logger.info("Row affected {}", rowsAffected)
 

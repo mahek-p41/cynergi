@@ -7,7 +7,6 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
-import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -42,7 +41,6 @@ class DivisionRepository @Inject constructor(
             div.name                               AS div_name,
             div.manager_number                     AS div_manager_number,
             div.description                        AS div_description,
-            div.deleted                            AS div_deleted,
             emp.emp_id                             AS emp_id,
             emp.emp_type                           AS emp_type,
             emp.emp_number                         AS emp_number,
@@ -89,8 +87,7 @@ class DivisionRepository @Inject constructor(
       val query =
          """${selectBaseQuery()} WHERE div.id = :id
                                                 AND div.company_id = :comp_id
-                                                AND (div.manager_number IS null OR comp_dataset_code = :comp_dataset_code)
-                                                AND div.deleted = FALSE"""
+                                                AND (div.manager_number IS null OR comp_dataset_code = :comp_dataset_code)"""
       logger.trace("Searching for Division params {}: \nQuery {}", params, query)
 
       val found = jdbc.findFirstOrNull(
@@ -112,9 +109,7 @@ class DivisionRepository @Inject constructor(
          """
          WITH paged AS (
             ${selectBaseQuery()}
-            WHERE div.company_id = :comp_id
-                  AND (div.manager_number IS null OR comp_dataset_code = :comp_dataset_code)
-                  AND div.deleted = FALSE
+            WHERE div.company_id = :comp_id AND (div.manager_number IS null OR comp_dataset_code = :comp_dataset_code)
          )
          SELECT
             p.*,
@@ -204,8 +199,7 @@ class DivisionRepository @Inject constructor(
 
          jdbc.deleteReturning(
             """
-            UPDATE division
-            SET deleted = TRUE
+            DELETE FROM division
             WHERE id = :id
             RETURNING
                *""",
@@ -237,14 +231,12 @@ class DivisionRepository @Inject constructor(
    fun deleteRegions(division: DivisionEntity) {
       logger.debug("Deleting Regions belong to Division {}", division)
 
-      jdbc.softDelete(
+      jdbc.update(
          """
-         UPDATE region
-         SET deleted = TRUE
+         DELETE FROM region
          WHERE division_id = :division_id
          """,
-         mapOf("division_id" to division.id),
-         "region"
+         mapOf("division_id" to division.id)
       )
    }
 

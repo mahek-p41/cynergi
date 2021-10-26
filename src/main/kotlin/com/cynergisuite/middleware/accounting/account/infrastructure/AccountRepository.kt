@@ -10,7 +10,7 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.isNumber
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.softDelete
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.AccountStatusType
@@ -44,7 +44,6 @@ class AccountRepository @Inject constructor(
             account.form_1099_field                      AS account_form_1099_field,
             account.corporate_account_indicator          AS account_corporate_account_indicator,
             account.company_id                           AS account_comp_id,
-            account.deleted                              AS account_deleted,
             type.id                                      AS account_type_id,
             type.value                                   AS account_type_value,
             type.description                             AS account_type_description,
@@ -72,7 +71,7 @@ class AccountRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): AccountEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE account.id = :id AND comp.id = :comp_id AND deleted = FALSE"
+      val query = "${selectBaseQuery()} WHERE account.id = :id AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
          params
@@ -88,7 +87,7 @@ class AccountRepository @Inject constructor(
    @ReadOnly
    fun findByNumber(number: Long, company: CompanyEntity): AccountEntity? {
       val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE account.number = :number AND comp.id = :comp_id AND deleted = FALSE"
+      val query = "${selectBaseQuery()} WHERE account.number = :number AND comp.id = :comp_id"
       val found = jdbc.findFirstOrNull(
          query,
          params
@@ -110,7 +109,7 @@ class AccountRepository @Inject constructor(
          """
          WITH paged AS (
             ${selectBaseQuery()}
-            WHERE comp.id = :comp_id AND deleted = FALSE
+            WHERE comp.id = :comp_id
          )
          SELECT
             p.*,
@@ -141,7 +140,7 @@ class AccountRepository @Inject constructor(
    @ReadOnly
    fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<AccountEntity, PageRequest> {
       var searchQuery = page.query
-      val where = StringBuilder(" WHERE comp.id = :comp_id  AND deleted = FALSE")
+      val where = StringBuilder(" WHERE comp.id = :comp_id ")
       val sortBy = if (!searchQuery.isNullOrEmpty()) {
          if (page.fuzzy == false) {
             where.append(" AND (search_vector @@ to_tsquery(:search_query)) ")
@@ -254,14 +253,12 @@ class AccountRepository @Inject constructor(
    fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting account with id={}", id)
 
-      val rowsAffected = jdbc.softDelete(
+      val rowsAffected = jdbc.update(
          """
-         UPDATE account
-         SET deleted = TRUE
+         DELETE FROM account
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.id),
-         "account"
+         mapOf("id" to id, "company_id" to company.id)
       )
 
       logger.info("Row affected {}", rowsAffected)

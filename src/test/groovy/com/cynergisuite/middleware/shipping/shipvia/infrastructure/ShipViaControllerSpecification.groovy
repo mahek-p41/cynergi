@@ -6,15 +6,12 @@ import com.cynergisuite.middleware.error.ErrorDTO
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoader
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaDTO
-import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
-import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
-import static io.micronaut.http.HttpStatus.CONFLICT
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
@@ -23,8 +20,6 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/shipping/shipvia"
 
    @Inject ShipViaTestDataLoaderService shipViaFactoryService
-   @Inject VendorTestDataLoaderService vendorTestDataLoaderService
-   @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
 
    void "fetch one shipVia by id" (){
       given:
@@ -231,7 +226,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       when:
       delete("$path/$shipVia.id")
 
-      then: "ship via of for user's company is deleted"
+      then: "ship via of for user's company is delete"
       notThrown(HttpClientResponseException)
 
       when:
@@ -243,24 +238,6 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.message == "$shipVia.id was unable to be found"
       response.code == "system.not.found"
-   }
-
-   void "delete ship via still has references" () {
-      given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final shipVia = shipViaFactoryService.single(nineNineEightEmployee.company)
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
-      vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
-
-      when:
-      delete("$path/$shipVia.id")
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status == CONFLICT
-      def response = exception.response.bodyAsJson()
-      response.message == "Requested operation violates data integrity"
-      response.code == "cynergi.data.constraint.violated"
    }
 
    void "delete ship via from other company is not allowed" () {

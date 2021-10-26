@@ -72,7 +72,7 @@ class PaymentReportFilterRequest(
    @field:Schema(name = "thruDtVoid", description = "Ending date voided")
    var thruDtVoid: OffsetDateTime? = null,
 
-) : SortableRequestBase<PaymentReportFilterRequest>(null, null) {
+   ) : SortableRequestBase<PaymentReportFilterRequest>(null, null) {
 
    override fun sortByMe(): String = sortBy()
 

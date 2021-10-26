@@ -74,10 +74,10 @@ class StoreRepository @Inject constructor(
             division.description          AS div_description
          FROM fastinfo_prod_import.store_vw store
               JOIN company comp ON comp.dataset_code = store.dataset
-              LEFT JOIN address ON comp.address_id = address.id AND address.deleted = FALSE
+              LEFT JOIN address ON comp.address_id = address.id
               LEFT OUTER JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = :comp_id
-              LEFT OUTER JOIN region ON r2s.region_id = region.id AND region.deleted = FALSE
-              LEFT OUTER JOIN division ON region.division_id = division.id AND division.deleted = FALSE
+              LEFT OUTER JOIN region ON r2s.region_id = region.id
+              LEFT OUTER JOIN division ON region.division_id = division.id
       """
    }
 
@@ -91,7 +91,7 @@ class StoreRepository @Inject constructor(
       (r2s.region_id IS null
          OR r2s.region_id NOT IN (
                SELECT region.id
-               FROM region JOIN division ON region.division_id = division.id AND division.deleted = FALSE
+               FROM region JOIN division ON region.division_id = division.id
                WHERE division.company_id <> :comp_id
             ))
    """
@@ -194,8 +194,8 @@ class StoreRepository @Inject constructor(
          FROM fastinfo_prod_import.store_vw store
             JOIN company comp ON comp.dataset_code = store.dataset
             LEFT JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = comp.id
-            LEFT JOIN region ON  r2s.region_id = region.id AND region.deleted = FALSE
-			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id AND division.deleted = FALSE
+            LEFT JOIN region ON  r2s.region_id = region.id
+			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id
          WHERE store.id = :store_id
                AND $subQuery
       """.trimIndent(),
@@ -220,8 +220,8 @@ class StoreRepository @Inject constructor(
          FROM fastinfo_prod_import.store_vw store
             JOIN company comp ON comp.dataset_code = store.dataset
             LEFT JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = comp.id
-            LEFT JOIN region ON  r2s.region_id = region.id AND region.deleted = FALSE
-			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id AND division.deleted = FALSE
+            LEFT JOIN region ON  r2s.region_id = region.id
+			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id
          WHERE store.number = :store_number
                   AND comp.id = :comp_id
                   AND $subQuery

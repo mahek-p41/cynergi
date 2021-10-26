@@ -22,7 +22,7 @@ class RebatePageRequest(
    @field:Schema(name = "vendorIds", description = "The collection of vendor IDs to filter results with")
    var vendorIds: Set<UUID>? = emptySet(),
 
-) : PageRequestBase<RebatePageRequest>(page, size, sortBy, sortDirection) {
+   ) : PageRequestBase<RebatePageRequest>(page, size, sortBy, sortDirection) {
 
    @ValidPageSortBy("id", "storeNumber")
    override fun sortByMe(): String = sortBy()

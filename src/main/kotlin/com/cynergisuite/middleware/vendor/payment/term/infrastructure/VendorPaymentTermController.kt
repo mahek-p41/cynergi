@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.vendor.payment.term.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -10,11 +9,9 @@ import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermDTO
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermService
 import io.micronaut.http.HttpRequest
-import io.micronaut.http.MediaType
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
@@ -157,28 +154,5 @@ class VendorPaymentTermController @Inject constructor(
       logger.debug("Requested Update VendorPaymentTerm {} resulted in {}", vo, response)
 
       return response
-   }
-
-   @Delete(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [MediaType.APPLICATION_JSON])
-   @AccessControl
-   @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Delete a vendor payment term", description = "Delete a single vendor payment term", operationId = "vendorPaymentTerm-delete")
-   @ApiResponses(
-      value = [
-         ApiResponse(responseCode = "200", description = "If the vendor payment term was able to be deleted"),
-         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-         ApiResponse(responseCode = "409", description = "If the vendor payment term is still referenced from other tables"),
-         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-      ]
-   )
-   fun delete(
-      @QueryValue("id") id: UUID,
-      httpRequest: HttpRequest<*>,
-      authentication: Authentication
-   ) {
-      logger.debug("User {} requested delete vendor payment term", authentication)
-
-      val user = userService.fetchUser(authentication)
-
-      return vendorPaymentTermService.delete(id, user.myCompany())
    }
 }

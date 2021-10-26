@@ -54,7 +54,6 @@ class GeneralLedgerJournalRepository @Inject constructor(
             account.account_form_1099_field                                 AS glJournal_account_form_1099_field,
             account.account_corporate_account_indicator                     AS glJournal_account_corporate_account_indicator,
             account.account_comp_id                                         AS glJournal_account_comp_id,
-            account.account_deleted                                         AS glJournal_account_deleted,
             account.account_type_id                                         AS glJournal_account_type_id,
             account.account_type_value                                      AS glJournal_account_type_value,
             account.account_type_description                                AS glJournal_account_type_description,
@@ -80,11 +79,11 @@ class GeneralLedgerJournalRepository @Inject constructor(
             count(*) OVER()                                                 AS total_elements
          FROM general_ledger_journal glJournal
             JOIN company comp ON glJournal.company_id = comp.id
-            JOIN account ON glJournal.account_id = account.account_id AND account.account_deleted = FALSE
+            JOIN account ON glJournal.account_id = account.account_id
             JOIN fastinfo_prod_import.store_vw profitCenter
                ON profitCenter.dataset = comp.dataset_code
                   AND profitCenter.id = glJournal.profit_center_id_sfk
-            JOIN general_ledger_source_codes source ON glJournal.source_id = source.id AND source.deleted = FALSE
+            JOIN general_ledger_source_codes source ON glJournal.source_id = source.id
       """
    }
 

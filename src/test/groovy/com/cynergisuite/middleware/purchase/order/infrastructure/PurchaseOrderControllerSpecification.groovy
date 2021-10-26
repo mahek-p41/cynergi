@@ -6,7 +6,6 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
-import com.cynergisuite.middleware.purchase.order.detail.PurchaseOrderDetailDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
@@ -20,7 +19,6 @@ import java.time.ZoneOffset
 import java.util.stream.Collectors
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
-import static io.micronaut.http.HttpStatus.CONFLICT
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
@@ -32,7 +30,6 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
    @Inject ShipViaTestDataLoaderService shipViaTestDataLoaderService
    @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
    @Inject VendorTestDataLoaderService vendorTestDataLoaderService
-   @Inject PurchaseOrderDetailDataLoaderService purchaseOrderDetailTestDataLoaderService
 
    void "fetch one" () {
       given:
@@ -924,41 +921,5 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.message == "${purchaseOrder.id} was unable to be found"
       response.code == "system.not.found"
-   }
-
-   void "delete purchase order still has references" () {
-      given:
-      final company = nineNineEightEmployee.company
-      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
-      final shipViaList = shipViaTestDataLoaderService.stream(2, company).toList()
-      final vendorShipVia = shipViaList[0]
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
-      final approvedByIn = employeeFactoryService.single(company)
-      final purchaseAgentIn = employeeFactoryService.single(company)
-      final shipViaIn = shipViaList[1]
-      final shipToIn = storeFactoryService.store(3, company)
-      final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
-      final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
-      final purchaseOrder = purchaseOrderDataLoaderService.single(
-         company,
-         vendorIn,
-         approvedByIn,
-         purchaseAgentIn,
-         shipViaIn,
-         shipToIn,
-         paymentTermTypeIn,
-         vendorSubmittedEmployeeIn
-      )
-      purchaseOrderDetailTestDataLoaderService.single(company, purchaseOrder, shipToIn, vendorIn)
-
-      when:
-      delete("$path/${purchaseOrder.id}", )
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status == CONFLICT
-      def response = exception.response.bodyAsJson()
-      response.message == "Requested operation violates data integrity"
-      response.code == "cynergi.data.constraint.violated"
    }
 }

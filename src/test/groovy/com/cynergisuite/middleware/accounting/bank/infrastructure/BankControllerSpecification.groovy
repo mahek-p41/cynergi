@@ -380,7 +380,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       when:
       delete("$path/$bank.id", )
 
-      then: "bank for user's company is deleted"
+      then: "bank for user's company is delete"
       notThrown(HttpClientResponseException)
 
       when:

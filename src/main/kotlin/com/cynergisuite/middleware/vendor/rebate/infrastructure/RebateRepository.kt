@@ -66,7 +66,6 @@ class RebateRepository @Inject constructor(
             glDebitAcct.account_form_1099_field                 AS glDebitAcct_form_1099_field,
             glDebitAcct.account_corporate_account_indicator     AS glDebitAcct_corporate_account_indicator,
             glDebitAcct.account_comp_id                         AS glDebitAcct_comp_id,
-            glDebitAcct.account_deleted                         AS glDebitAcct_deleted,
             glDebitAcct.account_type_id                         AS glDebitAcct_type_id,
             glDebitAcct.account_type_value                      AS glDebitAcct_type_value,
             glDebitAcct.account_type_description                AS glDebitAcct_type_description,
@@ -85,7 +84,6 @@ class RebateRepository @Inject constructor(
             glCreditAcct.account_form_1099_field                AS glCreditAcct_form_1099_field,
             glCreditAcct.account_corporate_account_indicator    AS glCreditAcct_corporate_account_indicator,
             glCreditAcct.account_comp_id                        AS glCreditAcct_comp_id,
-            glCreditAcct.account_deleted                        AS glCreditAcct_deleted,
             glCreditAcct.account_type_id                        AS glCreditAcct_type_id,
             glCreditAcct.account_type_value                     AS glCreditAcct_type_value,
             glCreditAcct.account_type_description               AS glCreditAcct_type_description,
@@ -102,8 +100,8 @@ class RebateRepository @Inject constructor(
          FROM rebate r
             JOIN account_status_type_domain status ON r.status_type_id = status.id
             JOIN rebate_type_domain rebate         ON r.rebate_type_id = rebate.id
-            JOIN account glCreditAcct              ON r.general_ledger_credit_account_id = glCreditAcct.account_id AND glCreditAcct.account_deleted = FALSE
-            LEFT JOIN account glDebitAcct          ON r.general_ledger_debit_account_id = glDebitAcct.account_id AND glDebitAcct.account_deleted = FALSE
+            JOIN account glCreditAcct              ON r.general_ledger_credit_account_id = glCreditAcct.account_id
+            LEFT JOIN account glDebitAcct          ON r.general_ledger_debit_account_id = glDebitAcct.account_id
       """
    }
 
