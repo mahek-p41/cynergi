@@ -46,6 +46,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
             glRecurringDist.general_ledger_distribution_account_id            AS glRecurringDist_account_id,
             glRecurringDist.general_ledger_distribution_profit_center_id_sfk  AS glRecurringDist_profit_center_id_sfk,
             glRecurringDist.general_ledger_distribution_amount                AS glRecurringDist_general_ledger_distribution_amount,
+            glRecurringDist.deleted                                           AS glRecurringDist_deleted,
             glRecurring.glRecurring_id                                        AS glRecurringDist_glRecurring_id,
             glRecurring.glRecurring_company_id                                AS glRecurringDist_glRecurring_company_id,
             glRecurring.glRecurring_reverse_indicator                         AS glRecurringDist_glRecurring_reverse_indicator,
@@ -66,6 +67,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
             account.account_form_1099_field                                   AS glRecurringDist_account_form_1099_field,
             account.account_corporate_account_indicator                       AS glRecurringDist_account_corporate_account_indicator,
             account.account_comp_id                                           AS glRecurringDist_account_comp_id,
+            account.account_deleted                                           AS glRecurringDist_account_deleted,
             account.account_type_id                                           AS glRecurringDist_account_type_id,
             account.account_type_value                                        AS glRecurringDist_account_type_value,
             account.account_type_description                                  AS glRecurringDist_account_type_description,
@@ -80,15 +82,15 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
             account.account_status_localization_code                          AS glRecurringDist_account_status_localization_code,
             count(*) OVER() AS total_elements
          FROM general_ledger_recurring_distribution glRecurringDist
-            JOIN general_ledger_recurring glRecurring ON glRecurringDist.general_ledger_recurring_id = glRecurring.glRecurring_id
-            JOIN account ON glRecurringDist.general_ledger_distribution_account_id = account.account_id
+            JOIN general_ledger_recurring glRecurring ON glRecurringDist.general_ledger_recurring_id = glRecurring.glRecurring_id AND glRecurring.glRecurring_deleted = FALSE
+            JOIN account ON glRecurringDist.general_ledger_distribution_account_id = account.account_id AND account.account_deleted = FALSE
       """
    }
 
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): GeneralLedgerRecurringDistributionEntity? {
       val params = mutableMapOf<String, Any?>("id" to id)
-      val query = "${selectBaseQuery()} WHERE glRecurringDist.id = :id"
+      val query = "${selectBaseQuery()} WHERE glRecurringDist.id = :id AND glRecurringDist.deleted = FALSE"
       val found = jdbc.findFirstOrNull(
          query, params
       ) { rs, _ ->
@@ -108,6 +110,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
+            WHERE glRecurringDist.deleted = FALSE
             ORDER BY glRecurringDist_${page.snakeSortBy()} ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
@@ -132,7 +135,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
-            WHERE glRecurringDist.general_ledger_recurring_id = :glRecurringId
+            WHERE glRecurringDist.general_ledger_recurring_id = :glRecurringId AND glRecurringDist.deleted = FALSE
             ORDER BY glRecurringDist_${page.snakeSortBy()} ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
@@ -212,10 +215,10 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
    @Transactional
    fun delete(id: UUID) {
       logger.debug("Deleting GeneralLedgerRecurringDistribution with id={}", id)
-
       val rowsAffected = jdbc.update(
          """
-         DELETE FROM general_ledger_recurring_distribution
+         UPDATE general_ledger_recurring_distribution
+         SET deleted = TRUE
          WHERE id = :id
          """,
          mapOf("id" to id)

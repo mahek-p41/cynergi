@@ -204,15 +204,15 @@ class AuditRepository @Inject constructor(
                     JOIN status s ON s.audit_id = a.id
                     JOIN maxStatus ms ON s.id = ms.current_status_id
                     JOIN company comp ON a.company_id = comp.id
-                    JOIN division div ON comp.id = div.company_id
-                    JOIN region reg ON div.id = reg.division_id
+                    JOIN division div ON comp.id = div.company_id AND div.deleted = FALSE
+                    JOIN region reg ON div.id = reg.division_id AND reg.deleted = FALSE
                 $whereClause) AS total_elements
             FROM audit a
                  JOIN status s ON s.audit_id = a.id
                  JOIN maxStatus ms ON s.id = ms.current_status_id
                  JOIN company comp ON a.company_id = comp.id
-                 JOIN division div ON comp.id = div.company_id
-                 JOIN region reg ON div.id = reg.division_id
+                 JOIN division div ON comp.id = div.company_id AND div.deleted = FALSE
+                 JOIN region reg ON div.id = reg.division_id AND reg.deleted = FALSE
             $whereClause
          )
          SELECT
@@ -304,8 +304,8 @@ class AuditRepository @Inject constructor(
                      ON comp.dataset_code = auditStore.dataset
                         AND a.store_number = auditStore.number
                LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
-               LEFT JOIN region reg ON reg.id = rts.region_id
-               LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id
+               LEFT JOIN region reg ON reg.id = rts.region_id AND reg.deleted = FALSE
+               LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id AND div.deleted = FALSE
          ORDER BY a.id
       """
 
@@ -319,8 +319,8 @@ class AuditRepository @Inject constructor(
                            (rts.region_id IS null
                               OR rts.region_id NOT IN (
                                     SELECT region.id
-                                    FROM region JOIN division ON region.division_id = division.id
-                                    WHERE division.company_id <> :comp_id
+                                    FROM region JOIN division ON region.division_id = division.id AND division.deleted = FALSE
+                                    WHERE division.company_id <> :comp_id AND region.deleted = FALSE
                                  ))
    """
 
@@ -521,8 +521,8 @@ class AuditRepository @Inject constructor(
                JOIN status s ON s.audit_id = a.id
                JOIN maxStatus ms ON s.id = ms.current_status_id
                LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
-               LEFT JOIN region reg ON reg.id = rts.region_id
-               LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id
+               LEFT JOIN region reg ON reg.id = rts.region_id AND reg.deleted = FALSE
+               LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id AND div.deleted = FALSE
          $whereClause
          ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
@@ -622,8 +622,8 @@ class AuditRepository @Inject constructor(
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
             LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
-            LEFT JOIN region reg ON reg.id = rts.region_id
-            LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id
+            LEFT JOIN region reg ON reg.id = rts.region_id AND reg.deleted = FALSE
+            LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id AND div.deleted = FALSE
          $whereClause
          GROUP BY status.current_status,
                   status.current_status_description,

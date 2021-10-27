@@ -8,7 +8,7 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.update
+import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionEntity
@@ -47,6 +47,7 @@ class AccountPayableDistributionRepository @Inject constructor(
             apDist.name                                                    AS apDist_name,
             apDist.percent                                                 AS apDist_percent,
             apDist.profit_center_sfk                                       AS apDist_profit_center_sfk,
+            apDist.deleted                                                 AS apDist_deleted,
             profitCenter.id                                                AS apDist_profitCenter_id,
             profitCenter.number                                            AS apDist_profitCenter_number,
             profitCenter.name                                              AS apDist_profitCenter_name,
@@ -57,6 +58,7 @@ class AccountPayableDistributionRepository @Inject constructor(
             account.account_form_1099_field                                AS apDist_account_form_1099_field,
             account.account_corporate_account_indicator                    AS apDist_account_corporate_account_indicator,
             account.account_comp_id                                        AS apDist_account_comp_id,
+            account.account_deleted                                        AS apDist_account_deleted,
             account.account_type_id                                        AS apDist_account_type_id,
             account.account_type_value                                     AS apDist_account_type_value,
             account.account_type_description                               AS apDist_account_type_description,
@@ -74,14 +76,14 @@ class AccountPayableDistributionRepository @Inject constructor(
             JOIN fastinfo_prod_import.store_vw profitCenter
                ON profitCenter.dataset = comp.dataset_code
                   AND profitCenter.number = apDist.profit_center_sfk
-            JOIN account ON account.account_id = apDist.account_id
+            JOIN account ON account.account_id = apDist.account_id AND account.account_deleted = FALSE
       """
    }
 
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): AccountPayableDistributionEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE apDist.id = :id AND comp.id = :comp_id"
+      val query = "${selectBaseQuery()} WHERE apDist.id = :id AND comp.id = :comp_id AND apDist.deleted = FALSE"
       val found = jdbc.findFirstOrNull(
          query,
          params
@@ -106,7 +108,7 @@ class AccountPayableDistributionRepository @Inject constructor(
          """
          WITH paged AS (
             ${selectBaseQuery()}
-            WHERE comp.id = :comp_id
+            WHERE comp.id = :comp_id AND apDist.deleted = FALSE
          )
          SELECT
             p.*,
@@ -141,7 +143,7 @@ class AccountPayableDistributionRepository @Inject constructor(
             WITH paged AS (
             SELECT DISTINCT name
             FROM account_payable_distribution_template
-            WHERE company_id = :comp_id
+            WHERE company_id = :comp_id AND deleted = FALSE
          )
          SELECT
             p.*,
@@ -176,7 +178,7 @@ class AccountPayableDistributionRepository @Inject constructor(
          """
          WITH paged AS (
             ${selectBaseQuery()}
-            WHERE comp.id = :comp_id AND apDist.name = :name
+            WHERE comp.id = :comp_id AND apDist.name = :name AND apDist.deleted = FALSE
          )
          SELECT
             p.*,
@@ -262,12 +264,14 @@ class AccountPayableDistributionRepository @Inject constructor(
    fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting AccountPayableDistribution with id={}", id)
 
-      val rowsAffected = jdbc.update(
+      val rowsAffected = jdbc.softDelete(
          """
-         DELETE FROM account_payable_distribution_template
+         UPDATE account_payable_distribution_template
+         SET deleted = TRUE
          WHERE id = :id AND company_id = :company_id
          """,
-         mapOf("id" to id, "company_id" to company.id)
+         mapOf("id" to id, "company_id" to company.id),
+         "account_payable_distribution_template"
       )
       logger.info("Row affected {}", rowsAffected)
 
