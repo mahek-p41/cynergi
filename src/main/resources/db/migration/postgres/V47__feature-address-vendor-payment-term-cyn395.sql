@@ -112,15 +112,15 @@ BEGIN
             RAISE NOTICE 'Checking % in referenced column: %.%', new.id, fkTable, fkColumn;
             RAISE NOTICE 'Checking pkColumn=% pkTable=%', pkColumn, pkTable;
 
-            IF EXISTS (SELECT FROM INFORMATION_SCHEMA.COLUMNS
+            IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS
                        WHERE TABLE_NAME = fkTable AND COLUMN_NAME = 'deleted') THEN
-               EXECUTE 'SELECT (EXISTS(SELECT FROM ' || fkTable || ' WHERE ' || fkColumn || ' = ' || quote_literal(new.id) || ' AND deleted = false))::boolean'
+               EXECUTE 'SELECT (EXISTS(SELECT * FROM ' || fkTable || ' WHERE ' || fkColumn || ' = ' || quote_literal(new.id) || ' AND deleted = false))::boolean'
                  INTO hasReferences;
                IF (hasReferences) THEN
                   RAISE EXCEPTION 'Still referenced';
                END IF;
             ELSE
-               EXECUTE 'SELECT (EXISTS(SELECT FROM ' || fkTable || ' WHERE ' || fkColumn || ' = ' || quote_literal(new.id) || '))::boolean'
+               EXECUTE 'SELECT (EXISTS(SELECT * FROM ' || fkTable || ' WHERE ' || fkColumn || ' = ' || quote_literal(new.id) || '))::boolean'
                   INTO hasReferences2;
                IF (hasReferences2) THEN
                   RAISE EXCEPTION 'Still referenced';
