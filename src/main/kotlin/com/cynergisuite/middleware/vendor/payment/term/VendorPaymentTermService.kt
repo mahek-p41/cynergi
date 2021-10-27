@@ -40,4 +40,8 @@ class VendorPaymentTermService @Inject constructor(
          entity = vendorPaymentTermRepository.update(entity = toUpdate)
       )
    }
+
+   fun delete(id: UUID, company: CompanyEntity) {
+      vendorPaymentTermRepository.delete(id, company)
+   }
 }

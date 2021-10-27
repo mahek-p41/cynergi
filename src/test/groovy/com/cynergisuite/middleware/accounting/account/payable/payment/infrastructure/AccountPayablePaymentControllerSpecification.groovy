@@ -953,7 +953,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def apPayment = dataLoaderService.single(company, bank, vendor)
 
-      def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendor, apInvoice, apPayment).toList()
+      apPaymentDetailDataLoaderService.stream(5, company, vendor, apInvoice, apPayment).toList()
 
       when:
       delete("$path/$apPayment.id")
