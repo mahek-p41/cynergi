@@ -27,6 +27,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
    private JsonSlurper jsonSlurper = new JsonSlurper()
    @Inject AddressTestDataLoaderService addressTestDataLoaderService
    @Inject AddressRepository addressRepository
+   @Inject CompanyRepository companyRepository
 
    private static String path = '/company'
 
@@ -667,5 +668,24 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
          it.address.name == "Test update name"
       }
       addressRepository.findById(addressId).get().name == "Test update name"
+   }
+
+   void "delete a company" () {
+      given:
+      def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
+      jsonCompany.tap {
+         name = 'HTI'
+         doingBusinessAs = 'Sale'
+         clientCode = '1234'
+         clientId = 1234
+         datasetCode = 'tstds3'
+         federalTaxNumber = '654321'
+         address = null
+      }
+
+      when:
+      delete("$path/$tstds1.id")
+      then:
+      companyRepository.findOne(tstds1.id) == null
    }
 }

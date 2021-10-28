@@ -3,19 +3,16 @@ package com.cynergisuite.middleware.company.infrastructure
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.company.CompanyDTO
 import com.cynergisuite.middleware.company.CompanyService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.HttpRequest
+import io.micronaut.http.MediaType
 import io.micronaut.http.MediaType.APPLICATION_JSON
-import io.micronaut.http.annotation.Body
-import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Get
-import io.micronaut.http.annotation.Post
-import io.micronaut.http.annotation.Put
-import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.annotation.*
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
@@ -35,7 +32,8 @@ import javax.validation.Valid
 @Secured(IS_ANONYMOUS)
 @Controller("/api/company")
 class CompanyController @Inject constructor(
-   private val companyService: CompanyService
+   private val companyService: CompanyService,
+   private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(CompanyController::class.java)
 
@@ -141,5 +139,28 @@ class CompanyController @Inject constructor(
       logger.debug("Requested Update Company {} resulted in {}", companyDTO, response)
 
       return response
+   }
+
+   @Delete(uri = "/{id}", processes = [APPLICATION_JSON])
+   @AccessControl
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["CompanyEndpoints"], summary = "Delete a company", description = "Delete a single company", operationId = "company-delete")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the company was able to be deleted"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun delete(
+      @QueryValue("id") id: UUID,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ) {
+      logger.debug("User {} requested delete company", authentication)
+
+      val user = userService.fetchUser(authentication)
+
+      return companyService.delete(id)
    }
 }

@@ -3,15 +3,12 @@ package com.cynergisuite.middleware.company.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getUuid
-import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.query
-import com.cynergisuite.extensions.queryForObject
-import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.error.NotFoundException
+import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.Store
 import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -43,6 +40,7 @@ class CompanyRepository @Inject constructor(
          comp.client_id           AS client_id,
          comp.dataset_code        AS dataset_code,
          comp.federal_id_number   AS federal_id_number,
+         comp.deleted             AS deleted,
          address.id               AS address_id,
          address.name             AS address_name,
          address.address1         AS address_address1,
@@ -76,6 +74,7 @@ class CompanyRepository @Inject constructor(
            comp.client_id           AS client_id,
            comp.dataset_code        AS dataset_code,
            comp.federal_id_number   AS federal_id_number,
+           comp.deleted             As deleted,
            address.id               AS address_id,
            address.name             AS address_name,
            address.address1         AS address_address1,
@@ -110,7 +109,7 @@ class CompanyRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID): CompanyEntity? {
       val found =
-         jdbc.findFirstOrNull("${companyBaseQuery()} WHERE comp.id = :id", mapOf("id" to id)) { rs, _ -> mapRow(rs) }
+         jdbc.findFirstOrNull("${companyBaseQuery()} WHERE comp.id = :id AND comp.deleted = FALSE", mapOf("id" to id)) { rs, _ -> mapRow(rs) }
 
       logger.trace("Searching for Company: {} resulted in {}", id, found)
 
@@ -138,6 +137,7 @@ class CompanyRepository @Inject constructor(
          """
          WITH paged AS (
             ${companyBaseQuery()}
+            WHERE comp.deleted = FALSE
          )
          SELECT
             p.*,
@@ -181,7 +181,7 @@ class CompanyRepository @Inject constructor(
       if (id == null) return false
 
       val exists = jdbc.queryForObject(
-         "SELECT EXISTS(SELECT id FROM company WHERE id = :id)",
+         "SELECT EXISTS(SELECT id FROM company WHERE id = :id AND company.deleted = FALSE)",
          mapOf("id" to id),
          Boolean::class.java
       )
@@ -296,6 +296,23 @@ class CompanyRepository @Inject constructor(
       addressToDelete?.let { addressRepository.deleteById(it.id!!) } // delete address if it exists, done this way because it avoids the race condition compilation error
 
       return updatedCompany
+   }
+
+   @Transactional
+   fun delete(id: UUID) {
+      logger.debug("Deleting Company with id={}", id)
+
+      val rowsAffected =jdbc.update(
+         """
+            UPDATE company
+            SET deleted = TRUE
+            WHERE id = :id
+         """,
+         mapOf("id" to id)
+      )
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(id)
    }
 
    fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY, addressPrefix: String = "address_"): CompanyEntity =
