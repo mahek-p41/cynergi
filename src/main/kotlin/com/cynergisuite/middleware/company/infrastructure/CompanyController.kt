@@ -159,8 +159,6 @@ class CompanyController @Inject constructor(
    ) {
       logger.debug("User {} requested delete company", authentication)
 
-      val user = userService.fetchUser(authentication)
-
       return companyService.delete(id)
    }
 }

@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.address.AddressTestDataLoaderService
 import com.cynergisuite.middleware.company.CompanyDTO
 import com.cynergisuite.middleware.company.CompanyFactory
+import com.cynergisuite.middleware.employee.EmployeeTestDataLoaderService
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import io.micronaut.core.type.Argument
@@ -18,7 +19,9 @@ import javax.inject.Inject
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.POST
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.CONFLICT
 import static io.micronaut.http.HttpStatus.METHOD_NOT_ALLOWED
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
@@ -28,6 +31,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
    @Inject AddressTestDataLoaderService addressTestDataLoaderService
    @Inject AddressRepository addressRepository
    @Inject CompanyRepository companyRepository
+   @Inject EmployeeTestDataLoaderService employeeTestDataLoader
 
    private static String path = '/company'
 
@@ -670,22 +674,64 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       addressRepository.findById(addressId).get().name == "Test update name"
    }
 
-   void "delete a company" () {
+   void "delete a company with reference" () {
       given:
-      def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
-      jsonCompany.tap {
-         name = 'HTI'
-         doingBusinessAs = 'Sale'
-         clientCode = '1234'
-         clientId = 1234
-         datasetCode = 'tstds3'
-         federalTaxNumber = '654321'
-         address = null
-      }
+      final address = addressTestDataLoaderService.single()
+      final company = companyFactoryService.single(address)
+      final employee = employeeTestDataLoader.single(company)
+
 
       when:
-      delete("$path/$tstds1.id")
+      delete("$path/$company.id")
       then:
-      companyRepository.findOne(tstds1.id) == null
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == CONFLICT
+      def response = exception.response.bodyAsJson()
+      response.message == "Requested operation violates data integrity"
+      response.code == "cynergi.data.constraint.violated"
+   }
+
+   void "delete company" () {
+      given:
+      final address = addressTestDataLoaderService.single()
+      final company = companyFactoryService.single(address)
+
+      when:
+      delete("$path/$company.id", )
+
+      then: " user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("$path/$company.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "$company.id was unable to be found"
+      response.code == "system.not.found"
+   }
+
+   void "delete bank from other company is not allowed" () {
+      given:
+      final tstds1 = companies.find { it.datasetCode == "tstds1" }
+      final tstds2 = companies.find { it.datasetCode == "tstds2" }
+      final accountTstds1 = accountFactoryService.single(tstds1)
+      final accountTstds2 = accountFactoryService.single(tstds2)
+      final store3Tstds1 = storeFactoryService.store(3, tstds1)
+      final store4Tstds2 = storeFactoryService.store(4, tstds2)
+      final bankStore3Tstds1 = bankFactoryService.single(tstds1, store3Tstds1, accountTstds1)
+      final bankStore4Tstds2 = bankFactoryService.single(tstds2, store4Tstds2, accountTstds2)
+
+      when:
+      delete("$path/$bankStore4Tstds2.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "$bankStore4Tstds2.id was unable to be found"
+      response.code == "system.not.found"
    }
 }

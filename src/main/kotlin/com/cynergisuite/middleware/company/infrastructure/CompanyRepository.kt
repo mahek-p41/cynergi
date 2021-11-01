@@ -302,13 +302,14 @@ class CompanyRepository @Inject constructor(
    fun delete(id: UUID) {
       logger.debug("Deleting Company with id={}", id)
 
-      val rowsAffected =jdbc.update(
+      val rowsAffected =jdbc.softDelete(
          """
             UPDATE company
             SET deleted = TRUE
             WHERE id = :id
          """,
-         mapOf("id" to id)
+         mapOf("id" to id),
+         "company"
       )
       logger.info("Row affected {}", rowsAffected)
 
