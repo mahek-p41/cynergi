@@ -245,6 +245,433 @@ BEGIN
 
    EXECUTE sqlToExec;
 END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW csv_active_customer_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_active_customer_vw') THEN
+      DROP VIEW csv_customer_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+            stores.loc_tran_loc as StoreID,
+            ''''::text AS PeopleID,
+            customers.cust_acct_nbr as UniqueID,
+            customers.cust_first_name_mi as FirstName,
+            customers.cust_last_name as LastName,
+            customers.cust_address as Address1,
+            customers.cust_address_2 as Address2,
+            customers.cust_city as City,
+            customers.cust_state as State,
+            customers.cust_zip_pc as Zip,
+            customers.cust_cell_phone as PhoneNumber,
+            customers.cust_email_address as email,
+            sum(case when agreement_versions.agreement_payment_terms = ''M'' then Round(trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2))
+                when agreement_versions.agreement_payment_terms = ''W'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 4.33))
+                when agreement_versions.agreement_payment_terms = ''B'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2))
+                else Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2))
+                end) as ProjectedPayout,
+            case
+            when agreement_versions.agreement_open_flag = ''Y'' and
+               agreement_versions.agreement_next_due_date < current_date
+            then ''Y''
+            else ''N''
+            end as PastDue,
+            case
+            when agreement_versions.agreement_open_flag = ''Y'' and
+            agreement_versions.agreement_next_due_date < current_date
+            then current_date - agreement_versions.agreement_next_due_date
+            else null
+            end as DaysPastDue
+         FROM ' || r.schema_name || '.level2_agreements as agreements
+            JOIN
+            ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
+            JOIN
+            ' || r.schema_name || '.level2_stores as stores on agreement_versions.store_id = stores.id
+           JOIN
+            ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
+            where
+            agreements.agreement_type = ''O'' and agreement_versions.agreement_open_flag = ''Y''
+            group by stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
+            customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone,customers.cust_email_address,
+            agreement_versions.agreement_open_flag, agreement_versions.agreement_next_due_date
+          ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY UniqueId ASC';
+
+   EXECUTE sqlToExec;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW csv_collection_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_collection_vw') THEN
+      DROP VIEW csv_collection_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+            stores.loc_tran_loc as StoreID,
+            ''''::text AS PeopleID,
+            customers.cust_acct_nbr as UniqueID,
+            customers.cust_first_name_mi as FirstName,
+            customers.cust_last_name as LastName,
+            customers.cust_address as Address1,
+            customers.cust_address_2 as Address2,
+            customers.cust_city as City,
+            customers.cust_state as State,
+            customers.cust_zip_pc as Zip,
+            customers.cust_cell_phone as PhoneNumber,
+            customers.cust_email_address as email,
+            case
+            when agreement_versions.agreement_open_flag = ''Y'' and
+            agreement_versions.agreement_next_due_date < current_date
+            then current_date - agreement_versions.agreement_next_due_date
+            else null
+            end as DaysLate
+            FROM ' || r.schema_name || '.level2_agreements as agreements
+            JOIN
+            ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
+            JOIN
+            ' || r.schema_name || '.level2_stores as stores on agreement_versions.store_id = stores.id
+           JOIN
+            ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
+            where
+            agreements.agreement_type = ''O'' and agreement_versions.agreement_open_flag = ''Y''
+            group by stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
+            customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone,customers.cust_email_address,
+            agreement_versions.agreement_open_flag,agreement_versions.agreement_next_due_date
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY UniqueId ASC';
+
+   EXECUTE sqlToExec;
+END $$;
+
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW csv_birthday_customer_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_birthday_customer_vw') THEN
+      DROP VIEW csv_customer_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+           stores.loc_tran_loc as StoreID,
+            ''''::text AS PeopleID,
+            customers.cust_acct_nbr as UniqueID,
+            customers.cust_first_name_mi as FirstName,
+            customers.cust_last_name as LastName,
+            customers.cust_address as Address1,
+            customers.cust_address_2 as Address2,
+            customers.cust_city as City,
+            customers.cust_state as State,
+            customers.cust_zip_pc as Zip,
+            customers.cust_cell_phone as PhoneNumber,
+            customers.cust_email_address as email,
+            customers.cust_birth_date as BirthDay
+         FROM ' || r.schema_name || '.level2_agreements as agreements
+            JOIN
+            ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
+            JOIN
+            ' || r.schema_name || '.level2_stores as stores on agreement_versions.store_id = stores.id
+           JOIN
+            ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
+            where
+            agreements.agreement_type = ''O'' and agreement_versions.agreement_open_flag = ''Y''
+            group by stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
+            customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone,customers.cust_email_address,
+            customers.cust_birth_date
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY UniqueId ASC';
+
+   EXECUTE sqlToExec;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW csv_last_week_deliveries_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_last_week_deliveris_vw') THEN
+      DROP VIEW csv_customer_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+            stores.loc_tran_loc as StoreID,
+            ''''::text AS PeopleID,
+            customers.cust_acct_nbr as UniqueID,
+            customers.cust_first_name_mi as FirstName,
+            customers.cust_last_name as LastName,
+            customers.cust_address as Address1,
+            customers.cust_address_2 as Address2,
+            customers.cust_city as City,
+            customers.cust_state as State,
+            customers.cust_zip_pc as Zip,
+            customers.cust_cell_phone as PhoneNumber,
+            customers.cust_email_address as email,
+            agreement_contract_date as PurchaseDate,
+            case when agreement_versions.agreement_open_flag = ''Y''
+            then ''Active''
+            else ''Inactive''
+            end as CurrentCustomerStatus
+         FROM ' || r.schema_name || '.level2_agreements as agreements
+            JOIN
+            ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
+            JOIN
+            ' || r.schema_name || '.level2_stores as stores on agreement_versions.store_id = stores.id
+           JOIN
+            ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
+            where
+            agreements.agreement_type = ''O'' and agreement_versions.agreement_contract_date between current_date - extract(dow from current_date)::integer - 7 and current_date - extract(dow from current_date)::integer + 6 - 7
+            group by stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
+            customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone,customers.cust_email_address,
+            agreement_contract_date, agreement_versions.agreement_open_flag
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY UniqueId ASC';
+
+   EXECUTE sqlToExec;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW csv_last_week_payouts_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_last_week_payouts_vw') THEN
+      DROP VIEW csv_customer_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+           stores.loc_tran_loc as StoreID,
+            ''''::text AS PeopleID,
+            customers.cust_acct_nbr as UniqueID,
+            customers.cust_first_name_mi as FirstName,
+            customers.cust_last_name as LastName,
+            customers.cust_address as Address1,
+            customers.cust_address_2 as Address2,
+            customers.cust_city as City,
+            customers.cust_state as State,
+            customers.cust_zip_pc as Zip,
+            customers.cust_cell_phone as PhoneNumber,
+            customers.cust_email_address as email,
+            CASE when Trim(LEADING ''0'' FROM CAST(agreement_versions.agreement_closed_reason AS TEXT)) = ''3'' then ''Paid In Full''
+							 when Trim(LEADING ''0'' FROM CAST(agreement_versions.agreement_closed_reason AS TEXT)) = ''4'' then ''Paid In Full''
+							 when Trim(LEADING ''0'' FROM CAST(agreement_versions.agreement_closed_reason AS TEXT)) = ''10'' then ''Bought Out''
+							 else '''' end as FinalStatus,
+				agreement_versions.agreement_closed_date as PayoutDate
+         FROM ' || r.schema_name || '.level2_agreements as agreements
+            JOIN
+            ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
+            JOIN
+            ' || r.schema_name || '.level2_stores as stores on agreement_versions.store_id = stores.id
+           JOIN
+            ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
+            where
+            agreements.agreement_type = ''O'' and agreement_versions.agreement_open_flag <> ''Y'' and Trim(LEADING ''0'' FROM CAST(agreement_versions.agreement_closed_reason AS TEXT))In(''3'',''4'',''10'')
+            and agreement_versions.agreement_closed_date between current_date - extract(dow from current_date)::integer - 7 and current_date - extract(dow from current_date)::integer + 6 - 7
+            group by stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
+            customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone,customers.cust_email_address,
+            agreement_versions.agreement_closed_reason, agreement_closed_date
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY UniqueId ASC';
+
+   EXECUTE sqlToExec;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW csv_payout_day_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_payout_day_vw') THEN
+      DROP VIEW csv_customer_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+          stores.loc_tran_loc as StoreID,
+            ''''::text AS PeopleID,
+            customers.cust_acct_nbr as UniqueID,
+            customers.cust_first_name_mi as FirstName,
+            customers.cust_last_name as LastName,
+            customers.cust_address as Address1,
+            customers.cust_address_2 as Address2,
+            customers.cust_city as City,
+            customers.cust_state as State,
+            customers.cust_zip_pc as Zip,
+            customers.cust_cell_phone as PhoneNumber,
+            customers.cust_email_address as email,
+            sum(case when agreement_versions.agreement_payment_terms = ''M'' then Round(trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2))
+                when agreement_versions.agreement_payment_terms = ''W'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 4.33))
+                when agreement_versions.agreement_payment_terms = ''B'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2))
+                else Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2))
+                end) as nbr_payments_left_in_months
+         FROM ' || r.schema_name || '.level2_agreements as agreements
+            JOIN
+            ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
+            JOIN
+            ' || r.schema_name || '.level2_stores as stores on agreement_versions.store_id = stores.id
+           JOIN
+            ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
+            where
+            agreements.agreement_type = ''O'' and agreement_versions.agreement_open_flag = ''Y''
+            group by stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
+            customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone, customers.cust_email_address
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY UniqueId ASC';
+
+   EXECUTE sqlToExec;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW csv_inactive_customer_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_inactive_customer_vw') THEN
+      DROP VIEW csv_customer_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+           stores.loc_tran_loc as StoreID,
+            ''''::text AS PeopleID,
+            customers.cust_acct_nbr as UniqueID,
+            customers.cust_first_name_mi as FirstName,
+            customers.cust_last_name as LastName,
+            customers.cust_address as Address1,
+            customers.cust_address_2 as Address2,
+            customers.cust_city as City,
+            customers.cust_state as State,
+            customers.cust_zip_pc as Zip,
+            customers.cust_cell_phone as PhoneNumber,
+            customers.cust_email_address as email,
+            ''''::text AS CustomerRating,
+            agreement_versions.agreement_closed_date as InactiveDate,
+            Trim(LEADING ''0'' FROM CAST(agreement_versions.agreement_closed_reason AS TEXT)) as reason_indr,
+            CASE when Trim(LEADING ''0'' FROM CAST(agreement_versions.agreement_closed_reason AS TEXT)) = ''2'' then ''refund/cancel''
+                      when Trim(LEADING ''0'' FROM CAST(agreement_versions.agreement_closed_reason AS TEXT))= ''3'' then ''payout satisfactory''
+							 when Trim(LEADING ''0'' FROM CAST(agreement_versions.agreement_closed_reason AS TEXT)) = ''4'' then ''payout unsatisfactory''
+							 when Trim(LEADING ''0'' FROM CAST(agreement_versions.agreement_closed_reason AS TEXT)) = ''5'' then ''requested pickup''
+							 when Trim(LEADING ''0'' FROM CAST(agreement_versions.agreement_closed_reason AS TEXT)) = ''10'' then ''early buy out''
+							 else '''' end as Reason
+         FROM ' || r.schema_name || '.level2_agreements as agreements
+            JOIN
+            ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
+            JOIN
+            ' || r.schema_name || '.level2_stores as stores on agreement_versions.store_id = stores.id
+           JOIN
+            ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
+            where
+            agreements.agreement_type = ''O'' and agreement_versions.agreement_open_flag <> ''Y''
+            and Trim(LEADING ''0'' FROM CAST(agreement_versions.agreement_closed_reason AS TEXT))In(''2'',''3'',''4'',''10'',''5'') and
+             customers.cust_acct_nbr not in (
+              (select cust_acct_nbr from ' || r.schema_name || '.level2_customers as c2 join ' || r.schema_name || '.level2_agreements as a2 on c2.id = a2.customer_id
+			                  JOIN ' || r.schema_name || '.level2_agreement_versions as av2 on a2.id = av2.agreement_id
+                                 where a2.agreement_type = ''O'' and av2.agreement_open_flag = ''Y''))
+            group by stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
+            customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone,customers.cust_email_address,
+            agreement_versions.agreement_closed_date,agreement_versions.agreement_closed_reason
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY UniqueId ASC';
+
+   EXECUTE sqlToExec;
+END $$;
+
+
 -- End fastinfo setup
 
 -- Begin cynergidb setup
@@ -330,6 +757,126 @@ CREATE FOREIGN TABLE fastinfo_prod_import.location_vw (
     number INTEGER,
     name VARCHAR
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'location_vw', SCHEMA_NAME 'public');
+
+
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_active_customer_vw (
+   StoreID INTEGER,
+   PeopleID VARCHAR,
+   UniqueID VARCHAR,
+   FirstName VARCHAR,
+   LastName VARCHAR,
+   Address1 VARCHAR,
+   Address2 VARCHAR,
+   City VARCHAR,
+   State VARCHAR,
+   Zip VARCHAR,
+   PhoneNumber VARCHAR,
+   email VARCHAR,
+   ProjectedPayout INTEGER,
+   PastDue VARCHAR,
+   DaysPastDue INTEGER
+) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_active_customer_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_vw (
+   StoreID INTEGER,
+   PeopleID VARCHAR,
+   UniqueID VARCHAR,
+   FirstName VARCHAR,
+   LastName VARCHAR,
+   Address1 VARCHAR,
+   Address2 VARCHAR,
+   City VARCHAR,
+   State VARCHAR,
+   Zip VARCHAR,
+   PhoneNumber VARCHAR,
+   email VARCHAR,
+   DaysLate INTEGER
+) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_collection_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_birthday_customer_vw (
+   StoreID INTEGER,
+   PeopleID VARCHAR,
+   UniqueID VARCHAR,
+   FirstName VARCHAR,
+   LastName VARCHAR,
+   Address1 VARCHAR,
+   Address2 VARCHAR,
+   City VARCHAR,
+   State VARCHAR,
+   Zip VARCHAR,
+   PhoneNumber VARCHAR,
+   email VARCHAR,
+   BirthDay DATE
+) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_birthday_customer_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_last_week_deliveries_vw (
+   StoreID INTEGER,
+   PeopleID VARCHAR,
+   UniqueID VARCHAR,
+   FirstName VARCHAR,
+   LastName VARCHAR,
+   Address1 VARCHAR,
+   Address2 VARCHAR,
+   City VARCHAR,
+   State VARCHAR,
+   Zip VARCHAR,
+   PhoneNumber VARCHAR,
+   email VARCHAR,
+   PurchaseDate DATE,
+   CurrentCustomerStatus VARCHAR
+) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_last_week_deliveries_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_last_week_payouts_vw (
+   StoreID INTEGER,
+   PeopleID VARCHAR,
+   UniqueID VARCHAR,
+   FirstName VARCHAR,
+   LastName VARCHAR,
+   Address1 VARCHAR,
+   Address2 VARCHAR,
+   City VARCHAR,
+   State VARCHAR,
+   Zip VARCHAR,
+   PhoneNumber VARCHAR,
+   email VARCHAR,
+   FinalStatus VARCHAR,
+   PayoutDate DATE
+) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_last_week_payouts_vw', SCHEMA_NAME 'public');
+
+
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_payout_day_vw (
+   StoreID INTEGER,
+   PeopleID VARCHAR,
+   UniqueID VARCHAR,
+   FirstName VARCHAR,
+   LastName VARCHAR,
+   Address1 VARCHAR,
+   Address2 VARCHAR,
+   City VARCHAR,
+   State VARCHAR,
+   Zip VARCHAR,
+   PhoneNumber VARCHAR,
+   email VARCHAR,
+   nbr_payments_left_in_months INTEGER
+) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_payout_day_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_inactive_customer_vw (
+   StoreID INTEGER,
+   PeopleID VARCHAR,
+   UniqueID VARCHAR,
+   FirstName VARCHAR,
+   LastName VARCHAR,
+   Address1 VARCHAR,
+   Address2 VARCHAR,
+   City VARCHAR,
+   State VARCHAR,
+   Zip VARCHAR,
+   PhoneNumber VARCHAR,
+   email VARCHAR,
+   CustomerRating VARCHAR,
+   InactiveDate DATE,
+   Reason VARCHAR
+) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_inactive_customer_vw', SCHEMA_NAME 'public');
 
 GRANT USAGE ON SCHEMA fastinfo_prod_import TO cynergiuser;
 GRANT SELECT ON ALL TABLES IN SCHEMA fastinfo_prod_import TO cynergiuser;
