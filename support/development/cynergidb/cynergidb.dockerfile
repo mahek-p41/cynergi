@@ -8,6 +8,8 @@ RUN dos2unix /tmp/setup-database.sql
 COPY export-cynergidb.groovy /opt/scripts
 COPY export-fastinfo.groovy /opt/scripts
 COPY migratedb.groovy /opt/scripts
+COPY truncatedb.groovy /opt/scripts
+COPY truncatedb.sh /opt/scripts
 COPY load-dev-fastinfo-data.sh /opt/scripts
 COPY load-dev-cynergidb-data.sh /opt/scripts
 COPY setup-database.sh /opt/scripts
