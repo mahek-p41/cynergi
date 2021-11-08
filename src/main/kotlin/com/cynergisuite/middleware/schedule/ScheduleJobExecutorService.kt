@@ -47,6 +47,7 @@ class ScheduleJobExecutorService @Inject constructor(
          .map { it to qualifierSupplier(it.command.value) }
          .filter { (_, qualifier) -> applicationContext.containsBean(jobClazz.java, qualifier) }
          .map { (schedule, qualifier) -> schedule to applicationContext.getBean(jobClazz.java, qualifier) }
+         .filter { (schedule, task) -> task.shouldProcess(schedule, temporalAccessor) }
          .map { (schedule, task) -> task.process(schedule, temporalAccessor) }
          .count()
    }

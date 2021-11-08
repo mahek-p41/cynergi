@@ -1,11 +1,12 @@
 package com.cynergisuite.middleware.schedule
 
 import io.micronaut.inject.BeanType
+import java.time.OffsetDateTime
 import java.time.temporal.TemporalAccessor
 import java.util.stream.Stream
 import javax.inject.Named
 
-sealed interface Job<in T : TemporalAccessor> {
+sealed interface Job<T : TemporalAccessor> {
 
    @Throws(ScheduleProcessingException::class)
    fun shouldProcess(schedule: ScheduleEntity, time: T): Boolean
