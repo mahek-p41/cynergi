@@ -272,4 +272,16 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
          }
       }
    }
+
+   void "create complete financial calendar" () {
+      given:
+      final beginDate = LocalDate.parse("2021-11-09")
+
+      when:
+      def result = post("$path/complete", beginDate)
+
+      then:
+      notThrown(Exception)
+      result != null
+   }
 }

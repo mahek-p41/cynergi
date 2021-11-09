@@ -1,15 +1,9 @@
 package com.cynergisuite.middleware.accounting.financial.calendar.infrastructure
 
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getLocalDate
-import com.cynergisuite.extensions.getUuid
-import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.queryForObject
-import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.update
-import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarEntity
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodType
@@ -294,47 +288,51 @@ class FinancialCalendarRepository @Inject constructor(
    }
 
    @Transactional
-   fun insertFinancialCalendar(entity: FinancialCalendarEntity, company: CompanyEntity): FinancialCalendarEntity {
+   fun insertFinancialCalendar(entities: List<FinancialCalendarEntity>, company: CompanyEntity): List<FinancialCalendarEntity> {
       logger.debug("Creating entire financial_calendar {}", company)
+      val entity = entities[1]
 
-      return jdbc.insertReturning(
+      return jdbc.insertReturningList(
          """
-         INSERT INTO financial_calendar (
-            company_id,
-            overall_period_id,
-            period,
-            period_from,
-            period_to,
-            fiscal_year,
-            general_ledger_open,
-            account_payable_open
-         )
-         VALUES (
-            :company_id,
-            :overall_period_id,
-            :period,
-            :period_from,
-            :period_to,
-            :fiscal_year,
-            :general_ledger_open,
-            :account_payable_open
-         )
-         RETURNING
-            *
-         """.trimIndent(),
+           INSERT INTO financial_calendar (
+              company_id,
+              overall_period_id,
+              period,
+              period_from,
+              period_to,
+              fiscal_year,
+              general_ledger_open,
+              account_payable_open
+           )
+           VALUES (
+              :company_id,
+              :overall_period_id,
+              :period,
+              :period_from,
+              :period_to,
+              :fiscal_year,
+              :general_ledger_open,
+              :account_payable_open
+           )
+           RETURNING
+              *
+           """.trimIndent(),
          mapOf(
-            "company_id" to company.id,
-            "overall_period_id" to entity.overallPeriod.id,
-            "period" to entity.period,
-            "period_from" to entity.periodFrom,
-            "period_to" to entity.periodTo,
-            "fiscal_year" to entity.fiscalYear,
-            "general_ledger_open" to entity.generalLedgerOpen,
-            "account_payable_open" to entity.accountPayableOpen
+              "company_id" to company.id,
+              "overall_period_id" to entity.overallPeriod.id,
+              "period" to entity.period,
+              "period_from" to entity.periodFrom,
+              "period_to" to entity.periodTo,
+              "fiscal_year" to entity.fiscalYear,
+              "general_ledger_open" to entity.generalLedgerOpen,
+              "account_payable_open" to entity.accountPayableOpen
          )
-      ) { rs, _ ->
+      ) { rs, _, elements ->
+         do {
+              elements.add(mapRow(rs, "r_"))
+         } while (rs.next())
          mapRowUpsert(rs, entity.overallPeriod)
-      }
+      }!!
    }
 
    private fun mapRow(
