@@ -283,5 +283,24 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       then:
       notThrown(Exception)
       result != null
+      with(result) {
+         result.eachWithIndex { dto, index ->
+            with(dto) {
+               id == dto.id
+               period == dto.period
+               periodFrom == dto.periodFrom.toString()
+               periodTo == dto.periodTo.toString()
+               fiscalYear == dto.fiscalYear
+               generalLedgerOpen == dto.generalLedgerOpen
+               accountPayableOpen == dto.accountPayableOpen
+
+               with(overallPeriod) {
+                  value == dto.overallPeriod.value
+                  abbreviation == dto.overallPeriod.abbreviation
+                  description == dto.overallPeriod.description
+               }
+            }
+         }
+      }
    }
 }

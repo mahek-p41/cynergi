@@ -101,61 +101,61 @@ class FinancialCalendarController @Inject constructor(
       return page
    }
 
-//   @Post(processes = [APPLICATION_JSON])
-//   @Throws(ValidationException::class, NotFoundException::class)
-//   @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Create a single Financial Calendar", description = "Create a single Financial Calendar", operationId = "financialCalendar-create")
-//   @ApiResponses(
-//      value = [
-//         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = FinancialCalendarDTO::class))]),
-//         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
-//         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-//         ApiResponse(responseCode = "404", description = "The Financial Calendar was unable to be found"),
-//         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-//      ]
-//   )
-//   fun create(
-//      @Body @Valid
-//      dto: FinancialCalendarDTO,
-//      authentication: Authentication,
-//      httpRequest: HttpRequest<*>
-//   ): FinancialCalendarDTO {
-//      logger.debug("Requested Create Financial Calendar {}", dto)
-//
-//      val user = userService.fetchUser(authentication)
-//      val response = financialCalendarService.create(dto, user.myCompany())
-//
-//      logger.debug("Requested Create Financial Calendar {} resulted in {}", dto, response)
-//
-//      return response
-//   }
+   @Post(processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Create a single Financial Calendar", description = "Create a single Financial Calendar", operationId = "financialCalendar-create")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = FinancialCalendarDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The Financial Calendar was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun create(
+      @Body @Valid
+      dto: FinancialCalendarDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): FinancialCalendarDTO {
+      logger.debug("Requested Create Financial Calendar {}", dto)
 
-//   @Post(uri = "/year", processes = [APPLICATION_JSON])
-//   @Throws(ValidationException::class, NotFoundException::class)
-//   @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Create a single Financial Calendar", description = "Create a single Financial Calendar", operationId = "financialCalendar-create-financial-year")
-//   @ApiResponses(
-//      value = [
-//         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = List::class))]),
-//         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
-//         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-//         ApiResponse(responseCode = "404", description = "The Financial Calendar was unable to be found"),
-//         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-//      ]
-//   )
-//   fun createFinancialYear(
-//      @Body @Valid
-//      financialCalendarList: List<FinancialCalendarDTO>,
-//      authentication: Authentication,
-//      httpRequest: HttpRequest<*>
-//   ): List<FinancialCalendarDTO> {
-//      logger.debug("Requested Create Financial Calendar {}", financialCalendarList)
-//
-//      val user = userService.fetchUser(authentication)
-//      val response = financialCalendarList.map { financialCalendarService.create(it, user.myCompany()) }.toList()
-//
-//      logger.debug("Requested Create Financial Calendar {} resulted in {}", financialCalendarList, response)
-//
-//      return response
-//   }
+      val user = userService.fetchUser(authentication)
+      val response = financialCalendarService.create(dto, user.myCompany())
+
+      logger.debug("Requested Create Financial Calendar {} resulted in {}", dto, response)
+
+      return response
+   }
+
+   @Post(uri = "/year", processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Create a single Financial Calendar", description = "Create a single Financial Calendar", operationId = "financialCalendar-create-financial-year")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = List::class))]),
+         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The Financial Calendar was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun createFinancialYear(
+      @Body @Valid
+      financialCalendarList: List<FinancialCalendarDTO>,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): List<FinancialCalendarDTO> {
+      logger.debug("Requested Create Financial Calendar {}", financialCalendarList)
+
+      val user = userService.fetchUser(authentication)
+      val response = financialCalendarList.map { financialCalendarService.create(it, user.myCompany()) }.toList()
+
+      logger.debug("Requested Create Financial Calendar {} resulted in {}", financialCalendarList, response)
+
+      return response
+   }
 
    @Post(uri = "complete", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
@@ -186,36 +186,36 @@ class FinancialCalendarController @Inject constructor(
       return response
    }
 
-//   @Put(value = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
-//   @Throws(ValidationException::class, NotFoundException::class)
-//   @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Update a single Financial Calendar", description = "Update a single Financial Calendar", operationId = "financialCalendar-update")
-//   @ApiResponses(
-//      value = [
-//         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = FinancialCalendarDTO::class))]),
-//         ApiResponse(responseCode = "400", description = "If request body is invalid"),
-//         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-//         ApiResponse(responseCode = "404", description = "The requested Financial Calendar was unable to be found"),
-//         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-//      ]
-//   )
-//   fun update(
-//      @Parameter(name = "id", `in` = PATH, description = "The id for the Financial Calendar being updated")
-//      @QueryValue("id")
-//      id: UUID,
-//      @Body @Valid
-//      dto: FinancialCalendarDTO,
-//      authentication: Authentication,
-//      httpRequest: HttpRequest<*>
-//   ): FinancialCalendarDTO {
-//      logger.info("Requested Update Financial Calendar {}", dto)
-//
-//      val user = userService.fetchUser(authentication)
-//      val response = financialCalendarService.update(id, dto, user.myCompany())
-//
-//      logger.debug("Requested Update Financial Calendar {} resulted in {}", dto, response)
-//
-//      return response
-//   }
+   @Put(value = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Update a single Financial Calendar", description = "Update a single Financial Calendar", operationId = "financialCalendar-update")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = FinancialCalendarDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Financial Calendar was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun update(
+      @Parameter(name = "id", `in` = PATH, description = "The id for the Financial Calendar being updated")
+      @QueryValue("id")
+      id: UUID,
+      @Body @Valid
+      dto: FinancialCalendarDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): FinancialCalendarDTO {
+      logger.info("Requested Update Financial Calendar {}", dto)
+
+      val user = userService.fetchUser(authentication)
+      val response = financialCalendarService.update(id, dto, user.myCompany())
+
+      logger.debug("Requested Update Financial Calendar {} resulted in {}", dto, response)
+
+      return response
+   }
 
    @Put(value = "/open-gl", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class)

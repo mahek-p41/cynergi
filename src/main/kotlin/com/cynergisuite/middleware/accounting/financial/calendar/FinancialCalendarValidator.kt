@@ -20,36 +20,30 @@ class FinancialCalendarValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(FinancialCalendarValidator::class.java)
 
-   fun validateCreate(dtoList: List<FinancialCalendarDTO>, company: CompanyEntity): List<FinancialCalendarEntity> {
-      logger.trace("Validating Create Financial Calendar{}", dtoList)
-
-      return doSharedValidation(dtoList, company)
+   fun validateCreate(dto: FinancialCalendarDTO, company: CompanyEntity): FinancialCalendarEntity {
+      logger.trace("Validating Create Financial Calendar{}", dto)
+      return doSharedValidation(dto, company)
    }
 
-//   fun validateUpdate(id: UUID, dto: FinancialCalendarDTO, company: CompanyEntity): FinancialCalendarEntity {
-//      logger.debug("Validating Update Financial Calendar{}", dto)
-//
-//      val existingFinancialCalendar = financialCalendarRepository.findOne(id, company) ?: throw NotFoundException(id)
-//
-//      return doSharedValidation(dto, company, existingFinancialCalendar)
-//   }
+   fun validateUpdate(id: UUID, dto: FinancialCalendarDTO, company: CompanyEntity): FinancialCalendarEntity {
+      logger.debug("Validating Update Financial Calendar{}", dto)
 
-   private fun doSharedValidation(dtoList: List<FinancialCalendarDTO>, company: CompanyEntity, existingFinancialCalendar: FinancialCalendarEntity? = null): List<FinancialCalendarEntity> {
-      var calList : List<FinancialCalendarEntity> = emptyList()
-      for (dto in dtoList) {
-         val overallPeriodEntity = overallPeriodTypeRepository.findOne(dto.overallPeriod!!.value) ?: throw NotFoundException(dto.overallPeriod!!.value)
-         val financialCalendarExists = financialCalendarRepository.exists(company, overallPeriodEntity.id, dto.period!!)
+      val existingFinancialCalendar = financialCalendarRepository.findOne(id, company) ?: throw NotFoundException(id)
 
-         doValidation { errors ->
-            if ((existingFinancialCalendar == null && financialCalendarExists) || (existingFinancialCalendar != null && existingFinancialCalendar.id != dto.id)) errors.add(ValidationError("id", Duplicate(dto.id)))
-         }
+      return doSharedValidation(dto, company, existingFinancialCalendar)
+   }
 
-          val financialEntity = FinancialCalendarEntity(
-            dto,
-            overallPeriodEntity
-         )
-         calList.toMutableList().add((financialEntity))
+   private fun doSharedValidation(dto: FinancialCalendarDTO, company: CompanyEntity, existingFinancialCalendar: FinancialCalendarEntity? = null): FinancialCalendarEntity {
+      val overallPeriodEntity = overallPeriodTypeRepository.findOne(dto.overallPeriod!!.value) ?: throw NotFoundException(dto.overallPeriod!!.value)
+      val financialCalendarExists = financialCalendarRepository.exists(company, overallPeriodEntity.id, dto.period!!)
+
+      doValidation { errors ->
+         if ((existingFinancialCalendar == null && financialCalendarExists) || (existingFinancialCalendar != null && existingFinancialCalendar.id != dto.id)) errors.add(ValidationError("id", Duplicate(dto.id)))
       }
-      return calList
+
+      return FinancialCalendarEntity(
+         dto,
+         overallPeriodEntity
+      )
    }
 }
