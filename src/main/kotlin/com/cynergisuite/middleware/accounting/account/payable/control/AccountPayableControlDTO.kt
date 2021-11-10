@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.account.payable.control
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndicatorTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumberRequiredIndicatorTypeDTO
@@ -52,11 +53,11 @@ data class AccountPayableControlDTO(
 
    @field:NotNull
    @field:Schema(description = "General ledger inventory clearing account")
-   var generalLedgerInventoryClearingAccount: SimpleIdentifiableDTO? = null,
+   var generalLedgerInventoryClearingAccount: AccountDTO? = null,
 
    @field:NotNull
    @field:Schema(description = "General ledger inventory account")
-   var generalLedgerInventoryAccount: SimpleIdentifiableDTO? = null
+   var generalLedgerInventoryAccount: AccountDTO? = null
 
 ) : Identifiable {
    constructor(
@@ -75,8 +76,8 @@ data class AccountPayableControlDTO(
          printCurrencyIndicatorType = printCurrencyIndicatorType,
          lockInventoryIndicator = entity.lockInventoryIndicator,
          purchaseOrderNumberRequiredIndicatorType = purchaseOrderNumberRequiredIndicatorType,
-         generalLedgerInventoryClearingAccount = entity.generalLedgerInventoryClearingAccount.let { SimpleIdentifiableDTO(it) },
-         generalLedgerInventoryAccount = entity.generalLedgerInventoryAccount.let { SimpleIdentifiableDTO(it) }
+         generalLedgerInventoryClearingAccount = entity.generalLedgerInventoryClearingAccount.let { AccountDTO(it) },
+         generalLedgerInventoryAccount = entity.generalLedgerInventoryAccount.let { AccountDTO(it) }
       )
 
    override fun myId(): UUID? = id

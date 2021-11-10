@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.control
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDataLoader
@@ -43,7 +44,7 @@ class AccountPayableControlTestDataLoader {
    }
 
    @JvmStatic
-   static Stream<AccountPayableControlDTO> streamDTO(int numberIn = 1, SimpleIdentifiableDTO generalLedgerInventoryClearingAccount, SimpleIdentifiableDTO generalLedgerInventoryAccount) {
+   static Stream<AccountPayableControlDTO> streamDTO(int numberIn = 1, AccountDTO generalLedgerInventoryClearingAccount, AccountDTO generalLedgerInventoryAccount) {
       final number = numberIn > 0 ? numberIn : 1
       final random = new Faker().random()
 
@@ -84,7 +85,7 @@ class AccountPayableControlTestDataLoaderService {
       return stream(1, company, generalLedgerInventoryClearingAccount, generalLedgerInventoryAccount).findFirst().orElseThrow { new Exception("Unable to create AccountPayableControl") }
    }
 
-   AccountPayableControlDTO singleDTO(SimpleIdentifiableDTO generalLedgerInventoryClearingAccount, SimpleIdentifiableDTO generalLedgerInventoryAccount) {
+   AccountPayableControlDTO singleDTO(AccountDTO generalLedgerInventoryClearingAccount, AccountDTO generalLedgerInventoryAccount) {
       return AccountPayableControlTestDataLoader.streamDTO(1, generalLedgerInventoryClearingAccount, generalLedgerInventoryAccount).findFirst().orElseThrow { new Exception("Unable to create AccountPayableControl") }
    }
 }
