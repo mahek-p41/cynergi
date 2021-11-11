@@ -224,10 +224,6 @@ fun <ENTITY> Jdbi.deleteReturning(query: String, params: Map<String, *> = mapOf<
    return this.findFirstOrNull(query, params, rowMapper)
 }
 
-fun <ENTITY> Jdbi.insertReturningList(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: (rs: ResultSet, ctx: StatementContext, elements: MutableList<ENTITY>) -> Unit): List<ENTITY>? {
-   return this.queryFullList(query, params, rowMapper)
-}
-
 private fun <ENTITY> mineListForFirstElement(sql: String, elements: List<ENTITY>, params: Map<String, *>? = null): ENTITY? {
    return when (elements.size) {
       0 -> null
