@@ -146,14 +146,14 @@ class GeneralLedgerControlDataLoaderService {
 
    GeneralLedgerControlDTO singleDTO(
       SimpleLegacyIdentifiableDTO defaultProfitCenter,
-      SimpleIdentifiableDTO defaultAccountPayableAccount,
-      SimpleIdentifiableDTO defaultAccountPayableDiscountAccount,
-      SimpleIdentifiableDTO defaultAccountReceivableAccount,
-      SimpleIdentifiableDTO defaultAccountReceivableDiscountAccount,
-      SimpleIdentifiableDTO defaultAccountMiscInventoryAccount,
-      SimpleIdentifiableDTO defaultAccountSerializedInventoryAccount,
-      SimpleIdentifiableDTO defaultAccountUnbilledInventoryAccount,
-      SimpleIdentifiableDTO defaultAccountFreightAccount
+      AccountDTO defaultAccountPayableAccount,
+      AccountDTO defaultAccountPayableDiscountAccount,
+      AccountDTO defaultAccountReceivableAccount,
+      AccountDTO defaultAccountReceivableDiscountAccount,
+      AccountDTO defaultAccountMiscInventoryAccount,
+      AccountDTO defaultAccountSerializedInventoryAccount,
+      AccountDTO defaultAccountUnbilledInventoryAccount,
+      AccountDTO defaultAccountFreightAccount
    ) {
       return GeneralLedgerControlDataLoader.streamDTO(
          1,
