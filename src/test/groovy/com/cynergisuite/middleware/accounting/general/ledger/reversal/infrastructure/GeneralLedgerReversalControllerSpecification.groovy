@@ -57,7 +57,7 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$nonExistentId was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "fetch all" () {

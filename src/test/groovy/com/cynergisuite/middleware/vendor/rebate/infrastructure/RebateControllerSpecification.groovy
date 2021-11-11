@@ -87,7 +87,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$nonExistentId was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "fetch all" () {
@@ -470,6 +470,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == 'vendors[1].id'
       response[0].message == "${invalidVendorId} was unable to be found"
+      response[0].code == 'system.not.found'
    }
 
    void "create invalid rebate with percent greater than one" () {
@@ -558,8 +559,10 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       response.size() == 2
       response[0].path == "generalLedgerCreditAccount.id"
       response[0].message == "$generalLedgerCreditAccountNonExistentId was unable to be found"
+      response[0].code == 'system.not.found'
       response[1].path == "generalLedgerDebitAccount.id"
       response[1].message == "$generalLedgerDebitAccountNonExistentId was unable to be found"
+      response[1].code == 'system.not.found'
    }
 
    void "update one" () {
@@ -729,6 +732,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == 'vendors[1].id'
       response[0].message == "${nonExistentVendorId} was unable to be found"
+      response[0].code == 'system.not.found'
    }
 
    void "update invalid rebate with percent greater than one" () {
@@ -825,8 +829,10 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       response.size() == 2
       response[0].path == "generalLedgerCreditAccount.id"
       response[0].message == "$generalLedgerCreditAccountNonExistentId was unable to be found"
+      response[0].code == 'system.not.found'
       response[1].path == "generalLedgerDebitAccount.id"
       response[1].message == "$generalLedgerDebitAccountNonExistentId was unable to be found"
+      response[1].code == 'system.not.found'
    }
 
    void "assign vendors to rebate" () {

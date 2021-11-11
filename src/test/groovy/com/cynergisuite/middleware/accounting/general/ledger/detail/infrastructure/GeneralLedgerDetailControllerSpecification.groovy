@@ -67,7 +67,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$nonExistentId was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "create valid general ledger detail" () {
@@ -212,10 +212,13 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       response.size() == 3
       response[0].path == "account.id"
       response[0].message == "$nonExistentId was unable to be found"
+      response[0].code == 'system.not.found'
       response[1].path == "profitCenter.id"
       response[1].message == "0 was unable to be found"
+      response[1].code == 'system.not.found'
       response[2].path == "source.id"
       response[2].message == "$nonExistentId was unable to be found"
+      response[2].code == 'system.not.found'
    }
 
    void "update valid general ledger detail by id" () {
@@ -361,9 +364,12 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       def sortedResponse = response.collect().sort { a,b -> a.path <=> b.path }
       sortedResponse[0].path == "account.id"
       sortedResponse[0].message == "$nonExistentId was unable to be found"
+      sortedResponse[0].code == 'system.not.found'
       sortedResponse[1].path == "profitCenter.id"
       sortedResponse[1].message == "0 was unable to be found"
+      sortedResponse[1].code == 'system.not.found'
       sortedResponse[2].path == "source.id"
       sortedResponse[2].message == "$nonExistentId was unable to be found"
+      sortedResponse[2].code == 'system.not.found'
    }
 }

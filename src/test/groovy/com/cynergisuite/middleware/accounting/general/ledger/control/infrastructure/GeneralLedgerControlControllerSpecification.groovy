@@ -75,7 +75,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "General ledger control record of the company was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "create valid general ledger control" () {
@@ -216,6 +216,7 @@ class GeneralLedgerControlControllerSpecification extends ControllerSpecificatio
       response.size() == 1
       response[0].path == "company"
       response[0].message == "${company.datasetCode} already exists"
+      response[0].code == 'cynergi.validation.config.exists'
    }
 
    @Unroll

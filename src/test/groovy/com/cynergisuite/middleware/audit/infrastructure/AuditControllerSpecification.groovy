@@ -244,7 +244,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       with(response) {
          message == "$nonExistentId was unable to be found"
-         code == "system.not.found"
+         code == 'system.not.found'
       }
    }
 

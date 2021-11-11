@@ -77,7 +77,9 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == NOT_FOUND
-      exception.response.bodyAsJson().message == "$nonExistentId was unable to be found"
+      final response = exception.response.bodyAsJson()
+      response.message == "$nonExistentId was unable to be found"
+      response.code == 'system.not.found'
    }
 
    void "fetch all permissions" () {
@@ -277,6 +279,8 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == NOT_FOUND
-      exception.response.bodyAsJson().message == "$nonExistentId was unable to be found"
+      final response = exception.response.bodyAsJson()
+      response.message == "$nonExistentId was unable to be found"
+      response.code == 'system.not.found'
    }
 }

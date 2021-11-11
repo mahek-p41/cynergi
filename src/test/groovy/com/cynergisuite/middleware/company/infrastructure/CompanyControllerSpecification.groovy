@@ -245,6 +245,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == 'clientId'
       response[0].message == '1234 already exists'
+      response[0].code == 'cynergi.validation.duplicate'
    }
 
    void "create an invalid company with duplicate datasetCode" () {
@@ -265,6 +266,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == 'datasetCode'
       response[0].message == 'tstds2 already exists'
+      response[0].code == 'cynergi.validation.duplicate'
    }
 
    void "create an invalid company with invalid datasetCode" () {
@@ -303,8 +305,10 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       response.size() == 2
       response[0].path == 'clientId'
       response[0].message == '1234 already exists'
+      response[0].code == 'cynergi.validation.duplicate'
       response[1].path == 'datasetCode'
       response[1].message == 'tstds1 already exists'
+      response[0].code == 'cynergi.validation.duplicate'
    }
 
    void "create a company without login" () {
@@ -387,6 +391,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == 'clientId'
       response[0].message == '4321 already exists'
+      response[0].code == 'cynergi.validation.duplicate'
    }
 
    void "update an invalid company with duplicate datasetCode" () {
@@ -412,6 +417,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == 'datasetCode'
       response[0].message == 'tstds2 already exists'
+      response[0].code == 'cynergi.validation.duplicate'
    }
 
    void "update a company without login" () {

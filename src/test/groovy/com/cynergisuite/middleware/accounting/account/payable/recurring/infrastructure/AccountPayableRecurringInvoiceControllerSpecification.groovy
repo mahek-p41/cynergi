@@ -345,6 +345,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       response.size() == 1
       response[0].path == errorResponsePath
       response[0].message == 'Is required'
+      response[0].code == 'javax.validation.constraints.NotNull.message'
 
       where:
       nonNullableProp                  || errorResponsePath
@@ -387,6 +388,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       response.size() == 1
       response[0].path == errorResponsePath
       response[0].message == errorMessage
+      response[0].code == 'system.not.found'
 
       where:
       testProp                        | invalidValue                                                                       || errorResponsePath                     | errorMessage
@@ -546,13 +548,17 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson().collect().sort { a,b -> a.path <=> b.path }
       response.size() == 4
-      response[0].path == "expenseMonthCreationIndicator.value"
-      response[0].message == "Z was unable to be found"
-      response[1].path == "payTo.id"
+      response[0].path == 'expenseMonthCreationIndicator.value'
+      response[0].message == 'Z was unable to be found'
+      response[0].code == 'system.not.found'
+      response[1].path == 'payTo.id'
       response[1].message == "$nonExistentPayToId was unable to be found"
-      response[2].path == "status.value"
-      response[2].message == "Z was unable to be found"
-      response[3].path == "vendor.id"
+      response[1].code == 'system.not.found'
+      response[2].path == 'status.value'
+      response[2].message == 'Z was unable to be found'
+      response[2].code == 'system.not.found'
+      response[3].path == 'vendor.id'
       response[3].message == "$nonExistentVendorId was unable to be found"
+      response[3].code == 'system.not.found'
    }
 }

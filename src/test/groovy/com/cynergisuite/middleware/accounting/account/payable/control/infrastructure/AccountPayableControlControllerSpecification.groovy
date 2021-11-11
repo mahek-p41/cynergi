@@ -74,7 +74,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "Account payable control record of the company was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
 
    }
 
@@ -138,6 +138,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       response.size() == 1
       response[0].path == "company"
       response[0].message == "${company.datasetCode} already exists"
+      response[0].code == "cynergi.validation.config.exists"
    }
 
    @Unroll
@@ -159,6 +160,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       response.size() == 1
       response[0].path == errorResponsePath
       response[0].message == 'Is required'
+      response[0].code == 'javax.validation.constraints.NotNull.message'
 
       where:
       nonNullableProp                              || errorResponsePath
@@ -193,6 +195,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       response.size() == 1
       response[0].path == "checkFormType.value"
       response[0].message == "nonexisting was unable to be found"
+      response[0].code == 'system.not.found'
    }
 
    void "create invalid account payable control with non-existing general ledger inventory clearing account id" () {
@@ -214,6 +217,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       response.size() == 1
       response[0].path == "generalLedgerInventoryClearingAccount.id"
       response[0].message == "$nonExistentGeneralLedgerInventoryClearingAccountId was unable to be found"
+      response[0].code == 'system.not.found'
    }
 
    void "create invalid account payable control with non-existing general ledger inventory account id" () {
@@ -235,6 +239,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       response.size() == 1
       response[0].path == "generalLedgerInventoryAccount.id"
       response[0].message == "$nonExistentGeneralLedgerInventoryAccountId was unable to be found"
+      response[0].code == 'system.not.found'
    }
 
    void "update valid account payable control by id" () {
@@ -343,6 +348,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "${nineNineEightEmployee.company.id} was unable to be found"
+      response.code == 'system.not.found'
    }
 
    void "update invalid account payable control without non-nullable properties" () {

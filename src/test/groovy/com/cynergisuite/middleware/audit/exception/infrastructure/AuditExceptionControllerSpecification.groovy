@@ -213,7 +213,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final auditNotFoundResult = auditNotFoundException.response.bodyAsJson()
       with(auditNotFoundResult) {
          message == "$nonExistentId was unable to be found"
-         code == "system.not.found"
+         code == 'system.not.found'
       }
    }
 
@@ -339,7 +339,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       def response = exception.response.bodyAsJson()
       with(response) {
          message == "$nonExistentId was unable to be found"
-         code == "system.not.found"
+         code == 'system.not.found'
       }
    }
 
@@ -475,7 +475,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
       response.size() == 1
-      new ErrorDTO(response[0].message, response[0].code, response[0].path) == new ErrorDTO("$nonExistentAreaId was unable to be found", "system.not.found", "audit.scanArea.id")
+      new ErrorDTO(response[0].message, response[0].code, response[0].path) == new ErrorDTO("$nonExistentAreaId was unable to be found", 'system.not.found', 'audit.scanArea.id')
    }
 
    void "create invalid audit exception" () {
@@ -519,7 +519,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NOT_FOUND
       final notFoundResponse = notFoundException.response.bodyAsJson()
-      new ErrorDTO(notFoundResponse.message, notFoundResponse.code, notFoundResponse.path) == new ErrorDTO("$nonExistentAuditId was unable to be found", "system.not.found", null)
+      new ErrorDTO(notFoundResponse.message, notFoundResponse.code, notFoundResponse.path) == new ErrorDTO("$nonExistentAuditId was unable to be found", 'system.not.found', null)
    }
 
    void "create audit exception where inventory id is null" () {

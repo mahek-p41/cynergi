@@ -91,7 +91,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$nonExistentId was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "fetch all" () {
@@ -319,6 +319,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
 
       response.message == "$nonExistentId was unable to be found"
+      response.code == 'system.not.found'
    }
 
    void "update a invalid region without region id"() {
@@ -425,6 +426,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$nonExistentId was unable to be found"
+      response.code == 'system.not.found'
    }
 
    void "delete a region with region assigned"() {
@@ -460,7 +462,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "${regions[1].id} was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
 
@@ -557,6 +559,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       ex.status == NOT_FOUND
       final response = ex.response.bodyAsJson()
       response.message == "${region.id} was unable to be found"
+      response.code == 'system.not.found'
    }
 
    void "disassociate store from region for tstds2" () {
@@ -598,6 +601,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       ex.status == NOT_FOUND
       final response = ex.response.bodyAsJson()
       response.message == "${region.id} was unable to be found"
+      response.code == 'system.not.found'
    }
 
    void "re-associate store with another region of the same company" () {
@@ -658,5 +662,6 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       ex.status == NOT_FOUND
       final response = ex.response.bodyAsJson()
       response.message == "${regions[1].id} was unable to be found"
+      response.code == 'system.not.found'
    }
 }

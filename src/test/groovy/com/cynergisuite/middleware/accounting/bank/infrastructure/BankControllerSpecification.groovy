@@ -60,7 +60,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$nonExistentId was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "fetch all" () {
@@ -178,7 +178,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       final response = ex.response.bodyAsJson()
       response.size() == 1
       response.collect { new ErrorDTO(it.message, it.code, it.path) } == [
-         new ErrorDTO("${account.id} was unable to be found", "system.not.found", "generalLedgerAccount.id")
+         new ErrorDTO("${account.id} was unable to be found", 'system.not.found', "generalLedgerAccount.id")
       ]
    }
 
@@ -198,7 +198,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       final response = ex.response.bodyAsJson()
       response.size() == 1
       response.collect { new ErrorDTO(it.message, it.code, it.path) } == [
-         new ErrorDTO("${String.format('%,d', store.id)} was unable to be found", "system.not.found", "generalLedgerProfitCenter.id")
+         new ErrorDTO("${String.format('%,d', store.id)} was unable to be found", 'system.not.found', "generalLedgerProfitCenter.id")
       ]
    }
 
@@ -220,6 +220,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == 'number'
       response[0].message == "$existingBank.number already exists"
+      response[0].code == 'cynergi.validation.duplicate'
    }
 
    void "create an invalid account without #nonNullableProp"() {
@@ -241,6 +242,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == errorResponsePath
       response[0].message == 'Is required'
+      response[0].code == 'javax.validation.constraints.NotNull.message'
 
       where:
       nonNullableProp                              || errorResponsePath
@@ -346,6 +348,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == 'number'
       response[0].message == "$bankDTO.number already exists"
+      response[0].code == 'cynergi.validation.duplicate'
    }
 
    void "update a valid bank with no id"() {
@@ -391,7 +394,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$bank.id was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "delete bank from other company is not allowed" () {
@@ -413,7 +416,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$bankStore4Tstds2.id was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "delete bank still has reference" () {
@@ -432,6 +435,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == CONFLICT
       def response = exception.response.bodyAsJson()
       response.message == "Requested operation violates data integrity"
-      response.code == "cynergi.data.constraint.violated"
+      response.code == 'cynergi.data.constraint.violated'
    }
 }

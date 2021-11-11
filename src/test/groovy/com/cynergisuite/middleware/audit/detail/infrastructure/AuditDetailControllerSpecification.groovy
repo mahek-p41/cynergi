@@ -182,7 +182,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final response = exception.response.bodyAsJson()
       with(response) {
          message == "$nonExistentId was unable to be found"
-         code == "system.not.found"
+         code == 'system.not.found'
       }
    }
 
@@ -259,7 +259,8 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.status == NOT_FOUND
       final response = exception.response.bodyAsJson()
-      response.message == "9998 was unable to be found"
+      response.message == '9998 was unable to be found'
+      response.code == 'system.not.found'
 
       when:
       post("/audit/${audit.id}/detail", secondDetail)
@@ -269,7 +270,8 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       inventoryNotFoundException.status == NOT_FOUND
       exception.status == NOT_FOUND
       response == exception.response.bodyAsJson()
-      response.message == "9998 was unable to be found"
+      response.message == '9998 was unable to be found'
+      response.code == 'system.not.found'
    }
 
    void "create audit detail when audit is in state OPENED (CREATED?)" () {
@@ -355,5 +357,6 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == "inventory.lookupKey"
       response[0].message == "${inventoryItem2.lookupKey} already exists"
+      response[0].code == 'cynergi.validation.duplicate'
    }
 }

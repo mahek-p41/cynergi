@@ -227,7 +227,8 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == 'company'
-      response[0].message == "tstds1 already exists"
+      response[0].message == 'tstds1 already exists'
+      response[0].code == 'cynergi.validation.config.exists'
 
    }
 
@@ -291,6 +292,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       response.size() == 1
       response[0].path == 'defaultVendor.id'
       response[0].message == "$nonExistentDefaultVendorId was unable to be found"
+      response[0].code == 'system.not.found'
    }
 
    void "create invalid purchase order control with non-existing approver id" () {
@@ -397,6 +399,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       response[0].message == '999 was unable to be found'
       response[1].path == 'defaultVendor.id'
       response[1].message == "${vendorId} was unable to be found"
+      response[0].code == 'system.not.found'
    }
 
    void "update invalid purchase order control with id" () {
@@ -474,6 +477,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       response.size() == 1
       response[0].path == 'id'
       response[0].message == "$invalidPurchaseOrderId was unable to be found"
+      response[0].code == 'system.not.found'
    }
 
    void "update invalid purchase order control with non-nullable properties" () {

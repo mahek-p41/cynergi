@@ -66,7 +66,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$nonExistentId was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "fetch all" () {
@@ -257,6 +257,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       response.size() == 1
       response[0].path == errorResponsePath
       response[0].message == 'Is required'
+      response[0].code == 'javax.validation.constraints.NotNull.message'
 
       where:
       nonNullableProp || errorResponsePath
@@ -286,6 +287,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       response.size() == 1
       response[0].path == "bank.id"
       response[0].message == "$nonExistentBankId was unable to be found"
+      response[0].code == 'system.not.found'
    }
 
    void "update valid bank reconciliation"() {
@@ -403,5 +405,6 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       response.size() == 1
       response[0].path == "bank.id"
       response[0].message == "$nonExistentBankId was unable to be found"
+      response[0].code == 'system.not.found'
    }
 }

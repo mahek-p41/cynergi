@@ -65,7 +65,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$nonExistentId was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "fetch all" () {
@@ -265,6 +265,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
 
       response.message == "$nonExistentId was unable to be found"
+      response.code == 'system.not.found'
    }
 
    void "update an invalid division with un-match id in payload"() {
@@ -353,7 +354,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$nonExistentId was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "delete a division with region assigned"() {
@@ -384,7 +385,7 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "${divisions[1].id} was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
 

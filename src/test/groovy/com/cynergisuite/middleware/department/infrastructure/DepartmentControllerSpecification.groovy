@@ -40,6 +40,7 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
       exception.status == NOT_FOUND
       final response = exception.response.bodyAsJson()
       response.message == "${department.id} was unable to be found"
+      response.code == 'system.not.found'
    }
 
    void "fetch one by department id that doesn't exist"() {
@@ -51,8 +52,8 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
       exception.status == NOT_FOUND
       final response = exception.response.bodyAsJson()
       with(response) {
-         message == "110 was unable to be found"
-         code == "system.not.found"
+         message == '110 was unable to be found'
+         code == 'system.not.found'
       }
    }
 

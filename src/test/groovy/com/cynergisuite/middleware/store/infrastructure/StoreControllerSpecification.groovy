@@ -60,7 +60,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       with(response) {
          message == "0 was unable to be found"
-         code == "system.not.found"
+         code == 'system.not.found'
       }
    }
 
@@ -77,6 +77,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "${store.myId()} was unable to be found"
+      response.code == 'system.not.found'
    }
 
    void "fetch all stores as user who can see all stores" () {

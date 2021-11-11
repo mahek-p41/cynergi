@@ -97,7 +97,7 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
       exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$nonExistentId was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "create one"() {
@@ -247,6 +247,7 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
       response.size() == 1
       response[0].path == errorResponsePath
       response[0].message == 'Is required'
+      response[0].code == 'javax.validation.constraints.NotNull.message'
 
       where:
       nonNullableProp || errorResponsePath
@@ -298,6 +299,7 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
       response.size() == 1
       response[0].path == errorResponsePath
       response[0].message == errorMessage
+      response[0].code == 'system.not.found'
 
       where:
       testProp  | invalidValue                                                                             || errorResponsePath | errorMessage
@@ -454,6 +456,7 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
       response.size() == 1
       response[0].path == errorResponsePath
       response[0].message == 'Is required'
+      response[0].code == 'javax.validation.constraints.NotNull.message'
 
       where:
       nonNullableProp || errorResponsePath
@@ -559,7 +562,7 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$apPaymentDetail.id was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "delete account payable payment detail from other company is not allowed"() {
@@ -601,7 +604,7 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$apPaymentDetail.id was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 }
 

@@ -71,7 +71,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$nonExistentId was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "fetch all" () {
@@ -459,6 +459,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == errorResponsePath
       response[0].message == 'Is required'
+      response[0].code == 'javax.validation.constraints.NotNull.message'
 
       where:
       nonNullableProp                              || errorResponsePath
@@ -485,6 +486,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == 'type.value'
       response[0].message == 'Invalid was unable to be found'
+      response[0].code == 'system.not.found'
    }
 
    void "create an invalid account with duplicate account number"() {
@@ -503,6 +505,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == 'number'
       response[0].message == "$existingAccount.number already exists"
+      response[0].code == 'cynergi.validation.duplicate'
    }
 
    void "update a valid account"() {
@@ -587,6 +590,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == 'status.value'
       response[0].message == 'Z was unable to be found'
+      response[0].code == 'system.not.found'
    }
 
    void "update a invalid account with duplicate account number"() {
@@ -606,6 +610,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == 'number'
       response[0].message == "$accountDTO.number already exists"
+      response[0].code == 'cynergi.validation.duplicate'
    }
 
    void "delete account" () {
@@ -627,7 +632,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$account.id was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "delete account still has references" () {
@@ -672,6 +677,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "$account.id was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 }

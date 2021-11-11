@@ -373,7 +373,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "${glRecurring.id} was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 
    void "delete GL recurring still has references" () {
@@ -410,6 +410,6 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
       response.message == "${glRecurring.id} was unable to be found"
-      response.code == "system.not.found"
+      response.code == 'system.not.found'
    }
 }
