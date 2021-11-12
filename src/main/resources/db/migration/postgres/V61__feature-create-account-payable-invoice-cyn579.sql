@@ -22,7 +22,7 @@ INSERT INTO account_payable_invoice_status_type_domain(id, value, description, l
 VALUES (1, 'H', 'Hold', 'hold'),
        (2, 'O', 'Open', 'open'),
        (3, 'P', 'Paid', 'paid'),
-       (4, 'D', 'Deleted','deleted');
+       (4, 'V', 'Voided','voided');
 
 CREATE TABLE account_payable_invoice_selected_type_domain
 (
@@ -69,7 +69,10 @@ CREATE TABLE account_payable_invoice
     separate_check_indicator   BOOLEAN                                                             NOT NULL, -- The default for this is based upon the setting in the vendor record.
     use_tax_indicator          BOOLEAN     DEFAULT FALSE                                           NOT NULL,
     receive_date               DATE,
-    location_id_sfk            INTEGER
+    location_id_sfk            INTEGER,
+    invoice_interfaced_indicator    BOOLEAN    DEFAULT FALSE                                       NOT NULL,
+    date_voided                     DATE,
+    void_interfaced_indicator       BOOLEAN    DEFAULT FALSE                                       NOT NULL
 );
 CREATE TRIGGER update_account_payable_invoice_trg
     BEFORE UPDATE
@@ -83,6 +86,7 @@ CREATE INDEX account_payable_invoice_selected_id_idx ON account_payable_invoice 
 CREATE INDEX account_payable_invoice_type_id_idx ON account_payable_invoice (type_id);
 CREATE INDEX account_payable_invoice_status_id_idx ON account_payable_invoice (status_id);
 CREATE INDEX account_payable_invoice_pay_to_id_idx ON account_payable_invoice (pay_to_id);
+CREATE INDEX account_payable_invoice_invoice_interfaced_indicator_idx ON account_payable_invoice(invoice_interfaced_indicator)
 
 
 CREATE TABLE account_payable_invoice_distribution
