@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.control.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableCheckFormTypeDataLoader
@@ -61,7 +61,9 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
          }
 
          generalLedgerInventoryClearingAccount.id == accountPayableControl.generalLedgerInventoryClearingAccount.id
+         generalLedgerInventoryClearingAccount.name == accountPayableControl.generalLedgerInventoryClearingAccount.name
          generalLedgerInventoryAccount.id == accountPayableControl.generalLedgerInventoryAccount.id
+         generalLedgerInventoryAccount.name == accountPayableControl.generalLedgerInventoryAccount.name
       }
    }
 
@@ -83,7 +85,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
-      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new AccountDTO(glInvCleAcct), new AccountDTO(glInvAcct))
 
       when:
       def result = post("$path/", accountPayableControl)
@@ -117,7 +119,9 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
          }
 
          generalLedgerInventoryClearingAccount.id == accountPayableControl.generalLedgerInventoryClearingAccount.id
+         generalLedgerInventoryClearingAccount.name == accountPayableControl.generalLedgerInventoryClearingAccount.name
          generalLedgerInventoryAccount.id == accountPayableControl.generalLedgerInventoryAccount.id
+         generalLedgerInventoryAccount.name == accountPayableControl.generalLedgerInventoryAccount.name
       }
    }
 
@@ -147,7 +151,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
-      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new AccountDTO(glInvCleAcct), new AccountDTO(glInvAcct))
       accountPayableControl["$nonNullableProp"] = null
 
       when:
@@ -181,7 +185,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
-      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new AccountDTO(glInvCleAcct), new AccountDTO(glInvAcct))
       accountPayableControl.checkFormType = new AccountPayableCheckFormTypeDTO(AccountPayableCheckFormTypeDataLoader.random())
       accountPayableControl.checkFormType.value = "nonexisting"
 
@@ -204,7 +208,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
-      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new AccountDTO(glInvCleAcct), new AccountDTO(glInvAcct))
       accountPayableControl.generalLedgerInventoryClearingAccount.id = nonExistentGeneralLedgerInventoryClearingAccountId
 
       when:
@@ -226,7 +230,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final company = nineNineEightEmployee.company
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
-      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final accountPayableControl = accountPayableControlDataLoaderService.singleDTO(new AccountDTO(glInvCleAcct), new AccountDTO(glInvAcct))
       accountPayableControl.generalLedgerInventoryAccount.id = nonExistentGeneralLedgerInventoryAccountId
 
       when:
@@ -248,7 +252,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
-      final updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new AccountDTO(glInvCleAcct), new AccountDTO(glInvAcct))
       updatedAPControlDTO.id = existingAPControl.id
 
       when:
@@ -283,7 +287,9 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
          }
 
          generalLedgerInventoryClearingAccount.id == updatedAPControlDTO.generalLedgerInventoryClearingAccount.id
+         generalLedgerInventoryClearingAccount.name == updatedAPControlDTO.generalLedgerInventoryClearingAccount.name
          generalLedgerInventoryAccount.id == updatedAPControlDTO.generalLedgerInventoryAccount.id
+         generalLedgerInventoryAccount.name == updatedAPControlDTO.generalLedgerInventoryAccount.name
       }
    }
 
@@ -294,7 +300,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       final existingAPControl = accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
-      final updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new AccountDTO(glInvCleAcct), new AccountDTO(glInvAcct))
       updatedAPControlDTO.id = nonExistentAPControlId
 
       when: "sending a payload with an invalid id"
@@ -328,7 +334,9 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
          }
 
          generalLedgerInventoryClearingAccount.id == updatedAPControlDTO.generalLedgerInventoryClearingAccount.id
+         generalLedgerInventoryClearingAccount.name == updatedAPControlDTO.generalLedgerInventoryClearingAccount.name
          generalLedgerInventoryAccount.id == updatedAPControlDTO.generalLedgerInventoryAccount.id
+         generalLedgerInventoryAccount.name == updatedAPControlDTO.generalLedgerInventoryAccount.name
       }
    }
 
@@ -338,7 +346,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvCleAcct = accountDataLoaderService.single(company2)
       final glInvAcct = accountDataLoaderService.single(company2)
       accountPayableControlDataLoaderService.single(company2, glInvCleAcct, glInvAcct)
-      final updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      final updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new AccountDTO(glInvCleAcct), new AccountDTO(glInvAcct))
 
       when:
       put("$path", updatedAPControlDTO)
@@ -357,7 +365,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
       final glInvCleAcct = accountDataLoaderService.single(company)
       final glInvAcct = accountDataLoaderService.single(company)
       accountPayableControlDataLoaderService.single(company, glInvCleAcct, glInvAcct)
-      def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glInvCleAcct.myId()), new SimpleIdentifiableDTO(glInvAcct.myId()))
+      def updatedAPControlDTO = accountPayableControlDataLoaderService.singleDTO(new AccountDTO(glInvCleAcct), new AccountDTO(glInvAcct))
       updatedAPControlDTO.checkFormType = null
       updatedAPControlDTO.generalLedgerInventoryAccount = null
       updatedAPControlDTO.generalLedgerInventoryClearingAccount = null

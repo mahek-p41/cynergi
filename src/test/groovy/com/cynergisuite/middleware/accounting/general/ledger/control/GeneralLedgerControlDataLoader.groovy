@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.control
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure.GeneralLedgerControlRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -50,14 +51,14 @@ class GeneralLedgerControlDataLoader {
    static Stream<GeneralLedgerControlDTO> streamDTO(
       int numberIn = 1,
       SimpleLegacyIdentifiableDTO defaultProfitCenter,
-      SimpleIdentifiableDTO defaultAccountPayableAccount,
-      SimpleIdentifiableDTO defaultAccountPayableDiscountAccount,
-      SimpleIdentifiableDTO defaultAccountReceivableAccount,
-      SimpleIdentifiableDTO defaultAccountReceivableDiscountAccount,
-      SimpleIdentifiableDTO defaultAccountMiscInventoryAccount,
-      SimpleIdentifiableDTO defaultAccountSerializedInventoryAccount,
-      SimpleIdentifiableDTO defaultAccountUnbilledInventoryAccount,
-      SimpleIdentifiableDTO defaultAccountFreightAccount
+      AccountDTO defaultAccountPayableAccount,
+      AccountDTO defaultAccountPayableDiscountAccount,
+      AccountDTO defaultAccountReceivableAccount,
+      AccountDTO defaultAccountReceivableDiscountAccount,
+      AccountDTO defaultAccountMiscInventoryAccount,
+      AccountDTO defaultAccountSerializedInventoryAccount,
+      AccountDTO defaultAccountUnbilledInventoryAccount,
+      AccountDTO defaultAccountFreightAccount
    ) {
       final number = numberIn > 0 ? numberIn : 1
 
@@ -145,14 +146,14 @@ class GeneralLedgerControlDataLoaderService {
 
    GeneralLedgerControlDTO singleDTO(
       SimpleLegacyIdentifiableDTO defaultProfitCenter,
-      SimpleIdentifiableDTO defaultAccountPayableAccount,
-      SimpleIdentifiableDTO defaultAccountPayableDiscountAccount,
-      SimpleIdentifiableDTO defaultAccountReceivableAccount,
-      SimpleIdentifiableDTO defaultAccountReceivableDiscountAccount,
-      SimpleIdentifiableDTO defaultAccountMiscInventoryAccount,
-      SimpleIdentifiableDTO defaultAccountSerializedInventoryAccount,
-      SimpleIdentifiableDTO defaultAccountUnbilledInventoryAccount,
-      SimpleIdentifiableDTO defaultAccountFreightAccount
+      AccountDTO defaultAccountPayableAccount,
+      AccountDTO defaultAccountPayableDiscountAccount,
+      AccountDTO defaultAccountReceivableAccount,
+      AccountDTO defaultAccountReceivableDiscountAccount,
+      AccountDTO defaultAccountMiscInventoryAccount,
+      AccountDTO defaultAccountSerializedInventoryAccount,
+      AccountDTO defaultAccountUnbilledInventoryAccount,
+      AccountDTO defaultAccountFreightAccount
    ) {
       return GeneralLedgerControlDataLoader.streamDTO(
          1,
