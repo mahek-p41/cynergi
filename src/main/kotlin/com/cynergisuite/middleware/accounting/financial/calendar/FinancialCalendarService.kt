@@ -39,21 +39,21 @@ class FinancialCalendarService @Inject constructor(
 
    fun create(date: LocalDate, company: CompanyEntity): List<FinancialCalendarDTO> {
       val overallPeriods = overallPeriodTypeService.fetchAll()
-      var calList: MutableList<FinancialCalendarEntity> = mutableListOf()
-      for(overallPeriod in overallPeriods) {
-         for(j in 1..12) {
-            var baseDate = date.plusYears(overallPeriod.id - 3L)
-            var periodFrom = baseDate.plusMonths(j-1L)
-            var periodTo = periodFrom.plusMonths(1)
-            var currentYear = date.year
-            var fiscalYear = currentYear.plus(overallPeriod.id - 3)
+      val calList: MutableList<FinancialCalendarEntity> = mutableListOf()
+      for (overallPeriod in overallPeriods) {
+         for (j in 1..12) {
+            val baseDate = date.plusYears(overallPeriod.id - 3L)
+            val periodFrom = baseDate.plusMonths(j - 1L)
+            val periodTo = periodFrom.plusMonths(1)
+            val currentYear = date.year
+            val fiscalYear = currentYear.plus(overallPeriod.id - 3)
             val dto = FinancialCalendarDTO(
                null,
                overallPeriod = OverallPeriodTypeDTO(overallPeriod),
                period = j,
                periodFrom = periodFrom,
                periodTo = periodTo,
-               fiscalYear =  fiscalYear,
+               fiscalYear = fiscalYear,
                generalLedgerOpen = false,
                accountPayableOpen = false
             )
@@ -62,8 +62,8 @@ class FinancialCalendarService @Inject constructor(
          }
       }
 
-      val created = calList.map{financialCalendarRepository.insert(it, company)}.toList()
-      return created.map{transformEntity(it)}.toList()
+      val created = calList.map { financialCalendarRepository.insert(it, company) }.toList()
+      return created.map { transformEntity(it) }.toList()
    }
 
    fun update(id: UUID, dto: FinancialCalendarDTO, company: CompanyEntity): FinancialCalendarDTO {
