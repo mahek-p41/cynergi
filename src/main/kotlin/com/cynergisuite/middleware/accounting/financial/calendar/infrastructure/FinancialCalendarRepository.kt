@@ -293,50 +293,6 @@ class FinancialCalendarRepository @Inject constructor(
       logger.info("Affected row count when opening APAccounts {}", newAffectedRowCount)
    }
 
-   @Transactional
-   fun insertFinancialCalendar(entity: FinancialCalendarEntity, company: CompanyEntity): FinancialCalendarEntity {
-      logger.debug("Creating entire financial_calendar {}", company)
-
-      return jdbc.insertReturning(
-         """
-         INSERT INTO financial_calendar (
-            company_id,
-            overall_period_id,
-            period,
-            period_from,
-            period_to,
-            fiscal_year,
-            general_ledger_open,
-            account_payable_open
-         )
-         VALUES (
-            :company_id,
-            :overall_period_id,
-            :period,
-            :period_from,
-            :period_to,
-            :fiscal_year,
-            :general_ledger_open,
-            :account_payable_open
-         )
-         RETURNING
-            *
-         """.trimIndent(),
-         mapOf(
-            "company_id" to company.id,
-            "overall_period_id" to entity.overallPeriod.id,
-            "period" to entity.period,
-            "period_from" to entity.periodFrom,
-            "period_to" to entity.periodTo,
-            "fiscal_year" to entity.fiscalYear,
-            "general_ledger_open" to entity.generalLedgerOpen,
-            "account_payable_open" to entity.accountPayableOpen
-         )
-      ) { rs, _ ->
-         mapRowUpsert(rs, entity.overallPeriod)
-      }
-   }
-
    private fun mapRow(
       rs: ResultSet,
       columnPrefix: String = EMPTY

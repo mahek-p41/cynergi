@@ -22,7 +22,6 @@ class FinancialCalendarValidator @Inject constructor(
 
    fun validateCreate(dto: FinancialCalendarDTO, company: CompanyEntity): FinancialCalendarEntity {
       logger.trace("Validating Create Financial Calendar{}", dto)
-
       return doSharedValidation(dto, company)
    }
 

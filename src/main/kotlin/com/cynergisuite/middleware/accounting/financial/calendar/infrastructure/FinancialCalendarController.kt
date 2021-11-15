@@ -30,6 +30,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.sql.Date
+import java.time.LocalDate
 import java.util.UUID
 import javax.inject.Inject
 import javax.validation.Valid
@@ -151,6 +153,35 @@ class FinancialCalendarController @Inject constructor(
       val response = financialCalendarList.map { financialCalendarService.create(it, user.myCompany()) }.toList()
 
       logger.debug("Requested Create Financial Calendar {} resulted in {}", financialCalendarList, response)
+
+      return response
+   }
+
+   @Post(uri = "complete", processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Create a complete Financial Calendar", description = "Create a complete Financial Calendar", operationId = "financialCalendar-create-financial-complete")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = List::class))]),
+         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The Financial Calendar was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+
+   fun createCompleteCalendar(
+      @Body @Valid
+      date: LocalDate,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): List<FinancialCalendarDTO> {
+      logger.debug("Requested Create Financial Calendar with beginning date {}", date)
+
+      val user = userService.fetchUser(authentication)
+      val response = financialCalendarService.create(date, user.myCompany())
+
+      logger.debug("Requested Create Financial Calendar {} resulted in {}", date, response)
 
       return response
    }

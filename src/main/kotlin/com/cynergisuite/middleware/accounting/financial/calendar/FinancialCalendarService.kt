@@ -3,15 +3,21 @@ package com.cynergisuite.middleware.accounting.financial.calendar
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeService
 import com.cynergisuite.middleware.company.CompanyEntity
+import java.sql.Date
+import java.time.LocalDate
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.streams.toList
 
 @Singleton
 class FinancialCalendarService @Inject constructor(
    private val financialCalendarRepository: FinancialCalendarRepository,
-   private val financialCalendarValidator: FinancialCalendarValidator
+   private val financialCalendarValidator: FinancialCalendarValidator,
+   private val overallPeriodTypeService: OverallPeriodTypeService
 ) {
 
    fun fetchById(id: UUID, company: CompanyEntity): FinancialCalendarDTO? =
@@ -29,6 +35,35 @@ class FinancialCalendarService @Inject constructor(
       val toCreate = financialCalendarValidator.validateCreate(dto, company)
 
       return transformEntity(financialCalendarRepository.insert(toCreate, company))
+   }
+
+   fun create(date: LocalDate, company: CompanyEntity): List<FinancialCalendarDTO> {
+      val overallPeriods = overallPeriodTypeService.fetchAll()
+      val calList: MutableList<FinancialCalendarEntity> = mutableListOf()
+      for (overallPeriod in overallPeriods) {
+         for (j in 1..12) {
+            val baseDate = date.plusYears(overallPeriod.id - 3L)
+            val periodFrom = baseDate.plusMonths(j - 1L)
+            val periodTo = periodFrom.plusMonths(1)
+            val currentYear = date.year
+            val fiscalYear = currentYear.plus(overallPeriod.id - 3)
+            val dto = FinancialCalendarDTO(
+               null,
+               overallPeriod = OverallPeriodTypeDTO(overallPeriod),
+               period = j,
+               periodFrom = periodFrom,
+               periodTo = periodTo,
+               fiscalYear = fiscalYear,
+               generalLedgerOpen = false,
+               accountPayableOpen = false
+            )
+
+            calList.add(financialCalendarValidator.validateCreate(dto, company))
+         }
+      }
+
+      val created = calList.map { financialCalendarRepository.insert(it, company) }.toList()
+      return created.map { transformEntity(it) }.toList()
    }
 
    fun update(id: UUID, dto: FinancialCalendarDTO, company: CompanyEntity): FinancialCalendarDTO {
