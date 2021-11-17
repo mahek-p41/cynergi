@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.sftp
 
 import com.cynergisuite.middleware.ssh.SftpClientService
+import io.micronaut.context.annotation.Value
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Specification
 import spock.lang.TempDir
@@ -13,6 +14,8 @@ class SftpClientServiceSpecification extends Specification {
 
    @TempDir File tempDir
    @Inject SftpClientService sftpClientService
+   @Inject @Value("\${test.sftp.hostname}") String sftpHostname
+   @Inject @Value("\${test.sftp.port}") int sftpPort
 
    void "Single file upload" () {
       given:
@@ -21,7 +24,7 @@ class SftpClientServiceSpecification extends Specification {
       tempFile.write("Test file $uuid")
 
       when:
-      sftpClientService.transferFile(Path.of("test-${uuid}.txt"), "sftpuser", "password", "0.0.0.0", 2223) { fileChannel ->
+      sftpClientService.transferFile(Path.of("test-${uuid}.txt"), "sftpuser", "password", sftpHostname, sftpPort) { fileChannel ->
          try(final inputChannel = new FileInputStream(tempFile).channel) {
             println "File size = ${inputChannel.size()}"
 

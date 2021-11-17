@@ -18,7 +18,7 @@ class SftpClientService {
    val logger: Logger = LoggerFactory.getLogger(SftpClientService::class.java)
 
    fun transferFile(fileName: Path, username: String, password: String, host: String, port: Int, copyTo: (fileChannel: FileChannel) -> Unit) {
-      logger.debug("Creating ssh client")
+      logger.debug("Creating ssh client for {}/{}", host, port)
 
       SshClient.setUpDefaultClient().use { sshClient ->
          try {

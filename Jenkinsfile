@@ -31,28 +31,36 @@ pipeline {
             script {
                def cynergibasedb = docker.build("cynergibasedb:${env.BRANCH_NAME}", "-f ./support/development/cynergibasedb/cynergibasedb.dockerfile ./support/development/cynergibasedb")
                def cynergitestdb = docker.build("cynergitestdb:${env.BRANCH_NAME}", "-f ./support/development/cynergitestdb/cynergitestdb.dockerfile --build-arg DB_IMAGE=cynergibasedb:${env.BRANCH_NAME} ./support/development/cynergitestdb")
+               def sftpTestServer = docker.build("cynergisftp:${env.BRANCH_NAME}", "-f ./support/development/sftp/sftp.dockerfile --build-arg USER_ID=$jenkinsUid --build-arg GROUP_ID=$jenkinsGid ./support/development/sftp")
                def cynmid = docker.build("middleware:${env.BRANCH_NAME}", "-f ./support/deployment/cynmid/cynmid.dockerfile --build-arg USER_ID=$jenkinsUid --build-arg GROUP_ID=$jenkinsGid ./support/deployment/cynmid")
 
+               sh 'mkdir -p /tmp/sftpuser'
+
                cynergitestdb.withRun("--network ${networkId} --name cynergitestdb${env.BRANCH_NAME} -e POSTGRES_PASSWORD=password --tmpfs /var/lib/postgresql/data:rw -v ${workspace}/support/development/cynergitestdb/fastinfo:/tmp/fastinfo") { cdbt ->
-                  script {
-                     sh "docker run -i --rm --network ${networkId} cynergibasedb:${env.BRANCH_NAME} /opt/scripts/db-ready.sh cynergitestdb${env.BRANCH_NAME}"
+                  sftpTestServer.withRun("--network ${networkId} --name cynergitestsftp${env.BRANCH_NAME} -v /tmp/sftpuser:/home/sftpuser") { sftp ->
+                      script {
+                         sh "docker run -i --rm --network ${networkId} cynergibasedb:${env.BRANCH_NAME} /opt/scripts/db-ready.sh cynergitestdb${env.BRANCH_NAME}"
 
-                     cynmid.inside(
-                        "--rm " +
-                        "--network ${networkId} "+
-                        "-v ${workspace}/gradleCache:/home/jenkins/caches " +
-                        "-v ${workspace}/gradleWrapper:/home/jenkins/wrapper " +
-                        "-e DATASOURCES_DEFAULT_URL=jdbc:postgresql://cynergitestdb${env.BRANCH_NAME}:5432/postgres "
-                     ) {
-                        sh '''#!/usr/bin/env bash
-                        set -x
-                        set -o errexit -o pipefail -o noclobber -o nounset
-                        export JAVA_OPTS="-Xms2048m -Xmx2048m -Xgcpolicy:gencon"
+                         cynmid.inside(
+                            "--rm " +
+                            "--network ${networkId} "+
+                            "-v ${workspace}/gradleCache:/home/jenkins/caches " +
+                            "-v ${workspace}/gradleWrapper:/home/jenkins/wrapper " +
+                            "-v /tmp/sftpuser:/tmp/sftpuser " +
+                            "-e DATASOURCES_DEFAULT_URL=jdbc:postgresql://cynergitestdb${env.BRANCH_NAME}:5432/postgres " +
+                            "-e TEST_SFTP_HOSTNAME=cynergitestsftp${env.BRANCH_NAME} " +
+                            "-e TEST_SFTP_PORT=22 "
+                         ) {
+                            sh '''#!/usr/bin/env bash
+                            set -x
+                            set -o errexit -o pipefail -o noclobber -o nounset
+                            export JAVA_OPTS="-Xms2048m -Xmx2048m -Xgcpolicy:gencon"
 
-                        ./gradlew --no-daemon --stacktrace clean buildApiDocs 2>&1 1>/dev/null
-                        ./gradlew test jacocoTestReport
-                        '''
-                     }
+                            ./gradlew --no-daemon --stacktrace clean buildApiDocs 2>&1 1>/dev/null
+                            ./gradlew --no-daemon test jacocoTestReport
+                            '''
+                         }
+                      }
                   }
                }
             }
