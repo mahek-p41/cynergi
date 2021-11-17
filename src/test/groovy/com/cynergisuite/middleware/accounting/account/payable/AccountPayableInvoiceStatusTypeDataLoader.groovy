@@ -27,9 +27,9 @@ class AccountPayableInvoiceStatusTypeDataLoader {
       ),
       new AccountPayableInvoiceStatusType(
          4,
-         "D",
-         "Deleted",
-         "deleted"
+         "V",
+         "Voided",
+         "voided"
       )
    ]
 

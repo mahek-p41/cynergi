@@ -55,7 +55,7 @@ CREATE INDEX account_payable_payment_bank_id_idx
 CREATE INDEX account_payable_payment_vendor_id_idx
     ON account_payable_payment (vendor_id);
 CREATE INDEX account_payable_payment_payment_interfaced_indicator_idx
-   ON account_payable_payment (payment_interfaced_indicator)
+   ON account_payable_payment (payment_interfaced_indicator);
 
 
 COMMENT ON COLUMN account_payable_payment.company_id IS 'Foreign key which joins to the company table';
