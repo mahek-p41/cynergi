@@ -90,11 +90,11 @@ if (options != null && !options.h) {
       }
    } catch (Throwable e) {
       println e.getMessage()
-      exitCode = -1
+      exitCode = 3
    }
 } else {
    println cli.usage()
-   exitCode = -3
+   exitCode = 4
 }
 
 System.exit(exitCode)
