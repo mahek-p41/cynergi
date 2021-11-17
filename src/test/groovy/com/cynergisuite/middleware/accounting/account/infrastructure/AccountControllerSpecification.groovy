@@ -38,7 +38,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          id == account.id
          number == account.number
          name == account.name
-         form1099Field == account.form1099Field
          corporateAccountIndicator == account.corporateAccountIndicator
          with(type) {
             description == account.type.description
@@ -55,6 +54,10 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          with(type) {
             description == account.type.description
             value == account.type.value
+         }
+         with(form1099Field) {
+            description == account.form1099Field.description
+            value == account.form1099Field.value
          }
       }
    }
@@ -102,7 +105,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
             id == firstPageAccount[index].id
             number == firstPageAccount[index].number
             name == firstPageAccount[index].name
-            form1099Field == firstPageAccount[index].form1099Field
             corporateAccountIndicator == firstPageAccount[index].corporateAccountIndicator
             with(type) {
                description == firstPageAccount[index].type.description
@@ -119,6 +121,10 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
             with(type) {
                description == firstPageAccount[index].type.description
                value == firstPageAccount[index].type.value
+            }
+            with(form1099Field) {
+               description == firstPageAccount[index].form1099Field.description
+               value == firstPageAccount[index].form1099Field.value
             }
          }
       }
@@ -137,7 +143,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          with(result) {
             id == secondPageAccount[index].id
             name == secondPageAccount[index].name
-            form1099Field == secondPageAccount[index].form1099Field
             corporateAccountIndicator == secondPageAccount[index].corporateAccountIndicator
             with(type) {
                description == secondPageAccount[index].type.description
@@ -154,6 +159,10 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
             with(type) {
                description == secondPageAccount[index].type.description
                value == secondPageAccount[index].type.value
+            }
+            with(form1099Field) {
+               description == secondPageAccount[index].form1099Field.description
+               value == secondPageAccount[index].form1099Field.value
             }
          }
 
@@ -189,6 +198,10 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
             with(type) {
                description == lastPageAccount[index].type.description
                value == lastPageAccount[index].type.value
+            }
+            with(form1099Field) {
+               description == lastPageAccount[index].form1099Field.description
+               value == lastPageAccount[index].form1099Field.value
             }
          }
 
@@ -385,7 +398,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       with(result) {
          id != null
          name == account.name
-         form1099Field == account.form1099Field
          corporateAccountIndicator == account.corporateAccountIndicator
          with(type) {
             description == account.type.description
@@ -402,6 +414,10 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          with(type) {
             description == account.type.description
             value == account.type.value
+         }
+         with(form1099field) {
+            description == account.form1099Field.description
+            value == account.form1099Field.value
          }
       }
    }

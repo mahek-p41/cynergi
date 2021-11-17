@@ -79,6 +79,10 @@ class RebateRepository @Inject constructor(
             glDebitAcct.account_status_value                    AS glDebitAcct_status_value,
             glDebitAcct.account_status_description              AS glDebitAcct_status_description,
             glDebitAcct.account_status_localization_code        AS glDebitAcct_status_localization_code,
+            glDebitAcct.account_vendor_1099_type_id                            AS glDebitAcct_vendor_1099_type_id,
+            glDebitAcct.account_vendor_1099_type_value                         AS glDebitAcct_vendor_1099_type_value,
+            glDebitAcct.account_vendor_1099_type_description                   AS glDebitAcct_vendor_1099_type_description,
+            glDebitAcct.account_vendor_1099_type_localization_code             AS glDebitAcct_vendor_1099_type_localization_code,
             glCreditAcct.account_id                             AS glCreditAcct_id,
             glCreditAcct.account_number                         AS glCreditAcct_number,
             glCreditAcct.account_name                           AS glCreditAcct_name,
@@ -98,6 +102,10 @@ class RebateRepository @Inject constructor(
             glCreditAcct.account_status_value                   AS glCreditAcct_status_value,
             glCreditAcct.account_status_description             AS glCreditAcct_status_description,
             glCreditAcct.account_status_localization_code       AS glCreditAcct_status_localization_code,
+            glCreditAcct.account_vendor_1099_type_id                            AS glCreditAcct_vendor_1099_type_id,
+            glCreditAcct.account_vendor_1099_type_value                         AS glCreditAcct_vendor_1099_type_value,
+            glCreditAcct.account_vendor_1099_type_description                   AS glCreditAcct_vendor_1099_type_description,
+            glCreditAcct.account_vendor_1099_type_localization_code             AS glCreditAcct_vendor_1099_type_localization_code,
             count(*) OVER()                                     AS total_elements
          FROM rebate r
             JOIN account_status_type_domain status ON r.status_type_id = status.id

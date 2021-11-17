@@ -71,7 +71,11 @@ class AccountPayableDistributionRepository @Inject constructor(
             account.account_status_id                                      AS apDist_account_status_id,
             account.account_status_value                                   AS apDist_account_status_value,
             account.account_status_description                             AS apDist_account_status_description,
-            account.account_status_localization_code                       AS apDist_account_status_localization_code
+            account.account_status_localization_code                       AS apDist_account_status_localization_code,
+            account.account_vendor_1099_type_id                            AS apDist_account_vendor_1099_type_id,
+            account.account_vendor_1099_type_value                         AS apDist_account_vendor_1099_type_value,
+            account.account_vendor_1099_type_description                   AS apDist_account_vendor_1099_type_description,
+            account.account_vendor_1099_type_localization_code             AS apDist_account_vendor_1099_type_localization_code
          FROM account_payable_distribution_template apDist
             JOIN company comp ON apDist.company_id = comp.id AND comp.deleted = FALSE
             JOIN fastinfo_prod_import.store_vw profitCenter

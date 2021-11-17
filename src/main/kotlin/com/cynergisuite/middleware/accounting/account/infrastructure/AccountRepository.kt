@@ -18,6 +18,7 @@ import com.cynergisuite.middleware.accounting.account.AccountType
 import com.cynergisuite.middleware.accounting.account.NormalAccountBalanceType
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
+import com.cynergisuite.middleware.vendor.VendorType
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -56,7 +57,12 @@ class AccountRepository @Inject constructor(
             status.id                                    AS account_status_id,
             status.value                                 AS account_status_value,
             status.description                           AS account_status_description,
-            status.localization_code                     AS account_status_localization_code
+            status.localization_code                     AS account_status_localization_code,
+            vendor_1099_type.id                          AS account_vendor_1099_type_id,
+            vendor_1099_type.value                       AS account_vendor_1099_type_value,
+            vendor_1099_type.description                 AS account_vendor_1099_type_description,
+            vendor_1099_type.localization_code           AS account_vendor_1099_type_localization_code
+
          FROM account
                JOIN company comp
                      ON comp.id = account.company_id AND comp.deleted = FALSE
@@ -66,6 +72,8 @@ class AccountRepository @Inject constructor(
                      ON balance_type.id = account.normal_account_balance_type_id
                JOIN account_status_type_domain status
                      ON status.id = account.status_type_id
+               JOIN vendor_1099_type_domain vendor_1099_type
+                     ON vendor_1099_type.id = account.form_1099_field
       """
    }
 
@@ -206,7 +214,7 @@ class AccountRepository @Inject constructor(
             "type_id" to account.type.id,
             "normal_account_balance_type_id" to account.normalAccountBalance.id,
             "status_type_id" to account.status.id,
-            "form_1099_field" to account.form1099Field,
+            "form_1099_field" to account.form1099Field.id,
             "corporate_account_indicator" to account.corporateAccountIndicator
          )
       ) { rs, _ ->
@@ -242,7 +250,7 @@ class AccountRepository @Inject constructor(
             "type_id" to account.type.id,
             "normal_account_balance_type_id" to account.normalAccountBalance.id,
             "status_type_id" to account.status.id,
-            "form_1099_field" to account.form1099Field,
+            "form_1099_field" to account.form1099Field.id,
             "corporate_account_indicator" to account.corporateAccountIndicator
          )
       ) { rs, _ ->
@@ -277,7 +285,7 @@ class AccountRepository @Inject constructor(
          type = mapAccountType(rs, "${columnPrefix}type_"),
          normalAccountBalance = mapNormalAccountBalanceType(rs, "${columnPrefix}balance_type_"),
          status = mapAccountStatusType(rs, "${columnPrefix}status_"),
-         form1099Field = rs.getIntOrNull("${columnPrefix}form_1099_field"),
+         form1099Field = mapVendorStatusType(rs,"${columnPrefix}vendor_1099_type_"),
          corporateAccountIndicator = rs.getBoolean("${columnPrefix}corporate_account_indicator")
       )
    }
@@ -297,7 +305,7 @@ class AccountRepository @Inject constructor(
          type = account.type,
          normalAccountBalance = account.normalAccountBalance,
          status = account.status,
-         form1099Field = rs.getIntOrNull("${columnPrefix}form_1099_field"),
+         form1099Field = account.form1099Field,
          corporateAccountIndicator = rs.getBoolean("${columnPrefix}corporate_account_indicator")
       )
    }
@@ -322,6 +330,14 @@ class AccountRepository @Inject constructor(
       AccountStatusType(
          id = rs.getInt("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
+         description = rs.getString("${columnPrefix}description"),
+         localizationCode = rs.getString("${columnPrefix}localization_code")
+      )
+
+   private fun mapVendorStatusType(rs: ResultSet, columnPrefix: String): VendorType =
+      VendorType(
+         id = rs.getInt( "${columnPrefix}id"),
+         value = rs.getInt("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
       )

@@ -81,6 +81,10 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
             profitCenter.number                                               AS glRecurringDist_profitCenter_number,
             profitCenter.name                                                 AS glRecurringDist_profitCenter_name,
             profitCenter.dataset                                              AS glRecurringDist_profitCenter_dataset,
+            account.account_vendor_1099_type_id                               AS glRecurringDist_account_vendor_1099_type_id,
+            account.account_vendor_1099_type_value                            AS glRecurringDist_account_vendor_1099_type_value,
+            account.account_vendor_1099_type_description                      AS glRecurringDist_account_vendor_1099_type_description,
+            account.account_vendor_1099_type_localization_code                AS glRecurringDist_account_vendor_1099_type_localization_code,
             count(*) OVER() AS total_elements
          FROM general_ledger_recurring_distribution glRecurringDist
             JOIN general_ledger_recurring glRecurring ON glRecurringDist.general_ledger_recurring_id = glRecurring.glRecurring_id AND glRecurring.glRecurring_deleted = FALSE
