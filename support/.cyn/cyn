@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+export GROUP_ID=$(id -g)
+export USER_ID=$(id -u)
+
+alias docker-compose="GROUP_ID=$GROUP_ID USER_ID=$USER_ID docker-compose"
+
 show() {
   TYPE="$1"; shift
   for i in $(echo $*)
@@ -7,6 +12,7 @@ show() {
      echo "$TYPE: $i"
   done
 }
+
 drive() {
   unset DIRS
   unset FILES

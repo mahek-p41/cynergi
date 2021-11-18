@@ -20,7 +20,7 @@ data class InventoryDTO(
 
    @field:JsonView(value = [Full::class, InventoryApp::class])
    @field:Schema(name = "serialNumber", description = "Either a manufacturer defined serial number or a system generated serial number")
-   val serialNumber: String,
+   val serialNumber: String?,
 
    @field:JsonView(value = [Full::class, InventoryApp::class])
    @field:Schema(name = "lookupKey", description = "A system managed key that can be used to lookup inventory items")
@@ -32,11 +32,11 @@ data class InventoryDTO(
 
    @field:JsonView(value = [Full::class, InventoryApp::class])
    @field:Schema(name = "barcode", description = "System generated value for a single inventory item. One possible value for lookupKey")
-   val barcode: String,
+   val barcode: String?,
 
    @field:JsonView(value = [Full::class])
    @field:Schema(name = "altId", description = "Alternate Identifier.  One possible value for lookupKey")
-   val altId: String,
+   val altId: String?,
 
    @field:JsonView(value = [Full::class])
    @field:Schema(name = "brand", description = "Manufacturer of the referenced inventory item", nullable = true)

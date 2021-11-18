@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 ## description: stops the cynmidintegration service
 
-cd ../development
+pushd ../development > /dev/null
 
 if [ -z `docker-compose ps -q cynmidintegration` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q cynmidintegration)` ]; then
   echo "cynmidintegration is not running"
@@ -11,3 +11,5 @@ else
   docker-compose stop cynmidintegration && docker-compose rm -f cynmidintegration
   exit $?
 fi
+
+popd > /dev/null

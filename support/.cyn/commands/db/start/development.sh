@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 ## description: starts the cynergidb and the fastinfo_production databases and makes them available on localhost:6432 and returns once they are up and running
 
-cd ../development
-
+pushd ../development > /dev/null
 
 if [ -z `docker-compose ps -q cynergidb` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q cynergidb)` ]; then
   docker rm -f cynergidb >> /tmp/cynergi-dev.log 2>&1
@@ -36,3 +35,5 @@ else
   echo "can be accessed at $(docker-compose port cynergidb 5432)"
   exit 0
 fi
+
+popd > /dev/null

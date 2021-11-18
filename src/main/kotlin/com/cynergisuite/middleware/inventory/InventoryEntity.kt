@@ -9,11 +9,11 @@ import java.time.LocalDate
 
 data class InventoryEntity(
    val id: Long,
-   val serialNumber: String,
+   val serialNumber: String?,
    val lookupKey: String,
    val lookupKeyType: String,
-   val barcode: String,
-   val altId: String,
+   val barcode: String?,
+   val altId: String?,
    val brand: String?,
    val modelNumber: String,
    val productCode: String,
