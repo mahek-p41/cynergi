@@ -729,7 +729,7 @@ BEGIN
                              and av3.agreement_closed_reason In(''02'',''03'',''05'',''10'') and
 			            av3.agreement_closed_date > current_date - 1096 and av3.agreement_closed_date  < current_date and
 			            c3.cust_acct_nbr not in (
-                               (select cust_acct_nbr from corrto.level2_customers as c5
+                               (select cust_acct_nbr from ' || r.schema_name || '.level2_customers as c5
                                         JOIN ' || r.schema_name || '.level2_agreements as a5 on c5.id = a5.customer_id
 			                               JOIN ' || r.schema_name || '.level2_agreement_versions as av5 on a5.id = av5.agreement_id
                                  where a5.agreement_type = ''O'' and av5.agreement_open_flag <> ''Y'' and av5.agreement_closed_date > current_date - 1096
