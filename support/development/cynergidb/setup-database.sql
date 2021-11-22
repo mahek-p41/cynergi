@@ -266,6 +266,7 @@ BEGIN
       || ' '
       || unionAll || '
          SELECT
+           ''' || r.schema_name || '''::text AS dataset,
             stores.loc_tran_loc as StoreID,
             ''''::text AS PeopleID,
             customers.cust_acct_nbr as UniqueID,
@@ -351,6 +352,7 @@ BEGIN
       || ' '
       || unionAll || '
          SELECT
+            ''' || r.schema_name || '''::text AS dataset,
             stores.loc_tran_loc as StoreID,
             ''''::text AS PeopleID,
             customers.cust_acct_nbr as UniqueID,
@@ -413,6 +415,7 @@ BEGIN
       || ' '
       || unionAll || '
          SELECT
+           ''' || r.schema_name || '''::text AS dataset,
            stores.loc_tran_loc as StoreID,
             ''''::text AS PeopleID,
             customers.cust_acct_nbr as UniqueID,
@@ -468,6 +471,7 @@ BEGIN
       || ' '
       || unionAll || '
          SELECT
+            ''' || r.schema_name || '''::text AS dataset,
             stores.loc_tran_loc as StoreID,
             ''''::text AS PeopleID,
             customers.cust_acct_nbr as UniqueID,
@@ -529,6 +533,7 @@ BEGIN
       || ' '
       || unionAll || '
          SELECT
+           ''' || r.schema_name || '''::text AS dataset,
            stores.loc_tran_loc as StoreID,
             ''''::text AS PeopleID,
             customers.cust_acct_nbr as UniqueID,
@@ -587,6 +592,7 @@ BEGIN
       || ' '
       || unionAll || '
          SELECT
+          ''' || r.schema_name || '''::text AS dataset,
           stores.loc_tran_loc as StoreID,
             ''''::text AS PeopleID,
             customers.cust_acct_nbr as UniqueID,
@@ -648,6 +654,7 @@ BEGIN
       || unionAll || '
       SELECT * FROM
          (SELECT
+           ''' || r.schema_name || '''::text AS dataset,
            stores.loc_tran_loc as StoreID,
             ''''::text AS PeopleID,
             agreements.customer_id as CustomerID,
@@ -663,7 +670,6 @@ BEGIN
             customers.cust_home_phone as HomePhoneNumber,
             customers.cust_email_address as email,
             customers.cust_birth_date as BirthDay,
-            ''''::text AS CustomerRating,
             agreements.agreement_number as AgreementID,
             agreement_versions.agreement_closed_date as InactiveDate,
             Trim(LEADING ''0'' FROM CAST(agreement_versions.agreement_closed_reason AS TEXT)) as reason_indr,
@@ -698,6 +704,23 @@ BEGIN
                    customers.cust_birth_date, agreements.agreement_number, agreement_versions.agreement_closed_date,agreement_versions.agreement_closed_reason)a
 
            JOIN
+		       (select cust_acct_nbr, CASE WHEN round(sum((agreement_total_payments - tot_temp)/agreement_total_payments) * 100,2)::NUMERIC = 0 THEN 1
+				                           ELSE round(sum((agreement_total_payments - tot_temp)/agreement_total_payments) * 100,2)::NUMERIC END as CustomerRating
+					from
+						(select cust_acct_nbr,
+							Case when (sum(agreement_times_pd_1 +  agreement_times_pd_2 +  agreement_times_pd_3)::numeric) = 0
+						         then 1
+						         else (sum(agreement_times_pd_1 +  agreement_times_pd_2 +  agreement_times_pd_3)::numeric) end as tot_temp,
+							Case when sum(agreement_tot_nbr_pmts) = 0 then 1 else sum(agreement_tot_nbr_pmts)::numeric end as agreement_total_payments
+							from ' || r.schema_name || '.level2_agreement_versions avc
+							join ' || r.schema_name || '.level2_agreements ac on ac.id = avc.agreement_id
+							join ' || r.schema_name || '.level2_customers cc on cc.id = ac.customer_id
+				    		where ac.agreement_type = ''O''
+						    group by cc.cust_acct_nbr)e
+							group by cust_acct_nbr)d
+		   ON a.UniqueID = d.cust_acct_nbr
+
+		   JOIN
            (SELECT customer_id, MAX(agreement_closed_date) as max_date
 			   FROM ' || r.schema_name || '.level2_agreement_versions as av3
 			   JOIN ' || r.schema_name || '.level2_agreements as a3 on a3.id = av3.agreement_id
@@ -811,6 +834,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.location_vw (
 
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_active_customer_vw (
+   dataset VARCHAR,
    StoreID INTEGER,
    PeopleID VARCHAR,
    UniqueID VARCHAR,
@@ -836,6 +860,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_active_customer_vw (
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_active_customer_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_vw (
+   dataset VARCHAR,
    StoreID INTEGER,
    PeopleID VARCHAR,
    UniqueID VARCHAR,
@@ -854,6 +879,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_vw (
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_collection_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_birthday_customer_vw (
+   dataset VARCHAR,
    StoreID INTEGER,
    PeopleID VARCHAR,
    UniqueID VARCHAR,
@@ -871,6 +897,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_birthday_customer_vw (
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_birthday_customer_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_last_week_deliveries_vw (
+   dataset VARCHAR,
    StoreID INTEGER,
    PeopleID VARCHAR,
    UniqueID VARCHAR,
@@ -890,6 +917,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_last_week_deliveries_vw (
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_last_week_deliveries_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_last_week_payouts_vw (
+   dataset VARCHAR,
    StoreID INTEGER,
    PeopleID VARCHAR,
    UniqueID VARCHAR,
@@ -910,6 +938,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_last_week_payouts_vw (
 
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_future_payout_vw (
+   dataset VARCHAR,
    StoreID INTEGER,
    PeopleID VARCHAR,
    UniqueID VARCHAR,
@@ -928,6 +957,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_future_payout_vw (
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_future_payout_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_inactive_customer_vw (
+   dataset VARCHAR,
    StoreID INTEGER,
    PeopleID VARCHAR,
    UniqueID VARCHAR,
