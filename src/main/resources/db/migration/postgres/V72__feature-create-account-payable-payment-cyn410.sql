@@ -38,6 +38,8 @@ CREATE TABLE account_payable_payment
     date_cleared                      DATE,
     date_voided                       DATE,
     amount                            NUMERIC(13, 2)                                                     NOT NULL,
+    payment_interfaced_indicator      BOOLEAN   DEFAULT FALSE                                            NOT NULL,
+    void_interfaced_indicator         BOOLEAN   DEFAULT FALSE                                            NOT NULL,
     UNIQUE (company_id, bank_id, account_payable_payment_type_id, payment_number)
 );
 CREATE TRIGGER account_payable_payment_trg
@@ -52,6 +54,8 @@ CREATE INDEX account_payable_payment_bank_id_idx
     ON account_payable_payment (bank_id);
 CREATE INDEX account_payable_payment_vendor_id_idx
     ON account_payable_payment (vendor_id);
+CREATE INDEX account_payable_payment_payment_interfaced_indicator_idx
+   ON account_payable_payment (payment_interfaced_indicator);
 
 
 COMMENT ON COLUMN account_payable_payment.company_id IS 'Foreign key which joins to the company table';
