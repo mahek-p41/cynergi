@@ -88,7 +88,7 @@ class AccountRepository @Inject constructor(
    @ReadOnly
    fun findByNumber(number: Long, company: CompanyEntity): AccountEntity? {
       val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE account.number = :number AND comp.id = :comp_id"
+      val query = "${selectBaseQuery()} WHERE account.number = :number AND comp.id = :comp_id and account.deleted = FALSE"
       val found = jdbc.findFirstOrNull(
          query,
          params
@@ -110,7 +110,7 @@ class AccountRepository @Inject constructor(
          """
          WITH paged AS (
             ${selectBaseQuery()}
-            WHERE comp.id = :comp_id
+            WHERE comp.id = :comp_id AND account.deleted = FALSE
          )
          SELECT
             p.*,
@@ -141,7 +141,7 @@ class AccountRepository @Inject constructor(
    @ReadOnly
    fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<AccountEntity, PageRequest> {
       var searchQuery = page.query
-      val where = StringBuilder(" WHERE comp.id = :comp_id")
+      val where = StringBuilder(" WHERE comp.id = :comp_id AND account.deleted = FALSE")
       val sortBy = if (!searchQuery.isNullOrEmpty()) {
          if (page.fuzzy == false) {
             where.append(" AND (search_vector @@ to_tsquery(:search_query)) ")
