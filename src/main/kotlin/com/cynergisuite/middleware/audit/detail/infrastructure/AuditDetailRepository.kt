@@ -100,7 +100,7 @@ class AuditDetailRepository @Inject constructor(
             store.name                                AS scanAreaStore_name
          FROM audit_detail auditDetail
               JOIN audit a ON auditDetail.audit_id = a.id
-              JOIN company comp ON a.company_id = comp.id
+              JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
               JOIN employees scannedBy ON auditDetail.scanned_by = scannedBy.emp_number AND scannedBy.comp_id = comp.id
               JOIN audit_scan_area scanArea ON auditDetail.scan_area_id = scanArea.id
               JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND scanArea.store_number_sfk = store.number

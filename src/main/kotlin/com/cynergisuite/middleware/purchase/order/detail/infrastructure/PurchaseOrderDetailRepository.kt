@@ -525,7 +525,7 @@ class PurchaseOrderDetailRepository @Inject constructor(
             exceptionIndType.localization_code                        AS poDetail_exceptionIndType_localization_code,
             count(*) OVER()                                           AS total_elements
          FROM purchase_order_detail poDetail
-            JOIN company comp                                                  ON poDetail.company_id = comp.id
+            JOIN company comp                                                  ON poDetail.company_id = comp.id AND comp.deleted = FALSE
             JOIN purchase_order_header po                                      ON poDetail.purchase_order_header_id = po.po_id AND po.po_deleted = FALSE
             JOIN vendor                                                        ON poDetail.vendor_id = vendor.v_id
             JOIN purchase_order_status_type_domain statusType                  ON poDetail.status_type_id = statusType.id

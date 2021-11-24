@@ -85,7 +85,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
             overallPeriod.description                                 AS glSummary_overallPeriod_description,
             overallPeriod.localization_code                           AS glSummary_overallPeriod_localization_code
          FROM general_ledger_summary glSummary
-            JOIN company comp ON glSummary.company_id = comp.id
+            JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
             JOIN fastinfo_prod_import.store_vw profitCenter
                     ON profitCenter.dataset = comp.dataset_code
                        AND profitCenter.id = glSummary.profit_center_id_sfk

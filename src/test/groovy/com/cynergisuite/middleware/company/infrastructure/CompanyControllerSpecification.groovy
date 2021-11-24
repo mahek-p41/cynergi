@@ -449,7 +449,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       def exception = thrown(HttpClientResponseException)
       exception.status == METHOD_NOT_ALLOWED
       def response = exception.response.bodyAsJson()
-      response.message == "Method [POST] not allowed for URI [/api/company/${tstds1.id}]. Allowed methods: [HEAD, GET, PUT]"
+      response.message == "Method [POST] not allowed for URI [/api/company/${tstds1.id}]. Allowed methods: [HEAD, DELETE, GET, PUT]"
    }
 
    void "update a valid company by removing address" () {

@@ -93,7 +93,7 @@ class ScheduleRepository @Inject constructor(
               JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
               JOIN schedule_command_type_domain sctd ON sched.command_id = sctd.id
               LEFT OUTER JOIN schedule_arg sa ON sched.id = sa.schedule_id
-              JOIN company comp ON sched.company_id = comp.id
+              JOIN company comp ON sched.company_id = comp.id AND comp.deleted = FALSE
          WHERE sched.id = :id
          """.trimIndent(),
          mapOf("id" to id)
@@ -194,7 +194,7 @@ class ScheduleRepository @Inject constructor(
             FROM schedule sched
                JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
                JOIN schedule_command_type_domain sctd ON sched.command_id = sctd.id
-               JOIN company comp ON sched.company_id = comp.id
+               JOIN company comp ON sched.company_id = comp.id AND comp.deleted = FALSE
             $whereClause
             ORDER BY sched_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
                LIMIT :limit

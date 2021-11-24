@@ -407,7 +407,7 @@ class PurchaseOrderRepository @Inject constructor(
             vendorSubmittedEmp.address_phone                    AS po_vendorSubmittedEmp_comp_address_phone,
             vendorSubmittedEmp.address_fax                      AS po_vendorSubmittedEmp_comp_address_fax
          FROM purchase_order_header po
-            JOIN company comp ON po.company_id = comp.id
+            JOIN company comp ON po.company_id = comp.id AND comp.deleted = FALSE
             JOIN vendor                                           ON po.vendor_id = vendor.v_id
             JOIN purchase_order_status_type_domain statusType     ON po.status_type_id = statusType.id
             JOIN purchase_order_type_domain type                  ON po.type_id = type.id

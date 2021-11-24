@@ -78,7 +78,7 @@ class AuditPermissionRepository @Inject constructor(
             dept.description           AS dept_description,
             dept.dataset               AS dept_dataset
          FROM audit_permission ap
-              JOIN company comp ON ap.company_id = comp.id
+              JOIN company comp ON ap.company_id = comp.id AND comp.deleted = FALSE
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
               JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
          WHERE ap.id = :ap_id
@@ -139,7 +139,7 @@ class AuditPermissionRepository @Inject constructor(
             dept.dataset                  AS dept_dataset,
             count(*) OVER() as total_elements
          FROM audit_permission ap
-              JOIN company comp ON ap.company_id = comp.id
+              JOIN company comp ON ap.company_id = comp.id AND comp.deleted = FALSE
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
               JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
          WHERE comp.id = :comp_id AND ap.deleted = FALSE
@@ -210,7 +210,7 @@ class AuditPermissionRepository @Inject constructor(
             dept.dataset                  AS dept_dataset,
             count(*) OVER() as total_elements
          FROM audit_permission ap
-            JOIN company comp ON ap.company_id = comp.id
+            JOIN company comp ON ap.company_id = comp.id AND comp.deleted = FALSE
             JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
             JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
          WHERE comp.id = :comp_id AND ap.type_id = :typeId AND ap.deleted = FALSE
@@ -249,7 +249,7 @@ class AuditPermissionRepository @Inject constructor(
             dept.description        AS dept_description,
             dept.dataset            AS dept_dataset
          FROM audit_permission ap
-              JOIN company comp ON ap.company_id = comp.id
+              JOIN company comp ON ap.company_id = comp.id AND comp.deleted = FALSE
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
               JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
          WHERE aptd.value = :asset

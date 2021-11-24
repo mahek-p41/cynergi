@@ -79,7 +79,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
             source.company_id                                               AS glJournal_source_comp_id,
             count(*) OVER()                                                 AS total_elements
          FROM general_ledger_journal glJournal
-            JOIN company comp ON glJournal.company_id = comp.id
+            JOIN company comp ON glJournal.company_id = comp.id AND comp.deleted = FALSE
             JOIN account ON glJournal.account_id = account.account_id AND account.account_deleted = FALSE
             JOIN fastinfo_prod_import.store_vw profitCenter
                ON profitCenter.dataset = comp.dataset_code

@@ -72,7 +72,7 @@ class AccountPayableDistributionRepository @Inject constructor(
             account.account_status_description                             AS apDist_account_status_description,
             account.account_status_localization_code                       AS apDist_account_status_localization_code
          FROM account_payable_distribution_template apDist
-            JOIN company comp ON apDist.company_id = comp.id
+            JOIN company comp ON apDist.company_id = comp.id AND comp.deleted = FALSE
             JOIN fastinfo_prod_import.store_vw profitCenter
                ON profitCenter.dataset = comp.dataset_code
                   AND profitCenter.number = apDist.profit_center_sfk
@@ -83,7 +83,7 @@ class AccountPayableDistributionRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): AccountPayableDistributionEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE apDist.id = :id AND comp.id = :comp_id AND apDist.deleted = FALSE"
+      val query = "${selectBaseQuery()} WHERE apDist.id = :id AND comp.id = :comp_id AND apDist.deleted = FALSE AND comp.deleted = FALSE"
       val found = jdbc.findFirstOrNull(
          query,
          params
@@ -108,7 +108,7 @@ class AccountPayableDistributionRepository @Inject constructor(
          """
          WITH paged AS (
             ${selectBaseQuery()}
-            WHERE comp.id = :comp_id AND apDist.deleted = FALSE
+            WHERE comp.id = :comp_id AND apDist.deleted = FALSE AND comp.deleted = FALSE
          )
          SELECT
             p.*,

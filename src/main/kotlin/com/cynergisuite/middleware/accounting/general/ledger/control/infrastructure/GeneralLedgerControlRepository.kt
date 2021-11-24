@@ -197,7 +197,7 @@ class GeneralLedgerControlRepository @Inject constructor(
             defAcctFreightAcct.account_status_description                     AS defAcctFreightAcct_status_description,
             defAcctFreightAcct.account_status_localization_code               AS defAcctFreightAcct_status_localization_code
          FROM general_ledger_control glCtrl
-            JOIN company comp ON glCtrl.company_id = comp.id
+            JOIN company comp ON glCtrl.company_id = comp.id AND comp.deleted = FALSE
             JOIN fastinfo_prod_import.store_vw profitCenter
                     ON profitCenter.dataset = comp.dataset_code
                        AND profitCenter.number = glCtrl.default_profit_center_sfk

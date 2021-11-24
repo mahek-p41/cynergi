@@ -68,7 +68,7 @@ class BankRepository @Inject constructor(
             glProfitCenter.name                                            AS bank_glProfitCenter_name,
             glProfitCenter.dataset                                         AS bank_glProfitCenter_dataset
          FROM bank
-               JOIN company comp ON bank.company_id = comp.id
+               JOIN company comp ON bank.company_id = comp.id AND comp.deleted = FALSE
                JOIN fastinfo_prod_import.store_vw glProfitCenter
                     ON glProfitCenter.dataset = comp.dataset_code
                        AND glProfitCenter.number = bank.general_ledger_profit_center_sfk
@@ -79,7 +79,7 @@ class BankRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): BankEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE bank.id = :id AND bank.company_id = :comp_id AND bank.deleted = FALSE"
+      val query = "${selectBaseQuery()} WHERE bank.id = :id AND bank.company_id = :comp_id AND bank.deleted = FALSE AND comp.deleted = FALSE"
       val found = jdbc.findFirstOrNull(
          query,
          params
@@ -95,7 +95,7 @@ class BankRepository @Inject constructor(
    @ReadOnly
    fun findByNumber(number: Long, company: CompanyEntity): BankEntity? {
       val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE bank.number = :number AND comp.id = :comp_id AND bank.deleted = FALSE"
+      val query = "${selectBaseQuery()} WHERE bank.number = :number AND comp.id = :comp_id AND bank.deleted = FALSE AND comp.deleted = FALSE"
       val found = jdbc.findFirstOrNull(
          query,
          params
@@ -115,7 +115,7 @@ class BankRepository @Inject constructor(
          """
          WITH paged AS (
             ${selectBaseQuery()}
-            WHERE bank.company_id = :comp_id AND bank.deleted = FALSE
+            WHERE bank.company_id = :comp_id AND bank.deleted = FALSE AND comp.deleted = FALSE
          )
          SELECT
             p.*,
@@ -144,7 +144,7 @@ class BankRepository @Inject constructor(
    @ReadOnly
    fun exists(id: Long): Boolean {
       val exists = jdbc.queryForObject(
-         "SELECT EXISTS(SELECT id FROM bank WHERE id = :id AND bank.deleted = FALSE)",
+         "SELECT EXISTS(SELECT id FROM bank WHERE id = :id AND bank.deleted = FALSE AND comp.deleted = FALSE)",
          mapOf("id" to id),
          Boolean::class.java
       )

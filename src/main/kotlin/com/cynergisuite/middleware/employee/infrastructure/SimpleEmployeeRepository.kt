@@ -189,7 +189,7 @@ class SimpleEmployeeRepository @Inject constructor(
                   'sysz' AS emp_type,
                   comp.id AS comp_id
                FROM fastinfo_prod_import.employee_vw emp
-                  JOIN company comp ON emp.dataset = comp.dataset_code
+                  JOIN company comp ON emp.dataset = comp.dataset_code AND comp.deleted = FALSE
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
                UNION
@@ -199,7 +199,7 @@ class SimpleEmployeeRepository @Inject constructor(
                   'eli' AS emp_type,
                   comp.id AS comp_id
                FROM employee emp
-                  JOIN company comp ON emp.company_id = comp.id
+                  JOIN company comp ON emp.company_id = comp.id AND comp.deleted = FALSE
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
                   LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
             ) AS inner_employees
