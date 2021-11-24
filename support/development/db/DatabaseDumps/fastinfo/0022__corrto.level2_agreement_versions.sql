@@ -1,0 +1,155 @@
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET search_path = corrto, pg_catalog;
+SET default_tablespace = '';
+SET default_with_oids = false;
+CREATE TABLE level2_agreement_versions (
+    id bigint NOT NULL,
+    agreement_id bigint,
+    agreement_sequence_number integer,
+    agreement_open_flag character varying(1),
+    agreement_contract_date date,
+    agreement_contract_balance numeric(11,2),
+    agreement_next_due_date date,
+    agreement_closed_date date,
+    store_id bigint,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL,
+    row_creator_id bigint,
+    agreement_rental_cust_type character varying(1),
+    agreement_rto_contract_length character varying(1),
+    agreement_check_miscitem_indr character varying(1),
+    agreement_last_pmt_frequency character varying(1),
+    agreement_payment_terms character varying(1),
+    agreement_last_due_date date,
+    agreement_last_paid_date date,
+    agreement_contract_nbr integer,
+    agreement_payment_amt numeric(11,2),
+    agreement_grp_amt numeric(11,2),
+    agreement_tax_amt numeric(11,2),
+    agreement_loan_apr numeric(11,3),
+    agreement_ar_annual_interest_rate numeric(11,3),
+    agreement_delivery_amt numeric(11,2),
+    agreement_down_payment_amt numeric(11,2),
+    agreement_ar_net_contract_bal numeric(11,2),
+    agreement_deposit_amt numeric(11,2),
+    agreement_late_receivable_amt numeric(11,2),
+    agreement_misc_charges numeric(11,2),
+    agreement_balloon_amt_paid numeric(11,2),
+    agreement_trade_in_amt numeric(11,2),
+    agreement_discount_amt numeric(11,2),
+    agreement_esp_amt numeric(11,2),
+    agreement_ext_ser_pol_amt numeric(11,2),
+    agreement_contract_amt numeric(11,2),
+    agreement_rto_ship_to_nbr bigint,
+    agreement_total_price numeric(11,2),
+    agreement_ar_interest_type character varying(1),
+    agreement_tp_agmt_indr character varying(1),
+    agreement_down_payment_form integer,
+    agreement_nbr_bad_checks integer,
+    agreement_who_added_this_agreement integer,
+    agreement_salesman_1 integer,
+    agreement_salesman_2 integer,
+    agreement_salesman_3 integer,
+    agreement_acct_manager integer,
+    agreement_source_code_1 character varying(2),
+    agreement_status_flag character varying(2),
+    agreement_booked_ar_interest numeric(11,2),
+    agreement_tax_code integer,
+    agreement_nbr_late_payments integer,
+    agreement_last_changed_date date,
+    agreement_status character varying(1),
+    agreement_nbr_count_as_bor integer,
+    agreement_paid_out_printed character varying(1),
+    agreement_data_changed_indr character varying(1),
+    agreement_balloon_amt numeric(11,2),
+    agreement_carry_out_indr character varying(1),
+    agreement_autopay_indr character varying(1),
+    agreement_tpc_indr character varying(1),
+    agreement_big_bonus_indr character varying(1),
+    agreement_tpc_pv_factor numeric(11,3),
+    agreement_tpc_deferred_weeks integer,
+    agreement_no_sac_indr character varying(1),
+    agreement_old_star_cash_price character varying(1),
+    agreement_tpc_lease_pmt_amt numeric(11,2),
+    agreement_grp_percent_to_chg numeric(11,4),
+    agreement_tpc_lease_value numeric(11,2),
+    agreement_cash_price numeric(11,2),
+    agreement_pre_express_lease_term integer,
+    agreement_staging_bal_last_reduct numeric(11,2),
+    agreement_sac_nbr_days integer,
+    agreement_score_big_indr character varying(1),
+    agreement_score_big_date date,
+    agreement_score_big_times integer,
+    agreement_last_score_big_date date,
+    agreement_last_re_open_date date,
+    agreement_times_re_opened integer,
+    agreement_ttl_days_late_re_open integer,
+    agreement_days_late_re_open integer,
+    agreement_rto_receivable_amt numeric(11,2),
+    agreement_previous_agmt_revenue numeric(11,2),
+    agreement_orig_pmt_mode character varying(1),
+    agreement_curr_pmt_mode character varying(1),
+    agreement_mo_contract_amt numeric(11,2),
+    agreement_wk_contract_amt numeric(11,2),
+    agreement_weekly_grp_amt numeric(11,2),
+    agreement_terms_weekly integer,
+    agreement_terms_monthly integer,
+    agreement_rent_ctrl_record_nbr integer,
+    agreement_str_recur_pmt_override character varying(1),
+    agreement_recur_pmt_switch character varying(1),
+    agreement_monthly_grp_amt numeric(11,2),
+    agreement_bi_wk_contract_amt numeric(11,2),
+    agreement_semi_mo_contract_amt numeric(11,2),
+    agreement_orig_contract_amt numeric(11,2),
+    agreement_bi_wk_grp_amt numeric(11,2),
+    agreement_orig_contract_length character varying(1),
+    agreement_semi_mo_grp_amt numeric(11,2),
+    agreement_orig_grp_amt numeric(11,2),
+    agreement_premium_amt numeric(11,2),
+    agreement_collection_ind character varying(1),
+    agreement_oaorder_acct_nbr bigint,
+    agreement_oaorder_acct_nbr_seq integer,
+    agreement_return_code character varying(2),
+    agreement_sm_day_1 integer,
+    agreement_sm_day_2 integer,
+    agreement_source_code_2 character varying(2),
+    agreement_source_code_3 character varying(2),
+    agreement_source_code_4 character varying(2),
+    agreement_closed_reason character varying(2),
+    agreement_contract_year integer,
+    agreement_contract_month integer,
+    agreement_contract_day integer,
+    agreement_next_due_year integer,
+    agreement_next_due_month integer,
+    agreement_next_due_day integer,
+    ht_etl_schema character varying(10) DEFAULT 'public'::character varying NOT NULL,
+    agreement_days_free integer,
+    agreement_ext_days integer,
+    agreement_times_pd_1 integer,
+    agreement_times_pd_2 integer,
+    agreement_times_pd_3 integer,
+    agreement_tot_nbr_pmts integer
+);
+ALTER TABLE corrto.level2_agreement_versions OWNER TO postgres;
+CREATE SEQUENCE level2_agreement_versions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+ALTER TABLE corrto.level2_agreement_versions_id_seq OWNER TO postgres;
+ALTER SEQUENCE level2_agreement_versions_id_seq OWNED BY level2_agreement_versions.id;
+ALTER TABLE ONLY level2_agreement_versions ALTER COLUMN id SET DEFAULT nextval('level2_agreement_versions_id_seq'::regclass);
+ALTER TABLE ONLY level2_agreement_versions
+    ADD CONSTRAINT level2_agreement_versions_pkey PRIMARY KEY (id);
+CREATE INDEX index_level2_agreement_versions_on_agreement_contract_date ON level2_agreement_versions USING btree (agreement_contract_date);
+CREATE INDEX index_level2_agreement_versions_on_agreement_open_flag ON level2_agreement_versions USING btree (agreement_open_flag);
+CREATE INDEX index_level2_agreement_versions_on_row_creator_id ON level2_agreement_versions USING btree (row_creator_id);
+CREATE INDEX index_level2_agreement_versions_on_store_id ON level2_agreement_versions USING btree (store_id);
+CREATE UNIQUE INDEX index_level2_agreement_versions_unique_constraint ON level2_agreement_versions USING btree (agreement_id, agreement_open_flag, agreement_sequence_number);
+
