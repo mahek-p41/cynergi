@@ -55,6 +55,8 @@ if (options != null && !options.h) {
       tables.add("${schemaName}.level2_locations")
       tables.add("${schemaName}.level2_vendors")
       tables.add("${schemaName}.level2_customers")
+      tables.add("${schemaName}.level2_agreements")
+      tables.add("${schemaName}.level2_agreement_versions")
       tables.add("${schemaName}.level1_operators")
       tables.add("${schemaName}.level1_furn_cols")
 
