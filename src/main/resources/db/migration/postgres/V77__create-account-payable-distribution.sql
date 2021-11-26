@@ -9,8 +9,8 @@ CREATE TABLE account_payable_payment_distribution
    distribution_amount                 NUMERIC(11,2)                                   NOT NULL
 );
 
-CREATE TRIGGER account_payable_distribution_trg
+CREATE TRIGGER account_payable_payment_distribution_trg
    BEFORE UPDATE
-   ON account_payable_distribution
+   ON account_payable_payment_distribution
    FOR EACH ROW
 EXECUTE PROCEDURE update_user_table_fn();
