@@ -5,12 +5,12 @@ pushd ../development > /dev/null
 
 if [ -z `docker-compose ps -q cynergidb` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q cynergidb)` ]; then
   docker rm -f cynergidb >> /tmp/cynergi-dev.log 2>&1
-  docker-compose build --force-rm --quiet cynergibasedb
-  docker-compose build --force-rm --quiet cynergidb
+  docker-compose build --force-rm cynergibasedb
+  docker-compose build --force-rm cynergidb
   docker-compose up -d --no-deps cynergidb
 
   if [ $? -eq 0 ]; then
-    docker-compose build --force-rm --quiet cynergidbready && docker-compose run --rm cynergidbready
+    docker-compose build --force-rm cynergidbready && docker-compose run --rm cynergidbready
 
     if [ $? -eq 0 ]; then
       echo ""
