@@ -33,4 +33,8 @@ class CompanyService @Inject constructor(
 
       return CompanyDTO(companyRepository.update(existing, toUpdate))
    }
+
+   fun delete(id: UUID ) {
+      companyRepository.delete(id)
+   }
 }

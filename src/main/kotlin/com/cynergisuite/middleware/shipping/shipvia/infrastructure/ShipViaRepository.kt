@@ -65,7 +65,7 @@ class ShipViaRepository @Inject constructor(
          comp.address_fax              AS address_fax,
          count(*) OVER()               AS total_elements
       FROM ship_via shipVia
-           JOIN company comp ON shipVia.company_id = comp.id
+           JOIN company comp ON shipVia.company_id = comp.id AND comp.deleted = FALSE
    """
 
    @ReadOnly fun findOne(id: UUID, company: CompanyEntity): ShipViaEntity? {

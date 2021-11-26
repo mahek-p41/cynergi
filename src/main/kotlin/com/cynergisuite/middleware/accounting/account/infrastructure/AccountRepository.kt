@@ -59,7 +59,7 @@ class AccountRepository @Inject constructor(
             status.localization_code                     AS account_status_localization_code
          FROM account
                JOIN company comp
-                     ON comp.id = account.company_id
+                     ON comp.id = account.company_id AND comp.deleted = FALSE
                JOIN account_type_domain type
                      ON type.id = account.type_id
                JOIN normal_account_balance_type_domain balance_type
@@ -72,7 +72,7 @@ class AccountRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): AccountEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE account.id = :id AND comp.id = :comp_id AND deleted = FALSE"
+      val query = "${selectBaseQuery()} WHERE account.id = :id AND comp.id = :comp_id AND account.deleted = FALSE"
       val found = jdbc.findFirstOrNull(
          query,
          params
@@ -88,7 +88,7 @@ class AccountRepository @Inject constructor(
    @ReadOnly
    fun findByNumber(number: Long, company: CompanyEntity): AccountEntity? {
       val params = mutableMapOf<String, Any?>("number" to number, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE account.number = :number AND comp.id = :comp_id AND deleted = FALSE"
+      val query = "${selectBaseQuery()} WHERE account.number = :number AND comp.id = :comp_id and account.deleted = FALSE"
       val found = jdbc.findFirstOrNull(
          query,
          params
@@ -110,7 +110,7 @@ class AccountRepository @Inject constructor(
          """
          WITH paged AS (
             ${selectBaseQuery()}
-            WHERE comp.id = :comp_id AND deleted = FALSE
+            WHERE comp.id = :comp_id AND account.deleted = FALSE
          )
          SELECT
             p.*,
@@ -141,7 +141,7 @@ class AccountRepository @Inject constructor(
    @ReadOnly
    fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<AccountEntity, PageRequest> {
       var searchQuery = page.query
-      val where = StringBuilder(" WHERE comp.id = :comp_id  AND deleted = FALSE")
+      val where = StringBuilder(" WHERE comp.id = :comp_id AND account.deleted = FALSE")
       val sortBy = if (!searchQuery.isNullOrEmpty()) {
          if (page.fuzzy == false) {
             where.append(" AND (search_vector @@ to_tsquery(:search_query)) ")

@@ -231,7 +231,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
             status.localization_code                                  AS apInvoice_status_localization_code,
             count(*) OVER()                                           AS total_elements
          FROM account_payable_invoice apInvoice
-            JOIN company comp                                           ON apInvoice.company_id = comp.id
+            JOIN company comp                                           ON apInvoice.company_id = comp.id AND comp.deleted = FALSE
             JOIN vend                                                   ON apInvoice.vendor_id = vend.v_id
             JOIN employee                                               ON apInvoice.employee_number_id_sfk = employee.emp_number AND employee.comp_id = comp.id
             JOIN account_payable_invoice_selected_type_domain selected  ON apInvoice.selected_id = selected.id

@@ -53,7 +53,7 @@ class LocationRepository @Inject constructor(
             address.phone                 AS address_phone,
             address.fax                   AS address_fax
          FROM fastinfo_prod_import.location_vw location
-              JOIN company comp ON comp.dataset_code = location.dataset
+              JOIN company comp ON comp.dataset_code = location.dataset AND comp.deleted = FALSE
               LEFT JOIN address ON comp.address_id = address.id AND address.deleted = FALSE
       """
    }
@@ -140,7 +140,7 @@ class LocationRepository @Inject constructor(
          """
             SELECT count(location.id) > 0
             FROM fastinfo_prod_import.location_vw location
-               JOIN company comp ON comp.dataset_code = location.dataset
+               JOIN company comp ON comp.dataset_code = location.dataset AND comp.deleted = FALSE
             WHERE location.id = :location_id
          """.trimIndent(),
          mapOf("location_id" to id, "comp_id" to company.id),
@@ -158,7 +158,7 @@ class LocationRepository @Inject constructor(
          """
             SELECT count(location.id) > 0
             FROM fastinfo_prod_import.location_vw location
-               JOIN company comp ON comp.dataset_code = location.dataset
+               JOIN company comp ON comp.dataset_code = location.dataset AND comp.deleted = FALSE
             WHERE location.number = :location_number
                AND comp.id = :comp_id
          """.trimIndent(),

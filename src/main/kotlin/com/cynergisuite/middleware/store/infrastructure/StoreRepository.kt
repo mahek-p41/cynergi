@@ -73,7 +73,7 @@ class StoreRepository @Inject constructor(
             division.name                 AS div_name,
             division.description          AS div_description
          FROM fastinfo_prod_import.store_vw store
-              JOIN company comp ON comp.dataset_code = store.dataset
+              JOIN company comp ON comp.dataset_code = store.dataset AND comp.deleted = FALSE
               LEFT JOIN address ON comp.address_id = address.id AND address.deleted = FALSE
               LEFT OUTER JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = :comp_id
               LEFT OUTER JOIN region ON r2s.region_id = region.id AND region.deleted = FALSE
@@ -103,6 +103,7 @@ class StoreRepository @Inject constructor(
          ${selectBaseQuery()}
          WHERE store.id = :id
                AND comp.id = :comp_id
+               AND comp.deleted = FALSE
                AND $subQuery
       """.trimMargin()
 
@@ -119,7 +120,7 @@ class StoreRepository @Inject constructor(
    fun findOne(number: Int, company: CompanyEntity): StoreEntity? {
       val params = mutableMapOf("number" to number, "comp_id" to company.id)
       val query =
-         """${selectBaseQuery()} WHERE store.number = :number AND comp.id = :comp_id
+         """${selectBaseQuery()} WHERE store.number = :number AND comp.id = :comp_id AND comp.deleted = FALSE
                                                 AND $subQuery
       """.trimMargin()
 
@@ -138,7 +139,7 @@ class StoreRepository @Inject constructor(
       val params = mutableMapOf("comp_id" to company.id, "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       var totalElements: Long? = null
       val elements = mutableListOf<StoreEntity>()
-      val pagedQuery = StringBuilder("${selectBaseQuery()} WHERE comp.id = :comp_id AND $subQuery")
+      val pagedQuery = StringBuilder("${selectBaseQuery()} WHERE comp.id = :comp_id AND comp.deleted = FALSE AND $subQuery")
 
       when (user.myAlternativeStoreIndicator()) {
          // with value 'A' return all stores
@@ -192,7 +193,7 @@ class StoreRepository @Inject constructor(
          """
          SELECT count(store.id) > 0
          FROM fastinfo_prod_import.store_vw store
-            JOIN company comp ON comp.dataset_code = store.dataset
+            JOIN company comp ON comp.dataset_code = store.dataset AND comp.deleted = FALSE
             LEFT JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = comp.id
             LEFT JOIN region ON  r2s.region_id = region.id AND region.deleted = FALSE
 			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id AND division.deleted = FALSE
@@ -218,7 +219,7 @@ class StoreRepository @Inject constructor(
          """
          SELECT count(store.id) > 0
          FROM fastinfo_prod_import.store_vw store
-            JOIN company comp ON comp.dataset_code = store.dataset
+            JOIN company comp ON comp.dataset_code = store.dataset AND comp.deleted = FALSE
             LEFT JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = comp.id
             LEFT JOIN region ON  r2s.region_id = region.id AND region.deleted = FALSE
 			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id AND division.deleted = FALSE

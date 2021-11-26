@@ -66,7 +66,7 @@ class VendorGroupRepository @Inject constructor(
          comp.address_fax            AS address_fax,
          count(*) OVER()             AS total_elements
       FROM vendor_group vgrp
-           JOIN company comp ON vgrp.company_id = comp.id
+           JOIN company comp ON vgrp.company_id = comp.id AND comp.deleted = FALSE
    """
 
    @ReadOnly fun exists(value: String, company: CompanyEntity): Boolean {

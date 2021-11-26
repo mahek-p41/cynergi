@@ -78,7 +78,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
             source.description                                        AS source_description,
             source.deleted                                            AS source_deleted
          FROM general_ledger_detail glDetail
-            JOIN company comp ON glDetail.company_id = comp.id
+            JOIN company comp ON glDetail.company_id = comp.id AND comp.deleted = FALSE
             JOIN fastinfo_prod_import.store_vw profitCenter
                     ON profitCenter.dataset = comp.dataset_code
                        AND profitCenter.number = glDetail.profit_center_id_sfk

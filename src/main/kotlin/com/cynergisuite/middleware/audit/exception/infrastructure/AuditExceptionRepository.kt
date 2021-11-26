@@ -156,7 +156,7 @@ class AuditExceptionRepository @Inject constructor(
       FROM audit_exception auditException
            JOIN audit_scan_area AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
            JOIN audit a ON auditException.audit_id = a.id
-           JOIN company comp ON a.company_id = comp.id
+           JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
            JOIN employees scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
            JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND auditScanArea.store_number_sfk = store.number
            LEFT OUTER JOIN employees approvedBy ON auditException.approved_by = approvedBy.emp_number AND comp.id = approvedBy.comp_id
@@ -327,7 +327,7 @@ class AuditExceptionRepository @Inject constructor(
             FROM audit_exception auditException
                JOIN audit_scan_area AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
                JOIN audit a ON auditException.audit_id = a.id
-               JOIN company comp ON a.company_id = comp.id
+               JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
                JOIN employees scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
                JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND auditScanArea.store_number_sfk = store.number
                LEFT OUTER JOIN employees approvedBy ON auditException.approved_by = approvedBy.emp_number AND comp.id = approvedBy.comp_id

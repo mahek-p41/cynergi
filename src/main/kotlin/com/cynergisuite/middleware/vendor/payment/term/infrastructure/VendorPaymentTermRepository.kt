@@ -82,7 +82,7 @@ class VendorPaymentTermRepository @Inject constructor(
          vpts.schedule_order_number AS vpts_schedule_order_number,
          count(*) OVER()            AS total_elements
       FROM vendor_payment_term vpt
-           JOIN company comp ON vpt.company_id = comp.id
+           JOIN company comp ON vpt.company_id = comp.id AND comp.deleted = FALSE
            LEFT OUTER JOIN vendor_payment_term_schedule vpts ON vpt.id = vpts.vendor_payment_term_id
    """
 
@@ -153,8 +153,8 @@ class VendorPaymentTermRepository @Inject constructor(
                comp.address_fax           AS address_fax,
                count(*) OVER () AS total_elements
             FROM vendor_payment_term vpt
-               JOIN company comp ON vpt.company_id = comp.id
-            WHERE comp.id = :comp_id AND deleted = false
+               JOIN company comp ON vpt.company_id = comp.id AND comp.deleted = FALSE
+            WHERE comp.id = :comp_id AND vpt.deleted = false
             ORDER BY vpt_${page.snakeSortBy()} ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
          )

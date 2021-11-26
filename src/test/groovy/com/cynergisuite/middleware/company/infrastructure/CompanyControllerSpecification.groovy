@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.address.AddressTestDataLoaderService
 import com.cynergisuite.middleware.company.CompanyDTO
 import com.cynergisuite.middleware.company.CompanyFactory
+import com.cynergisuite.middleware.employee.EmployeeTestDataLoaderService
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import io.micronaut.core.type.Argument
@@ -18,7 +19,9 @@ import javax.inject.Inject
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.POST
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.CONFLICT
 import static io.micronaut.http.HttpStatus.METHOD_NOT_ALLOWED
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
@@ -27,6 +30,8 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
    private JsonSlurper jsonSlurper = new JsonSlurper()
    @Inject AddressTestDataLoaderService addressTestDataLoaderService
    @Inject AddressRepository addressRepository
+   @Inject CompanyRepository companyRepository
+   @Inject EmployeeTestDataLoaderService employeeTestDataLoader
 
    private static String path = '/company'
 
@@ -444,7 +449,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       def exception = thrown(HttpClientResponseException)
       exception.status == METHOD_NOT_ALLOWED
       def response = exception.response.bodyAsJson()
-      response.message == "Method [POST] not allowed for URI [/api/company/${tstds1.id}]. Allowed methods: [HEAD, GET, PUT]"
+      response.message == "Method [POST] not allowed for URI [/api/company/${tstds1.id}]. Allowed methods: [HEAD, DELETE, GET, PUT]"
    }
 
    void "update a valid company by removing address" () {
@@ -667,5 +672,44 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
          it.address.name == "Test update name"
       }
       addressRepository.findById(addressId).get().name == "Test update name"
+   }
+
+   void "delete a company with reference" () {
+      given:
+      final address = addressTestDataLoaderService.single()
+      final company = companyFactoryService.single(address)
+      final employee = employeeTestDataLoader.single(company)
+
+
+      when:
+      delete("$path/$company.id")
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == CONFLICT
+      def response = exception.response.bodyAsJson()
+      response.message == "Requested operation violates data integrity"
+      response.code == "cynergi.data.constraint.violated"
+   }
+
+   void "delete company" () {
+      given:
+      final address = addressTestDataLoaderService.single()
+      final company = companyFactoryService.single(address)
+
+      when:
+      delete("$path/$company.id", )
+
+      then: " user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("$path/$company.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "$company.id was unable to be found"
+      response.code == "system.not.found"
    }
 }

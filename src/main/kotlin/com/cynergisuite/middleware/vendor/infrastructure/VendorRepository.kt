@@ -157,7 +157,7 @@ class VendorRepository @Inject constructor(
             vgrp.description                      AS v_vgrp_description,
             count(*) OVER()                       AS total_elements
          FROM vendor v
-            JOIN company comp                            ON v.company_id = comp.id
+            JOIN company comp                            ON v.company_id = comp.id AND comp.deleted = FALSE
             JOIN freight_on_board_type_domain onboard    ON onboard.id = v.freight_on_board_type_id
             JOIN freight_calc_method_type_domain method  ON method.id = v.freight_calc_method_type_id
             JOIN vendor_payment_term vpt                 ON vpt.id = v.vendor_payment_term_id

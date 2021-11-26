@@ -205,7 +205,7 @@ class FinancialCalendarRepository @Inject constructor(
          SET
             general_ledger_open = :general_ledger_open
          FROM financial_calendar finCal
-            JOIN company ON finCal.company_id = company.id
+            JOIN company ON finCal.company_id = company.id AND company.deleted = FALSE
             JOIN overall_period_type_domain overallPeriod ON overallPeriod.id = finCal.overall_period_id
          WHERE finCal.company_id = :company_id
             AND overallPeriod.value = :financial_period
@@ -254,7 +254,7 @@ class FinancialCalendarRepository @Inject constructor(
          SET
             account_payable_open = :account_payable_open
          FROM financial_calendar finCal
-            JOIN company ON finCal.company_id = company.id
+            JOIN company ON finCal.company_id = company.id AND company.deleted = FALSE
             JOIN overall_period_type_domain overallPeriod ON overallPeriod.id = finCal.overall_period_id
          WHERE finCal.company_id = :company_id
             AND overallPeriod.value = :financial_period

@@ -143,7 +143,7 @@ abstract class AuthenticationRepository @Inject constructor(
          fallbackLoc.number             AS fallback_location_number,
          fallbackLoc.name               AS fallback_location_name
       FROM authenticated_user_vw au
-           JOIN company comp ON comp.id = au.company_id
+           JOIN company comp ON comp.id = au.company_id AND comp.deleted = FALSE
            LEFT JOIN address compAddr on comp.address_id = compAddr.id AND compAddr.deleted = FALSE
            LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND au.department = dept.code
            LEFT OUTER JOIN fastinfo_prod_import.store_vw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND au.store_number = assignedLoc.number
@@ -302,7 +302,7 @@ abstract class AuthenticationRepository @Inject constructor(
          compAddr.phone                 AS fallback_location_company_address_phone,
          compAddr.fax                   AS fallback_location_company_address_fax
       FROM authenticated_user_vw au
-           JOIN company comp ON comp.id = au.company_id
+           JOIN company comp ON comp.id = au.company_id AND comp.deleted = FALSE
            LEFT JOIN address compAddr on comp.address_id = compAddr.id AND compAddr.deleted = FALSE
            LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND au.department = dept.code
            LEFT OUTER JOIN fastinfo_prod_import.store_vw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND au.store_number = assignedLoc.number

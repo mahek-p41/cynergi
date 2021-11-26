@@ -154,7 +154,7 @@ class AuditRepository @Inject constructor(
          comp.address_phone                                            AS address_phone,
          comp.address_fax                                              AS address_fax
       FROM audit a
-           JOIN company comp ON a.company_id = comp.id
+           JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
            JOIN audit_action auditAction ON a.id = auditAction.audit_id
            JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
            JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
@@ -203,14 +203,14 @@ class AuditRepository @Inject constructor(
                 FROM audit a
                     JOIN status s ON s.audit_id = a.id
                     JOIN maxStatus ms ON s.id = ms.current_status_id
-                    JOIN company comp ON a.company_id = comp.id
+                    JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
                     JOIN division div ON comp.id = div.company_id AND div.deleted = FALSE
                     JOIN region reg ON div.id = reg.division_id AND reg.deleted = FALSE
                 $whereClause) AS total_elements
             FROM audit a
                  JOIN status s ON s.audit_id = a.id
                  JOIN maxStatus ms ON s.id = ms.current_status_id
-                 JOIN company comp ON a.company_id = comp.id
+                 JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
                  JOIN division div ON comp.id = div.company_id AND div.deleted = FALSE
                  JOIN region reg ON div.id = reg.division_id AND reg.deleted = FALSE
             $whereClause
@@ -296,7 +296,7 @@ class AuditRepository @Inject constructor(
             comp.address_fax                                    AS address_fax,
             total_elements                                      AS total_elements
          FROM audits a
-              JOIN company comp ON a.company_id = comp.id
+              JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
               JOIN audit_action auditAction ON a.id = auditAction.audit_id
               JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
               JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
@@ -514,7 +514,7 @@ class AuditRepository @Inject constructor(
             comp.address_fax                                    AS address_fax,
             count(*) OVER() AS total_elements
          FROM audit a
-               JOIN company comp ON a.company_id = comp.id
+               JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
                JOIN fastinfo_prod_import.store_vw auditStore
                      ON comp.dataset_code = auditStore.dataset
                         AND a.store_number = auditStore.number
@@ -617,7 +617,7 @@ class AuditRepository @Inject constructor(
             status.current_status_color AS current_status_color,
             count(*) AS current_status_count
          FROM audit a
-            JOIN company comp ON a.company_id = comp.id
+            JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
             JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
