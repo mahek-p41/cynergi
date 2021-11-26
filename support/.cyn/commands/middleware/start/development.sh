@@ -29,6 +29,7 @@ if [ $? -eq 0 ]; then
   else
     echo "SFTP Server did not start successfully, not starting middleware"
     exit 2
+  fi
 else
   echo "Database did not successfully start, not starting middleware"
   exit 1
