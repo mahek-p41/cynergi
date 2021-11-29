@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-export GROUP_ID=$(id -g)
-export USER_ID=$(id -u)
+export GROUP_ID=1001
+export USER_ID=1001
 
 alias docker-compose="GROUP_ID=$GROUP_ID USER_ID=$USER_ID docker-compose"
 
