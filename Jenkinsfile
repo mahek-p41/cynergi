@@ -42,7 +42,6 @@ pipeline {
                          sh "docker run -i --rm --network ${networkId} cynergibasedb:${env.BRANCH_NAME} /opt/scripts/db-ready.sh cynergitestdb${env.BRANCH_NAME}"
 
                          cynmid.inside(
-                            "--rm " +
                             "--network ${networkId} "+
                             "-v ${workspace}/gradleCache:/home/jenkins/caches " +
                             "-v ${workspace}/gradleWrapper:/home/jenkins/wrapper " +
