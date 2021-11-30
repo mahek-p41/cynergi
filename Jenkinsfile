@@ -86,7 +86,6 @@ pipeline {
                def cynmidtar = docker.build("middlewaretar:${env.BRANCH_NAME}", "-f ./support/deployment/cynmid/cynmid.dockerfile --build-arg USER_ID=$jenkinsUid --build-arg GROUP_ID=$jenkinsGid --build-arg GROOVY_VER=3.0.9 ./support/deployment/cynmid")
 
                cynmidtar.inside(
-                  "--rm " +
                   "-v ${workspace}/gradleCache:/home/jenkins/caches " +
                   "-v ${workspace}/gradleWrapper:/home/jenkins/wrapper " +
                   "-v ${workspace}:/home/jenkins/cynergi-middleware " +
