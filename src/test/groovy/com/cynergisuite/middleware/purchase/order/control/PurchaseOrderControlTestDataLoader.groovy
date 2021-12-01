@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.purchase.order.control
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeDataLoader
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -13,6 +12,7 @@ import com.cynergisuite.middleware.purchase.order.type.DefaultPurchaseOrderTypeD
 import com.cynergisuite.middleware.purchase.order.type.DefaultPurchaseOrderTypeTestDataLoader
 import com.cynergisuite.middleware.purchase.order.type.UpdatePurchaseOrderCostTypeTestDataLoader
 import com.cynergisuite.middleware.purchase.order.type.UpdatePurchaseOrderCostTypeValueObject
+import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
@@ -57,7 +57,7 @@ class PurchaseOrderControlTestDataLoader {
 
    static Stream<PurchaseOrderControlDTO> streamDTO(
       int numberIn = 1,
-      SimpleIdentifiableDTO defaultVendor,
+      VendorDTO defaultVendor,
       EmployeeEntity defaultApprover
    ) {
       final number = numberIn > 0 ? numberIn : 1
@@ -107,7 +107,7 @@ class PurchaseOrderControlTestDataLoaderService {
       return stream(1, company, defaultVendor, defaultApprover).findFirst().orElseThrow { new Exception("Unable to create PurchaseOrderControl") }
    }
 
-   PurchaseOrderControlDTO singleDTO(SimpleIdentifiableDTO defaultVendor, EmployeeEntity defaultApprover) {
+   PurchaseOrderControlDTO singleDTO(VendorDTO defaultVendor, EmployeeEntity defaultApprover) {
       return PurchaseOrderControlTestDataLoader.streamDTO(1, defaultVendor, defaultApprover).findFirst().orElseThrow { new Exception("Unable to create PurchaseOrderControl") }
    }
 }
