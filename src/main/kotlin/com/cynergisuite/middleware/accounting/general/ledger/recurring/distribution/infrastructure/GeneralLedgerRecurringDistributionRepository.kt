@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.infrastructure
 
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.*
@@ -155,6 +156,23 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
          ),
          page
       ) { rs, elements ->
+         do {
+            elements.add(mapRow(rs, company, "glRecurringDist_"))
+         } while (rs.next())
+      }
+   }
+
+   @ReadOnly
+   fun findAllByRecurringId(glRecurringId: UUID, company: CompanyEntity): List<GeneralLedgerRecurringDistributionEntity> {
+      return jdbc.queryFullList(
+         """
+            ${selectBaseQuery()}
+            WHERE glRecurringDist.general_ledger_recurring_id = :glRecurringId AND glRecurringDist.deleted = FALSE
+         """.trimIndent(),
+         mapOf(
+            "glRecurringId" to glRecurringId
+         )
+      ) { rs, _, elements ->
          do {
             elements.add(mapRow(rs, company, "glRecurringDist_"))
          } while (rs.next())
