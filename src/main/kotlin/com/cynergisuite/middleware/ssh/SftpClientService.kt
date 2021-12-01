@@ -13,9 +13,8 @@ import javax.inject.Singleton
 
 @Singleton
 class SftpClientService {
-
-   val verifyDuration: Duration = Duration.ofSeconds(30L)
-   val logger: Logger = LoggerFactory.getLogger(SftpClientService::class.java)
+   private val verifyDuration: Duration = Duration.ofSeconds(30L)
+   private val logger: Logger = LoggerFactory.getLogger(SftpClientService::class.java)
 
    fun transferFile(fileName: Path, username: String, password: String, host: String, port: Int, copyTo: (fileChannel: FileChannel) -> Unit) {
       logger.debug("Creating ssh client for {}/{}", host, port)
