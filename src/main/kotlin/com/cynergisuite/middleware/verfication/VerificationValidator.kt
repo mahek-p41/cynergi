@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.localization.NotUpdatable
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 class VerificationValidator(

@@ -7,7 +7,7 @@ import io.micronaut.transaction.annotation.ReadOnly
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 class AuditPermissionTypeRepository(

@@ -1,5 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE EXTENSION IF NOT EXISTS file_fdw;
 CREATE SCHEMA fastinfo_prod_import;
 
 CREATE TABLE fastinfo_prod_import.store_vw (
@@ -153,6 +154,10 @@ INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, 
 INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (36, 999, 1, 'tstds2', 'PAP', 'PAYMENT', 'pass', 'MG', true);
 INSERT INTO fastinfo_prod_import.employee_vw(id, number, store_number, dataset, last_name, first_name_mi, pass_code, department, active) VALUES (37, 99998, 1, 'tstds2', '2-Way SMS', null, 'pass', 'HO', true);
 
+DROP SERVER IF EXISTS fastinfo CASCADE;
+CREATE SERVER fastinfo
+   FOREIGN DATA WRAPPER file_fdw;
+
 CREATE TABLE fastinfo_prod_import.inventory_vw (
    id               BIGSERIAL                             NOT NULL PRIMARY KEY,
    dataset          VARCHAR(6)                            NOT NULL,
@@ -213,17 +218,157 @@ COPY fastinfo_prod_import.inventory_vw(
 )
 FROM '/tmp/fastinfo/test-inventory.csv' DELIMITER ',' CSV HEADER;
 
-CREATE TABLE fastinfo_prod_import.location_vw (
-   id           BIGSERIAL                                             NOT NULL PRIMARY KEY,
-   number       INTEGER,
-   name         VARCHAR(27),
-   dataset      VARCHAR(6)                                            NOT NULL,
-   time_created TIMESTAMPTZ  DEFAULT clock_timestamp()                NOT NULL,
-   time_updated TIMESTAMPTZ  DEFAULT clock_timestamp()                NOT NULL
-);
+CREATE FOREIGN TABLE fastinfo_prod_import.location_vw (
+   id BIGINT,
+   dataset VARCHAR,
+   number INTEGER,
+   name VARCHAR
+) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-location.csv', format 'csv', header 'TRUE');
 
-COPY fastinfo_prod_import.location_vw(
-    dataset,
-    number,
-    name
-) FROM '/tmp/fastinfo/test-location.csv' DELIMITER ',' CSV HEADER;
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_active_customer_vw (
+   dataset VARCHAR,
+   store_id INTEGER,
+   people_id VARCHAR,
+   unique_id VARCHAR,
+   first_name VARCHAR,
+   last_name VARCHAR,
+   address_1 VARCHAR,
+   address_2 VARCHAR,
+   city VARCHAR,
+   state VARCHAR,
+   zip VARCHAR,
+   cell_phone_number VARCHAR,
+   home_phone_number VARCHAR,
+   email VARCHAR,
+   agreement_id VARCHAR,
+   payment_frequency VARCHAR,
+   text_opt_in VARCHAR,
+   online_indicator VARCHAR,
+   care_plus VARCHAR,
+   projected_payout INTEGER,
+   payments_left_in_weeks INTEGER,
+   past_due VARCHAR,
+   days_past_due INTEGER
+) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-active-customer.csv', format 'csv', header 'TRUE');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_vw (
+   dataset VARCHAR,
+   store_id INTEGER,
+   people_id VARCHAR,
+   unique_id VARCHAR,
+   first_name VARCHAR,
+   last_name VARCHAR,
+   address_1 VARCHAR,
+   address_2 VARCHAR,
+   city VARCHAR,
+   state VARCHAR,
+   zip VARCHAR,
+   cell_phone_number VARCHAR,
+   home_phone_number VARCHAR,
+   email VARCHAR,
+   agreement_id VARCHAR,
+   days_late INTEGER
+) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-collection.csv', format 'csv', header 'TRUE');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_birthday_customer_vw (
+   dataset VARCHAR,
+   store_id INTEGER,
+   people_id VARCHAR,
+   unique_id VARCHAR,
+   first_name VARCHAR,
+   last_name VARCHAR,
+   address_1 VARCHAR,
+   address_2 VARCHAR,
+   city VARCHAR,
+   state VARCHAR,
+   zip VARCHAR,
+   cell_phone_number VARCHAR,
+   home_phone_number VARCHAR,
+   email VARCHAR,
+   birth_day DATE
+) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-birthday-customer.csv', format 'csv', header 'TRUE');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_last_week_deliveries_vw (
+   dataset VARCHAR,
+   store_id INTEGER,
+   people_id VARCHAR,
+   unique_id VARCHAR,
+   first_name VARCHAR,
+   last_name VARCHAR,
+   address_1 VARCHAR,
+   address_2 VARCHAR,
+   city VARCHAR,
+   state VARCHAR,
+   zip VARCHAR,
+   cell_phone_number VARCHAR,
+   home_phone_number VARCHAR,
+   email VARCHAR,
+   agreement_id VARCHAR,
+   purchase_date DATE,
+   current_customer_status VARCHAR,
+   new_customer VARCHAR
+) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-last-week-deliveries.csv', format 'csv', header 'TRUE');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_last_week_payouts_vw (
+   dataset VARCHAR,
+   store_id INTEGER,
+   people_id VARCHAR,
+   unique_id VARCHAR,
+   first_name VARCHAR,
+   last_name VARCHAR,
+   address_1 VARCHAR,
+   address_2 VARCHAR,
+   city VARCHAR,
+   state VARCHAR,
+   zip VARCHAR,
+   cell_phone_number VARCHAR,
+   home_phone_number VARCHAR,
+   email VARCHAR,
+   agreement_id VARCHAR,
+   final_status VARCHAR,
+   payout_date DATE
+) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-last-week-payouts.csv', format 'csv', header 'TRUE');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_future_payout_vw (
+   dataset VARCHAR,
+   store_id INTEGER,
+   people_id VARCHAR,
+   unique_id VARCHAR,
+   first_name VARCHAR,
+   last_name VARCHAR,
+   address_1 VARCHAR,
+   address_2 VARCHAR,
+   city VARCHAR,
+   state VARCHAR,
+   zip VARCHAR,
+   cell_phone_number VARCHAR,
+   home_phone_number VARCHAR,
+   email VARCHAR,
+   agreement_id VARCHAR,
+   number_payments_left_in_months INTEGER
+) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-future-payout.csv', format 'csv', header 'TRUE');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_inactive_customer_vw (
+   dataset VARCHAR,
+   store_id INTEGER,
+   people_id VARCHAR,
+   customer_id INTEGER,
+   unique_id VARCHAR,
+   first_name VARCHAR,
+   last_name VARCHAR,
+   address_1 VARCHAR,
+   address_2 VARCHAR,
+   city VARCHAR,
+   state VARCHAR,
+   zip VARCHAR,
+   cell_phone_number VARCHAR,
+   home_phone_number VARCHAR,
+   email VARCHAR,
+   birth_day DATE,
+   agreement_id VARCHAR,
+   inactive_date DATE,
+   reason_indicator VARCHAR,
+   reason VARCHAR,
+   amount_paid VARCHAR,
+   customer_rating VARCHAR
+) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-inactive-customer.csv', format 'csv', header 'TRUE');

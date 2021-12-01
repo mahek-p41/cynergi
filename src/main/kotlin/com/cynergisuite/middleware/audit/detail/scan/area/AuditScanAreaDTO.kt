@@ -4,11 +4,13 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.store.StoreDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.UUID
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "AuditScanAreaEntity", title = "Area where an item was scanned", description = "Possible location within a store where an item was scanned as part of an audit")
 data class AuditScanAreaDTO(

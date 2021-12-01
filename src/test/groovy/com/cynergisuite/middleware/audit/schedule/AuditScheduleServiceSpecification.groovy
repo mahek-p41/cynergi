@@ -10,7 +10,7 @@ import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 import static java.time.DayOfWeek.FRIDAY
 import static java.time.DayOfWeek.MONDAY

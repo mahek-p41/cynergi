@@ -7,7 +7,7 @@ import java.io.OutputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.util.concurrent.ForkJoinPool
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 class CynergiExecutor {

@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.department.infrastructure.DepartmentRepositor
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.NotFound
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 class AuditPermissionValidator(

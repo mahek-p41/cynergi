@@ -4,10 +4,12 @@ import com.cynergisuite.domain.LegacyIdentifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "Location", title = "A location where rental inventory is processed", description = "A location within Cynergi where rental items in inventory are managed.", requiredProperties = ["number"])
 data class LocationDTO(

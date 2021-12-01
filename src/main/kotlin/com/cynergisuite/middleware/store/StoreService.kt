@@ -5,8 +5,8 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class StoreService @Inject constructor(

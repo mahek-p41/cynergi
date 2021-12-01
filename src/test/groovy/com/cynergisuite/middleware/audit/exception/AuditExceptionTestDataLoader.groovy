@@ -11,8 +11,8 @@ import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 import org.apache.commons.lang3.RandomUtils
 
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import java.time.OffsetDateTime
 import java.util.stream.IntStream
 import java.util.stream.Stream

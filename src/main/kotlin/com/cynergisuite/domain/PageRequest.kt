@@ -7,6 +7,7 @@ import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_SORT_DIRECTION
 import com.cynergisuite.extensions.isAllSameCase
 import com.google.common.base.CaseFormat.LOWER_CAMEL
 import com.google.common.base.CaseFormat.LOWER_UNDERSCORE
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
@@ -33,6 +34,7 @@ interface PageRequest {
    fun copyFillInDefaults(): PageRequest
 }
 
+@Introspected
 @Schema(
    name = "PageRequestBase",
    title = "Basic implementation of a page request"
@@ -138,6 +140,7 @@ abstract class PageRequestBase<out PAGE : PageRequest>(
    description = "This is the form of the URL parameters that can be used to query for a subset of a larger dataset. Example: ?page=1&size=10&sortBy=id&sortDirection=ASC",
    allOf = [PageRequestBase::class]
 )
+@Introspected
 class StandardPageRequest(
    page: Int? = null,
    size: Int? = null,

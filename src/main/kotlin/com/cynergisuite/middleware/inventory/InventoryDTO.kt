@@ -6,10 +6,12 @@ import com.cynergisuite.middleware.json.view.Full
 import com.cynergisuite.middleware.json.view.InventoryApp
 import com.cynergisuite.middleware.store.StoreDTO
 import com.fasterxml.jackson.annotation.JsonView
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
 
+@Introspected
 @JsonView
 @Schema(name = "Inventory", title = "Inventory Item", description = "Single item in inventory")
 data class InventoryDTO(
@@ -155,5 +157,5 @@ data class InventoryDTO(
          dataset = item.primaryLocation.myCompany().datasetCode
       )
 
-   override fun myId(): Long? = id
+   override fun myId(): Long = id
 }

@@ -3,12 +3,12 @@ package com.cynergisuite.middleware.authentication.infrastructure
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.authentication.LoginCredentials
 import io.micronaut.core.type.Argument
-import io.micronaut.http.client.RxHttpClient
+import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import jakarta.inject.Inject
 
-import javax.inject.Inject
 
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.HEAD
@@ -19,7 +19,7 @@ import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 
 @MicronautTest(transactional = false)
 class SystemLoginControllerSpecification extends ServiceSpecificationBase {
-   @Inject @Client("/api") RxHttpClient httpClient
+   @Inject @Client("/api") HttpClient httpClient
 
    void "login successful with user who doesn't have department" () {
       given:
@@ -390,12 +390,12 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
          .exchange(
             GET("/authenticated/check"),
             Argument.of(String),
-            Argument.of(String)
+            Argument.of(String),
          )
 
       then:
       final e = thrown(HttpClientResponseException)
-      e.response.bodyAsJson().message == 'Method [GET] not allowed for URI [/api/authenticated/check]. Allowed methods: [HEAD]'
+      e.response.bodyAsJson().message == 'Method Not Allowed'
       e.status == METHOD_NOT_ALLOWED
    }
 

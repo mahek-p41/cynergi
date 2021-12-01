@@ -5,8 +5,8 @@ import com.cynergisuite.middleware.location.infrastructure.LocationRepository
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 @CompileStatic

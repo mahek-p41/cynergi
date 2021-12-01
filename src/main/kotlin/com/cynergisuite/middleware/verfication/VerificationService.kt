@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.verfication
 
 import com.cynergisuite.middleware.verfication.infrastructure.VerificationRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 /**
  * Defines the business service for handling the loading and processing of the [Verification] entity through the [VerificationValueObject]

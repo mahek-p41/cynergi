@@ -14,7 +14,7 @@ import com.cynergisuite.middleware.schedule.type.WEEKLY
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import java.util.Locale
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 class AuditScheduleValidator(

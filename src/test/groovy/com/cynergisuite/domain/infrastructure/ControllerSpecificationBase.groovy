@@ -11,12 +11,12 @@ import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.client.BlockingHttpClient
-import io.micronaut.http.client.RxHttpClient
+import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.security.token.jwt.render.BearerAccessRefreshToken
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 import static io.micronaut.http.HttpRequest.DELETE
 import static io.micronaut.http.HttpRequest.GET
@@ -26,7 +26,7 @@ import static io.micronaut.http.HttpRequest.PUT
 abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
    private @Inject EmployeeTestDataLoaderService userSetupEmployeeFactoryService
    private @Inject StoreRepository userStoreRepository
-   @Client("/api") @Inject RxHttpClient httpClient
+   @Client("/api") @Inject HttpClient httpClient
    @Inject UserService userService
 
    BlockingHttpClient client
@@ -45,7 +45,7 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
       this.store3Tstds1 = userStoreRepository.findOne(3, tstds1)
 
       this.nineNineEightEmployee = userSetupEmployeeFactoryService.singleSuperUser(998, tstds1, 'man', 'super', 'pass')
-      this.nineNineEightAuthenticatedEmployee = userService.fetchUserByAuthentication(nineNineEightEmployee.number, nineNineEightEmployee.passCode, tstds1.datasetCode, null).blockingGet().with { new AuthenticatedEmployee(it, 'pass') }
+      this.nineNineEightAuthenticatedEmployee = userService.fetchUserByAuthentication(nineNineEightEmployee.number, nineNineEightEmployee.passCode, tstds1.datasetCode, null).with { new AuthenticatedEmployee(it, 'pass') }
       this.nineNineEightAccessToken = loginEmployee(nineNineEightAuthenticatedEmployee)
    }
 

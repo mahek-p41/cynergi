@@ -1,12 +1,14 @@
 package com.cynergisuite.middleware.audit.exception
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
+@Introspected
 @Schema(name = "AuditExceptionCreate", title = "Create an AuditException", description = "Payload required to create an AuditException entity")
 data class AuditExceptionCreateValueObject(
 

@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.PageRequestBase
 import com.cynergisuite.domain.ValidPageSortBy
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
@@ -13,6 +14,7 @@ import java.time.OffsetDateTime
    description = "Defines the parameters available to for a paging request to the audit-fetchAll endpoint. Example ?page=1&size=10&sortBy=id&sortDirection=ASC&storeNumber=1&status=CREATED&status=IN-PROGRESS",
    allOf = [PageRequestBase::class]
 )
+@Introspected
 class AuditPageRequest(
    page: Int? = null,
    size: Int? = null,

@@ -6,14 +6,16 @@ import java.util.UUID
 data class ScheduleArgumentEntity(
    val id: UUID? = null,
    val value: String,
-   val description: String
+   val description: String,
+   val encrypted: Boolean = false,
 ) : Identifiable {
 
-   constructor(value: String, description: String) :
+   constructor(value: String, description: String, encrypted: Boolean = false) :
       this(
          id = null,
          value = value,
-         description = description
+         description = description,
+         encrypted = encrypted,
       )
 
    override fun myId(): UUID? = id

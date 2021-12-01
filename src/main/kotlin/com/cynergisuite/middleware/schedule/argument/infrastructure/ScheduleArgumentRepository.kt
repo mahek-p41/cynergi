@@ -6,57 +6,80 @@ import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
+import io.micronaut.context.annotation.Value
 import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
 class ScheduleArgumentRepository @Inject constructor(
-   private val jdbc: Jdbi
+   private val jdbc: Jdbi,
+   @Value("\${cynergi.schedule.arg.key}") private val scheduleArgKey: String,
 ) {
 
    @Transactional
    fun insert(parent: ScheduleEntity, entity: ScheduleArgumentEntity): ScheduleArgumentEntity {
+      val (valueSql, argMap) = this.encryptValueColumnSql(entity)
+
+      argMap.putAll(
+         mapOf<String, Any>(
+            "value" to entity.value,
+            "description" to entity.description,
+            "schedule_id" to parent.id!!,
+            "encrypted" to entity.encrypted,
+         )
+      )
+
       return jdbc.insertReturning(
          """
-         INSERT INTO schedule_arg(value, description, schedule_id)
-         VALUES (:value, :description, :schedule_id)
+         INSERT INTO schedule_arg(value, description, schedule_id, encrypted)
+         VALUES (${valueSql}, :description, :schedule_id, :encrypted)
          RETURNING
             *
          """.trimIndent(),
-         mapOf("value" to entity.value, "description" to entity.description, "schedule_id" to parent.id)
+         argMap
       ) { rs, _ ->
          ScheduleArgumentEntity(
             id = rs.getUuid("id"),
             value = rs.getString("value"),
-            description = rs.getString("description")
+            description = rs.getString("description"),
+            encrypted = rs.getBoolean("encrypted"),
          )
       }
    }
 
    @Transactional
    fun update(entity: ScheduleArgumentEntity): ScheduleArgumentEntity {
+      val (valueSql, argMap) = this.encryptValueColumnSql(entity)
+
+      argMap.putAll(
+         mapOf<String, Any>(
+            "id" to entity.id!!,
+            "value" to entity.value,
+            "description" to entity.description,
+            "encrypted" to entity.encrypted,
+         )
+      )
+
       return jdbc.updateReturning(
          """
          UPDATE schedule_arg
-         SET value = :value,
-             description = :description
+         SET value = ${valueSql},
+             description = :description,
+             encrypted = :encrypted
          WHERE id = :id
          RETURNING
             *
          """.trimIndent(),
-         mapOf(
-            "id" to entity.id,
-            "value" to entity.value,
-            "description" to entity.description
-         )
+         argMap
       ) { rs, _ ->
          ScheduleArgumentEntity(
             id = rs.getUuid("id"),
             value = rs.getString("value"),
-            description = rs.getString("description")
+            description = rs.getString("description"),
+            encrypted = rs.getBoolean("encrypted"),
          )
       }
    }
@@ -82,7 +105,8 @@ class ScheduleArgumentRepository @Inject constructor(
             ScheduleArgumentEntity(
                id = rs.getUuid("id"),
                value = rs.getString("value"),
-               description = rs.getString("description")
+               description = rs.getString("description"),
+               encrypted = rs.getBoolean("encrypted"),
             )
          )
       }
@@ -104,10 +128,18 @@ class ScheduleArgumentRepository @Inject constructor(
          ScheduleArgumentEntity(
             id = rs.getUuid("${columnPrefix}id"),
             value = rs.getString("${columnPrefix}value"),
-            description = rs.getString("${columnPrefix}description")
+            description = rs.getString("${columnPrefix}description"),
+            encrypted = rs.getBoolean("${columnPrefix}encrypted")
          )
       } else {
          null
       }
    }
+
+   private fun encryptValueColumnSql(scheduleArgument: ScheduleArgumentEntity): Pair<String, MutableMap<String, Any>> =
+      if (scheduleArgument.encrypted) {
+         "encode(pgp_sym_encrypt(:value, :scheduleArgKey), 'hex')" to mutableMapOf("scheduleArgKey" to scheduleArgKey)
+      } else {
+         ":value" to mutableMapOf()
+      }
 }

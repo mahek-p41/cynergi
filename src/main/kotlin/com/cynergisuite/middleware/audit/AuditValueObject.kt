@@ -7,12 +7,14 @@ import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.store.StoreDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.OffsetDateTime
 import java.util.Locale
 import java.util.UUID
 import javax.validation.constraints.Positive
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "Audit", title = "Single Audit associated with a single Store", description = "A single audit for a store on a specified date along with it's current state")
 data class AuditValueObject(

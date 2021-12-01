@@ -12,6 +12,7 @@ data class ScheduleEntity(
    val id: UUID? = null,
    val title: String,
    val description: String?,
+   @Deprecated("This needs to be moved to an schedule_arg")
    val schedule: String,
    val command: ScheduleCommandType,
    val type: ScheduleType,
@@ -40,6 +41,18 @@ data class ScheduleEntity(
          command = command,
          type = type,
          company = company,
+         arguments = arguments
+      )
+
+   constructor(scheduleEntity: ScheduleEntity, arguments: MutableSet<ScheduleArgumentEntity> = mutableSetOf()) :
+      this(
+         id = scheduleEntity.id,
+         title = scheduleEntity.title,
+         description = scheduleEntity.description,
+         schedule = scheduleEntity.schedule,
+         command = scheduleEntity.command,
+         type = scheduleEntity.type,
+         company = scheduleEntity.company,
          arguments = arguments
       )
 

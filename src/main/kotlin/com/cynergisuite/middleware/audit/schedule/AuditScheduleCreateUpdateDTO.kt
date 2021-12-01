@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.location.Location
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.DayOfWeek
 import java.util.UUID
@@ -10,6 +11,7 @@ import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
+@Introspected
 @Schema(name = "AuditScheduleCreateUpdate", title = "Requirements for creating an audit schedule", description = "Payload for creating a schedule for an audit associated with what stores and which department is supposed to do the audit")
 data class AuditScheduleCreateUpdateDTO(
 

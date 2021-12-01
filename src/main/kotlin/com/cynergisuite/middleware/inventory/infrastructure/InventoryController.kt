@@ -43,7 +43,7 @@ class InventoryController(
    @JsonView(value = [Full::class])
    @Throws(AccessException::class)
    @Get(uri = "/all{?pageRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["InventoryEndpoints"], summary = "Fetch a listing of Stores", description = "Fetch a paginated listing of Inventory", operationId = "inventory-fetchAll")
+   @Operation(tags = ["InventoryEndpoints"], summary = "Fetch a listing of inventory", description = "Fetch a paginated listing of Inventory", operationId = "inventory-fetchAll")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
@@ -77,7 +77,7 @@ class InventoryController(
    @JsonView(value = [InventoryApp::class])
    @Throws(AccessException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["InventoryEndpoints"], summary = "Fetch a listing of Stores", description = "Fetch a paginated listing of Inventory", operationId = "inventory-fetchAll-v2")
+   @Operation(tags = ["InventoryEndpoints"], summary = "Fetch a listing of inventory for use by the inventory auditing app", description = "Fetch a paginated listing of Inventory for audit app", operationId = "inventory-fetchAll-v2")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),

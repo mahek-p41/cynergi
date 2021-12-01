@@ -4,6 +4,7 @@ import com.cynergisuite.domain.LegacyIdentifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -11,6 +12,7 @@ import javax.validation.constraints.Digits
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "VerificationAuto", title = "Automobile verification for a customer", description = "Automobile verification for a single customer associated with a Verification")
 data class VerificationAutoValueObject(
