@@ -1,10 +1,14 @@
 package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure
 
+import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
+import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
+import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -16,6 +20,8 @@ import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -35,7 +41,7 @@ class GeneralLedgerDetailController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerDetailController::class.java)
 
    @Get(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Fetch a single GeneralLedgerDetailDTO", description = "Fetch a single GeneralLedgerDetailDTO that is associated with the logged-in user's company", operationId = "GeneralLedgerDetail-fetchOne")
+   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Fetch a single GeneralLedgerDetailDTO", description = "Fetch a single GeneralLedgerDetailDTO that is associated with the logged-in user's company", operationId = "generalLedgerDetail-fetchOne")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerDetailDTO::class))]),
@@ -58,9 +64,39 @@ class GeneralLedgerDetailController @Inject constructor(
       return response
    }
 
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Fetch a listing of General Ledger Details", description = "Fetch a paginated listing of General Ledger Details", operationId = "generalLedgerDetail-fetchAll")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested General Ledger Detail was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchAll(
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("pageRequest")
+      pageRequest: StandardPageRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Page<GeneralLedgerDetailDTO> {
+      logger.info("Fetching all General Ledger Details {}", pageRequest)
+
+      val user = userService.fetchUser(authentication)
+      val page = generalLedgerDetailService.fetchAll(user.myCompany(), pageRequest)
+
+      if (page.elements.isEmpty()) {
+         throw PageOutOfBoundsException(pageRequest = pageRequest)
+      }
+
+      return page
+   }
+
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Create a GeneralLedgerDetailEntity", description = "Create an GeneralLedgerDetailEntity", operationId = "GeneralLedgerDetail-create")
+   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Create a GeneralLedgerDetailEntity", description = "Create an GeneralLedgerDetailEntity", operationId = "generalLedgerDetail-create")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerDetailDTO::class))]),
@@ -86,7 +122,7 @@ class GeneralLedgerDetailController @Inject constructor(
 
    @Put(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Update a GeneralLedgerDetailEntity", description = "Update an GeneralLedgerDetailEntity from a body of GeneralLedgerDetailDTO", operationId = "GeneralLedgerDetail-update")
+   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Update a GeneralLedgerDetailEntity", description = "Update an GeneralLedgerDetailEntity from a body of GeneralLedgerDetailDTO", operationId = "generalLedgerDetail-update")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", description = "If successfully able to update GeneralLedgerDetail", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerDetailDTO::class))]),

@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastruct
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
@@ -14,6 +15,7 @@ import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class GeneralLedgerDetailControllerSpecification extends ControllerSpecificationBase {
@@ -68,6 +70,50 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       def response = exception.response.bodyAsJson()
       response.message == "$nonExistentId was unable to be found"
       response.code == 'system.not.found'
+   }
+
+   void "fetch all" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource = sourceCodeDataLoaderService.single(company)
+      final generalLedgerDetails = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource).toList()
+      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
+
+      when:
+      def result = get("$path$pageOne")
+
+      then:
+      notThrown(Exception)
+      with(result) {
+         requested.with { new StandardPageRequest(it) } == pageOne
+         totalElements == 3
+         totalPages == 1
+         first == true
+         last == true
+         elements.eachWithIndex { pageOneResult, index ->
+            with(pageOneResult) {
+               id == generalLedgerDetails[index].id
+               account.id == generalLedgerDetails[index].account.id
+               date == generalLedgerDetails[index].date.toString()
+               profitCenter.id == generalLedgerDetails[index].profitCenter.id
+               source.id == generalLedgerDetails[index].source.id
+               amount == generalLedgerDetails[index].amount
+               message == generalLedgerDetails[index].message
+               employeeNumberId == generalLedgerDetails[index].employeeNumberId
+               journalEntryNumber == generalLedgerDetails[index].journalEntryNumber
+            }
+         }
+      }
+
+      when:
+      get("$path$pageTwo")
+
+      then:
+      final notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NO_CONTENT
    }
 
    void "create valid general ledger detail" () {

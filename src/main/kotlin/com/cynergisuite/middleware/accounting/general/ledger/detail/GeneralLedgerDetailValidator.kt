@@ -8,7 +8,6 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
-import com.cynergisuite.middleware.localization.ConfigAlreadyExist
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import org.slf4j.Logger
@@ -52,10 +51,6 @@ class GeneralLedgerDetailValidator @Inject constructor(
       val source = dto.source?.id?.let { sourceCodeRepository.findOne(it, company) }
 
       doValidation { errors ->
-         if (generalLedgerDetailRepository.exists(company) && entity == null) {
-            errors.add(ValidationError("company", ConfigAlreadyExist(company.datasetCode)))
-         }
-
          // account is not nullable
          account ?: errors.add(ValidationError("account.id", NotFound(dto.account!!.id!!)))
 
