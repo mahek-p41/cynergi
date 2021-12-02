@@ -12,5 +12,5 @@ psql -v ON_ERROR_STOP=1 \
   --dbname postgres \
   -v fastinfoUserName=fastinfo_dba \
   -v fastinfoPassword=password \
-  -v datasets=corrto,corptp,corrll,cornwv,corrdv,corapw,corrbn,coravt \
+  -v datasets=corrto,corptp,corrll,cornwv,corrdv,corapw,corrbn,coravt,corron,corfar \
   -f /tmp/setup-database.sql

@@ -40,7 +40,7 @@ if (options != null && !options.h) {
    final schemas = new ArrayList<String>()
 
    sql.eachRow("""
-   SELECT schema_name FROM information_schema.schemata WHERE schema_name IN ('corrto', 'coravt', 'corron')
+   SELECT schema_name FROM information_schema.schemata WHERE schema_name IN ('corrto', 'coravt', 'corron', 'corfar')
 """) { rs ->
       final schemaName = rs.getString("schema_name")
 
