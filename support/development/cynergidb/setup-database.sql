@@ -27,7 +27,7 @@ BEGIN
    unionStr := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'department_vw') THEN
-      DROP VIEW department_vw CASCADE;
+      DROP VIEW IF EXISTS department_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
@@ -61,7 +61,7 @@ BEGIN
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'store_vw') THEN
-      DROP VIEW store_vw CASCADE;
+      DROP VIEW IF EXISTS store_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
@@ -96,7 +96,7 @@ BEGIN
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'employee_vw') THEN
-      DROP VIEW employee_vw CASCADE;
+      DROP VIEW IF EXISTS employee_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
@@ -149,7 +149,7 @@ BEGIN
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'inventory_vw') THEN
-      DROP VIEW inventory_vw CASCADE;
+      DROP VIEW IF EXISTS inventory_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
@@ -421,7 +421,7 @@ BEGIN
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'location_vw') THEN
-      DROP VIEW location_vw CASCADE;
+      DROP VIEW IF EXISTS location_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
@@ -456,7 +456,7 @@ BEGIN
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_active_customer_vw') THEN
-      DROP VIEW csv_active_customer_vw CASCADE;
+      DROP VIEW IF EXISTS csv_active_customer_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
@@ -542,7 +542,7 @@ BEGIN
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_collection_vw') THEN
-      DROP VIEW csv_collection_vw CASCADE;
+      DROP VIEW IF EXISTS csv_collection_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
@@ -605,7 +605,7 @@ BEGIN
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_birthday_customer_vw') THEN
-      DROP VIEW csv_bithday_customer_vw CASCADE;
+      DROP VIEW IF EXISTS csv_bithday_customer_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
@@ -661,7 +661,7 @@ BEGIN
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_last_week_deliveris_vw') THEN
-      DROP VIEW csv_last_week_deliveries_vw CASCADE;
+      DROP VIEW IF EXISTS csv_last_week_deliveries_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
@@ -723,7 +723,7 @@ BEGIN
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_last_week_payouts_vw') THEN
-      DROP VIEW csv_last_week_payouts_vw CASCADE;
+      DROP VIEW IF EXISTS csv_last_week_payouts_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
@@ -782,7 +782,7 @@ BEGIN
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_future_payout_vw') THEN
-      DROP VIEW csv_future_payout_vw CASCADE;
+      DROP VIEW IF EXISTS csv_future_payout_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
@@ -843,7 +843,7 @@ BEGIN
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_inactive_customer_vw') THEN
-      DROP VIEW csv_customer_vw CASCADE;
+      DROP VIEW IF EXISTS csv_customer_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
