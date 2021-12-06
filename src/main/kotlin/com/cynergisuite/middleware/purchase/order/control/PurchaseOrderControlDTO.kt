@@ -1,12 +1,12 @@
 package com.cynergisuite.middleware.purchase.order.control
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeDTO
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.type.ApprovalRequiredFlagDTO
 import com.cynergisuite.middleware.purchase.order.type.DefaultPurchaseOrderTypeDTO
 import com.cynergisuite.middleware.purchase.order.type.UpdatePurchaseOrderCostTypeValueObject
+import com.cynergisuite.middleware.vendor.VendorDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -51,7 +51,7 @@ data class PurchaseOrderControlDTO(
    var updateCostOnModel: Boolean? = null,
 
    @field:Schema(description = "Default vendor")
-   var defaultVendor: SimpleIdentifiableDTO? = null,
+   var defaultVendor: VendorDTO? = null,
 
    @field:NotNull
    @field:Valid
@@ -87,6 +87,7 @@ data class PurchaseOrderControlDTO(
    constructor(
       entity: PurchaseOrderControlEntity,
       defaultAccountPayableStatusType: DefaultAccountPayableStatusTypeDTO,
+      defaultVendor: VendorDTO?,
       updatePurchaseOrderCost: UpdatePurchaseOrderCostTypeValueObject,
       defaultPurchaseOrderType: DefaultPurchaseOrderTypeDTO,
       approvalRequiredFlagType: ApprovalRequiredFlagDTO
@@ -100,7 +101,7 @@ data class PurchaseOrderControlDTO(
          printVendorComments = entity.printVendorComments,
          includeFreightInCost = entity.includeFreightInCost,
          updateCostOnModel = entity.updateCostOnModel,
-         defaultVendor = entity.defaultVendor?.let { SimpleIdentifiableDTO(it) },
+         defaultVendor = defaultVendor,
          updatePurchaseOrderCost = updatePurchaseOrderCost,
          defaultPurchaseOrderType = defaultPurchaseOrderType,
          sortByShipToOnPrint = entity.sortByShipToOnPrint,

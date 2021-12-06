@@ -79,7 +79,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             defVen.v_account_number                                              AS defVen_account_number,
             defVen.v_pay_to_id                                                   AS defVen_pay_to_id,
             defVen.v_freight_on_board_type_id                                    AS defVen_freight_on_board_type_id,
-            defVen.v_vendor_payment_term_id                                            AS defVen_vendor_payment_term_id,
+            defVen.v_vendor_payment_term_id                                      AS defVen_vendor_payment_term_id,
             defVen.v_normal_days                                                 AS defVen_normal_days,
             defVen.v_return_policy                                               AS defVen_return_policy,
             defVen.v_ship_via_id                                                 AS defVen_ship_via_id,

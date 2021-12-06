@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.purchase.order.control.infrastructure.Purchas
 import com.cynergisuite.middleware.purchase.order.type.ApprovalRequiredFlagDTO
 import com.cynergisuite.middleware.purchase.order.type.DefaultPurchaseOrderTypeDTO
 import com.cynergisuite.middleware.purchase.order.type.UpdatePurchaseOrderCostTypeValueObject
+import com.cynergisuite.middleware.vendor.VendorDTO
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -43,6 +44,7 @@ class PurchaseOrderControlService @Inject constructor(
       return PurchaseOrderControlDTO(
          entity = purchaseOrderControl,
          defaultAccountPayableStatusType = DefaultAccountPayableStatusTypeDTO(purchaseOrderControl.defaultAccountPayableStatusType),
+         defaultVendor = purchaseOrderControl.defaultVendor?.let { VendorDTO(it) },
          updatePurchaseOrderCost = UpdatePurchaseOrderCostTypeValueObject(purchaseOrderControl.updatePurchaseOrderCost),
          defaultPurchaseOrderType = DefaultPurchaseOrderTypeDTO(purchaseOrderControl.defaultPurchaseOrderType),
          approvalRequiredFlagType = ApprovalRequiredFlagDTO(purchaseOrderControl.approvalRequiredFlagType)

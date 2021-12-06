@@ -1,9 +1,9 @@
 package com.cynergisuite.middleware.purchase.order.control.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.purchase.order.control.PurchaseOrderControlTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
+import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -50,7 +50,13 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
          printVendorComments == purchaseOrderControl.printVendorComments
          includeFreightInCost == purchaseOrderControl.includeFreightInCost
          updateCostOnModel == purchaseOrderControl.updateCostOnModel
-         defaultVendor.id == purchaseOrderControl.defaultVendor.id
+
+         with(defaultVendor) {
+            id == purchaseOrderControl.defaultVendor.id
+            name == purchaseOrderControl.defaultVendor.name
+            address.id == purchaseOrderControl.defaultVendor.address.id
+            number == purchaseOrderControl.defaultVendor.number
+         }
 
          with(updatePurchaseOrderCost) {
             value == purchaseOrderControl.updatePurchaseOrderCost.value
@@ -93,7 +99,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final purchaseOrderControl = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
+      final purchaseOrderControl = purchaseOrderControlDataLoaderService.singleDTO(new VendorDTO(vendor), employee)
 
       when:
       def result = post("$path/", purchaseOrderControl)
@@ -115,7 +121,13 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
          printVendorComments == purchaseOrderControl.printVendorComments
          includeFreightInCost == purchaseOrderControl.includeFreightInCost
          updateCostOnModel == purchaseOrderControl.updateCostOnModel
-         defaultVendor.id == purchaseOrderControl.defaultVendor.id
+
+         with(defaultVendor) {
+            id == purchaseOrderControl.defaultVendor.id
+            name == purchaseOrderControl.defaultVendor.name
+            address.id == purchaseOrderControl.defaultVendor.address.id
+            number == purchaseOrderControl.defaultVendor.number
+         }
 
          with(updatePurchaseOrderCost) {
             value == purchaseOrderControl.updatePurchaseOrderCost.value
@@ -130,7 +142,6 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
          sortByShipToOnPrint == purchaseOrderControl.sortByShipToOnPrint
          invoiceByLocation == purchaseOrderControl.invoiceByLocation
          validateInventory == purchaseOrderControl.validateInventory
-         defaultVendor.id == purchaseOrderControl.defaultVendor.id
          defaultApprover.id == employee.id
 
          with(approvalRequiredFlagType) {
@@ -154,7 +165,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      def purchaseOrderControl = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
+      def purchaseOrderControl = purchaseOrderControlDataLoaderService.singleDTO(new VendorDTO(vendor), employee)
       purchaseOrderControl.defaultVendor = null
       purchaseOrderControl.defaultApprover = null
 
@@ -240,7 +251,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
+      def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new VendorDTO(vendor), employee)
       purchaseOrderControlDTO["$nonNullableProp"] = null
 
       when:
@@ -279,7 +290,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
+      def purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new VendorDTO(vendor), employee)
       purchaseOrderControlDTO.defaultVendor.id = nonExistentDefaultVendorId
 
       when:
@@ -302,7 +313,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final shipViaIn = shipViaTestDataLoaderService.single(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
-      final purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
+      final purchaseOrderControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new VendorDTO(vendor), employee)
       purchaseOrderControlDTO.defaultApprover.id = 0
 
       when:
@@ -325,7 +336,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
       final existingPOControl = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
-      final updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
+      final updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new VendorDTO(vendor), employee)
       updatedPOControlDTO.id = existingPOControl.id
       updatedPOControlDTO.defaultVendor = null
       updatedPOControlDTO.defaultApprover = null
@@ -383,8 +394,8 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
       final existingPOControl = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
-      final updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
-      updatedPOControlDTO.defaultVendor = new SimpleIdentifiableDTO(vendorId)
+      final updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new VendorDTO(vendor), employee)
+      updatedPOControlDTO.defaultVendor.id = vendorId
       updatedPOControlDTO.defaultApprover.id = 999
 
       when:
@@ -410,7 +421,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
       final existingPOControl = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
-      final updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
+      final updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new VendorDTO(vendor), employee)
       updatedPOControlDTO.id = UUID.randomUUID() // this should be ignored by the API
 
       when:
@@ -465,7 +476,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
       purchaseOrderControlDataLoaderService.single(company, vendor, employee)
-      final updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
+      final updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new VendorDTO(vendor), employee)
 
       when:
       put("$path/$invalidPurchaseOrderId", updatedPOControlDTO)
@@ -488,7 +499,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipViaIn)
       final employee = employeeFactoryService.single(company)
       final purchaseOrder = purchaseOrderControlDataLoaderService.single(company, vendor, employee)
-      def updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new SimpleIdentifiableDTO(vendor.myId()), employee)
+      def updatedPOControlDTO = purchaseOrderControlDataLoaderService.singleDTO(new VendorDTO(vendor), employee)
       updatedPOControlDTO.dropFiveCharactersOnModelNumber = null
       updatedPOControlDTO.updateAccountPayable = null
       updatedPOControlDTO.printSecondDescription = null
