@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.accounting.account.payable.distribution
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.AccountDTO
+import com.cynergisuite.middleware.store.StoreDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
@@ -28,11 +28,11 @@ data class AccountPayableDistributionDTO(
 
    @field:NotNull
    @field:Schema(name = "profitCenter", description = "Profit center")
-   var profitCenter: SimpleLegacyIdentifiableDTO? = null,
+   var profitCenter: StoreDTO? = null,
 
    @field:NotNull
    @field:Schema(name = "account", description = "Account")
-   var account: SimpleIdentifiableDTO? = null,
+   var account: AccountDTO? = null,
 
    @field:NotNull
    @field:DecimalMin(value = "0", inclusive = false)
@@ -47,8 +47,8 @@ data class AccountPayableDistributionDTO(
       this(
          id = entity.id,
          name = entity.name,
-         profitCenter = SimpleLegacyIdentifiableDTO(entity.profitCenter.myId()),
-         account = SimpleIdentifiableDTO(entity.account.id),
+         profitCenter = StoreDTO(entity.profitCenter.myId()),
+         account = AccountDTO(entity.account.id),
          percent = entity.percent
       )
 
