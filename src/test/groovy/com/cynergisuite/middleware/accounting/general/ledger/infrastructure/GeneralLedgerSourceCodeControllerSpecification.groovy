@@ -285,7 +285,6 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       response.code == 'system.not.found'
    }
 
-
    void "delete source code still has references" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
@@ -320,4 +319,41 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       response.message == "$glSourceCode.id was unable to be found"
       response.code == 'system.not.found'
    }
- }
+
+   void "recreate deleted source code" () {
+      given:
+      final glSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+
+      when: // create a source code
+      def response1 = post(path, glSourceCode)
+
+      then:
+      notThrown(Exception)
+      response1 != null
+      response1.id != null
+      response1.value == glSourceCode.value
+      response1.description == glSourceCode.description
+
+      when: // delete source code
+      delete("$path/$response1.id")
+
+      then: "source code of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate source code
+      def response2 = post(path, glSourceCode)
+
+      then:
+      notThrown(Exception)
+      response2 != null
+      response2.id != null
+      response2.value == glSourceCode.value
+      response2.description == glSourceCode.description
+
+      when: // delete source code again
+      delete("$path/$response2.id")
+
+      then: "source code of user's company is deleted"
+      notThrown(HttpClientResponseException)
+   }
+}

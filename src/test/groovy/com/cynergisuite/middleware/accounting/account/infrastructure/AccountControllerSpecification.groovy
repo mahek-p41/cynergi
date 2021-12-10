@@ -679,4 +679,85 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       response.message == "$account.id was unable to be found"
       response.code == 'system.not.found'
    }
+
+   void "recreate deleted account" () {
+      given:
+      final account = accountDataLoaderService.singleDTO(nineNineEightEmployee.company)
+
+      when: // create an account
+      def response1 = post("$path/", account)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      response1.number != null
+      response1.number > 0
+
+      with(response1) {
+         id != null
+         name == account.name
+         form1099Field == account.form1099Field
+         corporateAccountIndicator == account.corporateAccountIndicator
+         with(type) {
+            description == account.type.description
+            value == account.type.value
+         }
+         with(normalAccountBalance) {
+            description == account.normalAccountBalance.description
+            value == account.normalAccountBalance.value
+         }
+         with(status) {
+            description == account.status.description
+            value == account.status.value
+         }
+         with(type) {
+            description == account.type.description
+            value == account.type.value
+         }
+      }
+
+      when: // delete account
+      delete("$path/$response1.id")
+
+      then: "account of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate account
+      def response2 = post("$path/", account)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      response2.number != null
+      response2.number > 0
+
+      with(response2) {
+         id != null
+         name == account.name
+         form1099Field == account.form1099Field
+         corporateAccountIndicator == account.corporateAccountIndicator
+         with(type) {
+            description == account.type.description
+            value == account.type.value
+         }
+         with(normalAccountBalance) {
+            description == account.normalAccountBalance.description
+            value == account.normalAccountBalance.value
+         }
+         with(status) {
+            description == account.status.description
+            value == account.status.value
+         }
+         with(type) {
+            description == account.type.description
+            value == account.type.value
+         }
+      }
+
+      when: // delete account again
+      delete("$path/$response2.id")
+
+      then: "account of user's company is deleted"
+      notThrown(HttpClientResponseException)
+   }
 }

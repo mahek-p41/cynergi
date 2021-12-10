@@ -412,4 +412,71 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       response.message == "${glRecurring.id} was unable to be found"
       response.code == 'system.not.found'
    }
+
+   void "recreate deleted GL recurring" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
+
+      when: // create a GL recurring
+      def response1 = post(path, glRecurring)
+
+      then:
+      notThrown(Exception)
+      response1 != null
+      with(response1) {
+         id != null
+         reverseIndicator == glRecurring.reverseIndicator
+         message == glRecurring.message
+         beginDate == glRecurring.beginDate.toString()
+         endDate == glRecurring.endDate.toString()
+
+         with(type) {
+            value == glRecurring.type.value
+            description == glRecurring.type.description
+         }
+
+         with(source) {
+            value == glRecurring.source.value
+            description == glRecurring.source.description
+         }
+      }
+
+      when: // delete GL recurring
+      delete("$path/$response1.id")
+
+      then: "GL recurring of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate GL recurring
+      def response2 = post(path, glRecurring)
+
+      then:
+      notThrown(Exception)
+      response2 != null
+      with(response2) {
+         id != null
+         reverseIndicator == glRecurring.reverseIndicator
+         message == glRecurring.message
+         beginDate == glRecurring.beginDate.toString()
+         endDate == glRecurring.endDate.toString()
+
+         with(type) {
+            value == glRecurring.type.value
+            description == glRecurring.type.description
+         }
+
+         with(source) {
+            value == glRecurring.source.value
+            description == glRecurring.source.description
+         }
+      }
+
+      when: // delete GL recurring again
+      delete("$path/$response2.id")
+
+      then: "GL recurring of user's company is deleted"
+      notThrown(HttpClientResponseException)
+   }
 }

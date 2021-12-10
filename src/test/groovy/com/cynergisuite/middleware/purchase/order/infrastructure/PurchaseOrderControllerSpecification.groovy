@@ -961,4 +961,164 @@ class PurchaseOrderControllerSpecification extends ControllerSpecificationBase {
       response.message == "Requested operation violates data integrity"
       response.code == "cynergi.data.constraint.violated"
    }
+
+   void "recreate deleted purchase order" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
+      final shipViaList = shipViaTestDataLoaderService.stream(2, company).toList()
+      final vendorShipVia = shipViaList[0]
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final approvedByIn = employeeFactoryService.single(company)
+      final purchaseAgentIn = employeeFactoryService.single(company)
+      final shipViaIn = shipViaList[1]
+      final shipToIn = storeFactoryService.store(3, company)
+      final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
+      final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
+      final purchaseOrder = purchaseOrderDataLoaderService.singleDTO(
+         new SimpleIdentifiableDTO(vendorIn),
+         approvedByIn,
+         purchaseAgentIn,
+         new SimpleIdentifiableDTO(shipViaIn),
+         new SimpleLegacyIdentifiableDTO(shipToIn.myId()),
+         new SimpleIdentifiableDTO(paymentTermTypeIn),
+         vendorSubmittedEmployeeIn
+      )
+
+      when: // create a purchase order
+      def response1 = post("$path/", purchaseOrder)
+
+      then:
+      notThrown(HttpClientResponseException)
+      response1 != null
+      response1.id != null
+      with(response1) {
+         id != null
+         number == purchaseOrder.number
+         vendor.id == purchaseOrder.vendor.id
+
+         with(statusType) {
+            value == purchaseOrder.statusType.value
+            description == purchaseOrder.statusType.description
+         }
+
+         orderDate == purchaseOrder.orderDate.toString()
+
+         with(type) {
+            value == purchaseOrder.type.value
+            description == purchaseOrder.type.description
+         }
+
+         with(freightOnboardType) {
+            value == purchaseOrder.freightOnboardType.value
+            description == purchaseOrder.freightOnboardType.description
+         }
+
+         with(freightTermType) {
+            value == purchaseOrder.freightTermType.value
+            description == purchaseOrder.freightTermType.description
+         }
+
+         with(shipLocationType) {
+            value == purchaseOrder.shipLocationType.value
+            description == purchaseOrder.shipLocationType.description
+         }
+
+         approvedBy.number == purchaseOrder.approvedBy.number
+         totalAmount == purchaseOrder.totalAmount
+         receivedAmount == purchaseOrder.receivedAmount
+         paidAmount == purchaseOrder.paidAmount
+         purchaseAgent.number == purchaseOrder.purchaseAgent.number
+         shipVia.id == purchaseOrder.shipVia.id
+         requiredDate == purchaseOrder.requiredDate.toString()
+         shipTo.id == purchaseOrder.shipTo.myId()
+         paymentTermType.id == purchaseOrder.paymentTermType.id
+         message == purchaseOrder.message
+         totalLandedAmount == purchaseOrder.totalLandedAmount
+         totalFreightAmount == purchaseOrder.totalFreightAmount
+
+         with(exceptionIndicatorType) {
+            value == purchaseOrder.exceptionIndicatorType.value
+            description == purchaseOrder.exceptionIndicatorType.description
+         }
+
+         vendorSubmittedTime.toInstant().toEpochMilli() == purchaseOrder.vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC).toInstant().toEpochMilli()
+         vendorSubmittedEmployee.number == purchaseOrder.vendorSubmittedEmployee.number
+         ecommerceIndicator == purchaseOrder.ecommerceIndicator
+      }
+
+      when: // delete purchase order
+      delete("$path/$response1.id")
+
+      then: "purchase order of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate purchase order
+      def response2 = post("$path/", purchaseOrder)
+
+      then:
+      notThrown(HttpClientResponseException)
+      response2 != null
+      response2.id != null
+      with(response2) {
+         id != null
+         number == purchaseOrder.number
+         vendor.id == purchaseOrder.vendor.id
+
+         with(statusType) {
+            value == purchaseOrder.statusType.value
+            description == purchaseOrder.statusType.description
+         }
+
+         orderDate == purchaseOrder.orderDate.toString()
+
+         with(type) {
+            value == purchaseOrder.type.value
+            description == purchaseOrder.type.description
+         }
+
+         with(freightOnboardType) {
+            value == purchaseOrder.freightOnboardType.value
+            description == purchaseOrder.freightOnboardType.description
+         }
+
+         with(freightTermType) {
+            value == purchaseOrder.freightTermType.value
+            description == purchaseOrder.freightTermType.description
+         }
+
+         with(shipLocationType) {
+            value == purchaseOrder.shipLocationType.value
+            description == purchaseOrder.shipLocationType.description
+         }
+
+         approvedBy.number == purchaseOrder.approvedBy.number
+         totalAmount == purchaseOrder.totalAmount
+         receivedAmount == purchaseOrder.receivedAmount
+         paidAmount == purchaseOrder.paidAmount
+         purchaseAgent.number == purchaseOrder.purchaseAgent.number
+         shipVia.id == purchaseOrder.shipVia.id
+         requiredDate == purchaseOrder.requiredDate.toString()
+         shipTo.id == purchaseOrder.shipTo.myId()
+         paymentTermType.id == purchaseOrder.paymentTermType.id
+         message == purchaseOrder.message
+         totalLandedAmount == purchaseOrder.totalLandedAmount
+         totalFreightAmount == purchaseOrder.totalFreightAmount
+
+         with(exceptionIndicatorType) {
+            value == purchaseOrder.exceptionIndicatorType.value
+            description == purchaseOrder.exceptionIndicatorType.description
+         }
+
+         vendorSubmittedTime.toInstant().toEpochMilli() == purchaseOrder.vendorSubmittedTime.withOffsetSameInstant(ZoneOffset.UTC).toInstant().toEpochMilli()
+         vendorSubmittedEmployee.number == purchaseOrder.vendorSubmittedEmployee.number
+         ecommerceIndicator == purchaseOrder.ecommerceIndicator
+      }
+
+      when: // delete purchase order again
+      delete("$path/$response2.id")
+
+      then: "purchase order of user's company is deleted"
+      notThrown(HttpClientResponseException)
+   }
 }

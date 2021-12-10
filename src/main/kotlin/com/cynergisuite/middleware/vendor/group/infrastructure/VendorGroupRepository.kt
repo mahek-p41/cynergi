@@ -192,7 +192,7 @@ class VendorGroupRepository @Inject constructor(
          """
          UPDATE vendor_group
          SET deleted = TRUE
-         WHERE id = :id AND company_id = :company_id
+         WHERE id = :id AND company_id = :company_id AND deleted = FALSE
          """,
          mapOf("id" to id, "company_id" to company.id),
          "vendor_group"

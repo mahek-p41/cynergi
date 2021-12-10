@@ -19,8 +19,8 @@ CREATE TABLE address
     deleted      BOOLEAN      DEFAULT FALSE                          NOT NULL
 );
 
-CREATE INDEX address_name_idx ON address(name);
-CREATE INDEX address_postal_code_idx ON address(postal_code);
+CREATE INDEX address_name_idx ON address(name) WHERE deleted is FALSE;
+CREATE INDEX address_postal_code_idx ON address(postal_code) WHERE deleted is FALSE;
 
 CREATE TRIGGER update_address_trg
    BEFORE UPDATE
@@ -65,7 +65,7 @@ CREATE TABLE vendor_payment_term_schedule
     UNIQUE (vendor_payment_term_id, schedule_order_number, deleted)
 );
 
-CREATE INDEX vendor_payment_schedule_payment_term_id_idx ON vendor_payment_term_schedule(vendor_payment_term_id);
+CREATE INDEX vendor_payment_schedule_payment_term_id_idx ON vendor_payment_term_schedule(vendor_payment_term_id) WHERE deleted is FALSE;
 
 CREATE TRIGGER update_vendor_payment_term_schedule_trg
    BEFORE UPDATE

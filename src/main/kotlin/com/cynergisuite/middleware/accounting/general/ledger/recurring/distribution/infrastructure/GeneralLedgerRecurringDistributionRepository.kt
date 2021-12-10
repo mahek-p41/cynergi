@@ -219,7 +219,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
          """
          UPDATE general_ledger_recurring_distribution
          SET deleted = TRUE
-         WHERE id = :id
+         WHERE id = :id AND deleted = FALSE
          """,
          mapOf("id" to id)
       )

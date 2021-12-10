@@ -206,7 +206,7 @@ class DivisionRepository @Inject constructor(
             """
             UPDATE division
             SET deleted = TRUE
-            WHERE id = :id
+            WHERE id = :id AND deleted = FALSE
             RETURNING
                *""",
             mapOf("id" to id)
@@ -241,7 +241,7 @@ class DivisionRepository @Inject constructor(
          """
          UPDATE region
          SET deleted = TRUE
-         WHERE division_id = :division_id
+         WHERE division_id = :division_id AND deleted = FALSE
          """,
          mapOf("division_id" to division.id),
          "region"

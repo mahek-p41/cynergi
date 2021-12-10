@@ -283,4 +283,46 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       response.message == "$nonExistentId was unable to be found"
       response.code == 'system.not.found'
    }
+
+   void "recreate deleted audit permission" () {
+      given:
+      final company = companyFactoryService.forDatasetCode("tstds1")
+      final salesAssociateDepartment = departmentFactoryService.department("SA", company)
+      final permissionType = AuditPermissionTypeTestDataLoader.findByValue("audit-approver")
+      final permission = new AuditPermissionCreateDTO(permissionType, salesAssociateDepartment)
+
+      when: // create an audit permission
+      def response1 = post("/audit/permission", permission)
+
+      then:
+      notThrown(Exception)
+      response1.id != null
+      response1.type.id == permissionType.id
+      response1.type.value == permissionType.value
+      response1.department.id == salesAssociateDepartment.id
+      response1.department.code == salesAssociateDepartment.code
+
+      when: // delete audit permission
+      delete("/audit/permission/$response1.id")
+
+      then: "audit permission of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate audit permission
+      def response2 = post("/audit/permission", permission)
+
+      then:
+      notThrown(Exception)
+      response1.id != null
+      response1.type.id == permissionType.id
+      response1.type.value == permissionType.value
+      response1.department.id == salesAssociateDepartment.id
+      response1.department.code == salesAssociateDepartment.code
+
+      when: // delete audit permission again
+      delete("/audit/permission/$response2.id")
+
+      then: "audit permission of user's company is deleted"
+      notThrown(HttpClientResponseException)
+   }
 }

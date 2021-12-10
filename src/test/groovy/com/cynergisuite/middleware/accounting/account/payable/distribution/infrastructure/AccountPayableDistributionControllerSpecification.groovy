@@ -504,4 +504,52 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       response.message == "${apDistribution.id} was unable to be found"
       response.code == 'system.not.found'
    }
+
+   void "recreate deleted account payable distribution" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final acct = accountDataLoaderService.single(company)
+      final apDistribution = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
+
+      when: // create a account payable distribution
+      def response1 = post("$path/", apDistribution)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(response1) {
+         id != null
+         name == apDistribution.name
+         profitCenter.id == apDistribution.profitCenter.id
+         account.id == apDistribution.account.id
+         percent == apDistribution.percent
+      }
+
+      when: // delete account payable distribution
+      delete("$path/$response1.id")
+
+      then: "account payable distribution of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate account payable distribution
+      def response2 = post("$path/", apDistribution)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(response2) {
+         id != null
+         name == apDistribution.name
+         profitCenter.id == apDistribution.profitCenter.id
+         account.id == apDistribution.account.id
+         percent == apDistribution.percent
+      }
+
+      when: // delete account payable distribution again
+      delete("$path/$response2.id")
+
+      then: "account payable distribution of user's company is deleted"
+      notThrown(HttpClientResponseException)
+   }
 }

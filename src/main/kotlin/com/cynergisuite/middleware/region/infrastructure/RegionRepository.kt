@@ -213,7 +213,7 @@ class RegionRepository @Inject constructor(
             """
             UPDATE region
             SET deleted = TRUE
-            WHERE id = :id
+            WHERE id = :id AND deleted = FALSE
             RETURNING
                *""",
             mapOf("id" to id)

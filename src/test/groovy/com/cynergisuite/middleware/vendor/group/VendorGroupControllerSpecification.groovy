@@ -338,4 +338,41 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
       response.message == "Requested operation violates data integrity"
       response.code == "cynergi.data.constraint.violated"
    }
+
+   void "recreate deleted vendor group" () {
+      given:
+      final vendorGroup = vendorGroupTestDataLoaderService.predefined().first()
+
+      when: // create a vendor group
+      def response1 = post(path, vendorGroup)
+
+      then:
+      notThrown(Exception)
+      response1 != null
+      response1.id != null
+      response1.value == vendorGroup.value
+      response1.description == vendorGroup.description
+
+      when: // delete vendor group
+      delete("$path/$response1.id")
+
+      then: "vendor group of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate vendor group
+      def response2 = post(path, vendorGroup)
+
+      then:
+      notThrown(Exception)
+      response2 != null
+      response2.id != null
+      response2.value == vendorGroup.value
+      response2.description == vendorGroup.description
+
+      when: // delete vendor group again
+      delete("$path/$response2.id")
+
+      then: "vendor group of user's company is deleted"
+      notThrown(HttpClientResponseException)
+   }
 }

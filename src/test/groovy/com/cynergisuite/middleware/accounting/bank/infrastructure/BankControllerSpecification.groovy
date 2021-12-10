@@ -437,4 +437,49 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       response.message == "Requested operation violates data integrity"
       response.code == 'cynergi.data.constraint.violated'
    }
+
+   void "recreate deleted bank" () {
+      given:
+      final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankDTO = bankFactoryService.singleDTO(store, account)
+
+      when: // create a bank
+      def response1 = post("$path/", bankDTO)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(response1) {
+         id != null
+         name == bankDTO.name
+         generalLedgerProfitCenter.id == bankDTO.generalLedgerProfitCenter.id
+         generalLedgerAccount.id == bankDTO.generalLedgerAccount.id
+      }
+
+      when: // delete bank
+      delete("$path/$response1.id")
+
+      then: "bank of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate bank
+      def response2 = post("$path/", bankDTO)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(response2) {
+         id != null
+         name == bankDTO.name
+         generalLedgerProfitCenter.id == bankDTO.generalLedgerProfitCenter.id
+         generalLedgerAccount.id == bankDTO.generalLedgerAccount.id
+      }
+
+      when: // delete bank again
+      delete("$path/$response2.id")
+
+      then: "bank of user's company is deleted"
+      notThrown(HttpClientResponseException)
+   }
 }
