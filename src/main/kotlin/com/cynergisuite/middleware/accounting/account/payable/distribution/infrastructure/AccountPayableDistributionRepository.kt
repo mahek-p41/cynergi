@@ -268,7 +268,7 @@ class AccountPayableDistributionRepository @Inject constructor(
          """
          UPDATE account_payable_distribution_template
          SET deleted = TRUE
-         WHERE id = :id AND company_id = :company_id
+         WHERE id = :id AND company_id = :company_id AND deleted = FALSE
          """,
          mapOf("id" to id, "company_id" to company.id),
          "account_payable_distribution_template"

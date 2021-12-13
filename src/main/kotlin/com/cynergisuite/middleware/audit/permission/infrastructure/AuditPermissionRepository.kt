@@ -379,7 +379,7 @@ class AuditPermissionRepository @Inject constructor(
             """
             UPDATE audit_permission
             SET deleted = TRUE
-            WHERE id = :id
+            WHERE id = :id AND deleted = FALSE
             RETURNING
                *""",
             mapOf("id" to id)

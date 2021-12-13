@@ -712,4 +712,61 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       response.message == "$company.id was unable to be found"
       response.code == "system.not.found"
    }
+
+   void "recreate deleted company" () {
+      given:
+      final address = AddressTestDataLoader.single()
+      final companyEntity = CompanyFactory.stream(1, address).findFirst().orElseThrow { new Exception("Unable to create company") }
+      final company = new CompanyDTO(companyEntity)
+
+      when: // create a company
+      def response1 = post("$path", company)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(response1) {
+         id != null
+         name == company.name
+         doingBusinessAs == company.doingBusinessAs
+         clientCode == company.clientCode
+         clientId == company.clientId
+         datasetCode == company.datasetCode
+         federalTaxNumber == company.federalTaxNumber
+         it.address.id != null
+         it.address.name == address.name
+         it.address.address1 == address.address1
+      }
+
+      when: // delete company
+      delete("$path/$response1.id")
+
+      then: "company of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate company
+      def response2 = post("$path", company)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(response2) {
+         id != null
+         name == company.name
+         doingBusinessAs == company.doingBusinessAs
+         clientCode == company.clientCode
+         clientId == company.clientId
+         datasetCode == company.datasetCode
+         federalTaxNumber == company.federalTaxNumber
+         it.address.id != null
+         it.address.name == address.name
+         it.address.address1 == address.address1
+      }
+
+      when: // delete company again
+      delete("$path/$response2.id")
+
+      then: "company of user's company is deleted"
+      notThrown(HttpClientResponseException)
+   }
 }

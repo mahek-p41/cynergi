@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.region
 
-
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
@@ -465,7 +464,6 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       response.code == 'system.not.found'
    }
 
-
    void "create a region with logged in user who is not superuser"() {
       given:
       final region = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
@@ -520,6 +518,63 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == FORBIDDEN
+   }
+
+   void "recreate deleted region" () {
+      given:
+      final region = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
+
+      when: // create a region
+      def response1 = post("$path/", region)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(response1) {
+         id != null
+         name == region.name
+         number > 0
+         description == region.description
+         regionalManager.id == region.regionalManager.id
+         with(division) {
+            id == this.tstds1Division.id
+            number == this.tstds1Division.number
+            name == this.tstds1Division.name
+            description == this.tstds1Division.description
+         }
+      }
+
+      when: // delete region
+      delete("$path/$response1.id")
+
+      then: "region of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate region
+      def response2 = post("$path/", region)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(response2) {
+         id != null
+         name == region.name
+         number > 0
+         description == region.description
+         regionalManager.id == region.regionalManager.id
+         with(division) {
+            id == this.tstds1Division.id
+            number == this.tstds1Division.number
+            name == this.tstds1Division.name
+            description == this.tstds1Division.description
+         }
+      }
+
+      when: // delete region again
+      delete("$path/$response2.id")
+
+      then: "region of user's company is deleted"
+      notThrown(HttpClientResponseException)
    }
 
    void "associate store with region for tstds2" () {

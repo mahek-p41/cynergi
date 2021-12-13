@@ -204,9 +204,9 @@ class CompanyRepository @Inject constructor(
       }
 
       if (clientId != null) {
-         query.append(and).append(" client_id = :clientId ")
+         query.append(and).append(" client_id = :clientId AND deleted = FALSE ")
       } else if (datasetCode != null) {
-         query.append(and).append(" dataset_code = :datasetCode ")
+         query.append(and).append(" dataset_code = :datasetCode AND deleted = FALSE ")
       }
 
       query.append(")")
@@ -306,7 +306,7 @@ class CompanyRepository @Inject constructor(
          """
             UPDATE company
             SET deleted = TRUE
-            WHERE id = :id
+            WHERE id = :id AND deleted = FALSE
          """,
          mapOf("id" to id),
          "company"

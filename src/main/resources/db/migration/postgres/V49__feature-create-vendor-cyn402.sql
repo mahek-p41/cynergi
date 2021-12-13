@@ -38,9 +38,11 @@ CREATE TABLE vendor_group
     company_id   UUID REFERENCES company (id)                           NOT NULL,
     value        VARCHAR(10) CHECK (char_length(trim(value)) > 1)       NOT NULL,
     description  VARCHAR(50) CHECK (char_length(trim(description)) > 1) NOT NULL,
-    deleted      BOOLEAN     DEFAULT FALSE                              NOT NULL,
-    UNIQUE (company_id, value)
+    deleted      BOOLEAN     DEFAULT FALSE                              NOT NULL
 );
+
+CREATE UNIQUE INDEX vendor_group_unique_idx ON vendor_group USING btree (company_id, value, deleted)
+WHERE deleted = false;
 
 CREATE INDEX vendor_group_deleted_idx ON vendor_group(deleted)
 WHERE deleted = false;

@@ -390,4 +390,58 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       response.message == "${glRecurringDistribution.id} was unable to be found"
       response.code == 'system.not.found'
    }
+
+   void "recreate deleted GL recurring distribution" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      final glRecurring = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
+      final account = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, company)
+      final glRecurringDistributionDTO = dataLoaderService.singleDTO(
+         new GeneralLedgerRecurringDTO(glRecurring),
+         new AccountDTO(account),
+         new SimpleLegacyIdentifiableDTO(profitCenter.myId())
+      )
+
+      when: // create a GL recurring distribution
+      def response1 = post(path, glRecurringDistributionDTO)
+
+      then:
+      notThrown(Exception)
+      response1 != null
+      with(response1) {
+         id != null
+         generalLedgerRecurring.id == glRecurringDistributionDTO.generalLedgerRecurring.id
+         generalLedgerDistributionAccount.id == glRecurringDistributionDTO.generalLedgerDistributionAccount.myId()
+         generalLedgerDistributionProfitCenter.id == glRecurringDistributionDTO.generalLedgerDistributionProfitCenter.myId()
+         generalLedgerDistributionAmount == glRecurringDistributionDTO.generalLedgerDistributionAmount
+      }
+
+      when: // delete GL recurring distribution
+      delete("$path/$response1.id")
+
+      then: "GL recurring distribution of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate GL recurring distribution
+      def response2 = post(path, glRecurringDistributionDTO)
+
+      then:
+      notThrown(Exception)
+      response2 != null
+      with(response2) {
+         id != null
+         generalLedgerRecurring.id == glRecurringDistributionDTO.generalLedgerRecurring.id
+         generalLedgerDistributionAccount.id == glRecurringDistributionDTO.generalLedgerDistributionAccount.myId()
+         generalLedgerDistributionProfitCenter.id == glRecurringDistributionDTO.generalLedgerDistributionProfitCenter.myId()
+         generalLedgerDistributionAmount == glRecurringDistributionDTO.generalLedgerDistributionAmount
+      }
+
+      when: // delete GL recurring distribution again
+      delete("$path/$response2.id")
+
+      then: "GL recurring distribution of user's company is deleted"
+      notThrown(HttpClientResponseException)
+   }
 }

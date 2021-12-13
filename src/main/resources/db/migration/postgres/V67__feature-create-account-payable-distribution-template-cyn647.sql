@@ -8,14 +8,16 @@ CREATE TABLE account_payable_distribution_template
     account_id        UUID REFERENCES account (id)           NOT NULL,
     company_id        UUID REFERENCES company (id)           NOT NULL,
     percent           NUMERIC(8, 7)                          NOT NULL,
-    deleted           BOOLEAN     DEFAULT FALSE              NOT NULL,
-    UNIQUE (company_id, name, profit_center_sfk, account_id)
+    deleted           BOOLEAN     DEFAULT FALSE              NOT NULL
 );
 CREATE TRIGGER account_payable_distribution_template_trg
     BEFORE UPDATE
     ON account_payable_distribution_template
     FOR EACH ROW
 EXECUTE PROCEDURE update_user_table_fn();
+
+CREATE UNIQUE INDEX account_payable_distribution_unique_idx ON account_payable_distribution_template USING btree (company_id, name, profit_center_sfk, account_id, deleted)
+WHERE deleted = false;
 
 CREATE INDEX account_payable_distribution_account_idx ON account_payable_distribution_template (account_id) WHERE deleted is FALSE;
 

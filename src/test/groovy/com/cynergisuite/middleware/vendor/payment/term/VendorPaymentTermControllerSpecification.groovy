@@ -373,4 +373,42 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       response.message == "$vendorPaymentTerm.id was unable to be found"
       response.code == "system.not.found"
    }
+
+   void "recreate deleted vendor payment term" () {
+      given:
+      final schedules = [new VendorPaymentTermScheduleDTO(null, null, 90, 1.0, 1)]
+      final vendorPaymentTerm = new VendorPaymentTermDTO(null, "test2", null, null, null, schedules)
+
+      when: // create a vendor payment term
+      def response1 = post(path, vendorPaymentTerm)
+
+      then:
+      notThrown(HttpClientResponseException)
+      response1.description == vendorPaymentTerm.description
+      response1.discountMonth == vendorPaymentTerm.discountMonth
+      response1.discountDays == vendorPaymentTerm.discountDays
+      response1.discountPercent == vendorPaymentTerm.discountPercent
+
+      when: // delete vendor payment term
+      delete("$path/$response1.id")
+
+      then: "vendor payment term of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate vendor payment term
+      def response2 = post(path, vendorPaymentTerm)
+
+      then:
+      notThrown(HttpClientResponseException)
+      response2.description == vendorPaymentTerm.description
+      response2.discountMonth == vendorPaymentTerm.discountMonth
+      response2.discountDays == vendorPaymentTerm.discountDays
+      response2.discountPercent == vendorPaymentTerm.discountPercent
+
+      when: // delete vendor payment term again
+      delete("$path/$response2.id")
+
+      then: "vendor payment term of user's company is deleted"
+      notThrown(HttpClientResponseException)
+   }
 }

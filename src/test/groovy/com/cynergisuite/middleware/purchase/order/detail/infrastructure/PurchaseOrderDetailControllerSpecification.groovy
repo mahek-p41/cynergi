@@ -809,4 +809,139 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       response.message == "${poDetail.id} was unable to be found"
       response.code == 'system.not.found'
    }
+
+   void "recreate deleted purchase order detail" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
+      final shipViaList = shipViaTestDataLoaderService.stream(2, company).toList()
+      final vendorShipVia = shipViaList[0]
+      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final approvedByIn = employeeFactoryService.single(company)
+      final purchaseAgentIn = employeeFactoryService.single(company)
+      final shipViaIn = shipViaList[1]
+      final shipToIn = storeFactoryService.store(3, company)
+      final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
+      final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
+      final purchaseOrderIn = purchaseOrderTestDataLoaderService.single(
+         company,
+         poVendorIn,
+         approvedByIn,
+         purchaseAgentIn,
+         shipViaIn as ShipViaEntity,
+         shipToIn,
+         paymentTermTypeIn,
+         vendorSubmittedEmployeeIn
+      )
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final poDetailDTO = purchaseOrderDetailTestDataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleLegacyIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
+
+      when: // create a purchase order detail
+      def response1 = post("$path/", poDetailDTO)
+
+      then:
+      notThrown(HttpClientResponseException)
+      response1 != null
+      response1.id != null
+      with(response1) {
+         id != null
+         number == poDetailDTO.number
+         purchaseOrder.id == poDetailDTO.purchaseOrder.id
+         itemfileNumber == poDetailDTO.itemfileNumber
+         orderQuantity == poDetailDTO.orderQuantity
+         receivedQuantity == poDetailDTO.receivedQuantity
+         cost == poDetailDTO.cost
+         message == poDetailDTO.message
+         color == poDetailDTO.color
+         fabric == poDetailDTO.fabric
+         cancelledQuantity == poDetailDTO.cancelledQuantity
+         cancelledTempQuantity == poDetailDTO.cancelledTempQuantity
+         shipTo.id == poDetailDTO.shipTo.myId()
+         requiredDate == poDetailDTO.requiredDate.toString()
+         dateOrdered == poDetailDTO.dateOrdered.toString()
+         freightPerItem == poDetailDTO.freightPerItem
+         tempQuantityToReceive == poDetailDTO.tempQuantityToReceive
+         vendor.id == poDetailDTO.vendor.id
+         lastReceivedDate == poDetailDTO.lastReceivedDate.toString()
+         landedCost == poDetailDTO.landedCost
+
+         with(statusType) {
+            value == poDetailDTO.statusType.value
+            description == poDetailDTO.statusType.description
+         }
+
+         with(purchaseOrderRequisitionIndicatorType) {
+            value == poDetailDTO.purchaseOrderRequisitionIndicatorType.value
+            description == poDetailDTO.purchaseOrderRequisitionIndicatorType.description
+         }
+
+         with(exceptionIndicatorType) {
+            value == poDetailDTO.exceptionIndicatorType.value
+            description == poDetailDTO.exceptionIndicatorType.description
+         }
+
+         convertedPurchaseOrderNumber == poDetailDTO.convertedPurchaseOrderNumber
+         approvedIndicator == poDetailDTO.approvedIndicator
+      }
+
+      when: // delete purchase order detail
+      delete("$path/$response1.id")
+
+      then: "purchase order detail of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate purchase order detail
+      def response2 = post("$path/", poDetailDTO)
+
+      then:
+      notThrown(HttpClientResponseException)
+      response2 != null
+      response2.id != null
+      with(response2) {
+         id != null
+         number == poDetailDTO.number
+         purchaseOrder.id == poDetailDTO.purchaseOrder.id
+         itemfileNumber == poDetailDTO.itemfileNumber
+         orderQuantity == poDetailDTO.orderQuantity
+         receivedQuantity == poDetailDTO.receivedQuantity
+         cost == poDetailDTO.cost
+         message == poDetailDTO.message
+         color == poDetailDTO.color
+         fabric == poDetailDTO.fabric
+         cancelledQuantity == poDetailDTO.cancelledQuantity
+         cancelledTempQuantity == poDetailDTO.cancelledTempQuantity
+         shipTo.id == poDetailDTO.shipTo.myId()
+         requiredDate == poDetailDTO.requiredDate.toString()
+         dateOrdered == poDetailDTO.dateOrdered.toString()
+         freightPerItem == poDetailDTO.freightPerItem
+         tempQuantityToReceive == poDetailDTO.tempQuantityToReceive
+         vendor.id == poDetailDTO.vendor.id
+         lastReceivedDate == poDetailDTO.lastReceivedDate.toString()
+         landedCost == poDetailDTO.landedCost
+
+         with(statusType) {
+            value == poDetailDTO.statusType.value
+            description == poDetailDTO.statusType.description
+         }
+
+         with(purchaseOrderRequisitionIndicatorType) {
+            value == poDetailDTO.purchaseOrderRequisitionIndicatorType.value
+            description == poDetailDTO.purchaseOrderRequisitionIndicatorType.description
+         }
+
+         with(exceptionIndicatorType) {
+            value == poDetailDTO.exceptionIndicatorType.value
+            description == poDetailDTO.exceptionIndicatorType.description
+         }
+
+         convertedPurchaseOrderNumber == poDetailDTO.convertedPurchaseOrderNumber
+         approvedIndicator == poDetailDTO.approvedIndicator
+      }
+
+      when: // delete purchase order detail again
+      delete("$path/$response2.id")
+
+      then: "purchase order detail of user's company is deleted"
+      notThrown(HttpClientResponseException)
+   }
 }

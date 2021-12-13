@@ -95,6 +95,7 @@ class VendorPaymentTermScheduleRepository @Inject constructor(
          SET deleted = TRUE
          WHERE vendor_payment_term_id = :vendor_payment_term_id
                AND id NOT IN(<ids>)
+               AND deleted = FALSE
          RETURNING
             *
          """.trimIndent(),

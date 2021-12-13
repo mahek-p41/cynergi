@@ -40,7 +40,7 @@ abstract class AddressRepository @Inject constructor(
          """
          UPDATE address
          SET deleted = TRUE
-         WHERE id = :id
+         WHERE id = :id AND deleted = FALSE
          """,
          mapOf("id" to id),
          "address"

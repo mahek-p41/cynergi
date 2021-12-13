@@ -388,7 +388,6 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       response.code == 'system.not.found'
    }
 
-
    void "create a division with logged in user who is not superuser"() {
       given:
       final division = divisionFactoryService.singleDTO(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
@@ -443,5 +442,50 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == FORBIDDEN
+   }
+
+   void "recreate deleted division" () {
+      given:
+      final division = divisionFactoryService.singleDTO(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+
+      when: // create a division
+      def response1 = post("$path/", division)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(response1) {
+         id != null
+         number > 0
+         name == division.name
+         description == division.description
+         divisionalManager.id == division.divisionalManager.id
+      }
+
+      when: // delete division
+      delete("$path/$response1.id")
+
+      then: "division of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate division
+      def response2 = post("$path/", division)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(response2) {
+         id != null
+         number > 0
+         name == division.name
+         description == division.description
+         divisionalManager.id == division.divisionalManager.id
+      }
+
+      when: // delete division again
+      delete("$path/$response2.id")
+
+      then: "division of user's company is deleted"
+      notThrown(HttpClientResponseException)
    }
 }

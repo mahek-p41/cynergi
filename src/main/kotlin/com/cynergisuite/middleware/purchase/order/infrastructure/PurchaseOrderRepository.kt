@@ -635,7 +635,7 @@ class PurchaseOrderRepository @Inject constructor(
          """
          UPDATE purchase_order_header
          SET deleted = TRUE
-         WHERE id = :id AND company_id = :company_id
+         WHERE id = :id AND company_id = :company_id AND deleted = FALSE
          """,
          mapOf("id" to id, "company_id" to company.id),
          "purchase_order_header"

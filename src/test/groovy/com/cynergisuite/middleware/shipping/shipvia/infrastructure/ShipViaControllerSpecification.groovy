@@ -278,5 +278,80 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.message == "$shipVia.id was unable to be found"
       response.code == 'system.not.found'
+
+      when:
+      delete( "$path/905545bf-3509-4ad3-8ccc-e437b2dbdcb0")
+
+      then:
+      final exception2 = thrown(HttpClientResponseException)
+      exception2.response.status == NOT_FOUND
+      def response2 = exception.response.bodyAsJson()
+      response2.message == "$shipVia.id was unable to be found"
+      response2.code == 'system.not.found'
+   }
+
+   void "delete non-existing ship via" () {
+      given:
+      def shipVia = shipViaFactoryService.single(nineNineEightEmployee.company)
+
+      when: // delete ship via
+      delete("$path/$shipVia.id")
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      when: // delete ship via that has already been deleted
+      delete("$path/$shipVia.id")
+
+      then:
+      final exception1 = thrown(HttpClientResponseException)
+      exception1.response.status == NOT_FOUND
+      def response1 = exception1.response.bodyAsJson()
+      response1.message == "$shipVia.id was unable to be found"
+      response1.code == 'system.not.found'
+
+      when: // delete ship via with non-existing uuid
+      delete( "$path/905545bf-3509-4ad3-8ccc-e437b2dbdcb0")
+
+      then:
+      final exception2 = thrown(HttpClientResponseException)
+      exception2.response.status == NOT_FOUND
+      def response2 = exception2.response.bodyAsJson()
+      response2.message == "905545bf-3509-4ad3-8ccc-e437b2dbdcb0 was unable to be found"
+      response2.code == 'system.not.found'
+   }
+
+   void "recreate deleted ship via" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = ShipViaTestDataLoader.single(company).with { new ShipViaDTO(it) }
+
+      when: // create a ship via
+      def response1 = post("$path/", shipVia)
+
+      then:
+      response1.id != null
+      response1.description == shipVia.description
+      response1.number > 0
+
+      when: // delete ship via
+      delete("$path/$response1.id")
+
+      then: "ship via of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate ship via
+      def response2 = post("$path/", shipVia)
+
+      then:
+      response2.id != null
+      response2.description == shipVia.description
+      response2.number > 0
+
+      when: // delete ship via again
+      delete("$path/$response2.id")
+
+      then: "ship via of user's company is deleted"
+      notThrown(HttpClientResponseException)
    }
 }

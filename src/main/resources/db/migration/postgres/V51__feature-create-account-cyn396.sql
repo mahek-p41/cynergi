@@ -41,7 +41,7 @@ INSERT INTO normal_account_balance_type_domain(id, value, description, localizat
 VALUES (1, 'C', 'Credit', 'credit'),
        (2, 'D', 'Debit', 'debit');
 
--- being account setup
+-- begin account setup
 CREATE TABLE account
 (
     id                             UUID        DEFAULT uuid_generate_v1()                     NOT NULL PRIMARY KEY,
@@ -56,8 +56,7 @@ CREATE TABLE account
     form_1099_field                INTEGER, -- field # on the 1099 form for this account
     corporate_account_indicator    BOOLEAN     DEFAULT FALSE                                  NOT NULL,
     search_vector                  TSVECTOR                                                   NOT NULL,
-    deleted                        BOOLEAN      DEFAULT FALSE                                 NOT NULL,
-    UNIQUE (company_id, number)
+    deleted                        BOOLEAN      DEFAULT FALSE                                 NOT NULL
 );
 
 CREATE OR REPLACE FUNCTION account_search_update_fn()
@@ -75,6 +74,9 @@ BEGIN
 END;
 $$
     LANGUAGE plpgsql STRICT;
+
+CREATE UNIQUE INDEX account_unique_idx ON account USING btree (company_id, number, deleted)
+WHERE deleted = false;
 
 CREATE INDEX account_company_id_idx ON account (company_id) WHERE deleted is FALSE;
 CREATE INDEX account_type_id_idx ON account (type_id) WHERE deleted is FALSE;
@@ -104,13 +106,16 @@ CREATE TABLE bank
     name                             VARCHAR(50) CHECK ( CHAR_LENGTH(TRIM(name)) > 1)       NOT NULL,
     general_ledger_profit_center_sfk INTEGER CHECK ( general_ledger_profit_center_sfk > 0 ) NOT NULL, --profit center is store or possibly home office
     general_ledger_account_id        UUID REFERENCES account (id)                           NOT NULL,
-    deleted                          BOOLEAN     DEFAULT FALSE                              NOT NULL,
-    UNIQUE (company_id, number)
+    deleted                          BOOLEAN     DEFAULT FALSE                              NOT NULL
 );
 CREATE TRIGGER update_bank_trg
     BEFORE UPDATE
     ON bank
     FOR EACH ROW
 EXECUTE PROCEDURE update_user_table_fn();
+
+CREATE UNIQUE INDEX bank_unique_idx ON bank USING btree (company_id, number, deleted)
+WHERE deleted = false;
+
 CREATE INDEX bank_company_id_idx ON bank (company_id) WHERE deleted is FALSE;
 -- end bank setup

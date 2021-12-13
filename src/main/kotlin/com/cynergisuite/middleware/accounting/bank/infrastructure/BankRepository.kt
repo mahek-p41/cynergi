@@ -215,7 +215,7 @@ class BankRepository @Inject constructor(
          """
          UPDATE bank
          SET deleted = TRUE
-         WHERE id = :id AND company_id = :company_id
+         WHERE id = :id AND company_id = :company_id AND deleted = FALSE
          """,
          mapOf("id" to id, "company_id" to company.id),
          "bank"
