@@ -50,6 +50,11 @@ class AccountPayableDistributionService @Inject constructor(
       return transformEntity(accountPayableDistributionRepository.update(toUpdate, company))
    }
 
+   fun update(dto: List<AccountPayableDistributionDTO>, company: CompanyEntity): List<AccountPayableDistributionDTO> {
+      val toUpdate = accountPayableDistributionValidator.validateBulkUpdate(dto, company)
+      val updated = accountPayableDistributionRepository.bulkUpdate(toUpdate, company)
+      return updated.map{ transformEntity(it) }.toList()
+   }
    fun delete(id: UUID, company: CompanyEntity) {
       accountPayableDistributionRepository.delete(id, company)
    }

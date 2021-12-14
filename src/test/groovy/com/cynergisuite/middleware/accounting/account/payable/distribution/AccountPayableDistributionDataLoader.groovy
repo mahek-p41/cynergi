@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.account.payable.distribution
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.payable.distribution.infrastructure.AccountPayableDistributionRepository
@@ -38,7 +39,7 @@ class AccountPayableDistributionDataLoader {
       }
    }
 
-   static Stream<AccountPayableDistributionDTO> streamDTO(int numberIn = 1, StoreDTO profitCenter, AccountDTO account, String name = null) {
+   static Stream<AccountPayableDistributionDTO> streamDTO(int numberIn = 1, SimpleLegacyIdentifiableDTO profitCenter, AccountDTO account, String name = null) {
       final number = numberIn > 0 ? numberIn : 1
       final faker = new Faker()
       final lorem = faker.lorem()
@@ -79,7 +80,7 @@ class AccountPayableDistributionDataLoaderService {
          .findFirst().orElseThrow { new Exception("Unable to create AccountPayableDistribution") }
    }
 
-   AccountPayableDistributionDTO singleDTO(StoreDTO profitCenterIn, AccountDTO accountIn, String nameIn = null) {
+   AccountPayableDistributionDTO singleDTO(SimpleLegacyIdentifiableDTO profitCenterIn, AccountDTO accountIn, String nameIn = null) {
       return AccountPayableDistributionDataLoader.streamDTO(1, profitCenterIn, accountIn, nameIn).findFirst().orElseThrow { new Exception("Unable to create AccountPayableDistribution") }
    }
 }

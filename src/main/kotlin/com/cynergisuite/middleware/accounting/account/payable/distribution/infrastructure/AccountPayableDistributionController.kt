@@ -205,7 +205,7 @@ class AccountPayableDistributionController @Inject constructor(
 
    @Put(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["AccountPayableDistributionEndpoints"], summary = "Update multiple AccountPayableDistributionEntity", description = "Update multiple AccountPayableDistributionEntity from a body of AccountPayableDistributionDTO", operationId = "accountPayableDistribution-update")
+   @Operation(tags = ["AccountPayableDistributionEndpoints"], summary = "Update multiple AccountPayableDistributionEntity", description = "Update multiple AccountPayableDistributionEntity from a body of AccountPayableDistributionDTO", operationId = "accountPayableDistribution-bulkUpdate")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", description = "If successfully able to update AccountPayableDistribution", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableDistributionDTO::class))]),
@@ -224,7 +224,7 @@ class AccountPayableDistributionController @Inject constructor(
       val userCompany = user.myCompany()
       logger.info("Requested Update AccountPayableDistribution {}", dto)
 
-      val response = dto.map {accountPayableDistributionService.update(it.id!!, it, userCompany) }.toList()
+      val response = accountPayableDistributionService.update(dto, userCompany)
 
       logger.debug("Requested Update AccountPayableDistribution {} resulted in {}", dto, response)
 

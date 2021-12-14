@@ -37,6 +37,12 @@ class AccountPayableDistributionValidator @Inject constructor(
       return doSharedValidation(dto, company)
    }
 
+   fun validateBulkUpdate(dto: List<AccountPayableDistributionDTO>, company: CompanyEntity): List<AccountPayableDistributionEntity> {
+      logger.debug("Validating Bulk Update AccountPayableDistribution {}", dto)
+
+      return dto.map {doSharedValidation(it, company) }.toList()
+   }
+
    private fun doSharedValidation(dto: AccountPayableDistributionDTO, company: CompanyEntity): AccountPayableDistributionEntity {
       val profitCenter = dto.profitCenter?.id?.let { storeRepository.findOne(it, company) } // FIXME change to loading using the id provided via the URL on update
       val account = dto.account?.id?.let { accountRepository.findOne(it, company) }
