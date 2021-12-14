@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.vendor.rebate.infrastructure
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
@@ -316,7 +317,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
-      final rebateDTO = rebateTestDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      final rebateDTO = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
 
       when:
       def result = post(path, rebateDTO)
@@ -357,7 +358,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
-      final rebateDTO = rebateTestDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      final rebateDTO = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
       rebateDTO.accrualIndicator = false
       rebateDTO.generalLedgerDebitAccount = null
 
@@ -399,7 +400,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
-      final rebateDTO = rebateTestDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      final rebateDTO = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
       rebateDTO.accrualIndicator = true
       rebateDTO.generalLedgerDebitAccount = null
 
@@ -421,7 +422,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
-      final rebate = rebateTestDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      final rebate = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
       rebate["$nonNullableProp"] = null
 
       when:
@@ -457,7 +458,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       }
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
-      final rebate = rebateTestDataLoaderService.singleDTO(vendorListDTO, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      final rebate = rebateTestDataLoaderService.singleDTO(vendorListDTO, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
       rebate.vendors.add(new SimpleIdentifiableDTO(invalidVendorId))
 
       when:
@@ -478,7 +479,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
-      final rebate = rebateTestDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      final rebate = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
       rebate.percent = 1.2
       rebate.amountPerUnit = null
 
@@ -500,7 +501,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
-      final rebate = rebateTestDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      final rebate = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
       rebate.percent = null
       rebate.amountPerUnit = null
 
@@ -521,7 +522,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
-      final rebate = rebateTestDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      final rebate = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
       rebate.percent = 0.5
       rebate.amountPerUnit = 10
 
@@ -544,7 +545,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
-      final rebate = rebateTestDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      final rebate = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
       rebate.accrualIndicator = false
       rebate.generalLedgerDebitAccount.id = generalLedgerDebitAccountNonExistentId
       rebate.generalLedgerCreditAccount.id = generalLedgerCreditAccountNonExistentId
@@ -571,7 +572,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
-      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
 
       when:
       updatedRebateDTO.id = existingRebate.id
@@ -612,7 +613,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
-      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
       updatedRebateDTO.accrualIndicator = false
       updatedRebateDTO.generalLedgerDebitAccount = null
 
@@ -656,7 +657,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
-      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
       updatedRebateDTO.accrualIndicator = true
       updatedRebateDTO.generalLedgerDebitAccount = null
 
@@ -680,7 +681,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
-      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
       updatedRebateDTO["$nonNullableProp"] = null
 
       when:
@@ -718,7 +719,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, vendorList, glDebitAcct, glCreditAcct)
-      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(vendorListDTO, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(vendorListDTO, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
       updatedRebateDTO.vendors.add(new SimpleIdentifiableDTO(nonExistentVendorId))
 
       when:
@@ -741,7 +742,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
-      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
       updatedRebateDTO.percent = 1.2
       updatedRebateDTO.amountPerUnit = null
 
@@ -765,7 +766,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
-      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
       updatedRebateDTO.percent = null
       updatedRebateDTO.amountPerUnit = null
 
@@ -788,7 +789,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
-      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
       updatedRebateDTO.percent = 0.5
       updatedRebateDTO.amountPerUnit = 10
 
@@ -813,7 +814,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
-      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
       updatedRebateDTO.accrualIndicator = false
       updatedRebateDTO.generalLedgerDebitAccount.id = generalLedgerDebitAccountNonExistentId
       updatedRebateDTO.generalLedgerCreditAccount.id = generalLedgerCreditAccountNonExistentId
@@ -847,7 +848,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       }
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
-      final rebateDTO = rebateTestDataLoaderService.singleDTO(vendorListDTO, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      final rebateDTO = rebateTestDataLoaderService.singleDTO(vendorListDTO, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
 
       when: // create rebate
       def result = post(path, rebateDTO)
@@ -917,7 +918,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       }
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
-      final rebateDTO = rebateTestDataLoaderService.singleDTO(vendorListDTO, new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct))
+      final rebateDTO = rebateTestDataLoaderService.singleDTO(vendorListDTO, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
 
       when: // create rebate
       def result = post(path, rebateDTO)
