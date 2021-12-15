@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.vendor.rebate
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.AccountStatusFactory
 import com.cynergisuite.middleware.accounting.account.AccountStatusTypeValueObject
@@ -57,7 +58,7 @@ class RebateTestDataLoader {
       }
    }
 
-   static Stream<RebateDTO> streamDTO(int numberIn = 1, List<SimpleIdentifiableDTO> vendorsIn, SimpleIdentifiableDTO generalLedgerDebitAccountIn, SimpleIdentifiableDTO generalLedgerCreditAccountIn) {
+   static Stream<RebateDTO> streamDTO(int numberIn = 1, List<SimpleIdentifiableDTO> vendorsIn, AccountDTO generalLedgerDebitAccountIn, AccountDTO generalLedgerCreditAccountIn) {
       final number = numberIn < 0 ? 1 : numberIn
       final faker = new Faker()
       final random = faker.random()
@@ -104,7 +105,7 @@ class RebateTestDataLoaderService {
       return stream(1, companyIn, vendorsIn, generalLedgerDebitAccountIn, generalLedgerCreditAccountIn).findFirst().orElseThrow { new Exception("Unable to create RebateEntity") }
    }
 
-   RebateDTO singleDTO(List<SimpleIdentifiableDTO> vendorsIn, SimpleIdentifiableDTO generalLedgerDebitAccountIn, SimpleIdentifiableDTO generalLedgerCreditAccountIn) {
+   RebateDTO singleDTO(List<SimpleIdentifiableDTO> vendorsIn, AccountDTO generalLedgerDebitAccountIn, AccountDTO generalLedgerCreditAccountIn) {
       return RebateTestDataLoader.streamDTO(1, vendorsIn, generalLedgerDebitAccountIn, generalLedgerCreditAccountIn).findFirst().orElseThrow { new Exception("Unable to create Rebate") }
    }
 

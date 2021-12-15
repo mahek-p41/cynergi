@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.vendor.rebate
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountStatusTypeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -58,12 +59,12 @@ data class RebateDTO(
 
    @field:Valid
    @field:Schema(name = "generalLedgerDebitAccount", description = "General ledger debit account, must not be null if accrualIndicator is true", required = false)
-   var generalLedgerDebitAccount: SimpleIdentifiableDTO?,
+   var generalLedgerDebitAccount: AccountDTO?,
 
    @field:NotNull
    @field:Valid
    @field:Schema(name = "generalLedgerCreditAccount", description = "General ledger credit account")
-   var generalLedgerCreditAccount: SimpleIdentifiableDTO? = null
+   var generalLedgerCreditAccount: AccountDTO? = null
 
 ) : Identifiable {
 
@@ -77,8 +78,8 @@ data class RebateDTO(
          percent = entity.percent,
          amountPerUnit = entity.amountPerUnit,
          accrualIndicator = entity.accrualIndicator,
-         generalLedgerDebitAccount = entity.generalLedgerDebitAccount?.let { SimpleIdentifiableDTO(it) },
-         generalLedgerCreditAccount = SimpleIdentifiableDTO(entity.generalLedgerCreditAccount)
+         generalLedgerDebitAccount = entity.generalLedgerDebitAccount?.let { AccountDTO(it) },
+         generalLedgerCreditAccount = AccountDTO(entity.generalLedgerCreditAccount)
       )
 
    override fun myId(): UUID? = id
