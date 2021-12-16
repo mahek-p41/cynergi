@@ -9,6 +9,7 @@ import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.softDelete
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionEntity
@@ -261,6 +262,18 @@ class AccountPayableDistributionRepository @Inject constructor(
    }
 
    @Transactional
+   fun bulkUpdate(entity: List<AccountPayableDistributionEntity>, company: CompanyEntity ): List<AccountPayableDistributionEntity> {
+      logger.debug("Updating AccountPayableDistributionEntity {}", entity)
+      deleteNotIn(company.id!!, entity)
+      val updated = mutableListOf<AccountPayableDistributionEntity>()
+
+      entity.map { upsert(it, company) }
+         .forEach { updated.add(it) }
+
+      return updated
+   }
+
+   @Transactional
    fun delete(id: UUID, company: CompanyEntity) {
       logger.debug("Deleting AccountPayableDistribution with id={}", id)
 
@@ -322,4 +335,31 @@ class AccountPayableDistributionRepository @Inject constructor(
    private fun mapRowName(rs: ResultSet): String {
       return rs.getString("name")
    }
+
+   @Transactional
+   fun deleteNotIn(id: UUID, apdList: List<AccountPayableDistributionEntity>): Int {
+
+      val result =  jdbc.update(
+        """
+        UPDATE account_payable_distribution_template
+        SET deleted = TRUE
+        WHERE company_id = :company_id
+              AND name NOT IN(<names>)
+        RETURNING
+           *
+        """.trimIndent(),
+        mapOf(
+           "company_id" to id,
+           "names" to apdList.asSequence().map { it.name }.toList()
+        )
+     )
+      return result
+   }
+
+   fun upsert(apd: AccountPayableDistributionEntity, company: CompanyEntity): AccountPayableDistributionEntity =
+      if (apd.id == null) {
+         insert(apd, company)
+      } else {
+         update(apd, company)
+      }
 }

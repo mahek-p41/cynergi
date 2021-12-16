@@ -552,4 +552,39 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       then: "account payable distribution of user's company is deleted"
       notThrown(HttpClientResponseException)
    }
+
+   void "update valid list of account payable distribution" () {
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final accounts = accountDataLoaderService.stream(5, company).toList()
+      def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      def existingAPDistributions = []
+      def updatedAPDistDTOs = []
+      accounts.eachWithIndex { account, index ->
+         existingAPDistributions.add(dataLoaderService.single(store, account, company))
+         updatedAPDistDTOs.add(dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(account), "test"))
+      }
+      updatedAPDistDTOs.eachWithIndex { dto, index ->
+         dto.id = existingAPDistributions[index].id
+         dto.percent = 0.2
+      }
+
+      when:
+      def result = put("$path", updatedAPDistDTOs)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         result.eachWithIndex { dto, index ->
+            with(dto) {
+               id == dto.id
+               name == dto.name
+               profitCenter.id == dto.profitCenter.id
+               account.id == dto.account.id
+               percent == dto.percent
+            }
+         }
+      }
+   }
 }
