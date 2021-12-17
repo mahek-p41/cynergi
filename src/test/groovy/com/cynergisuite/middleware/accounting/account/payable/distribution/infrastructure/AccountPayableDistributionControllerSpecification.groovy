@@ -510,7 +510,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final apDistribution = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new SimpleIdentifiableDTO(acct.myId()), null)
+      final apDistribution = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), null)
 
       when: // create a account payable distribution
       def response1 = post("$path/", apDistribution)
