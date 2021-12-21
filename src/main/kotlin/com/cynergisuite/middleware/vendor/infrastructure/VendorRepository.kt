@@ -5,19 +5,12 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getIntOrNull
-import com.cynergisuite.extensions.getUuid
-import com.cynergisuite.extensions.getUuidOrNull
-import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.queryForObject
-import com.cynergisuite.extensions.queryFullList
-import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodType
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardType
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
@@ -160,8 +153,8 @@ class VendorRepository @Inject constructor(
             JOIN company comp                            ON v.company_id = comp.id AND comp.deleted = FALSE
             JOIN freight_on_board_type_domain onboard    ON onboard.id = v.freight_on_board_type_id
             JOIN freight_calc_method_type_domain method  ON method.id = v.freight_calc_method_type_id
-            JOIN vendor_payment_term vpt                 ON vpt.id = v.vendor_payment_term_id
-            JOIN ship_via shipVia                        ON shipVia.id = v.ship_via_id
+            JOIN vendor_payment_term vpt                 ON vpt.id = v.vendor_payment_term_id AND vpt.deleted = FALSE
+            JOIN ship_via shipVia                        ON shipVia.id = v.ship_via_id AND shipVia.deleted = FALSE
             LEFT OUTER JOIN address                      ON address.id = v.address_id AND address.deleted = FALSE
             LEFT OUTER JOIN vendor_group vgrp            ON vgrp.id = v.vendor_group_id AND vgrp.deleted = FALSE
       """
@@ -169,7 +162,7 @@ class VendorRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): VendorEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${baseSelectQuery()}\nWHERE v.id = :id AND comp.id = :comp_id"
+      val query = "${baseSelectQuery()}\nWHERE v.id = :id AND comp.id = :comp_id AND v.deleted = FALSE"
 
       logger.debug("Searching for Vendor using {} {}", query, params)
 
@@ -189,7 +182,7 @@ class VendorRepository @Inject constructor(
       return jdbc.queryPaged(
          """
       ${baseSelectQuery()}
-      WHERE comp.id = :comp_id
+      WHERE comp.id = :comp_id AND v.deleted = FALSE
       ORDER BY v.${page.snakeSortBy()} ${page.sortDirection()}
       LIMIT :limit OFFSET :offset
          """.trimIndent(),
@@ -228,7 +221,7 @@ class VendorRepository @Inject constructor(
    @ReadOnly
    fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<VendorEntity, PageRequest> {
       var searchQuery = page.query
-      val where = StringBuilder(" WHERE comp.id = :comp_id ")
+      val where = StringBuilder(" WHERE comp.id = :comp_id AND v.deleted = FALSE ")
       val sortBy = if (!searchQuery.isNullOrEmpty()) {
          if (page.fuzzy == false) {
             where.append(" AND (search_vector @@ to_tsquery(:search_query)) ")
@@ -267,7 +260,7 @@ class VendorRepository @Inject constructor(
    @ReadOnly
    fun exists(id: UUID): Boolean {
       val exists = jdbc.queryForObject(
-         "SELECT EXISTS(SELECT id FROM vendor WHERE id = :id)",
+         "SELECT EXISTS(SELECT id FROM vendor WHERE id = :id AND vendor.deleted = FALSE)",
          mapOf("id" to id),
          Boolean::class.java
       )
@@ -528,6 +521,25 @@ class VendorRepository @Inject constructor(
       addressToDelete?.let { addressRepository.deleteById(it.id!!) } // delete address if it exists, done this way because it avoids the race condition compilation error
 
       return updatedVendor
+   }
+
+   @Transactional
+   fun delete(id: UUID, company: CompanyEntity) {
+      logger.debug("Deleting vendor with id={}", id)
+
+      val rowsAffected = jdbc.softDelete(
+         """
+         UPDATE vendor
+         SET deleted = TRUE
+         WHERE id = :id AND company_id = :company_id AND deleted = FALSE
+         """,
+         mapOf("id" to id, "company_id" to company.id),
+         "vendor"
+      )
+
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(id)
    }
 
    fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String? = "v_"): VendorEntity {
