@@ -59,6 +59,7 @@ class ErrorHandlerController @Inject constructor(
 
    companion object {
       const val SOFT_DELETE_ERROR = "The deleted row is still referenced from another table"
+      const val DUPLICATE_ERROR_BEGINNING = "org.postgresql.util.PSQLException: ERROR: duplicate key value violates unique constraint"
    }
 
    @Error(global = true, exception = JsonParseException::class)
@@ -204,7 +205,8 @@ class ErrorHandlerController @Inject constructor(
       val errorPayload = localizationService.localizeError(localizationCode = DataConstraintIntegrityViolation(), locale = locale)
 
       return if (message.startsWith("org.postgresql.util.PSQLException: ERROR: update or delete") ||
-         message.equals(Companion.SOFT_DELETE_ERROR)
+            message.equals(Companion.SOFT_DELETE_ERROR) ||
+            message.contains(DUPLICATE_ERROR_BEGINNING)
       ) {
          return HttpResponse.status<ErrorDTO>(CONFLICT).body(errorPayload)
       } else {

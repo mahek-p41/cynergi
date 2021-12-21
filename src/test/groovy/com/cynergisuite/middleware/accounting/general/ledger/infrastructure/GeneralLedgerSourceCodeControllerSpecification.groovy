@@ -263,6 +263,27 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       result.description == updatedGLSourceCode.description
    }
 
+
+   void "update source code with duplicate value" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode1 = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final glSourceCode2 = generalLedgerSourceCodeDataLoaderService.single(tstds1)
+      final updatedGLSourceCode = GeneralLedgerSourceCodeDataLoader.singleDTO()
+      updatedGLSourceCode.id = glSourceCode1.id
+      updatedGLSourceCode.value = glSourceCode2.value
+
+      when:
+      def result = put("$path/${glSourceCode1.id}", updatedGLSourceCode)
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == CONFLICT
+      def response = exception.response.bodyAsJson()
+      response.message == "Requested operation violates data integrity"
+      response.code == "cynergi.data.constraint.violated"
+   }
+
    void "delete one source code" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
