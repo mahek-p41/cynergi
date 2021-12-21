@@ -349,32 +349,10 @@ class AccountPayableDistributionRepository @Inject constructor(
         """.trimIndent(),
         mapOf(
            "company_id" to id,
-           "profitCenters" to apdList.asSequence().map { it.profitCenter.myNumber() }.toList(),
-           "name" to apdList[0].name
+           "profitCenters" to apdList.asSequence().map { it.profitCenter.myNumber() }.toList()
         )
      )
       return result
-   }
-
-   @ReadOnly
-   fun findProfitCentersByGroupName(company: CompanyEntity, name: String): List<AccountPayableDistributionEntity> {
-      val resultList: MutableList<AccountPayableDistributionEntity> = mutableListOf()
-
-      jdbc.query(
-      """
-         ${selectBaseQuery()}
-         WHERE comp.id = :comp_id AND comp.deleted = FALSE AND apDist.name = :name
-
-      """,
-         mapOf(
-            "comp_id" to company.id,
-            "name" to name
-         )
-      )
-         { rs, _ ->
-            resultList.add(mapRow(rs, company, "apDist_"))
-         }
-      return resultList
    }
 
    fun upsert(apd: AccountPayableDistributionEntity, company: CompanyEntity): AccountPayableDistributionEntity =
@@ -383,4 +361,24 @@ class AccountPayableDistributionRepository @Inject constructor(
       } else {
          update(apd, company)
       }
+
+   @ReadOnly
+   fun findProfitCenters(company: CompanyEntity): List<AccountPayableDistributionEntity> {
+      val resultList: MutableList<AccountPayableDistributionEntity> = mutableListOf()
+
+      jdbc.query(
+      """
+         ${selectBaseQuery()}
+         WHERE comp.id = :comp_id AND comp.deleted = FALSE
+
+      """,
+         mapOf(
+            "comp_id" to company.id,
+         )
+      )
+         { rs, _ ->
+            resultList.add(mapRow(rs, company, "apDist_"))
+         }
+      return resultList
+   }
 }

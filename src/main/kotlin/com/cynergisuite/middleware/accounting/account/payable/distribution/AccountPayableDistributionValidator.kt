@@ -40,7 +40,7 @@ class AccountPayableDistributionValidator @Inject constructor(
    fun validateBulkUpdate(dto: List<AccountPayableDistributionDTO>, company: CompanyEntity): List<AccountPayableDistributionEntity> {
       logger.debug("Validating Bulk Update AccountPayableDistribution {}", dto)
 
-      return dto.map {doSharedValidation(it, company) }.toList()
+      return doBulkValidation(dto, company)
    }
 
    private fun doSharedValidation(dto: AccountPayableDistributionDTO, company: CompanyEntity): AccountPayableDistributionEntity {
@@ -70,5 +70,37 @@ class AccountPayableDistributionValidator @Inject constructor(
          profitCenter = profitCenter!!,
          account = account!!
       )
+   }
+
+   private fun doBulkValidation(dtoList: List<AccountPayableDistributionDTO>, company: CompanyEntity): List<AccountPayableDistributionEntity> {
+      val percentTotal = dtoList.sumOf { dto -> dto.percent!! }
+      val updateEntities : MutableList<AccountPayableDistributionEntity> = mutableListOf()
+
+      for (dto in dtoList) {
+         val profitCenter = dto.profitCenter?.id?.let { storeRepository.findOne(it, company) }
+         val account = dto.account?.id?.let { accountRepository.findOne(it, company) }
+         val percent = dto.percent
+
+         doValidation { errors ->
+            profitCenter
+               ?: errors.add(ValidationError("profitCenter.id", NotFound(dtoList[0].profitCenter!!.id!!)))
+
+            account
+               ?: errors.add(ValidationError("account.id", NotFound(dtoList[0].account!!.id!!)))
+
+            if ((percent != null) && (percent < BigDecimal.ZERO || percent > ONE)) {
+               errors.add(ValidationError("percent", MustBeInRangeOf("[0, 1]")))
+            }
+
+            if (percentTotal > ONE) {
+               errors.add(ValidationError("percent", PercentTotalGreaterThan100(percent!!)))
+            }
+         }
+
+         updateEntities.add(AccountPayableDistributionEntity(dto, profitCenter!!, account!!))
+      }
+
+      return updateEntities
+
    }
 }

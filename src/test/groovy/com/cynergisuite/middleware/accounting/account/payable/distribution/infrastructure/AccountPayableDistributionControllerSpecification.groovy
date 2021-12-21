@@ -5,10 +5,7 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
-import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDTO
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDataLoaderService
-import com.cynergisuite.middleware.store.Store
-import com.cynergisuite.middleware.store.StoreDTO
 import com.cynergisuite.middleware.store.StoreTestDataLoader
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -248,14 +245,14 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       'profitCenter'                               || 'profitCenter'
    }
 
-   @Unroll
-   void "create invalid account payable distribution with non-existing #testProp" () {
+   void "create invalid account payable distribution with non-existing profit center" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), null)
-      apDistributionDTO["$testProp"] = invalidValue
+      final invalidValue = new SimpleLegacyIdentifiableDTO(999999)
+      apDistributionDTO["profitCenter"] = invalidValue
 
       when:
       post("$path", apDistributionDTO)
@@ -265,13 +262,33 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == errorResponsePath
-      response[0].message == errorMessage
+      response[0].path == 'profitCenter.id'
+      response[0].message == "999999 was unable to be found"
       response[0].code == 'system.not.found'
-      where:
-      testProp       | invalidValue                                                                       || errorResponsePath | errorMessage
-      'account'      | new AccountDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')) || 'account.id'      | "ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found"
-      'profitCenter' | new StoreDTO(999999)                                            || 'profitCenter.id' | "999999 was unable to be found"
+   }
+
+   void "create invalid account payable distribution with non-existing Account" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final acct = accountDataLoaderService.single(company)
+      final apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), null)
+      final badDTO = new AccountDTO(acct)
+      badDTO.id = UUID.fromString("ee2359b6-c88c-11eb-8098-02420a4d0702")
+      final invalidValue =  badDTO
+      apDistributionDTO["account"] = invalidValue
+
+      when:
+      post("$path", apDistributionDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == 'account.id'
+      response[0].message == "ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found"
+      response[0].code == 'system.not.found'
    }
 
    @Unroll
