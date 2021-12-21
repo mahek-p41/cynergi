@@ -5,7 +5,16 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getIntOrNull
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.getUuidOrNull
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.queryFullList
+import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.softDelete
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.CompanyEntity

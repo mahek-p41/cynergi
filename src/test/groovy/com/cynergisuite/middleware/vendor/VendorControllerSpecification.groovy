@@ -6,6 +6,8 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDataLoaderService
+import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.address.AddressDTO
@@ -35,6 +37,7 @@ import spock.lang.Unroll
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.CONFLICT
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
@@ -42,8 +45,10 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class VendorControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/vendor"
 
+   @Inject AccountPayablePaymentDataLoaderService accountPayablePaymentDataLoaderService
    @Inject AccountTestDataLoaderService accountTestDataLoaderService
    @Inject AddressTestDataLoaderService addressTestDataLoaderService
+   @Inject BankFactoryService bankFactoryService
    @Inject FreightOnboardTypeRepository freightOnboardTypeRepository
    @Inject FreightCalcMethodTypeRepository freightCalcMethodTypeRepository
    @Inject RebateTestDataLoaderService rebateTestDataLoaderService
@@ -1112,6 +1117,29 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.message == "$vendor.id was unable to be found"
       response.code == 'system.not.found'
+   }
+
+   void "delete vendor still has references" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaTestDataLoaderService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
+      final apPaymentVendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+
+      final store = storeFactoryService.store(3, company)
+      final account = accountTestDataLoaderService.single(company)
+      final bank = bankFactoryService.single(company, store, account)
+      accountPayablePaymentDataLoaderService.single(company, bank, apPaymentVendor)
+
+      when:
+      delete("$path/$apPaymentVendor.id", )
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status == CONFLICT
+      def response = exception.response.bodyAsJson()
+      response.message == "Requested operation violates data integrity"
+      response.code == "cynergi.data.constraint.violated"
    }
 
    void "delete vendor from other company is not allowed" () {
