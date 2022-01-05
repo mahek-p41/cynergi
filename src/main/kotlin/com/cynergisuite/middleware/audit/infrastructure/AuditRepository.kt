@@ -156,9 +156,14 @@ class AuditRepository @Inject constructor(
                   csaa.audit_id AS audit_id, csaa.id
                FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
             ), maxStatus AS (
-               SELECT MAX(id) AS current_status_id, audit_id
+               SELECT id AS current_status_id, audit_id
                FROM audit_action
-               GROUP BY audit_id
+               WHERE (status_id, audit_id) IN
+                  (
+                     SELECT MAX(status_id), audit_id
+                     FROM audit_action
+                     GROUP BY audit_id
+                  )
             )
             SELECT
                a.id AS id,
@@ -384,9 +389,14 @@ class AuditRepository @Inject constructor(
       val sql =
          """
          WITH maxStatus AS (
-            SELECT MAX(id) AS current_status_id, audit_id
-            FROM audit_action
-            GROUP BY audit_id
+            SELECT id AS current_status_id, audit_id
+               FROM audit_action
+               WHERE (status_id, audit_id) IN
+                  (
+                     SELECT MAX(status_id), audit_id
+                     FROM audit_action
+                     GROUP BY audit_id
+                  )
          ), status AS (
             SELECT
                csastd.value AS current_status,
@@ -539,9 +549,14 @@ class AuditRepository @Inject constructor(
                  ON csaa.status_id = csastd.id
             ),
             maxStatus AS (
-               SELECT MAX(id) AS current_status_id, audit_id
+               SELECT id AS current_status_id, audit_id
                FROM audit_action
-               GROUP BY audit_id
+               WHERE (status_id, audit_id) IN
+                  (
+                     SELECT MAX(status_id), audit_id
+                     FROM audit_action
+                     GROUP BY audit_id
+                  )
             )
          SELECT
             status.current_status_id AS current_status_id,

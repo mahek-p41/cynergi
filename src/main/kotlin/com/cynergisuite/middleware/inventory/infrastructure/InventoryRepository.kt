@@ -91,7 +91,8 @@ class InventoryRepository(
    private val selectFromAuditInventory =
       """
       SELECT
-         i.audit_id AS id,
+         i.id AS id,
+         i.audit_id AS audit_id,
          i.serial_number AS serial_number,
          i.lookup_key AS lookup_key,
          i.lookup_key_type AS lookup_key_type,
