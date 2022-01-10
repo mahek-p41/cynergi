@@ -349,7 +349,8 @@ class AccountPayableDistributionRepository @Inject constructor(
         """.trimIndent(),
         mapOf(
            "company_id" to id,
-           "profitCenters" to apdList.asSequence().map { it.profitCenter.myNumber() }.toList()
+           "profitCenters" to apdList.asSequence().map { it.profitCenter.myNumber() }.toList(),
+           "name" to apdList[0].name
         )
      )
       return result
@@ -363,17 +364,18 @@ class AccountPayableDistributionRepository @Inject constructor(
       }
 
    @ReadOnly
-   fun findProfitCenters(company: CompanyEntity): List<AccountPayableDistributionEntity> {
+   fun findProfitCentersByGroupName(company: CompanyEntity, name: String): List<AccountPayableDistributionEntity> {
       val resultList: MutableList<AccountPayableDistributionEntity> = mutableListOf()
 
       jdbc.query(
       """
          ${selectBaseQuery()}
-         WHERE comp.id = :comp_id AND comp.deleted = FALSE
+         WHERE comp.id = :comp_id AND comp.deleted = FALSE AND apDist.name = :name
 
       """,
          mapOf(
             "comp_id" to company.id,
+            "name" to name
          )
       )
          { rs, _ ->

@@ -52,7 +52,7 @@ class AccountPayableDistributionService @Inject constructor(
 
    fun update(dto: List<AccountPayableDistributionDTO>, company: CompanyEntity): List<AccountPayableDistributionDTO> {
       //update rather than create entity where profit center already exists for company
-      val existProfitCenters = accountPayableDistributionRepository.findProfitCenters(company)
+      val existProfitCenters = accountPayableDistributionRepository.findProfitCentersByGroupName(company, dto[0].name!!)
       val match = existProfitCenters.filter{ e -> dto.any { d -> d.profitCenter?.id == e.profitCenter.myId() } }
 
       val mapIds = dto.map {
