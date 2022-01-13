@@ -2,9 +2,11 @@ package com.cynergisuite.domain
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.ALWAYS
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import kotlin.math.ceil
 
+@Introspected
 @JsonInclude(ALWAYS)
 @Schema(name = "Page", title = "Resulting list of a PageRequest", description = "A sub listing or a large result set")
 data class Page<I>(

@@ -6,8 +6,8 @@ import com.cynergisuite.middleware.authentication.infrastructure.AccessControlPr
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.localization.AccessDenied
 import io.micronaut.core.type.MutableArgumentValue
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class AuditAccessControlProvider @Inject constructor(

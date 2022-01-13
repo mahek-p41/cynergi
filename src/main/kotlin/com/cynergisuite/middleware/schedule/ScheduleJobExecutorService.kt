@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.schedule.type.ScheduleType
 import com.cynergisuite.middleware.schedule.type.WEEKLY
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.Qualifier
+import io.micronaut.kotlin.context.getBean
 import io.micronaut.scheduling.annotation.Scheduled
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -15,8 +16,9 @@ import java.time.DayOfWeek
 import java.time.Month
 import java.time.OffsetDateTime
 import java.time.temporal.TemporalAccessor
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
+import org.apache.commons.lang3.ClassUtils
 import javax.transaction.Transactional
 import kotlin.reflect.KClass
 
@@ -30,25 +32,29 @@ class ScheduleJobExecutorService @Inject constructor(
 
    @Transactional
    fun runDaily(dayOfWeek: DayOfWeek = OffsetDateTime.now().dayOfWeek) = // useful for calling on-demand
-      runJob(dayOfWeek, WEEKLY, OnceDailyJob::class) { OnceDailyJobQualifier(it) }
+      runJob(dayOfWeek, WEEKLY, OnceDailyJob::class)
 
    @Transactional
    fun runBeginningOfMonth(month: Month = OffsetDateTime.now().month) =
-      runJob(month, BEGINNING_OF_MONTH, BeginningOfMonthJob::class) { BeginningOfMonthJobQualifier(it) }
+      runJob(month, BEGINNING_OF_MONTH, BeginningOfMonthJob::class)
 
    @Transactional
    fun runEndOfMonth(month: Month = OffsetDateTime.now().month) =
-      runJob(month, END_OF_MONTH, EndOfMonthJob::class) { EndOfMonthJobQualifier(it) }
+      runJob(month, END_OF_MONTH, EndOfMonthJob::class)
 
-   private fun <T : TemporalAccessor, J : Job<T>> runJob(temporalAccessor: T, scheduleType: ScheduleType, jobClazz: KClass<J>, qualifierSupplier: (commandValue: String) -> Qualifier<J>): Int {
+   private fun <T : TemporalAccessor, J : Job<T>> runJob(temporalAccessor: T, scheduleType: ScheduleType, jobClazz: KClass<J>): Int {
       return companyRepository.all()
          .flatMap { scheduleRepository.all(scheduleType, it) }
          .filter { it.enabled }
-         .map { it to qualifierSupplier(it.command.value) }
-         .filter { (_, qualifier) -> applicationContext.containsBean(jobClazz.java, qualifier) }
-         .map { (schedule, qualifier) -> schedule to applicationContext.getBean(jobClazz.java, qualifier) }
-         .filter { (schedule, task) -> task.shouldProcess(schedule, temporalAccessor) }
+         .filter {
+            val job: Job<T> = applicationContext.getBean(it.command.value)
+
+            ClassUtils.isAssignable(job::class.java, jobClazz.java)
+         }
+         .map { it to applicationContext.getBean<Job<T>>(it.command.value) }
          .map { (schedule, task) -> task.process(schedule, temporalAccessor) }
+         .onEach { r -> if ( !(r.failureReason().isNullOrBlank()) ) logger.error("Job failed {}", r.failureReason()) }
+         .filter { r -> r.failureReason().isNullOrBlank() }
          .count()
    }
 

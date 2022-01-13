@@ -35,7 +35,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import javax.inject.Inject
+import jakarta.inject.Inject
 import javax.validation.Valid
 
 @Validated
@@ -217,8 +217,7 @@ class NotificationController @Inject constructor(
       ]
    )
    fun create(
-      @Valid @Body
-      dto: NotificationRequestValueObject
+      @Valid @Body dto: NotificationRequestValueObject
    ): NotificationResponseValueObject {
       logger.trace("Requested Create Notification {}", dto)
 

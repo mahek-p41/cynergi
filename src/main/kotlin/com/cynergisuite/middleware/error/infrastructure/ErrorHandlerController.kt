@@ -19,6 +19,7 @@ import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotImplemented
 import com.cynergisuite.middleware.localization.NotLoggedIn
 import com.cynergisuite.middleware.localization.RouteError
+import com.cynergisuite.middleware.localization.RouteHeaderError
 import com.cynergisuite.middleware.localization.UnableToParseJson
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.JsonMappingException
@@ -39,6 +40,7 @@ import io.micronaut.http.annotation.Error
 import io.micronaut.http.codec.CodecException
 import io.micronaut.security.authentication.AuthenticationException
 import io.micronaut.security.authentication.AuthorizationException
+import io.micronaut.web.router.exceptions.UnsatisfiedHeaderRouteException
 import io.micronaut.web.router.exceptions.UnsatisfiedRouteException
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException
@@ -47,7 +49,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.util.Locale
-import javax.inject.Inject
+import jakarta.inject.Inject
 import javax.validation.ConstraintViolationException
 import javax.validation.Path
 
@@ -149,6 +151,17 @@ class ErrorHandlerController @Inject constructor(
       )
    }
 
+   @Error(global = true, exception = UnsatisfiedHeaderRouteException::class)
+   fun unsatisfiedHeaderRouteException(httpRequest: HttpRequest<*>, exception: UnsatisfiedHeaderRouteException): HttpResponse<ErrorDTO> {
+      logger.warn("Unsatisfied Route Error", exception)
+
+      val locale = httpRequest.findLocaleWithDefault()
+
+      return badRequest(
+         localizationService.localizeError(localizationCode = RouteHeaderError(exception.headerName), locale = locale)
+      )
+   }
+
    @Error(global = true, exception = UnsatisfiedRouteException::class)
    fun unsatisfiedRouteException(httpRequest: HttpRequest<*>, exception: UnsatisfiedRouteException): HttpResponse<ErrorDTO> {
       logger.warn("Unsatisfied Route Error", exception)
@@ -218,7 +231,7 @@ class ErrorHandlerController @Inject constructor(
             val value = if (it.invalidValue != null) it.invalidValue else EMPTY // just use the empty string if invalidValue is null to make the varargs call to localize happy
 
             ErrorDTO(
-               message = localizationService.localize(it.constraintDescriptor.messageTemplate, locale, arguments = arrayOf(field, value.toString())),
+               message = localizationService.localize(it.messageTemplate, locale, arguments = arrayOf(field, value.toString())),
                path = field,
                code = it.messageTemplate.removeSurrounding("{", "}")
             )

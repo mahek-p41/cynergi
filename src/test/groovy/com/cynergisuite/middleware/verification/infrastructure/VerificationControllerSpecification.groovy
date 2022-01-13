@@ -17,7 +17,7 @@ import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 import java.util.stream.Collectors
 
 import static com.cynergisuite.domain.infrastructure.SpecificationHelpers.allPropertiesFullAndNotEmpty

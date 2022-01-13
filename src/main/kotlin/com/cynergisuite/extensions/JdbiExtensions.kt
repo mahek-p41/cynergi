@@ -37,6 +37,9 @@ fun Jdbi.update(sql: String, params: Map<String, *>): Int {
    }
 }
 
+fun Jdbi.delete(sql: String, params: Map<String, *>): Int =
+   this.update(sql, params)
+
 fun <ENTITY> Jdbi.queryForObject(sql: String, params: Map<String, *>, clazz: Class<ENTITY>): ENTITY {
    return this.withHandle<ENTITY, Exception> { handle ->
       val query = handle.createQuery(sql)

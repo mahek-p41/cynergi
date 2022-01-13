@@ -2,12 +2,13 @@ package com.cynergisuite.middleware.localization
 
 import com.cynergisuite.middleware.error.ErrorDTO
 import io.micronaut.context.MessageSource
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Locale
-import javax.inject.Inject
-import javax.inject.Singleton
+
 
 /**
  * Defines the localization service that is to be used by the system.  The idea for this is that when a message is to

@@ -3,11 +3,13 @@ package com.cynergisuite.middleware.audit.exception
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 
+@Introspected
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(
    name = "AuditExceptionUpdate",

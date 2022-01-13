@@ -66,13 +66,16 @@ class NotFound(unfindable: Any) : SystemCode("system.not.found", arrayOf(unfinda
 }
 class InternalError : SystemCode("system.internal.error", emptyArray())
 class RouteError(routeArgument: String) : SystemCode("system.route.error", arrayOf(routeArgument))
+class RouteHeaderError(headerName: String): SystemCode("system.route.header.error", arrayOf(headerName))
 class NotImplemented(pathNotImplemented: String) : SystemCode("system.not.implemented", arrayOf(pathNotImplemented))
 class NotLoggedIn : SystemCode("system.not.logged.in", emptyArray())
 class AccessDenied : SystemCode("system.access.denied", emptyArray())
 class AccessDeniedCredentialsDoNotMatch(user: String) : SystemCode("system.access.denied.creds.do.not.match", arrayOf(user)) {
    constructor(user: Int) : this(user.toString())
 }
-class AccessDeniedStore(user: String) : SystemCode("system.access.denied.store", arrayOf(user))
+class AccessDeniedStore(user: String) : SystemCode("system.access.denied.store", arrayOf(user)) {
+   constructor(user: Int) : this(user.toString())
+}
 class Unknown : SystemCode("system.word.unknown", arrayOf())
 class UnableToParseJson(jsonParseErrorMessage: String) : SystemCode("system.json.unable.parse", arrayOf(jsonParseErrorMessage))
 class PageOutOfBounds(page: Int?, size: Int?, sortBy: String?, sortDirection: String?) : SystemCode("system.page.out.of.bounds", arrayOf(page, size, sortBy, sortDirection))

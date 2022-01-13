@@ -1,0 +1,11 @@
+pluginManagement {
+   resolutionStrategy {
+
+      repositories {
+         mavenCentral()
+         gradlePluginPortal()
+      }
+   }
+}
+
+rootProject.name = 'cynergi-middleware'

@@ -9,8 +9,8 @@ import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 import kotlin.Pair
 
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import java.util.stream.Stream
 
 import static java.util.stream.Collectors.toList
@@ -117,9 +117,6 @@ class StoreTestDataLoaderService {
    Stream<Pair<RegionEntity, Location>> companyStoresToRegion(RegionEntity region, Long limit) {
       return StoreTestDataLoader.stores(region.division.company)
          .limit(limit)
-         .peek {
-            println "Store: ${it.myNumber()} - ${it.myCompany().datasetCode} "
-         }
          .map { storeRepository.assignToRegion(it, region, region.division.company.id) }
    }
 

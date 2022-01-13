@@ -13,12 +13,11 @@ import io.micronaut.data.annotation.repeatable.JoinSpecifications
 import io.micronaut.data.jdbc.annotation.JdbcRepository
 import io.micronaut.data.repository.CrudRepository
 import io.micronaut.transaction.annotation.ReadOnly
-import io.reactivex.Maybe
+import jakarta.inject.Inject
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
-import javax.inject.Inject
 
 @JdbcRepository
 abstract class AuthenticationRepository @Inject constructor(
@@ -103,7 +102,7 @@ abstract class AuthenticationRepository @Inject constructor(
       Join("fallbackLocation"),
       Join("fallbackLocation.company"),
    )
-   abstract fun findUserByAuthenticationWithStore(employeeNumber: Int, passCode: String, dataset: String, storeNumber: Int): Maybe<AuthenticatedEmployee>
+   abstract fun findUserByAuthenticationWithStore(employeeNumber: Int, passCode: String, dataset: String, storeNumber: Int): AuthenticatedEmployee?
 
    @Query(
       """
@@ -186,7 +185,7 @@ abstract class AuthenticationRepository @Inject constructor(
       Join("fallbackLocation"),
       Join("fallbackLocation.company"),
    )
-   abstract fun findUserByAuthentication(employeeNumber: Int, passCode: String, dataset: String): Maybe<AuthenticatedEmployee>
+   abstract fun findUserByAuthentication(employeeNumber: Int, passCode: String, dataset: String): AuthenticatedEmployee?
 
    @ReadOnly
    @Cacheable("creds-cache")

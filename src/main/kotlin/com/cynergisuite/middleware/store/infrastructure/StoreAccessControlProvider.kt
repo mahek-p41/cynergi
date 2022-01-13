@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.store.infrastructure
 
 import com.cynergisuite.middleware.authentication.infrastructure.DatasetLimitingAccessControlProvider
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class StoreAccessControlProvider @Inject constructor(

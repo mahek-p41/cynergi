@@ -11,7 +11,7 @@ printf "%s" "Wait for $1 to become ready"
 for count in {1..72}; do
   pg_isready --host=$1 --port=5432 > /dev/null 2> /dev/null
   if [ $? -eq 0 ]; then
-    printf "\n%s" "$1 is accepting connections"
+    printf "\n%s\n" "$1 is accepting connections"
     exit 0
   elif [ $? -eq 3 ]; then
     printf "\n%s\n" "no attempt was made due to invalid parameters"

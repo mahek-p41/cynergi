@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.authentication.user
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.location.Location
-import io.micronaut.security.authentication.UserDetails
+import io.micronaut.security.authentication.ServerAuthentication
 
 data class AuthenticatedUser(
    val id: Long,
@@ -15,7 +15,17 @@ data class AuthenticatedUser(
    val alternativeStoreIndicator: String,
    val alternativeArea: Long,
    val cynergiSystemAdmin: Boolean
-) : User, UserDetails(number.toString(), mutableListOf()) {
+) : User, ServerAuthentication(
+   number.toString(),
+   mutableListOf(), // TODO add roles here
+   mutableMapOf<String, Any>(
+      "id" to id.toString(),
+      "tp" to type,
+      "sub" to number.toString(),
+      "ci" to company.id.toString(),
+      "sn" to location.myNumber().toString()
+   )
+) {
 
    constructor(employee: AuthenticatedEmployee) :
       this(

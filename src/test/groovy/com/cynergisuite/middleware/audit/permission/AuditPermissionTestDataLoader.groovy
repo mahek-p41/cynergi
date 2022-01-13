@@ -9,8 +9,8 @@ import com.cynergisuite.middleware.department.DepartmentFactory
 import com.cynergisuite.middleware.department.DepartmentFactoryService
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @CompileStatic
 class AuditPermissionTestDataLoader {

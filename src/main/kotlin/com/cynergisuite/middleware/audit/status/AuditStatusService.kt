@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.audit.status
 
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 @Singleton
 class AuditStatusService(

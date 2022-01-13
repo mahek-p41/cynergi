@@ -11,8 +11,8 @@ import io.micronaut.security.utils.SecurityService
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 /**
  * Handles the AOP Around advice managed by attaching the AccessControl annotation to methods where a user's level can

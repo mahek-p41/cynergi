@@ -1,10 +1,11 @@
 package com.cynergisuite.domain.infrastructure
 
+import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
@@ -20,5 +21,10 @@ class SimpleTransactionalSql {
    @Transactional
    int executeUpdate(Map params, String sql) {
       this.sql.executeUpdate(params, sql)
+   }
+
+   @Transactional
+   GroovyRowResult firstRow(String sql, Map params = [:]) {
+      this.sql.firstRow(params, sql)
    }
 }

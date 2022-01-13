@@ -5,8 +5,8 @@ import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 import org.apache.commons.lang3.RandomUtils
 import java.util.stream.Stream
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 class NotificationTypeDomainTestDataLoader {
    private static final List<NotificationType> typeDomainValues = [

@@ -150,8 +150,6 @@ services:
             USER_ID: $USER_ID
       ports:
          - "2223:22"
-      volumes:
-         - /tmp/sftpuser:/home/sftpuser
       logging:
          driver: "json-file"
          options:

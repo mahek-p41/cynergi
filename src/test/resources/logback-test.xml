@@ -9,6 +9,8 @@
     </appender>
 
     <logger name="io.micronaut" level="INFO"/>
+    <logger name="org.apache.sshd" level="INFO"/>
+    <logger name="org.xnio" level="ERROR"/>
     <logger name="org.hibernate" level="ERROR"/>
     <logger name="io.netty" level="ERROR"/>
     <logger name="org.jboss" level="ERROR"/>
@@ -19,6 +21,6 @@
     <logger name="com.hightouchinc" level="TRACE"/>
 
     <root level="TRACE">
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="STDOUT"/>
     </root>
 </configuration>

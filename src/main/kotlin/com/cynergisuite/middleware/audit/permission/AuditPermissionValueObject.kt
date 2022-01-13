@@ -5,12 +5,14 @@ import com.cynergisuite.middleware.department.DepartmentDTO
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.Locale
 import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "AuditPermission", title = "Single Audit Permission", description = "A single audit permission defining access to endpoints of the auditing system")
 data class AuditPermissionValueObject(

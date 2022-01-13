@@ -17,7 +17,7 @@ import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.stream.Collectors
@@ -175,9 +175,11 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       client.retrieve(GET(path), Argument.of(NotificationsResponseValueObject), Argument.of(HashMap))
 
       then:
-      final exception = thrown(HttpClientResponseException)
+      def exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      exception.response.getBody(HashMap).orElse(null)?.message == "Required Header [X-Auth-Company] not specified"
+      def body = exception.response.getBody(HashMap).orElse(null)
+      body?.message == "Required Header [X-Auth-Company] not specified"
+      body?.code == "system.route.header.error"
    }
 
    @Deprecated
@@ -215,7 +217,10 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == BAD_REQUEST
-      exception.response.getBody(HashMap).orElse(null)?.message == 'Failed to convert argument [id] for value [type] due to: For input string: "type"'
+      def body = exception.response.getBody(HashMap).orElse(null)
+      body?.message == 'Failed to convert argument [id] for value [type]'
+      body?.code == 'cynergi.validation.conversion.error'
+      body?.path == 'id'
    }
 
    void "post valid notification of type All" () {
@@ -426,10 +431,10 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
 
       then:
       final exception = thrown(HttpClientResponseException)
-      final errors = exception.response.getBody(HashMap[]).get().sort { o1, o2 -> (o1.message <=> o2.message) }
-      errors.size() == 1
-      errors[0].message == 'Failed to convert argument [id] for value [null] due to: For input string: \"null\"'
-      errors[0].path == "/id"
+      final errors = exception.response.getBody(HashMap).get()
+      errors.message == 'Failed to convert argument [id] for value [null]'
+      errors.code == 'cynergi.validation.conversion.error'
+      errors.path == "id"
    }
 
    void "delete notification of type all" () {

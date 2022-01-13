@@ -5,12 +5,14 @@ import com.cynergisuite.middleware.store.StoreDTO
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
+@Introspected
 @JsonInclude(NON_NULL)
 @JsonIgnoreProperties(value = ["passCode", "store", "active"], allowSetters = true)
 @Schema(name = "Employee", title = "Employee/User", description = "Describes an employee and user within the system")
