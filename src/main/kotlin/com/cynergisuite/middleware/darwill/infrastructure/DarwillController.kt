@@ -26,11 +26,11 @@ class DarwillController @Inject constructor(
 
    @Post(consumes = [APPLICATION_JSON])
    fun enableDarwill(
-      @Valid @Body darwillManagementDto: DarwillManagementDto
+      @Valid @Body darwillManagement: DarwillManagementDto
    ) {
-      val company = companyService.fetchOne(darwillManagementDto.companyId!!) ?: throw NotFoundException(darwillManagementDto.companyId)
+      val company = companyService.fetchOne(darwillManagement.companyId!!) ?: throw NotFoundException(darwillManagement.companyId)
 
-      darwillService.enableFor(company, SftpClientCredentials(darwillManagementDto))
+      darwillService.enableFor(company, SftpClientCredentials(darwillManagement))
    }
 
    @Delete("/{companyId}")
