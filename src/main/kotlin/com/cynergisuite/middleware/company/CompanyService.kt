@@ -12,6 +12,10 @@ class CompanyService @Inject constructor(
    private val companyRepository: CompanyRepository,
 ) {
 
+   fun fetchOne(id: UUID): CompanyEntity? {
+      return companyRepository.findOne(id)
+   }
+
    fun fetchByDatasetCode(datasetCode: String): CompanyEntity? {
       return companyRepository.findByDataset(datasetCode)
    }

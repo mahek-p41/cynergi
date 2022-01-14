@@ -14,6 +14,7 @@ import io.micronaut.http.annotation.Post
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
 import jakarta.inject.Inject
+import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_ANONYMOUS)
@@ -27,16 +28,16 @@ class DarwillController @Inject constructor(
    fun enableDarwill(
       @Valid @Body darwillManagementDto: DarwillManagementDto
    ) {
-      val company = companyService.fetchByDatasetCode(darwillManagementDto.dataset!!) ?: throw NotFoundException(darwillManagementDto.dataset)
+      val company = companyService.fetchOne(darwillManagementDto.companyId!!) ?: throw NotFoundException(darwillManagementDto.companyId)
 
       darwillService.enableFor(company, SftpClientCredentials(darwillManagementDto))
    }
 
-   @Delete("/{dataset}")
+   @Delete("/{companyId}")
    fun disableDarwill(
-      @Parameter("dataset") dataset: String
+      @Parameter("companyId") companyId: UUID
    ) {
-      val company = companyService.fetchByDatasetCode(dataset) ?: throw NotFoundException(dataset)
+      val company = companyService.fetchOne(companyId) ?: throw NotFoundException(companyId)
 
       darwillService.disableFor(company)
    }

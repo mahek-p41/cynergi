@@ -25,7 +25,7 @@ class DarwillControllerSpecification extends ServiceSpecificationBase {
       final tstds1 = companies.find { it.datasetCode == "tstds1"}
 
       when:
-      def result = client.toBlocking().exchange(POST("/darwill", new DarwillManagementDto(tstds1.datasetCode, "username", "password", "host", 12345)))
+      def result = client.toBlocking().exchange(POST("/darwill", new DarwillManagementDto(tstds1.id, "username", "password", "host", 12345)))
 
       then:
       notThrown(Exception)
@@ -39,7 +39,7 @@ class DarwillControllerSpecification extends ServiceSpecificationBase {
       final schedules = darwillTestDataLoaderService.enableDarwill(tstds1)
 
       when:
-      def result = client.toBlocking().exchange(HttpRequest.DELETE("/darwill/${tstds1.datasetCode}"))
+      def result = client.toBlocking().exchange(HttpRequest.DELETE("/darwill/${tstds1.id}"))
 
       then:
       notThrown(Exception)

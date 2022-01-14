@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.darwill
 
 import io.micronaut.core.annotation.Introspected
+import java.util.UUID
 import javax.validation.constraints.Max
 import javax.validation.constraints.Min
 import javax.validation.constraints.NotEmpty
@@ -12,7 +13,7 @@ data class DarwillManagementDto(
 
    @field:NotEmpty
    @field:Size(min = 6, max = 6)
-   val dataset: String? = null,
+   val companyId: UUID? = null,
 
    @field:NotEmpty
    @field:Size(min = 3, max = 100)
