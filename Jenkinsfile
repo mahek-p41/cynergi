@@ -112,7 +112,7 @@ pipeline {
                      --compress 2 \\
                      --no-header-files \\
                      --no-man-pages \\
-                     --add-modules java.base,java.sql,openj9.jvm,openj9.sharedclasses,jdk.net,java.naming,java.management,jdk.unsupported,java.desktop,java.scripting \\
+                     --add-modules java.base,java.sql,openj9.jvm,openj9.sharedclasses,jdk.net,java.naming,java.management,jdk.unsupported,java.desktop,java.scripting,java.rmi \\
                      --strip-debug \\
                      --output /opt/cyn/v01/cynmid/java/openj9/${VER_BUILD}
                   mkdir -p /opt/cyn/v01/cynmid/java/openj9/${VER_BUILD}/jitcache

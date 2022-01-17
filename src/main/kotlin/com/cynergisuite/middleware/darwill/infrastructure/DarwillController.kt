@@ -4,6 +4,7 @@ import com.cynergisuite.middleware.company.CompanyService
 import com.cynergisuite.middleware.darwill.DarwillManagementDto
 import com.cynergisuite.middleware.darwill.DarwillService
 import com.cynergisuite.middleware.error.NotFoundException
+import com.cynergisuite.middleware.schedule.ScheduleJobExecutorService
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
 import io.micronaut.context.annotation.Parameter
 import io.micronaut.http.MediaType.APPLICATION_JSON
@@ -18,13 +19,14 @@ import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_ANONYMOUS)
-@Controller("/manage/darwill")
+@Controller("/manage")
 class DarwillController @Inject constructor(
    private val companyService: CompanyService,
    private val darwillService: DarwillService,
+   private val scheduleJobExecutorService: ScheduleJobExecutorService,
 ) {
 
-   @Post(consumes = [APPLICATION_JSON])
+   @Post("/darwill", consumes = [APPLICATION_JSON])
    fun enableDarwill(
       @Valid @Body darwillManagement: DarwillManagementDto
    ) {
@@ -33,12 +35,27 @@ class DarwillController @Inject constructor(
       darwillService.enableFor(company, SftpClientCredentials(darwillManagement))
    }
 
-   @Delete("/{companyId}")
+   @Delete("/darwill/{companyId}")
    fun disableDarwill(
       @Parameter("companyId") companyId: UUID
    ) {
       val company = companyService.fetchOne(companyId) ?: throw NotFoundException(companyId)
 
       darwillService.disableFor(company)
+   }
+
+   @Post("/schedule/run/daily")
+   fun runDaily() {
+      scheduleJobExecutorService.runDailyScheduled()
+   }
+
+   @Post("/schedule/run/beginning/of/month")
+   fun runBeginningOfMonth() {
+      scheduleJobExecutorService.runBeginningOfMonth()
+   }
+   
+   @Post("/schedule/run/end/of/month")
+   fun runEndOfMonth() {
+      scheduleJobExecutorService.runEndOfMonth()
    }
 }
