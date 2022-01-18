@@ -45,6 +45,7 @@ class ScheduleJobExecutorService @Inject constructor(
    private fun <T : TemporalAccessor, J : Job<T>> runJob(temporalAccessor: T, scheduleType: ScheduleType, jobClazz: KClass<J>): Int {
       return companyRepository.all()
          .flatMap { scheduleRepository.all(scheduleType, it) }
+         .onEach { logger.debug("Loaded scheduled task {}/{}", it.title, it.enabled) }
          .filter { it.enabled }
          .filter {
             val job: Job<T> = applicationContext.getBean(it.command.value)
@@ -52,6 +53,8 @@ class ScheduleJobExecutorService @Inject constructor(
             ClassUtils.isAssignable(job::class.java, jobClazz.java)
          }
          .map { it to applicationContext.getBean<Job<T>>(it.command.value) }
+         .filter { (schedule, task) -> task.shouldProcess(schedule, temporalAccessor) }
+         .onEach { (schedule, _) -> logger.debug("Executing scheduled task {}", schedule.title) }
          .map { (schedule, task) -> task.process(schedule, temporalAccessor) }
          .onEach { r -> if ( !(r.failureReason().isNullOrBlank()) ) logger.error("Job failed {}", r.failureReason()) }
          .filter { r -> r.failureReason().isNullOrBlank() }

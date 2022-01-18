@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.darwill
 import com.cynergisuite.middleware.area.AreaService
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.darwill.infrastructure.DarwillRepository
+import com.cynergisuite.middleware.schedule.BeginningOfMonthJob
 import com.cynergisuite.middleware.schedule.EndOfMonthJob
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
 import com.cynergisuite.middleware.ssh.SftpClientService
@@ -26,7 +27,7 @@ class DarwillBirthdayService @Inject constructor(
    areaService: AreaService,
    private val darwillRepository: DarwillRepository,
    private val sftpClientService: SftpClientService,
-) : EndOfMonthJob, DarwillScheduledService<Month>(areaService) {
+) : BeginningOfMonthJob, DarwillScheduledService<Month>(areaService) {
    private val logger: Logger = LoggerFactory.getLogger(DarwillBirthdayService::class.java)
 
    override fun shouldProcess(time: Month): Boolean = true
