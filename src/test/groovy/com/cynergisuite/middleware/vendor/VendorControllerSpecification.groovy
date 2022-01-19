@@ -4,7 +4,10 @@ import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDataLoaderService
+import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.address.AddressDTO
@@ -34,14 +37,18 @@ import spock.lang.Unroll
 import javax.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.CONFLICT
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class VendorControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/vendor"
 
+   @Inject AccountPayablePaymentDataLoaderService accountPayablePaymentDataLoaderService
    @Inject AccountTestDataLoaderService accountTestDataLoaderService
    @Inject AddressTestDataLoaderService addressTestDataLoaderService
+   @Inject BankFactoryService bankFactoryService
    @Inject FreightOnboardTypeRepository freightOnboardTypeRepository
    @Inject FreightCalcMethodTypeRepository freightCalcMethodTypeRepository
    @Inject RebateTestDataLoaderService rebateTestDataLoaderService
@@ -951,7 +958,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def rebateList = rebateTestDataLoaderService.stream(5, company, [], glDebitAcct, glCreditAcct).toList()
-      def rebateDTOList = RebateTestDataLoader.streamDTO(5, [], new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct)).toList()
+      def rebateDTOList = RebateTestDataLoader.streamDTO(5, [], new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct)).toList()
 
       when: // create vendor
       def result = post(path, vendor)
@@ -1024,7 +1031,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def rebateList = rebateTestDataLoaderService.stream(5, company, [], glDebitAcct, glCreditAcct).toList()
-      def rebateDTOList = RebateTestDataLoader.streamDTO(5, [], new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct)).toList()
+      def rebateDTOList = RebateTestDataLoader.streamDTO(5, [], new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct)).toList()
 
       when: // create vendor
       def result = post(path, vendor)
@@ -1086,5 +1093,120 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
             v == rebateDTOList[index].vendors[i]
          }
       }
+   }
+
+   void "delete vendor" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaTestDataLoaderService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+
+      when:
+      delete("$path/$vendor.id", )
+
+      then: "vendor of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("$path/$vendor.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "$vendor.id was unable to be found"
+      response.code == 'system.not.found'
+   }
+
+   void "delete vendor still has references" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaTestDataLoaderService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
+      final apPaymentVendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+
+      final store = storeFactoryService.store(3, company)
+      final account = accountTestDataLoaderService.single(company)
+      final bank = bankFactoryService.single(company, store, account)
+      accountPayablePaymentDataLoaderService.single(company, bank, apPaymentVendor)
+
+      when:
+      delete("$path/$apPaymentVendor.id", )
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status == CONFLICT
+      def response = exception.response.bodyAsJson()
+      response.message == "Requested operation violates data integrity"
+      response.code == "cynergi.data.constraint.violated"
+   }
+
+   void "delete vendor from other company is not allowed" () {
+      given:
+      def tstds2 = companies.find { it.datasetCode == "tstds2" }
+      final shipVia = shipViaTestDataLoaderService.single(tstds2)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(tstds2)
+      final vendor = vendorTestDataLoaderService.single(tstds2, vendorPaymentTerm, shipVia)
+
+      when:
+      delete("$path/$vendor.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "$vendor.id was unable to be found"
+      response.code == 'system.not.found'
+   }
+
+   void "recreate deleted vendor" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final shipVia = shipViaTestDataLoaderService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final vendor = VendorTestDataLoader.single(company, vendorPaymentTerm, shipVia).with { new VendorDTO(it) }
+
+      when: // create a vendor
+      def response1 = post("$path/", vendor)
+      vendor.id = response1.id
+      vendor.address.id = response1.address?.id
+      vendor.number = response1.number
+
+      then:
+      notThrown(Exception)
+      response1 != null
+      response1.id != null
+      response1.address.id != null
+      response1.number != null
+      response1.number > 0
+      new VendorDTO(response1) == vendor
+
+      when: // delete vendor
+      delete("$path/$response1.id")
+
+      then: "vendor of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate vendor
+      def response2 = post("$path/", vendor)
+      vendor.id = response2.id
+      vendor.address.id = response2.address?.id
+      vendor.number = response2.number
+
+      then:
+      notThrown(Exception)
+      response2 != null
+      response2.id != null
+      response2.address.id != null
+      response2.number != null
+      response2.number > 0
+      new VendorDTO(response2) == vendor
+
+      when: // delete vendor again
+      delete("$path/$response2.id")
+
+      then: "vendor of user's company is deleted"
+      notThrown(HttpClientResponseException)
    }
 }
