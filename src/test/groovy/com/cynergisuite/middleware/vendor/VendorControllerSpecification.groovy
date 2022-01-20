@@ -4,6 +4,7 @@ import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressTestDataLoader
@@ -951,7 +952,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def rebateList = rebateTestDataLoaderService.stream(5, company, [], glDebitAcct, glCreditAcct).toList()
-      def rebateDTOList = RebateTestDataLoader.streamDTO(5, [], new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct)).toList()
+      def rebateDTOList = RebateTestDataLoader.streamDTO(5, [], new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct)).toList()
 
       when: // create vendor
       def result = post(path, vendor)
@@ -1024,7 +1025,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def rebateList = rebateTestDataLoaderService.stream(5, company, [], glDebitAcct, glCreditAcct).toList()
-      def rebateDTOList = RebateTestDataLoader.streamDTO(5, [], new SimpleIdentifiableDTO(glDebitAcct), new SimpleIdentifiableDTO(glCreditAcct)).toList()
+      def rebateDTOList = RebateTestDataLoader.streamDTO(5, [], new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct)).toList()
 
       when: // create vendor
       def result = post(path, vendor)
