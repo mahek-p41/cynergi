@@ -2,6 +2,9 @@ version: '3.8'
 networks:
    cynerginet:
       name: cynerginet
+volumes:
+   gradleCache:
+
 services:
    cynergibasedb:
       image: cynergibasedb
@@ -31,16 +34,11 @@ services:
          - POSTGRES_PASSWORD=password
          - POSTGRES_DB=postgres
       restart: 'no'
-   cynergidbready:
-      container_name: cynergidbready
-      image: cynergibasedb
-      networks:
-         - cynerginet
-      depends_on:
-         - cynergidb
-      stdin_open: true
-      tty: true
-      command: [ "/opt/scripts/db-ready.sh", "cynergidb" ]
+      healthcheck:
+         test: [ "CMD-SHELL", "pg_isready --host=cynergidb -U cynergiuser -d cynergidb --port=5432" ]
+         interval: 10s
+         timeout: 5s
+         retries: 15
    cynergidbpsql:
       container_name: cynergidbpsql
       image: cynergibasedb
@@ -86,6 +84,31 @@ services:
          options:
             max-file: "5"
             max-size: "10m"
+   cynmid:
+      container_name: cynmid
+      build:
+         context: ../../
+         dockerfile: support/development/cynmid/cynmid.dockerfile
+         args:
+            GROUP_ID: ${GROUP_ID:-1001}
+            USER_ID: ${USER_ID:-1001}
+      logging:
+         driver: "json-file"
+         options:
+            max-file: "5"
+            max-size: "10m"
+      depends_on:
+         - cynergidb
+         - sftpdev
+      networks:
+         - cynerginet
+      ports:
+         - "8080:8080"
+      environment:
+         - DATASOURCES_DEFAULT_URL=jdbc:postgresql://cynergidb:5432/cynergidb
+      volumes:
+         - gradleCache:/home/jenkins/.gradle
+      command: [ "./gradlew", "--no-daemon", "--info", "clean", "&&", "./gradlew", "--no-daemon", "--info", "shadowJar", "&&", "java", "-Dmicronaut.environments=development", "-jar", "/opt/cynergi-middleware/build/libs/cynergi-middleware.jar" ]
 
    cynergitestdb:
       container_name: cynergitestdb
@@ -156,29 +179,6 @@ services:
             max-file: "5"
             max-size: "10m"
 
-   cynmid:
-      container_name: cynmid
-      image: bellsoft/liberica-openjdk-alpine:11.0.12
-      logging:
-         driver: "json-file"
-         options:
-            max-file: "5"
-            max-size: "10m"
-      depends_on:
-         - cynergidb
-      networks:
-         - cynerginet
-      links:
-         - cynergidb
-      stdin_open: true
-      tty: true
-      volumes:
-         - ../../build/libs:/tmp/cynergi-middleware
-      ports:
-         - "8080:8080"
-      environment:
-         - DATASOURCES_DEFAULT_URL=jdbc:postgresql://cynergidb:5432/cynergidb
-      command: [ "java", "-Dmicronaut.environments=development", "-jar", "/tmp/cynergi-middleware/cynergi-middleware.jar" ]
    cynmidintegration:
       container_name: cynmidintegration
       image: bellsoft/liberica-openjdk-alpine:11.0.12
