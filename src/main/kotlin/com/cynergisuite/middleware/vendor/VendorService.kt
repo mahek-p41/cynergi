@@ -49,4 +49,8 @@ class VendorService @Inject constructor(
          entity = vendorRepository.update(existing, toUpdate)
       )
    }
+
+   fun delete(id: UUID, company: CompanyEntity) {
+      vendorRepository.delete(id, company)
+   }
 }
