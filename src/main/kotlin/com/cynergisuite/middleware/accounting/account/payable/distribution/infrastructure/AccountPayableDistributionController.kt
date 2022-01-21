@@ -215,6 +215,7 @@ class AccountPayableDistributionController @Inject constructor(
       ]
    )
    fun update(
+      @QueryValue("name") name: String?,
       @Body @Valid
       dto: List<AccountPayableDistributionDTO>,
       authentication: Authentication,
@@ -224,7 +225,7 @@ class AccountPayableDistributionController @Inject constructor(
       val userCompany = user.myCompany()
       logger.info("Requested Update AccountPayableDistribution {}", dto)
 
-      val response = accountPayableDistributionService.update(dto, userCompany)
+      val response = accountPayableDistributionService.update(dto, name, userCompany)
 
       logger.debug("Requested Update AccountPayableDistribution {} resulted in {}", dto, response)
 
