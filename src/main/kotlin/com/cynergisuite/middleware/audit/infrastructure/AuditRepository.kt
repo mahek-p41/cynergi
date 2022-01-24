@@ -24,13 +24,13 @@ import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
@@ -66,12 +66,16 @@ class AuditRepository @Inject constructor(
          a.store_number                                                AS store_number,
          a.number                                                      AS a_number,
          (SELECT count(id) FROM audit_detail WHERE audit_id = a.id)    AS a_total_details,
-         (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS a_total_exceptions,
+         (
+         SELECT count(id)
+         FROM audit_exception
+         WHERE audit_id = a.id AND exception_code != 'Unit Was Not Scanned'
+         )                                                             AS a_total_exceptions,
          (
           SELECT count(aen.id) > 0
           FROM audit_exception ae
                JOIN audit_exception_note aen ON ae.id = aen.audit_exception_id
-          WHERE ae.audit_id = a.id
+          WHERE ae.audit_id = a.id AND ae.exception_code != 'Unit Was Not Scanned'
          )                                                             AS a_exception_has_notes,
          (
          SELECT max(time_updated)
@@ -172,11 +176,15 @@ class AuditRepository @Inject constructor(
                a.store_number AS store_number,
                a.number AS number,
                (SELECT count(id) FROM audit_detail WHERE audit_id = a.id) AS total_details,
-               (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS total_exceptions,
+               (
+               SELECT count(id)
+               FROM audit_exception
+               WHERE audit_id = a.id AND exception_code != 'Unit Was Not Scanned'
+               ) AS total_exceptions,
                (SELECT count(aen.id) > 0
                   FROM audit_exception ae
                      JOIN audit_exception_note aen ON ae.id = aen.audit_exception_id
-                  WHERE ae.audit_id = a.id
+                  WHERE ae.audit_id = a.id AND ae.exception_code != 'Unit Was Not Scanned'
                ) AS exception_has_notes,
                (SELECT max(time_updated)
                 FROM (
@@ -412,11 +420,15 @@ class AuditRepository @Inject constructor(
             auditStore.name                                               AS auditStore_name,
             a.number                                                      AS a_number,
             (SELECT count(id) FROM audit_detail WHERE audit_id = a.id)    AS a_total_details,
-            (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS a_total_exceptions,
+            (
+            SELECT count(id)
+            FROM audit_exception
+            WHERE audit_id = a.id AND exception_code != 'Unit Was Not Scanned'
+            )                                                             AS a_total_exceptions,
             (SELECT count(aen.id) > 0
                FROM audit_exception ae
                   JOIN audit_exception_note aen ON ae.id = aen.audit_exception_id
-               WHERE ae.audit_id = a.id
+               WHERE ae.audit_id = a.id AND ae.exception_code != 'Unit Was Not Scanned'
             ) AS a_exception_has_notes,
             (SELECT max(time_updated)
              FROM (
