@@ -43,6 +43,7 @@ class ShipViaRepository @Inject constructor(
          shipVia.time_updated          AS time_updated,
          shipVia.description           AS description,
          shipVia.number                AS number,
+         shipVia.deleted               AS deleted,
          comp.id                       AS comp_id,
          comp.name                     AS comp_name,
          comp.doing_business_as        AS comp_doing_business_as,
