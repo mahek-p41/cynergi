@@ -270,10 +270,6 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
             break
          case 'PmtNumberCase3':
             filterRequest['beginPmt'] = apPayments[0].paymentNumber
-            filterRequest['endPmt'] = apPayments[1].paymentNumber
-            break
-         case 'PmtNumberCase4':
-            filterRequest['beginPmt'] = apPayments[0].paymentNumber
             filterRequest['endPmt'] = apPayments[0].paymentNumber
             break
          case 'BankCase1':
@@ -366,8 +362,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
       criteria          || paymentCount
       'PmtNumberCase1'  || 2
       'PmtNumberCase2'  || 0
-      'PmtNumberCase3'  || 2
-      'PmtNumberCase4'  || 1
+      'PmtNumberCase3'  || 1
       'BankCase1'       || 4
       'BankCase2'       || 0
       'BankCase3'       || 4
