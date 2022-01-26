@@ -11,7 +11,10 @@ import java.math.BigDecimal
 data class AccountPayablePaymentReportTemplate(
 
    @field:Schema(description = "Total of AP payment amount for all payments on report")
-   var reportTotal: BigDecimal? = null,
+   var paidTotal: BigDecimal? = null,
+
+   @field:Schema(description = "Total of AP payment amount for all payments on report")
+   var voidTotal: BigDecimal? = null,
 
    @field:Schema(description = "Listing of payments")
    var payments: List<AccountPayablePaymentReportDTO>? = null
@@ -22,6 +25,7 @@ data class AccountPayablePaymentReportTemplate(
          payments = entities.asSequence().map { paymentEntity ->
             AccountPayablePaymentReportDTO(paymentEntity)
          }.toList(),
-         reportTotal = entities.sumByBigDecimal { it.amount }
+         paidTotal = entities.filter { it.status.value == "P" }.sumByBigDecimal{ it.amount },
+         voidTotal = entities.filter { it.status.value == "V" }.sumByBigDecimal { it.amount }
       )
 }

@@ -93,8 +93,8 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
             description == apPayment.type.description
          }
          paymentDate == apPayment.paymentDate.toString()
-         dateCleared == apPayment.dateCleared.toString()
-         dateVoided == apPayment.dateVoided.toString()
+         dateCleared == apPayment.dateCleared?.toString()
+         dateVoided == apPayment.dateVoided?.toString()
          paymentNumber == apPayment.paymentNumber
          amount == apPayment.amount
          paymentDetails.size() == 5
@@ -155,7 +155,8 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
       def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
       def apInvoice = payableInvoiceDataLoaderService.single(company, vendor, purchaseOrderIn, employeeIn, payToIn, store)
       def apPayments = dataLoaderService.stream(2, company, bank, vendor).toList()
-      def reportTotalAmount = apPayments.sum { it.amount }
+      def reportPaidTotal = Optional.ofNullable(apPayments.findAll { it.status.value == 'P' }.sum { it.amount }).orElse(0)
+      def reportVoidTotal = Optional.ofNullable(apPayments.findAll { it.status.value == 'V' }.sum { it.amount }).orElse(0)
 
       def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendor, apInvoice, apPayments[0]).toList()
       apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendor, apInvoice, apPayments[1]).toList())
@@ -166,7 +167,8 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
       then:
       notThrown(Exception)
       response != null
-      response.reportTotal == reportTotalAmount
+      response.paidTotal == reportPaidTotal
+      response.voidTotal == reportVoidTotal
       response.payments.eachWithIndex { responsePayment, i ->
          with(responsePayment) {
             id == apPayments[i].id
@@ -185,8 +187,8 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
                description == apPayments[i].type.description
             }
             paymentDate == apPayments[i].paymentDate.toString()
-            dateCleared == apPayments[i].dateCleared.toString()
-            dateVoided == apPayments[i].dateVoided.toString()
+            dateCleared == apPayments[i].dateCleared?.toString()
+            dateVoided == apPayments[i].dateVoided?.toString()
             paymentNumber == apPayments[i].paymentNumber
             amount == apPayments[i].amount
             paymentDetails.size() == 5
@@ -241,7 +243,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
       def pmtStatuses = AccountPayablePaymentStatusTypeDataLoader.predefined()
       def pmtTypes = AccountPayablePaymentTypeTypeDataLoader.predefined()
       def apPayments = dataLoaderService.stream(2, company, bank, vendors[0], pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }).toList()
-      apPayments.addAll(dataLoaderService.stream(2, company, bank, vendors[1], pmtStatuses.find { it.value == 'V' }, pmtTypes.find { it.value == 'C' }).toList())
+      apPayments.addAll(dataLoaderService.stream(2, company, bank, vendors[1], pmtStatuses.find { it.value == 'V' }, pmtTypes.find { it.value == 'C' }, true).toList())
 
 
       def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[0]).toList()
@@ -344,6 +346,12 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
             filterRequest["frmDtVoid"] = OffsetDateTime.now().minusDays(10)
             filterRequest["thruDtVoid"] = OffsetDateTime.now().plusDays(1)
             break
+         case 'IncludeOption1':
+            filterRequest["includeOption"] = 'C'
+            break
+         case 'IncludeOption2':
+            filterRequest["includeOption"] = 'O'
+            break
       }
 
       when:
@@ -353,6 +361,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
       notThrown(Exception)
       response != null
       response.payments.size() == paymentCount
+
       where:
       criteria          || paymentCount
       'PmtNumberCase1'  || 2
@@ -375,10 +384,12 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
       'TypeCase2'       || 2
       'PmtDateCase1'    || 0
       'PmtDateCase2'    || 4
-      'PmtClearedCase1' || 4
-      'PmtClearedCase2' || 4
+      'PmtClearedCase1' || 2
+      'PmtClearedCase2' || 2
       'PmtVoidedCase1'  || 0
       'PmtVoidedCase2'  || 4
+      'IncludeOption1'  || 2
+      'IncludeOption2'  || 2
    }
 
    void "create one"() {
