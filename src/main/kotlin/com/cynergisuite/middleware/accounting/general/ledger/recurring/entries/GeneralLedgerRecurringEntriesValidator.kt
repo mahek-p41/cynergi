@@ -61,13 +61,8 @@ class GeneralLedgerRecurringEntriesValidator @Inject constructor(
       val glRecurringType = recurringTypeRepository.findOne(dto.generalLedgerRecurring!!.type!!.value)
       val beginDate = dto.generalLedgerRecurring!!.beginDate
       val endDate = dto.generalLedgerRecurring!!.endDate
-
       val glDistributionAccts = mutableListOf<AccountEntity>()
       val glDistributionProfitCenters = mutableListOf<Store>()
-      dto.generalLedgerRecurringDistributions.forEach {
-         glDistributionAccts.add(accountRepository.findOne(it.generalLedgerDistributionAccount!!.id!!, company)!!)
-         glDistributionProfitCenters.add(storeRepository.findOne(it.generalLedgerDistributionProfitCenter!!.id!!, company)!!)
-      }
 
       doValidation { errors ->
          // GL recurring validations
@@ -79,17 +74,20 @@ class GeneralLedgerRecurringEntriesValidator @Inject constructor(
          }
 
          // GL recurring distribution validations
-         glDistributionAccts.forEachIndexed { index, account ->
-            account ?: errors.add(ValidationError("generalLedgerDistributions[index].generalLedgerDistributionAccount.id", NotFound(account.id!!)))
-         }
-         glDistributionProfitCenters.forEachIndexed { index, profitCenter ->
-            profitCenter ?: errors.add(ValidationError("generalLedgerDistributions[index].generalLedgerDistributionProfitCenter.id", NotFound(profitCenter.myId())))
+         dto.generalLedgerRecurringDistributions.forEach {
+            accountRepository.findOne(it.generalLedgerDistributionAccount!!.id!!, company) ?: errors.add(ValidationError("generalLedgerRecurringDistributions[index].generalLedgerDistributionAccount.id", NotFound(it.generalLedgerDistributionAccount!!.id!!)))
+            storeRepository.findOne(it.generalLedgerDistributionProfitCenter!!.id!!, company) ?: errors.add(ValidationError("generalLedgerRecurringDistributions[index].generalLedgerDistributionProfitCenter.id", NotFound(it.generalLedgerDistributionProfitCenter!!.id!!)))
          }
 
          // balance must be zero before records can be inserted/updated
          if (dto.balance != BigDecimal.ZERO) {
             errors.add(ValidationError("balance", BalanceMustBeZero(dto.balance!!)))
          }
+      }
+
+      dto.generalLedgerRecurringDistributions.forEach {
+         glDistributionAccts.add(accountRepository.findOne(it.generalLedgerDistributionAccount!!.id!!, company)!!)
+         glDistributionProfitCenters.add(storeRepository.findOne(it.generalLedgerDistributionProfitCenter!!.id!!, company)!!)
       }
 
       return GeneralLedgerRecurringEntriesEntity(dto, existingGlRecurring?.id, glRecurringSourceCode!!, glRecurringType!!, existingGlDistributions, glDistributionAccts, glDistributionProfitCenters)

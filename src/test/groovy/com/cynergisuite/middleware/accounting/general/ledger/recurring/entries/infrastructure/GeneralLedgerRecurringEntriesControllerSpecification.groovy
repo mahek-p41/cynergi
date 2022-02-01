@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.infrastructure
 
 import com.cynergisuite.domain.GeneralLedgerRecurringEntriesFilterRequest
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
@@ -337,6 +338,42 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       'type'   | new GeneralLedgerRecurringTypeDTO('Z', 'Invalid DTO')                                                       || 'generalLedgerRecurring.type.value' | 'Z was unable to be found'
    }
 
+   @Unroll
+   void "create invalid GL recurring entry with non-existing GL recurring distribution #testProp" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
+      final account = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, company)
+      def glRecurringDistributionDTOs = GeneralLedgerRecurringDistributionDataLoader.streamDTO(
+         1,
+         glRecurringDTO,
+         new AccountDTO(account),
+         new SimpleLegacyIdentifiableDTO(profitCenter.myId())
+      ).toList()
+      def glRecurringEntriesDTO = dataLoaderService.singleDTO(glRecurringDTO, glRecurringDistributionDTOs)
+      glRecurringEntriesDTO.generalLedgerRecurringDistributions.forEach {
+         it."$testProp" = invalidValue
+      }
+
+      when:
+      post(path, glRecurringEntriesDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == errorResponsePath
+      response[0].message == errorMessage
+
+      where:
+      testProp                                | invalidValue                                                                       || errorResponsePath | errorMessage
+      'generalLedgerDistributionAccount'      | new SimpleIdentifiableDTO(UUID.fromString('0fd98cc1-0870-4a98-958b-e62bf5c389e8')) || 'generalLedgerRecurringDistributions[index].generalLedgerDistributionAccount.id'      | "0fd98cc1-0870-4a98-958b-e62bf5c389e8 was unable to be found"
+      'generalLedgerDistributionProfitCenter' | new SimpleLegacyIdentifiableDTO(999_999)                                           || 'generalLedgerRecurringDistributions[index].generalLedgerDistributionProfitCenter.id' | '999999 was unable to be found'
+   }
+
    void "create invalid GL recurring entry with begin date after end date" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
@@ -539,6 +576,51 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       testProp | invalidValue                                                                                                || errorResponsePath                   | errorMessage
       'source' | new GeneralLedgerSourceCodeDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702'), 'Z', 'Invalid DTO') || 'generalLedgerRecurring.source.id'  | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
       'type'   | new GeneralLedgerRecurringTypeDTO('Z', 'Invalid DTO')                                                       || 'generalLedgerRecurring.type.value' | 'Z was unable to be found'
+   }
+
+   @Unroll
+   void "update invalid GL recurring entry with non-existing GL recurring distribution #testProp" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      final account = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, company)
+
+      final glRecurringEntity = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
+      def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
+      glRecurringDTO.id = glRecurringEntity.id
+
+      final glRecurringDistributions = generalLedgerRecurringDistributionDataLoaderService.stream(1, glRecurringEntity, account, profitCenter).toList()
+      def glRecurringDistributionDTOs = GeneralLedgerRecurringDistributionDataLoader.streamDTO(
+         1,
+         glRecurringDTO,
+         new AccountDTO(account),
+         new SimpleLegacyIdentifiableDTO(profitCenter.myId())
+      ).toList()
+      glRecurringDistributionDTOs.eachWithIndex { it, index ->
+         it.id = glRecurringDistributions[index].id
+      }
+
+      def glRecurringEntriesDTO = dataLoaderService.singleDTO(glRecurringDTO, glRecurringDistributionDTOs)
+      glRecurringEntriesDTO.generalLedgerRecurringDistributions.forEach {
+         it."$testProp" = invalidValue
+      }
+
+      when:
+      put("$path/${glRecurringEntity.id}", glRecurringEntriesDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == errorResponsePath
+      response[0].message == errorMessage
+
+      where:
+      testProp                                | invalidValue                                                                       || errorResponsePath | errorMessage
+      'generalLedgerDistributionAccount'      | new SimpleIdentifiableDTO(UUID.fromString('0fd98cc1-0870-4a98-958b-e62bf5c389e8')) || 'generalLedgerRecurringDistributions[index].generalLedgerDistributionAccount.id'      | "0fd98cc1-0870-4a98-958b-e62bf5c389e8 was unable to be found"
+      'generalLedgerDistributionProfitCenter' | new SimpleLegacyIdentifiableDTO(999_999)                                           || 'generalLedgerRecurringDistributions[index].generalLedgerDistributionProfitCenter.id' | '999999 was unable to be found'
    }
 
    void "update invalid GL recurring entry with begin date after end date" () {
