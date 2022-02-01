@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.infrastructure
 
-import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.*
@@ -175,6 +174,13 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       }
    }
 
+   fun upsert(generalLedgerRecurringDistribution: GeneralLedgerRecurringDistributionEntity): GeneralLedgerRecurringDistributionEntity =
+      if (generalLedgerRecurringDistribution.id == null) {
+         insert(generalLedgerRecurringDistribution)
+      } else {
+         update(generalLedgerRecurringDistribution)
+      }
+
    @Transactional
    fun insert(entity: GeneralLedgerRecurringDistributionEntity): GeneralLedgerRecurringDistributionEntity {
       logger.debug("Inserting general_ledger_recurring_distribution")
@@ -249,6 +255,27 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       logger.info("Row affected {}", rowsAffected)
 
       if (rowsAffected == 0) throw NotFoundException(id)
+   }
+
+   @Transactional
+   fun deleteNotIn(generalLedgerRecurringId: UUID, distributions: List<GeneralLedgerRecurringDistributionEntity>) {
+      val result = mutableListOf<GeneralLedgerRecurringDistributionEntity>()
+
+      jdbc.update(
+         """
+         UPDATE general_ledger_recurring_distribution
+         SET deleted = TRUE
+         WHERE general_ledger_recurring_id = :general_ledger_recurring_id
+               AND id NOT IN(<ids>)
+               AND deleted = FALSE
+         RETURNING
+            *
+         """.trimIndent(),
+         mapOf(
+            "general_ledger_recurring_id" to generalLedgerRecurringId,
+            "ids" to distributions.asSequence().map { it.id }.toList()
+         )
+      )
    }
 
    private fun mapRow(

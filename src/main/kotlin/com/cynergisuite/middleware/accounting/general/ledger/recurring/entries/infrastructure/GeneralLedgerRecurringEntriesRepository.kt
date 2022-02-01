@@ -149,17 +149,18 @@ class GeneralLedgerRecurringEntriesRepository @Inject constructor(
 
    @Transactional
    fun update(company: CompanyEntity, entity: GeneralLedgerRecurringEntriesEntity): GeneralLedgerRecurringEntriesEntity {
-      logger.debug("Updating general_ledger_recurring and general_ledger_recurring_distribution {}", entity)
+      logger.debug("Updating GeneralLedgerRecurringEntries {}", entity)
 
-      val glRecurringEntity = generalLedgerRecurringRepository.update(entity.generalLedgerRecurring, company)
+      val existing = findOne(entity.generalLedgerRecurring.id!!, company)
 
-      val list = entity.generalLedgerRecurringDistributions.map {
-         it.generalLedgerRecurring = glRecurringEntity
-         generalLedgerRecurringDistributionRepository.update(it)
-      }.toList()
+      generalLedgerRecurringDistributionRepository.deleteNotIn(entity.generalLedgerRecurring.id!!, entity.generalLedgerRecurringDistributions)
 
-      entity.generalLedgerRecurring = glRecurringEntity
-      entity.generalLedgerRecurringDistributions = list
+      entity.generalLedgerRecurring = generalLedgerRecurringRepository.update(entity.generalLedgerRecurring, company)
+
+      // loop through each distribution to update or delete it in general_ledger_recurring_distribution
+      entity.generalLedgerRecurringDistributions.map { generalLedgerRecurringDistributionRepository.upsert(it) }
+
+      logger.debug("Updated GeneralLedgerRecurringEntries {}", entity)
 
       return entity
    }
