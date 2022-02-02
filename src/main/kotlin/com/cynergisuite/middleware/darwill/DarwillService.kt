@@ -42,7 +42,7 @@ class DarwillService @Inject constructor(
          areaRepository.save(AreaEntity(areaType = DarwillUpload, company = company))
 
          listOf(
-            saveSchedule("Darwill Inactive Customer", "SUNDAY", DarwillInactiveCustomer, Weekly, company, credentials),
+            saveSchedule("Darwill Inactive Customer", "BEGINNING", DarwillInactiveCustomer, BeginningOfMonth, company, credentials),
             saveSchedule("Darwill Active Customer", "SUNDAY", DarwillActiveCustomer, Weekly, company, credentials),
             saveSchedule("Darwill Birthdays", "BEGINNING", DarwillBirthday, BeginningOfMonth, company, credentials),
             saveSchedule("Darwill Collections", "DAILY", DarwillCollection, Daily, company, credentials),
