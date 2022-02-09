@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.darwill
 
 import com.cynergisuite.middleware.company.CompanyEntity
 import java.math.BigInteger
-import java.time.LocalDate
 
 data class DarwillCollectionEntity(
    val company: CompanyEntity,

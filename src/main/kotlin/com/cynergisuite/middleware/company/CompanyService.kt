@@ -3,9 +3,9 @@ package com.cynergisuite.middleware.company
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import java.util.UUID
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.UUID
 
 @Singleton
 class CompanyService @Inject constructor(

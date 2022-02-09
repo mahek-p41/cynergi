@@ -9,5 +9,5 @@ class DarwillJobResult(
 ) : JobResult {
    override fun scheduleName(): String = schedName
    override fun failureReason(): String? = failureReason
-   public fun rowCount(): Int = rowCount
+   fun rowCount(): Int = rowCount
 }

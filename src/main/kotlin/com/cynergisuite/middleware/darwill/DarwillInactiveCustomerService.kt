@@ -7,6 +7,9 @@ import com.cynergisuite.middleware.schedule.OnceDailyJob
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
 import com.cynergisuite.middleware.ssh.SftpClientService
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Named
+import jakarta.inject.Singleton
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import org.slf4j.Logger
@@ -17,9 +20,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.DayOfWeek
 import java.time.DayOfWeek.SUNDAY
-import jakarta.inject.Inject
-import jakarta.inject.Named
-import jakarta.inject.Singleton
 
 @Singleton
 @Named("DarwillInactiveCustomer")
@@ -29,7 +29,6 @@ class DarwillInactiveCustomerService @Inject constructor(
    private val sftpClientService: SftpClientService,
 ) : OnceDailyJob, DarwillScheduledService<DayOfWeek>(areaService) {
    private val logger: Logger = LoggerFactory.getLogger(DarwillInactiveCustomerService::class.java)
-
 
    override fun shouldProcess(time: DayOfWeek): Boolean = time == SUNDAY
 

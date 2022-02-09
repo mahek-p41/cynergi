@@ -66,7 +66,7 @@ class NotFound(unfindable: Any) : SystemCode("system.not.found", arrayOf(unfinda
 }
 class InternalError : SystemCode("system.internal.error", emptyArray())
 class RouteError(routeArgument: String) : SystemCode("system.route.error", arrayOf(routeArgument))
-class RouteHeaderError(headerName: String): SystemCode("system.route.header.error", arrayOf(headerName))
+class RouteHeaderError(headerName: String) : SystemCode("system.route.header.error", arrayOf(headerName))
 class NotImplemented(pathNotImplemented: String) : SystemCode("system.not.implemented", arrayOf(pathNotImplemented))
 class NotLoggedIn : SystemCode("system.not.logged.in", emptyArray())
 class AccessDenied : SystemCode("system.access.denied", emptyArray())

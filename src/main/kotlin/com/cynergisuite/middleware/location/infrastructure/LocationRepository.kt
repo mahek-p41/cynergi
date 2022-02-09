@@ -8,14 +8,14 @@ import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.location.LocationEntity
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @Singleton
 class LocationRepository @Inject constructor(

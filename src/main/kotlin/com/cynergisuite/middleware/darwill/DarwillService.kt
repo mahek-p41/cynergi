@@ -20,10 +20,10 @@ import com.cynergisuite.middleware.schedule.type.Daily
 import com.cynergisuite.middleware.schedule.type.ScheduleType
 import com.cynergisuite.middleware.schedule.type.Weekly
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import javax.transaction.Transactional
 
 @Singleton
@@ -65,14 +65,16 @@ class DarwillService @Inject constructor(
    }
 
    private fun saveSchedule(title: String, schedule: String, command: ScheduleCommandTypeEntity, type: ScheduleType, company: CompanyEntity, credentials: SftpClientCredentials): ScheduleEntity {
-      val scheduled = scheduleRepository.insert(ScheduleEntity(
-         title = title,
-         description = "$title ${company.datasetCode}",
-         schedule = schedule, // this isn't used by this process
-         command = command,
-         type = type,
-         company = company,
-      ))
+      val scheduled = scheduleRepository.insert(
+         ScheduleEntity(
+            title = title,
+            description = "$title ${company.datasetCode}",
+            schedule = schedule, // this isn't used by this process
+            command = command,
+            type = type,
+            company = company,
+         )
+      )
 
       val args = listOf(
          scheduleArgumentRepository.insert(scheduled, ScheduleArgumentEntity(credentials.host, "sftpHost")),

@@ -10,10 +10,8 @@ import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.location.Location
-import io.micronaut.http.HttpRequest
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import kotlinx.coroutines.coroutineScope
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -87,7 +85,6 @@ class UserAuthenticationProvider @Inject constructor(
 
       return CredentialsRequireStore(identity)
    }
-
 
    private fun credentialsProvidedDidNotMatch(userId: Int): CredentialsProvidedDidNotMatch {
       logger.debug("Credentials provided did not match any known user/password/company/store combo")

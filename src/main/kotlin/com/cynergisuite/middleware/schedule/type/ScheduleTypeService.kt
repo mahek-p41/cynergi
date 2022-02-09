@@ -4,9 +4,9 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.schedule.type.infrastructure.ScheduleTypeRepository
-import java.util.Locale
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.Locale
 
 @Singleton
 class ScheduleTypeService @Inject constructor(

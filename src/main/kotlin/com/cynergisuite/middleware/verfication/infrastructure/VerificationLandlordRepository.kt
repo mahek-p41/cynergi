@@ -8,6 +8,7 @@ import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.verfication.VerificationLandlord
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.mapper.RowMapper
@@ -15,7 +16,6 @@ import org.jdbi.v3.core.statement.StatementContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
-import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton

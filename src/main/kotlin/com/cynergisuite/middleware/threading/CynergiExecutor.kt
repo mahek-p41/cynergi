@@ -2,12 +2,12 @@ package com.cynergisuite.middleware.threading
 
 import io.micronaut.http.MediaType
 import io.micronaut.http.server.types.files.StreamedFile
+import jakarta.inject.Singleton
 import org.apache.commons.io.output.CloseShieldOutputStream
 import java.io.OutputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.util.concurrent.ForkJoinPool
-import jakarta.inject.Singleton
 
 @Singleton
 class CynergiExecutor {

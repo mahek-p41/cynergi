@@ -6,10 +6,10 @@ import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissi
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.localization.LocalizationService
-import java.util.Locale
-import java.util.UUID
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.Locale
+import java.util.UUID
 import javax.validation.ValidationException
 
 @Singleton

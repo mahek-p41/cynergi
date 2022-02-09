@@ -7,11 +7,11 @@ import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @Singleton
 class AuditScanAreaValidator @Inject constructor(

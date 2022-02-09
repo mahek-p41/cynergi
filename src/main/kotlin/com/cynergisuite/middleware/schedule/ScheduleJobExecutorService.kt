@@ -7,18 +7,17 @@ import com.cynergisuite.middleware.schedule.type.END_OF_MONTH
 import com.cynergisuite.middleware.schedule.type.ScheduleType
 import com.cynergisuite.middleware.schedule.type.WEEKLY
 import io.micronaut.context.ApplicationContext
-import io.micronaut.context.Qualifier
 import io.micronaut.kotlin.context.getBean
 import io.micronaut.scheduling.annotation.Scheduled
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
+import org.apache.commons.lang3.ClassUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.DayOfWeek
 import java.time.Month
 import java.time.OffsetDateTime
 import java.time.temporal.TemporalAccessor
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
-import org.apache.commons.lang3.ClassUtils
 import javax.transaction.Transactional
 import kotlin.reflect.KClass
 
@@ -31,7 +30,7 @@ class ScheduleJobExecutorService @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(ScheduleJobExecutorService::class.java)
 
    @Transactional
-   fun runDaily(dayOfWeek: DayOfWeek = OffsetDateTime.now().dayOfWeek) = // useful for calling on-demand
+   fun runDaily(dayOfWeek: DayOfWeek = OffsetDateTime.now().dayOfWeek) =
       runJob(dayOfWeek, WEEKLY, OnceDailyJob::class)
 
    @Transactional
@@ -45,7 +44,7 @@ class ScheduleJobExecutorService @Inject constructor(
    private fun <T : TemporalAccessor, J : Job<T>> runJob(temporalAccessor: T, scheduleType: ScheduleType, jobClazz: KClass<J>): Int {
       return companyRepository.all()
          .flatMap { scheduleRepository.all(scheduleType, it) }
-         .onEach { logger.debug("Loaded scheduled task {}/{}", it.title, it.enabled) }
+         .onEach { logger.info("Loaded scheduled task {}/{}", it.title, it.enabled) }
          .filter { it.enabled }
          .filter {
             val job: Job<T> = applicationContext.getBean(it.command.value)
@@ -54,10 +53,19 @@ class ScheduleJobExecutorService @Inject constructor(
          }
          .map { it to applicationContext.getBean<Job<T>>(it.command.value) }
          .filter { (schedule, task) -> task.shouldProcess(schedule, temporalAccessor) }
-         .onEach { (schedule, _) -> logger.debug("Executing scheduled task {}", schedule.title) }
-         .map { (schedule, task) -> task.process(schedule, temporalAccessor) }
-         .onEach { r -> if ( !(r.failureReason().isNullOrBlank()) ) logger.error("Job failed {}", r.failureReason()) }
-         .filter { r -> r.failureReason().isNullOrBlank() }
+         .onEach { (schedule, _) -> logger.info("Submitting scheduled task {}", schedule.title) }
+         .map { (schedule, task) ->
+            val result = try {
+               task.process(schedule, temporalAccessor)
+            } catch (e: Throwable) {
+               ErrorJobResult(e, schedule.title)
+            }
+
+            schedule to result
+         }
+         .onEach { (schedule, result) -> if (!(result.failureReason().isNullOrBlank())) logger.error("Job {} failed {}", schedule.title, result.failureReason()) }
+         .filter { (_, result) -> result.failureReason().isNullOrBlank() }
+         .onEach { (schedule, _) -> logger.info("Successfully ran {}", schedule.title) }
          .count()
    }
 

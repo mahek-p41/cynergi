@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.schedule.command
 
 import com.cynergisuite.domain.TypeDomainEntity
 
-sealed interface ScheduleCommandType: TypeDomainEntity<ScheduleCommandType> {
+sealed interface ScheduleCommandType : TypeDomainEntity<ScheduleCommandType> {
    val id: Int
    val value: String
    val description: String

@@ -11,10 +11,10 @@ import com.cynergisuite.middleware.darwill.DarwillInactiveCustomerEntity
 import com.cynergisuite.middleware.darwill.DarwillLastWeeksDeliveryEntity
 import com.cynergisuite.middleware.darwill.DarwillLastWeeksPayoutEntity
 import io.micronaut.transaction.annotation.ReadOnly
-import org.jdbi.v3.core.Jdbi
-import java.time.Month
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import org.jdbi.v3.core.Jdbi
+import java.time.Month
 
 @Singleton
 class DarwillRepository @Inject constructor(
@@ -75,7 +75,7 @@ class DarwillRepository @Inject constructor(
                agreementId = rs.getString("agreementId"),
                paymentFrequency = rs.getString("paymentFrequency"),
                textOptIn = rs.getString("textOptIn"),
-               onlineIndicator = rs.getString("onlineIndicator")?: "N",
+               onlineIndicator = rs.getString("onlineIndicator") ?: "N",
                carePlus = rs.getString("carePlus"),
                projectedPayout = rs.getInt("projectedPayout"),
                paymentsLeftInWeeks = rs.getInt("paymentsLeftInWeeks"),
@@ -300,7 +300,7 @@ class DarwillRepository @Inject constructor(
                email = rs.getString("email"),
                agreementId = rs.getString("agreementId"),
                finalStatus = rs.getString("finalStatus"),
-               payoutDate =  rs.getLocalDate("payoutDate")
+               payoutDate = rs.getLocalDate("payoutDate")
             )
          }.asSequence()
       }

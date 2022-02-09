@@ -67,7 +67,7 @@ dependencies {
    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.1.5")
 
-   implementation("org.apache.sshd:sshd-sftp:2.7.0")
+   implementation("org.apache.sshd:sshd-sftp:2.8.0")
 
    implementation("io.swagger.core.v3:swagger-annotations")
    implementation("org.jdbi:jdbi3-kotlin:${jdbiVersion}") { transitive = false}

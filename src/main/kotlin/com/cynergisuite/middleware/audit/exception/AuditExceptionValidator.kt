@@ -23,9 +23,9 @@ import com.cynergisuite.middleware.localization.AuditUpdateRequiresApprovedOrNot
 import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.util.UUID
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.UUID
 
 @Singleton
 class AuditExceptionValidator @Inject constructor (

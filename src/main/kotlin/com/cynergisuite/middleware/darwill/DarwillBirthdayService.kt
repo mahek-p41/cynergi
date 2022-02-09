@@ -4,10 +4,12 @@ import com.cynergisuite.middleware.area.AreaService
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.darwill.infrastructure.DarwillRepository
 import com.cynergisuite.middleware.schedule.BeginningOfMonthJob
-import com.cynergisuite.middleware.schedule.EndOfMonthJob
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
 import com.cynergisuite.middleware.ssh.SftpClientService
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Named
+import jakarta.inject.Singleton
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import org.slf4j.Logger
@@ -17,9 +19,6 @@ import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Month
-import jakarta.inject.Inject
-import jakarta.inject.Named
-import jakarta.inject.Singleton
 
 @Singleton
 @Named("DarwillBirthday")

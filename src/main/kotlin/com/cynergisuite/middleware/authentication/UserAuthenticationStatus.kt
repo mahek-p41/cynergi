@@ -12,7 +12,7 @@ data class UserAuthenticated(
 
 data class UserAuthenticatedAsAdmin(
    val user: AuthenticatedUser,
-): UserAuthenticationStatus, UserAuthenticationSuccess
+) : UserAuthenticationStatus, UserAuthenticationSuccess
 
 data class CredentialsRequireStore(
    val identity: Int,

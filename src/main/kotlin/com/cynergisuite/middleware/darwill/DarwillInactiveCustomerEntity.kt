@@ -26,5 +26,5 @@ class DarwillInactiveCustomerEntity(
    val reasonIndicator: String,
    val reason: String,
    val amountPaid: String,
-   val customerRating: String    // Holds percentage
+   val customerRating: String // Holds percentage
 )

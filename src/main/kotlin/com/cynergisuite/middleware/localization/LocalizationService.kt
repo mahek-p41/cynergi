@@ -9,7 +9,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.Locale
 
-
 /**
  * Defines the localization service that is to be used by the system.  The idea for this is that when a message is to
  * be returned by the system that it will be localized using appropriate message.(language).properties file

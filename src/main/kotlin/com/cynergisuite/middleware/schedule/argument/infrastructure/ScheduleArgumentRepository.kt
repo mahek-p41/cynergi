@@ -7,10 +7,10 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import io.micronaut.context.annotation.Value
-import org.jdbi.v3.core.Jdbi
-import java.sql.ResultSet
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import org.jdbi.v3.core.Jdbi
+import java.sql.ResultSet
 import javax.transaction.Transactional
 
 @Singleton
@@ -35,7 +35,7 @@ class ScheduleArgumentRepository @Inject constructor(
       return jdbc.insertReturning(
          """
          INSERT INTO schedule_arg(value, description, schedule_id, encrypted)
-         VALUES (${valueSql}, :description, :schedule_id, :encrypted)
+         VALUES ($valueSql, :description, :schedule_id, :encrypted)
          RETURNING
             *
          """.trimIndent(),
@@ -66,7 +66,7 @@ class ScheduleArgumentRepository @Inject constructor(
       return jdbc.updateReturning(
          """
          UPDATE schedule_arg
-         SET value = ${valueSql},
+         SET value = $valueSql,
              description = :description,
              encrypted = :encrypted
          WHERE id = :id

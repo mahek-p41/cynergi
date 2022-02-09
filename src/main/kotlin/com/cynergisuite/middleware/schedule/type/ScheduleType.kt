@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.schedule.type
 
 import com.cynergisuite.domain.TypeDomainEntity
 
-sealed interface ScheduleType: TypeDomainEntity<ScheduleType> {
+sealed interface ScheduleType : TypeDomainEntity<ScheduleType> {
    val id: Int
    val value: String
    val description: String

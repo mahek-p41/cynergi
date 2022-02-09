@@ -69,12 +69,12 @@ class SystemLoginController @Inject constructor(
    fun login(
       @Valid @Body loginCredentials: LoginCredentials,
       request: HttpRequest<*>
-   ) : HttpResponse<*> {
+   ): HttpResponse<*> {
       logger.debug("Store login attempted with {}", loginCredentials)
 
       val locale = request.findLocaleWithDefault()
 
-      return when(val authentication = userAuthenticationProvider.authenticate(loginCredentials)) {
+      return when (val authentication = userAuthenticationProvider.authenticate(loginCredentials)) {
          is UserAuthenticated -> {
             eventPublisher.publishEvent(LoginSuccessfulEvent(authentication.user))
 

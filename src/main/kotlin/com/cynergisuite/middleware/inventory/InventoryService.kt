@@ -6,8 +6,8 @@ import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.inventory.location.InventoryLocationTypeValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
-import java.util.Locale
 import jakarta.inject.Singleton
+import java.util.Locale
 
 @Singleton
 class InventoryService(

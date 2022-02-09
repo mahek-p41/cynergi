@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.ssh
 
+import jakarta.inject.Singleton
 import org.apache.sshd.client.SshClient
 import org.apache.sshd.sftp.client.SftpClient.OpenMode.Create
 import org.apache.sshd.sftp.client.SftpClient.OpenMode.Write
@@ -9,7 +10,6 @@ import org.slf4j.LoggerFactory
 import java.nio.channels.FileChannel
 import java.nio.file.Path
 import java.time.Duration
-import jakarta.inject.Singleton
 
 @Singleton
 class SftpClientService {

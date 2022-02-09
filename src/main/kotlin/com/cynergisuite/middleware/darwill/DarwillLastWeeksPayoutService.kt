@@ -3,11 +3,13 @@ package com.cynergisuite.middleware.darwill
 import com.cynergisuite.middleware.area.AreaService
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.darwill.infrastructure.DarwillRepository
-import com.cynergisuite.middleware.schedule.JobResult
 import com.cynergisuite.middleware.schedule.OnceDailyJob
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
 import com.cynergisuite.middleware.ssh.SftpClientService
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Named
+import jakarta.inject.Singleton
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import org.slf4j.Logger
@@ -18,9 +20,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.DayOfWeek
 import java.time.DayOfWeek.MONDAY
-import jakarta.inject.Inject
-import jakarta.inject.Named
-import jakarta.inject.Singleton
 
 @Singleton
 @Named("DarwillLastWeeksPayout")

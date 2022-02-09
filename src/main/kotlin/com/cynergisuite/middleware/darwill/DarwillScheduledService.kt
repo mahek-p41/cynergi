@@ -2,13 +2,12 @@ package com.cynergisuite.middleware.darwill
 
 import com.cynergisuite.middleware.area.AreaService
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.schedule.JobResult
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.ScheduleProcessingException
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
 import java.time.temporal.TemporalAccessor
 
-abstract class DarwillScheduledService<in T: TemporalAccessor> (
+abstract class DarwillScheduledService<in T : TemporalAccessor> (
    private val areaService: AreaService,
 ) {
    protected abstract fun shouldProcess(time: T): Boolean

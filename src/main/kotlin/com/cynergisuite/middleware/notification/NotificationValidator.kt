@@ -7,11 +7,11 @@ import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.localization.NotificationRecipientsRequired
 import com.cynergisuite.middleware.localization.NotificationRecipientsRequiredAll
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.format.DateTimeFormatter
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @Singleton
 class NotificationValidator @Inject constructor(

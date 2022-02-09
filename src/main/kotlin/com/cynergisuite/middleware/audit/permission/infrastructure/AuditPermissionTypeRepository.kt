@@ -4,10 +4,10 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.audit.permission.AuditPermissionType
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Singleton
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import jakarta.inject.Singleton
 
 @Singleton
 class AuditPermissionTypeRepository(

@@ -9,12 +9,12 @@ import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.department.DepartmentEntity
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @Singleton
 class DepartmentRepository @Inject constructor(
