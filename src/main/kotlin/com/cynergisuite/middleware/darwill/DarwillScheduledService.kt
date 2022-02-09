@@ -5,13 +5,18 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.ScheduleProcessingException
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAccessor
 
 abstract class DarwillScheduledService<in T : TemporalAccessor> (
    private val areaService: AreaService,
 ) {
    protected abstract fun shouldProcess(time: T): Boolean
-   protected abstract fun process(company: CompanyEntity, sftpClientCredentials: SftpClientCredentials, time: T): DarwillJobResult
+   protected abstract fun process(company: CompanyEntity, sftpClientCredentials: SftpClientCredentials, time: T, fileDate: String): DarwillJobResult
+
+   private val fileDateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
 
    @Throws(ScheduleProcessingException::class)
    fun shouldProcess(schedule: ScheduleEntity, time: T): Boolean {
@@ -33,7 +38,8 @@ abstract class DarwillScheduledService<in T : TemporalAccessor> (
             host = sftpHost,
             port = sftpPort,
          ),
-         time
+         time,
+         LocalDateTime.now().format(fileDateFormat)
       )
    }
 }

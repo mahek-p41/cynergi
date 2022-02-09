@@ -33,8 +33,8 @@ class DarwillInactiveCustomerService @Inject constructor(
    override fun shouldProcess(time: DayOfWeek): Boolean = time == SUNDAY
 
    @ReadOnly
-   override fun process(company: CompanyEntity, sftpClientCredentials: SftpClientCredentials, time: DayOfWeek): DarwillJobResult {
-      val pushedFileName = "${company.clientCode}-inactive-customers.csv"
+   override fun process(company: CompanyEntity, sftpClientCredentials: SftpClientCredentials, time: DayOfWeek, fileDate: String): DarwillJobResult {
+      val pushedFileName = "${company.clientCode}-inactive-customers-${fileDate}.csv"
       val inactiveCustomerTempPath = Files.createTempFile("inactiveCustomer", ".csv")
 
       Files.newBufferedWriter(inactiveCustomerTempPath).use { writer ->
