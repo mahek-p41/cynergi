@@ -7,10 +7,12 @@ import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.GeneralLedgerReversalEntity
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.error.NotFoundException
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -41,6 +43,7 @@ class GeneralLedgerReversalRepository @Inject constructor(
             glReversal.comment                                              AS glReversal_comment,
             glReversal.entry_month                                          AS glReversal_entry_month,
             glReversal.entry_number                                         AS glReversal_entry_number,
+            glReversal.deleted                                              AS glReversal_deleted,
             source.id                                                       AS glReversal_source_id,
             source.company_id                                               AS glReversal_source_company_id,
             source.value                                                    AS glReversal_source_value,
@@ -54,8 +57,8 @@ class GeneralLedgerReversalRepository @Inject constructor(
 
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): GeneralLedgerReversalEntity? {
-      val params = mutableMapOf<String, Any?>("id" to id)
-      val query = "${selectBaseQuery()}\nWHERE glReversal.id = :id"
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
+      val query = "${selectBaseQuery()}\nWHERE glReversal.id = :id AND glReversal.company_id = :comp_id AND glReversal.deleted = FALSE"
 
       logger.debug("Searching for GeneralLedgerReversal using {} {}", query, params)
 
@@ -78,7 +81,7 @@ class GeneralLedgerReversalRepository @Inject constructor(
       return jdbc.queryPaged(
          """
          ${selectBaseQuery()}
-         WHERE glReversal.company_id = :comp_id
+         WHERE glReversal.company_id = :comp_id AND glReversal.deleted = FALSE
          ORDER BY glReversal.${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
@@ -168,6 +171,24 @@ class GeneralLedgerReversalRepository @Inject constructor(
       logger.debug("Updated GeneralLedgerReversal {}", updated)
 
       return updated
+   }
+
+   @Transactional
+   fun delete(id: UUID, company: CompanyEntity) {
+      logger.debug("Deleting GeneralLedgerReversal with id={}", id)
+
+      val rowsAffected = jdbc.softDelete(
+         """
+         UPDATE general_ledger_reversal
+         SET deleted = TRUE
+         WHERE id = :id AND company_id = :company_id AND deleted = FALSE
+         """,
+         mapOf("id" to id, "company_id" to company.id),
+         "general_ledger_reversal"
+      )
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(id)
    }
 
    fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): GeneralLedgerReversalEntity {

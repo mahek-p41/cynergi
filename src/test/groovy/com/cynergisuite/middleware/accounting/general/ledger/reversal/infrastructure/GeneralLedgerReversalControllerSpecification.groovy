@@ -2,9 +2,11 @@ package com.cynergisuite.middleware.accounting.general.ledger.reversal.infrastru
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.GeneralLedgerReversalDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.reversal.distribution.GeneralLedgerReversalDistributionDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
@@ -12,6 +14,7 @@ import spock.lang.Unroll
 import jakarta.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.CONFLICT
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
@@ -19,8 +22,10 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class GeneralLedgerReversalControllerSpecification extends ControllerSpecificationBase {
    private static String path = '/general-ledger/reversal'
 
+   @Inject AccountTestDataLoaderService accountTestDataLoaderService
    @Inject GeneralLedgerSourceCodeDataLoaderService sourceCodeDataLoaderService
    @Inject GeneralLedgerReversalDataLoaderService generalLedgerReversalDataLoaderService
+   @Inject GeneralLedgerReversalDistributionDataLoaderService generalLedgerReversalDistributionDataLoaderService
 
    void "fetch one" () {
       given:
@@ -343,5 +348,116 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
       response.size() == 1
       response[0].path == "source.id"
       response[0].message == "$nonExistentId was unable to be found"
+   }
+
+   void "delete one GL reversal" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final sourceCode = sourceCodeDataLoaderService.single(company)
+      final generalLedgerReversal = generalLedgerReversalDataLoaderService.single(company, sourceCode)
+
+      when:
+      delete("$path/${generalLedgerReversal.id}")
+
+      then:
+      notThrown(Exception)
+
+      when:
+      get("$path/${generalLedgerReversal.id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "${generalLedgerReversal.id} was unable to be found"
+      response.code == 'system.not.found'
+   }
+
+   void "delete GL reversal still has references" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final sourceCode = sourceCodeDataLoaderService.single(company)
+      final generalLedgerReversal = generalLedgerReversalDataLoaderService.single(company, sourceCode)
+      final account = accountTestDataLoaderService.single(tstds1)
+      final profitCenter = storeFactoryService.store(3, tstds1)
+      generalLedgerReversalDistributionDataLoaderService.single(generalLedgerReversal, account, profitCenter)
+
+      when:
+      delete("$path/${generalLedgerReversal.id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == CONFLICT
+      def response = exception.response.bodyAsJson()
+      response.message == "Requested operation violates data integrity"
+      response.code == "cynergi.data.constraint.violated"
+   }
+
+   void "delete GL reversal from other company is not allowed" () {
+      given:
+      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final sourceCode = sourceCodeDataLoaderService.single(tstds2)
+      final generalLedgerReversal = generalLedgerReversalDataLoaderService.single(tstds2, sourceCode)
+
+      when:
+      delete("$path/${generalLedgerReversal.id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "${generalLedgerReversal.id} was unable to be found"
+      response.code == 'system.not.found'
+   }
+
+   void "recreate deleted GL reversal" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final sourceCode = sourceCodeDataLoaderService.single(company)
+      final generalLedgerReversal = generalLedgerReversalDataLoaderService.single(company, sourceCode)
+
+      when: // create a GL reversal
+      def response1 = post(path, generalLedgerReversal)
+
+      then:
+      notThrown(Exception)
+      response1 != null
+      with(response1) {
+         id != null
+         source.id == generalLedgerReversal.source.id
+         date == generalLedgerReversal.date.toString()
+         reversalDate == generalLedgerReversal.reversalDate.toString()
+         comment == generalLedgerReversal.comment
+         entryMonth == generalLedgerReversal.entryMonth
+         entryNumber == generalLedgerReversal.entryNumber
+      }
+
+      when: // delete GL reversal
+      delete("$path/$response1.id")
+
+      then: "GL reversal of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate GL reversal
+      def response2 = post(path, generalLedgerReversal)
+
+      then:
+      notThrown(Exception)
+      response2 != null
+      with(response2) {
+         id != null
+         source.id == generalLedgerReversal.source.id
+         date == generalLedgerReversal.date.toString()
+         reversalDate == generalLedgerReversal.reversalDate.toString()
+         comment == generalLedgerReversal.comment
+         entryMonth == generalLedgerReversal.entryMonth
+         entryNumber == generalLedgerReversal.entryNumber
+      }
+
+      when: // delete GL reversal again
+      delete("$path/$response2.id")
+
+      then: "GL reversal of user's company is deleted"
+      notThrown(HttpClientResponseException)
    }
 }
