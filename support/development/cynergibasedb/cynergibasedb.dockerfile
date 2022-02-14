@@ -1,7 +1,7 @@
 ARG GROOVY_VER=3.0.9
 FROM groovy:${GROOVY_VER}-jdk11 AS groovyImage
 
-FROM postgres:12.7-buster
+FROM postgres:9.325
 
 ENV DEBIAN_FRONTEND noninteractive
 

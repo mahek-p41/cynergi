@@ -1038,4 +1038,5 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_inactive_customer_vw (
 
 GRANT USAGE ON SCHEMA fastinfo_prod_import TO cynergiuser;
 GRANT SELECT ON ALL TABLES IN SCHEMA fastinfo_prod_import TO cynergiuser;
+
 -- End cynergidb setup

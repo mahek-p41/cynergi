@@ -40,9 +40,6 @@ class AuditDetailRepository @Inject constructor(
 
    private fun selectBaseQuery(): String {
       return """
-         WITH employees AS (
-            ${employeeRepository.employeeBaseQuery()}
-         )
          SELECT
             auditDetail.id AS auditDetail_id,
             auditDetail.time_created                  AS auditDetail_time_created,
@@ -88,9 +85,9 @@ class AuditDetailRepository @Inject constructor(
          FROM audit_detail auditDetail
               JOIN audit a ON auditDetail.audit_id = a.id
               JOIN company comp ON a.company_id = comp.id
-              JOIN employees scannedBy ON auditDetail.scanned_by = scannedBy.emp_number AND scannedBy.comp_id = comp.id
+              JOIN system_employees_fimvw scannedBy ON auditDetail.scanned_by = scannedBy.emp_number AND scannedBy.comp_id = comp.id
               JOIN audit_scan_area scanArea ON auditDetail.scan_area_id = scanArea.id
-              JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND scanArea.store_number_sfk = store.number
+              JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND scanArea.store_number_sfk = store.number
       """
    }
 
@@ -170,22 +167,19 @@ class AuditDetailRepository @Inject constructor(
       page: PageRequest
    ): RepositoryPage<AuditDetailEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("audit_id" to audit.id, "comp_id" to company.id)
-      val query =
-         """
-      WITH paged AS (
-         ${selectBaseQuery()}
-         WHERE scannedBy.comp_id = :comp_id
-      )
+      val query = """
       SELECT
          p.*,
          count(*) OVER() as total_elements
-      FROM paged AS p
+      FROM (${selectBaseQuery()} WHERE scannedBy.comp_id = :comp_id) AS p
       WHERE p.auditDetail_audit_id = :audit_id
       ORDER by auditDetail_${page.snakeSortBy()} ${page.sortDirection()}
       LIMIT ${page.size()} OFFSET ${page.offset()}
       """
       var totalElements: Long? = null
       val resultList: MutableList<AuditDetailEntity> = mutableListOf()
+
+      logger.debug("Finding all audit details using {}/{}", query, params)
 
       jdbc.query(query, params) { rs, _ ->
          val scannedBy = employeeRepository.mapRow(rs, "scannedBy_")

@@ -59,7 +59,7 @@ class CompanyRepository @Inject constructor(
            comp.dataset_code        AS dataset_code,
            comp.federal_id_number  AS federal_id_number
          FROM company comp
-              JOIN fastinfo_prod_import.store_vw s
+              JOIN system_stores_fimvw s
                 ON comp.dataset_code = s.dataset
          WHERE s.id = :store_id
                AND s.dataset = :dataset
@@ -104,13 +104,10 @@ class CompanyRepository @Inject constructor(
 
       jdbc.query(
          """
-         WITH paged AS (
-            ${companyBaseQuery()}
-         )
          SELECT
             p.*,
             count(*) OVER() as total_elements
-         FROM paged AS p
+         FROM (${companyBaseQuery()}) AS p
          ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT ${pageRequest.size()}
             OFFSET ${pageRequest.offset()}

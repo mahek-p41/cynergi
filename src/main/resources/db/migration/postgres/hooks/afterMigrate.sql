@@ -133,6 +133,47 @@ BEGIN
    EXECUTE sqlToExec;
 END $$;
 
+CREATE MATERIALIZED VIEW system_employees_fimvw AS SELECT * FROM system_employees_vw;
+DROP INDEX IF EXISTS sys_emp_mat_vw_number_idx;
+DROP INDEX IF EXISTS sys_emp_mat_vw_comp_id;
+CREATE INDEX sys_emp_mat_vw_number_idx ON system_employees_fimvw (emp_number);
+CREATE INDEX sys_emp_mat_vw_comp_id ON system_employees_fimvw (comp_id);
+
+CREATE MATERIALIZED VIEW system_stores_fimvw AS SELECT * FROM fastinfo_prod_import.store_vw;
+CREATE INDEX sys_stores_dataset_idx ON system_stores_fimvw (dataset);
+CREATE INDEX sys_stores_number_idx ON system_stores_fimvw (number);
+
+CREATE OR REPLACE PROCEDURE refresh_fastinfo_materialized_views_fn() LANGUAGE plpgsql AS
+$$
+DECLARE
+   r RECORD;
+BEGIN
+   FOR r IN SELECT matviewname FROM pg_matviews WHERE matviewname LIKE '%_fimvw'
+   LOOP
+      EXECUTE 'REFRESH MATERIALIZED VIEW ' || r.matviewname;
+   END LOOP;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION refresh_employees_fimvw_fn()
+   RETURNS TRIGGER AS
+$$
+BEGIN
+   CALL refresh_fastinfo_materialized_views_fn();
+
+   RETURN new;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS update_system_employees_fimvw_trg On employee;
+
+CREATE TRIGGER update_system_employees_fimvw_trg
+   AFTER INSERT OR UPDATE
+   ON employee
+   FOR EACH STATEMENT
+   EXECUTE PROCEDURE refresh_employees_fimvw_fn();
+
+
 -- This function will take the provided pass_code and determine what TEXT string to return based on the type.
 -- 'eli' get's you the bcypt hashed version
 -- 'sysz' get's you the plain text result trimmed to 6 characters

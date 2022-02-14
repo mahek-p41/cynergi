@@ -10,7 +10,6 @@ if [ -z `docker-compose ps -q cynergidb` ] || [ -z `docker ps -q --no-trunc | gr
   docker-compose up -d --no-deps cynergidb
 
   if [ $? -eq 0 ]; then
-    #docker-compose build --force-rm cynergidbready && docker-compose run --rm cynergidbready
     docker exec cynergidb /opt/scripts/db-ready.sh cynergidb || exit $?
 
     echo "Loading fastinfo development data"
@@ -18,9 +17,6 @@ if [ -z `docker-compose ps -q cynergidb` ] || [ -z `docker ps -q --no-trunc | gr
 
     echo "Setting up bridge between cynergidb and fastinfo_production"
     docker exec cynergidb /opt/scripts/setup-database.sh >> /tmp/cynergi-dev.log 2>&1 || exit $?
-
-    echo "Migrating cynergidb via flyway"
-    docker exec cynergidb /opt/scripts/migratedb.sh >> /tmp/cynergi-dev.log 2>&1 || exit $?
 
     echo "Loading cynergidb development data"
     docker exec cynergidb /opt/scripts/load-dev-cynergidb-data.sh >> /tmp/cynergi-dev.log 2>&1 || exit $?

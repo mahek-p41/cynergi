@@ -40,9 +40,6 @@ class AuditPermissionRepository @Inject constructor(
 
       val found = jdbc.findFirstOrNull(
          """
-         WITH company AS (
-            ${companyRepository.companyBaseQuery()}
-         )
          SELECT
             ap.id                      AS ap_id,
             ap.time_created            AS ap_time_created,
@@ -65,7 +62,7 @@ class AuditPermissionRepository @Inject constructor(
             dept.description           AS dept_description,
             dept.dataset               AS dept_dataset
          FROM audit_permission ap
-              JOIN company comp ON ap.company_id = comp.id
+              JOIN (${companyRepository.companyBaseQuery()}) comp ON ap.company_id = comp.id
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
               JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
          WHERE ap.id = :ap_id
@@ -86,9 +83,6 @@ class AuditPermissionRepository @Inject constructor(
 
       return jdbc.queryPaged(
          """
-         WITH company AS (
-            ${companyRepository.companyBaseQuery()}
-         )
          SELECT
             ap.id                         AS ap_id,
             ap.time_created               AS ap_time_created,
@@ -112,7 +106,7 @@ class AuditPermissionRepository @Inject constructor(
             dept.dataset                  AS dept_dataset,
             count(*) OVER() as total_elements
          FROM audit_permission ap
-              JOIN company comp ON ap.company_id = comp.id
+              JOIN (${companyRepository.companyBaseQuery()}) comp ON ap.company_id = comp.id
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
               JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
          WHERE comp.id = :comp_id
@@ -144,9 +138,6 @@ class AuditPermissionRepository @Inject constructor(
 
       return jdbc.queryPaged(
          """
-         WITH company AS (
-            ${companyRepository.companyBaseQuery()}
-         )
          SELECT
             ap.id                         AS ap_id,
             ap.time_created               AS ap_time_created,
@@ -170,7 +161,7 @@ class AuditPermissionRepository @Inject constructor(
             dept.dataset                  AS dept_dataset,
             count(*) OVER() as total_elements
          FROM audit_permission ap
-            JOIN company comp ON ap.company_id = comp.id
+            JOIN (${companyRepository.companyBaseQuery()}) comp ON ap.company_id = comp.id
             JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
             JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
          WHERE comp.id = :comp_id AND ap.type_id = :typeId

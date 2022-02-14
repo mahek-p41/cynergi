@@ -4,7 +4,7 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.region.RegionEntity
 
 /**
- * Represents a Store as loaded from fastinfo_prod_import.store_vw
+ * Represents a Store as loaded from system_stores_fimvw
  */
 data class StoreEntity(
    val id: Long,

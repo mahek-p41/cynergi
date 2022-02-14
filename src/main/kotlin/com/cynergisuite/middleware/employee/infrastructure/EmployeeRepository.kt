@@ -36,7 +36,7 @@ class EmployeeRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(EmployeeRepository::class.java)
 
-   fun employeeBaseQuery() = "SELECT * FROM system_employees_vw"
+   private fun employeeBaseQuery() = "SELECT * FROM system_employees_fimvw"
 
    @ReadOnly
    fun findOne(user: User): EmployeeEntity? =
@@ -44,6 +44,8 @@ class EmployeeRepository @Inject constructor(
 
    @ReadOnly
    fun findOne(id: Long, employeeType: String, company: CompanyEntity): EmployeeEntity? {
+      logger.trace("Searching for Employee: {} {} {}", id, employeeType, company)
+
       val found = jdbc.findFirstOrNull(
          "${employeeBaseQuery()} WHERE comp_id = :comp_id AND emp_id = :emp_id AND emp_type = :emp_type",
          mutableMapOf("comp_id" to company.id, "emp_id" to id, "emp_type" to employeeType)
@@ -116,7 +118,7 @@ class EmployeeRepository @Inject constructor(
                FROM fastinfo_prod_import.employee_vw emp
                   JOIN company comp ON emp.dataset = comp.dataset_code
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
-                  LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
+                  LEFT OUTER JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
                UNION
                SELECT
                   2 AS from_priority,
@@ -126,7 +128,7 @@ class EmployeeRepository @Inject constructor(
                FROM employee emp
                   JOIN company comp ON emp.company_id = comp.id
                   LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
-                  LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
+                  LEFT OUTER JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
             ) AS inner_employees
             ORDER BY from_priority
          ) AS employees
