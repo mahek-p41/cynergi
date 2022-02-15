@@ -7,11 +7,11 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @Singleton
 class AccountPayablePaymentDetailValidator @Inject constructor(

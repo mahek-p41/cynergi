@@ -11,11 +11,11 @@ import com.cynergisuite.middleware.purchase.order.type.infrastructure.PurchaseOr
 import com.cynergisuite.middleware.purchase.order.type.infrastructure.PurchaseOrderStatusTypeRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @Singleton
 class PurchaseOrderDetailValidator @Inject constructor(

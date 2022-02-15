@@ -16,13 +16,13 @@ import com.cynergisuite.middleware.accounting.account.payable.infrastructure.Pri
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.PurchaseOrderNumberRequiredIndicatorTypeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton

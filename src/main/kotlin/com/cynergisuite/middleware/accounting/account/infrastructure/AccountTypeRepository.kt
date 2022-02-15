@@ -5,6 +5,8 @@ import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.accounting.account.AccountType
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.mapper.RowMapper
@@ -12,8 +14,6 @@ import org.jdbi.v3.core.statement.StatementContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @Singleton
 class AccountTypeRepository @Inject constructor(

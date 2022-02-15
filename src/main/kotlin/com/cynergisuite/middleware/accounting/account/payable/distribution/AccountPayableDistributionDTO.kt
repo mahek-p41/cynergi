@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.fasterxml.jackson.annotation.JsonInclude
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.util.UUID
@@ -13,6 +14,7 @@ import javax.validation.constraints.Digits
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
+@Introspected
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "AccountPayableDistribution", title = "A data transfer object containing an account payable distribution", description = "A data transfer object containing an account payable distribution.")
 data class AccountPayableDistributionDTO(

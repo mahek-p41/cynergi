@@ -6,10 +6,10 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure.BankReconciliationRepository
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.company.CompanyEntity
-import java.util.Locale
-import java.util.UUID
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.Locale
+import java.util.UUID
 
 @Singleton
 class BankReconciliationService @Inject constructor(

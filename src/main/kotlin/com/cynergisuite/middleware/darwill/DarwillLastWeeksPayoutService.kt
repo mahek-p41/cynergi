@@ -34,7 +34,7 @@ class DarwillLastWeeksPayoutService @Inject constructor(
 
    @ReadOnly
    override fun process(company: CompanyEntity, sftpClientCredentials: SftpClientCredentials, time: DayOfWeek, fileDate: String): DarwillJobResult {
-      val pushedFileName = "${company.clientCode}-last-week-payouts-${fileDate}.csv"
+      val pushedFileName = "${company.clientCode}-last-week-payouts-$fileDate.csv"
       val lastWeeksPayoutTempPath = Files.createTempFile("lastWeeksPayout", ".csv")
 
       Files.newBufferedWriter(lastWeeksPayoutTempPath).use { writer ->

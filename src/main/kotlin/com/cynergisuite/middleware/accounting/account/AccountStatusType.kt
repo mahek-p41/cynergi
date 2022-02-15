@@ -1,7 +1,9 @@
 package com.cynergisuite.middleware.accounting.account
 
 import com.cynergisuite.domain.TypeDomainEntity
+import io.micronaut.core.annotation.Introspected
 
+@Introspected
 data class AccountStatusType(
    val id: Int,
    val value: String,

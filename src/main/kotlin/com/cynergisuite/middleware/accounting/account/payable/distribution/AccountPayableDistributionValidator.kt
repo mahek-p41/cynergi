@@ -9,13 +9,13 @@ import com.cynergisuite.middleware.localization.MustBeInRangeOf
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.PercentTotalGreaterThan100
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.math.BigDecimal.ONE
 import java.util.UUID
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @Singleton
 class AccountPayableDistributionValidator @Inject constructor(

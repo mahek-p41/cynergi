@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.vendor.rebate
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountDTO
-import com.cynergisuite.middleware.accounting.account.AccountStatusTypeValueObject
+import com.cynergisuite.middleware.accounting.account.AccountStatusTypeValueDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -30,7 +30,7 @@ data class RebateDTO(
    @field:NotNull
    @field:Valid
    @field:Schema(name = "status", description = "Status type")
-   var status: AccountStatusTypeValueObject? = null,
+   var status: AccountStatusTypeValueDTO? = null,
 
    @field:NotNull
    @field:Size(min = 3, max = 30)
@@ -72,7 +72,7 @@ data class RebateDTO(
       this(
          id = entity.id,
          vendors = (vendors ?: entity.vendors?.map { SimpleIdentifiableDTO(it) }) as MutableList<SimpleIdentifiableDTO>,
-         status = AccountStatusTypeValueObject(entity.status),
+         status = AccountStatusTypeValueDTO(entity.status),
          description = entity.description,
          type = RebateTypeDTO(entity.rebate),
          percent = entity.percent,

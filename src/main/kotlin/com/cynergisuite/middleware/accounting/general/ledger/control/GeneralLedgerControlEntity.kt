@@ -4,8 +4,10 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
+import io.micronaut.core.annotation.Introspected
 import java.util.UUID
 
+@Introspected
 data class GeneralLedgerControlEntity(
    val id: UUID? = null,
    val company: CompanyEntity,

@@ -28,14 +28,14 @@ import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton

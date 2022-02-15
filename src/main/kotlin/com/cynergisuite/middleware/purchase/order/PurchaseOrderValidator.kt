@@ -18,11 +18,11 @@ import com.cynergisuite.middleware.shipping.shipvia.infrastructure.ShipViaReposi
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @Singleton
 class PurchaseOrderValidator @Inject constructor(

@@ -4,9 +4,11 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
+import io.micronaut.core.annotation.Introspected
 import org.apache.commons.lang3.builder.CompareToBuilder
 import java.util.UUID
 
+@Introspected
 data class DivisionEntity(
    val id: UUID? = null,
    val company: CompanyEntity,

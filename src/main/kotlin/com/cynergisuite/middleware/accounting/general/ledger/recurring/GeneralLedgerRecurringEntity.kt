@@ -2,9 +2,11 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
+import io.micronaut.core.annotation.Introspected
 import java.time.LocalDate
 import java.util.UUID
 
+@Introspected
 data class GeneralLedgerRecurringEntity(
    val id: UUID? = null,
    val source: GeneralLedgerSourceCodeEntity,

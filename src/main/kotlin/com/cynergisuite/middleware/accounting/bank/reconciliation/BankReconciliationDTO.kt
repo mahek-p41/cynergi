@@ -5,6 +5,7 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -12,6 +13,7 @@ import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "Bank Reconciliation", title = "An entity containing a bank reconciliation information", description = "An entity containing a bank reconciliation information.")
 data class BankReconciliationDTO(

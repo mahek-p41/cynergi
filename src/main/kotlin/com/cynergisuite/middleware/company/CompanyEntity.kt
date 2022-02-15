@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.company
 
 import com.cynergisuite.middleware.address.AddressEntity
+import io.micronaut.core.annotation.Introspected
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
@@ -11,6 +12,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
 import java.util.UUID
 
+@Introspected
 @MappedEntity("company")
 data class CompanyEntity(
 

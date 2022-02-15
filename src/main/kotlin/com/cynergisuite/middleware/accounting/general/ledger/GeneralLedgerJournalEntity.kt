@@ -3,10 +3,12 @@ package com.cynergisuite.middleware.accounting.general.ledger
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.store.Store
+import io.micronaut.core.annotation.Introspected
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
 
+@Introspected
 data class GeneralLedgerJournalEntity(
    val id: UUID? = null,
    val account: AccountEntity,

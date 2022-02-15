@@ -4,9 +4,11 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodType
 import com.cynergisuite.middleware.store.Store
+import io.micronaut.core.annotation.Introspected
 import java.math.BigDecimal
 import java.util.UUID
 
+@Introspected
 data class GeneralLedgerSummaryEntity(
    val id: UUID? = null,
    val account: AccountEntity,

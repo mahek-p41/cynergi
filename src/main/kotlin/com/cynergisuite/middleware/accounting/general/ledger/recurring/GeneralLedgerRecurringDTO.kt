@@ -4,11 +4,13 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import java.util.UUID
 import javax.validation.constraints.NotNull
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "GeneralLedgerRecurring", title = "General Ledger Recurring", description = "General ledger recurring entity")
 data class GeneralLedgerRecurringDTO(

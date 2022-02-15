@@ -26,14 +26,14 @@ import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
@@ -419,7 +419,7 @@ class PurchaseOrderRepository @Inject constructor(
                   AND shipTo.number = po.ship_to_id_sfk
             JOIN vendor_payment_term paymentTermType              ON po.vendor_payment_term_id = paymentTermType.vpt_id
             JOIN exception_ind_type_domain exceptionIndType       ON po.exception_ind_type_id = exceptionIndType.id
-            LEFT JOIN employee vendorSubmittedEmp                 ON po.vendor_submitted_employee_sfk = vendorSubmittedEmp.emp_number AND po.company_id = vendorSubmittedEmp.comp_id
+            LEFT JOIN system_employees_fimvw vendorSubmittedEmp   ON po.vendor_submitted_employee_sfk = vendorSubmittedEmp.emp_number AND po.company_id = vendorSubmittedEmp.comp_id
       """
    }
 

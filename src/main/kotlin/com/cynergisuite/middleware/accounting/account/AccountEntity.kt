@@ -1,9 +1,11 @@
 package com.cynergisuite.middleware.accounting.account
 
 import com.cynergisuite.domain.Identifiable
+import io.micronaut.core.annotation.Introspected
 import java.util.UUID
 
 // FIXME add company here rather than passing it in through the repository method
+@Introspected
 data class AccountEntity(
    val id: UUID? = null,
    val number: Long,

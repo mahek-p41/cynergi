@@ -7,27 +7,26 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @JsonInclude(NON_NULL)
-@Schema(name = "AccountStatusType", title = "Account status type", description = "Currencies that the banks support")
-data class AccountStatusTypeValueObject(
+@Schema(name = "NormalAccountBalanceType", title = "Normal account balance type", description = "Normal account balance")
+data class NormalAccountBalanceTypeDTO(
 
    @field:NotNull
    @field:Size(min = 1, max = 10)
-   @field:Schema(description = "Account status")
+   @field:Schema(name = "value", description = "Normal account balance")
    var value: String? = null,
 
    @field:Size(min = 1, max = 100)
-   @field:Schema(description = "A localized description for currency")
+   @field:Schema(name = "description", description = "A localized description for normal account balance")
    var description: String? = null
 
 ) {
-
-   constructor(currencyType: AccountStatusType) :
+   constructor(currencyType: NormalAccountBalanceType) :
       this(
          value = currencyType.value,
          description = currencyType.description
       )
 
-   constructor(currencyType: AccountStatusType, localizedDescription: String) :
+   constructor(currencyType: NormalAccountBalanceType, localizedDescription: String) :
       this(
          value = currencyType.value,
          description = localizedDescription

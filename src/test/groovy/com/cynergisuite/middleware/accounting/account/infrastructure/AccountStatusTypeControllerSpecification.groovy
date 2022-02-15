@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.accounting.account.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountStatusFactoryService
-import com.cynergisuite.middleware.accounting.account.AccountStatusTypeValueObject
+import com.cynergisuite.middleware.accounting.account.AccountStatusTypeValueDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
@@ -15,13 +15,13 @@ class AccountStatusTypeControllerSpecification extends ControllerSpecificationBa
 
    void "fetch all account statuses" () {
       given:
-      def predefinedAccountStatus = accountStatusFactoryService.predefined().collect { new AccountStatusTypeValueObject(it) }
+      def predefinedAccountStatus = accountStatusFactoryService.predefined().collect { new AccountStatusTypeValueDTO(it) }
 
       when:
       def response = get("/accounting/account/status")
 
       then:
       notThrown(HttpClientResponseException)
-      response.collect { new AccountStatusTypeValueObject(it) } == predefinedAccountStatus
+      response.collect { new AccountStatusTypeValueDTO(it) } == predefinedAccountStatus
    }
 }

@@ -6,11 +6,10 @@ import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeService
 import com.cynergisuite.middleware.company.CompanyEntity
-import java.sql.Date
-import java.time.LocalDate
-import java.util.UUID
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.time.LocalDate
+import java.util.UUID
 import kotlin.streams.toList
 
 @Singleton

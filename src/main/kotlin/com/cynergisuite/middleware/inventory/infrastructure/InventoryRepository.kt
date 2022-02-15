@@ -69,19 +69,19 @@ class InventoryRepository(
          comp.client_id                AS comp_client_id,
          comp.dataset_code             AS comp_dataset_code,
          comp.federal_id_number        AS comp_federal_id_number,
-         comp.address_id               AS address_id,
-         comp.address_name             AS address_name,
-         comp.address_address1         AS address_address1,
-         comp.address_address2         AS address_address2,
-         comp.address_city             AS address_city,
-         comp.address_state            AS address_state,
-         comp.address_postal_code      AS address_postal_code,
-         comp.address_latitude         AS address_latitude,
-         comp.address_longitude        AS address_longitude,
-         comp.address_country          AS address_country,
-         comp.address_county           AS address_county,
-         comp.address_phone            AS address_phone,
-         comp.address_fax              AS address_fax,
+         comp.address_id               AS comp_address_id,
+         comp.address_name             AS comp_address_name,
+         comp.address_address1         AS comp_address_address1,
+         comp.address_address2         AS comp_address_address2,
+         comp.address_city             AS comp_address_city,
+         comp.address_state            AS comp_address_state,
+         comp.address_postal_code      AS comp_address_postal_code,
+         comp.address_latitude         AS comp_address_latitude,
+         comp.address_longitude        AS comp_address_longitude,
+         comp.address_country          AS comp_address_country,
+         comp.address_county           AS comp_address_county,
+         comp.address_phone            AS comp_address_phone,
+         comp.address_fax              AS comp_address_fax,
          primaryStore.id               AS primary_store_id,
          primaryStore.number           AS primary_store_number,
          primaryStore.name             AS primary_store_name,
@@ -244,8 +244,7 @@ class InventoryRepository(
          params["location_type"] = pageRequest.locationType!!
       }
 
-      val sql =
-         """
+      val sql = """
       WITH paged AS (
          $selectBase
          WHERE i.primary_location = :location

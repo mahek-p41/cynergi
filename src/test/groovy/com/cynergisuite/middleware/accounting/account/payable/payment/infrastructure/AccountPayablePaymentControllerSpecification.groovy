@@ -195,7 +195,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
             paymentDetails.eachWithIndex { detail, k ->
                with(detail) {
-                  id == apPaymentDetails[k + i * 5].id
+                  id != null
                   with(vendor) {
                      id == apPaymentDetails[k + i * 5].vendor.id
                      number == apPaymentDetails[k + i * 5].vendor.number

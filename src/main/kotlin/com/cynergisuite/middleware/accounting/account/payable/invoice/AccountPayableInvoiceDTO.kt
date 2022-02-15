@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvo
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -19,6 +20,7 @@ import javax.validation.constraints.Digits
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "AccountPayableInvoice", title = "Account Payable Invoice", description = "Account payable invoice")
 data class AccountPayableInvoiceDTO(

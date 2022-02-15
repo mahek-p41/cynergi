@@ -28,7 +28,6 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class CompanyControllerSpecification extends ControllerSpecificationBase {
-   @Client("/api/company") @Inject HttpClient httpClient // since the company controller only has a single endpoint of fetchAll and it doesn't require authentication no need to use the ControllerSpecificationBase class.  Also there is nothing to cleanup
    private JsonOutput jsonOutput = new JsonOutput()
    private JsonSlurper jsonSlurper = new JsonSlurper()
    @Inject AddressTestDataLoaderService addressTestDataLoaderService

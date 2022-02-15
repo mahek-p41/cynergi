@@ -5,9 +5,9 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.shipping.shipvia.infrastructure.ShipViaRepository
-import java.util.UUID
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.UUID
 
 @Singleton
 class ShipViaService @Inject constructor(

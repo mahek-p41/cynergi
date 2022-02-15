@@ -7,11 +7,11 @@ import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.shipping.shipvia.infrastructure.ShipViaRepository
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import javax.validation.Valid
 
 @Singleton

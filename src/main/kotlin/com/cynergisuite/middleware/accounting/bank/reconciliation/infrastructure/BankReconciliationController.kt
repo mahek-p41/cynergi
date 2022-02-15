@@ -27,10 +27,10 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
-import jakarta.inject.Inject
 import javax.validation.Valid
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
@@ -52,7 +52,7 @@ class BankReconciliationController @Inject constructor(
       ]
    )
    fun fetchOne(
-      @Valid @QueryValue("id")
+      @QueryValue("id")
       id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>

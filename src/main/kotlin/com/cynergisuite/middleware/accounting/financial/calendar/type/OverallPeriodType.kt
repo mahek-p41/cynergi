@@ -1,7 +1,9 @@
 package com.cynergisuite.middleware.accounting.financial.calendar.type
 
 import com.cynergisuite.domain.TypeDomainEntity
+import io.micronaut.core.annotation.Introspected
 
+@Introspected
 data class OverallPeriodType(
    val id: Int,
    val value: String,

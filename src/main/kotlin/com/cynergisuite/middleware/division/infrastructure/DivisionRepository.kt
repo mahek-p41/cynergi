@@ -14,15 +14,14 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.division.DivisionEntity
 import com.cynergisuite.middleware.employee.infrastructure.SimpleEmployeeRepository
 import io.micronaut.transaction.annotation.ReadOnly
-import org.apache.commons.lang3.StringUtils.EMPTY
-import java.util.UUID
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
+import java.util.UUID
 import javax.transaction.Transactional
 
 @Singleton

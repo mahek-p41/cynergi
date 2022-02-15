@@ -5,14 +5,14 @@ import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardType
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.Locale
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @Singleton
 class FreightOnboardTypeRepository @Inject constructor(

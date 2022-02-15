@@ -8,13 +8,13 @@ import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.*
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton

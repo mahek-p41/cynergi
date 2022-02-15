@@ -17,7 +17,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.AuditExceptionTestDataLoaderService
-import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
+import com.cynergisuite.middleware.audit.exception.AuditExceptionDTO
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
@@ -1235,7 +1235,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final employee = employeeFactoryService.single(store, department)
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       final storeThreeStoreroom = auditScanAreaFactoryService.storeroom(store, company)
-      final List<AuditExceptionValueObject> threeAuditExceptions = auditExceptionFactoryService.stream(3, audit, storeThreeStoreroom, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
+      final List<AuditExceptionDTO> threeAuditExceptions = auditExceptionFactoryService.stream(3, audit, storeThreeStoreroom, employee, false).map { new AuditExceptionDTO(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
 
       when:
       def result = put("$path/approve", new AuditUpdateDTO(['id': audit.id, 'status': new AuditStatusValueObject([value: 'APPROVED'])]))
@@ -1307,7 +1307,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(1, company)
       final auditOne = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       final storeStoreroom = auditScanAreaFactoryService.storeroom(store, company)
-      final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditOne = auditExceptionFactoryService.stream(3, auditOne, storeStoreroom, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
+      final List<AuditExceptionDTO> threeAuditDiscrepanciesAuditOne = auditExceptionFactoryService.stream(3, auditOne, storeStoreroom, employee, false).map { new AuditExceptionDTO(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
 
       when:
       put("$path/approve", new AuditUpdateDTO([id: auditOne.id, status: new AuditStatusValueObject([value: "APPROVED"])]))

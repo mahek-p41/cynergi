@@ -7,9 +7,9 @@ import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.localization.AccessDenied
 import io.micronaut.core.type.MutableArgumentValue
 import io.micronaut.http.annotation.QueryValue
-import java.util.UUID
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.UUID
 
 @Singleton
 class CompanyAccessControlProvider @Inject constructor(

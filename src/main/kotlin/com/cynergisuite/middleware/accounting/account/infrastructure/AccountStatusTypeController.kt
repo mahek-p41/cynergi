@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.accounting.account.infrastructure
 
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.account.AccountStatusTypeService
-import com.cynergisuite.middleware.accounting.account.AccountStatusTypeValueObject
+import com.cynergisuite.middleware.accounting.account.AccountStatusTypeValueDTO
 import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
@@ -15,9 +15,9 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import jakarta.inject.Inject
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
 @Controller("/api/accounting/account/status")
@@ -31,16 +31,16 @@ class AccountStatusTypeController @Inject constructor(
    @Operation(tags = ["AccountStatusTypeEndpoints"], summary = "Fetch a list of account statuses", description = "Fetch a listing of account statuses", operationId = "accountStatusType-fetchAll")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AccountStatusTypeValueObject::class))])
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AccountStatusTypeValueDTO::class))])
       ]
    )
    fun fetchAll(
       httpRequest: HttpRequest<*>
-   ): List<AccountStatusTypeValueObject> {
+   ): List<AccountStatusTypeValueDTO> {
       val locale = httpRequest.findLocaleWithDefault()
 
       val statuses = accountStatusTypeService.fetchAll().map {
-         AccountStatusTypeValueObject(it, it.localizeMyDescription(locale, localizationService))
+         AccountStatusTypeValueDTO(it, it.localizeMyDescription(locale, localizationService))
       }
 
       logger.debug("Listing of account statuses resulted in {}", statuses)

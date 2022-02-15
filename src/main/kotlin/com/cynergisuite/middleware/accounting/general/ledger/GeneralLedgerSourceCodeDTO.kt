@@ -1,11 +1,13 @@
 package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.Identifiable
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.UUID
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
+@Introspected
 @Schema(name = "GeneralLedgerSourceCode", title = "Defines a general ledger source code", description = "Defines a general ledger source code")
 data class GeneralLedgerSourceCodeDTO(
 

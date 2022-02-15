@@ -4,9 +4,9 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository
 import com.cynergisuite.middleware.company.CompanyEntity
-import java.util.UUID
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.UUID
 
 @Singleton
 class GeneralLedgerSummaryService @Inject constructor(

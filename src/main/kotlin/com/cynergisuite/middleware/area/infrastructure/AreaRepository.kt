@@ -16,13 +16,12 @@ import io.micronaut.data.annotation.repeatable.JoinSpecifications
 import io.micronaut.data.jdbc.annotation.JdbcRepository
 import io.micronaut.data.repository.CrudRepository
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @JdbcRepository
@@ -182,7 +181,7 @@ abstract class AreaRepository @Inject constructor(
                menu
             }
 
-         //area.copy(menus = menus as MutableList<MenuType>)
+         // area.copy(menus = menus as MutableList<MenuType>)
          area.menus.clear()
          area.menus.addAll(menus)
          area

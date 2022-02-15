@@ -1,8 +1,9 @@
 package com.cynergisuite.domain
 
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.UUID
 
 @Schema(
    name = "PaymentReportFilterRequest",
@@ -10,6 +11,7 @@ import java.util.*
    description = "Defines the parameters available to for a sortable request. Example ?banks=1,3&status=P",
    allOf = [SortableRequestBase::class]
 )
+@Introspected
 class PaymentReportFilterRequest(
 
    @field:Schema(name = "paymentNumbers", description = "The collection of Payment Numbers to filter results with")

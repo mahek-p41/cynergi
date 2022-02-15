@@ -14,11 +14,10 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.employee.infrastructure.SimpleEmployeeRepository
 import com.cynergisuite.middleware.region.RegionEntity
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
-import org.apache.commons.lang3.StringUtils
 import com.cynergisuite.middleware.store.Store
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger

@@ -13,11 +13,11 @@ import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.purchase.order.infrastructure.PurchaseOrderRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @Singleton
 class AccountPayableInvoiceValidator @Inject constructor(

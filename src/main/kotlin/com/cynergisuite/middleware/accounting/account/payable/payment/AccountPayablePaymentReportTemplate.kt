@@ -25,7 +25,7 @@ data class AccountPayablePaymentReportTemplate(
          payments = entities.asSequence().map { paymentEntity ->
             AccountPayablePaymentReportDTO(paymentEntity)
          }.toList(),
-         paidTotal = entities.filter { it.status.value == "P" }.sumByBigDecimal{ it.amount },
+         paidTotal = entities.filter { it.status.value == "P" }.sumByBigDecimal { it.amount },
          voidTotal = entities.filter { it.status.value == "V" }.sumByBigDecimal { it.amount }
       )
 }

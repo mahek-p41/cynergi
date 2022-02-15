@@ -36,7 +36,8 @@ class AuditActionRepository @Inject constructor(
       val result = Multimaps.mutable.list.empty<UUID, AuditActionEntity>()
 
       if (parents.isNotEmpty()) {
-         jdbc.query("""
+         jdbc.query(
+            """
          SELECT
             auditActions.id                                     AS auditAction_id,
             auditActions.time_updated                           AS auditAction_time_created,

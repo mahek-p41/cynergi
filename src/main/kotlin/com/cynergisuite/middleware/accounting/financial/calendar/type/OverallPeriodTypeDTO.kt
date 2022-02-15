@@ -2,10 +2,12 @@ package com.cynergisuite.middleware.accounting.financial.calendar.type
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "OverallPeriodType", title = "Overall period type", description = "Overall period type")
 data class OverallPeriodTypeDTO(

@@ -7,9 +7,9 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.rebate.infrastructure.RebateRepository
-import java.util.UUID
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.UUID
 
 @Singleton
 class RebateService @Inject constructor(

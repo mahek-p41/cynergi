@@ -11,8 +11,8 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateDTO
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.AuditExceptionTestDataLoader
 import com.cynergisuite.middleware.audit.exception.AuditExceptionTestDataLoaderService
-import com.cynergisuite.middleware.audit.exception.AuditExceptionUpdateValueObject
-import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
+import com.cynergisuite.middleware.audit.exception.AuditExceptionUpdateDTO
+import com.cynergisuite.middleware.audit.exception.AuditExceptionDTO
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteFactoryService
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
@@ -135,7 +135,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
       final warehouse = auditScanAreaFactoryService.warehouse(store, company)
-      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, warehouse, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
+      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, warehouse, employee, false).map { new AuditExceptionDTO(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
       final firstTenDiscrepancies = twentyAuditDiscrepancies[0..9]
 
       when:
@@ -151,7 +151,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       pageOneResult.elements != null
       pageOneResult.elements.size() == 10
       pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
-         .collect { new AuditExceptionValueObject(it) } == firstTenDiscrepancies
+         .collect { new AuditExceptionDTO(it) } == firstTenDiscrepancies
    }
 
    void "fetch all exceptions for a single audit" () {
@@ -163,7 +163,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
       final warehouse = auditScanAreaFactoryService.warehouse(store, company)
-      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, warehouse, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
+      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, warehouse, employee, false).map { new AuditExceptionDTO(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       final pageFive = new StandardPageRequest(5, 5, "id", "ASC")
@@ -184,7 +184,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
-         .collect { new AuditExceptionValueObject(it) } == firstFiveDiscrepancies
+         .collect { new AuditExceptionDTO(it) } == firstFiveDiscrepancies
 
       when:
       def pageTwoResult = get("/audit/${audit.id}/exception$pageTwo")
@@ -195,7 +195,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       pageTwoResult.elements != null
       pageTwoResult.elements.size() == 5
       pageTwoResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
-         .collect { new AuditExceptionValueObject(it) } == secondFiveDiscrepancies
+         .collect { new AuditExceptionDTO(it) } == secondFiveDiscrepancies
 
       when:
       get("/audit/${audit.id}/exception$pageFive")
@@ -228,7 +228,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final warehouse = auditScanAreaFactoryService.warehouse(store, company)
       final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, warehouse, employee, false)
          .peek{ it.notes.addAll(auditExceptionNoteFactoryService.stream(2, it, employee).toList()) } // create some notes and save them
-         .map { new AuditExceptionValueObject(it, new AuditScanAreaDTO(it.scanArea)) }
+         .map { new AuditExceptionDTO(it, new AuditScanAreaDTO(it.scanArea)) }
          .toList()
       final firstFiveDiscrepancies = twentyAuditDiscrepancies[0..4]
 
@@ -241,7 +241,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       final pageOneAuditExceptions = pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
-         .collect { new AuditExceptionValueObject(it) }
+         .collect { new AuditExceptionDTO(it) }
       pageOneAuditExceptions[0].notes.size() == 2
       pageOneAuditExceptions[0].notes[0].id == firstFiveDiscrepancies[0].notes[0].id
       pageOneAuditExceptions[0].notes[0].note == firstFiveDiscrepancies[0].notes[0].note
@@ -312,7 +312,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final auditOne = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       final auditTwo = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final warehouse = auditScanAreaFactoryService.warehouse(store, company)
-      final List<AuditExceptionValueObject> threeAuditDiscrepanciesAuditTwo = auditExceptionFactoryService.stream(3, auditTwo, warehouse, employee, false).map { new AuditExceptionValueObject(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
+      final List<AuditExceptionDTO> threeAuditDiscrepanciesAuditTwo = auditExceptionFactoryService.stream(3, auditTwo, warehouse, employee, false).map { new AuditExceptionDTO(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
 
       when:
       def pageOneResult = get("/audit/${auditTwo.id}/exception")
@@ -323,7 +323,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       auditTwo.number == 2
       pageOneResult.elements.size() == 3
       pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableDTO(it.audit.id)}
-         .collect { new AuditExceptionValueObject(it) }.toSorted {o1, o2 -> o2.id <=> o2.id } == threeAuditDiscrepanciesAuditTwo
+         .collect { new AuditExceptionDTO(it) }.toSorted {o1, o2 -> o2.id <=> o2.id } == threeAuditDiscrepanciesAuditTwo
    }
 
    void "fetch one audit exception by id not found" () {
@@ -657,7 +657,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final noteText = "Test Note"
 
       when:
-      def result = put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: savedAuditException.id, note: new AuditExceptionNoteValueObject([note: noteText])]))
+      def result = put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateDTO([id: savedAuditException.id, note: new AuditExceptionNoteValueObject([note: noteText])]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -692,7 +692,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final noteText = "Test Note"
 
       when:
-      put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: savedAuditException.id, note: new AuditExceptionNoteValueObject([note: noteText])]))
+      put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateDTO([id: savedAuditException.id, note: new AuditExceptionNoteValueObject([note: noteText])]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -713,7 +713,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final auditException = auditExceptionFactoryService.single(audit, warehouse, employee, false)
 
       when:
-      def result = put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, approved: true]))
+      def result = put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateDTO([id: auditException.id, approved: true]))
 
       then:
       notThrown(HttpClientResponseException)
@@ -732,7 +732,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final auditException = auditExceptionFactoryService.single(audit, warehouse, employee, false)
 
       when:
-      put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, approved: null, note: null]))
+      put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateDTO([id: auditException.id, approved: null, note: null]))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -753,7 +753,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final auditException = auditExceptionFactoryService.single(audit, warehouse, employee, false)
 
       when:
-      put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateValueObject([id: auditException.id, note: new AuditExceptionNoteValueObject([note: "Should fail to be added note"])]))
+      put("/audit/${audit.myId()}/exception", new AuditExceptionUpdateDTO([id: auditException.id, note: new AuditExceptionNoteValueObject([note: "Should fail to be added note"])]))
 
       then:
       def e = thrown(HttpClientResponseException)

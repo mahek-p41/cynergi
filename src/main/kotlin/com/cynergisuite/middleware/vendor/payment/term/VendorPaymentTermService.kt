@@ -4,9 +4,9 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
-import java.util.UUID
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.UUID
 
 @Singleton
 class VendorPaymentTermService @Inject constructor(

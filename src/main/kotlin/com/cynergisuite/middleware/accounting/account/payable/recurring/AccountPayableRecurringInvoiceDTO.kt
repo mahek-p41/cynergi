@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.accounting.account.payable.AccountPayableRecu
 import com.cynergisuite.middleware.schedule.ScheduleDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -13,6 +14,7 @@ import java.util.UUID
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "AccountPayableRecurringInvoice", title = "Account Payable Recurring Invoice", description = "Account payable recurring invoice entity")
 data class AccountPayableRecurringInvoiceDTO(

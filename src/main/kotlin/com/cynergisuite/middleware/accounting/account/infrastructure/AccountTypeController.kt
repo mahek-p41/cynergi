@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.accounting.account.infrastructure
 
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.accounting.account.AccountTypeDTO
 import com.cynergisuite.middleware.accounting.account.AccountTypeService
-import com.cynergisuite.middleware.accounting.account.AccountTypeValueObject
 import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
@@ -15,9 +15,9 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import jakarta.inject.Inject
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
 @Controller("/api/accounting/account/type")
@@ -31,16 +31,16 @@ class AccountTypeController @Inject constructor(
    @Operation(tags = ["AccountTypeEndpoints"], summary = "Fetch a list of account types", description = "Fetch a listing of account types", operationId = "accountType-fetchAll")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AccountTypeValueObject::class))])
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AccountTypeDTO::class))])
       ]
    )
    fun fetchAll(
       httpRequest: HttpRequest<*>
-   ): List<AccountTypeValueObject> {
+   ): List<AccountTypeDTO> {
       val locale = httpRequest.findLocaleWithDefault()
 
       val statuses = accountTypeService.fetchAll().map {
-         AccountTypeValueObject(it, it.localizeMyDescription(locale, localizationService))
+         AccountTypeDTO(it, it.localizeMyDescription(locale, localizationService))
       }
 
       logger.debug("Listing of Account Types resulted in {}", statuses)

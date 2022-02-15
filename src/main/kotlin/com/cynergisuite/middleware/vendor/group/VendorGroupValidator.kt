@@ -8,11 +8,11 @@ import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @Singleton
 class VendorGroupValidator @Inject constructor(

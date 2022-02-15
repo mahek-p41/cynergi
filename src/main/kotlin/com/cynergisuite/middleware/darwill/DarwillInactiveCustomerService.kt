@@ -34,7 +34,7 @@ class DarwillInactiveCustomerService @Inject constructor(
 
    @ReadOnly
    override fun process(company: CompanyEntity, sftpClientCredentials: SftpClientCredentials, time: DayOfWeek, fileDate: String): DarwillJobResult {
-      val pushedFileName = "${company.clientCode}-inactive-customers-${fileDate}.csv"
+      val pushedFileName = "${company.clientCode}-inactive-customers-$fileDate.csv"
       val inactiveCustomerTempPath = Files.createTempFile("inactiveCustomer", ".csv")
 
       Files.newBufferedWriter(inactiveCustomerTempPath).use { writer ->

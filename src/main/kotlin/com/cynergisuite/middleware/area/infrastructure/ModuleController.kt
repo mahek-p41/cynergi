@@ -19,9 +19,9 @@ import io.micronaut.security.rules.SecurityRule
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import jakarta.inject.Inject
 import javax.validation.Valid
 import javax.validation.ValidationException
 

@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderRequisitionI
 import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderStatusTypeValueObject
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -18,6 +19,7 @@ import javax.validation.constraints.Digits
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "PurchaseOrderDetail", title = "An entity containing purchase order detail information", description = "An entity containing purchase order detail information.")
 data class PurchaseOrderDetailDTO(

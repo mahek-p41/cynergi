@@ -12,13 +12,13 @@ import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.localization.NotUpdatable
 import com.cynergisuite.middleware.localization.VendorPaymentTermDuePercentDoesNotAddUp
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.math.BigDecimal.ONE
 import java.util.UUID
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @Singleton
 class VendorPaymentTermValidator @Inject constructor(

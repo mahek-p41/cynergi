@@ -21,14 +21,14 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
@@ -230,7 +230,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
          FROM account_payable_invoice apInvoice
             JOIN company comp                                           ON apInvoice.company_id = comp.id AND comp.deleted = FALSE
             JOIN vend                                                   ON apInvoice.vendor_id = vend.v_id
-            JOIN system_employees_fimvw                                 ON apInvoice.employee_number_id_sfk = employee.emp_number AND employee.comp_id = comp.id
+            JOIN system_employees_fimvw employee                        ON apInvoice.employee_number_id_sfk = employee.emp_number AND employee.comp_id = comp.id
             JOIN account_payable_invoice_selected_type_domain selected  ON apInvoice.selected_id = selected.id
             JOIN account_payable_invoice_type_domain type               ON apInvoice.type_id = type.id
             JOIN account_payable_invoice_status_type_domain status      ON apInvoice.status_id = status.id

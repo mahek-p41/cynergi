@@ -2,9 +2,9 @@ package com.cynergisuite.middleware.accounting.account.payable.payment
 
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentDetailRepository
 import com.cynergisuite.middleware.company.CompanyEntity
-import java.util.*
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.*
 
 @Singleton
 class AccountPayablePaymentDetailService @Inject constructor(

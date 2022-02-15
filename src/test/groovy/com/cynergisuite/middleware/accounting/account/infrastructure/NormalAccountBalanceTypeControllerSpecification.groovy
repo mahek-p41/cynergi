@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.accounting.account.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.NormalAccountBalanceFactoryService
-import com.cynergisuite.middleware.accounting.account.NormalAccountBalanceTypeValueObject
+import com.cynergisuite.middleware.accounting.account.NormalAccountBalanceTypeDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
@@ -15,13 +15,13 @@ class NormalAccountBalanceTypeControllerSpecification extends ControllerSpecific
 
    void "fetch all normal account balances" () {
       given:
-      def predefinedNormalAccountBalance = normalAccountBalanceFactoryService.predefined().collect { new NormalAccountBalanceTypeValueObject(it) }
+      def predefinedNormalAccountBalance = normalAccountBalanceFactoryService.predefined().collect { new NormalAccountBalanceTypeDTO(it) }
 
       when:
       def response = get("/accounting/account/balance-type")
 
       then:
       notThrown(HttpClientResponseException)
-      response.collect { new NormalAccountBalanceTypeValueObject(it) } == predefinedNormalAccountBalance
+      response.collect { new NormalAccountBalanceTypeDTO(it) } == predefinedNormalAccountBalance
    }
 }

@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import java.util.UUID
@@ -12,6 +13,7 @@ import javax.validation.constraints.Max
 import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "Financial calendar", title = "An entity used to build a financial calendar", description = "An entity used to build a financial calendar.")
 data class FinancialCalendarDTO(

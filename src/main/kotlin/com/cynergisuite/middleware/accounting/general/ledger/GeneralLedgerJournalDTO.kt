@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.general.ledger
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -10,6 +11,7 @@ import java.util.UUID
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
+@Introspected
 @Schema(name = "GeneralLedgerJournal", title = "Defines a general ledger journal", description = "Defines a general ledger journal")
 data class GeneralLedgerJournalDTO(
 

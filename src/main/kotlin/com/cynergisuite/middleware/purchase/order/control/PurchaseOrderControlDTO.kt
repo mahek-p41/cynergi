@@ -9,11 +9,13 @@ import com.cynergisuite.middleware.purchase.order.type.UpdatePurchaseOrderCostTy
 import com.cynergisuite.middleware.vendor.VendorDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "PurchaseOrderControl", title = "Purchase order control", description = "Purchase order control entity")
 data class PurchaseOrderControlDTO(

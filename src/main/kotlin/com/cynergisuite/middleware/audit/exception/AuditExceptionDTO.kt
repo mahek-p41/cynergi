@@ -24,7 +24,7 @@ import javax.validation.constraints.Size
    description = "A single item associated with an Exception encountered during an Audit.  It describes the problem as best can be determined by the data at hand.",
    requiredProperties = ["barcode", "exceptionCode", "audit", "approved"]
 )
-data class AuditExceptionValueObject(
+data class AuditExceptionDTO(
 
    @field:Schema(name = "id", description = "System generated ID", example = "1")
    var id: UUID? = null,

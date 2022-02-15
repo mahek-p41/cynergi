@@ -10,11 +10,11 @@ import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.SelectPercentOrPerUnit
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.rebate.infrastructure.RebateTypeRepository
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @Singleton
 class RebateValidator @Inject constructor(

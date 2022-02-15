@@ -1,7 +1,9 @@
 package com.cynergisuite.middleware.accounting.general.ledger.recurring
 
 import com.cynergisuite.domain.TypeDomainEntity
+import io.micronaut.core.annotation.Introspected
 
+@Introspected
 data class GeneralLedgerRecurringType(
    val id: Int,
    val value: String,

@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.accounting.account.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountTypeFactoryService
-import com.cynergisuite.middleware.accounting.account.AccountTypeValueObject
+import com.cynergisuite.middleware.accounting.account.AccountTypeDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
@@ -15,13 +15,13 @@ class AccountTypeControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all account types" () {
       given:
-      def predefinedAccountStatus = accountTypeFactoryService.predefined().collect { new AccountTypeValueObject(it) }
+      def predefinedAccountStatus = accountTypeFactoryService.predefined().collect { new AccountTypeDTO(it) }
 
       when:
       def response = get("/accounting/account/type")
 
       then:
       notThrown(HttpClientResponseException)
-      response.collect { new AccountTypeValueObject(it) } == predefinedAccountStatus
+      response.collect { new AccountTypeDTO(it) } == predefinedAccountStatus
    }
 }

@@ -1,12 +1,14 @@
 package com.cynergisuite.middleware.department
 
 import com.cynergisuite.middleware.company.CompanyEntity
+import io.micronaut.core.annotation.Introspected
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
 import io.micronaut.data.annotation.Relation
 import io.micronaut.data.annotation.Relation.Kind.ONE_TO_ONE
 
+@Introspected
 @MappedEntity("fastinfo_prod_import.department_vw")
 data class DepartmentEntity(
 

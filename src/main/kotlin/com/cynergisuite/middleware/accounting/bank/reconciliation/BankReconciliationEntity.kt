@@ -3,10 +3,12 @@ package com.cynergisuite.middleware.accounting.bank.reconciliation
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.bank.BankEntity
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationType
+import io.micronaut.core.annotation.Introspected
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
 
+@Introspected
 data class BankReconciliationEntity(
    val id: UUID? = null,
    var bank: BankEntity,

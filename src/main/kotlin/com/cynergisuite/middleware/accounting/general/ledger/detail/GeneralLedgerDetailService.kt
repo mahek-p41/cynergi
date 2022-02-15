@@ -2,9 +2,9 @@ package com.cynergisuite.middleware.accounting.general.ledger.detail
 
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.company.CompanyEntity
-import java.util.UUID
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.UUID
 
 @Singleton
 class GeneralLedgerDetailService @Inject constructor(

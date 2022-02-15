@@ -218,8 +218,8 @@ class ErrorHandlerController @Inject constructor(
       val errorPayload = localizationService.localizeError(localizationCode = DataConstraintIntegrityViolation(), locale = locale)
 
       return if (message.startsWith("org.postgresql.util.PSQLException: ERROR: update or delete") ||
-            message.equals(Companion.SOFT_DELETE_ERROR) ||
-            message.contains(DUPLICATE_ERROR_BEGINNING)
+         message.equals(Companion.SOFT_DELETE_ERROR) ||
+         message.contains(DUPLICATE_ERROR_BEGINNING)
       ) {
          return HttpResponse.status<ErrorDTO>(CONFLICT).body(errorPayload)
       } else {

@@ -47,9 +47,9 @@ class AccountTestDataLoader {
             null,
             lorem.sentence(5, 3),
             accountNumber.getAndIncrement(),
-            new AccountTypeValueObject(AccountTypeFactory.random()),
-            new NormalAccountBalanceTypeValueObject(NormalAccountBalanceFactory.random()),
-            new AccountStatusTypeValueObject(AccountStatusFactory.random()),
+            new AccountTypeDTO(AccountTypeFactory.random()),
+            new NormalAccountBalanceTypeDTO(NormalAccountBalanceFactory.random()),
+            new AccountStatusTypeValueDTO(AccountStatusFactory.random()),
             random.nextInt(1, 20),
             random.nextBoolean()
          )

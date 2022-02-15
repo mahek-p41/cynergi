@@ -3,12 +3,17 @@ package com.cynergisuite.middleware.company.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.softDelete
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
-import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.Store
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
@@ -298,7 +303,7 @@ class CompanyRepository @Inject constructor(
    fun delete(id: UUID) {
       logger.debug("Deleting Company with id={}", id)
 
-      val rowsAffected =jdbc.softDelete(
+      val rowsAffected = jdbc.softDelete(
          """
             UPDATE company
             SET deleted = TRUE

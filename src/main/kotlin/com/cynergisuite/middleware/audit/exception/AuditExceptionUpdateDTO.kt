@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull
    title = "An update to an existing AuditException",
    description = "Associate an additional note to an AuditException.  Allows for communication about why an AuditException might exist."
 )
-data class AuditExceptionUpdateValueObject(
+data class AuditExceptionUpdateDTO(
 
    @field:NotNull
    @field:Schema(name = "id", description = "System generated ID of AuditException that is being updated", example = "1")

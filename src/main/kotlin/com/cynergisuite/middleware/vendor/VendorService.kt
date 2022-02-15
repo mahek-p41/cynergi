@@ -5,9 +5,9 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
-import java.util.UUID
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.UUID
 
 @Singleton
 class VendorService @Inject constructor(

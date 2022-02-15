@@ -2,9 +2,11 @@ package com.cynergisuite.middleware.accounting.financial.calendar
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodType
+import io.micronaut.core.annotation.Introspected
 import java.time.LocalDate
 import java.util.UUID
 
+@Introspected
 data class FinancialCalendarEntity(
    val id: UUID? = null,
    val overallPeriod: OverallPeriodType,

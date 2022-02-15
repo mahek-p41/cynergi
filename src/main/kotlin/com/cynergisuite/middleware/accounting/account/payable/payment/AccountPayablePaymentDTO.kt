@@ -5,12 +5,14 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.vendor.VendorDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.*
 import javax.validation.constraints.NotNull
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "AccountPayablePayment", title = "Account Payable Payment", description = "Account Payable Payment")
 data class AccountPayablePaymentDTO(

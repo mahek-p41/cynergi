@@ -2,32 +2,34 @@ package com.cynergisuite.middleware.accounting.account
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
+@Introspected
 @JsonInclude(NON_NULL)
-@Schema(name = "AccountType", title = "Account type", description = "Account type")
-data class AccountTypeValueObject(
+@Schema(name = "AccountStatusType", title = "Account status type", description = "Currencies that the banks support")
+data class AccountStatusTypeValueDTO(
 
    @field:NotNull
    @field:Size(min = 1, max = 10)
-   @field:Schema(name = "value", description = "Currency code")
+   @field:Schema(description = "Account status")
    var value: String? = null,
 
    @field:Size(min = 1, max = 100)
-   @field:Schema(name = "description", description = "A localized description for currency")
+   @field:Schema(description = "A localized description for currency")
    var description: String? = null
 
 ) {
 
-   constructor(currencyType: AccountType) :
+   constructor(currencyType: AccountStatusType) :
       this(
          value = currencyType.value,
          description = currencyType.description
       )
 
-   constructor(currencyType: AccountType, localizedDescription: String) :
+   constructor(currencyType: AccountStatusType, localizedDescription: String) :
       this(
          value = currencyType.value,
          description = localizedDescription

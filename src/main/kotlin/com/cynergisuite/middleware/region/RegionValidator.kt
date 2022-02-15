@@ -11,11 +11,11 @@ import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.region.infrastructure.RegionRepository
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @Singleton
 class RegionValidator @Inject constructor(

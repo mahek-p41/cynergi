@@ -3,9 +3,9 @@ package com.cynergisuite.middleware.area
 import com.cynergisuite.middleware.area.infrastructure.AreaRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.localization.LocalizationService
-import java.util.Locale
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.Locale
 
 @Singleton
 class AreaService @Inject constructor(

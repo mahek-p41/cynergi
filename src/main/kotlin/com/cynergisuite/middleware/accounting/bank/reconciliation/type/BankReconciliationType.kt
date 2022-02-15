@@ -1,7 +1,9 @@
 package com.cynergisuite.middleware.accounting.bank.reconciliation.type
 
 import com.cynergisuite.domain.TypeDomainEntity
+import io.micronaut.core.annotation.Introspected
 
+@Introspected
 data class BankReconciliationType(
    val id: Int,
    val value: String,

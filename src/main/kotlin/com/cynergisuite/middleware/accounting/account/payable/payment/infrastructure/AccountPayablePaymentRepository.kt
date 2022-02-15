@@ -15,6 +15,8 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
@@ -22,8 +24,6 @@ import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.time.OffsetDateTime
 import java.util.*
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
@@ -598,8 +598,8 @@ class AccountPayablePaymentRepository @Inject constructor(
       }
 
       val sorting = when (filterRequest.snakeSortBy()) {
-         "N" ->  "apPayment_vendor_name ${filterRequest.sortDirection()}"
-         "P" ->  """
+         "N" -> "apPayment_vendor_name ${filterRequest.sortDirection()}"
+         "P" -> """
             CASE
                WHEN apPayment.payment_number ~ '^[0-9]+${'$'}' THEN 1
                WHEN apPayment.payment_number ~ '^[0-9]+[a-z]+${'$'}' THEN 2
@@ -611,7 +611,7 @@ class AccountPayablePaymentRepository @Inject constructor(
                WHEN apPayment.payment_number ~ '^[0-9]+[a-z]+${'$'}' THEN regexp_replace(apPayment.payment_number, '[^0-9]+', '', 'g')::integer
                ELSE 0
             END ${filterRequest.sortDirection()}"""
-         "V" ->  "apPayment_vendor_number ${filterRequest.sortDirection()}"
+         "V" -> "apPayment_vendor_number ${filterRequest.sortDirection()}"
          else -> "apPayment.time_created ${filterRequest.sortDirection()}"
       }
 
