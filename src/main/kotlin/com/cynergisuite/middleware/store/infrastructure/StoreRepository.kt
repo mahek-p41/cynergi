@@ -59,7 +59,7 @@ class StoreRepository @Inject constructor(
             division.number               AS div_number,
             division.name                 AS div_name,
             division.description          AS div_description
-         FROM fastinfo_prod_import.store_vw store
+         FROM system_stores_fimvw store
               JOIN company comp ON comp.dataset_code = store.dataset
               LEFT OUTER JOIN region_to_store r2s ON r2s.store_number = store.number
               LEFT OUTER JOIN region ON r2s.region_id = region.id
@@ -178,7 +178,7 @@ class StoreRepository @Inject constructor(
       val exists = jdbc.queryForObject(
          """
          SELECT count(store.id) > 0
-         FROM fastinfo_prod_import.store_vw store
+         FROM system_stores_fimvw store
             JOIN company comp ON comp.dataset_code = store.dataset
             LEFT JOIN region_to_store r2s ON r2s.store_number = store.number
             LEFT JOIN region ON  r2s.region_id = region.id
@@ -204,7 +204,7 @@ class StoreRepository @Inject constructor(
       val exists = jdbc.queryForObject(
          """
          SELECT count(store.id) > 0
-         FROM fastinfo_prod_import.store_vw store
+         FROM system_stores_fimvw store
             JOIN company comp ON comp.dataset_code = store.dataset
             LEFT JOIN region_to_store r2s ON r2s.store_number = store.number
             LEFT JOIN region ON  r2s.region_id = region.id

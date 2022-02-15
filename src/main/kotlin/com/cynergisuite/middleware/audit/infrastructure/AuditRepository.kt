@@ -56,9 +56,6 @@ class AuditRepository @Inject constructor(
 
    private fun selectByIdBaseQuery(): String =
       """
-      WITH employees AS (
-         ${employeeRepository.employeeBaseQuery()}
-      )
       SELECT
          a.id                                                          AS a_id,
          a.time_created                                                AS a_time_created,
@@ -141,15 +138,13 @@ class AuditRepository @Inject constructor(
            JOIN company comp ON a.company_id = comp.id
            JOIN audit_action auditAction ON a.id = auditAction.audit_id
            JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
-           JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
-           JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
+           JOIN system_employees_vw auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
+           JOIN system_stores_fimvw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
    """
 
    private fun selectAllBaseQuery(whereClause: String): String =
       """
-         WITH employees AS (
-            ${employeeRepository.employeeBaseQuery()}
-         ), audits AS (
+         WITH audits AS (
             WITH status AS (
                SELECT
                   csastd.value AS current_status,
@@ -274,10 +269,10 @@ class AuditRepository @Inject constructor(
               JOIN division div ON comp.id = div.company_id
               JOIN region reg ON div.id = reg.division_id
               JOIN region_to_store regionStores ON reg.id = regionStores.region_id
-              JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
+              JOIN system_stores_fimvw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
               JOIN audit_action auditAction ON a.id = auditAction.audit_id
               JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
-              JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
+              JOIN system_employees_vw auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
          ORDER BY a.id
       """
 
@@ -463,7 +458,7 @@ class AuditRepository @Inject constructor(
               JOIN division div ON comp.id = div.company_id
               JOIN region reg ON div.id = reg.division_id
               JOIN region_to_store rts ON reg.id = rts.region_id
-              JOIN fastinfo_prod_import.store_vw auditStore
+              JOIN system_stores_fimvw auditStore
                    ON rts.store_number = auditStore.number
                       AND comp.dataset_code = auditStore.dataset
                       AND a.store_number = auditStore.number
@@ -570,7 +565,7 @@ class AuditRepository @Inject constructor(
             JOIN division div ON comp.id = div.company_id
             JOIN region reg ON div.id = reg.division_id
             JOIN region_to_store regionStores ON reg.id = regionStores.region_id
-            JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND regionStores.store_number = auditStore.number AND a.store_number = auditStore.number
+            JOIN system_stores_fimvw auditStore ON comp.dataset_code = auditStore.dataset AND regionStores.store_number = auditStore.number AND a.store_number = auditStore.number
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
          $whereClause

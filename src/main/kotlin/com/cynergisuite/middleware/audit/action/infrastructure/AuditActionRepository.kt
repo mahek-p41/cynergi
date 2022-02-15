@@ -36,13 +36,7 @@ class AuditActionRepository @Inject constructor(
       val result = Multimaps.mutable.list.empty<UUID, AuditActionEntity>()
 
       if (parents.isNotEmpty()) {
-         jdbc.query(
-            """
-         WITH employees AS (
-            ${employeeRepository.employeeBaseQuery()}
-         ), company AS (
-            ${companyRepository.companyBaseQuery()}
-         )
+         jdbc.query("""
          SELECT
             auditActions.id                                     AS auditAction_id,
             auditActions.time_updated                           AS auditAction_time_created,
@@ -80,9 +74,9 @@ class AuditActionRepository @Inject constructor(
             audits.id                                           AS audit_id
       FROM audit_action auditActions
            JOIN audit audits ON auditActions.audit_id = audits.id
-           JOIN company comp ON audits.company_id = comp.id
+           JOIN (${companyRepository.companyBaseQuery()}) comp ON audits.company_id = comp.id
            JOIN audit_status_type_domain astd ON auditActions.status_id = astd.id
-           JOIN employees auditActionEmployee ON comp.dataset_code = auditActionEmployee.comp_dataset_code AND auditActions.changed_by = auditActionEmployee.emp_number
+           JOIN system_employees_fimvw auditActionEmployee ON comp.dataset_code = auditActionEmployee.comp_dataset_code AND auditActions.changed_by = auditActionEmployee.emp_number
       WHERE auditActions.audit_id IN (<auditAction_id>)
             """.trimIndent(),
             mapOf("auditAction_id" to parents)

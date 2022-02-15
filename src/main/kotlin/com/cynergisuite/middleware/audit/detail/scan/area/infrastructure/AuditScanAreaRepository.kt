@@ -45,7 +45,7 @@ class AuditScanAreaRepository @Inject constructor(
             store.name AS store_name
          FROM audit_scan_area area
             JOIN company comp ON area.company_id = comp.id
-            JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND area.store_number_sfk = store.number
+            JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND area.store_number_sfk = store.number
       """
    }
 

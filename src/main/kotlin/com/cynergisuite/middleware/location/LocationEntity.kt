@@ -5,7 +5,7 @@ import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
 
-@MappedEntity("fastinfo_prod_import.store_vw")
+@MappedEntity("system_stores_fimvw")
 data class LocationEntity(
 
    @field:Id

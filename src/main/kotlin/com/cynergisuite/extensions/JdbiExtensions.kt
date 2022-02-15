@@ -18,6 +18,8 @@ private val logger: Logger = LoggerFactory.getLogger("com.cynergisuite.extension
  * query to mirror Spring's NamedParameterJdbcOperations as much as possible.
  */
 fun <ENTITY> Jdbi.query(sql: String, params: Map<String, *> = emptyMap<String, Any?>(), rowMapper: RowMapper<ENTITY>): List<ENTITY> {
+   logger.trace("Executing query {}/{}", sql, params)
+
    return this.withHandle<List<ENTITY>, Exception> { handle ->
       val query = handle.createQuery(sql)
 
