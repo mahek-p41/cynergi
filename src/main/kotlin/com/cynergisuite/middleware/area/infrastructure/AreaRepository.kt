@@ -12,6 +12,7 @@ import com.cynergisuite.middleware.area.MenuType
 import com.cynergisuite.middleware.area.ModuleType
 import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.data.annotation.Join
+import io.micronaut.data.annotation.Query
 import io.micronaut.data.annotation.repeatable.JoinSpecifications
 import io.micronaut.data.jdbc.annotation.JdbcRepository
 import io.micronaut.data.repository.CrudRepository
@@ -41,8 +42,59 @@ abstract class AreaRepository @Inject constructor(
    )
    abstract fun findByCompanyAndAreaType(company: CompanyEntity, areaType: AreaTypeEntity): AreaEntity?
 
-   @ReadOnly
-   fun findAll(company: CompanyEntity): List<AreaType> {
+   @Query("""
+      SELECT
+         area.id                     AS id,
+         areaType.id                 AS area_type_id,
+         areaType.value              AS area_type_value,
+         areaType.description        AS area_type_description,
+         areaType.localization_code  AS area_type_localization_code,
+         comp.id                     AS company_id,
+         comp.name                   AS company_name,
+         comp.doing_business_as      AS company_doing_business_as,
+         comp.client_code            AS company_client_code,
+         comp.client_id              AS company_client_id,
+         comp.dataset_code           AS company_dataset_code,
+         comp.federal_id_number      AS company_federal_id_number,
+         comp.deleted                AS company_deleted,
+         comp.address_id             AS company_address_id,
+         compAddress.id              AS comp_address_id,
+         compAddress.name            AS comp_address_name,
+         compAddress.address1        AS comp_address_address1,
+         compAddress.address2        AS comp_address_address2,
+         compAddress.city            AS comp_address_city,
+         compAddress.state           AS comp_address_state,
+         compAddress.postal_code     AS comp_address_postal_code,
+         compAddress.latitude        AS comp_address_latitude,
+         compAddress.longitude       AS comp_address_longitude,
+         compAddress.country         AS comp_address_country,
+         compAddress.county          AS comp_address_county,
+         compAddress.phone           AS comp_address_phone,
+         compAddress.fax             AS comp_address_fax,
+         menuTypes.id                AS area_type_menus_id,
+         menuTypes.value             AS area_type_menus_value,
+         menuTypes.description       AS area_type_menus_description,
+         menuTypes.localization_code AS area_type_menus_localization_code,
+         menuTypes.parent_id         AS area_type_menus_parent_id,
+         menuTypes.order_number      AS area_type_menus_order_number
+      FROM area_type_domain areaType
+           LEFT OUTER JOIN area area ON areaType.id = area.area_type_id
+           LEFT OUTER JOIN menu_type_domain menuTypes ON areaType.id = menuTypes.area_type_id
+           LEFT OUTER JOIN module_type_domain moduleTypes ON menuTypes.id = moduleTypes.menu_type_id
+           LEFT OUTER JOIN company comp ON area.company_id = comp.id
+           LEFT OUTER JOIN address compAddress ON comp.address_id = compAddress.id
+           LEFT OUTER JOIN module module ON moduleTypes.id = module.module_type_id
+      ORDER BY areaType.id, menuTypes.id, menuTypes.parent_id, moduleTypes.id
+   """, nativeQuery = true)
+   @JoinSpecifications(
+      Join("company"),
+      Join("areaType"),
+      Join("areaType.menus"),
+      Join("areaType.menus.modules"),
+   )
+   abstract fun findByCompany(company: CompanyEntity): List<AreaEntity>
+  /* @ReadOnly
+   fun findAll(company: CompanyEntity): List<AreaEntity> {
       logger.trace("Loading all areas for company {}", company)
 
       val areas = mutableListOf<AreaType>()
@@ -88,8 +140,11 @@ abstract class AreaRepository @Inject constructor(
                currentArea!!
             }
 
-            val tempMenu = if (currentMenu?.id != rs.getInt("menu_id")) {
+            val tempMenu = if (rs.getString("menu_id") == null) {
+               null
+            } else if (currentMenu?.id != rs.getInt("menu_id")) {
                val localMenu = mapMenu(rs)
+
                tempArea.menus.add(localMenu)
                currentMenu = localMenu
 
@@ -98,12 +153,12 @@ abstract class AreaRepository @Inject constructor(
                currentMenu!!
             }
 
-            mapModule(rs)?.also { tempMenu.modules.add(it) }
+            mapModule(rs)?.also { tempMenu?.modules?.add(it) }
          } while (rs.next())
       }
 
       return groupingMenus(areas)
-   }
+   }*/
 
    @Transactional
    fun enable(company: CompanyEntity, areaTypeId: Int) {
@@ -121,7 +176,9 @@ abstract class AreaRepository @Inject constructor(
       )
    }
 
-   @Transactional
+   abstract fun deleteByCompanyAndAreaType(company: CompanyEntity, areaType: AreaTypeEntity)
+
+   /*@Transactional
    fun disable(company: CompanyEntity, areaTypeId: Int) {
       logger.debug("Disable area {} for company {}", areaTypeId, company.datasetCode)
 
@@ -132,7 +189,7 @@ abstract class AreaRepository @Inject constructor(
          """,
          mapOf("company_id" to company.id, "area_type_id" to areaTypeId)
       )
-   }
+   }*/
 
    @Transactional
    fun insert(company: CompanyEntity, areaType: AreaType): AreaType {
@@ -194,7 +251,6 @@ abstract class AreaRepository @Inject constructor(
          value = rs.getString("area_value"),
          description = rs.getString("area_description"),
          localizationCode = rs.getString("area_localization_code"),
-         enabled = rs.getBoolean("area_enabled"),
          menus = mutableListOf()
       )
    }
@@ -209,6 +265,7 @@ abstract class AreaRepository @Inject constructor(
          localizationCode = rs.getString("menu_localization_code"),
          modules = mutableListOf()
       )
+
    }
 
    private fun mapModule(rs: ResultSet): ModuleType? {

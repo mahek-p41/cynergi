@@ -582,7 +582,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
       final store = storeFactoryService.store(2, tstds2)
       final tstds2SuperUser = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
-      final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).blockingGet().with { new AuthenticatedEmployee(it, 'pass') }
+      final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).with { new AuthenticatedEmployee(it, 'pass') }
       final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
       final division = divisionFactoryService.single(tstds2)
       final region = regionFactoryService.single(division)
@@ -601,7 +601,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
       final tstds1Store3 = storeFactoryService.store(3, tstds1)
       final tstds2SuperUser = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
-      final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).blockingGet().with { new AuthenticatedEmployee(it, 'pass') }
+      final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).with { new AuthenticatedEmployee(it, 'pass') }
       final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
       final division = divisionFactoryService.single(tstds1)
       final region = regionFactoryService.single(division)
@@ -622,7 +622,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
       final store = storeFactoryService.store(2, tstds2)
       final tstds2SuperUser = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
-      final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).blockingGet().with { new AuthenticatedEmployee(it, 'pass') }
+      final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).with { new AuthenticatedEmployee(it, 'pass') }
       final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
       final division = divisionFactoryService.single(tstds2)
       final region = regionFactoryService.single(division)
@@ -642,7 +642,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
       final store = storeFactoryService.store(3, tstds1)
       final tstds2SuperUser = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
-      final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).blockingGet().with { new AuthenticatedEmployee(it, 'pass') }
+      final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).with { new AuthenticatedEmployee(it, 'pass') }
       final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
       final division = divisionFactoryService.single(tstds1)
       final region = regionFactoryService.single(division)

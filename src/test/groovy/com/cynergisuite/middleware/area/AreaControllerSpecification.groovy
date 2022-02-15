@@ -26,7 +26,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      response.size() == 5
+      response.size() == 6
       with(response[0]) {
          def predefinedArea = predefinedAreas[0]
          id == predefinedArea.id
@@ -117,7 +117,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
 
       then: 'Area 3 is not enabled by default'
       notThrown(HttpClientResponseException)
-      response.size() == 5
+      response.size() == 6
       response.find { it.id == 3 }.enabled == false
 
       when:
@@ -131,7 +131,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      response2.size() == 5
+      response2.size() == 6
       response2.find { it.id == 3 }.enabled == true
 
       when:

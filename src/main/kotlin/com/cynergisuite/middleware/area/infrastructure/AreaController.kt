@@ -4,6 +4,7 @@ import com.cynergisuite.domain.SimpleTypeDomainDTO
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.area.AreaDTO
 import com.cynergisuite.middleware.area.AreaService
+import com.cynergisuite.middleware.area.AreaTypeService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
@@ -31,7 +32,8 @@ import javax.validation.ValidationException
 @Controller("/api/area")
 class AreaController @Inject constructor(
    private val userService: UserService,
-   private val areaService: AreaService
+   private val areaService: AreaService,
+   private val areaTypeService: AreaTypeService,
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AreaController::class.java)
 
@@ -96,9 +98,10 @@ class AreaController @Inject constructor(
       httpRequest: HttpRequest<*>
    ) {
       val company = userService.fetchUser(authentication).myCompany()
+      val areaType = areaTypeService.findById(id) ?: throw NotFoundException(id)
 
       logger.info("Disable area {} for company {}", id, company.id)
 
-      areaService.disableArea(company, id)
+      areaService.disableArea(company, areaType)
    }
 }

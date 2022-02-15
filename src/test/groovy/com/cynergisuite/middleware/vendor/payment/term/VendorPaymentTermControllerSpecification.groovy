@@ -174,7 +174,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       exception.response.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].message == "Cannot be updated to 1"
+      response[0].message == "Cannot be updated to 1.0"
       response[0].path == "discountPercent"
    }
 

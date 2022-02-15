@@ -1,8 +1,15 @@
 package com.cynergisuite.middleware.area
 
 import com.cynergisuite.domain.TypeDomainEntity
+import io.micronaut.data.annotation.GeneratedValue
+import io.micronaut.data.annotation.Id
+import io.micronaut.data.annotation.MappedEntity
 
+@MappedEntity("menu_type_domain")
 data class MenuType(
+
+   @field:Id
+   @field:GeneratedValue
    val id: Int,
    val parentId: Int? = null,
    val value: String,

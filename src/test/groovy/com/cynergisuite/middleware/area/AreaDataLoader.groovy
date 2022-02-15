@@ -14,7 +14,6 @@ class AreaDataLoader {
          "AP",
          "Account Payable",
          "account.payable.area.and.functionality",
-         false,
          []
       ),
       new AreaTypeEntity(
@@ -22,7 +21,6 @@ class AreaDataLoader {
          "BR",
          "Bank Reconciliation",
          "bank.reconciliation.area.and.functionality",
-         false,
          []
       ),
       new AreaTypeEntity(
@@ -30,7 +28,6 @@ class AreaDataLoader {
          "GL",
          "General Ledger",
          "general.ledger.area.and.functionality",
-         false,
          []
       ),
       new AreaTypeEntity(
@@ -38,7 +35,6 @@ class AreaDataLoader {
          "PO",
          "Purchase Order",
          "purchase.order.and.requisition.area.and.functionality",
-         false,
          []
       ),
       new AreaTypeEntity(
@@ -46,7 +42,6 @@ class AreaDataLoader {
          "MCF",
          "Master Control Files",
          "master.control.files",
-         false,
          []
       )
    ]

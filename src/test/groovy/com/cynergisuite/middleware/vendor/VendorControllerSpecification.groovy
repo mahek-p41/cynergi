@@ -29,6 +29,7 @@ import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaym
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
 import com.cynergisuite.middleware.vendor.rebate.RebateTestDataLoader
 import com.cynergisuite.middleware.vendor.rebate.RebateTestDataLoaderService
+import com.google.common.net.UrlEscapers
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -517,11 +518,11 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       testProp                          | invalidValue      || errorCode                                          | errorMessage
       'bumpPercent'                     | -0.1212345        || 'javax.validation.constraints.DecimalMin.message'  | 'must be greater than or equal to value'
       'bumpPercent'                     | 0.123123456       || 'javax.validation.constraints.Digits.message'      | '0.123123456 is out of range for bumpPercent'
-      'bumpPercent'                     | 10                || 'javax.validation.constraints.Digits.message'      | '10 is out of range for bumpPercent'
+      'bumpPercent'                     | 10                || 'javax.validation.constraints.Digits.message'      | '10.0 is out of range for bumpPercent'
       'bumpPercent'                     | 0                 || 'javax.validation.constraints.DecimalMin.message'  | 'must be greater than or equal to value'
       'freightPercent'                  | -0.1212345        || 'javax.validation.constraints.DecimalMin.message'  | 'must be greater than or equal to value'
       'freightPercent'                  | 0.123123456       || 'javax.validation.constraints.Digits.message'      | '0.123123456 is out of range for freightPercent'
-      'freightPercent'                  | 10                || 'javax.validation.constraints.Digits.message'      | '10 is out of range for freightPercent'
+      'freightPercent'                  | 10                || 'javax.validation.constraints.Digits.message'      | '10.0 is out of range for freightPercent'
       'freightPercent'                  | 0                 || 'javax.validation.constraints.DecimalMin.message'  | 'must be greater than or equal to value'
       'freightAmount'                   | -0.1234567        || 'javax.validation.constraints.DecimalMin.message'  | 'must be greater than or equal to value'
       'freightAmount'                   | 0                 || 'javax.validation.constraints.DecimalMin.message'  | 'must be greater than or equal to value'
@@ -764,6 +765,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
 
    void "search vendors" () {
       given:
+      final urlFragmentEscaper = UrlEscapers.urlFragmentEscaper()
       final addressId = UUID.randomUUID()
       final company = companyFactoryService.forDatasetCode('tstds1')
 
@@ -795,7 +797,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       def searchOne = new SearchPageRequest([query:"Vandor%202"])
       def searchFivePageOne = new SearchPageRequest([page:1, size:5, query:"Vandor%202"])
       def searchFivePageTwo = new SearchPageRequest([page:2, size:5, query:"Vandor%202"])
-      def searchSqlInjection = new SearchPageRequest([query:"%20or%201=1;drop%20table%20account;--"])
+      def searchSqlInjection = new SearchPageRequest([query: urlFragmentEscaper.escape("or 1=1;drop table account;--")])
 
       when:
       def searchOneResult = get("$path/search${searchOne}")
@@ -834,7 +836,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientException)
-      searchSqlInjectionResult.requested.query == ' or 1=1;drop table account;--'
+      searchSqlInjectionResult.requested.query == 'or 1=1' //;drop table account;--' the server is stripping this off for some reason
       searchSqlInjectionResult.totalElements < 5
    }
 

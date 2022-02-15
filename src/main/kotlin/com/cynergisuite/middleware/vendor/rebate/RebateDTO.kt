@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountStatusTypeValueDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.util.UUID
@@ -16,6 +17,7 @@ import javax.validation.constraints.Digits
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "Rebate", title = "An entity containing rebate information", description = "An entity containing rebate information.")
 data class RebateDTO(

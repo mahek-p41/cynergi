@@ -30,12 +30,12 @@ data class AreaDTO(
    var menus: MutableList<MenuDTO>
 
 ) {
-   constructor(type: AreaType, localizedDescription: String, menus: List<MenuDTO>? = null) :
+   constructor(area: AreaEntity, localizedDescription: String, menus: List<MenuDTO>? = null) :
       this(
-         id = type.id,
-         value = type.value,
+         id = area.areaType.id,
+         value = area.areaType.value,
          description = localizedDescription,
-         enabled = type.enabled,
-         menus = (menus ?: type.menus.map { MenuDTO(it) }) as MutableList<MenuDTO>
+         enabled = area.company != null,
+         menus = (menus ?: area.areaType.menus.map { MenuDTO(it) }) as MutableList<MenuDTO>
       )
 }
