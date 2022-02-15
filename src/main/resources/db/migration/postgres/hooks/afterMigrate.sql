@@ -150,7 +150,7 @@ DECLARE
 BEGIN
    FOR r IN SELECT matviewname FROM pg_matviews WHERE matviewname LIKE '%_fimvw'
    LOOP
-      EXECUTE 'REFRESH MATERIALIZED VIEW ' || r.matviewname;
+      EXECUTE 'REFRESH MATERIALIZED VIEW ' || r.matviewname || 'WITH DATA';
    END LOOP;
 END;
 $$;
