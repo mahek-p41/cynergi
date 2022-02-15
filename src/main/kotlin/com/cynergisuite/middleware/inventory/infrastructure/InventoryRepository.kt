@@ -69,19 +69,19 @@ class InventoryRepository(
          comp.client_id                AS comp_client_id,
          comp.dataset_code             AS comp_dataset_code,
          comp.federal_id_number        AS comp_federal_id_number,
-         comp.address_id               AS comp_address_id,
-         comp.address_name             AS comp_address_name,
-         comp.address_address1         AS comp_address_address1,
-         comp.address_address2         AS comp_address_address2,
-         comp.address_city             AS comp_address_city,
-         comp.address_state            AS comp_address_state,
-         comp.address_postal_code      AS comp_address_postal_code,
-         comp.address_latitude         AS comp_address_latitude,
-         comp.address_longitude        AS comp_address_longitude,
-         comp.address_country          AS comp_address_country,
-         comp.address_county           AS comp_address_county,
-         comp.address_phone            AS comp_address_phone,
-         comp.address_fax              AS comp_address_fax,
+         compAddress.id                AS comp_address_id,
+         compAddress.name              AS comp_address_name,
+         compAddress.address1          AS comp_address_address1,
+         compAddress.address2          AS comp_address_address2,
+         compAddress.city              AS comp_address_city,
+         compAddress.state             AS comp_address_state,
+         compAddress.postal_code       AS comp_address_postal_code,
+         compAddress.latitude          AS comp_address_latitude,
+         compAddress.longitude         AS comp_address_longitude,
+         compAddress.country           AS comp_address_country,
+         compAddress.county            AS comp_address_county,
+         compAddress.phone             AS comp_address_phone,
+         compAddress.fax               AS comp_address_fax,
          primaryStore.id               AS primary_store_id,
          primaryStore.number           AS primary_store_number,
          primaryStore.name             AS primary_store_name,
@@ -96,7 +96,7 @@ class InventoryRepository(
          iltd.localization_code        AS location_type_localization_code
       FROM company comp
            JOIN fastinfo_prod_import.inventory_vw i ON comp.dataset_code = i.dataset
-           LEFT JOIN address ON comp.address_id = address.id AND address.deleted = FALSE
+           LEFT JOIN address AS compAddress ON comp.address_id = compAddress.id AND compAddress.deleted = FALSE
            JOIN system_stores_fimvw primaryStore ON comp.dataset_code = primaryStore.dataset AND i.primary_location = primaryStore.number
            LEFT OUTER JOIN system_stores_fimvw currentStore ON comp.dataset_code = currentStore.dataset AND i.location = currentStore.number
            JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
@@ -355,7 +355,7 @@ class InventoryRepository(
    }
 
    fun mapRow(rs: ResultSet): InventoryEntity {
-      val company = companyRepository.mapRow(rs, "comp_")
+      val company = companyRepository.mapRow(rs, columnPrefix = "comp_", addressPrefix = "comp_address_")
 
       return InventoryEntity(
          id = rs.getLong("id"),

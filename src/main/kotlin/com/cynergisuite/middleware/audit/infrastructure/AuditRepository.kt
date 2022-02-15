@@ -134,21 +134,22 @@ class AuditRepository @Inject constructor(
          comp.client_id                                                AS comp_client_id,
          comp.dataset_code                                             AS comp_dataset_code,
          comp.federal_id_number                                        AS comp_federal_id_number,
-         comp.address_id                                               AS address_id,
-         comp.address_name                                             AS address_name,
-         comp.address_address1                                         AS address_address1,
-         comp.address_address2                                         AS address_address2,
-         comp.address_city                                             AS address_city,
-         comp.address_state                                            AS address_state,
-         comp.address_postal_code                                      AS address_postal_code,
-         comp.address_latitude                                         AS address_latitude,
-         comp.address_longitude                                        AS address_longitude,
-         comp.address_country                                          AS address_country,
-         comp.address_county                                           AS address_county,
-         comp.address_phone                                            AS address_phone,
-         comp.address_fax                                              AS address_fax
+         compAddress.id                                                AS comp_address_id,
+         compAddress.name                                              AS comp_address_name,
+         compAddress.address1                                          AS comp_address_address1,
+         compAddress.address2                                          AS comp_address_address2,
+         compAddress.city                                              AS comp_address_city,
+         compAddress.state                                             AS comp_address_state,
+         compAddress.postal_code                                       AS comp_address_postal_code,
+         compAddress.latitude                                          AS comp_address_latitude,
+         compAddress.longitude                                         AS comp_address_longitude,
+         compAddress.country                                           AS comp_address_country,
+         compAddress.county                                            AS comp_address_county,
+         compAddress.phone                                             AS comp_address_phone,
+         compAddress.fax                                               AS comp_address_fax
       FROM audit a
            JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
+           LEFT OUTER JOIN address compAddress ON comp.address_id = compAddress.id
            JOIN audit_action auditAction ON a.id = auditAction.audit_id
            JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
            JOIN system_employees_vw auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
@@ -276,32 +277,26 @@ class AuditRepository @Inject constructor(
             comp.client_id                                      AS comp_client_id,
             comp.dataset_code                                   AS comp_dataset_code,
             comp.federal_id_number                              AS comp_federal_id_number,
-            comp.address_id                                     AS address_id,
-            comp.address_name                                   AS address_name,
-            comp.address_address1                               AS address_address1,
-            comp.address_address2                               AS address_address2,
-            comp.address_city                                   AS address_city,
-            comp.address_state                                  AS address_state,
-            comp.address_postal_code                            AS address_postal_code,
-            comp.address_latitude                               AS address_latitude,
-            comp.address_longitude                              AS address_longitude,
-            comp.address_country                                AS address_country,
-            comp.address_county                                 AS address_county,
-            comp.address_phone                                  AS address_phone,
-            comp.address_fax                                    AS address_fax,
+            compAddress.id                                      AS comp_address_id,
+            compAddress.address1                                AS comp_address_address1,
+            compAddress.address2                                AS comp_address_address2,
+            compAddress.city                                    AS comp_address_city,
+            compAddress.state                                   AS comp_address_state,
+            compAddress.postal_code                             AS comp_address_postal_code,
+            compAddress.latitude                                AS comp_address_latitude,
+            compAddress.longitude                               AS comp_address_longitude,
+            compAddress.country                                 AS comp_address_country,
+            compAddress.county                                  AS comp_address_county,
+            compAddress.phone                                   AS comp_address_phone,
+            compAddress.fax                                     AS comp_address_fax,
             total_elements                                      AS total_elements
          FROM audits a
-              JOIN company comp ON a.company_id = comp.id
-              JOIN division div ON comp.id = div.company_id
-              JOIN region reg ON div.id = reg.division_id
-              JOIN region_to_store regionStores ON reg.id = regionStores.region_id
-              JOIN system_stores_fimvw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
+              JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
+              LEFT OUTER JOIN address compAddress ON comp.address_id = compAddress.id
               JOIN audit_action auditAction ON a.id = auditAction.audit_id
               JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
               JOIN system_employees_vw auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
-              JOIN fastinfo_prod_import.store_vw auditStore
-                     ON comp.dataset_code = auditStore.dataset
-                        AND a.store_number = auditStore.number
+              JOIN system_stores_fimvw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
                LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
                LEFT JOIN region reg ON reg.id = rts.region_id AND reg.deleted = FALSE
                LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id AND div.deleted = FALSE
@@ -503,19 +498,19 @@ class AuditRepository @Inject constructor(
             comp.client_id                                      AS comp_client_id,
             comp.dataset_code                                   AS comp_dataset_code,
             comp.federal_id_number                              AS comp_federal_id_number,
-            comp.address_id                                     AS address_id,
-            comp.address_name                                   AS address_name,
-            comp.address_address1                               AS address_address1,
-            comp.address_address2                               AS address_address2,
-            comp.address_city                                   AS address_city,
-            comp.address_state                                  AS address_state,
-            comp.address_postal_code                            AS address_postal_code,
-            comp.address_latitude                               AS address_latitude,
-            comp.address_longitude                              AS address_longitude,
-            comp.address_country                                AS address_country,
-            comp.address_county                                 AS address_county,
-            comp.address_phone                                  AS address_phone,
-            comp.address_fax                                    AS address_fax,
+            comp.address_id                                     AS comp_address_id,
+            comp.address_name                                   AS comp_address_name,
+            comp.address_address1                               AS comp_address_address1,
+            comp.address_address2                               AS comp_address_address2,
+            comp.address_city                                   AS comp_address_city,
+            comp.address_state                                  AS comp_address_state,
+            comp.address_postal_code                            AS comp_address_postal_code,
+            comp.address_latitude                               AS comp_address_latitude,
+            comp.address_longitude                              AS comp_address_longitude,
+            comp.address_country                                AS comp_address_country,
+            comp.address_county                                 AS comp_address_county,
+            comp.address_phone                                  AS comp_address_phone,
+            comp.address_fax                                    AS comp_address_fax,
             count(*) OVER() AS total_elements
          FROM audit a
                JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
@@ -784,7 +779,7 @@ class AuditRepository @Inject constructor(
          id = rs.getLong("auditStore_id"),
          number = rs.getInt("auditStore_number"),
          name = rs.getString("auditStore_name"),
-         company = companyRepository.mapRow(rs, "comp_"),
+         company = companyRepository.mapRow(rs, "comp_", "comp_address_"),
       )
    }
 
@@ -804,7 +799,8 @@ class AuditRepository @Inject constructor(
          columnPrefix = "auditActionEmployee_",
          companyColumnPrefix = "comp_",
          departmentColumnPrefix = "auditActionEmployeeDept_",
-         storeColumnPrefix = "auditStore_"
+         storeColumnPrefix = "auditStore_",
+         companyAddressColumnPrefix = "comp_address_"
       )
    }
 

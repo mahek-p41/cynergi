@@ -340,7 +340,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.message == 'Required argument [Authentication authentication] not specified'
+      response.message == 'Required argument authentication not specified'
    }
 
    void "update a valid company" () {
@@ -451,7 +451,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       def exception = thrown(HttpClientResponseException)
       exception.status == METHOD_NOT_ALLOWED
       def response = exception.response.bodyAsJson()
-      response.message == "Method [POST] not allowed for URI [/api/company/${tstds1.id}]. Allowed methods: [HEAD, DELETE, GET, PUT]"
+      response.message == "Method Not Allowed"
    }
 
    void "update a valid company by removing address" () {
