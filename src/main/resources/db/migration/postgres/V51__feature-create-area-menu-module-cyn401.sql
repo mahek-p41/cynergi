@@ -1,20 +1,4 @@
 -- being domain tables
-CREATE TABLE area_type_domain
-(
-    id                 INTEGER                                                        NOT NULL PRIMARY KEY,
-    value              VARCHAR(50) CHECK ( char_length(trim(value)) > 1)              NOT NULL,
-    description        VARCHAR(100) CHECK ( char_length(trim(description)) > 1)       NOT NULL,
-    localization_code  VARCHAR(100) CHECK ( char_length(trim(localization_code)) > 1) NOT NULL,
-    UNIQUE (value)
-);
-
-INSERT INTO area_type_domain (id, value, description, localization_code)
-VALUES (1, 'AP', 'Account Payable', 'account.payable'),
-       (2, 'BR', 'Bank Reconciliation', 'bank.reconciliation'),
-       (3, 'GL', 'General Ledger', 'general.ledger'),
-       (4, 'PO', 'Purchase Order', 'purchase.order'),
-       (5, 'MCF', 'Master Control Files', 'master.control.files');
-
 CREATE TABLE menu_type_domain
 (
     id                INTEGER                                                       NOT NULL PRIMARY KEY,
@@ -211,21 +195,6 @@ VALUES (1, 'APADD', 'Add Invoices', 'add.invoices', 'APADD', (SELECT id FROM men
        (106, 'SHOAPDST', 'Show a Distribution Template', 'show.a.distribution.template', 'SHOAPDST', (SELECT id FROM menu_type_domain WHERE value = 'DISTRIBUTION_TEMPLATE_MAINTENANCE')),
        (107, 'PRTAPDST', 'Print a Distribution Template', 'print.a.distribution.template', 'PRTAPDST', (SELECT id FROM menu_type_domain WHERE value = 'DISTRIBUTION_TEMPLATE_MAINTENANCE'))
 ;
-
-CREATE TABLE area
-(
-    id           UUID        DEFAULT uuid_generate_v1()   NOT NULL,
-    time_created TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()    NOT NULL,
-    time_updated TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()    NOT NULL,
-    area_type_id INTEGER REFERENCES area_type_domain (id) NOT NULL,
-    company_id   UUID REFERENCES company (id)             NOT NULL,
-    UNIQUE (company_id, area_type_id)
-);
-CREATE TRIGGER update_area_trg
-BEFORE UPDATE
-   ON area
-FOR EACH ROW
-EXECUTE PROCEDURE update_user_table_fn();
 
 CREATE TABLE module
 (
