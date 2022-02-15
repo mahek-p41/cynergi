@@ -1,11 +1,11 @@
 ARG GROOVY_VER=3.0.9
 FROM groovy:${GROOVY_VER}-jdk11 AS groovyImage
 
-FROM postgres:9.325
+FROM postgres:12.7-buster
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt-get update &&\
+RUN apt-get update && \
     apt-get install pspg  dos2unix -y
 
 COPY pgpass /root/.pgpass
