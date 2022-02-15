@@ -17,13 +17,13 @@ import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeePageRequest
 import com.cynergisuite.middleware.store.Store
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.sql.SQLException
-import javax.inject.Inject
-import javax.inject.Singleton
 import javax.transaction.Transactional
 
 /**

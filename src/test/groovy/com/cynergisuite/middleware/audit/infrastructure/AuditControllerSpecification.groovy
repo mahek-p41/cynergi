@@ -34,7 +34,7 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 import java.time.OffsetDateTime
 
 import static io.micronaut.http.HttpRequest.GET
@@ -851,7 +851,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds1StoreManagerDepartment = departmentFactoryService.department('SM', tstds1)
       final store1Tstds1Employee = employeeFactoryService.single(store1Tstds1, tstds1StoreManagerDepartment)
-      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.datasetCode, store1Tstds1Employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.datasetCode, store1Tstds1Employee.store.myNumber()).with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
       final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
 
       when:
@@ -885,7 +885,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds1StoreManagerDepartment = departmentFactoryService.department('SM', tstds1)
       final store1Tstds1Employee = employeeFactoryService.single(store1Tstds1, tstds1StoreManagerDepartment)
-      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.datasetCode, store1Tstds1Employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.datasetCode, store1Tstds1Employee.store.myNumber()).with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
       final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
       final store = storeFactoryService.random(tstds1)
       final employee = employeeFactoryService.single(tstds1)
@@ -909,7 +909,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds1StoreManagerDepartment = departmentFactoryService.department('SM', tstds1)
       final store1Tstds1Employee = employeeFactoryService.single(store1Tstds1, tstds1StoreManagerDepartment)
-      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.datasetCode, store1Tstds1Employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.datasetCode, store1Tstds1Employee.store.myNumber()).with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
       final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
       auditFactoryService.single(store1Tstds1, store1Tstds1Employee, [AuditStatusFactory.created(), AuditStatusFactory.canceled(), AuditStatusFactory.approved()] as Set)
 
@@ -944,7 +944,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds1StoreManagerDepartment = departmentFactoryService.department('SM', tstds1)
       final store1Tstds1Employee = employeeFactoryService.single(store1Tstds1, tstds1StoreManagerDepartment)
-      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.datasetCode, store1Tstds1Employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.datasetCode, store1Tstds1Employee.store.myNumber()).with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
       final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
       auditFactoryService.single(store1Tstds1)
       final newAudit = AuditTestDataLoader.single(store1Tstds1).with { new AuditCreateValueObject([store: new StoreDTO(it.store)]) }
@@ -1202,7 +1202,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds1StoreManagerDepartment = departmentFactoryService.department('SM', tstds1)
       final store1Tstds1Employee = employeeFactoryService.single(store1Tstds1, tstds1StoreManagerDepartment)
-      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.datasetCode, store1Tstds1Employee.store.myNumber()).blockingGet().with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
+      final store1Tstds1AuthenticatedEmployee = userService.fetchUserByAuthentication(store1Tstds1Employee.number, store1Tstds1Employee.passCode, tstds1.datasetCode, store1Tstds1Employee.store.myNumber()).with { new AuthenticatedEmployee(it, store1Tstds1Employee.passCode) }
       final store1Tstds1UserAccessToken = loginEmployee(store1Tstds1AuthenticatedEmployee)
       final audit = auditFactoryService.single(store1Tstds1, store1Tstds1Employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
 

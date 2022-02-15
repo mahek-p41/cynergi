@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.accounting.financial.calendar.type
 
 import com.cynergisuite.middleware.accounting.financial.calendar.type.infrastructure.OverallPeriodTypeRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class OverallPeriodTypeService @Inject constructor(

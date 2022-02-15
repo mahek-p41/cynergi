@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPer
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 @MicronautTest(transactional = false)
 class OverallPeriodTypeControllerSpecification extends ControllerSpecificationBase {

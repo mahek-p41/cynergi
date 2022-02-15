@@ -9,7 +9,7 @@ import com.cynergisuite.middleware.accounting.account.payable.control.AccountPay
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CONFLICT

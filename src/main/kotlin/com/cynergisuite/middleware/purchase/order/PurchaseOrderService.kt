@@ -5,8 +5,8 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.purchase.order.infrastructure.PurchaseOrderRepository
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class PurchaseOrderService @Inject constructor(

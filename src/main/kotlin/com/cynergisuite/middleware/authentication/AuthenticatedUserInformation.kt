@@ -5,8 +5,10 @@ import com.cynergisuite.middleware.authentication.user.UserSecurityLevels
 import com.cynergisuite.middleware.company.CompanyDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "AuthenticationInformation", title = "Claims associated with a user", description = "Describes some useful info about a user's login status.  The loginStatus property will change to describe the user's state.")
 data class AuthenticatedUserInformation(

@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.vendor.rebate
 
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 class RebateTypeDataLoader {
 

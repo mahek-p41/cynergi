@@ -10,8 +10,8 @@ import com.cynergisuite.middleware.shipping.shipvia.infrastructure.ShipViaReposi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import javax.validation.Valid
 
 @Singleton

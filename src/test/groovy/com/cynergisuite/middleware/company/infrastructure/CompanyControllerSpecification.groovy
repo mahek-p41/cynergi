@@ -11,10 +11,12 @@ import com.cynergisuite.middleware.employee.EmployeeTestDataLoaderService
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import io.micronaut.core.type.Argument
+import io.micronaut.http.client.HttpClient
+import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.POST
@@ -26,6 +28,7 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class CompanyControllerSpecification extends ControllerSpecificationBase {
+   @Client("/api/company") @Inject HttpClient httpClient // since the company controller only has a single endpoint of fetchAll and it doesn't require authentication no need to use the ControllerSpecificationBase class.  Also there is nothing to cleanup
    private JsonOutput jsonOutput = new JsonOutput()
    private JsonSlurper jsonSlurper = new JsonSlurper()
    @Inject AddressTestDataLoaderService addressTestDataLoaderService

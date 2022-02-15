@@ -10,7 +10,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch first page without locationType" () {
       given:
-      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
       final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), inventoryStatus: ["N", "O", "R", "D"]])
 
@@ -59,7 +59,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch first page of inventory-app without locationType" () {
       given:
-      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
       final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), inventoryStatus: ["N", "O", "R", "D"]])
 
@@ -79,29 +79,29 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
          first == true
          last == false
          elements[0].id == 73821
-         elements[0].serialNumber == null
-         elements[0].barcode == null
-         elements[0].altId == "201-00923"
          elements[0].lookupKey == "201-00923"
          elements[0].modelNumber == "FPGIDFRAMEDART"
          elements[0].description == "MISCELLANEOUS FURNITURE PICT"
          // below this values should be null
-         elements[0].lookupKeyType == 'ALT_ID'
-         elements[0].originalCost == 55.03
-         elements[0].actualCost == 55.03
-         elements[0].modelCategory == "F"
-         elements[0].timesRented == 0
-         elements[0].totalRevenue == 0
-         elements[0].remainingValue == 0
-         elements[0].sellPrice == 0
-         elements[0].assignedValue == 0
-         elements[0].idleDays == 0
+         elements[0].serialNumber == null
+         elements[0].barcode == null
+         elements[0].altId == null
+         elements[0].lookupKeyType == null
+         elements[0].originalCost == null
+         elements[0].actualCost == null
+         elements[0].modelCategory == null
+         elements[0].timesRented == null
+         elements[0].totalRevenue == null
+         elements[0].remainingValue == null
+         elements[0].sellPrice == null
+         elements[0].assignedValue == null
+         elements[0].idleDays == null
       }
    }
 
    void "fetch first page with locationType" () {
       given:
-      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
       final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]])
 
@@ -150,7 +150,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch first page of inventory with status of N" () {
       given:
-      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
       final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), inventoryStatus: ["N"]])
 
@@ -199,7 +199,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch by location type store"() {
       given:
-      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
       final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]])
 
@@ -247,7 +247,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch by existing barcode" () {
       given:
-      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
 
       when:
@@ -288,7 +288,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch by existing lookup key" () {
       when:
-      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1).blockingGet()
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
       def inventory = get("inventory/lookup?key=00110360", tstds1Store1UserLogin)
 

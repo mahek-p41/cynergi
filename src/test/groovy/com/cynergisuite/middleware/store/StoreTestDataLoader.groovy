@@ -9,8 +9,8 @@ import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 import kotlin.Pair
 
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import java.util.stream.Stream
 
 import static java.util.stream.Collectors.toList

@@ -3,11 +3,13 @@ package com.cynergisuite.middleware.audit.detail
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 
+@Introspected
 @Schema(name = "AuditDetailCreate", title = "Requirements for creating an Audit Detail", description = "Payload required to create an audit detail entity")
 data class AuditDetailCreateUpdateDTO(
 

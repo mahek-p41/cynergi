@@ -27,8 +27,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
@@ -46,9 +46,6 @@ class AccountPayableInvoiceRepository @Inject constructor(
       return """
          WITH vend AS (
             ${vendorRepository.baseSelectQuery()}
-         ),
-         employee AS (
-            ${employeeRepository.employeeBaseQuery()}
          )
          SELECT
             apInvoice.id                                                AS apInvoice_id,
@@ -233,7 +230,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
          FROM account_payable_invoice apInvoice
             JOIN company comp                                           ON apInvoice.company_id = comp.id AND comp.deleted = FALSE
             JOIN vend                                                   ON apInvoice.vendor_id = vend.v_id
-            JOIN employee                                               ON apInvoice.employee_number_id_sfk = employee.emp_number AND employee.comp_id = comp.id
+            JOIN system_employees_fimvw                                 ON apInvoice.employee_number_id_sfk = employee.emp_number AND employee.comp_id = comp.id
             JOIN account_payable_invoice_selected_type_domain selected  ON apInvoice.selected_id = selected.id
             JOIN account_payable_invoice_type_domain type               ON apInvoice.type_id = type.id
             JOIN account_payable_invoice_status_type_domain status      ON apInvoice.status_id = status.id

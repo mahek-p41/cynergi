@@ -8,8 +8,8 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.region.infrastructure.RegionRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class RegionService @Inject constructor(

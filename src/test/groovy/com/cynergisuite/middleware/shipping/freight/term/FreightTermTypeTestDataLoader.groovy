@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.shipping.freight.term
 
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 class FreightTermTypeTestDataLoader {
 

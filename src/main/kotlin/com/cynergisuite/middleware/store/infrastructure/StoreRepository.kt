@@ -15,6 +15,8 @@ import com.cynergisuite.middleware.region.infrastructure.RegionRepository
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Jdbi
@@ -23,8 +25,6 @@ import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
@@ -72,7 +72,7 @@ class StoreRepository @Inject constructor(
             division.number               AS div_number,
             division.name                 AS div_name,
             division.description          AS div_description
-         FROM fastinfo_prod_import.store_vw store
+         FROM system_stores_fimvw store
               JOIN company comp ON comp.dataset_code = store.dataset AND comp.deleted = FALSE
               LEFT JOIN address ON comp.address_id = address.id AND address.deleted = FALSE
               LEFT OUTER JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = :comp_id
@@ -96,7 +96,8 @@ class StoreRepository @Inject constructor(
             ))
    """
 
-   @ReadOnly fun findOne(id: Long, company: CompanyEntity): StoreEntity? {
+   @ReadOnly
+   fun findOne(id: Long, company: CompanyEntity): StoreEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query =
          """
@@ -192,7 +193,7 @@ class StoreRepository @Inject constructor(
       val exists = jdbc.queryForObject(
          """
          SELECT count(store.id) > 0
-         FROM fastinfo_prod_import.store_vw store
+         FROM system_stores_fimvw store
             JOIN company comp ON comp.dataset_code = store.dataset AND comp.deleted = FALSE
             LEFT JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = comp.id
             LEFT JOIN region ON  r2s.region_id = region.id AND region.deleted = FALSE
@@ -218,7 +219,7 @@ class StoreRepository @Inject constructor(
       val exists = jdbc.queryForObject(
          """
          SELECT count(store.id) > 0
-         FROM fastinfo_prod_import.store_vw store
+         FROM system_stores_fimvw store
             JOIN company comp ON comp.dataset_code = store.dataset AND comp.deleted = FALSE
             LEFT JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = comp.id
             LEFT JOIN region ON  r2s.region_id = region.id AND region.deleted = FALSE

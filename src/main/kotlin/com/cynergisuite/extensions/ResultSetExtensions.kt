@@ -1,6 +1,7 @@
 package com.cynergisuite.extensions
 
 import org.apache.commons.lang3.math.NumberUtils
+import java.math.BigInteger
 import java.sql.ResultSet
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -52,4 +53,8 @@ fun ResultSet.getLongOrNull(columnLabel: String): Long? {
    } else {
       null
    }
+}
+
+fun ResultSet.getBigInteger(columnLabel: String): BigInteger {
+   return this.getBigDecimal(columnLabel).toBigInteger()
 }

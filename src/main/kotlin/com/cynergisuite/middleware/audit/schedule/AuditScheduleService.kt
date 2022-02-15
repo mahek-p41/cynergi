@@ -24,16 +24,15 @@ import com.cynergisuite.middleware.schedule.infrastructure.SchedulePageRequest
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.store.StoreDTO
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import jakarta.inject.Inject
+import jakarta.inject.Named
+import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.Locale
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Named
-import javax.inject.Singleton
 
 @Singleton
 @Named("AuditSchedule")

@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.accounting.bank.reconciliation.type
 
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastructure.BankReconciliationTypeRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class BankReconciliationTypeService @Inject constructor(

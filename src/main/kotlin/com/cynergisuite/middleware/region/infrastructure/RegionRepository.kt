@@ -14,6 +14,9 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.division.infrastructure.DivisionRepository
 import com.cynergisuite.middleware.employee.infrastructure.SimpleEmployeeRepository
 import com.cynergisuite.middleware.region.RegionEntity
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
+import org.apache.commons.lang3.StringUtils
 import com.cynergisuite.middleware.store.Store
 import io.micronaut.transaction.annotation.ReadOnly
 import org.apache.commons.lang3.StringUtils.EMPTY
@@ -23,8 +26,6 @@ import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton

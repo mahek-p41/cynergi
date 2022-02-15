@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.accounting.account
 
 import com.cynergisuite.middleware.accounting.account.infrastructure.NormalAccountBalanceTypeRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class NormalAccountBalanceTypeService @Inject constructor(

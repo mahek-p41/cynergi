@@ -6,8 +6,8 @@ import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupReposi
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import java.util.stream.Stream
 
 class VendorGroupTestDataLoader {

@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.accounting.account.payable.recurring
 
 import com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure.ExpenseMonthCreationTypeRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class ExpenseMonthCreationTypeService @Inject constructor(

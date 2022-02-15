@@ -14,6 +14,8 @@ import com.cynergisuite.middleware.notification.NotificationType
 import io.micronaut.cache.annotation.CacheInvalidate
 import io.micronaut.cache.annotation.Cacheable
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Jdbi
@@ -22,8 +24,6 @@ import org.jdbi.v3.core.statement.StatementContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
-import javax.inject.Inject
-import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton

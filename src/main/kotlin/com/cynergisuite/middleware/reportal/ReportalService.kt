@@ -3,6 +3,8 @@ package com.cynergisuite.middleware.reportal
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.threading.CynergiExecutor
 import io.micronaut.context.annotation.Value
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.SystemUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -20,8 +22,6 @@ import java.nio.file.attribute.PosixFilePermission.OWNER_READ
 import java.nio.file.attribute.PosixFilePermission.OWNER_WRITE
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class ReportalService @Inject constructor(

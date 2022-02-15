@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.shipping.freight.term
 
 import com.cynergisuite.middleware.shipping.freight.term.infrastructure.FreightTermTypeRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class FreightTermTypeService @Inject constructor(

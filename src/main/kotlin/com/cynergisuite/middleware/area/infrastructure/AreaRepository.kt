@@ -5,24 +5,42 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.update
+import com.cynergisuite.middleware.area.AreaEntity
 import com.cynergisuite.middleware.area.AreaType
+import com.cynergisuite.middleware.area.AreaTypeEntity
 import com.cynergisuite.middleware.area.MenuType
 import com.cynergisuite.middleware.area.ModuleType
 import com.cynergisuite.middleware.company.CompanyEntity
+import io.micronaut.data.annotation.Join
+import io.micronaut.data.annotation.repeatable.JoinSpecifications
+import io.micronaut.data.jdbc.annotation.JdbcRepository
+import io.micronaut.data.repository.CrudRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
-import javax.inject.Inject
-import javax.inject.Singleton
+import java.util.UUID
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
-@Singleton
-class AreaRepository @Inject constructor(
+@JdbcRepository
+abstract class AreaRepository @Inject constructor(
    private val jdbc: Jdbi
-) {
+) : CrudRepository<AreaEntity, UUID> {
    private val logger: Logger = LoggerFactory.getLogger(AreaRepository::class.java)
+
+   @JoinSpecifications(
+      Join("areaType")
+   )
+   abstract fun existsByCompanyAndAreaType(company: CompanyEntity, areaType: AreaTypeEntity): Boolean
+
+   @JoinSpecifications(
+      Join("areaType"),
+      Join("company")
+   )
+   abstract fun findByCompanyAndAreaType(company: CompanyEntity, areaType: AreaTypeEntity): AreaEntity?
 
    @ReadOnly
    fun findAll(company: CompanyEntity): List<AreaType> {
@@ -164,12 +182,15 @@ class AreaRepository @Inject constructor(
                menu
             }
 
-         area.copy(menus = menus as MutableList<MenuType>)
+         //area.copy(menus = menus as MutableList<MenuType>)
+         area.menus.clear()
+         area.menus.addAll(menus)
+         area
       }
    }
 
    private fun mapArea(rs: ResultSet): AreaType {
-      return AreaType(
+      return AreaTypeEntity(
          id = rs.getInt("area_id"),
          value = rs.getString("area_value"),
          description = rs.getString("area_description"),

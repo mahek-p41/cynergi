@@ -30,14 +30,14 @@ import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
@@ -53,12 +53,6 @@ class AuditExceptionRepository @Inject constructor(
 
    private fun findOneQuery(): String =
       """
-      WITH employees AS (
-         ${employeeRepository.employeeBaseQuery()}
-      ),
-      company AS (
-         ${companyRepository.companyBaseQuery()}
-      )
       SELECT
          auditException.id                                          AS auditException_id,
          auditException.time_created                                AS auditException_time_created,
@@ -156,12 +150,12 @@ class AuditExceptionRepository @Inject constructor(
       FROM audit_exception auditException
            JOIN audit_scan_area AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
            JOIN audit a ON auditException.audit_id = a.id
-           JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
-           JOIN employees scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
-           JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND auditScanArea.store_number_sfk = store.number
-           LEFT OUTER JOIN employees approvedBy ON auditException.approved_by = approvedBy.emp_number AND comp.id = approvedBy.comp_id
+           JOIN (${companyRepository.companyBaseQuery()}) comp ON a.company_id = comp.id AND comp.deleted = FALSE
+           JOIN system_employees_fimvw scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
+           JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND auditScanArea.store_number_sfk = store.number
+           LEFT OUTER JOIN system_employees_fimvw approvedBy ON auditException.approved_by = approvedBy.emp_number AND comp.id = approvedBy.comp_id
            LEFT OUTER JOIN audit_exception_note auditExceptionNote ON auditException.id = auditExceptionNote.audit_exception_id
-           LEFT OUTER JOIN employees auditExceptionNoteEmployee ON auditExceptionNote.entered_by = auditExceptionNoteEmployee.emp_number AND comp.id = auditExceptionNoteEmployee.comp_id
+           LEFT OUTER JOIN system_employees_fimvw auditExceptionNoteEmployee ON auditExceptionNote.entered_by = auditExceptionNoteEmployee.emp_number AND comp.id = auditExceptionNoteEmployee.comp_id
       """.trimIndent()
 
    @ReadOnly
@@ -243,12 +237,7 @@ class AuditExceptionRepository @Inject constructor(
       val params = mutableMapOf("audit_id" to audit.id, "comp_id" to compId, "limit" to page.size(), "offset" to page.offset())
       val sql =
          """
-         WITH employees AS (
-            ${employeeRepository.employeeBaseQuery()}
-         ), paged AS (
-            WITH company AS (
-               ${companyRepository.companyBaseQuery()}
-            )
+         WITH paged AS (
             SELECT
                auditException.id                           AS auditException_id,
                auditException.time_created                 AS auditException_time_created,
@@ -327,10 +316,10 @@ class AuditExceptionRepository @Inject constructor(
             FROM audit_exception auditException
                JOIN audit_scan_area AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
                JOIN audit a ON auditException.audit_id = a.id
-               JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
-               JOIN employees scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
-               JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND auditScanArea.store_number_sfk = store.number
-               LEFT OUTER JOIN employees approvedBy ON auditException.approved_by = approvedBy.emp_number AND comp.id = approvedBy.comp_id
+               JOIN (${companyRepository.companyBaseQuery()}) comp ON a.company_id = comp.id AND comp.deleted = FALSE
+               JOIN system_employees_fimvw scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
+               JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND auditScanArea.store_number_sfk = store.number
+               LEFT OUTER JOIN system_employees_fimvw approvedBy ON auditException.approved_by = approvedBy.emp_number AND comp.id = approvedBy.comp_id
             WHERE auditException.audit_id = :audit_id AND comp.id = :comp_id
             ORDER BY auditException_${page.snakeSortBy()} ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
@@ -359,7 +348,7 @@ class AuditExceptionRepository @Inject constructor(
             auditExceptionNoteEmployee.store_name                      AS auditExceptionNoteEmployee_store_name
          FROM paged AS p
             LEFT OUTER JOIN audit_exception_note auditExceptionNote ON p.auditException_id = auditExceptionNote.audit_exception_id
-            LEFT OUTER JOIN employees auditExceptionNoteEmployee ON auditExceptionNote.entered_by = auditExceptionNoteEmployee.emp_number AND p.comp_id = auditExceptionNoteEmployee.comp_id
+            LEFT OUTER JOIN system_employees_fimvw auditExceptionNoteEmployee ON auditExceptionNote.entered_by = auditExceptionNoteEmployee.emp_number AND p.comp_id = auditExceptionNoteEmployee.comp_id
          ORDER BY auditException_${page.snakeSortBy()}, auditExceptionNote.id ${page.sortDirection()}
       """
 

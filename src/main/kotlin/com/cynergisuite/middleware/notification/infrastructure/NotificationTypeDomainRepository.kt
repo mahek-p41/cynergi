@@ -6,6 +6,8 @@ import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.notification.NotificationType
 import com.cynergisuite.middleware.notification.NotificationTypeEntity
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.mapper.RowMapper
@@ -13,8 +15,6 @@ import org.jdbi.v3.core.statement.StatementContext
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class NotificationTypeDomainRepository @Inject constructor(

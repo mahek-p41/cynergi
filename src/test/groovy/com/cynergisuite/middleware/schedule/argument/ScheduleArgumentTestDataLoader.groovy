@@ -8,10 +8,10 @@ import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 @CompileStatic
 class ScheduleArgumentTestDataLoader {
@@ -25,7 +25,8 @@ class ScheduleArgumentTestDataLoader {
          new ScheduleArgumentEntity(
             null,
             code.sport(),
-            code.creature()
+            code.creature(),
+            false,
          )
       }
    }

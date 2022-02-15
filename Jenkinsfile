@@ -1,5 +1,5 @@
 pipeline {
-   agent any
+   agent { label 'docs' }
 
    options {
       buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '10'))
@@ -31,13 +31,13 @@ pipeline {
             script {
                def cynergibasedb = docker.build("cynergibasedb:${env.BRANCH_NAME}", "-f ./support/development/cynergibasedb/cynergibasedb.dockerfile ./support/development/cynergibasedb")
                def cynergitestdb = docker.build("cynergitestdb:${env.BRANCH_NAME}", "-f ./support/development/cynergitestdb/cynergitestdb.dockerfile --build-arg DB_IMAGE=cynergibasedb:${env.BRANCH_NAME} ./support/development/cynergitestdb")
-               def sftpTestServer = docker.build("cynergisftp:${env.BRANCH_NAME}", "-f ./support/development/sftp/sftp.dockerfile --build-arg USER_ID=$jenkinsUid --build-arg GROUP_ID=$jenkinsGid ./support/development/sftp")
+               def sftpTestServer = docker.build("cynergitestsftp:${env.BRANCH_NAME}", "-f ./support/development/sftp/sftp.dockerfile --build-arg USER_ID=$jenkinsUid --build-arg GROUP_ID=$jenkinsGid ./support/development/sftp")
                def cynmid = docker.build("middleware:${env.BRANCH_NAME}", "-f ./support/deployment/cynmid/cynmid.dockerfile --build-arg USER_ID=$jenkinsUid --build-arg GROUP_ID=$jenkinsGid ./support/deployment/cynmid")
 
                sh 'mkdir -p /tmp/sftpuser'
 
                cynergitestdb.withRun("--network ${networkId} --name cynergitestdb${env.BRANCH_NAME} -e POSTGRES_PASSWORD=password --tmpfs /var/lib/postgresql/data:rw -v ${workspace}/support/development/cynergitestdb/fastinfo:/tmp/fastinfo") { cdbt ->
-                  sftpTestServer.withRun("--network ${networkId} --name cynergitestsftp${env.BRANCH_NAME} -v /tmp/sftpuser:/home/sftpuser") { sftp ->
+                  sftpTestServer.withRun("--network ${networkId} --name cynergitestsftp${env.BRANCH_NAME}") { sftp ->
                       script {
                          sh "docker run -i --rm --network ${networkId} cynergibasedb:${env.BRANCH_NAME} /opt/scripts/db-ready.sh cynergitestdb${env.BRANCH_NAME}"
 
@@ -45,7 +45,6 @@ pipeline {
                             "--network ${networkId} "+
                             "-v ${workspace}/gradleCache:/home/jenkins/caches " +
                             "-v ${workspace}/gradleWrapper:/home/jenkins/wrapper " +
-                            "-v /tmp/sftpuser:/tmp/sftpuser " +
                             "-e DATASOURCES_DEFAULT_URL=jdbc:postgresql://cynergitestdb${env.BRANCH_NAME}:5432/postgres " +
                             "-e TEST_SFTP_HOSTNAME=cynergitestsftp${env.BRANCH_NAME} " +
                             "-e TEST_SFTP_PORT=22 "
@@ -113,7 +112,7 @@ pipeline {
                      --compress 2 \\
                      --no-header-files \\
                      --no-man-pages \\
-                     --add-modules java.base,java.sql,openj9.jvm,openj9.sharedclasses,jdk.net,java.naming,java.management,jdk.unsupported,java.desktop,java.scripting \\
+                     --add-modules java.base,java.sql,openj9.jvm,openj9.sharedclasses,jdk.net,java.naming,java.management,jdk.unsupported,java.desktop,java.scripting,java.rmi \\
                      --strip-debug \\
                      --output /opt/cyn/v01/cynmid/java/openj9/${VER_BUILD}
                   mkdir -p /opt/cyn/v01/cynmid/java/openj9/${VER_BUILD}/jitcache
@@ -178,9 +177,9 @@ pipeline {
 
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep all\\.jar | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-RELEASE/cynergi-middleware.RELEASE-${releaseVersion}.jar
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-RELEASE/cynergi-middleware.RELEASE-${releaseVersion}.tar.xz
-               sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' scp -oStrictHostKeyChecking=no ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17:/home/jenkins/ELIMINATION/RELEASE/cynergi-middleware-${releaseVersion}.tar.xz
-               sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'ln -f /home/jenkins/ELIMINATION/RELEASE/cynergi-middleware-${releaseVersion}.tar.xz /home/jenkins/ELIMINATION/RELEASE/cynergi-middleware-current.tar.xz'"
-               sshpass -p '$CYNERGI_DEPLOY_JENKINS_PSW' ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'touch /home/jenkins/ELIMINATION/RELEASE/build.trigger'"
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW scp -oStrictHostKeyChecking=no ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17:/home/jenkins/ELIMINATION/RELEASE/cynergi-middleware-${releaseVersion}.tar.xz
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'ln -f /home/jenkins/ELIMINATION/RELEASE/cynergi-middleware-${releaseVersion}.tar.xz /home/jenkins/ELIMINATION/RELEASE/cynergi-middleware-current.tar.xz'"
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'touch /home/jenkins/ELIMINATION/RELEASE/build.trigger'"
                '''
             }
          }

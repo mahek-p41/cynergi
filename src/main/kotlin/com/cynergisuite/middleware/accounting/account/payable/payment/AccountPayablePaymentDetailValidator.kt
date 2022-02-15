@@ -10,8 +10,8 @@ import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class AccountPayablePaymentDetailValidator @Inject constructor(

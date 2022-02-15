@@ -8,8 +8,8 @@ import com.cynergisuite.middleware.localization.AccessDenied
 import io.micronaut.core.type.MutableArgumentValue
 import io.micronaut.http.annotation.QueryValue
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class CompanyAccessControlProvider @Inject constructor(

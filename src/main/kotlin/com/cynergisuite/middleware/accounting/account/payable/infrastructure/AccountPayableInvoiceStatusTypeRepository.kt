@@ -11,8 +11,8 @@ import org.jdbi.v3.core.mapper.RowMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class AccountPayableInvoiceStatusTypeRepository @Inject constructor(

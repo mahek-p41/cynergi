@@ -8,8 +8,8 @@ import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankRecon
 import com.cynergisuite.middleware.company.CompanyEntity
 import java.util.Locale
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class BankReconciliationService @Inject constructor(

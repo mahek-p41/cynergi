@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.vendor.rebate
 
 import com.cynergisuite.middleware.vendor.rebate.infrastructure.RebateTypeRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class RebateTypeService @Inject constructor(

@@ -15,7 +15,7 @@ import io.micronaut.context.annotation.Requires
 import java.time.DayOfWeek
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 @CompileStatic
 class AuditScheduleTestDataLoader {
@@ -37,7 +37,8 @@ class AuditScheduleTestDataLoader {
                arguments.add(
                   new ScheduleArgumentEntity(
                      store.myNumber().toString(),
-                     "storeNumber"
+                     "storeNumber",
+                     false,
                   )
                )
             }
@@ -49,21 +50,24 @@ class AuditScheduleTestDataLoader {
       arguments.add(
          new ScheduleArgumentEntity(
             "en-US",
-            "locale"
+            "locale",
+            false,
          )
       )
 
       arguments.add(
          new ScheduleArgumentEntity(
             user.myEmployeeType(),
-            "employeeType"
+            "employeeType",
+            false,
          )
       )
 
       arguments.add(
          new ScheduleArgumentEntity(
             user.myEmployeeNumber().toString(),
-            "employeeNumber"
+            "employeeNumber",
+            false,
          )
       )
 

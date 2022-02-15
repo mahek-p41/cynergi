@@ -11,7 +11,7 @@ import javax.sql.DataSource
 @CompileStatic
 class TestingBeanFactory {
 
-   @Bean
+   @Bean(preDestroy = "close")
    Sql groovySql(DataSource dataSource) {
       return new Sql(dataSource)
    }

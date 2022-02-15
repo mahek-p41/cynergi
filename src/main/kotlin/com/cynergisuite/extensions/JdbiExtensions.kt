@@ -20,6 +20,8 @@ private val logger: Logger = LoggerFactory.getLogger("com.cynergisuite.extension
  * query to mirror Spring's NamedParameterJdbcOperations as much as possible.
  */
 fun <ENTITY> Jdbi.query(sql: String, params: Map<String, *> = emptyMap<String, Any?>(), rowMapper: RowMapper<ENTITY>): List<ENTITY> {
+   logger.trace("Executing query {}/{}", sql, params)
+
    return this.withHandle<List<ENTITY>, Exception> { handle ->
       val query = handle.createQuery(sql)
 
@@ -125,6 +127,9 @@ fun Jdbi.softDelete(sql: String, params: Map<String, *>, tableName: String, idCo
       update.execute()
    }
 }
+
+fun Jdbi.delete(sql: String, params: Map<String, *>): Int =
+   this.update(sql, params)
 
 fun <ENTITY> Jdbi.queryForObject(sql: String, params: Map<String, *>, clazz: Class<ENTITY>): ENTITY {
    return this.withHandle<ENTITY, Exception> { handle ->

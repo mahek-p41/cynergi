@@ -12,8 +12,8 @@ import io.micronaut.context.annotation.Requires
 import java.util.concurrent.atomic.AtomicLong
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @CompileStatic
 class BankFactory {

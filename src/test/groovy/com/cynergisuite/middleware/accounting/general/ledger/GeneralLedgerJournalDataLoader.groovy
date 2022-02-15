@@ -13,7 +13,7 @@ import java.math.RoundingMode
 import java.time.LocalDate
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 @CompileStatic
 class GeneralLedgerJournalDataLoader {

@@ -27,8 +27,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
@@ -47,9 +47,6 @@ class PurchaseOrderControlRepository @Inject constructor(
       return """
          WITH vendor AS (
             ${vendorRepository.baseSelectQuery()}
-         ),
-         employee AS (
-            ${employeeRepository.employeeBaseQuery()}
          )
          SELECT
             purchaseOrderControl.id                                              AS purchaseOrderControl_id,
@@ -232,7 +229,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             JOIN default_purchase_order_type_domain defaultPOType ON purchaseOrderControl.default_purchase_order_type_id = defaultPOType.id
             JOIN approval_required_flag_type_domain appReqFlagType ON purchaseOrderControl.approval_required_flag_type_id = appReqFlagType.id
             LEFT JOIN vendor defVen ON purchaseOrderControl.default_vendor_id = defVen.v_id
-            LEFT JOIN employee defApp ON purchaseOrderControl.default_approver_id_sfk = defApp.emp_number AND purchaseOrderControl.company_id = defApp.comp_id
+            LEFT JOIN system_employees_fimvw defApp ON purchaseOrderControl.default_approver_id_sfk = defApp.emp_number AND purchaseOrderControl.company_id = defApp.comp_id
       """
    }
 

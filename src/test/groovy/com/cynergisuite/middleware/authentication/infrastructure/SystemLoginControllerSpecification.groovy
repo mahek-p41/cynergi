@@ -5,12 +5,12 @@ import com.cynergisuite.middleware.address.AddressTestDataLoaderService
 import com.cynergisuite.middleware.authentication.LoginCredentials
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import io.micronaut.core.type.Argument
-import io.micronaut.http.client.RxHttpClient
+import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import jakarta.inject.Inject
 
-import javax.inject.Inject
 
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.HEAD
@@ -21,7 +21,7 @@ import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 
 @MicronautTest(transactional = false)
 class SystemLoginControllerSpecification extends ServiceSpecificationBase {
-   @Inject @Client("/api") RxHttpClient httpClient
+   @Inject @Client("/api") HttpClient httpClient
    @Inject AddressTestDataLoaderService addressTestDataLoaderService
    @Inject CompanyRepository companyRepository
 
@@ -394,12 +394,12 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
          .exchange(
             GET("/authenticated/check"),
             Argument.of(String),
-            Argument.of(String)
+            Argument.of(String),
          )
 
       then:
       final e = thrown(HttpClientResponseException)
-      e.response.bodyAsJson().message == 'Method [GET] not allowed for URI [/api/authenticated/check]. Allowed methods: [HEAD]'
+      e.response.bodyAsJson().message == 'Method Not Allowed'
       e.status == METHOD_NOT_ALLOWED
    }
 

@@ -13,7 +13,7 @@ import com.cynergisuite.middleware.region.RegionTestDataLoaderService
 import com.cynergisuite.middleware.store.StoreTestDataLoaderService
 import spock.lang.Specification
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 abstract class ServiceSpecificationBase extends Specification {
    @Inject CompanyFactoryService companyFactoryService
@@ -31,7 +31,6 @@ abstract class ServiceSpecificationBase extends Specification {
    List<RegionEntity> regions
 
    void setup() {
-
       truncateDatabaseService.truncate()
       this.companies = companyFactoryService.streamPredefined().toList() // create the default companies
 

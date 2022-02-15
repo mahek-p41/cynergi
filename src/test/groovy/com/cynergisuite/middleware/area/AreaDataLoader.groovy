@@ -5,11 +5,11 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 class AreaDataLoader {
    private static final List<AreaType> areaTypes = [
-      new AreaType(
+      new AreaTypeEntity(
          1,
          "AP",
          "Account Payable",
@@ -17,7 +17,7 @@ class AreaDataLoader {
          false,
          []
       ),
-      new AreaType(
+      new AreaTypeEntity(
          2,
          "BR",
          "Bank Reconciliation",
@@ -25,7 +25,7 @@ class AreaDataLoader {
          false,
          []
       ),
-      new AreaType(
+      new AreaTypeEntity(
          3,
          "GL",
          "General Ledger",
@@ -33,7 +33,7 @@ class AreaDataLoader {
          false,
          []
       ),
-      new AreaType(
+      new AreaTypeEntity(
          4,
          "PO",
          "Purchase Order",
@@ -41,7 +41,7 @@ class AreaDataLoader {
          false,
          []
       ),
-      new AreaType(
+      new AreaTypeEntity(
          5,
          "MCF",
          "Master Control Files",

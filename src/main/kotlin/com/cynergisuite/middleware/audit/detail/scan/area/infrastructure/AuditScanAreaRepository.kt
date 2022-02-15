@@ -14,6 +14,8 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.intellij.lang.annotations.Language
 import org.jdbi.v3.core.Jdbi
@@ -21,8 +23,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
@@ -45,7 +45,7 @@ class AuditScanAreaRepository @Inject constructor(
             store.name AS store_name
          FROM audit_scan_area area
             JOIN company comp ON area.company_id = comp.id AND comp.deleted = FALSE
-            JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND area.store_number_sfk = store.number
+            JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND area.store_number_sfk = store.number
       """
    }
 
@@ -66,14 +66,13 @@ class AuditScanAreaRepository @Inject constructor(
    fun exists(name: String, store: StoreEntity): Boolean {
       val exists = jdbc.queryForObject(
          """
-               SELECT EXISTS (
-                  SELECT id
-                  FROM audit_scan_area
-                  WHERE name = :name
-                     AND store_number_sfk = :store_number
-                     AND company_id = :comp_id
-               )
-            """,
+         SELECT EXISTS (
+            SELECT id
+            FROM audit_scan_area
+            WHERE name = :name
+               AND store_number_sfk = :store_number
+               AND company_id = :comp_id
+         )""",
          mapOf("name" to name, "comp_id" to store.myCompany().id, "store_number" to store.myNumber()),
          Boolean::class.java
       )

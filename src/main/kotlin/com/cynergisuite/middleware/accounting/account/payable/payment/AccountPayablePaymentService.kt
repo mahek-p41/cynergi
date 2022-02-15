@@ -4,8 +4,8 @@ import com.cynergisuite.domain.PaymentReportFilterRequest
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import java.util.*
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class AccountPayablePaymentService @Inject constructor(

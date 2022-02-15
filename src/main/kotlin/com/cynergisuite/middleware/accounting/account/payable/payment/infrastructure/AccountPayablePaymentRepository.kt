@@ -22,8 +22,8 @@ import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.time.OffsetDateTime
 import java.util.*
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton

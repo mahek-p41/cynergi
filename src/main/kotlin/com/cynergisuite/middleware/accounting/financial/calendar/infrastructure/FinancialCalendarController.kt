@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory
 import java.sql.Date
 import java.time.LocalDate
 import java.util.UUID
-import javax.inject.Inject
+import jakarta.inject.Inject
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)

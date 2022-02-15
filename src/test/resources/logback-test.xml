@@ -9,6 +9,8 @@
     </appender>
 
     <logger name="io.micronaut" level="ERROR"/>
+    <logger name="org.apache.sshd" level="INFO"/>
+    <logger name="org.xnio" level="ERROR"/>
     <logger name="org.xnio" level="ERROR"/>
     <logger name="io.netty" level="ERROR"/>
     <logger name="org.jboss" level="ERROR"/>

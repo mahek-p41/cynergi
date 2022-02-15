@@ -13,8 +13,8 @@ import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.schedule.type.WEEKLY
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import jakarta.inject.Singleton
 import java.util.Locale
-import javax.inject.Singleton
 
 @Singleton
 class AuditScheduleValidator(

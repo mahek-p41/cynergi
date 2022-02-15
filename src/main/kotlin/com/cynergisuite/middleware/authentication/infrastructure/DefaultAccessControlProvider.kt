@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 /**
  * Provides a default implementation of AccessControlProvider through the Micronaut IOC container.

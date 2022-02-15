@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.schedule
 
 
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeTestDataLoader
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
@@ -11,8 +12,8 @@ import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import java.util.stream.IntStream
 import java.util.stream.Stream
 
@@ -38,7 +39,7 @@ class ScheduleTestDataLoader {
       }
    }
 
-   ScheduleEntity single(ScheduleType scheduleTypeIn = null, CompanyEntity company) {
+   static ScheduleEntity single(ScheduleType scheduleTypeIn = null, CompanyEntity company) {
       return stream(1, scheduleTypeIn, company).findFirst().orElseThrow { new Exception("Unable to create Schedule") }
    }
 }
@@ -59,7 +60,12 @@ class ScheduleTestDataLoaderService {
          .map { scheduleRepository.insert(it) }
    }
 
+   Stream<ScheduleEntity> stream(int numberIn = 1, ScheduleType scheduleTypeIn = null, ScheduleCommandType scheduleCommandTypeIn, CompanyEntity company) {
+      return ScheduleTestDataLoader.stream(numberIn, scheduleTypeIn, new ScheduleCommandTypeEntity(scheduleCommandTypeIn), company)
+         .map {  scheduleRepository.insert(it) }
+   }
+
    ScheduleEntity single(CompanyEntity company) {
-      return stream(1, null, company).findFirst().orElseThrow { new Exception("Unable to create Schedule") }
+      return stream(1, null, null, company).findFirst().orElseThrow { new Exception("Unable to create Schedule") }
    }
 }

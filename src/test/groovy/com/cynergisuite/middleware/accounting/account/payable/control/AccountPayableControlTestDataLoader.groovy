@@ -16,7 +16,7 @@ import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 import kotlin.jvm.JvmStatic
 
 @CompileStatic

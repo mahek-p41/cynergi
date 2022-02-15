@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.accounting.account.payable.AccountPayableRecu
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 @MicronautTest(transactional = false)
 class AccountPayableRecurringInvoiceStatusTypeControllerSpecification extends ControllerSpecificationBase {

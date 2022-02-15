@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.accounting.general.ledger.recurring
 
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringTypeRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class GeneralLedgerRecurringTypeService @Inject constructor(

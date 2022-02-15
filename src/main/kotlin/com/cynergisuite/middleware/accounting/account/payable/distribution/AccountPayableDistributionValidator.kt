@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.math.BigDecimal.ONE
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class AccountPayableDistributionValidator @Inject constructor(

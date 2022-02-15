@@ -11,14 +11,14 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.Store
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
@@ -89,7 +89,7 @@ class CompanyRepository @Inject constructor(
            address.phone            AS address_phone,
            address.fax              AS address_fax
          FROM company comp
-            JOIN fastinfo_prod_import.store_vw s
+            JOIN system_stores_fimvw s
                ON comp.dataset_code = s.dataset
             LEFT JOIN address ON comp.address_id = address.id AND address.deleted = FALSE
          WHERE s.id = :store_id
@@ -135,14 +135,10 @@ class CompanyRepository @Inject constructor(
 
       jdbc.query(
          """
-         WITH paged AS (
-            ${companyBaseQuery()}
-            WHERE comp.deleted = FALSE
-         )
          SELECT
             p.*,
             count(*) OVER() as total_elements
-         FROM paged AS p
+         FROM (${companyBaseQuery()} WHERE comp.deleted = FALSE) AS p
          ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT ${pageRequest.size()}
             OFFSET ${pageRequest.offset()}

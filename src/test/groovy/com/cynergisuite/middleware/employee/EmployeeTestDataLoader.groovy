@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.employee
 
+
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.CompanyFactory
@@ -11,8 +12,8 @@ import com.cynergisuite.middleware.store.Store
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.IntStream
 import java.util.stream.Stream
@@ -81,13 +82,8 @@ class EmployeeTestDataLoader {
 @CompileStatic
 @Requires(env = ["develop", "test"])
 class EmployeeTestDataLoaderService {
-   private final CompanyFactoryService companyFactoryService
-   private final EmployeeRepository employeeRepository
-
-   EmployeeTestDataLoaderService(CompanyFactoryService companyFactoryService, EmployeeRepository employeeRepository) {
-      this.companyFactoryService = companyFactoryService
-      this.employeeRepository = employeeRepository
-   }
+   @Inject CompanyFactoryService companyFactoryService
+   @Inject EmployeeRepository employeeRepository
 
    EmployeeEntity single(CompanyEntity company) {
       return stream(company).findFirst().orElseThrow { new Exception("Unable to create EmployeeEntity") }

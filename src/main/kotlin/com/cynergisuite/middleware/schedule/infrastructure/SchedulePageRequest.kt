@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.schedule.infrastructure
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.PageRequestBase
 import com.cynergisuite.domain.ValidPageSortBy
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.Size
 
@@ -12,6 +13,7 @@ import javax.validation.constraints.Size
    description = "This is the form of the URL parameters that can be used to query for a subset of a larger dataset. Example: ?page=1&size=10&sortBy=id&sortDirection=ASC&command=SOMECOMAND",
    allOf = [PageRequestBase::class]
 )
+@Introspected
 class SchedulePageRequest(
    page: Int?,
    size: Int?,

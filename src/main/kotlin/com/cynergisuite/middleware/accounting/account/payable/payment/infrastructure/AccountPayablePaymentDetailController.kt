@@ -27,7 +27,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
-import javax.inject.Inject
+import jakarta.inject.Inject
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)

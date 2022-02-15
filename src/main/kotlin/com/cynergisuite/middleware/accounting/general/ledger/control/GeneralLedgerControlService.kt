@@ -2,8 +2,8 @@ package com.cynergisuite.middleware.accounting.general.ledger.control
 
 import com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure.GeneralLedgerControlRepository
 import com.cynergisuite.middleware.company.CompanyEntity
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class GeneralLedgerControlService @Inject constructor(

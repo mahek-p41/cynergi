@@ -1,13 +1,13 @@
 ARG GROOVY_VER=3.0.9
 FROM groovy:${GROOVY_VER}-jdk11 AS groovyImage
 
-ARG GROOVY_VER=3.0.8
+ARG GROOVY_VER=3.0.9
 RUN mkdir -pv /tmp/gdk/${GROOVY_VER} && \
     cp -r /opt/groovy/* /tmp/gdk/${GROOVY_VER}
 
-FROM adoptopenjdk:11.0.11_9-jdk-openj9-0.26.0-focal
+FROM ibm-semeru-runtimes:open-11.0.13_8-jdk-focal
 
-ARG GROOVY_VER=3.0.8
+ARG GROOVY_VER=3.0.9
 ARG USER_ID=1001
 ARG GROUP_ID=1001
 

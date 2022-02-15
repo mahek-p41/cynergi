@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.ssh
 
+import jakarta.inject.Singleton
 import org.apache.sshd.client.SshClient
 import org.apache.sshd.sftp.client.SftpClient.OpenMode.Create
 import org.apache.sshd.sftp.client.SftpClient.OpenMode.Write
@@ -9,12 +10,14 @@ import org.slf4j.LoggerFactory
 import java.nio.channels.FileChannel
 import java.nio.file.Path
 import java.time.Duration
-import javax.inject.Singleton
 
 @Singleton
 class SftpClientService {
    private val verifyDuration: Duration = Duration.ofSeconds(30L)
    private val logger: Logger = LoggerFactory.getLogger(SftpClientService::class.java)
+
+   fun transferFile(fileName: Path, uploadCredentials: SftpClientCredentials, copyTo: (fileChannel: FileChannel) -> Unit) =
+      transferFile(fileName, uploadCredentials.username, uploadCredentials.password, uploadCredentials.host, uploadCredentials.port, copyTo)
 
    fun transferFile(fileName: Path, username: String, password: String, host: String, port: Int, copyTo: (fileChannel: FileChannel) -> Unit) {
       logger.debug("Creating ssh client for {}/{}", host, port)

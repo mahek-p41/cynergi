@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.inventory.infrastructure
 
 import com.cynergisuite.domain.PageRequestBase
 import com.cynergisuite.domain.ValidPageSortBy
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
@@ -14,6 +15,7 @@ import javax.validation.constraints.Positive
    description = "Defines the parameters available to for a paging request to the inventory-fetchAll endpoint. Example ?page=1&size=10&sortBy=id&sortDirection=ASC&storeNumber=1&inventoryStatus=N&inventoryStatus=O&inventoryStatus=R&inventoryStatus=D&locationType=STORE",
    allOf = [PageRequestBase::class]
 )
+@Introspected
 class InventoryPageRequest(
    page: Int? = null,
    size: Int? = null,

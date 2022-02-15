@@ -4,9 +4,11 @@ import com.cynergisuite.domain.LegacyIdentifiable
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
 import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.store.Store
+import io.micronaut.core.annotation.Introspected
 import java.math.BigDecimal
 import java.time.LocalDate
 
+@Introspected
 data class InventoryEntity(
    val id: Long,
    val serialNumber: String?,

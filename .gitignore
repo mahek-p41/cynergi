@@ -660,3 +660,4 @@ heapdump.*
 javacore.*
 gradleCache
 gradleWrapper
+support/development/sftp/sftpuser/*

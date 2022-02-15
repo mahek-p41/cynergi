@@ -14,8 +14,8 @@ import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class PurchaseOrderDetailValidator @Inject constructor(

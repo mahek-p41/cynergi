@@ -5,8 +5,8 @@ import com.cynergisuite.middleware.accounting.account.payable.PrintCurrencyIndic
 import com.cynergisuite.middleware.accounting.account.payable.PurchaseOrderNumberRequiredIndicatorTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.control.infrastructure.AccountPayableControlRepository
 import com.cynergisuite.middleware.company.CompanyEntity
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class AccountPayableControlService @Inject constructor(

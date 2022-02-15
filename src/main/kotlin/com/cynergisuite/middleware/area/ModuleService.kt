@@ -2,8 +2,8 @@ package com.cynergisuite.middleware.area
 
 import com.cynergisuite.middleware.area.infrastructure.ModuleRepository
 import com.cynergisuite.middleware.company.CompanyEntity
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class ModuleService @Inject constructor(

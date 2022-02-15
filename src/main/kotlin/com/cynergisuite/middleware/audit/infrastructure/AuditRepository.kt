@@ -24,13 +24,13 @@ import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
@@ -56,12 +56,6 @@ class AuditRepository @Inject constructor(
 
    private fun selectByIdBaseQuery(): String =
       """
-      WITH employees AS (
-         ${employeeRepository.employeeBaseQuery()}
-      ),
-      company AS (
-         ${companyRepository.companyBaseQuery()}
-      )
       SELECT
          a.id                                                          AS a_id,
          a.time_created                                                AS a_time_created,
@@ -157,26 +151,27 @@ class AuditRepository @Inject constructor(
            JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
            JOIN audit_action auditAction ON a.id = auditAction.audit_id
            JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
-           JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
-           JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
+           JOIN system_employees_vw auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
+           JOIN system_stores_fimvw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
    """
 
    private fun selectAllBaseQuery(whereClause: String): String =
       """
-         WITH employees AS (
-            ${employeeRepository.employeeBaseQuery()}
-         ), company AS (
-            ${companyRepository.companyBaseQuery()}
-         ), audits AS (
+         WITH audits AS (
             WITH status AS (
                SELECT
                   csastd.value AS current_status,
                   csaa.audit_id AS audit_id, csaa.id
                FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
             ), maxStatus AS (
-               SELECT MAX(id) AS current_status_id, audit_id
+               SELECT id AS current_status_id, audit_id
                FROM audit_action
-               GROUP BY audit_id
+               WHERE (status_id, audit_id) IN
+                  (
+                     SELECT MAX(status_id), audit_id
+                     FROM audit_action
+                     GROUP BY audit_id
+                  )
             )
             SELECT
                a.id AS id,
@@ -296,10 +291,14 @@ class AuditRepository @Inject constructor(
             comp.address_fax                                    AS address_fax,
             total_elements                                      AS total_elements
          FROM audits a
-              JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
+              JOIN company comp ON a.company_id = comp.id
+              JOIN division div ON comp.id = div.company_id
+              JOIN region reg ON div.id = reg.division_id
+              JOIN region_to_store regionStores ON reg.id = regionStores.region_id
+              JOIN system_stores_fimvw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
               JOIN audit_action auditAction ON a.id = auditAction.audit_id
               JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
-              JOIN employees auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
+              JOIN system_employees_vw auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
               JOIN fastinfo_prod_import.store_vw auditStore
                      ON comp.dataset_code = auditStore.dataset
                         AND a.store_number = auditStore.number
@@ -436,9 +435,14 @@ class AuditRepository @Inject constructor(
          WITH company AS (
             ${companyRepository.companyBaseQuery()}
          ), maxStatus AS (
-            SELECT MAX(id) AS current_status_id, audit_id
-            FROM audit_action
-            GROUP BY audit_id
+            SELECT id AS current_status_id, audit_id
+               FROM audit_action
+               WHERE (status_id, audit_id) IN
+                  (
+                     SELECT MAX(status_id), audit_id
+                     FROM audit_action
+                     GROUP BY audit_id
+                  )
          ), status AS (
             SELECT
                csastd.value AS current_status,
@@ -515,7 +519,7 @@ class AuditRepository @Inject constructor(
             count(*) OVER() AS total_elements
          FROM audit a
                JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
-               JOIN fastinfo_prod_import.store_vw auditStore
+               JOIN system_stores_fimvw auditStore
                      ON comp.dataset_code = auditStore.dataset
                         AND a.store_number = auditStore.number
                JOIN status s ON s.audit_id = a.id
@@ -605,9 +609,14 @@ class AuditRepository @Inject constructor(
                  ON csaa.status_id = csastd.id
             ),
             maxStatus AS (
-               SELECT MAX(id) AS current_status_id, audit_id
+               SELECT id AS current_status_id, audit_id
                FROM audit_action
-               GROUP BY audit_id
+               WHERE (status_id, audit_id) IN
+                  (
+                     SELECT MAX(status_id), audit_id
+                     FROM audit_action
+                     GROUP BY audit_id
+                  )
             )
          SELECT
             status.current_status_id AS current_status_id,
@@ -618,7 +627,7 @@ class AuditRepository @Inject constructor(
             count(*) AS current_status_count
          FROM audit a
             JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
-            JOIN fastinfo_prod_import.store_vw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
+            JOIN system_stores_fimvw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
             LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id

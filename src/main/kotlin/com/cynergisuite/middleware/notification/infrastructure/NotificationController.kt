@@ -31,10 +31,10 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import jakarta.inject.Inject
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import javax.inject.Inject
 import javax.validation.Valid
 
 // TODO make company a first class part of this controller by defining it here, and remove the plural form
@@ -226,8 +226,7 @@ class NotificationController @Inject constructor(
       ]
    )
    fun create(
-      @Valid @Body
-      dto: NotificationRequestValueObject
+      @Valid @Body dto: NotificationRequestValueObject
    ): NotificationResponseValueObject {
       logger.trace("Requested Create Notification {}", dto)
 

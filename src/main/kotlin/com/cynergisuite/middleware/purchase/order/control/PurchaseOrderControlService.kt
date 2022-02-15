@@ -11,8 +11,8 @@ import com.cynergisuite.middleware.purchase.order.type.DefaultPurchaseOrderTypeD
 import com.cynergisuite.middleware.purchase.order.type.UpdatePurchaseOrderCostTypeValueObject
 import com.cynergisuite.middleware.vendor.VendorDTO
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class PurchaseOrderControlService @Inject constructor(

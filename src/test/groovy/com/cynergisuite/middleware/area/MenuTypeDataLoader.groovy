@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.area
 
 import io.micronaut.context.annotation.Requires
 
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 class MenuTypeDataLoader {
    private static final List<MenuType> menuTypes = [

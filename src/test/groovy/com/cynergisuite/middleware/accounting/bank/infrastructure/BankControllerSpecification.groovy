@@ -11,7 +11,7 @@ import groovy.json.JsonOutput
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 import java.time.LocalDate
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST

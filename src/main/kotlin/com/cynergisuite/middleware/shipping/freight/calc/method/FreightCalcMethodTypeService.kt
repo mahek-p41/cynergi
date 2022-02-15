@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.shipping.freight.calc.method
 
 import com.cynergisuite.middleware.shipping.freight.calc.method.infrastructure.FreightCalcMethodTypeRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class FreightCalcMethodTypeService @Inject constructor(

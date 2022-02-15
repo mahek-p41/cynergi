@@ -2,8 +2,10 @@ package com.cynergisuite.middleware.error
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import org.apache.commons.lang3.builder.CompareToBuilder
 
+@Introspected
 @JsonInclude(NON_NULL)
 data class ErrorDTO(
    var message: String,

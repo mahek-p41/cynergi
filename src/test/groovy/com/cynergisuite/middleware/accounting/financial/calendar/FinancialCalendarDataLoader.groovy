@@ -9,7 +9,7 @@ import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.concurrent.TimeUnit

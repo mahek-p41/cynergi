@@ -5,8 +5,8 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.infrastructure.GeneralLedgerReversalRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class GeneralLedgerReversalService @Inject constructor(

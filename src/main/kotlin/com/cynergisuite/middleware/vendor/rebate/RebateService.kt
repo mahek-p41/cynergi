@@ -8,8 +8,8 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.rebate.infrastructure.RebateRepository
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class RebateService @Inject constructor(

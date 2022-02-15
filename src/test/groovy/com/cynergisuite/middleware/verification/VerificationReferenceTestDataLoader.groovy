@@ -10,7 +10,7 @@ import io.micronaut.context.annotation.Requires
 import java.time.OffsetDateTime
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import javax.inject.Singleton
+import jakarta.inject.Singleton
 
 @CompileStatic
 class VerificationReferenceTestDataLoader {

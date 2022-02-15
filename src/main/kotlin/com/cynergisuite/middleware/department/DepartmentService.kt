@@ -4,8 +4,8 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class DepartmentService @Inject constructor(

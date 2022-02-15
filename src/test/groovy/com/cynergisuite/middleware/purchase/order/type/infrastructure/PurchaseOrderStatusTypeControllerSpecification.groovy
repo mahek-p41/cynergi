@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderStatusTypeVa
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 @MicronautTest(transactional = false)
 class PurchaseOrderStatusTypeControllerSpecification extends ControllerSpecificationBase {

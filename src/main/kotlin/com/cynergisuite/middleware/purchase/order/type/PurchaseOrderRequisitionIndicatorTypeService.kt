@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.purchase.order.type
 
 import com.cynergisuite.middleware.purchase.order.type.infrastructure.PurchaseOrderRequisitionIndicatorTypeRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class PurchaseOrderRequisitionIndicatorTypeService @Inject constructor(

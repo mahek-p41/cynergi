@@ -1,113 +1,94 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
-import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.authentication.AuthenticationResponseStoreRequired
+import com.cynergisuite.middleware.authentication.CredentialsProvidedDidNotMatch
+import com.cynergisuite.middleware.authentication.CredentialsRequireStore
 import com.cynergisuite.middleware.authentication.LoginCredentials
+import com.cynergisuite.middleware.authentication.UserAuthenticated
+import com.cynergisuite.middleware.authentication.UserAuthenticatedAsAdmin
+import com.cynergisuite.middleware.authentication.UserAuthenticationStatus
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import com.cynergisuite.middleware.authentication.user.UserService
-import com.cynergisuite.middleware.localization.AccessDeniedCredentialsDoNotMatch
-import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.location.Location
-import io.micronaut.http.HttpRequest
-import io.micronaut.security.authentication.AuthenticationFailed
-import io.micronaut.security.authentication.AuthenticationProvider
-import io.micronaut.security.authentication.AuthenticationRequest
-import io.micronaut.security.authentication.AuthenticationResponse
-import io.reactivex.Flowable
-import io.reactivex.Flowable.just
-import org.apache.commons.lang3.StringUtils.EMPTY
-import org.reactivestreams.Publisher
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class UserAuthenticationProvider @Inject constructor(
-   private val localizationService: LocalizationService,
    private val userService: UserService
-) : AuthenticationProvider {
+) {
    private val logger: Logger = LoggerFactory.getLogger(UserAuthenticationProvider::class.java)
 
-   override fun authenticate(httpRequest: HttpRequest<*>?, authenticationRequest: AuthenticationRequest<*, *>?): Publisher<AuthenticationResponse> {
-      logger.info("Authentication requested for user {}", authenticationRequest?.identity)
+   fun authenticate(authenticationRequest: LoginCredentials): UserAuthenticationStatus {
+      logger.info("Authentication requested for user {}", authenticationRequest.username)
 
-      val locale = httpRequest.findLocaleWithDefault()
-      val userNumber = (authenticationRequest?.identity as String?)?.toInt()
-      val secret = authenticationRequest?.secret as String?
-      val storeNumber = if (authenticationRequest is LoginCredentials) authenticationRequest.storeNumber else null
-      val dataset = if (authenticationRequest is LoginCredentials) authenticationRequest.dataset else null
+      val userNumber = authenticationRequest.username!!.toInt()
+      val secret = authenticationRequest.password!!
+      val storeNumber = authenticationRequest.storeNumber
+      val dataset = authenticationRequest.dataset!!
 
-      return if (userNumber != null && secret != null && dataset != null) {
-         logger.info("Checking authentication for userNumber: {} dataset: {} storeNumber: {}", userNumber, dataset, storeNumber)
+      val employee = userService.fetchUserByAuthentication(userNumber, secret, dataset, storeNumber)
 
-         userService
-            .fetchUserByAuthentication(userNumber, secret, dataset, storeNumber)
-            .flatMapPublisher { employee ->
-               logger.info("Matching employee {} found, checking additional login criteria", authenticationRequest?.identity)
+      return if (employee != null) {
+         val employeeAssignedStore = employee.assignedLocation // this can be null which unless user is a cynergi admin you must have a store assigned
+         val chosenStore = employee.chosenLocation // this is what the user chose as their store during login
+         val fallbackStore = employee.fallbackLocation // use this if user is a cynergi admin and they didn't pick a store to log into
 
-               val employeeAssignedStore = employee.assignedLocation // this can be null which unless user is a cynergi admin you must have a store assigned
-               val chosenStore = employee.chosenLocation // this is what the user chose as their store during login
-               val fallbackStore = employee.fallbackLocation // use this if user is a cynergi admin and they didn't pick a store to log into
+         if (employee.cynergiSystemAdmin) {
+            logger.info("Employee {} is cynergi admin, authentication successful", authenticationRequest.username)
 
-               if (employee.cynergiSystemAdmin) {
-                  logger.info("Employee {} is cynergi admin, authentication successful", authenticationRequest?.identity)
+            credentialsAssociatedWithAdmin(employee, fallbackStore)
+         } else if (chosenStore == null) {
+            if (storeNumber != null) {
+               logger.warn("Employee {} did not provide matching credentials or invalid chosen store, not authenticated", authenticationRequest.username)
 
-                  credentialsAssociatedWithAdmin(employee, fallbackStore)
-               } else if (chosenStore == null) {
-                  if (storeNumber != null) {
-                     logger.warn("Employee {} did not provide matching credentials or invalid chosen store, not authenticated", authenticationRequest?.identity)
+               credentialsProvidedDidNotMatch(userNumber)
+            } else {
+               logger.info("Employee {} required choosing a store number poorly and are assigned {}, not authenticated", userNumber, employeeAssignedStore)
 
-                     credentialsProvidedDidNotMatch(userNumber, localizationService)
-                  } else {
-                     logger.info("Employee {} required choosing a store and they chose {} and are assigned {}, not authenticated", authenticationRequest?.identity, chosenStore, employeeAssignedStore)
-
-                     credentialsRequireStore(userNumber)
-                  }
-               } else {
-                  // cases when chosenStore != null
-
-                  if (employeeAssignedStore == chosenStore || employee.alternativeStoreIndicator == "A") {
-                     logger.info("Employee {} has alternative store indicator set to A and chose store {}, authentication successful", employee, chosenStore)
-
-                     credentialsMatched(chosenStore, employee)
-                  } else {
-                     logger.info("Employee {} was allowed to login without choosing a store, using assigned store {}, authentication successful", authenticationRequest?.identity, employeeAssignedStore)
-
-                     credentialsMatched(employeeAssignedStore, employee)
-                  }
-               }
+               credentialsRequireStore(userNumber)
             }
-            .defaultIfEmpty(AuthenticationFailed(localizationService.localize(AccessDeniedCredentialsDoNotMatch(userNumber), locale)))
-      } else {
-         logger.warn("Employee {} was not authenticated", userNumber)
+         } else {
+            // cases when chosenStore != null
 
-         just(AuthenticationFailed(localizationService.localize(AccessDeniedCredentialsDoNotMatch(userNumber?.toString() ?: EMPTY))))
+            if (employeeAssignedStore == chosenStore || employee.alternativeStoreIndicator == "A") {
+               logger.info("Employee {} has alternative store indicator set to A and chose store {}, authentication successful", employee, chosenStore)
+
+               credentialsMatched(chosenStore, employee)
+            } else {
+               logger.info("Employee {} was allowed to login without choosing a store, using assigned store {}, authentication successful", userNumber, employeeAssignedStore)
+
+               credentialsMatched(employeeAssignedStore, employee)
+            }
+         }
+      } else {
+         credentialsProvidedDidNotMatch(userNumber)
       }
    }
 
-   private fun credentialsAssociatedWithAdmin(employee: AuthenticatedEmployee, fallbackStore: Location): Flowable<AuthenticatedUser> {
+   private fun credentialsAssociatedWithAdmin(employee: AuthenticatedEmployee, fallbackStore: Location): UserAuthenticatedAsAdmin {
       logger.debug("Employee is system admin")
 
-      return just(AuthenticatedUser(employee, employee.assignedLocation ?: fallbackStore))
+      return UserAuthenticatedAsAdmin(AuthenticatedUser(employee, employee.assignedLocation ?: fallbackStore))
    }
 
-   private fun credentialsRequireStore(identity: Int): Flowable<AuthenticationResponseStoreRequired> {
-      logger.debug("Employee did not have store informing client of store requirement")
-
-      return just(AuthenticationResponseStoreRequired(identity))
-   }
-
-   private fun credentialsMatched(employeeAssignedStore: Location?, employee: AuthenticatedEmployee): Flowable<AuthenticatedUser> {
+   private fun credentialsMatched(employeeAssignedStore: Location?, employee: AuthenticatedEmployee): UserAuthenticated {
       logger.debug("Employee chosen store matched assigned store, allowing access", employeeAssignedStore)
 
-      return just(AuthenticatedUser(employee))
+      return UserAuthenticated(AuthenticatedUser(employee))
    }
 
-   private fun credentialsProvidedDidNotMatch(userId: Int, localizationService: LocalizationService): Flowable<AuthenticationFailed> {
+   private fun credentialsRequireStore(identity: Int): CredentialsRequireStore {
+      logger.debug("Employee did not have store informing client of store requirement")
+
+      return CredentialsRequireStore(identity)
+   }
+
+   private fun credentialsProvidedDidNotMatch(userId: Int): CredentialsProvidedDidNotMatch {
       logger.debug("Credentials provided did not match any known user/password/company/store combo")
 
-      return just(AuthenticationFailed(localizationService.localize(AccessDeniedCredentialsDoNotMatch(userId))))
+      return CredentialsProvidedDidNotMatch(userId)
    }
 }

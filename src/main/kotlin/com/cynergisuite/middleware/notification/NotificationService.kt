@@ -2,8 +2,8 @@ package com.cynergisuite.middleware.notification
 
 import com.cynergisuite.middleware.notification.infrastructure.NotificationRepository
 import com.cynergisuite.middleware.notification.infrastructure.NotificationTypeDomainRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class NotificationService @Inject constructor(

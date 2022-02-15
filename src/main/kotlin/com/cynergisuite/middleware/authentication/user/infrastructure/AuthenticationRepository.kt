@@ -18,13 +18,12 @@ import io.micronaut.data.annotation.repeatable.JoinSpecifications
 import io.micronaut.data.jdbc.annotation.JdbcRepository
 import io.micronaut.data.repository.CrudRepository
 import io.micronaut.transaction.annotation.ReadOnly
-import io.reactivex.Maybe
+import jakarta.inject.Inject
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
-import javax.inject.Inject
 
 @JdbcRepository
 abstract class AuthenticationRepository @Inject constructor(
@@ -146,9 +145,9 @@ abstract class AuthenticationRepository @Inject constructor(
            JOIN company comp ON comp.id = au.company_id AND comp.deleted = FALSE
            LEFT JOIN address compAddr on comp.address_id = compAddr.id AND compAddr.deleted = FALSE
            LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND au.department = dept.code
-           LEFT OUTER JOIN fastinfo_prod_import.store_vw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND au.store_number = assignedLoc.number
-           LEFT OUTER JOIN fastinfo_prod_import.store_vw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number  = :storeNumber
-           JOIN fastinfo_prod_import.store_vw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
+           LEFT OUTER JOIN system_stores_fimvw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND au.store_number = assignedLoc.number
+           LEFT OUTER JOIN system_stores_fimvw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number  = :storeNumber
+           JOIN system_stores_fimvw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
       WHERE comp.dataset_code = :dataset
             AND au.number = :employeeNumber
             AND au.pass_code = convert_passcode(au.type, :passCode, au.pass_code)
@@ -171,7 +170,7 @@ abstract class AuthenticationRepository @Inject constructor(
       Join("fallbackLocation.company"),
       Join("fallbackLocation.company.address"),
    )
-   abstract fun findUserByAuthenticationWithStore(employeeNumber: Int, passCode: String, dataset: String, storeNumber: Int): Maybe<AuthenticatedEmployee>
+   abstract fun findUserByAuthenticationWithStore(employeeNumber: Int, passCode: String, dataset: String, storeNumber: Int): AuthenticatedEmployee?
 
    @Query(
       """
@@ -305,9 +304,9 @@ abstract class AuthenticationRepository @Inject constructor(
            JOIN company comp ON comp.id = au.company_id AND comp.deleted = FALSE
            LEFT JOIN address compAddr on comp.address_id = compAddr.id AND compAddr.deleted = FALSE
            LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND au.department = dept.code
-           LEFT OUTER JOIN fastinfo_prod_import.store_vw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND au.store_number = assignedLoc.number
-           LEFT OUTER JOIN fastinfo_prod_import.store_vw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number IS NULL
-           JOIN fastinfo_prod_import.store_vw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
+           LEFT OUTER JOIN system_stores_fimvw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND au.store_number = assignedLoc.number
+           LEFT OUTER JOIN system_stores_fimvw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number IS NULL
+           JOIN system_stores_fimvw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
       WHERE comp.dataset_code = :dataset
             AND au.number = :employeeNumber
             AND au.pass_code = convert_passcode(au.type, :passCode, au.pass_code)
@@ -330,7 +329,7 @@ abstract class AuthenticationRepository @Inject constructor(
       Join("fallbackLocation.company"),
       Join("fallbackLocation.company.address"),
    )
-   abstract fun findUserByAuthentication(employeeNumber: Int, passCode: String, dataset: String): Maybe<AuthenticatedEmployee>
+   abstract fun findUserByAuthentication(employeeNumber: Int, passCode: String, dataset: String): AuthenticatedEmployee?
 
    @ReadOnly
    @Cacheable("creds-cache")

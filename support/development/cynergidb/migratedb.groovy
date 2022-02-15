@@ -18,8 +18,16 @@ import java.util.zip.ZipFile
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.FilenameUtils
 
+boolean isCst143() {
+   try {
+      return (InetAddress.getLocalHost().getHostName() == "cst143")
+   } catch(Throwable e) {
+      return false
+   }
+}
+
 def migrate(Path dir, String dbUrl, String username, String password, boolean forceClean = false) {
-   final isCst143 = (InetAddress.getLocalHost().getHostName() == "cst143")
+   final isCst143 = isCst143()
 
    final flyway = Flyway
       .configure()

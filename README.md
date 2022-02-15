@@ -169,3 +169,48 @@ API is actually fulfilling that contract.
    * `./gradlew flywayMigrateCynergiDb`
 3. Run migrations against the cynergitestdb database
    * `./gradlew flywayMigrateCynergiTestDb`
+
+## Local management
+A series of simple management endpoints are available in the ManagerController
+
+To enable darwill locally in development mode using a company of 09f8f0ba-4792-11ea-8e28-005056bb0072 and pointed at the local docker hosted sftp server
+```shell
+curl -XPOST -H "Content-Type: application/json" http://localhost:8080/manage/darwill -d '{
+  "companyId": "09f8f0ba-4792-11ea-8e28-005056bb0072",
+  "username" : "sftpuser",
+  "password" : "password",
+  "host" : "localhost",
+  "port" : 2223
+}'
+
+```
+
+To disable darwill locally in development mode
+```shell
+curl -XDELETE http://localhost:8080/manage/darwill/09f8f0ba-4792-11ea-8e28-005056bb0072
+```
+
+To run the daily jobs on-demand
+```shell
+curl -v -XPOST http://localhost:8080/manage/schedule/run/daily
+```
+
+To run the beginning of month job
+```shell
+curl -XPOST http://localhost:8080/manage/schedule/run/beginning/of/month
+```
+
+To run the end of month job
+```shell
+curl -XPOST http://localhost:8080/manage/schedule/run/end/of/month
+```
+
+## Development services
+
+### SFTP Server
+To connect to the local sftp server when running the dev stack
+```shell
+sftp -P 2223 sftpuser@localhost
+```
+
+When prompted for the password use password for the password :)

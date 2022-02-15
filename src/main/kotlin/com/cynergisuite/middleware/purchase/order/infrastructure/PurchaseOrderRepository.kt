@@ -32,8 +32,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
@@ -58,9 +58,6 @@ class PurchaseOrderRepository @Inject constructor(
       return """
          WITH account AS (
             ${accountRepository.selectBaseQuery()}
-         ),
-         employee AS (
-            ${employeeRepository.employeeBaseQuery()}
          ),
          ship_via AS (
             ${shipViaRepository.baseSelectQuery()}
@@ -414,8 +411,8 @@ class PurchaseOrderRepository @Inject constructor(
             JOIN freight_on_board_type_domain freightOnboardType  ON po.freight_on_board_type_id = freightOnboardType.id
             JOIN freight_term_type_domain freightTermType         ON po.freight_term_type_id = freightTermType.id
             JOIN ship_location_type_domain shipLocType            ON po.ship_location_type_id = shipLocType.id
-            LEFT JOIN employee approvedBy                         ON po.approved_by_id_sfk = approvedBy.emp_number AND po.company_id = approvedBy.comp_id
-            LEFT JOIN employee purchaseAgent                      ON po.purchase_agent_id_sfk = purchaseAgent.emp_number AND po.company_id = purchaseAgent.comp_id
+            LEFT JOIN system_employees_fimvw approvedBy           ON po.approved_by_id_sfk = approvedBy.emp_number AND po.company_id = approvedBy.comp_id
+            LEFT JOIN system_employees_fimvw purchaseAgent        ON po.purchase_agent_id_sfk = purchaseAgent.emp_number AND po.company_id = purchaseAgent.comp_id
             JOIN ship_via shipVia                                 ON po.ship_via_id = shipVia.id
             JOIN fastinfo_prod_import.store_vw shipTo
                ON shipTo.dataset = comp.dataset_code

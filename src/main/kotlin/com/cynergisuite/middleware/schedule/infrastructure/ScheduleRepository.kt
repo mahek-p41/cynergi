@@ -5,24 +5,27 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.infrastructure.ScheduleArgumentRepository
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
+import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
 import com.cynergisuite.middleware.schedule.command.infrastructure.ScheduleCommandTypeRepository
 import com.cynergisuite.middleware.schedule.type.ScheduleType
 import com.cynergisuite.middleware.schedule.type.infrastructure.ScheduleTypeRepository
+import io.micronaut.context.annotation.Value
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
@@ -31,7 +34,8 @@ class ScheduleRepository @Inject constructor(
    private val companyRepository: CompanyRepository,
    private val scheduleArgumentRepository: ScheduleArgumentRepository,
    private val scheduleCommandTypeRepository: ScheduleCommandTypeRepository,
-   private val scheduleTypeRepository: ScheduleTypeRepository
+   private val scheduleTypeRepository: ScheduleTypeRepository,
+   @Value("\${cynergi.schedule.arg.key}") private val scheduleArgKey: String,
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ScheduleRepository::class.java)
 
@@ -65,8 +69,11 @@ class ScheduleRepository @Inject constructor(
             sa.id                       AS sa_id,
             sa.time_created             AS sa_time_created,
             sa.time_updated             AS sa_time_updated,
-            sa.value                    AS sa_value,
+            CASE WHEN sa.encrypted THEN pgp_sym_decrypt(decode(sa.value, 'hex'), :scheduleArgKey)
+                 ELSE sa.value
+            END                         AS sa_value,
             sa.description              AS sa_description,
+            sa.encrypted                AS sa_encrypted,
             comp.id                     AS comp_id,
             comp.time_created           AS comp_time_created,
             comp.time_updated           AS comp_time_updated,
@@ -96,7 +103,7 @@ class ScheduleRepository @Inject constructor(
               JOIN company comp ON sched.company_id = comp.id AND comp.deleted = FALSE
          WHERE sched.id = :id
          """.trimIndent(),
-         mapOf("id" to id)
+         mapOf("id" to id, "scheduleArgKey" to scheduleArgKey)
       ) { rs: ResultSet, _ ->
          val localSchedule = found ?: mapRow(
             rs = rs,
@@ -132,7 +139,8 @@ class ScheduleRepository @Inject constructor(
       val params = mutableMapOf<String, Any>(
          "limit" to pageRequest.size(),
          "offset" to pageRequest.offset(),
-         "comp_id" to company.id!!
+         "comp_id" to company.id!!,
+         "scheduleArgKey" to scheduleArgKey
       )
 
       if (command != null) {
@@ -205,8 +213,11 @@ class ScheduleRepository @Inject constructor(
             sa.id                                                              AS sa_id,
             sa.time_created                                                    AS sa_time_created,
             sa.time_updated                                                    AS sa_time_updated,
-            sa.value                                                           AS sa_value,
-            sa.description                                                     AS sa_description
+            CASE WHEN sa.encrypted THEN pgp_sym_decrypt(decode(sa.value, 'hex'), :scheduleArgKey)
+                 ELSE sa.value
+            END                                                                AS sa_value,
+            sa.description                                                     AS sa_description,
+            sa.encrypted                                                       AS sa_encrypted
          FROM schedules sched
               LEFT OUTER JOIN schedule_arg sa ON sched_id = sa.schedule_id
          ORDER BY sched_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}, sa.id
@@ -343,6 +354,20 @@ class ScheduleRepository @Inject constructor(
       scheduleArgumentRepository.deleteNotIn(updated, updated.arguments)
 
       return updated
+   }
+
+   fun deleteByTypesForCompanyCascade(commandTypes: List<ScheduleCommandTypeEntity>, company: CompanyEntity) {
+      jdbc.update(
+         """
+         DELETE FROM schedule CASCADE
+         WHERE company_id = :company_id
+            AND command_id IN (<command_ids>)
+         """.trimIndent(),
+         mapOf(
+            "company_id" to company.id,
+            "command_ids" to commandTypes.map { it.id }
+         )
+      )
    }
 
    private fun mapRow(rs: ResultSet, entity: ScheduleEntity): ScheduleEntity =

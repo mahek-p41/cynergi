@@ -16,14 +16,14 @@ import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.Department
 import com.cynergisuite.middleware.department.infrastructure.DepartmentRepository
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.eclipse.collections.impl.factory.Sets
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
@@ -40,9 +40,6 @@ class AuditPermissionRepository @Inject constructor(
 
       val found = jdbc.findFirstOrNull(
          """
-         WITH company AS (
-            ${companyRepository.companyBaseQuery()}
-         )
          SELECT
             ap.id                      AS ap_id,
             ap.time_created            AS ap_time_created,
@@ -78,7 +75,7 @@ class AuditPermissionRepository @Inject constructor(
             dept.description           AS dept_description,
             dept.dataset               AS dept_dataset
          FROM audit_permission ap
-              JOIN company comp ON ap.company_id = comp.id AND comp.deleted = FALSE
+              JOIN (${companyRepository.companyBaseQuery()}) comp ON ap.company_id = comp.id AND comp.deleted = FALSE
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
               JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
          WHERE ap.id = :ap_id
@@ -100,9 +97,6 @@ class AuditPermissionRepository @Inject constructor(
 
       return jdbc.queryPaged(
          """
-         WITH company AS (
-            ${companyRepository.companyBaseQuery()}
-         )
          SELECT
             ap.id                         AS ap_id,
             ap.time_created               AS ap_time_created,
@@ -139,7 +133,7 @@ class AuditPermissionRepository @Inject constructor(
             dept.dataset                  AS dept_dataset,
             count(*) OVER() as total_elements
          FROM audit_permission ap
-              JOIN company comp ON ap.company_id = comp.id AND comp.deleted = FALSE
+              JOIN (${companyRepository.companyBaseQuery()}) comp ON ap.company_id = comp.id AND comp.deleted = FALSE
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
               JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
          WHERE comp.id = :comp_id AND ap.deleted = FALSE
@@ -171,9 +165,6 @@ class AuditPermissionRepository @Inject constructor(
 
       return jdbc.queryPaged(
          """
-         WITH company AS (
-            ${companyRepository.companyBaseQuery()}
-         )
          SELECT
             ap.id                         AS ap_id,
             ap.time_created               AS ap_time_created,
@@ -210,7 +201,7 @@ class AuditPermissionRepository @Inject constructor(
             dept.dataset                  AS dept_dataset,
             count(*) OVER() as total_elements
          FROM audit_permission ap
-            JOIN company comp ON ap.company_id = comp.id AND comp.deleted = FALSE
+            JOIN (${companyRepository.companyBaseQuery()}) comp ON ap.company_id = comp.id AND comp.deleted = FALSE
             JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
             JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
          WHERE comp.id = :comp_id AND ap.type_id = :typeId AND ap.deleted = FALSE

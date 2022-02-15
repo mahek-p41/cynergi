@@ -7,11 +7,11 @@ import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeEntity
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Singleton
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
-import javax.inject.Singleton
 
 @Singleton
 class ScheduleTypeRepository(

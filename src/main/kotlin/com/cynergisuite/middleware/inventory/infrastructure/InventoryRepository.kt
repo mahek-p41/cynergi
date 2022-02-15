@@ -18,11 +18,11 @@ import com.cynergisuite.middleware.inventory.location.InventoryLocationType
 import com.cynergisuite.middleware.location.infrastructure.LocationRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Singleton
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
-import javax.inject.Singleton
 
 @Singleton
 class InventoryRepository(
@@ -35,9 +35,6 @@ class InventoryRepository(
 
    private val selectBase =
       """
-      WITH company AS (
-         ${companyRepository.companyBaseQuery()}
-      )
       SELECT
          i.id                          AS id,
          i.serial_number               AS serial_number,
@@ -100,15 +97,16 @@ class InventoryRepository(
       FROM company comp
            JOIN fastinfo_prod_import.inventory_vw i ON comp.dataset_code = i.dataset
            LEFT JOIN address ON comp.address_id = address.id AND address.deleted = FALSE
-           JOIN fastinfo_prod_import.store_vw primaryStore ON comp.dataset_code = primaryStore.dataset AND i.primary_location = primaryStore.number
-           LEFT OUTER JOIN fastinfo_prod_import.store_vw currentStore ON comp.dataset_code = currentStore.dataset AND i.location = currentStore.number
+           JOIN system_stores_fimvw primaryStore ON comp.dataset_code = primaryStore.dataset AND i.primary_location = primaryStore.number
+           LEFT OUTER JOIN system_stores_fimvw currentStore ON comp.dataset_code = currentStore.dataset AND i.location = currentStore.number
            JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
       """.trimIndent()
 
    private val selectFromAuditInventory =
       """
       SELECT
-         i.audit_id AS id,
+         i.id AS id,
+         i.audit_id AS audit_id,
          i.serial_number AS serial_number,
          i.lookup_key AS lookup_key,
          i.lookup_key_type AS lookup_key_type,
@@ -155,8 +153,8 @@ class InventoryRepository(
          iltd.localization_code AS location_type_localization_code
       FROM company comp
            JOIN audit_inventory i ON comp.dataset_code = i.dataset
-           JOIN fastinfo_prod_import.store_vw primaryStore ON comp.dataset_code = primaryStore.dataset AND i.primary_location = primaryStore.number
-           LEFT OUTER JOIN fastinfo_prod_import.store_vw currentStore ON comp.dataset_code = currentStore.dataset AND i.location = currentStore.number
+           JOIN system_stores_fimvw primaryStore ON comp.dataset_code = primaryStore.dataset AND i.primary_location = primaryStore.number
+           LEFT OUTER JOIN system_stores_fimvw currentStore ON comp.dataset_code = currentStore.dataset AND i.location = currentStore.number
            JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
       """.trimIndent()
 

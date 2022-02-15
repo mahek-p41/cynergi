@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.accounting.account.payable
 
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableRecurringInvoiceStatusTypeRepository
-import javax.inject.Inject
-import javax.inject.Singleton
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 
 @Singleton
 class AccountPayableRecurringInvoiceStatusTypeService @Inject constructor(

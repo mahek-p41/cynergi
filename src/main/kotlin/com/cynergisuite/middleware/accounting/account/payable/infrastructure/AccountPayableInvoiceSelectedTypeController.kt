@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/accounting/account-payable/type/invoice-selected")
