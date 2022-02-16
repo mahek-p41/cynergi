@@ -19,7 +19,7 @@ class ModuleValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(ModuleValidator::class.java)
 
    @Throws(ValidationException::class)
-   fun validateCreate(company: CompanyEntity, moduleDTO: ModuleDTO): ModuleType {
+   fun validateCreate(company: CompanyEntity, moduleDTO: ModuleDTO): ModuleTypeEntity {
       val moduleTypeId = moduleDTO.id!!
       val moduleEntity = moduleRepository.findOne(moduleTypeId, company)
       val configExists = moduleRepository.configExists(moduleTypeId, company)
@@ -33,7 +33,7 @@ class ModuleValidator @Inject constructor(
    }
 
    @Throws(ValidationException::class)
-   fun validateUpdate(company: CompanyEntity, moduleDTO: ModuleDTO): ModuleType {
+   fun validateUpdate(company: CompanyEntity, moduleDTO: ModuleDTO): ModuleTypeEntity {
       val moduleTypeId = moduleDTO.id!!
       val moduleEntity = moduleRepository.findOne(moduleTypeId, company)
       val configExists = moduleRepository.configExists(moduleTypeId, company)

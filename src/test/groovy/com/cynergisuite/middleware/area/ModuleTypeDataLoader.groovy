@@ -9,8 +9,8 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 
 class ModuleDataLoader {
-   private static final List<ModuleType> moduleTypes = [
-      new ModuleType(
+   private static final List<ModuleTypeEntity> moduleTypes = [
+      new ModuleTypeEntity(
          1,
          "APADD",
          "APADD",
@@ -19,7 +19,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 2 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          2,
          "APSHO",
          "APSHO",
@@ -28,7 +28,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 2 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          3,
          "APCHG",
          "APCHG",
@@ -37,7 +37,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 2 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          4,
          "APDEL",
          "APDEL",
@@ -46,7 +46,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 2 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          5,
          "APCHECK",
          "APCHECK",
@@ -55,7 +55,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 4 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          6,
          "APCHKRPT",
          "APCHKRPT",
@@ -64,7 +64,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 4 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          7,
          "APCLEAR",
          "APCLEAR",
@@ -73,7 +73,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 4 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          8,
          "APSEL",
          "APSEL",
@@ -82,7 +82,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 4 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          9,
          "APPREVUE",
          "APPREVUE",
@@ -91,7 +91,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 4 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          10,
          "APVOID",
          "APVOID",
@@ -100,7 +100,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 4 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          11,
          "APAGERPT",
          "APAGERPT",
@@ -109,7 +109,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 5 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          12,
          "APRPT",
          "APRPT",
@@ -118,7 +118,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 5 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          13,
          "CASHOUT",
          "CASHOUT",
@@ -127,7 +127,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 5 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          14,
          "APSTATUS",
          "APSTATUS",
@@ -136,7 +136,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          15,
          "POADD",
          "POADD",
@@ -145,7 +145,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          16,
          "POCHG",
          "POCHG",
@@ -154,7 +154,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          17,
          "PODEL",
          "PODEL",
@@ -163,7 +163,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          18,
          "POLST",
          "POLST",
@@ -172,7 +172,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          19,
          "POPURGE",
          "POPURGE",
@@ -181,7 +181,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          20,
          "POSHO",
          "POSHO",
@@ -190,7 +190,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          21,
          "POINLOAD",
          "POINLOAD",
@@ -199,7 +199,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          22,
          "POUPDT",
          "POUPDT",
@@ -208,7 +208,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          23,
          "SPOADD",
          "SPOADD",
@@ -217,7 +217,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          24,
          "SPOLST",
          "SPOLST",
@@ -226,7 +226,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          25,
          "POCAN",
          "POCAN",
@@ -235,7 +235,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          26,
          "POCOPY",
          "POCOPY",
@@ -244,7 +244,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          27,
          "INVORDMT",
          "INVORDMT",
@@ -253,7 +253,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          28,
          "INVCRED",
          "INVCRED",
@@ -262,7 +262,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          29,
          "INVAVAIL",
          "INVAVAIL",
@@ -271,7 +271,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          30,
          "POSTAT",
          "POSTAT",
@@ -280,7 +280,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          31,
          "PODLST",
          "PODLST",
@@ -289,7 +289,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          32,
          "POSTAT1",
          "POSTAT1",
@@ -298,7 +298,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          33,
          "PODSQLST",
          "PODSQLST",
@@ -307,7 +307,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          34,
          "ITEMMNTS",
          "ITEMMNTS",
@@ -316,7 +316,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          35,
          "VENDOR",
          "VENDOR",
@@ -325,7 +325,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          36,
          "PODETCHG",
          "PODETCHG",
@@ -334,7 +334,7 @@ class ModuleDataLoader {
    null,
          MenuTypeDataLoader.menuTypes().find { it.id == 20 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          37,
          "POREC",
          "POREC",
@@ -343,7 +343,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 21 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          38,
          "PORECLST",
          "PORECLST",
@@ -352,7 +352,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 21 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          39,
          "PORECRPT",
          "PORECRPT",
@@ -361,7 +361,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 21 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          40,
          "PORPT",
          "PORPT",
@@ -370,7 +370,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 21 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          41,
          "POWRKSHT",
          "POWRKSHT",
@@ -379,7 +379,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 21 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          42,
          "QUOTERPT",
          "QUOTERPT",
@@ -388,7 +388,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 21 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          43,
          "VDRQUOTE",
          "VDRQUOTE",
@@ -397,7 +397,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 21 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          44,
          "SPOPRT",
          "SPOPRT",
@@ -406,7 +406,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 21 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          45,
          "STKRERDR",
          "STKRERDR",
@@ -415,7 +415,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 21 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          46,
          "GETSTKLV",
          "GETSTKLV",
@@ -424,7 +424,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 23 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          47,
          "PINVBC",
          "PINVBC",
@@ -433,7 +433,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 21 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          48,
          "PINORDRT",
          "PINORDRT",
@@ -442,7 +442,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 21 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          50,
          "APGLRPT",
          "APGLRPT",
@@ -451,7 +451,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 14 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          51,
          "ADDCOMP",
          "ADDCOMP",
@@ -460,7 +460,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 38 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          52,
          "CHGCOMP",
          "CHGCOMP",
@@ -469,7 +469,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 38 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          53,
          "DELCOMP",
          "DELCOMP",
@@ -478,7 +478,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 38 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          54,
          "LSTCOMP",
          "LSTCMP",
@@ -487,7 +487,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 38 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          55,
          "PRTCOMP",
          "PRTCOMP",
@@ -496,7 +496,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 38 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          56,
          "SHOCOMP",
          "SHOCOMP",
@@ -505,7 +505,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 38 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          57,
          "SETSYS",
          "SETSYS",
@@ -514,7 +514,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 38 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          58,
          "POPARAMS",
          "POPARAMS",
@@ -523,7 +523,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 41 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          59,
          "APLST",
          "APRPT",
@@ -532,7 +532,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 35 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          60,
          "ADDVEND",
          "ADDVEND",
@@ -541,7 +541,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 35 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          61,
          "CHGVEND",
          "CHGVEND",
@@ -550,7 +550,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 35 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          62,
          "DELVEND",
          "DELVEND",
@@ -559,7 +559,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 35 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          63,
          "LSTVEND",
          "LSTVEND",
@@ -568,7 +568,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 35 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          64,
          "PRTVEND",
          "PRTVEND",
@@ -577,7 +577,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 35 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          65,
          "DEFVEND",
          "DEFVEND",
@@ -586,7 +586,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 35 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          66,
          "SHOVEND",
          "SHOVEND",
@@ -595,7 +595,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 35 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          67,
          "SHIPVIA",
          "SHIPVIA",
@@ -604,7 +604,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 34 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          68,
          "ADDVIA",
          "ADDVIA",
@@ -613,7 +613,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 34 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          69,
          "CHGVIA",
          "CHGVIA",
@@ -622,7 +622,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 34 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          70,
          "DELVIA",
          "DELVIA",
@@ -631,7 +631,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 34 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          71,
          "PRTVIA",
          "PRTVIA",
@@ -640,7 +640,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 34 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          72,
          "SHOVIA",
          "SHOVIA",
@@ -649,7 +649,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 34 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          73,
          "GETVTERM",
          "GETVTERM",
@@ -658,7 +658,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 39 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          74,
          "APPURGE",
          "APPURGE",
@@ -667,7 +667,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 40 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          75,
          "APPARAMS",
          "APPARAMS",
@@ -676,7 +676,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 40 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          76,
          "ADDACCT",
          "ADDACCT",
@@ -685,7 +685,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 30 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          77,
          "CHGACCT",
          "CHGACCT",
@@ -694,7 +694,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 30 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          78,
          "DELACCT",
          "DELACCT",
@@ -703,7 +703,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 30 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          79,
          "LSTACCT",
          "LSTACCT",
@@ -712,7 +712,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 30 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          80,
          "PRTACCT",
          "PRTACCT",
@@ -721,7 +721,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 30 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          81,
          "CPYACCT",
          "CPYACCT",
@@ -730,7 +730,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 30 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          82,
          "SHOACCT",
          "SHOACCT",
@@ -739,7 +739,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 30 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          83,
          "ADDBANK",
          "ADDBANK",
@@ -748,7 +748,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 29 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          84,
          "CHGBANK",
          "CHGBANK",
@@ -757,7 +757,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 29 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          85,
          "DELBANK",
          "DELBANK",
@@ -766,7 +766,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 29 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          86,
          "LSTBANK",
          "LSTBANK",
@@ -775,7 +775,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 29 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          87,
          "PRTBANK",
          "PRTBANK",
@@ -784,7 +784,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 29 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          88,
          "SHOBANK",
          "SHOBANK",
@@ -793,7 +793,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 29 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          89,
          "GLPARAMS",
          "GLPARAMS",
@@ -802,7 +802,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 42 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          90,
          "ADDLAY",
          "ADDLAY",
@@ -811,7 +811,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 32 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          91,
          "CHGLAY",
          "CHGLAY",
@@ -820,7 +820,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 32 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          92,
          "DELLAY",
          "DELLAY",
@@ -829,7 +829,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 32 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          93,
          "FORMLAY",
          "FORMLAY",
@@ -838,7 +838,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 32 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          94,
          "PRTLAY",
          "PRTLAY",
@@ -847,7 +847,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 32 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          95,
          "CPYLAY",
          "CPYLAY",
@@ -856,7 +856,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 32 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          96,
          "SHOLAY",
          "SHOLAY",
@@ -865,7 +865,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 32 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          97,
          "ADDGLCOD",
          "ADDGLCOD",
@@ -874,7 +874,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 33 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          98,
          "CHGGLCOD",
          "CHGGLCOD",
@@ -883,7 +883,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 33 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          99,
          "DELGLCOD",
          "DELGLCOD",
@@ -892,7 +892,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 33 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          100,
          "LSTGLCOD",
          "LSTGLCOD",
@@ -901,7 +901,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 33 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          101,
          "PRTGLCOD",
          "PRTGLCOD",
@@ -910,7 +910,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 33 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          102,
          "SHOGLCOD",
          "SHOGLCOD",
@@ -919,7 +919,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 33 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          103,
          "ADDAPDST",
          "ADDAPDST",
@@ -928,7 +928,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 31 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          104,
          "CHGAPDST",
          "CHGAPDST",
@@ -937,7 +937,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 31 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          105,
          "DELAPDST",
          "DELAPDST",
@@ -946,7 +946,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 31 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          106,
          "SHOAPDST",
          "SHOAPDST",
@@ -955,7 +955,7 @@ class ModuleDataLoader {
          null,
          MenuTypeDataLoader.menuTypes().find { it.id == 31 }
       ),
-      new ModuleType(
+      new ModuleTypeEntity(
          107,
          "PRTAPDST",
          "PRTAPDST",
@@ -966,9 +966,9 @@ class ModuleDataLoader {
       ),
    ]
 
-   static List<ModuleType> moduleTypes() { moduleTypes }
+   static List<ModuleTypeEntity> moduleTypes() { moduleTypes }
 
-   static ModuleType random() { moduleTypes.random() }
+   static ModuleTypeEntity random() { moduleTypes.random() }
 
    static def singleDTO(int moduleTypeId, int level) {
       new ModuleDTO([

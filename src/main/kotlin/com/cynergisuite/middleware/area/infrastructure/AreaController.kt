@@ -51,7 +51,7 @@ class AreaController @Inject constructor(
       val locale = httpRequest.findLocaleWithDefault()
 
       val user = userService.fetchUser(authentication)
-      val areas = areaService.fetchAll(user.myCompany(), locale)
+      val areas = areaService.fetchAllVisibleWithMenusAndAreas(user.myCompany(), locale)
 
       logger.debug("Canonical structure of resulted in {}", areas)
 

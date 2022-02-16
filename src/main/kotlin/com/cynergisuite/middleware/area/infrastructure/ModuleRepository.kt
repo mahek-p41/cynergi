@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.area.infrastructure
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.update
-import com.cynergisuite.middleware.area.ModuleType
+import com.cynergisuite.middleware.area.ModuleTypeEntity
 import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
@@ -45,7 +45,7 @@ class ModuleRepository @Inject constructor(
    }
 
    @Transactional
-   fun insertConfig(moduleType: ModuleType, company: CompanyEntity): ModuleType {
+   fun insertConfig(moduleType: ModuleTypeEntity, company: CompanyEntity): ModuleTypeEntity {
       logger.debug("Inserting module level {}", moduleType)
 
       jdbc.update(
@@ -64,7 +64,7 @@ class ModuleRepository @Inject constructor(
    }
 
    @Transactional
-   fun updateConfig(moduleType: ModuleType, company: CompanyEntity): ModuleType {
+   fun updateConfig(moduleType: ModuleTypeEntity, company: CompanyEntity): ModuleTypeEntity {
       logger.debug("Updating module level {}", moduleType)
 
       jdbc.update(
@@ -85,7 +85,7 @@ class ModuleRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findOne(moduleTypeId: Int, company: CompanyEntity): ModuleType? {
+   fun findOne(moduleTypeId: Int, company: CompanyEntity): ModuleTypeEntity? {
       val found = jdbc.findFirstOrNull(
          "${selectBaseQuery()} WHERE module.id = :type_id",
          mapOf("type_id" to moduleTypeId)
@@ -111,8 +111,8 @@ class ModuleRepository @Inject constructor(
       return exists
    }
 
-   fun mapSimpleModule(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): ModuleType =
-      ModuleType(
+   fun mapSimpleModule(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): ModuleTypeEntity =
+      ModuleTypeEntity(
          id = rs.getInt("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          program = rs.getString("${columnPrefix}program"),

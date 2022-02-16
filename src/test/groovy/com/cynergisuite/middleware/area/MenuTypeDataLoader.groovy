@@ -8,7 +8,7 @@ import jakarta.inject.Singleton
 class MenuTypeDataLoader {
    private static final List<MenuType> menuTypes = [
 
-      new MenuType(
+      new MenuTypeEntity(
          1,
          null,
          "ACCOUNTS_PAYABLE",
@@ -19,7 +19,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          2,
          null,
          "INVOICE_MAINTENANCE",
@@ -30,7 +30,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          3,
          null,
          "RECURRING_INVOICE_MAINTENANCE",
@@ -41,7 +41,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          4,
          null,
          "CHECK_MAINTENANCE",
@@ -52,7 +52,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          5,
          null,
          "AP_REPORTS",
@@ -63,7 +63,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          6,
          null,
          "MONTH_END",
@@ -74,7 +74,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          7,
          null,
          "BANK_RECONCILIATION",
@@ -85,7 +85,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          8,
          null,
          "STORE_DEPOSIT_MAINTENANCE",
@@ -96,7 +96,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          9,
          null,
          "SEND_STORE_DEPOSIT_TO_BANK_REC",
@@ -107,7 +107,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          10,
          null,
          "CLEAR_OUTSTANDING_ITEMS",
@@ -118,7 +118,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          11,
          null,
          "RECONCILE_BANK_ACCOUNT",
@@ -129,7 +129,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          12,
          null,
          "BANK_TRANSACTIONS_MAINTENANCE",
@@ -140,7 +140,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          13,
          null,
          "GENERAL_LEDGER",
@@ -151,7 +151,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          14,
          null,
          "ACCOUNT_INQUIRY_ANALYSIS",
@@ -162,7 +162,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          15,
          null,
          "JOURNAL_ENTRY PROCESSING",
@@ -173,7 +173,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          16,
          null,
          "GL_REPORTS",
@@ -184,7 +184,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          17,
          null,
          "MONTH_END_PROCESSING",
@@ -195,7 +195,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          18,
          null,
          "UTILITIES",
@@ -206,7 +206,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          20,
          null,
          "PO_MAINTENANCE",
@@ -217,7 +217,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          21,
          null,
          "PO_REPORTS",
@@ -228,7 +228,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          22,
          21,
          "PO_REPORT_EXPORT",
@@ -239,7 +239,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          23,
          21,
          "STOCK_REORDER",
@@ -250,7 +250,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          24,
          21,
          "RECEIVER_REPORT",
@@ -261,7 +261,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          25,
          21,
          "RECEIVING_WORKSHEET",
@@ -272,7 +272,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          26,
          21,
          "SPECIAL_ORDERS",
@@ -283,7 +283,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          28,
          null,
          "HOME_OFFICE",
@@ -294,7 +294,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          29,
          28,
          "BANK",
@@ -305,7 +305,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          30,
          28,
          "CHART_OF_ACCOUNT",
@@ -316,7 +316,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          31,
          28,
          "DISTRIBUTION_TEMPLATE_MAINTENANCE",
@@ -327,7 +327,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          32,
          28,
          "FINANCIAL_STATEMENT",
@@ -338,7 +338,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          33,
          28,
          "GL_SOURCE_CODE",
@@ -349,7 +349,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          34,
          28,
          "SHIPVIA",
@@ -360,7 +360,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          35,
          28,
          "VENDOR",
@@ -371,7 +371,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          36,
          28,
          "VENDOR_GROUP",
@@ -382,7 +382,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          37,
          null,
          "RESTRICTED_MASTER_CONTROL_FILES",
@@ -393,7 +393,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          38,
          37,
          "COMPANY",
@@ -404,7 +404,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          39,
          28,
          "VENDOR_TERM_CODE",
@@ -415,7 +415,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          40,
          37,
          "AP_CONTROL",
@@ -426,7 +426,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          41,
          37,
          "PO_CONTROL",
@@ -437,7 +437,7 @@ class MenuTypeDataLoader {
          [],
          []
       ),
-      new MenuType(
+      new MenuTypeEntity(
          42,
          37,
          "GL_CONTROL",

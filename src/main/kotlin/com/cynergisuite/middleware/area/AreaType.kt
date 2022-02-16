@@ -4,7 +4,6 @@ import com.cynergisuite.domain.TypeDomainEntity
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
-import org.apache.commons.lang3.builder.EqualsBuilder
 
 sealed class AreaType(
    val id: Int,
@@ -36,7 +35,7 @@ open class AreaTypeEntity(
    val description: String,
    val localizationCode: String,
 
-) : TypeDomainEntity<AreaTypeEntity> {
+) : TypeDomainEntity<AreaType> {
 
    constructor(areaType: AreaType):
       this(
@@ -54,13 +53,8 @@ open class AreaTypeEntity(
    override fun equals(other: Any?): Boolean {
       return if (other is AreaTypeEntity) {
          basicEquality(other)
-      } else if (other is AreaType ) {
-         EqualsBuilder()
-            .append(this.id, other.id)
-            .append(this.value, other.value)
-            .append(this.description, other.description)
-            .append(this.localizationCode, other.localizationCode)
-            .isEquals
+      } else if (other is AreaType ) { // make smart cast happy
+         basicEquality(other)
       } else {
          false
       }

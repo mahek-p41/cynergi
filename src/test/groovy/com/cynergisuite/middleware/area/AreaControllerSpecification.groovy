@@ -26,7 +26,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      response.size() == 6
+      response.size() == 4
       with(response[0]) {
          def predefinedArea = predefinedAreas[0]
          id == predefinedArea.id

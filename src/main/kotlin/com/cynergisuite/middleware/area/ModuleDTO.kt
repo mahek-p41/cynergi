@@ -43,7 +43,7 @@ data class ModuleDTO(
 
 ) {
 
-   constructor(type: ModuleType) :
+   constructor(type: ModuleTypeEntity) :
       this(
          id = type.id,
          value = type.value,
@@ -53,7 +53,7 @@ data class ModuleDTO(
          menuType = type.menuType?.let { SimpleTypeDomainDTO(it.id) }
       )
 
-   constructor(type: ModuleType, localizedDescription: String) :
+   constructor(type: ModuleTypeEntity, localizedDescription: String) :
       this(
          id = type.id,
          value = type.value,

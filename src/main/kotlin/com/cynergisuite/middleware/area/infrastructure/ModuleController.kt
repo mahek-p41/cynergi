@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.module.infrastructure
 
 import com.cynergisuite.middleware.area.ModuleDTO
 import com.cynergisuite.middleware.area.ModuleService
-import com.cynergisuite.middleware.area.ModuleType
+import com.cynergisuite.middleware.area.ModuleTypeEntity
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
@@ -50,7 +50,7 @@ class ModuleController @Inject constructor(
       moduleDTO: ModuleDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): ModuleType {
+   ): ModuleTypeEntity {
       val company = userService.fetchUser(authentication).myCompany()
 
       logger.info("Create module level config {} for company {}", moduleDTO.id, company.id)
@@ -75,7 +75,7 @@ class ModuleController @Inject constructor(
       moduleDTO: ModuleDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): ModuleType {
+   ): ModuleTypeEntity {
       val company = userService.fetchUser(authentication).myCompany()
 
       logger.info("Update module level config {} for company {}", moduleDTO.id, company.id)

@@ -11,12 +11,12 @@ class ModuleService @Inject constructor(
    private val validator: ModuleValidator
 ) {
 
-   fun createLevelConfig(company: CompanyEntity, moduleDTO: ModuleDTO): ModuleType {
+   fun createLevelConfig(company: CompanyEntity, moduleDTO: ModuleDTO): ModuleTypeEntity {
       val toInsert = validator.validateCreate(company, moduleDTO)
       return repository.insertConfig(toInsert, company)
    }
 
-   fun updateLevelConfig(company: CompanyEntity, moduleDTO: ModuleDTO): ModuleType {
+   fun updateLevelConfig(company: CompanyEntity, moduleDTO: ModuleDTO): ModuleTypeEntity {
       val toUpdate = validator.validateUpdate(company, moduleDTO)
       return repository.updateConfig(toUpdate, company)
    }

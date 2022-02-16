@@ -14,37 +14,38 @@ class AreaDataLoader {
          "AP",
          "Account Payable",
          "account.payable.area.and.functionality",
-         []
       ),
       new AreaTypeEntity(
          2,
          "BR",
          "Bank Reconciliation",
          "bank.reconciliation.area.and.functionality",
-         []
       ),
       new AreaTypeEntity(
          3,
          "GL",
          "General Ledger",
          "general.ledger.area.and.functionality",
-         []
       ),
       new AreaTypeEntity(
          4,
          "PO",
          "Purchase Order",
          "purchase.order.and.requisition.area.and.functionality",
-         []
       ),
       new AreaTypeEntity(
          5,
-         "MCF",
-         "Master Control Files",
-         "master.control.files",
-         []
-      )
-   ]
+         "DARWILL",
+         "Darwill Upload",
+         "signature.capture",
+      ),
+      new AreaTypeEntity(
+         6,
+         "SIGNATURE_CAPTURE",
+         "Online Signature Capture",
+         "signature.capture"
+      ),
+   ].collect { AreaTypeKt.toAreaType(it) }
 
    static List<AreaType> areaTypes() { areaTypes }
 }

@@ -127,7 +127,7 @@ class StoreTestDataLoaderService {
    }
 
    Stream<Pair<RegionEntity, Location>> companyStoresToRegion(RegionEntity region, Long limit) {
-      return StoreTestDataLoader.stores(region.division.company)
+      return StoreTestDataLoader.stores(region.division.company).stream()
          .limit(limit)
          .map { storeRepository.assignToRegion(it, region, region.division.company.id) }
    }
