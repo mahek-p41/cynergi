@@ -15,7 +15,7 @@ class AreaService @Inject constructor(
 ) {
 
    fun isDarwillEnabledFor(company: CompanyEntity): Boolean =
-      areaRepository.existsByCompanyAndAreaType(company, DarwillUpload)
+      areaRepository.existsByCompanyAndAreaType(company, DarwillUpload.toAreaTypeEntity())
 
    fun fetchAll(company: CompanyEntity, locale: Locale): List<AreaDTO> =
       areaRepository.findByCompany(company).map { transformEntity(it, locale) }
@@ -25,16 +25,16 @@ class AreaService @Inject constructor(
       areaRepository.enable(company, areaTypeId)
    }
 
-   fun disableArea(company: CompanyEntity, areaType: AreaType) {
+   fun disableArea(company: CompanyEntity, areaType: AreaTypeEntity) {
       validator.validateAreaTypeId(company, areaType.id)
-      areaRepository.deleteByCompanyAndAreaType(company, areaType.convertAreaTypeToEntity())
+      areaRepository.deleteByCompanyAndAreaType(company, areaType)
    }
 
    private fun transformEntity(area: AreaEntity, locale: Locale): AreaDTO =
       AreaDTO(
          area = area,
          localizedDescription = area.areaType.localizeMyDescription(locale, localizationService),
-         menus = convertMenus(area.areaType.menus, locale)
+         //menus = convertMenus(area.areaType.menus, locale)
       )
 
    private fun convertMenus(menuTypes: List<MenuType>, locale: Locale): List<MenuDTO> {

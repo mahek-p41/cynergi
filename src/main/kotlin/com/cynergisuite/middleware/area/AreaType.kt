@@ -4,42 +4,46 @@ import com.cynergisuite.domain.TypeDomainEntity
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
-import io.micronaut.data.annotation.Relation
-import io.micronaut.data.annotation.Relation.Kind.ONE_TO_MANY
+import org.apache.commons.lang3.builder.EqualsBuilder
 
-sealed interface AreaType : TypeDomainEntity<AreaType> {
-   val id: Int
-   val value: String
-   val description: String
-   val localizationCode: String
-   val menus: MutableList<MenuType>
-
+sealed class AreaType(
+   val id: Int,
+   val value: String,
+   val description: String,
+   val localizationCode: String,
+) : TypeDomainEntity<AreaType> {
    override fun myId(): Int = id
    override fun myValue(): String = value
    override fun myDescription(): String = description
    override fun myLocalizationCode(): String = localizationCode
 }
 
+object Unknown : AreaType(-1, "UNK", "Unknown Area", "unknown.area")
+object AccountPayable : AreaType(1, "AP", "Account Payable", "account.payable")
+object BankReconciliation : AreaType(2, "BR", "Bank Reconciliation", "bank.reconciliation")
+object GeneralLedger : AreaType(3, "GL", "General Ledger", "general.ledger")
+object PurchaseOrder : AreaType(4, "PO", "Purchase Order", "purchase.order")
+object DarwillUpload : AreaType(5, "DARWILL", "Darwill Upload", "darwill.upload")
+
+
 @MappedEntity("area_type_domain")
 open class AreaTypeEntity(
 
    @field:Id
    @field:GeneratedValue
-   override val id: Int,
-   override val value: String,
-   override val description: String,
-   override val localizationCode: String,
+   val id: Int,
+   val value: String,
+   val description: String,
+   val localizationCode: String,
 
-   @Relation(ONE_TO_MANY)
-   override val menus: MutableList<MenuType> = mutableListOf(),
-) : AreaType {
-   constructor(areaType: AreaType) :
+) : TypeDomainEntity<AreaTypeEntity> {
+
+   constructor(areaType: AreaType):
       this(
          id = areaType.id,
          value = areaType.value,
          description = areaType.description,
          localizationCode = areaType.localizationCode,
-         menus = areaType.menus,
       )
 
    override fun myId(): Int = id
@@ -48,8 +52,15 @@ open class AreaTypeEntity(
    override fun myLocalizationCode(): String = localizationCode
 
    override fun equals(other: Any?): Boolean {
-      return if (other is AreaType) {
+      return if (other is AreaTypeEntity) {
          basicEquality(other)
+      } else if (other is AreaType ) {
+         EqualsBuilder()
+            .append(this.id, other.id)
+            .append(this.value, other.value)
+            .append(this.description, other.description)
+            .append(this.localizationCode, other.localizationCode)
+            .isEquals
       } else {
          false
       }
@@ -60,17 +71,15 @@ open class AreaTypeEntity(
    }
 }
 
-fun AreaType.convertAreaTypeToEntity(): AreaTypeEntity =
-   if (this is AreaTypeEntity) this else AreaTypeEntity(this)
+fun AreaTypeEntity.toAreaType(): AreaType =
+   when(this.id) {
+      1 -> AccountPayable
+      2 -> BankReconciliation
+      3 -> GeneralLedger
+      4 -> PurchaseOrder
+      5 -> DarwillUpload
+      else -> Unknown
+   }
 
-object AccountPayable : AreaTypeEntity(1, "AP", "Account Payable", "account.payable")
-object BankReconciliation : AreaTypeEntity(2, "BR", "Bank Reconciliation", "bank.reconciliation")
-object GeneralLedger : AreaTypeEntity(3, "GL", "General Ledger", "general.ledger")
-object PurchaseOrder : AreaTypeEntity(4, "PO", "Purchase Order", "purchase.order")
-object DarwillUpload : AreaTypeEntity(5, "DARWILL", "Darwill Upload", "darwill.upload")
-
-typealias ACCOUNT_PAYABLE = AccountPayable
-typealias BANK_REC = BankReconciliation
-typealias GENERAL_LEDGER = GeneralLedger
-typealias PURCHASE_ORDER = PurchaseOrder
-typealias DARWILL_UPLOAD = DarwillUpload
+fun AreaType.toAreaTypeEntity(): AreaTypeEntity =
+   AreaTypeEntity(this)

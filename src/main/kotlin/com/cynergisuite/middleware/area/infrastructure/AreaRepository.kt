@@ -42,7 +42,7 @@ abstract class AreaRepository @Inject constructor(
    )
    abstract fun findByCompanyAndAreaType(company: CompanyEntity, areaType: AreaTypeEntity): AreaEntity?
 
-   /*@Query("""
+   @Query("""
       SELECT
          area.id                     AS id,
          areaType.id                 AS area_type_id,
@@ -70,20 +70,11 @@ abstract class AreaRepository @Inject constructor(
          compAddress.country         AS comp_address_country,
          compAddress.county          AS comp_address_county,
          compAddress.phone           AS comp_address_phone,
-         compAddress.fax             AS comp_address_fax,
-         menuTypes.id                AS area_type_menus_id,
-         menuTypes.value             AS area_type_menus_value,
-         menuTypes.description       AS area_type_menus_description,
-         menuTypes.localization_code AS area_type_menus_localization_code,
-         menuTypes.parent_id         AS area_type_menus_parent_id,
-         menuTypes.order_number      AS area_type_menus_order_number
+         compAddress.fax             AS comp_address_fax
       FROM area_type_domain areaType
            LEFT OUTER JOIN area area ON areaType.id = area.area_type_id
-           LEFT OUTER JOIN menu_type_domain menuTypes ON areaType.id = menuTypes.area_type_id
-           LEFT OUTER JOIN module_type_domain moduleTypes ON menuTypes.id = moduleTypes.menu_type_id
            LEFT OUTER JOIN company comp ON area.company_id = comp.id
            LEFT OUTER JOIN address compAddress ON comp.address_id = compAddress.id
-           LEFT OUTER JOIN module module ON moduleTypes.id = module.module_type_id
       ORDER BY areaType.id, menuTypes.id, menuTypes.parent_id, moduleTypes.id
    """, nativeQuery = true)
    @JoinSpecifications(
@@ -92,9 +83,9 @@ abstract class AreaRepository @Inject constructor(
       Join("areaType.menus"),
       Join("areaType.menus.modules"),
    )
-   abstract fun findByCompany(company: CompanyEntity): List<AreaEntity>*/
+   abstract fun findByCompany(company: CompanyEntity): List<AreaEntity>
 
-   @ReadOnly
+   /*@ReadOnly
    fun findAll(company: CompanyEntity): List<AreaEntity> {
       logger.trace("Loading all areas for company {}", company)
 
@@ -159,7 +150,7 @@ abstract class AreaRepository @Inject constructor(
       }
 
       return groupingMenus(areas)
-   }
+   }*/
 
    @Transactional
    fun enable(company: CompanyEntity, areaTypeId: Int) {
@@ -225,7 +216,7 @@ abstract class AreaRepository @Inject constructor(
       return exists
    }
 
-   private fun groupingMenus(areas: List<AreaEntity>): List<AreaEntity> {
+/*   private fun groupingMenus(areas: List<AreaEntity>): List<AreaEntity> {
       return areas.map { area ->
          val subMenu = area.areaType.menus
             .asSequence()
@@ -244,15 +235,15 @@ abstract class AreaRepository @Inject constructor(
          area.areaType.menus.addAll(menus)
          area
       }
-   }
+   }*/
 
-   private fun mapArea(rs: ResultSet): AreaType {
+   private fun mapArea(rs: ResultSet): AreaTypeEntity {
       return AreaTypeEntity(
          id = rs.getInt("area_id"),
          value = rs.getString("area_value"),
          description = rs.getString("area_description"),
          localizationCode = rs.getString("area_localization_code"),
-         menus = mutableListOf()
+         //menus = mutableListOf()
       )
    }
 

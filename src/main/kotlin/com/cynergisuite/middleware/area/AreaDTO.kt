@@ -26,16 +26,16 @@ data class AreaDTO(
    @field:Schema(description = "Is area enabled by company")
    var enabled: Boolean = false,
 
-   @field:Schema(description = "List of menus under an area")
-   var menus: MutableList<MenuDTO>
+   /*@field:Schema(description = "List of menus under an area")
+   var menus: MutableList<MenuDTO>*/
 
 ) {
-   constructor(area: AreaEntity, localizedDescription: String, menus: List<MenuDTO>? = null) :
+   constructor(area: AreaEntity, localizedDescription: String/*, menus: List<MenuDTO>? = null*/) :
       this(
          id = area.areaType.id,
          value = area.areaType.value,
          description = localizedDescription,
          enabled = area.company != null,
-         menus = (menus ?: area.areaType.menus.map { MenuDTO(it) }) as MutableList<MenuDTO>
+         //menus = (menus ?: area.areaType.menus.map { MenuDTO(it) }) as MutableList<MenuDTO>
       )
 }
