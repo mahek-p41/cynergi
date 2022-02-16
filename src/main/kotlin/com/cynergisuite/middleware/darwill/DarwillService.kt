@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.darwill
 import com.cynergisuite.middleware.area.AreaEntity
 import com.cynergisuite.middleware.area.DarwillUpload
 import com.cynergisuite.middleware.area.infrastructure.AreaRepository
+import com.cynergisuite.middleware.area.toAreaTypeEntity
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
@@ -36,10 +37,12 @@ class DarwillService @Inject constructor(
 
    @Transactional // I want a rollback if any of these inserts fail
    fun enableFor(company: CompanyEntity, credentials: SftpClientCredentials): List<ScheduleEntity> {
-      return if (!areaRepository.existsByCompanyAndAreaType(company, DarwillUpload)) {
+      val darwillEntity = DarwillUpload.toAreaTypeEntity()
+
+      return if (!areaRepository.existsByCompanyAndAreaType(company, darwillEntity)) {
          logger.info("Enabling Darwill for company {}", company.id)
 
-         areaRepository.save(AreaEntity(areaType = DarwillUpload, company = company))
+         areaRepository.save(AreaEntity(areaType = darwillEntity, company = company))
 
          listOf(
             saveSchedule("Darwill Inactive Customer", "BEGINNING", DarwillInactiveCustomer, BeginningOfMonth, company, credentials),
@@ -56,7 +59,7 @@ class DarwillService @Inject constructor(
 
    @Transactional
    fun disableFor(company: CompanyEntity) {
-      val area = areaRepository.findByCompanyAndAreaType(company, DarwillUpload)
+      val area = areaRepository.findByCompanyAndAreaType(company, DarwillUpload.toAreaTypeEntity())
 
       if (area != null) {
          areaRepository.delete(area)

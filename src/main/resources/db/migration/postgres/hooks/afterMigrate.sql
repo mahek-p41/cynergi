@@ -171,7 +171,7 @@ CREATE MATERIALIZED VIEW system_stores_fimvw AS SELECT * FROM fastinfo_prod_impo
 CREATE INDEX sys_stores_dataset_idx ON system_stores_fimvw (dataset);
 CREATE INDEX sys_stores_number_idx ON system_stores_fimvw (number);
 
-CREATE OR REPLACE PROCEDURE refresh_fastinfo_materialized_views_fn() LANGUAGE plpgsql AS
+CREATE OR REPLACE FUNCTION refresh_fastinfo_materialized_views_fn() RETURNS VOID AS
 $$
 DECLARE
    r RECORD;
@@ -181,13 +181,13 @@ BEGIN
       EXECUTE 'REFRESH MATERIALIZED VIEW ' || r.matviewname || ' WITH DATA';
    END LOOP;
 END;
-$$;
+$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION refresh_employees_fimvw_fn()
    RETURNS TRIGGER AS
 $$
 BEGIN
-   CALL refresh_fastinfo_materialized_views_fn();
+   PERFORM refresh_fastinfo_materialized_views_fn();
 
    RETURN new;
 END;

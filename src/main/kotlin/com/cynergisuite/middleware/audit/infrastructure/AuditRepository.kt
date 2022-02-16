@@ -297,9 +297,9 @@ class AuditRepository @Inject constructor(
               JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
               JOIN system_employees_vw auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
               JOIN system_stores_fimvw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
-               LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
-               LEFT JOIN region reg ON reg.id = rts.region_id AND reg.deleted = FALSE
-               LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id AND div.deleted = FALSE
+              LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
+              LEFT JOIN region reg ON reg.id = rts.region_id AND reg.deleted = FALSE
+              LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id AND div.deleted = FALSE
          ORDER BY a.id
       """
 
