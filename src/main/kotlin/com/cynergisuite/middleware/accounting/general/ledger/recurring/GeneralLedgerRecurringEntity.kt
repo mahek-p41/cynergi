@@ -13,7 +13,7 @@ data class GeneralLedgerRecurringEntity(
    val message: String? = null,
    val beginDate: LocalDate,
    val endDate: LocalDate? = null,
-   val lastTransferDate: LocalDate? = null
+   var lastTransferDate: LocalDate? = null
 
 ) : Identifiable {
 

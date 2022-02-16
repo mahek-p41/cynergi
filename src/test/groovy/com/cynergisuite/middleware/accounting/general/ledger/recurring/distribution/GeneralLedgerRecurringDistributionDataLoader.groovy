@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring.distribu
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringDTO
@@ -14,7 +13,6 @@ import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import javax.inject.Inject
 import javax.inject.Singleton
 
 @CompileStatic
@@ -35,7 +33,7 @@ class GeneralLedgerRecurringDistributionDataLoader {
             null,
             glRecurring,
             glDistributionAcct,
-            new SimpleLegacyIdentifiableEntity(glDistributionProfitCenter.myId()),
+            glDistributionProfitCenter,
             numbers.randomDouble(2, 1, 1000000).toBigDecimal()
          )
       }

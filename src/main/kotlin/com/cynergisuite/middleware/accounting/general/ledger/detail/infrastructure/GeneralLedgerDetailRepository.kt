@@ -1,11 +1,14 @@
 package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure
 
+import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
@@ -76,7 +79,8 @@ class GeneralLedgerDetailRepository @Inject constructor(
             source.company_id                                         AS source_company_id,
             source.value                                              AS source_value,
             source.description                                        AS source_description,
-            source.deleted                                            AS source_deleted
+            source.deleted                                            AS source_deleted,
+            count(*) OVER() AS total_elements
          FROM general_ledger_detail glDetail
             JOIN company comp ON glDetail.company_id = comp.id AND comp.deleted = FALSE
             JOIN fastinfo_prod_import.store_vw profitCenter
@@ -124,6 +128,40 @@ class GeneralLedgerDetailRepository @Inject constructor(
       logger.trace("Searching for GeneralLedgerDetail id: {} resulted in {}\nQuery {}", id, found, query)
 
       return found
+   }
+
+   @ReadOnly
+   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<GeneralLedgerDetailEntity, PageRequest> {
+      return jdbc.queryPaged(
+         """
+            ${selectBaseQuery()}
+            WHERE glDetail.company_id = :comp_id
+            ORDER BY glDetail_${page.snakeSortBy()} ${page.sortDirection()}
+            LIMIT :limit OFFSET :offset
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "limit" to page.size(),
+            "offset" to page.offset()
+         ),
+         page
+      ) { rs, elements ->
+         val account = accountRepository.mapRow(rs, company, "acct_")
+         val profitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
+         val sourceCode = sourceCodeRepository.mapRow(rs, "source_")
+
+         do {
+            elements.add(
+               mapRow(
+                  rs,
+                  account,
+                  profitCenter,
+                  sourceCode,
+                  "glDetail_"
+               )
+            )
+         } while (rs.next())
+      }
    }
 
    @Transactional

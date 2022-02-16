@@ -52,6 +52,7 @@ class InvalidPayToVendor(id: UUID?) : Cynergi("cynergi.validation.invalid.pay.to
 class SelectPercentOrPerUnit(percent: BigDecimal?, amountPerUnit: BigDecimal?) : Cynergi("cynergi.validation.select.percent.or.per.unit", arrayOf(percent, amountPerUnit))
 class AccountIsRequired(account: AccountEntity?) : Cynergi("cynergi.validation.account.is.required", arrayOf(account))
 class PercentTotalGreaterThan100(percent: BigDecimal) : Cynergi("cynergi.validation.percent.total.greater.than.100", arrayOf(percent))
+class BalanceMustBeZero(balance: BigDecimal) : Cynergi("cynergi.validation.balance.must.be.zero", arrayOf(balance))
 
 class AuditStatusNotFound(auditStatus: String) : Cynergi("cynergi.audit.status.not.found", arrayOf(auditStatus))
 class AuditUnableToChangeStatusFromTo(auditId: UUID, toStatus: String, fromStatus: String) : Cynergi("cynergi.audit.unable.to.change.status.from.to", arrayOf(auditId, toStatus, fromStatus))
