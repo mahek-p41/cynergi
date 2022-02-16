@@ -11,5 +11,5 @@ class AreaService @Inject constructor(
 ) {
 
    fun isDarwillEnabledFor(company: CompanyEntity): Boolean =
-      areaRepository.existsByCompanyAndAreaType(company, DarwillUpload)
+      areaRepository.existsByCompanyAndAreaType(company, DarwillUpload.toAreaTypeEntity())
 }
