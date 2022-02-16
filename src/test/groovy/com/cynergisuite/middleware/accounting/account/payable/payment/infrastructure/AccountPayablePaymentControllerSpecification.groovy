@@ -196,11 +196,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
             paymentDetails.eachWithIndex { detail, k ->
                with(detail) {
                   id == apPaymentDetails[k + i * 5].id
-                  with(vendor) {
-                     id == apPaymentDetails[k + i * 5].vendor.id
-                     number == apPaymentDetails[k + i * 5].vendor.number
-                     name == apPaymentDetails[k + i * 5].vendor.name
-                  }
+                  vendorNumber == apPaymentDetails[k + i * 5].vendor.number
                   invoice == apPaymentDetails[k + i * 5].invoice.invoice
                   invoiceAmount == apPaymentDetails[k + i * 5].amount
                   invoiceDate == apPaymentDetails[k + i * 5].invoice.invoiceDate.toString()
