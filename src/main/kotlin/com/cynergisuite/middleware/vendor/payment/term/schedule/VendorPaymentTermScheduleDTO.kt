@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.vendor.payment.term.schedule
 import com.cynergisuite.domain.Identifiable
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.util.UUID
@@ -12,6 +13,7 @@ import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
+@Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "VendorPaymentTermSchedule", title = "Single vendor payment term schedule definition", description = "Single vendor payment term schedule")
 data class VendorPaymentTermScheduleDTO(

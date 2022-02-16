@@ -308,8 +308,8 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
       response[0].message == "must be greater than or equal to value"
       response[0].path == "discountPercent"
       response[1].code == "javax.validation.constraints.Positive.message"
-      response[1].message == "scheduleRecords[0].duePercent must be greater than zero"
-      response[1].path == "scheduleRecords[0].duePercent"
+      response[1].message == "scheduleRecords.duePercent must be greater than zero"
+      response[1].path == "scheduleRecords.duePercent"
    }
 
    void "post vendor payment term with two 49 duePercents" () {

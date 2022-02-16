@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.employee.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.employee.EmployeePageRequest
+import com.google.common.net.UrlEscapers
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
@@ -111,11 +112,12 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
 
    void "search employee" () {
       given:
-      def searchOne = new EmployeePageRequest([page: 1, size:  10, search: 'Store%20Manager'])
-      def searchTwo = new EmployeePageRequest([search: 'store%20manager'])
-      def searchThree = new EmployeePageRequest([search: 'Emp'])
-      def searchFour = new EmployeePageRequest([search: 'Karager'])
-      def searchFive = new EmployeePageRequest([search: 'St%20Manag'])
+      final urlEscaper = UrlEscapers.urlFragmentEscaper()
+      final searchOne = new EmployeePageRequest([page: 1, size:  10, search: urlEscaper.escape('Store Manager')])
+      final searchTwo = new EmployeePageRequest([search: urlEscaper.escape('store manager')])
+      final searchThree = new EmployeePageRequest([search: 'Emp'])
+      final searchFour = new EmployeePageRequest([search: 'Karager'])
+      final searchFive = new EmployeePageRequest([search: urlEscaper.escape('St Manag')])
 
       when: 'search for STORE MANAGER with paging request params'
       def searchOneResult = get("$path${searchOne}")

@@ -42,7 +42,7 @@ abstract class AreaRepository @Inject constructor(
    )
    abstract fun findByCompanyAndAreaType(company: CompanyEntity, areaType: AreaTypeEntity): AreaEntity?
 
-   @Query("""
+   /*@Query("""
       SELECT
          area.id                     AS id,
          areaType.id                 AS area_type_id,
@@ -92,12 +92,13 @@ abstract class AreaRepository @Inject constructor(
       Join("areaType.menus"),
       Join("areaType.menus.modules"),
    )
-   abstract fun findByCompany(company: CompanyEntity): List<AreaEntity>
-  /* @ReadOnly
+   abstract fun findByCompany(company: CompanyEntity): List<AreaEntity>*/
+
+   @ReadOnly
    fun findAll(company: CompanyEntity): List<AreaEntity> {
       logger.trace("Loading all areas for company {}", company)
 
-      val areas = mutableListOf<AreaType>()
+      val areas = mutableListOf<AreaEntity>()
       var currentArea: AreaType? = null
       var currentMenu: MenuType? = null
 
@@ -158,7 +159,7 @@ abstract class AreaRepository @Inject constructor(
       }
 
       return groupingMenus(areas)
-   }*/
+   }
 
    @Transactional
    fun enable(company: CompanyEntity, areaTypeId: Int) {
@@ -224,23 +225,23 @@ abstract class AreaRepository @Inject constructor(
       return exists
    }
 
-   private fun groupingMenus(areas: List<AreaType>): List<AreaType> {
+   private fun groupingMenus(areas: List<AreaEntity>): List<AreaEntity> {
       return areas.map { area ->
-         val subMenu = area.menus
+         val subMenu = area.areaType.menus
             .asSequence()
             .filter { it.parentId != null && it.parentId > 0 }
             .groupBy { it.parentId }
 
-         val menus: List<MenuType> = area.menus
+         val menus: List<MenuType> = area.areaType.menus
             .filter { it.parentId == null }
             .map { menu ->
                subMenu[menu.id]?.let { menu.menus.addAll(it) }
                menu
             }
 
-         // area.copy(menus = menus as MutableList<MenuType>)
-         area.menus.clear()
-         area.menus.addAll(menus)
+         //area.copy(menus = menus as MutableList<MenuType>)
+         area.areaType.menus.clear()
+         area.areaType.menus.addAll(menus)
          area
       }
    }
