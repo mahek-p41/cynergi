@@ -537,16 +537,4 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       response[12].path == 'validateInventory'
       response.collect { it.message } as Set == ['Is required'] as Set
    }
-
-   void "fetch all purchase order approvers" () {
-      given:
-      moduleDataLoaderService.configureLevel(16, 70, companies[0])
-      moduleDataLoaderService.configureLevel(16, 70, companies[1])
-
-      when:
-      def response = get("$path/approver")
-
-      then:
-      response.size() == 3
-   }
 }

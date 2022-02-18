@@ -374,3 +374,139 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_inactive_customer_vw (
    amount_paid VARCHAR,
    customer_rating VARCHAR
 ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-inactive-customer.csv', format 'csv', header 'TRUE');
+
+CREATE TABLE fastinfo_prod_import.itemfile_vw(
+   id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
+   dataset                VARCHAR(6)                            NOT NULL,
+   time_created           TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+   time_updated           TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+   number                 VARCHAR(18)                           NOT NULL,
+   description_1          VARCHAR(28)                           NOT NULL,
+   description_2          VARCHAR(26),
+   discontinued_indicator VARCHAR(1)                            NOT NULL,
+   vendor_number          INTEGER                               NOT NULL
+);
+/*
+select
+   CASE
+      WHEN dataset = 'corrto' THEN 'tstds1'
+      WHEN dataset = 'corptp' THEN 'tstds2'
+   END AS dataset,
+   time_created,
+   time_updated,
+   number,
+   description_1,
+   description_2,
+   discontinued_indicator,
+   vendor_number
+from itemfile_vw;
+ */
+
+COPY fastinfo_prod_import.itemfile_vw(
+   dataset,
+   time_created,
+   time_updated,
+   number,
+   description_1,
+   description_2,
+   discontinued_indicator,
+   vendor_number
+) FROM '/tmp/fastinfo/test-itemfile.csv' DELIMITER ',' CSV HEADER;
+
+CREATE TABLE fastinfo_prod_import.customer_vw(
+   id                     BIGSERIAL                             NOT NULL PRIMARY KEY,
+   dataset                VARCHAR(6)                            NOT NULL,
+   time_created           TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+   time_updated           TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+   number                 INTEGER                               NOT NULL,
+   first_name_mi          VARCHAR(50)                           NOT NULL,
+   last_name              VARCHAR(50)
+);
+
+COPY fastinfo_prod_import.customer_vw(
+   dataset,
+   time_created,
+   time_updated,
+   number,
+   first_name_mi,
+   last_name
+) FROM '/tmp/fastinfo/test-customer.csv' DELIMITER ',' CSV HEADER;
+
+CREATE TABLE fastinfo_prod_import.operator_vw(
+    id                             BIGSERIAL                             NOT NULL PRIMARY KEY,
+    dataset                        VARCHAR(6)                            NOT NULL,
+    time_created                   TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+    time_updated                   TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+    name                           VARCHAR(20)                           NOT NULL,
+    number                         INTEGER                               NOT NULL,
+    account_payable_security       INTEGER                               NOT NULL,
+    purchase_order_security        INTEGER                               NOT NULL,
+    general_ledger_security        INTEGER                               NOT NULL,
+    system_administration_security INTEGER                               NOT NULL,
+    file_maintenance_security      INTEGER                               NOT NULL,
+    bank_reconciliation_security   INTEGER                               NOT NULL
+);
+
+/*
+ select
+   CASE
+      WHEN dataset = 'corrto' THEN 'tstds1'
+      WHEN dataset = 'corptp' THEN 'tstds2'
+   END AS dataset,
+   time_created,
+   time_updated,
+   name,
+   number,
+   account_payable_security,
+   purchase_order_security,
+   general_ledger_security,
+   system_administration_security,
+   file_maintenance_security,
+   bank_reconciliation_security
+ from operator_vw
+*/
+
+COPY fastinfo_prod_import.operator_vw(
+    dataset,
+    time_created,
+    time_updated,
+    name,
+    number,
+    account_payable_security,
+    purchase_order_security,
+    general_ledger_security,
+    system_administration_security,
+    file_maintenance_security,
+    bank_reconciliation_security
+) FROM '/tmp/fastinfo/test-operator.csv' DELIMITER ',' CSV HEADER;
+
+CREATE TABLE fastinfo_prod_import.furncol_vw(
+    id                             BIGSERIAL                             NOT NULL PRIMARY KEY,
+    dataset                        VARCHAR(6)                            NOT NULL,
+    time_created                   TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+    time_updated                   TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+    number                         INTEGER                               NOT NULL,
+    description                    VARCHAR                               NOT NULL
+);
+
+COPY fastinfo_prod_import.furncol_vw(
+    dataset,
+    number,
+    description
+) FROM '/tmp/fastinfo/test-furncol.csv' DELIMITER ',' CSV HEADER;
+
+CREATE TABLE fastinfo_prod_import.furnfab_vw(
+    id                             BIGSERIAL                             NOT NULL PRIMARY KEY,
+    dataset                        VARCHAR(6)                            NOT NULL,
+    time_created                   TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+    time_updated                   TIMESTAMPTZ DEFAULT clock_timestamp() NOT NULL,
+    number                         INTEGER                               NOT NULL,
+    description                    VARCHAR                               NOT NULL
+);
+
+COPY fastinfo_prod_import.furnfab_vw(
+    dataset,
+    number,
+    description
+) FROM '/tmp/fastinfo/test-furnfab.csv' DELIMITER ',' CSV HEADER;
+

@@ -140,7 +140,7 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          active == null
       }
 
-      with(searchOneResult.elements[1]) {
+      with(searchOneResult.elements[2]) {
          number == 90004
          lastName == 'ASST MANAGER'
          alternativeStoreIndicator == 'N'
@@ -151,7 +151,7 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          active == null
       }
 
-      with(searchOneResult.elements[2]) {
+      with(searchOneResult.elements[1]) {
          number == 90002
          lastName == 'MARKET MANAGER'
          alternativeStoreIndicator == 'N'
@@ -184,8 +184,8 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
       }
 
       with(searchTwoResult.elements[1]) {
-         number == 90004
-         lastName == 'ASST MANAGER'
+         number == 90002
+         lastName == 'MARKET MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
          type == 'sysz'
@@ -195,8 +195,8 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
       }
 
       with(searchTwoResult.elements[2]) {
-         number == 90002
-         lastName == 'MARKET MANAGER'
+         number == 90004
+         lastName == 'ASST MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
          type == 'sysz'
