@@ -156,7 +156,8 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             type_id = :type_id,
             source_id = :source_id,
             begin_date = :begin_date,
-            end_date = :end_date
+            end_date = :end_date,
+            last_transfer_date = :last_transfer_date
          WHERE id = :id
          RETURNING
             *
@@ -169,7 +170,8 @@ class GeneralLedgerRecurringRepository @Inject constructor(
             "type_id" to entity.type.id,
             "source_id" to entity.source.id,
             "begin_date" to entity.beginDate,
-            "end_date" to entity.endDate
+            "end_date" to entity.endDate,
+            "last_transfer_date" to entity.lastTransferDate
          )
       ) { rs, _ ->
          mapRowUpsert(rs, entity.type, entity.source)
