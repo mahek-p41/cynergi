@@ -260,7 +260,7 @@ class InventoryRepository(
       ORDER BY ${pageRequest.sortBy} ${pageRequest.sortDirection}
       LIMIT :limit
          OFFSET :offset
-         """.trimIndent()
+      """.trimIndent()
 
       logger.debug("Querying Inventory {} {} {}", pageRequest, params, sql)
 

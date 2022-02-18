@@ -4,7 +4,7 @@ import com.cynergisuite.middleware.accounting.account.payable.payment.infrastruc
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.util.*
+import java.util.UUID
 
 @Singleton
 class AccountPayablePaymentDetailService @Inject constructor(

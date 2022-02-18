@@ -5,7 +5,7 @@ import com.cynergisuite.middleware.accounting.bank.BankEntity
 import com.cynergisuite.middleware.vendor.VendorEntity
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 
 data class AccountPayablePaymentEntity(
    val id: UUID? = null,

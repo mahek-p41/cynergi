@@ -38,7 +38,8 @@ abstract class AreaRepository @Inject constructor(
    )
    abstract fun findByCompanyAndAreaType(company: CompanyEntity, areaType: AreaTypeEntity): AreaEntity?
 
-   @Query("""
+   @Query(
+      """
       SELECT
          a.id                  AS id,
          atd.id                AS area_type_id,
@@ -80,7 +81,9 @@ abstract class AreaRepository @Inject constructor(
       WHERE a.company_id = :company
          OR a.id IS NULL
       ORDER BY atd.id
-   """, nativeQuery = true)
+   """,
+      nativeQuery = true
+   )
    @JoinSpecifications(
       Join("areaType"),
       Join("company"),
@@ -133,7 +136,8 @@ abstract class AreaRepository @Inject constructor(
    fun exists(areaTypeId: Int): Boolean {
       logger.trace("Checking if Area exists {}")
 
-      val exists = jdbc.queryForObject("SELECT EXISTS (SELECT id FROM area_type_domain WHERE id = :area_type_id)",
+      val exists = jdbc.queryForObject(
+         "SELECT EXISTS (SELECT id FROM area_type_domain WHERE id = :area_type_id)",
          mapOf("area_type_id" to areaTypeId),
          Boolean::class.java
       )

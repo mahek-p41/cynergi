@@ -30,7 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
+import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)

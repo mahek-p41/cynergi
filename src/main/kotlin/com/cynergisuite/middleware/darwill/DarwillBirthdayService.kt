@@ -33,7 +33,7 @@ class DarwillBirthdayService @Inject constructor(
 
    @ReadOnly
    override fun process(company: CompanyEntity, sftpClientCredentials: SftpClientCredentials, time: Month, fileDate: String): DarwillJobResult {
-      val pushedFileName = "${company.clientCode}-birthdays-${fileDate}.csv"
+      val pushedFileName = "${company.clientCode}-birthdays-$fileDate.csv"
       val birthdayTempPath = Files.createTempFile("birthday", ".csv")
 
       Files.newBufferedWriter(birthdayTempPath).use { writer ->

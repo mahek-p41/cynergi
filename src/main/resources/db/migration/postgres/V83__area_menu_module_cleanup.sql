@@ -12,3 +12,14 @@ WHERE id = 22;
 UPDATE menu_type_domain
 SET area_type_id = NULL
 WHERE id IN (22, 23, 24, 25, 26);
+
+UPDATE module_type_domain
+SET localization_code = 'list.po.by.sequence.number'
+WHERE id = 33;
+
+DELETE FROM module_type_domain
+WHERE menu_type_id IN (1, 36, 39);
+
+DELETE FROM menu_type_domain
+WHERE id IN (1, 36, 39);
+

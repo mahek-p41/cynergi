@@ -14,7 +14,7 @@ import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
-import java.util.*
+import java.util.UUID
 import javax.transaction.Transactional
 
 @Singleton

@@ -38,22 +38,22 @@ data class MenuDTO(
    var modules: MutableList<ModuleDTO>
 ) {
 
-   constructor(type: MenuType) :
+   constructor(type: MenuTypeEntity) :
       this(
          id = type.id,
          value = type.value,
          description = type.description,
          orderNumber = type.orderNumber,
-         modules = type.modules.map { ModuleDTO(it) } as MutableList<ModuleDTO>
+         modules = mutableListOf() // type.modules.map { ModuleDTO(it) } as MutableList<ModuleDTO>
       )
 
-   constructor(type: MenuType, localizedDescription: String, menus: List<MenuDTO>? = null, modules: List<ModuleDTO>? = null) :
+   constructor(type: MenuTypeEntity, localizedDescription: String, menus: List<MenuDTO>? = null, modules: List<ModuleDTO>? = null) :
       this(
          id = type.id,
-         menus = (menus ?: type.menus.map { MenuDTO(it) }) as MutableList<MenuDTO>,
+         menus = mutableListOf(), // (menus ?: type.menus.map { MenuDTO(it) }) as MutableList<MenuDTO>,
          value = type.value,
          description = localizedDescription,
          orderNumber = type.orderNumber,
-         modules = (modules ?: type.modules.map { ModuleDTO(it) }) as MutableList<ModuleDTO>
+         modules = mutableListOf(), // (modules ?: type.modules.map { ModuleDTO(it) }) as MutableList<ModuleDTO>
       )
 }

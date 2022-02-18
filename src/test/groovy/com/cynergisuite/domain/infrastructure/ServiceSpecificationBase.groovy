@@ -1,7 +1,9 @@
 package com.cynergisuite.domain.infrastructure
 
-import com.cynergisuite.middleware.area.AreaDataLoaderService
-import com.cynergisuite.middleware.area.ModuleDataLoaderService
+import com.cynergisuite.middleware.area.AccountPayable
+import com.cynergisuite.middleware.area.AreaDataTestDataLoaderService
+import com.cynergisuite.middleware.area.BankReconciliation
+import com.cynergisuite.middleware.area.PurchaseOrder
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.CompanyFactoryService
 import com.cynergisuite.middleware.department.DepartmentFactoryService
@@ -11,9 +13,8 @@ import com.cynergisuite.middleware.employee.EmployeeTestDataLoaderService
 import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.region.RegionTestDataLoaderService
 import com.cynergisuite.middleware.store.StoreTestDataLoaderService
-import spock.lang.Specification
-
 import jakarta.inject.Inject
+import spock.lang.Specification
 
 abstract class ServiceSpecificationBase extends Specification {
    @Inject CompanyFactoryService companyFactoryService
@@ -23,8 +24,7 @@ abstract class ServiceSpecificationBase extends Specification {
    @Inject StoreTestDataLoaderService storeFactoryService
    @Inject EmployeeTestDataLoaderService employeeFactoryService
    @Inject TruncateDatabaseService truncateDatabaseService
-   @Inject AreaDataLoaderService areaDataLoaderService
-   @Inject ModuleDataLoaderService moduleDataLoaderService
+   @Inject AreaDataTestDataLoaderService areaDataLoaderService
 
    List<CompanyEntity> companies
    List<DivisionEntity> divisions
@@ -52,15 +52,10 @@ abstract class ServiceSpecificationBase extends Specification {
          storeFactoryService.companyStoresToRegion(region, 1).toList()
       }
 
-      areaDataLoaderService.enableArea(1, tstds1)
-      areaDataLoaderService.enableArea(2, tstds1)
-      areaDataLoaderService.enableArea(4, tstds1)
-      areaDataLoaderService.enableArea(1, tstds2)
-      areaDataLoaderService.enableArea(2, tstds2)
-
-      moduleDataLoaderService.configureLevel(1, 10, tstds1)
-      moduleDataLoaderService.configureLevel(2, 15, tstds1)
-      moduleDataLoaderService.configureLevel(1, 20, tstds2)
-      moduleDataLoaderService.configureLevel(2, 25, tstds2)
+      areaDataLoaderService.enableArea(AccountPayable.INSTANCE, tstds1)
+      areaDataLoaderService.enableArea(BankReconciliation.INSTANCE, tstds1)
+      areaDataLoaderService.enableArea(PurchaseOrder.INSTANCE, tstds1)
+      areaDataLoaderService.enableArea(AccountPayable.INSTANCE, tstds2)
+      areaDataLoaderService.enableArea(BankReconciliation.INSTANCE, tstds2)
    }
 }

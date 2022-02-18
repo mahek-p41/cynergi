@@ -36,6 +36,6 @@ data class AreaDTO(
          value = area.areaType.value,
          description = localizedDescription,
          enabled = area.company != null,
-         //menus = (menus ?: area.areaType.menus.map { MenuDTO(it) }) as MutableList<MenuDTO>
+         // menus = (menus ?: area.areaType.menus.map { MenuDTO(it) }) as MutableList<MenuDTO>
       )
 }

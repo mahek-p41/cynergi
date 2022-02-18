@@ -39,6 +39,6 @@ class AreaService @Inject constructor(
       AreaDTO(
          area = area,
          localizedDescription = area.areaType.localizeMyDescription(locale, localizationService),
-         //menus = convertMenus(area.areaType.menus, locale)
+         // menus = convertMenus(area.areaType.menus, locale)
       )
 }

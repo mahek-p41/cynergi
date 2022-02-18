@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 import javax.validation.constraints.NotNull
 
 @JsonInclude(NON_NULL)

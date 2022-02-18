@@ -5,7 +5,7 @@ import com.cynergisuite.domain.ValidPageSortBy
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
-import java.util.*
+import java.util.UUID
 
 @Schema(
    name = "RebatePageRequest",
