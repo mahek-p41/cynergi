@@ -109,7 +109,7 @@ services:
          - DATASOURCES_DEFAULT_URL=jdbc:postgresql://cynergidb:5432/cynergidb
       volumes:
          - gradleCache:/home/jenkins/.gradle
-      command: [ "./gradlew", "--no-daemon", "--info", "clean", "&&", "./gradlew", "--no-daemon", "--info", "shadowJar", "&&", "java", "-Dmicronaut.environments=development", "-jar", "/opt/cynergi-middleware/build/libs/cynergi-middleware.jar" ]
+      command: [ "./gradlew", "--no-daemon", "--info", "clean", "shadowJar", "&&", "java", "-Dmicronaut.environments=development", "-jar", "/opt/cynergi-middleware/build/libs/cynergi-middleware.jar" ]
 
    cynergitestdb:
       container_name: cynergitestdb
