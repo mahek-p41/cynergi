@@ -76,8 +76,8 @@ services:
          context: sftp
          dockerfile: sftp.dockerfile
          args:
-            GROUP_ID: $GROUP_ID
-            USER_ID: $USER_ID
+            GROUP_ID: ${GROUP_ID:-1001}
+            USER_ID: ${USER_ID:-1001}
       ports:
          - "2222:22"
       logging:
@@ -170,8 +170,8 @@ services:
          context: sftp
          dockerfile: sftp.dockerfile
          args:
-            GROUP_ID: $GROUP_ID
-            USER_ID: $USER_ID
+            GROUP_ID: ${GROUP_ID:-1001}
+            USER_ID: ${USER_ID:-1001}
       ports:
          - "2223:22"
       logging:

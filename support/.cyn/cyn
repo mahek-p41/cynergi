@@ -1,7 +1,22 @@
 #!/usr/bin/env bash
 
-export GROUP_ID=1001
-export USER_ID=1001
+#!/usr/bin/env bash
+
+set -e
+
+case "$OSTYPE" in
+  linux*)
+      if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null ; then
+          echo "WSL detected"
+      else
+          export GROUP_ID=$(id -g)
+          export USER_ID=$(id -u)
+      fi
+      ;;
+  *)  export GROUP_ID=1001
+      export USER_ID=1001
+      ;;
+esac
 
 alias docker-compose="GROUP_ID=$GROUP_ID USER_ID=$USER_ID docker-compose"
 
