@@ -12,6 +12,7 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.BufferedReader
@@ -50,13 +51,13 @@ class DarwillLastWeeksPayoutService @Inject constructor(
                lastWeeksPayout.firstName,
                lastWeeksPayout.lastName,
                lastWeeksPayout.address1,
-               lastWeeksPayout.address2,
+               lastWeeksPayout.address2 ?: EMPTY,
                lastWeeksPayout.city,
-               lastWeeksPayout.state,
-               lastWeeksPayout.zip,
-               lastWeeksPayout.cellPhoneNumber,
-               lastWeeksPayout.homePhoneNumber,
-               lastWeeksPayout.email,
+               lastWeeksPayout.state ?: EMPTY,
+               lastWeeksPayout.zip ?: EMPTY,
+               lastWeeksPayout.cellPhoneNumber ?: EMPTY,
+               lastWeeksPayout.homePhoneNumber ?: EMPTY,
+               lastWeeksPayout.email ?: EMPTY,
                lastWeeksPayout.agreementId,
                lastWeeksPayout.finalStatus,
                lastWeeksPayout.payoutDate

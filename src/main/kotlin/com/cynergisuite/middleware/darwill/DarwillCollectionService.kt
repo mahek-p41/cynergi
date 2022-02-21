@@ -12,6 +12,7 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import org.apache.commons.csv.CSVFormat.EXCEL
 import org.apache.commons.csv.CSVPrinter
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.BufferedReader
@@ -51,11 +52,11 @@ class DarwillCollectionService @Inject constructor(
                collection.address1,
                collection.address2,
                collection.city,
-               collection.state,
-               collection.zip,
-               collection.cellPhoneNumber,
-               collection.homePhoneNumber,
-               collection.email,
+               collection.state ?: EMPTY,
+               collection.zip ?: EMPTY,
+               collection.cellPhoneNumber ?: EMPTY,
+               collection.homePhoneNumber ?: EMPTY,
+               collection.email ?: EMPTY,
                collection.agreementId,
                collection.daysLate
             )
