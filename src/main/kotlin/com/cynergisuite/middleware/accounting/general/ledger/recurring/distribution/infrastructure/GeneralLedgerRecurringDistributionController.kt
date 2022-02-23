@@ -5,6 +5,7 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionTotalsDTO
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -32,6 +33,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
 import java.util.UUID
 import javax.validation.Valid
 
@@ -238,5 +240,32 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
       val user = userService.fetchUser(authentication)
 
       return generalLedgerRecurringDistributionService.deleteByDistributionId(id, user.myCompany())
+   }
+
+   @Throws(NotFoundException::class)
+   @Get(uri = "/calculate-total/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["GeneralLedgerRecurringDistributionEndpoints"], summary = "Fetch a single General Ledger Recurring Distribution total", description = "Fetch a single General Ledger Recurring Distribution total", operationId = "generalLedgerRecurringDistribution-fetchTotal")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = BigDecimal::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested General Ledger Recurring Distribution was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchTotal(
+      @QueryValue("id")
+      id: UUID,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): GeneralLedgerRecurringDistributionTotalsDTO {
+      logger.info("Fetching General Ledger Recurring Distribution by {}", id)
+
+      val user = userService.fetchUser(authentication)
+      val response = generalLedgerRecurringDistributionService.calculateTotal(id, user.myCompany()) ?: throw NotFoundException(id)
+
+      logger.debug("Fetching General Ledger Recurring Distribution by {} resulted in", id, response)
+
+      return response
    }
 }

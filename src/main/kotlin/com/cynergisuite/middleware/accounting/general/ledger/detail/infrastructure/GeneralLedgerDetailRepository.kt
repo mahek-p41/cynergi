@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure
 
+import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
@@ -7,12 +8,15 @@ import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailEntity
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -263,6 +267,77 @@ class GeneralLedgerDetailRepository @Inject constructor(
       }
    }
 
+   @ReadOnly
+   fun fetchReports(company: CompanyEntity, filterRequest: GeneralLedgerSearchReportFilterRequest): List<GeneralLedgerDetailEntity> {
+      val reports = mutableListOf<GeneralLedgerDetailEntity>()
+      var currentEntity: GeneralLedgerDetailEntity? = null
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val whereClause = StringBuilder("WHERE glDetail.company_id = :comp_id ")
+
+      if (filterRequest.startingAccount != null && filterRequest.endingAccount != null) {
+         params["startingAccount"] = filterRequest.startingAccount
+         params["endingAccount"] = filterRequest.endingAccount
+         whereClause.append(" AND acct.account_number ")
+            .append(buildNumberFilterString("startingAccount", "endingAccount"))
+      }
+
+      if (filterRequest.profitCenter != null) {
+         params["profitCenter"] = filterRequest.profitCenter
+         whereClause.append(" AND profitCenter.id = :profitCenter")
+      }
+
+      if (filterRequest.sourceCode != null) {
+         params["sourceCode"] = filterRequest.sourceCode
+         whereClause.append(" AND source.value = :sourceCode")
+      }
+
+      when (filterRequest.typeEntry) {
+         "C" -> whereClause.append(" AND glDetail.amount <= 0 ")
+         "D" -> whereClause.append(" AND glDetail.amount >= 0 ")
+      }
+      if(filterRequest.lowAmount != null && filterRequest.highAmount != null) {
+         params["lowAmount"] = filterRequest.lowAmount
+         params["highAmount"] = filterRequest.highAmount
+         whereClause.append(" AND glDetail.amount ")
+            .append(buildNumberFilterString("lowAmount", "highAmount"))
+      }
+
+      if (filterRequest.description != null ) {
+         params["description"] = filterRequest.description
+         whereClause.append(" AND glDetail.message = :description")
+      }
+
+      if (filterRequest.jeNumber != null) {
+         params["jeNumber"] = filterRequest.jeNumber
+         whereClause.append(" AND glDetail.journal_entry_number = :jeNumber")
+      }
+
+      if (filterRequest.frmPmtDt != null && filterRequest.thruPmtDt != null) {
+         params["frmPmtDt"] = filterRequest.frmPmtDt
+         params["thruPmtDt"] = filterRequest.thruPmtDt
+         whereClause.append(" AND glDetail.date ")
+            .append(buildNumberFilterString("frmPmtDt", "thruPmtDt"))
+      }
+
+      jdbc.query(
+         """
+            ${selectBaseQuery()}
+            $whereClause
+         """.trimIndent(),
+         params
+      ) { rs, _ ->
+         do {
+            val account = accountRepository.mapRow(rs, company, "acct_")
+            val profitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
+            val sourceCode = sourceCodeRepository.mapRow(rs, "source_")
+            val currentEntity = mapRow(rs, account, profitCenter, sourceCode, "glDetail_")
+            reports.add(currentEntity)
+         } while (rs.next())
+      }
+
+      return reports
+   }
+
    fun mapRow(
       rs: ResultSet,
       account: AccountEntity,
@@ -281,5 +356,9 @@ class GeneralLedgerDetailRepository @Inject constructor(
          employeeNumberId = rs.getIntOrNull("${columnPrefix}employee_number_id_sfk"),
          journalEntryNumber = rs.getIntOrNull("${columnPrefix}journal_entry_number")
       )
+   }
+
+   private fun buildNumberFilterString(beginningParam: String, endingParam: String): String {
+      return " BETWEEN :$beginningParam AND :$endingParam "
    }
 }

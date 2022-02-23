@@ -1,7 +1,10 @@
 package com.cynergisuite.middleware.accounting.general.ledger
 
+import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.PaymentReportFilterRequest
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerJournalRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject

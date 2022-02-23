@@ -53,6 +53,11 @@ class GeneralLedgerRecurringDistributionService @Inject constructor(
       generalLedgerRecurringDistributionRepository.deleteByDistributionId(id)
    }
 
+   fun calculateTotal(id: UUID, company: CompanyEntity): GeneralLedgerRecurringDistributionTotalsDTO {
+
+      return generalLedgerRecurringDistributionRepository.total(id, company)
+   }
+
    private fun transformEntity(entity: GeneralLedgerRecurringDistributionEntity): GeneralLedgerRecurringDistributionDTO {
       return GeneralLedgerRecurringDistributionDTO(entity)
    }

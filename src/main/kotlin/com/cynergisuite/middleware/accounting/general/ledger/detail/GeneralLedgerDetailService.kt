@@ -1,10 +1,12 @@
 package com.cynergisuite.middleware.accounting.general.ledger.detail
 
 import com.cynergisuite.domain.GeneralLedgerRecurringEntriesFilterRequest
+import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.infrastructure.GeneralLedgerRecurringEntriesRepository
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.infrastructure.GeneralLedgerReversalEntryRepository
@@ -43,6 +45,12 @@ class GeneralLedgerDetailService @Inject constructor(
       val toUpdate = generalLedgerDetailValidator.validateUpdate(id, dto, company)
 
       return transformEntity(generalLedgerDetailRepository.update(toUpdate, company))
+   }
+
+   fun fetchReport(company: CompanyEntity, filterRequest: GeneralLedgerSearchReportFilterRequest): GeneralLedgerSearchReportTemplate {
+      val found = generalLedgerDetailRepository.fetchReports(company, filterRequest)
+
+      return GeneralLedgerSearchReportTemplate(found)
    }
 
    fun transfer(company: CompanyEntity, filterRequest: GeneralLedgerRecurringEntriesFilterRequest) {

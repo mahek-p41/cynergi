@@ -3,10 +3,20 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring.distribu
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.queryFullList
+import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.sumByBigDecimal
+import com.cynergisuite.extensions.update
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringEntity
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionEntity
+import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionTotalsDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
@@ -19,6 +29,7 @@ import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
 import java.sql.ResultSet
 import java.util.UUID
 import javax.transaction.Transactional
@@ -300,6 +311,25 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       )
    }
 
+   @ReadOnly
+   fun total(glRecurringId: UUID, company: CompanyEntity): GeneralLedgerRecurringDistributionTotalsDTO {
+      return jdbc.queryForObject(
+      """
+         SELECT
+         sum(case when general_ledger_distribution_amount >= 0 then general_ledger_distribution_amount end) as debit,
+         sum(ABS(case when general_ledger_distribution_amount < 0 then general_ledger_distribution_amount end)) as credit,
+         sum(general_ledger_distribution_amount ) as total
+         from general_ledger_recurring_distribution glRecurringDist
+         WHERE glRecurringDist.general_ledger_recurring_id = :glRecurringId AND glRecurringDist.deleted = FALSE
+      """.trimIndent(),
+          mapOf(
+            "glRecurringId" to glRecurringId
+          ),
+
+      ) { rs, _ -> mapRow(rs) }
+   }
+
+
    private fun mapRow(
       rs: ResultSet,
       company: CompanyEntity,
@@ -341,6 +371,16 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
          generalLedgerDistributionAccount = accountRepository.mapRow(rs, company, "${columnPrefix}account_"),
          generalLedgerDistributionProfitCenter = profitCenter,
          generalLedgerDistributionAmount = rs.getBigDecimal("${columnPrefix}general_ledger_distribution_amount")
+      )
+   }
+
+   fun mapRow(
+      rs: ResultSet,
+   ): GeneralLedgerRecurringDistributionTotalsDTO {
+      return GeneralLedgerRecurringDistributionTotalsDTO(
+         credit = rs.getBigDecimal("credit"),
+         debit = rs.getBigDecimal("debit"),
+         total = rs.getBigDecimal("total")
       )
    }
 }
