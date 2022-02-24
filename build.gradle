@@ -9,7 +9,6 @@ plugins {
 
    id "jacoco"
    id "groovy"
-   id "org.flywaydb.flyway" version "${flywayVersion}"
    id "org.openapi.generator" version "4.3.0"
    id "org.jmailen.kotlinter" version "3.4.0"
 }
@@ -127,31 +126,6 @@ tasks {
          jvmTarget = "11"
       }
    }
-}
-
-task flywayMigrateCynergiDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
-   url = "jdbc:postgresql://localhost:6432/cynergidb"
-   user = "cynergiuser"
-   password = "password"
-   locations = ["filesystem:src/main/resources/db/migration/postgres"]
-}
-
-task flywayMigrateCynergiDevelopDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
-   url = "jdbc:postgresql://localhost:6432/cynergidevelopdb"
-   user = "cynergiuser"
-   password = "password"
-   locations = ["filesystem:src/main/resources/db/migration/postgres"]
-   cleanDisabled = false
-   cleanOnValidationError = true
-}
-
-task flywayMigrateCynergiTestDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
-   url = "jdbc:postgresql://localhost:7432/cynergitestdb"
-   user = "postgres"
-   password = "password"
-   locations = ["filesystem:src/main/resources/db/migration/postgres"]
-   cleanDisabled = false
-   cleanOnValidationError = true
 }
 
 openApiGenerate {

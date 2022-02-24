@@ -1,4 +1,4 @@
-#!/usr/bin/env /opt/cyn/v01/cynmid/groovy/bin/groovy
+#!/usr/bin/env groovy
 @GrabConfig(systemClassLoader = true)
 @Grab(group = 'org.postgresql', module = 'postgresql', version = '42.2.15')
 @Grab(group='org.flywaydb', module='flyway-core', version='5.2.4')

@@ -52,7 +52,7 @@ class DarwillLastWeeksDeliveryService @Inject constructor(
                lastWeeksDelivery.lastName,
                lastWeeksDelivery.address1,
                lastWeeksDelivery.address2 ?: EMPTY,
-               lastWeeksDelivery.city,
+               lastWeeksDelivery.city ?: EMPTY,
                lastWeeksDelivery.state ?: EMPTY,
                lastWeeksDelivery.zip ?: EMPTY,
                lastWeeksDelivery.cellPhoneNumber ?: EMPTY,

@@ -51,7 +51,7 @@ class DarwillActiveCustomerService @Inject constructor(
                activeCustomer.lastName,
                activeCustomer.address1,
                activeCustomer.address2 ?: EMPTY,
-               activeCustomer.city,
+               activeCustomer.city ?: EMPTY,
                activeCustomer.state ?: EMPTY,
                activeCustomer.zip ?: EMPTY,
                activeCustomer.cellPhoneNumber ?: EMPTY,

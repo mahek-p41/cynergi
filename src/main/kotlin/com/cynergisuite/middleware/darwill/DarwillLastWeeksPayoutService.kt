@@ -52,7 +52,7 @@ class DarwillLastWeeksPayoutService @Inject constructor(
                lastWeeksPayout.lastName,
                lastWeeksPayout.address1,
                lastWeeksPayout.address2 ?: EMPTY,
-               lastWeeksPayout.city,
+               lastWeeksPayout.city ?: EMPTY,
                lastWeeksPayout.state ?: EMPTY,
                lastWeeksPayout.zip ?: EMPTY,
                lastWeeksPayout.cellPhoneNumber ?: EMPTY,

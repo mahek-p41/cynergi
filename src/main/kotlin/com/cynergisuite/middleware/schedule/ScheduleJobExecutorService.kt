@@ -30,18 +30,18 @@ class ScheduleJobExecutorService @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(ScheduleJobExecutorService::class.java)
 
    @Transactional
-   fun runDaily(dayOfWeek: DayOfWeek = OffsetDateTime.now().dayOfWeek) =
-      runJob(dayOfWeek, WEEKLY, OnceDailyJob::class)
+   fun runDaily(dayOfWeek: DayOfWeek = OffsetDateTime.now().dayOfWeek, forceRun: Boolean = false) =
+      runJob(dayOfWeek, WEEKLY, OnceDailyJob::class, forceRun)
 
    @Transactional
-   fun runBeginningOfMonth(month: Month = OffsetDateTime.now().month) =
-      runJob(month, BEGINNING_OF_MONTH, BeginningOfMonthJob::class)
+   fun runBeginningOfMonth(month: Month = OffsetDateTime.now().month, forceRun: Boolean = false) =
+      runJob(month, BEGINNING_OF_MONTH, BeginningOfMonthJob::class, forceRun)
 
    @Transactional
-   fun runEndOfMonth(month: Month = OffsetDateTime.now().month) =
-      runJob(month, END_OF_MONTH, EndOfMonthJob::class)
+   fun runEndOfMonth(month: Month = OffsetDateTime.now().month, forceRun: Boolean = false) =
+      runJob(month, END_OF_MONTH, EndOfMonthJob::class, forceRun)
 
-   private fun <T : TemporalAccessor, J : Job<T>> runJob(temporalAccessor: T, scheduleType: ScheduleType, jobClazz: KClass<J>): Int {
+   private fun <T : TemporalAccessor, J : Job<T>> runJob(temporalAccessor: T, scheduleType: ScheduleType, jobClazz: KClass<J>, forceRun: Boolean = false): Int {
       return companyRepository.all()
          .flatMap { scheduleRepository.all(scheduleType, it) }
          .onEach { logger.info("Loaded scheduled task {}/{}", it.title, it.enabled) }
@@ -52,7 +52,7 @@ class ScheduleJobExecutorService @Inject constructor(
             ClassUtils.isAssignable(job::class.java, jobClazz.java)
          }
          .map { it to applicationContext.getBean<Job<T>>(it.command.value) }
-         .filter { (schedule, task) -> task.shouldProcess(schedule, temporalAccessor) }
+         .filter { (schedule, task) -> forceRun || task.shouldProcess(schedule, temporalAccessor) }
          .onEach { (schedule, _) -> logger.info("Submitting scheduled task {}", schedule.title) }
          .map { (schedule, task) ->
             val result = try {

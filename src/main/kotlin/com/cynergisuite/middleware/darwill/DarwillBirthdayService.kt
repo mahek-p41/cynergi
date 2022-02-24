@@ -51,7 +51,7 @@ class DarwillBirthdayService @Inject constructor(
                birthday.lastName,
                birthday.address1,
                birthday.address2 ?: EMPTY,
-               birthday.city,
+               birthday.city ?: EMPTY,
                birthday.state ?: EMPTY,
                birthday.zip ?: EMPTY,
                birthday.cellPhoneNumber ?: EMPTY,

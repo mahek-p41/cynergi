@@ -51,7 +51,7 @@ class DarwillCollectionService @Inject constructor(
                collection.lastName,
                collection.address1,
                collection.address2,
-               collection.city,
+               collection.city ?: EMPTY,
                collection.state ?: EMPTY,
                collection.zip ?: EMPTY,
                collection.cellPhoneNumber ?: EMPTY,
