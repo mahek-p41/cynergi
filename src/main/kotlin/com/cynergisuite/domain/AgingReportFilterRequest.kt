@@ -2,7 +2,6 @@ package com.cynergisuite.domain
 
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.*
 
 @Schema(
