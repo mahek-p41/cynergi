@@ -33,7 +33,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company)
 
       when:
-      def result = scheduleService.runDaily(TUESDAY)
+      def result = scheduleService.runDaily(TUESDAY, false)
       def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
 
       then:
@@ -58,7 +58,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company)
 
       when:
-      def result = scheduleService.runDaily(TUESDAY)
+      def result = scheduleService.runDaily(TUESDAY, false)
       def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
 
       then:
@@ -81,7 +81,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company)
 
       when:
-      def result = scheduleService.runDaily(WEDNESDAY)
+      def result = scheduleService.runDaily(WEDNESDAY, false)
       def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
 
       then:
