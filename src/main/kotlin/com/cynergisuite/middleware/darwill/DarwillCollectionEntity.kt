@@ -8,9 +8,9 @@ data class DarwillCollectionEntity(
    val storeId: Int, // FIXME Convert to using Store when data is in cynergidb and not coming from Fastinfo
    val peopleId: String?,
    val uniqueId: BigInteger,
-   val firstName: String,
-   val lastName: String,
-   val address1: String,
+   val firstName: String?,
+   val lastName: String?,
+   val address1: String?,
    val address2: String?,
    val city: String?,
    val state: String?,
