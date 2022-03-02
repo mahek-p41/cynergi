@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.aging
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusType
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 
 data class AgingReportInvoiceDetailEntity(
    val invoiceCompanyId: UUID,

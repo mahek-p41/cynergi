@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.aging
 
-import java.util.*
-import kotlin.collections.LinkedHashSet
+import java.util.UUID
 
 data class AgingReportVendorDetailEntity(
    val vendorCompanyId: UUID,
