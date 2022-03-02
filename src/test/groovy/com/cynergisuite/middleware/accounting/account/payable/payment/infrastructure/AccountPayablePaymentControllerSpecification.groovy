@@ -93,7 +93,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
             description == apPayment.type.description
          }
          paymentDate == apPayment.paymentDate.toString()
-         dateCleared == apPayment.dateCleared.toString()
+         dateCleared == (apPayment.dateCleared ? apPayment.dateCleared.toString() : null)
          dateVoided == (apPayment.dateVoided ? apPayment.dateVoided.toString() : null)
          paymentNumber == apPayment.paymentNumber
          amount == apPayment.amount
@@ -238,7 +238,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
       def pmtStatuses = AccountPayablePaymentStatusTypeDataLoader.predefined()
       def pmtTypes = AccountPayablePaymentTypeTypeDataLoader.predefined()
       def apPayments = dataLoaderService.stream(2, company, bank, vendors[0], pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }).toList()
-      apPayments.addAll(dataLoaderService.stream(2, company, bank, vendors[1], pmtStatuses.find { it.value == 'V' }, pmtTypes.find { it.value == 'C' }, true).toList())
+      apPayments.addAll(dataLoaderService.stream(2, company, bank, vendors[1], pmtStatuses.find { it.value == 'V' }, pmtTypes.find { it.value == 'C' }, null, null, null, true).toList())
 
 
       def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[0]).toList()

@@ -49,7 +49,7 @@ class AccountPayableAgingReportController @Inject constructor(
    fun fetchOne(
       @QueryValue("id") id: UUID,
       @Parameter(name = "filterRequest", `in` = QUERY, required = false)
-      @Valid @QueryValue("filterRequest")
+      @QueryValue("filterRequest")
       filterRequest: AgingReportFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
@@ -72,7 +72,7 @@ class AccountPayableAgingReportController @Inject constructor(
    )
    fun fetchReport(
       @Parameter(name = "filterRequest", `in` = QUERY, required = false)
-      @Valid @QueryValue("filterRequest")
+      @QueryValue("filterRequest")
       filterRequest: AgingReportFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
