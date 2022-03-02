@@ -9,6 +9,7 @@ if [ -z `docker-compose ps -q cynergitestdb` ] || [ -z `docker ps -q --no-trunc 
 else
   echo "Migration Test database"
   cd ../../
-  ./support/development/cynergidb/migratedb.groovy -d cynergitestdb -H localhost -P 7432 -u postgres -p password -m ${PWD}/src/main/resources/db/migration/postgres/
+  pwd
+  ./gradlew flywayMigrateCynergiTestDb
   exit $?
 fi
