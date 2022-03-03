@@ -16,7 +16,7 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
 
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -400,107 +400,5 @@ class GeneralLedgerReversalEntryControllerSpecification extends ControllerSpecif
       def response = exception.response.bodyAsJson()
       response.message == "${glReversal.id} was unable to be found"
       response.code == 'system.not.found'
-   }
-
-   void "recreate deleted GL reversal entry" () {
-      given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
-      final account = accountDataLoaderService.single(company)
-      final profitCenter = storeFactoryService.store(3, company)
-      final glReversalEntity = generalLedgerReversalDataLoaderService.single(company, glSourceCode)
-      final glReversalDTO = generalLedgerReversalDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode))
-      glReversalDTO.id = glReversalEntity.id
-
-      final glReversalDistributions = generalLedgerReversalDistributionDataLoaderService.stream(1, glReversalEntity, account, profitCenter).toList()
-      def glReversalDistributionDTOs = GeneralLedgerReversalDistributionDataLoader.streamDTO(
-         1,
-         glReversalDTO,
-         new AccountDTO(account),
-         new SimpleLegacyIdentifiableDTO(profitCenter.myId())
-      ).toList()
-      glReversalDistributionDTOs.eachWithIndex { it, index ->
-         it.id = glReversalDistributions[index].id
-      }
-
-      def glReversalEntryDTO = dataLoaderService.singleDTO(glReversalDTO, glReversalDistributionDTOs)
-
-      when: // create a GL reversal entry
-      def response1 = post(path, glReversalEntryDTO)
-
-      then:
-      notThrown(Exception)
-      response1 != null
-      with(response1) {
-         with(generalLedgerReversal) {
-            id == glReversalDTO.id
-
-            with(source) {
-               value == glReversalEntryDTO.generalLedgerReversal.source.value
-               description == glReversalEntryDTO.generalLedgerReversal.source.description
-            }
-
-            date == glReversalEntryDTO.generalLedgerReversal.date.toString()
-            reversalDate == glReversalEntryDTO.generalLedgerReversal.reversalDate.toString()
-            comment == glReversalEntryDTO.generalLedgerReversal.comment
-            entryMonth == glReversalEntryDTO.generalLedgerReversal.entryMonth
-            entryNumber == glReversalEntryDTO.generalLedgerReversal.entryNumber
-         }
-
-         generalLedgerReversalDistributions.eachWithIndex{ distribution, index ->
-            distribution.id == glReversalEntryDTO.generalLedgerReversalDistributions[index].id
-            distribution.generalLedgerReversal.id == glReversalEntryDTO.generalLedgerReversalDistributions[index].generalLedgerReversal.id
-            distribution.generalLedgerReversalDistributionAccount.id == glReversalEntryDTO.generalLedgerReversalDistributions[index].generalLedgerReversalDistributionAccount.myId()
-            distribution.generalLedgerReversalDistributionProfitCenter.id == glReversalEntryDTO.generalLedgerReversalDistributions[index].generalLedgerReversalDistributionProfitCenter.myId()
-            distribution.generalLedgerReversalDistributionAmount == glReversalEntryDTO.generalLedgerReversalDistributions[index].generalLedgerReversalDistributionAmount
-         }
-
-         balance == BigDecimal.ZERO
-      }
-
-      when: // delete GL reversal entry
-      delete("$path/${response1.generalLedgerReversal.id}")
-
-      then: "GL reversal entry of user's company is deleted"
-      notThrown(HttpClientResponseException)
-
-      when: // recreate GL reversal entry
-      def response2 = post(path, glReversalEntryDTO)
-
-      then:
-      notThrown(Exception)
-      response2 != null
-      with(response2) {
-         with(generalLedgerReversal) {
-            id == glReversalDTO.id
-
-            with(source) {
-               value == glReversalEntryDTO.generalLedgerReversal.source.value
-               description == glReversalEntryDTO.generalLedgerReversal.source.description
-            }
-
-            date == glReversalEntryDTO.generalLedgerReversal.date.toString()
-            reversalDate == glReversalEntryDTO.generalLedgerReversal.reversalDate.toString()
-            comment == glReversalEntryDTO.generalLedgerReversal.comment
-            entryMonth == glReversalEntryDTO.generalLedgerReversal.entryMonth
-            entryNumber == glReversalEntryDTO.generalLedgerReversal.entryNumber
-         }
-
-         generalLedgerReversalDistributions.eachWithIndex{ distribution, index ->
-            distribution.id == glReversalEntryDTO.generalLedgerReversalDistributions[index].id
-            distribution.generalLedgerReversal.id == glReversalEntryDTO.generalLedgerReversalDistributions[index].generalLedgerReversal.id
-            distribution.generalLedgerReversalDistributionAccount.id == glReversalEntryDTO.generalLedgerReversalDistributions[index].generalLedgerReversalDistributionAccount.myId()
-            distribution.generalLedgerReversalDistributionProfitCenter.id == glReversalEntryDTO.generalLedgerReversalDistributions[index].generalLedgerReversalDistributionProfitCenter.myId()
-            distribution.generalLedgerReversalDistributionAmount == glReversalEntryDTO.generalLedgerReversalDistributions[index].generalLedgerReversalDistributionAmount
-         }
-
-         balance == BigDecimal.ZERO
-      }
-
-      when: // delete GL reversal entry again
-      delete("$path/${response2.generalLedgerReversal.id}")
-
-      then: "GL reversal entry of user's company is deleted"
-      notThrown(HttpClientResponseException)
    }
 }

@@ -179,23 +179,6 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       }
    }
 
-   @ReadOnly
-   fun findAllByRecurringId(glRecurringId: UUID, company: CompanyEntity): List<GeneralLedgerRecurringDistributionEntity> {
-      return jdbc.queryFullList(
-         """
-            ${selectBaseQuery()}
-            WHERE glRecurringDist.general_ledger_recurring_id = :glRecurringId AND glRecurringDist.deleted = FALSE
-         """.trimIndent(),
-         mapOf(
-            "glRecurringId" to glRecurringId
-         )
-      ) { rs, _, elements ->
-         do {
-            elements.add(mapRow(rs, company, "glRecurringDist_"))
-         } while (rs.next())
-      }
-   }
-
    fun upsert(generalLedgerRecurringDistribution: GeneralLedgerRecurringDistributionEntity): GeneralLedgerRecurringDistributionEntity =
       if (generalLedgerRecurringDistribution.id == null) {
          insert(generalLedgerRecurringDistribution)

@@ -15,12 +15,12 @@ import com.cynergisuite.middleware.localization.BalanceMustBeZero
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.util.UUID
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class GeneralLedgerReversalEntryValidator @Inject constructor(
@@ -71,7 +71,7 @@ class GeneralLedgerReversalEntryValidator @Inject constructor(
          }
 
          // balance must be zero before records can be inserted/updated
-         if (dto.balance != BigDecimal.ZERO) {
+         if (dto.balance?.compareTo(BigDecimal.ZERO) != 0) {
             errors.add(ValidationError("balance", BalanceMustBeZero(dto.balance!!)))
          }
       }

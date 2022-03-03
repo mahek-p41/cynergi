@@ -5,8 +5,8 @@ import com.cynergisuite.middleware.accounting.general.ledger.reversal.distributi
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.infrastructure.GeneralLedgerReversalEntryRepository
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 
-import javax.inject.Singleton
 import java.util.stream.IntStream
 import java.util.stream.Stream
 
