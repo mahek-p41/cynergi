@@ -39,6 +39,16 @@ services:
          interval: 10s
          timeout: 5s
          retries: 15
+   cynergidbmigrate:
+      container_name: cynergidbmigrate
+      image: cynergibasedb
+      depends_on:
+         - cynergidb
+      networks:
+         - cynerginet
+      volumes:
+         - ../../src/main/resources/db/migration/postgres/:/tmp/migrations
+      command: [ "/opt/scripts/migratedb.groovy", "-d", "cynergidb", "-H", "cynergidb", "-P", "5432", "-u", "cynergiuser", "-p", "password", "-m", "/tmp/migrations/" ]
    cynergidbpsql:
       container_name: cynergidbpsql
       image: cynergibasedb
@@ -146,6 +156,16 @@ services:
       stdin_open: true
       tty: true
       command: [ "/opt/scripts/db-ready.sh", "cynergitestdb" ]
+   cynergitestdbmigrate:
+      container_name: cynergidbmigrate
+      image: cynergibasedb
+      depends_on:
+         - cynergitestdb
+      networks:
+         - cynerginet
+      volumes:
+         - ../../src/main/resources/db/migration/postgres/:/tmp/migrations
+      command: [ "/opt/scripts/migratedb.groovy", "-d", "cynergitestdb", "-H", "cynergitestdb", "-P", "5432", "-u", "postgres", "-p", "password", "-m", "/tmp/migrations/" ]
    cynergitestdbpsql:
       container_name: cynergitestdbpsql
       image: cynergibasedb

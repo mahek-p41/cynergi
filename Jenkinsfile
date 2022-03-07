@@ -106,6 +106,7 @@ pipeline {
                   mkdir -p /opt/cyn/v01/cynmid/groovy/bin/
                   cp /home/jenkins/cynergi-middleware/support/deployment/cynergi-postgres-check.sh /opt/cyn/v01/cynmid/scripts/cynergi-postgres-check.sh
                   cp /home/jenkins/cynergi-middleware/support/development/cynergidb/*.groovy /opt/cyn/v01/cynmid/scripts/
+                  cp /home/jenkins/cynergi-middleware/support/development/cynergibasedb/*.groovy /opt/cyn/v01/cynmid/scripts/
                   chmod u+x /opt/cyn/v01/cynmid/scripts/*.groovy
                   chmod u+x /opt/cyn/v01/cynmid/scripts/cynergi-postgres-check.sh
                   jlink --module-path "$JAVA_HOME\\jmods" \\

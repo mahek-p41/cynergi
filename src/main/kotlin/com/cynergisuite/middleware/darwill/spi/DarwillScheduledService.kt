@@ -1,11 +1,11 @@
-package com.cynergisuite.middleware.darwill
+package com.cynergisuite.middleware.darwill.spi
 
 import com.cynergisuite.middleware.area.AreaService
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.darwill.DarwillJobResult
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.ScheduleProcessingException
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAccessor

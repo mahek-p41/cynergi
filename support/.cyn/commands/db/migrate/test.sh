@@ -8,8 +8,6 @@ if [ -z `docker-compose ps -q cynergitestdb` ] || [ -z `docker ps -q --no-trunc 
   exit 1
 else
   echo "Migration Test database"
-  cd ../../
-  pwd
-  ./gradlew flywayMigrateCynergiTestDb
+  docker-compose run --rm cynergitestdbmigrate
   exit $?
 fi
