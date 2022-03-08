@@ -35,6 +35,7 @@ class AccountPayableAgingReportController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableAgingReportController::class.java)
 
+/*
    @Throws(NotFoundException::class)
    @Get(value = "/{id:[0-9a-fA-F\\-]+}{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableAgingReportEndpoints"], summary = "Fetch a single Vendor Detail", description = "Fetch a single Vendor Detail for the Account Payable Aging Report by its system generated primary key", operationId = "accountPayableAgingReport-fetchOne")
@@ -57,8 +58,9 @@ class AccountPayableAgingReportController @Inject constructor(
       logger.info("Fetching Account Payable Aging Report Vendor Detail by {}", filterRequest)
 
       val user = userService.fetchUser(authentication)
-      return accountPayableAgingReportService.fetchOne(user.myCompany(), filterRequest.vendors!!, filterRequest.agingDate!!)!!
+      return accountPayableAgingReportService.fetchOne(user.myCompany(), filterRequest.vendorStart!!, filterRequest.agingDate!!)!!
    }
+*/
 
    @Get(uri = "{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableAgingReportEndpoints"], summary = "Fetch an Account Payable Aging Report", description = "Fetch an Account Payable Aging Report", operationId = "accountPayableAgingReport-fetchReport")

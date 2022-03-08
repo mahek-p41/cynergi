@@ -7,15 +7,16 @@ import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.time.LocalDate
-import java.util.UUID
 
 @Singleton
 class AccountPayableAgingReportService @Inject constructor(
    private val accountPayableAgingReportRepository: AccountPayableAgingReportRepository,
    private val vendorRepository: VendorRepository
 ) {
-   fun fetchOne(company: CompanyEntity, vendors: Set<UUID>, agingDate: LocalDate): AgingReportVendorDetailDTO? =
-      accountPayableAgingReportRepository.findOne(company, vendorRepository.findOne(vendors.take(1)[0], company)!!, agingDate)?.let { AgingReportVendorDetailDTO(it) }
+/*
+   fun fetchOne(company: CompanyEntity, vendorNumber: Int, agingDate: LocalDate): AgingReportVendorDetailDTO? =
+      accountPayableAgingReportRepository.findOne(company, vendorRepository.findOne(vendorNumber, company)!!, agingDate)?.let { AgingReportVendorDetailDTO(it) }
+*/
 
    fun fetchReport(company: CompanyEntity, filterRequest: AgingReportFilterRequest): AccountPayableAgingReportDTO =
       accountPayableAgingReportRepository.findAll(company, filterRequest)

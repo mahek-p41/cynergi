@@ -78,6 +78,7 @@ class AccountPayableAgingReportRepository @Inject constructor(
       """
    }
 
+/*
    @ReadOnly
    fun findOne(company: CompanyEntity, vendor: VendorEntity, agingDate: LocalDate): AgingReportVendorDetailEntity? {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "vendor_id" to vendor.id)
@@ -145,6 +146,7 @@ class AccountPayableAgingReportRepository @Inject constructor(
          found
       }
    }
+*/
 
    @ReadOnly
    fun findAll(company: CompanyEntity, filterRequest: AgingReportFilterRequest): AccountPayableAgingReportDTO {
@@ -154,9 +156,14 @@ class AccountPayableAgingReportRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id")
 
-      if (!filterRequest.vendors.isNullOrEmpty()) {
-         params["vendors"] = filterRequest.vendors
-         whereClause.append(" AND vend.id IN (<vendors>)")
+      if (filterRequest.vendorStart != null) {
+         params["vendorStart"] = filterRequest.vendorStart
+         whereClause.append(" AND vend.number >= :vendorStart")
+      }
+
+      if (filterRequest.vendorEnd != null) {
+         params["vendorEnd"] = filterRequest.vendorEnd
+         whereClause.append(" AND vend.number <= :vendorEnd")
       }
 
       filterRequest.agingDate?.let {

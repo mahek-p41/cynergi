@@ -90,6 +90,9 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
       def vendor2PmtTerm = vendorPaymentTermList[1]
       def vendor2ShipVia = shipViaList[1]
       def vendor2 = vendorTestDataLoaderService.single(company, vendor2PmtTerm, vendor2ShipVia)
+      def vendor3PmtTerm = vendorPaymentTermList[0]
+      def vendor3ShipVia = shipViaList[1]
+      def vendor3 = vendorTestDataLoaderService.single(company, vendor3PmtTerm, vendor3ShipVia)
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
@@ -99,6 +102,7 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
       def poVendorSubEmp = employeeList[2]
       def purchaseOrderIn1 = poTestDataLoaderService.single(company, vendor1, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
       def purchaseOrderIn2 = poTestDataLoaderService.single(company, vendor2, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      def purchaseOrderIn3 = poTestDataLoaderService.single(company, vendor3, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
       def employeeIn = employeeList[3]
 
       def payToPmtTerm = vendorPaymentTermList[3]
@@ -106,32 +110,43 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
       def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
       def apInvoicesForVend1 = apInvoiceDataLoaderService.stream(4, company, vendor1, purchaseOrderIn1, null, employeeIn, null, null, payToIn, store).toList()
       def apInvoicesForVend2 = apInvoiceDataLoaderService.stream(4, company, vendor2, purchaseOrderIn2, null, employeeIn, null, null, payToIn, store).toList()
+      def apInvoicesForVend3 = apInvoiceDataLoaderService.stream(4, company, vendor3, purchaseOrderIn3, null, employeeIn, null, null, payToIn, store).toList()
 
       def account = accountTestDataLoaderService.single(company)
       def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       def apPayment1 = apPaymentDataLoaderService.single(company, bank, vendor1)
       def apPayment2 = apPaymentDataLoaderService.single(company, bank, vendor2)
+      def apPayment3 = apPaymentDataLoaderService.single(company, bank, vendor3)
       apInvoicesForVend1.eachWithIndex { it, index ->
          apPaymentDetailDataLoaderService.single(company, vendor1, it, apPayment1)
       }
       apInvoicesForVend2.eachWithIndex { it, index ->
          apPaymentDetailDataLoaderService.single(company, vendor2, it, apPayment2)
       }
+      apInvoicesForVend3.eachWithIndex { it, index ->
+         apPaymentDetailDataLoaderService.single(company, vendor3, it, apPayment3)
+      }
 
       def agingDate = LocalDate.now()
 
       def filterRequest = new AgingReportFilterRequest([sortBy: "id", sortDirection: "ASC"])
       switch (criteria) {
-         case 'Vendor1':
-            filterRequest['vendors'] = [vendor1.id]
+         case 'Vendors by vendorStart':
+            filterRequest['vendorStart'] = vendor1.number
             filterRequest['agingDate'] = agingDate
             break
-         case 'Vendor2':
-            filterRequest['vendors'] = [vendor2.id]
+         case 'Vendors by vendorEnd':
+            filterRequest['vendorEnd'] = vendor2.number
             filterRequest['agingDate'] = agingDate
             break
-         case 'AllVendors':
-            filterRequest['vendors'] = [vendor1.id, vendor2.id]
+         case 'Vendors by vendorStart and vendorEnd':
+            filterRequest['vendorStart'] = vendor2.number
+            filterRequest['vendorEnd'] = vendor3.number
+            filterRequest['agingDate'] = agingDate
+            break
+         case 'All vendors by vendorStart and vendorEnd':
+            filterRequest['vendorStart'] = vendor1.number
+            filterRequest['vendorEnd'] = vendor3.number
             filterRequest['agingDate'] = agingDate
             break
       }
@@ -144,10 +159,11 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
       result != null
       result.vendors.size() == vendorCount
       where:
-      criteria         || vendorCount
-      'Vendor1'        || 1
-      'Vendor2'        || 1
-      'AllVendors'     || 2
+      criteria                                     || vendorCount
+      'Vendors by vendorStart'                     || 3
+      'Vendors by vendorEnd'                       || 2
+      'Vendors by vendorStart and vendorEnd'       || 2
+      'All vendors by vendorStart and vendorEnd'   || 3
    }
 
    void "fetch all with multiple payment details and back date inquiry"() {
@@ -195,7 +211,6 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
       def agingDate = LocalDate.now().plusDays(10)
 
       def filterRequest = new AgingReportFilterRequest([sortBy: "id", sortDirection: "ASC"])
-      filterRequest['vendors'] = [vendor.id]
       filterRequest['agingDate'] = agingDate
 
       when:
@@ -263,7 +278,6 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
       def agingDate = LocalDate.now().plusDays(10)
 
       def filterRequest = new AgingReportFilterRequest([sortBy: "id", sortDirection: "ASC"])
-      filterRequest['vendors'] = [vendor1.id, vendor2.id]
       filterRequest['agingDate'] = agingDate
 
       when:

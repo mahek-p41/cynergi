@@ -2,7 +2,6 @@ package com.cynergisuite.domain
 
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
-import java.util.*
 
 @Schema(
    name = "AgingReportFilterRequest",
@@ -12,8 +11,11 @@ import java.util.*
 )
 class AgingReportFilterRequest(
 
-   @field:Schema(name = "vendors", description = "The collection of Vendor IDs to filter results with")
-   var vendors: Set<UUID>? = emptySet(),
+   @field:Schema(name = "vendorStart", description = "Beginning number of vendor range")
+   var vendorStart: Int? = null,
+
+   @field:Schema(name = "vendorEnd", description = "End number of vendor range")
+   var vendorEnd: Int? = null,
 
    @field:Schema(name = "agingDate", description = "Aging date")
    var agingDate: LocalDate? = null
@@ -24,7 +26,8 @@ class AgingReportFilterRequest(
 
    override fun myToStringValues(): List<Pair<String, Any?>> =
       listOf(
-         "vendors" to vendors,
+         "vendorStart" to vendorStart,
+         "vendorEnd" to vendorEnd,
          "agingDate" to agingDate
       )
 }
