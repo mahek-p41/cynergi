@@ -7,7 +7,6 @@ import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.query
-import com.cynergisuite.extensions.queryForObjectOrNull
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusType
 import com.cynergisuite.middleware.accounting.account.payable.aging.AccountPayableAgingReportDTO
 import com.cynergisuite.middleware.accounting.account.payable.aging.AccountPayableAgingReportEntity
@@ -18,7 +17,6 @@ import com.cynergisuite.middleware.accounting.account.payable.aging.BalanceDispl
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentDetailRepository
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.vendor.VendorEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -28,7 +26,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.sql.ResultSet
-import java.time.LocalDate
 
 @Singleton
 class AccountPayableAgingReportRepository @Inject constructor(
@@ -77,76 +74,6 @@ class AccountPayableAgingReportRepository @Inject constructor(
             LEFT JOIN account_payable_payment apPayment ON apPaymentDetail.payment_number_id = apPayment.id
       """
    }
-
-/*
-   @ReadOnly
-   fun findOne(company: CompanyEntity, vendor: VendorEntity, agingDate: LocalDate): AgingReportVendorDetailEntity? {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "vendor_id" to vendor.id)
-      val whereClause = StringBuilder(" WHERE vend.company_id = :comp_id AND vend.id = :vendor_id ")
-
-      agingDate.let {
-         params["agingDate"] = agingDate
-         whereClause.append(" AND apInvoice.expense_date <= :agingDate")
-      }
-
-      val query = """
-         ${selectBaseQuery()}
-         $whereClause
-         """.trimIndent()
-      return jdbc.queryForObjectOrNull(query, params) { rs, _ ->
-         var found: AgingReportVendorDetailEntity? = null
-         val calcVendorTotals = BalanceDisplayTotalsEntity()
-         do {
-            found = found ?: mapRowVendorDetail(rs, "apInvoiceDetail_")
-            mapRowInvoiceDetail(rs, "apInvoiceDetail_").let {
-               // determine if invoice should be included on report
-               if (it.invoiceStatus.id == 2) {
-                  found.invoices?.add(it) // include invoice if invoice status = 2 (Open)
-               }
-               if (it.invoiceStatus.id == 3 && it.invoicePaidAmount > BigDecimal.ZERO) {
-                  // perform back date inquiry
-                  if (it.apPaymentPaymentDate!! > agingDate && it.apPaymentDateVoided == null) {
-                     it.invoiceStatus = AccountPayableInvoiceStatusType(2, "O", "Open", "open")
-
-                     it.invoicePaidAmount -= it.apPaymentDetailAmount!!
-                     it.balance = it.invoiceAmount - it.invoicePaidAmount
-
-                     found.invoices?.add(it)
-                  }
-               }
-
-               // determine the proper balance display column for the invoice
-               if (it.invoiceDueDate <= agingDate) {
-                  it.balanceDisplay = BalanceDisplayEnum.CURRENT
-               } else if (it.invoiceDueDate < agingDate.plusDays(31)) {
-                  it.balanceDisplay = BalanceDisplayEnum.ONETOTHIRTY
-               } else if (it.invoiceDueDate < agingDate.plusDays(61)) {
-                  it.balanceDisplay = BalanceDisplayEnum.THIRTYONETOSIXTY
-               } else {
-                  it.balanceDisplay = BalanceDisplayEnum.OVERSIXTY
-               }
-
-               // add invoice balance to running totals for balance and the proper balance display column
-               calcVendorTotals.balanceTotal = calcVendorTotals.balanceTotal.plus(it.balance)
-               when (it.balanceDisplay) {
-                  BalanceDisplayEnum.CURRENT -> calcVendorTotals.currentTotal =
-                     calcVendorTotals.currentTotal.plus(it.balance)
-                  BalanceDisplayEnum.ONETOTHIRTY -> calcVendorTotals.oneToThirtyTotal =
-                     calcVendorTotals.oneToThirtyTotal.plus(it.balance)
-                  BalanceDisplayEnum.THIRTYONETOSIXTY -> calcVendorTotals.thirtyOneToSixtyTotal =
-                     calcVendorTotals.thirtyOneToSixtyTotal.plus(it.balance)
-                  BalanceDisplayEnum.OVERSIXTY -> calcVendorTotals.overSixtyTotal =
-                     calcVendorTotals.overSixtyTotal.plus(it.balance)
-               }
-
-               found.vendorTotals = calcVendorTotals
-            }
-         } while (rs.next())
-         logger.trace("Searching for AP Aging Report Vendor Detail for vendor {} resulted in {}", vendor, found)
-         found
-      }
-   }
-*/
 
    @ReadOnly
    fun findAll(company: CompanyEntity, filterRequest: AgingReportFilterRequest): AccountPayableAgingReportDTO {

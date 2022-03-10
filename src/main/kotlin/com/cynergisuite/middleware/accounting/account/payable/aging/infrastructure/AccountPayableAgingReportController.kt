@@ -3,9 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.aging.infrastruct
 import com.cynergisuite.domain.AgingReportFilterRequest
 import com.cynergisuite.middleware.accounting.account.payable.aging.AccountPayableAgingReportDTO
 import com.cynergisuite.middleware.accounting.account.payable.aging.AccountPayableAgingReportService
-import com.cynergisuite.middleware.accounting.account.payable.aging.AgingReportVendorDetailDTO
 import com.cynergisuite.middleware.authentication.user.UserService
-import com.cynergisuite.middleware.error.NotFoundException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
@@ -24,8 +22,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.UUID
-import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/accounting/account-payable/aging")
@@ -34,33 +30,6 @@ class AccountPayableAgingReportController @Inject constructor(
    private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableAgingReportController::class.java)
-
-/*
-   @Throws(NotFoundException::class)
-   @Get(value = "/{id:[0-9a-fA-F\\-]+}{?filterRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["AccountPayableAgingReportEndpoints"], summary = "Fetch a single Vendor Detail", description = "Fetch a single Vendor Detail for the Account Payable Aging Report by its system generated primary key", operationId = "accountPayableAgingReport-fetchOne")
-   @ApiResponses(
-      value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AgingReportVendorDetailDTO::class))]),
-         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-         ApiResponse(responseCode = "404", description = "The requested Vendor Detail was unable to be found"),
-         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-      ]
-   )
-   fun fetchOne(
-      @QueryValue("id") id: UUID,
-      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
-      @QueryValue("filterRequest")
-      filterRequest: AgingReportFilterRequest,
-      authentication: Authentication,
-      httpRequest: HttpRequest<*>
-   ): AgingReportVendorDetailDTO {
-      logger.info("Fetching Account Payable Aging Report Vendor Detail by {}", filterRequest)
-
-      val user = userService.fetchUser(authentication)
-      return accountPayableAgingReportService.fetchOne(user.myCompany(), filterRequest.vendorStart!!, filterRequest.agingDate!!)!!
-   }
-*/
 
    @Get(uri = "{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableAgingReportEndpoints"], summary = "Fetch an Account Payable Aging Report", description = "Fetch an Account Payable Aging Report", operationId = "accountPayableAgingReport-fetchReport")

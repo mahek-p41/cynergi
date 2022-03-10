@@ -31,52 +31,6 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
    @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
    @Inject VendorTestDataLoaderService vendorTestDataLoaderService
 
-   void "fetch one"() {
-      given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
-      def store = storeFactoryService.store(3, company)
-      def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
-      def shipViaList = shipViaTestDataLoaderService.stream(4, company).toList()
-
-      def vendorPmtTerm = vendorPaymentTermList[0]
-      def vendorShipVia = shipViaList[0]
-      def vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
-
-      def employeeList = employeeFactoryService.stream(4, company).toList()
-      def poApprovedBy = employeeList[0]
-      def poPurchaseAgent = employeeList[1]
-      def poShipVia = shipViaList[2]
-      def poPmtTerm = vendorPaymentTermList[2]
-      def poVendorSubEmp = employeeList[2]
-      def purchaseOrderIn = poTestDataLoaderService.single(company, vendorIn, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
-      def employeeIn = employeeList[3]
-
-      def payToPmtTerm = vendorPaymentTermList[3]
-      def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
-      def statusTypeIn = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
-      def apInvoice = apInvoiceDataLoaderService.single(company, vendorIn, purchaseOrderIn, null, employeeIn, null, statusTypeIn, payToIn, store)
-
-      def account = accountTestDataLoaderService.single(company)
-      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      def apPayment = apPaymentDataLoaderService.single(company, bank, vendorIn)
-      apPaymentDetailDataLoaderService.stream(1, company, vendorIn, apInvoice, apPayment).toList()
-
-      def agingDate = LocalDate.now()
-
-      def filterRequest = new AgingReportFilterRequest([sortBy: "id", sortDirection: "ASC"])
-      filterRequest['vendors'] = [vendorIn.id]
-      filterRequest['agingDate'] = agingDate
-
-      when:
-      def result = get("$path/${vendorIn.id}$filterRequest")
-
-      then:
-      notThrown(Exception)
-      result != null
-      result.invoices.size() == 1
-   }
-
    void "fetch all with multiple vendors and invoices"() {
       given:
       def company = companyFactoryService.forDatasetCode('tstds1')
