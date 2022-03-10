@@ -117,12 +117,14 @@ class AccountPayableAgingReportRepository @Inject constructor(
                currentVendor!!
             }
 
+            var invoiceFlag = false
             mapRowInvoiceDetail(rs, "apInvoiceDetail_").let {
                // determine if invoice should be included on report
                if (it.invoiceStatus.id == 2) {
                   tempVendor.invoices?.add(it) // include invoice if invoice status = 2 (Open)
+                  invoiceFlag = true
                }
-               if (it.invoiceStatus.id == 3 && it.invoicePaidAmount > BigDecimal.ZERO) {
+               else if (it.invoiceStatus.id == 3 && it.invoicePaidAmount > BigDecimal.ZERO) {
                   // perform back date inquiry
                   if (it.apPaymentPaymentDate!! > filterRequest.agingDate && it.apPaymentDateVoided == null) {
                      it.invoiceStatus = AccountPayableInvoiceStatusType(2, "O", "Open", "open")
@@ -131,47 +133,57 @@ class AccountPayableAgingReportRepository @Inject constructor(
                      it.balance = it.invoiceAmount - it.invoicePaidAmount
 
                      tempVendor.invoices?.add(it)
+                     invoiceFlag = true
                   }
                }
 
-               // determine the proper balance display column for the invoice
-               if (it.invoiceDueDate <= filterRequest.agingDate) {
-                  it.balanceDisplay = BalanceDisplayEnum.CURRENT
-               } else if (it.invoiceDueDate < filterRequest.agingDate!!.plusDays(31)) {
-                  it.balanceDisplay = BalanceDisplayEnum.ONETOTHIRTY
-               } else if (it.invoiceDueDate < filterRequest.agingDate!!.plusDays(61)) {
-                  it.balanceDisplay = BalanceDisplayEnum.THIRTYONETOSIXTY
-               } else {
-                  it.balanceDisplay = BalanceDisplayEnum.OVERSIXTY
-               }
+               if (invoiceFlag) {
+                  // determine the proper balance display column for the invoice
+                  if (it.invoiceDueDate <= filterRequest.agingDate) {
+                     it.balanceDisplay = BalanceDisplayEnum.CURRENT
+                  } else if (it.invoiceDueDate < filterRequest.agingDate!!.plusDays(31)) {
+                     it.balanceDisplay = BalanceDisplayEnum.ONETOTHIRTY
+                  } else if (it.invoiceDueDate < filterRequest.agingDate!!.plusDays(61)) {
+                     it.balanceDisplay = BalanceDisplayEnum.THIRTYONETOSIXTY
+                  } else {
+                     it.balanceDisplay = BalanceDisplayEnum.OVERSIXTY
+                  }
 
-               // add invoice balance to running totals for balance and the proper balance display column
-               tempVendor.vendorTotals.balanceTotal = tempVendor.vendorTotals.balanceTotal.plus(it.balance)
-               when (it.balanceDisplay) {
-                  BalanceDisplayEnum.CURRENT -> tempVendor.vendorTotals.currentTotal =
-                     tempVendor.vendorTotals.currentTotal.plus(it.balance)
-                  BalanceDisplayEnum.ONETOTHIRTY -> tempVendor.vendorTotals.oneToThirtyTotal =
-                     tempVendor.vendorTotals.oneToThirtyTotal.plus(it.balance)
-                  BalanceDisplayEnum.THIRTYONETOSIXTY -> tempVendor.vendorTotals.thirtyOneToSixtyTotal =
-                     tempVendor.vendorTotals.thirtyOneToSixtyTotal.plus(it.balance)
-                  BalanceDisplayEnum.OVERSIXTY -> tempVendor.vendorTotals.overSixtyTotal =
-                     tempVendor.vendorTotals.overSixtyTotal.plus(it.balance)
-               }
+                  // add invoice balance to running totals for balance and the proper balance display column
+                  tempVendor.vendorTotals.balanceTotal = tempVendor.vendorTotals.balanceTotal.plus(it.balance)
+                  when (it.balanceDisplay) {
+                     BalanceDisplayEnum.CURRENT -> tempVendor.vendorTotals.currentTotal =
+                        tempVendor.vendorTotals.currentTotal.plus(it.balance)
+                     BalanceDisplayEnum.ONETOTHIRTY -> tempVendor.vendorTotals.oneToThirtyTotal =
+                        tempVendor.vendorTotals.oneToThirtyTotal.plus(it.balance)
+                     BalanceDisplayEnum.THIRTYONETOSIXTY -> tempVendor.vendorTotals.thirtyOneToSixtyTotal =
+                        tempVendor.vendorTotals.thirtyOneToSixtyTotal.plus(it.balance)
+                     BalanceDisplayEnum.OVERSIXTY -> tempVendor.vendorTotals.overSixtyTotal =
+                        tempVendor.vendorTotals.overSixtyTotal.plus(it.balance)
+                  }
 
-               // add invoice balance to running totals for balance and the proper balance display column
-               agedTotals.balanceTotal = agedTotals.balanceTotal.plus(it.balance)
-               when (it.balanceDisplay) {
-                  BalanceDisplayEnum.CURRENT -> agedTotals.currentTotal =
-                     agedTotals.currentTotal.plus(it.balance)
-                  BalanceDisplayEnum.ONETOTHIRTY -> agedTotals.oneToThirtyTotal =
-                     agedTotals.oneToThirtyTotal.plus(it.balance)
-                  BalanceDisplayEnum.THIRTYONETOSIXTY -> agedTotals.thirtyOneToSixtyTotal =
-                     agedTotals.thirtyOneToSixtyTotal.plus(it.balance)
-                  BalanceDisplayEnum.OVERSIXTY -> agedTotals.overSixtyTotal =
-                     agedTotals.overSixtyTotal.plus(it.balance)
+                  // add invoice balance to running totals for balance and the proper balance display column
+                  agedTotals.balanceTotal = agedTotals.balanceTotal.plus(it.balance)
+                  when (it.balanceDisplay) {
+                     BalanceDisplayEnum.CURRENT -> agedTotals.currentTotal =
+                        agedTotals.currentTotal.plus(it.balance)
+                     BalanceDisplayEnum.ONETOTHIRTY -> agedTotals.oneToThirtyTotal =
+                        agedTotals.oneToThirtyTotal.plus(it.balance)
+                     BalanceDisplayEnum.THIRTYONETOSIXTY -> agedTotals.thirtyOneToSixtyTotal =
+                        agedTotals.thirtyOneToSixtyTotal.plus(it.balance)
+                     BalanceDisplayEnum.OVERSIXTY -> agedTotals.overSixtyTotal =
+                        agedTotals.overSixtyTotal.plus(it.balance)
+                  }
                }
             }
+
          } while (rs.next())
+
+         // remove vendors with no invoices
+         vendors.forEach {
+            if (it.invoices?.size == 0)
+               vendors.remove(it)
+         }
       }
 
       val entity = AccountPayableAgingReportEntity(vendors, agedTotals)
