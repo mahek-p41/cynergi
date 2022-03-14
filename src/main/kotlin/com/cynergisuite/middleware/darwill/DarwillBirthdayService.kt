@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.darwill
 import com.cynergisuite.middleware.area.AreaService
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.darwill.infrastructure.DarwillRepository
+import com.cynergisuite.middleware.darwill.spi.DarwillScheduledService
 import com.cynergisuite.middleware.schedule.BeginningOfMonthJob
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
 import com.cynergisuite.middleware.ssh.SftpClientService

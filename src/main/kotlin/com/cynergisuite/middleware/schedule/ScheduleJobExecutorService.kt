@@ -44,7 +44,7 @@ class ScheduleJobExecutorService @Inject constructor(
    private fun <T : TemporalAccessor, J : Job<T>> runJob(temporalAccessor: T, scheduleType: ScheduleType, jobClazz: KClass<J>, forceRun: Boolean = false): Int {
       return companyRepository.all()
          .flatMap { scheduleRepository.all(scheduleType, it) }
-         .onEach { logger.info("Loaded scheduled task {}/{}", it.title, it.enabled) }
+         .onEach { logger.info("Loaded scheduled task {}, enabled: {}", it.title, it.enabled) }
          .filter { it.enabled }
          .filter {
             val job: Job<T> = applicationContext.getBean(it.command.value)
@@ -52,8 +52,9 @@ class ScheduleJobExecutorService @Inject constructor(
             ClassUtils.isAssignable(job::class.java, jobClazz.java)
          }
          .map { it to applicationContext.getBean<Job<T>>(it.command.value) }
+         .onEach { (schedule, task) -> logger.info("Will {} execute: {} -> force run: {}", schedule.title, forceRun || task.shouldProcess(schedule, temporalAccessor), forceRun) }
          .filter { (schedule, task) -> forceRun || task.shouldProcess(schedule, temporalAccessor) }
-         .onEach { (schedule, _) -> logger.info("Submitting scheduled task {}", schedule.title) }
+         .onEach { (schedule, _) -> logger.info("Executing {}", schedule.title) }
          .map { (schedule, task) ->
             val result = try {
                task.process(schedule, temporalAccessor)
@@ -65,7 +66,7 @@ class ScheduleJobExecutorService @Inject constructor(
          }
          .onEach { (schedule, result) -> if (!(result.failureReason().isNullOrBlank())) logger.error("Job {} failed {}", schedule.title, result.failureReason()) }
          .filter { (_, result) -> result.failureReason().isNullOrBlank() }
-         .onEach { (schedule, _) -> logger.info("Successfully ran {}", schedule.title) }
+         .onEach { (schedule, _) -> logger.info("Successfully executed {}", schedule.title) }
          .count()
    }
 
