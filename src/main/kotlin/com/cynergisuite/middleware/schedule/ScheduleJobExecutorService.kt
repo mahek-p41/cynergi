@@ -46,7 +46,7 @@ class ScheduleJobExecutorService @Inject constructor(
          .flatMap { scheduleRepository.all(scheduleType, it) }
          .onEach { logger.info("Loaded scheduled task {}, enabled: {}", it.title, it.enabled) }
          .filter { it.enabled }
-         .filter {
+         .filter { // TODO scheduler can this be removed?  Just rely completely on the data in the database
             val job: Job<T> = applicationContext.getBean(it.command.value)
 
             ClassUtils.isAssignable(job::class.java, jobClazz.java)
@@ -70,6 +70,7 @@ class ScheduleJobExecutorService @Inject constructor(
          .count()
    }
 
+   // TODO scheduler can we get rid of this, and just use a single job that runs once per minute and checks if there are jobs to be ran
    @Scheduled(cron = "0 30 5 * * *")
    internal fun runDailyScheduled() { // this is what is called by the scheduler
       val jobsRan = runDaily()
@@ -77,6 +78,7 @@ class ScheduleJobExecutorService @Inject constructor(
       logger.info("Submitted {} daily jobs", jobsRan)
    }
 
+   // TODO scheduler can we get rid of this, and just use a single job that runs once per minute and checks if there are jobs to be ran
    @Scheduled(cron = "0 0 6 1 JAN-DEC *") // run on the first day of the month
    internal fun runBeginningOfMonthScheduled() {
       val jobsRan = runBeginningOfMonth()
@@ -84,6 +86,7 @@ class ScheduleJobExecutorService @Inject constructor(
       logger.info("Submitted {} beginning of month jobs", jobsRan)
    }
 
+   // TODO scheduler can we get rid of this, and just use a single job that runs once per minute and checks if there are jobs to be ran
    @Scheduled(cron = "0 45 5 L * ?") // run on the last day of the month
    internal fun runEndOfMonthScheduled() {
       val jobsRan = runEndOfMonth()
