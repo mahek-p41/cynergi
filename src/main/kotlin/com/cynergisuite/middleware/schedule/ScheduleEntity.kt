@@ -12,7 +12,7 @@ data class ScheduleEntity(
    val id: UUID? = null,
    val title: String,
    val description: String?,
-   @Deprecated("This needs to be moved to an schedule_arg")
+   @Deprecated("This needs to be moved to an schedule_arg") // TODO schedule this shouldn't be deprecated.  Utilize it to determine what should process.
    val schedule: String,
    val command: ScheduleCommandType,
    val type: ScheduleType,
