@@ -13,8 +13,8 @@ import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.action.infrastructure.AuditActionRepository
 import com.cynergisuite.middleware.audit.status.AuditStatusCount
-import com.cynergisuite.middleware.audit.status.CREATED
-import com.cynergisuite.middleware.audit.status.IN_PROGRESS
+import com.cynergisuite.middleware.audit.status.Created
+import com.cynergisuite.middleware.audit.status.InProgress
 import com.cynergisuite.middleware.audit.status.infrastructure.AuditStatusRepository
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -291,7 +291,7 @@ class AuditRepository @Inject constructor(
 
    @ReadOnly
    fun findOneCreatedOrInProgress(store: Store): AuditEntity? {
-      val params = mutableMapOf("store_number" to store.myNumber(), "current_status" to listOf(CREATED.value, IN_PROGRESS.value))
+      val params = mutableMapOf("store_number" to store.myNumber(), "current_status" to listOf(Created.value, InProgress.value))
       val whereClause =
          """ WHERE a.store_number = :store_number
                    AND current_status IN (<current_status>)
@@ -611,7 +611,7 @@ class AuditRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "store_number" to storeNumber,
-            "values" to listOf(CREATED.value, IN_PROGRESS.value),
+            "values" to listOf(Created.value, InProgress.value),
             "comp_id" to company.id
          ),
          Int::class.java

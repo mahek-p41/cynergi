@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.audit.status
 
-import com.cynergisuite.domain.TypeDomainEntity
+import com.cynergisuite.domain.TypeDomain
 
 data class AuditStatusCount(
    val id: Int,
@@ -9,7 +9,7 @@ data class AuditStatusCount(
    val localizationCode: String,
    val color: String,
    val count: Int
-) : TypeDomainEntity<AuditStatusCount> {
+) : TypeDomain() {
    override fun myId(): Int = id
    override fun myValue(): String = value
    override fun myDescription(): String = description

@@ -11,7 +11,7 @@ data class SimpleTypeDomainDTO(
    var id: Int? = null
 
 ) {
-   constructor(entity: TypeDomainEntity<*>) :
+   constructor(entity: TypeDomain) :
       this(
          id = entity.myId()
       )

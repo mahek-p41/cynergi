@@ -6,7 +6,7 @@ import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.detail.infrastructure.AuditDetailRepository
 import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditScanAreaRepository
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
-import com.cynergisuite.middleware.audit.status.IN_PROGRESS
+import com.cynergisuite.middleware.audit.status.InProgress
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
@@ -100,7 +100,7 @@ class AuditDetailValidator @Inject constructor (
       val audit: AuditEntity = auditRepository.findOne(auditId, company) ?: throw NotFoundException(auditId)
       val auditStatus = audit.currentStatus()
 
-      if (auditStatus != IN_PROGRESS) {
+      if (auditStatus.id != InProgress.id) {
          errors.add(
             ValidationError("audit.status", AuditMustBeInProgressDetails(auditId))
          )

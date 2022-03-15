@@ -5,9 +5,9 @@ import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.audit.action.AuditActionEntity
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
-import com.cynergisuite.middleware.audit.status.APPROVED
+import com.cynergisuite.middleware.audit.status.Approved
 import com.cynergisuite.middleware.audit.status.AuditStatusService
-import com.cynergisuite.middleware.audit.status.CREATED
+import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -93,7 +93,7 @@ class AuditValidator @Inject constructor(
          inventoryCount = 0,
          actions = mutableSetOf(
             AuditActionEntity(
-               status = CREATED,
+               status = Created,
                changedBy = employeeRepository.findOne(user)!!
             )
          )
@@ -114,7 +114,7 @@ class AuditValidator @Inject constructor(
          } else if (requestedStatus != null) {
             val currentStatus = existingAudit.currentStatus()
 
-            if (!auditStatusService.requestedStatusIsValid(currentStatus, requestedStatus) || requestedStatus == APPROVED) {
+            if (!auditStatusService.requestedStatusIsValid(currentStatus, requestedStatus) || requestedStatus == Approved) {
                errors.add(
                   ValidationError(
                      "status",
@@ -153,14 +153,14 @@ class AuditValidator @Inject constructor(
       doValidation { errors ->
          val currentStatus = existingAudit.currentStatus()
 
-         if (!auditStatusService.requestedStatusIsValid(currentStatus, APPROVED)) {
+         if (!auditStatusService.requestedStatusIsValid(currentStatus, Approved)) {
             errors.add(
                ValidationError(
                   "status",
                   AuditUnableToChangeStatusFromTo(
                      existingAudit.id!!,
                      currentStatus.localizeMyDescription(locale, localizationService),
-                     APPROVED.localizeMyDescription(locale, localizationService)
+                     Approved.localizeMyDescription(locale, localizationService)
                   )
                )
             )

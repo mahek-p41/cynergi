@@ -7,8 +7,8 @@ import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditSc
 import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
-import com.cynergisuite.middleware.audit.status.APPROVED
-import com.cynergisuite.middleware.audit.status.IN_PROGRESS
+import com.cynergisuite.middleware.audit.status.Approved
+import com.cynergisuite.middleware.audit.status.InProgress
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.NotFoundException
@@ -58,7 +58,7 @@ class AuditExceptionValidator @Inject constructor (
             )
          }
 
-         if (IN_PROGRESS != auditStatus) {
+         if (InProgress != auditStatus) {
             errors.add(
                ValidationError("audit.status", AuditMustBeInProgressDiscrepancy(auditId))
             )
@@ -124,7 +124,7 @@ class AuditExceptionValidator @Inject constructor (
             )
          }
 
-         if (audit.currentStatus() == APPROVED) {
+         if (audit.currentStatus().id == Approved.id) {
             errors.add(
                ValidationError(null, AuditHasBeenApprovedNoNewNotesAllowed(auditId))
             )

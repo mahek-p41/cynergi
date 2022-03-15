@@ -14,12 +14,14 @@ import com.cynergisuite.middleware.schedule.command.DarwillCollection
 import com.cynergisuite.middleware.schedule.command.DarwillInactiveCustomer
 import com.cynergisuite.middleware.schedule.command.DarwillLastWeeksDelivery
 import com.cynergisuite.middleware.schedule.command.DarwillLastWeeksPayout
-import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
+import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
+import com.cynergisuite.middleware.schedule.command.toEntity
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.schedule.type.BeginningOfMonth
 import com.cynergisuite.middleware.schedule.type.Daily
 import com.cynergisuite.middleware.schedule.type.ScheduleType
 import com.cynergisuite.middleware.schedule.type.Weekly
+import com.cynergisuite.middleware.schedule.type.toEntity
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -45,12 +47,12 @@ class DarwillService @Inject constructor(
          areaRepository.save(AreaEntity(areaType = darwillEntity, company = company))
 
          listOf(
-            saveSchedule("Darwill Inactive Customer", "BEGINNING", DarwillInactiveCustomer, BeginningOfMonth, company, credentials),
-            saveSchedule("Darwill Active Customer", "SUNDAY", DarwillActiveCustomer, Weekly, company, credentials),
+            saveSchedule("Darwill Inactive Customer", "MONDAY", DarwillInactiveCustomer, Weekly, company, credentials),
+            saveSchedule("Darwill Active Customer", "MONDAY", DarwillActiveCustomer, Weekly, company, credentials),
             saveSchedule("Darwill Birthdays", "BEGINNING", DarwillBirthday, BeginningOfMonth, company, credentials),
             saveSchedule("Darwill Collections", "DAILY", DarwillCollection, Daily, company, credentials),
-            saveSchedule("Darwill Last Weeks Deliveries", "SUNDAY", DarwillLastWeeksDelivery, Weekly, company, credentials),
-            saveSchedule("Darwill Last Weeks Payouts", "SUNDAY", DarwillLastWeeksPayout, Weekly, company, credentials),
+            saveSchedule("Darwill Last Weeks Deliveries", "MONDAY", DarwillLastWeeksDelivery, Weekly, company, credentials),
+            saveSchedule("Darwill Last Weeks Payouts", "MONDAY", DarwillLastWeeksPayout, Weekly, company, credentials),
          )
       } else {
          emptyList()
@@ -67,14 +69,14 @@ class DarwillService @Inject constructor(
       }
    }
 
-   private fun saveSchedule(title: String, schedule: String, command: ScheduleCommandTypeEntity, type: ScheduleType, company: CompanyEntity, credentials: SftpClientCredentials): ScheduleEntity {
+   private fun saveSchedule(title: String, schedule: String, command: ScheduleCommandType, type: ScheduleType, company: CompanyEntity, credentials: SftpClientCredentials): ScheduleEntity {
       val scheduled = scheduleRepository.insert(
          ScheduleEntity(
             title = title,
             description = "$title ${company.datasetCode}",
             schedule = schedule, // this isn't used by this process
-            command = command,
-            type = type,
+            command = command.toEntity(),
+            type = type.toEntity(),
             company = company,
          )
       )
