@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.financial.calendar.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarCompleteDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarService
@@ -14,6 +15,7 @@ import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.PathVariable
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
@@ -156,7 +158,7 @@ class FinancialCalendarController @Inject constructor(
       return response
    }
 
-   @Post(uri = "complete", processes = [APPLICATION_JSON])
+   @Post(uri = "/complete", processes = [APPLICATION_JSON] )
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Create a complete Financial Calendar", description = "Create a complete Financial Calendar", operationId = "financialCalendar-create-financial-complete")
    @ApiResponses(
@@ -170,14 +172,17 @@ class FinancialCalendarController @Inject constructor(
    )
 
    fun createCompleteCalendar(
-      @Body date: LocalDate,
+      @Body @Valid
+      createDate: FinancialCalendarCompleteDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): List<FinancialCalendarDTO> {
-      logger.debug("Requested Create Financial Calendar with beginning date {}", date)
+      logger.debug("Requested Create Financial Calendar with beginning date {}", createDate.periodFrom)
 
       val user = userService.fetchUser(authentication)
-      val response = financialCalendarService.create(date, user.myCompany())
+      val date = createDate.periodFrom!!
+      val year = createDate.year!!
+      val response = financialCalendarService.create(date, year, user.myCompany())
 
       logger.debug("Requested Create Financial Calendar {} resulted in {}", date, response)
 
