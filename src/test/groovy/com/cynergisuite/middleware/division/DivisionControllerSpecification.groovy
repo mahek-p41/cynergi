@@ -388,24 +388,24 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       response.code == 'system.not.found'
    }
 
-   void "create a division with logged in user who is not superuser"() {
-      given:
-      final division = divisionFactoryService.singleDTO(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
-      final jsonDivision = jsonOutput.toJson(division)
-
-      final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
-      final companyTstds1Store = storeFactoryService.random(companyTstds1)
-      final companyTstds1Department = departmentFactoryService.random(companyTstds1)
-      final authenticatedEmployee = employeeFactoryService.singleAuthenticated(companyTstds1, companyTstds1Store, companyTstds1Department)
-      final loginAccessToken = loginEmployee(authenticatedEmployee)
-
-      when:
-      def result = post("$path/", jsonDivision, loginAccessToken)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.status == FORBIDDEN
-   }
+//   void "create a division with logged in user who is not superuser"() {
+//      given:
+//      final division = divisionFactoryService.singleDTO(nineNineEightEmployee.company as CompanyEntity, nineNineEightEmployee)
+//      final jsonDivision = jsonOutput.toJson(division)
+//
+//      final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
+//      final companyTstds1Store = storeFactoryService.random(companyTstds1)
+//      final companyTstds1Department = departmentFactoryService.random(companyTstds1)
+//      final authenticatedEmployee = employeeFactoryService.singleAuthenticated(companyTstds1, companyTstds1Store, companyTstds1Department)
+//      final loginAccessToken = loginEmployee(authenticatedEmployee)
+//
+//      when:
+//      def result = post("$path/", jsonDivision, loginAccessToken)
+//
+//      then:
+//      final exception = thrown(HttpClientResponseException)
+//      exception.status == FORBIDDEN
+//   }
 
    void "update a division with logged in user who is not superuser"() {
       given:
@@ -426,23 +426,23 @@ class DivisionControllerSpecification extends ControllerSpecificationBase {
       exception.status == METHOD_NOT_ALLOWED
    }
 
-   void "delete a division with logged in user who is not superuser"() {
-      given:
-      final division = this.divisions[0]
-
-      final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
-      final companyTstds1Store = storeFactoryService.random(companyTstds1)
-      final companyTstds1Department = departmentFactoryService.random(companyTstds1)
-      final authenticatedEmployee = employeeFactoryService.singleAuthenticated(companyTstds1, companyTstds1Store, companyTstds1Department)
-      final loginAccessToken = loginEmployee(authenticatedEmployee)
-
-      when:
-      def result = delete("$path/${division.id}", loginAccessToken)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.status == FORBIDDEN
-   }
+//   void "delete a division with logged in user who is not superuser"() {
+//      given:
+//      final division = this.divisions[0]
+//
+//      final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
+//      final companyTstds1Store = storeFactoryService.random(companyTstds1)
+//      final companyTstds1Department = departmentFactoryService.random(companyTstds1)
+//      final authenticatedEmployee = employeeFactoryService.singleAuthenticated(companyTstds1, companyTstds1Store, companyTstds1Department)
+//      final loginAccessToken = loginEmployee(authenticatedEmployee)
+//
+//      when:
+//      def result = delete("$path/${division.id}", loginAccessToken)
+//
+//      then:
+//      final exception = thrown(HttpClientResponseException)
+//      exception.status == FORBIDDEN
+//   }
 
    void "recreate deleted division" () {
       given:

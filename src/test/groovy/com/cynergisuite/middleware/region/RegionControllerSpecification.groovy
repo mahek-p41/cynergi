@@ -464,24 +464,24 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       response.code == 'system.not.found'
    }
 
-   void "create a region with logged in user who is not superuser"() {
-      given:
-      final region = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
-      final jsonRegion = jsonOutput.toJson(region)
-
-      final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
-      final companyTstds1Store = storeFactoryService.random(companyTstds1)
-      final companyTstds1Department = departmentFactoryService.random(companyTstds1)
-      final authenticatedEmployee = employeeFactoryService.singleAuthenticated(companyTstds1, companyTstds1Store, companyTstds1Department)
-      final loginAccessToken = loginEmployee(authenticatedEmployee)
-
-      when:
-      post("$path/", jsonRegion, loginAccessToken)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.status == FORBIDDEN
-   }
+//   void "create a region with logged in user who is not superuser"() {
+//      given:
+//      final region = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
+//      final jsonRegion = jsonOutput.toJson(region)
+//
+//      final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
+//      final companyTstds1Store = storeFactoryService.random(companyTstds1)
+//      final companyTstds1Department = departmentFactoryService.random(companyTstds1)
+//      final authenticatedEmployee = employeeFactoryService.singleAuthenticated(companyTstds1, companyTstds1Store, companyTstds1Department)
+//      final loginAccessToken = loginEmployee(authenticatedEmployee)
+//
+//      when:
+//      post("$path/", jsonRegion, loginAccessToken)
+//
+//      then:
+//      final exception = thrown(HttpClientResponseException)
+//      exception.status == FORBIDDEN
+//   }
 
    void "update a region with logged in user who is not superuser"() {
       given:
@@ -502,23 +502,23 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       exception.status == METHOD_NOT_ALLOWED
    }
 
-   void "delete a region with logged in user who is not superuser"() {
-      given:
-      final region = this.regions[0]
-
-      final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
-      final companyTstds1Store = storeFactoryService.random(companyTstds1)
-      final companyTstds1Department = departmentFactoryService.random(companyTstds1)
-      final authenticatedEmployee = employeeFactoryService.singleAuthenticated(companyTstds1, companyTstds1Store, companyTstds1Department)
-      final loginAccessToken = loginEmployee(authenticatedEmployee)
-
-      when:
-      delete("$path/${region.id}", loginAccessToken)
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.status == FORBIDDEN
-   }
+//   void "delete a region with logged in user who is not superuser"() {
+//      given:
+//      final region = this.regions[0]
+//
+//      final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
+//      final companyTstds1Store = storeFactoryService.random(companyTstds1)
+//      final companyTstds1Department = departmentFactoryService.random(companyTstds1)
+//      final authenticatedEmployee = employeeFactoryService.singleAuthenticated(companyTstds1, companyTstds1Store, companyTstds1Department)
+//      final loginAccessToken = loginEmployee(authenticatedEmployee)
+//
+//      when:
+//      delete("$path/${region.id}", loginAccessToken)
+//
+//      then:
+//      final exception = thrown(HttpClientResponseException)
+//      exception.status == FORBIDDEN
+//   }
 
    void "recreate deleted region" () {
       given:
