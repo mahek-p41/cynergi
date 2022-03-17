@@ -27,7 +27,7 @@ class GeneralLedgerDetailDataLoader {
    ) {
       final number = numberIn > 0 ? numberIn : 1
       final faker = new Faker()
-      final dateLocalDate = faker.date().future(5, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+      final dateLocalDate = faker.date().future(5, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
       final random = faker.random()
 
       return IntStream.range(0, number).mapToObj {

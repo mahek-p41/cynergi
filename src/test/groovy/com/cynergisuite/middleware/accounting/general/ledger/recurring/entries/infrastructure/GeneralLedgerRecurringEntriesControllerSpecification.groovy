@@ -868,7 +868,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       def filterRequest = new GeneralLedgerRecurringEntriesFilterRequest([sortBy: "id", sortDirection: "ASC"])
       filterRequest['entryType'] = glRecurringDTO.type.value
       filterRequest['sourceCode'] = glRecurringDTO.source.value
-      filterRequest['entryDate'] = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.systemDefault()).toOffsetDateTime()
+      filterRequest['entryDate'] = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toOffsetDateTime()
       filterRequest['employeeNumber'] = employee.number
 
       final glDetailPage = new StandardPageRequest(1, 5, "id", "ASC")

@@ -27,7 +27,7 @@ class FinancialCalendarDataLoader {
       final faker = new Faker()
       final random = faker.random()
       final date = faker.date()
-      final beginDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+      final beginDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
 
       return IntStream.range(0, number).mapToObj {
          new FinancialCalendarEntity(
@@ -50,7 +50,7 @@ class FinancialCalendarDataLoader {
       final faker = new Faker()
       final random = faker.random()
       final date = faker.date()
-      final beginDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+      final beginDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
 
       return IntStream.range(0, number).mapToObj {
          new FinancialCalendarDTO([
@@ -71,7 +71,7 @@ class FinancialCalendarDataLoader {
       final faker = new Faker()
       final random = faker.random()
       final date = faker.date()
-      final beginDate = startingDate ?: date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+      final beginDate = startingDate ?: date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
 
       return IntStream.range(0, number).mapToObj {
          new FinancialCalendarEntity(
@@ -94,7 +94,7 @@ class FinancialCalendarDataLoader {
       final faker = new Faker()
       final random = faker.random()
       final date = faker.date()
-      final beginDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+      final beginDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
 
       return IntStream.range(0, number).mapToObj {
          new FinancialCalendarDTO([

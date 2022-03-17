@@ -25,9 +25,9 @@ class NotificationTestDataLoader {
       final lorem = faker.lorem()
       final name = faker.name()
       final typeDomain = type ?: NotificationTypeDomainTestDataLoader.random()
-      final startDate = startDateIn != null ? Date.from(startDateIn.atStartOfDay(ZoneId.systemDefault()).toInstant()) : date.future(5, TimeUnit.DAYS) // hopefully this isn't lossy
-      final startLocalDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
-      final expirationLocalDate = expirationDateIn ?: date.future(100, TimeUnit.DAYS, startDate).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+      final startDate = startDateIn != null ? Date.from(startDateIn.atStartOfDay(ZoneId.of("-05:00")).toInstant()) : date.future(5, TimeUnit.DAYS) // hopefully this isn't lossy
+      final startLocalDate = startDate.toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
+      final expirationLocalDate = expirationDateIn ?: date.future(100, TimeUnit.DAYS, startDate).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
 
       return IntStream.range(0, number).mapToObj {
          new Notification(

@@ -25,8 +25,8 @@ class AccountPayableRecurringInvoiceDataLoader {
       final lorem = faker.lorem()
       final numbers = faker.number()
       final date = faker.date()
-      final lastTransferToCreateInvoiceDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
-      final startDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+      final lastTransferToCreateInvoiceDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
+      final startDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
 
       return IntStream.range(0, number).mapToObj {
          new AccountPayableRecurringInvoiceEntity(
@@ -66,8 +66,8 @@ class AccountPayableRecurringInvoiceDataLoader {
       final lorem = faker.lorem()
       final numbers = faker.number()
       final date = faker.date()
-      final lastTransferToCreateInvoiceDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
-      final startDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+      final lastTransferToCreateInvoiceDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
+      final startDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
 
       return IntStream.range(0, number).mapToObj {
          new AccountPayableRecurringInvoiceDTO(

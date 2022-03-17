@@ -32,7 +32,7 @@ class VerificationEmploymentTestDataLoader {
             OffsetDateTime.now(),
             OffsetDateTime.now(),
             job.field(),
-            date.past(3650, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+            date.past(3650, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate(),
             bool.bool(),
             company.name(),
             bool.bool(),
