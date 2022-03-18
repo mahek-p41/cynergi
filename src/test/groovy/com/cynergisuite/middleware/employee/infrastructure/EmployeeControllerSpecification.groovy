@@ -5,7 +5,7 @@ import com.cynergisuite.middleware.employee.EmployeePageRequest
 import com.google.common.net.UrlEscapers
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
+import spock.lang.Unroll
 
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
@@ -111,28 +111,15 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
       }
    }
 
-   void "search employee" () {
-      given:
-      final urlEscaper = UrlEscapers.urlFragmentEscaper()
-      final searchOne = new EmployeePageRequest([page: 1, size:  10, search: urlEscaper.escape('Store Manager')])
-      final searchTwo = new EmployeePageRequest([search: urlEscaper.escape('store manager')])
-      final searchThree = new EmployeePageRequest([search: 'Emp'])
-      final searchFour = new EmployeePageRequest([search: 'Karager'])
-      final searchFive = new EmployeePageRequest([search: urlEscaper.escape('St Manag')])
-
+   @Unroll
+   void "search employee #searchKey"() {
       when: 'search for STORE MANAGER with paging request params'
-      def searchOneResult = get("$path${searchOne}")
+      def searchOneResult = get("$path${searchQuery}")
 
       then:
-      searchOneResult.totalElements == 7  || searchOneResult.totalElements == 8
-      searchOneResult.totalPages == 1
-      searchOneResult.first == true
-      searchOneResult.last == true
-      searchOneResult.elements.size() == 7 || searchOneResult.elements.size() == 8
-
       with(searchOneResult.elements[0]) {
-         number == 90003
-         lastName == 'STORE MANAGER'
+         number == firstElementUserNumber
+         lastName == firstElementUserName
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
          type == 'sysz'
@@ -141,177 +128,11 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
          active == null
       }
 
-      with(searchOneResult.elements[2]) {
-         number == 90004
-         lastName == 'ASST MANAGER'
-         alternativeStoreIndicator == 'N'
-         alternativeArea == 0
-         type == 'sysz'
-         passCode == null
-         store == null
-         active == null
-      }
-
-      with(searchOneResult.elements[1]) {
-         number == 90002
-         lastName == 'MARKET MANAGER'
-         alternativeStoreIndicator == 'N'
-         alternativeArea == 0
-         type == 'sysz'
-         passCode == null
-         store == null
-         active == null
-      }
-
-      when: 'search for STORE MANAGER'
-      def searchTwoResult = get("$path${searchTwo}")
-
-      then:
-      searchTwoResult.totalElements == 7 || searchTwoResult.totalElements == 8
-      searchTwoResult.totalPages == 1
-      searchTwoResult.first == true
-      searchTwoResult.last == true
-      searchTwoResult.elements.size() == 7 || searchTwoResult.elements.size() == 8
-
-      with(searchTwoResult.elements[0]) {
-         number == 90003
-         lastName == 'STORE MANAGER'
-         alternativeStoreIndicator == 'N'
-         alternativeArea == 0
-         type == 'sysz'
-         passCode == null
-         store == null
-         active == null
-      }
-
-      with(searchTwoResult.elements[1]) {
-         number == 90002
-         lastName == 'MARKET MANAGER'
-         alternativeStoreIndicator == 'N'
-         alternativeArea == 0
-         type == 'sysz'
-         passCode == null
-         store == null
-         active == null
-      }
-
-      with(searchTwoResult.elements[2]) {
-         number == 90004
-         lastName == 'ASST MANAGER'
-         alternativeStoreIndicator == 'N'
-         alternativeArea == 0
-         type == 'sysz'
-         passCode == null
-         store == null
-         active == null
-      }
-
-      when: 'search for EMP'
-      def searchThreeResult = get("$path${searchThree}")
-
-      then:
-      searchThreeResult.totalElements == 1
-      searchThreeResult.totalPages == 1
-      searchThreeResult.first == true
-      searchThreeResult.last == true
-      searchThreeResult.elements.size() == 1
-
-      with(searchThreeResult.elements[0]) {
-         number == 90008
-         lastName == 'TERMINATED'
-         firstNameMi == 'EMP'
-         alternativeStoreIndicator == 'N'
-         alternativeArea == 0
-         type == 'sysz'
-         passCode == null
-         store == null
-         active == null
-      }
-
-      when: 'search for Karager'
-      def searchFourResult = get("$path${searchFour}")
-
-      then:
-      searchFourResult.totalElements == 3 || searchFourResult.totalElements == 4
-      searchFourResult.totalPages == 1
-      searchFourResult.first == true
-      searchFourResult.last == true
-      searchFourResult.elements.size() == 3 || searchFourResult.elements.size() == 4
-
-      with(searchFourResult.elements[0]) {
-         number == 90002
-         lastName == 'MARKET MANAGER'
-         alternativeStoreIndicator == 'N'
-         alternativeArea == 0
-         type == 'sysz'
-         passCode == null
-         store == null
-         active == null
-      }
-
-      with(searchFourResult.elements[1]) {
-         number == 90004
-         lastName == 'ASST MANAGER'
-         alternativeStoreIndicator == 'N'
-         alternativeArea == 0
-         type == 'sysz'
-         passCode == null
-         store == null
-         active == null
-      }
-
-      with(searchFourResult.elements[2]) {
-         number == 90003
-         lastName == 'STORE MANAGER'
-         alternativeStoreIndicator == 'N'
-         alternativeArea == 0
-         type == 'sysz'
-         passCode == null
-         store == null
-         active == null
-      }
-
-      when: 'search for St Man'
-      def searchFiveResult = get("$path${searchFive}")
-
-      then:
-      searchFiveResult.totalElements == 5 || searchFiveResult.totalElements == 6
-      searchFiveResult.totalPages == 1
-      searchFiveResult.first == true
-      searchFiveResult.last == true
-      searchFiveResult.elements.size() == 5  || searchFiveResult.elements.size() == 6
-
-      with(searchFiveResult.elements[0]) {
-         number == 90003
-         lastName == 'STORE MANAGER'
-         alternativeStoreIndicator == 'N'
-         alternativeArea == 0
-         type == 'sysz'
-         passCode == null
-         store == null
-         active == null
-      }
-
-      with(searchFiveResult.elements[1]) {
-         number == 90004
-         lastName == 'ASST MANAGER'
-         alternativeStoreIndicator == 'N'
-         alternativeArea == 0
-         type == 'sysz'
-         passCode == null
-         store == null
-         active == null
-      }
-
-      with(searchFiveResult.elements[2]) {
-         number == 90002
-         lastName == 'MARKET MANAGER'
-         alternativeStoreIndicator == 'N'
-         alternativeArea == 0
-         type == 'sysz'
-         passCode == null
-         store == null
-         active == null
-      }
+      where:
+      searchQuery                                                                                                       | searchKey       || firstElementUserNumber | firstElementUserName
+      new EmployeePageRequest([page: 1, size:  10, search: UrlEscapers.urlFragmentEscaper().escape('Store Manager')])   | 'Store Manager' || 90003                      | 'STORE MANAGER'
+      new EmployeePageRequest([search: UrlEscapers.urlFragmentEscaper().escape('stor manager')])                        | 'stor manager'  || 90003                      | 'STORE MANAGER'
+      new EmployeePageRequest([search: UrlEscapers.urlFragmentEscaper().escape('as manager')])                          | 'as manager'   || 90004                      | 'ASST MANAGER'
+      new EmployeePageRequest([search: UrlEscapers.urlFragmentEscaper().escape('St Manag')])                            | 'St Manag'      || 90003                      | 'STORE MANAGER'
    }
 }
