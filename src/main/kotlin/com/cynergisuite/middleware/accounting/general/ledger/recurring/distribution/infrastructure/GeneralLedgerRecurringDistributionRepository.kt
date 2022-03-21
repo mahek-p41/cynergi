@@ -246,7 +246,23 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
    }
 
    @Transactional
-   fun delete(id: UUID) {
+   fun deleteAll(id: UUID) {
+      logger.debug("Deleting all GeneralLedgerRecurringDistributions with id={}", id)
+      val rowsAffected = jdbc.update(
+         """
+         UPDATE general_ledger_recurring_distribution
+         SET deleted = TRUE
+         WHERE general_ledger_recurring_id = :id AND deleted = FALSE
+         """,
+         mapOf("id" to id)
+      )
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(id)
+   }
+
+   @Transactional
+   fun deleteOne(id: UUID) {
       logger.debug("Deleting GeneralLedgerRecurringDistribution with id={}", id)
       val rowsAffected = jdbc.update(
          """
@@ -260,6 +276,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
 
       if (rowsAffected == 0) throw NotFoundException(id)
    }
+
 
    @Transactional
    fun deleteNotIn(generalLedgerRecurringId: UUID, distributions: List<GeneralLedgerRecurringDistributionEntity>) {

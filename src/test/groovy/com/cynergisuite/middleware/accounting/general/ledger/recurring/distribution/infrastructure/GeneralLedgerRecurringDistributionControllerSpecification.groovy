@@ -365,6 +365,33 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       'generalLedgerDistributionProfitCenter' | new SimpleLegacyIdentifiableDTO(999_999L)                                          || 'generalLedgerDistributionProfitCenter.id' | "999999 was unable to be found"
    }
 
+   void "delete all GL recurring distribution by GL Recurring ID" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      final glRecurring = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
+      final account = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, company)
+      final glRecurringDistribution = dataLoaderService.single(glRecurring, account, profitCenter)
+
+      when:
+      delete("$path/glRecurringId/${glRecurring.id}")
+
+      then:
+      notThrown(Exception)
+
+      when:
+      get("$path/${glRecurringDistribution.id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "${glRecurringDistribution.id} was unable to be found"
+      response.code == 'system.not.found'
+   }
+
+
    void "delete one GL recurring distribution" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
@@ -390,6 +417,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       response.message == "${glRecurringDistribution.id} was unable to be found"
       response.code == 'system.not.found'
    }
+
 
    void "recreate deleted GL recurring distribution" () {
       given:
