@@ -102,7 +102,7 @@ class AccountPayableAgingReportRepository @Inject constructor(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY apInvoiceDetail_vendor_number
+            ORDER BY apInvoiceDetail_vendor_${filterRequest.sortBy}
          """.trimIndent(),
          params
       ) { rs, _ ->
