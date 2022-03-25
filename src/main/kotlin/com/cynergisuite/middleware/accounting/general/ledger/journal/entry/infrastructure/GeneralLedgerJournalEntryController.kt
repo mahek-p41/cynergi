@@ -25,7 +25,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
-@Controller("/api/accounting/general-ledger/new-journal-entry")
+@Controller("/api/accounting/general-ledger/journal-entry")
 class GeneralLedgerJournalEntryController @Inject constructor(
    private val journalEntryService: GeneralLedgerJournalEntryService,
    private val userService: UserService

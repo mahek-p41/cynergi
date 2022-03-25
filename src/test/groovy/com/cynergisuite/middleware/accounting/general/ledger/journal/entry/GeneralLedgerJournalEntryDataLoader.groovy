@@ -34,10 +34,8 @@ class GeneralLedgerJournalEntryDataLoader {
             LocalDate.now(),
             sourceIn,
             reverseIn,
-            random.nextBoolean(),
             journalEntryNumber.getAndIncrement() as int,
             glDetailsIn,
-            BigDecimal.ZERO,
             message,
             postReversingEntryIn
          )
@@ -61,10 +59,8 @@ class GeneralLedgerJournalEntryDataLoader {
             LocalDate.now(),
             sourceIn,
             reverseIn,
-            random.nextBoolean(),
             journalEntryNumber.getAndIncrement() as int,
             glDetailsIn,
-            BigDecimal.ZERO,
             message,
             postReversingEntryIn
          )

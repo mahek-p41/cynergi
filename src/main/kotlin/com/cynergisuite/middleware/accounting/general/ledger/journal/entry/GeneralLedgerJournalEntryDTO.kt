@@ -15,36 +15,27 @@ import javax.validation.constraints.NotNull
 data class GeneralLedgerJournalEntryDTO(
 
    @field:NotNull
-   @field:Schema(name = "entryDate", description = "Entry date (GL period must be open)")
+   @field:Schema(name = "entryDate", description = "Entry date (GL period must be open)", required = true)
    var entryDate: LocalDate? = null,
 
    @field:NotNull
-   @field:Schema(name = "source", description = "General ledger source code")
+   @field:Schema(name = "source", description = "General ledger source code", required = true)
    var source: GeneralLedgerSourceCodeDTO? = null,
 
    @field:NotNull
-   @field:Schema(name = "reverse", description = "Determines if GL Reversal records will be created")
+   @field:Schema(name = "reverse", description = "Determines if GL Reversal records will be created", required = true)
    var reverse: Boolean? = null,
 
-   @field:NotNull
-   @field:Schema(name = "useTemplate", description = "Determines if an AP Distribution template will be used")
-   var useTemplate: Boolean? = null,
-
-   @field:NotNull
    @field:Schema(name = "journalEntryNumber", description = "Journal entry number (system generated)")
    var journalEntryNumber: Int? = null,
 
    @field:Schema(name = "journalEntryDetails", description = "List of journal entry details")
    var journalEntryDetails: MutableList<GeneralLedgerJournalEntryDetailDTO> = mutableListOf(),
 
-   @field:NotNull
-   @field:Schema(name = "balance", description = "Journal entry balance (must be zero)")
-   var balance: BigDecimal? = null,
-
-   @field:Schema(name = "message", description = "Message", required = false)
+   @field:Schema(name = "message", description = "Message")
    var message: String? = null,
 
-   @field:Schema(name = "postReversingEntry", description = "Determines if the GL Reversal Entry will be posted (only available if the GL is open for the reversal date)", required = false)
+   @field:Schema(name = "postReversingEntry", description = "Determines if the GL Reversal Entry will be posted (only available if the GL is open for the reversal date)")
    var postReversingEntry: Boolean? = false
 
 )

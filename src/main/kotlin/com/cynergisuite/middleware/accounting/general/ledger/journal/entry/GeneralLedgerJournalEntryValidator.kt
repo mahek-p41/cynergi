@@ -30,7 +30,6 @@ class GeneralLedgerJournalEntryValidator @Inject constructor(
    fun validateCreate(dto: GeneralLedgerJournalEntryDTO, company: CompanyEntity): GeneralLedgerJournalEntryDTO {
       logger.trace("Validating create GeneralLedgerJournalEntry {}", dto)
 
-      //todo refactor this
       val (glOpenBegin, glOpenEnd) = financialCalendarRepository.findDateRangeWhenGLIsOpen(company)
       val source = sourceCodeRepository.findOne(dto.source!!.id!!, company)
 
@@ -42,18 +41,16 @@ class GeneralLedgerJournalEntryValidator @Inject constructor(
 
          source ?: errors.add(ValidationError("source.id", NotFound(dto.source!!.id!!)))
 
-         if (dto.balance?.compareTo(BigDecimal.ZERO) != 0) {
-            errors.add(ValidationError("balance", BalanceMustBeZero(dto.balance!!)))
-         }
-
          // GL journal entry detail validations
          dto.journalEntryDetails.forEach {
             accountRepository.findOne(it.account!!.id!!, company) ?: errors.add(
                ValidationError("journalEntryDetails[index].account.id", NotFound(it.account!!.id!!))
             )
-            bankReconciliationTypeRepository.findOne(it.bankType!!.value) ?: errors.add(
-               ValidationError("journalEntryDetails[index].bankType.value", NotFound(it.bankType!!.value))
-            )
+            if (it.bankType != null) {
+               bankReconciliationTypeRepository.findOne(it.bankType!!.value) ?: errors.add(
+                  ValidationError("journalEntryDetails[index].bankType.value", NotFound(it.bankType!!.value))
+               )
+            }
             storeRepository.findOne(it.profitCenter!!.id!!, company) ?: errors.add(
                ValidationError("journalEntryDetails[index].profitCenter.id", NotFound(it.profitCenter!!.id!!))
             )

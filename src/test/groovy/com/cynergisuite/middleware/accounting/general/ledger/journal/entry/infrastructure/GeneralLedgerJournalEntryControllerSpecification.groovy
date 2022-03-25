@@ -22,7 +22,7 @@ import static io.micronaut.http.HttpStatus.BAD_REQUEST
 
 @MicronautTest(transactional = false)
 class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecificationBase {
-   private static final String path = "/accounting/general-ledger/new-journal-entry"
+   private static final String path = "/accounting/general-ledger/journal-entry"
 
    @Inject AccountTestDataLoaderService accountDataLoaderService
    @Inject FinancialCalendarDataLoaderService financialCalendarDataLoaderService
@@ -74,7 +74,6 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
          }
 
          reverse == glJournalEntryDTO.reverse
-         useTemplate == glJournalEntryDTO.useTemplate
          journalEntryNumber != null
          journalEntryNumber > 0
 
@@ -132,7 +131,6 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
          }
 
          reverse == glJournalEntryDTO.reverse
-         useTemplate == glJournalEntryDTO.useTemplate
          journalEntryNumber != null
          journalEntryNumber > 0
 
@@ -170,13 +168,8 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
       def glJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), true, glJournalEntryDetailDTOs, true)
 
-      when: 'open GL in financial calendar'
-      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
-
-      then:
-      notThrown(Exception)
-
       when: 'create journal entry'
+      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
       def result = post(path, glJournalEntryDTO)
 
       then:
@@ -191,7 +184,6 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
          }
 
          reverse == glJournalEntryDTO.reverse
-         useTemplate == glJournalEntryDTO.useTemplate
          journalEntryNumber != null
          journalEntryNumber > 0
 
@@ -249,11 +241,8 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
 
       where:
       nonNullableProp         || errorResponsePath
-      'balance'               || 'balance'
       'entryDate'             || 'entryDate'
-      'journalEntryNumber'    || 'journalEntryNumber'
       'reverse'               || 'reverse'
       'source'                || 'source'
-      'useTemplate'           || 'useTemplate'
    }
 }
