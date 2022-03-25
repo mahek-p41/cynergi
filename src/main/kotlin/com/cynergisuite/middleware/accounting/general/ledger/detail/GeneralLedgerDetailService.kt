@@ -53,6 +53,7 @@ class GeneralLedgerDetailService @Inject constructor(
    fun transfer(company: CompanyEntity, filterRequest: GeneralLedgerRecurringEntriesFilterRequest) {
       val glRecurringEntries = generalLedgerRecurringEntriesRepository.findAll(company, filterRequest)
       var glDetailDTO: GeneralLedgerDetailDTO
+      val journalEntryNumber = generalLedgerDetailRepository.findNextJENumber(company)
 
       glRecurringEntries.forEach {
          // create GL detail for each distribution
@@ -66,7 +67,7 @@ class GeneralLedgerDetailService @Inject constructor(
                distribution.generalLedgerDistributionAmount,
                distribution.generalLedgerRecurring.message,
                filterRequest.employeeNumber,
-               null
+               journalEntryNumber
             )
 
             create(glDetailDTO, company)

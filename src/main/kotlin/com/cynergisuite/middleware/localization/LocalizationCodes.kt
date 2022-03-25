@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.apache.commons.lang3.builder.ToStringBuilder
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -53,6 +54,7 @@ class SelectPercentOrPerUnit(percent: BigDecimal?, amountPerUnit: BigDecimal?) :
 class AccountIsRequired(account: AccountEntity?) : Cynergi("cynergi.validation.account.is.required", arrayOf(account))
 class PercentTotalGreaterThan100(percent: BigDecimal) : Cynergi("cynergi.validation.percent.total.greater.than.100", arrayOf(percent))
 class BalanceMustBeZero(balance: BigDecimal) : Cynergi("cynergi.validation.balance.must.be.zero", arrayOf(balance))
+class GLNotOpen(date: LocalDate) : Cynergi("cynergi.validation.gl.not.open", arrayOf(date))
 
 class AuditStatusNotFound(auditStatus: String) : Cynergi("cynergi.audit.status.not.found", arrayOf(auditStatus))
 class AuditUnableToChangeStatusFromTo(auditId: UUID, toStatus: String, fromStatus: String) : Cynergi("cynergi.audit.unable.to.change.status.from.to", arrayOf(auditId, toStatus, fromStatus))

@@ -38,7 +38,7 @@ class GeneralLedgerReversalEntryControllerSpecification extends ControllerSpecif
       final glReversal = generalLedgerReversalDataLoaderService.single(company, glSourceCode)
       final account = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, company)
-      final glReversalDistributions = generalLedgerReversalDistributionDataLoaderService.stream(1, glReversal, account, profitCenter).toList()
+      final glReversalDistributions = generalLedgerReversalDistributionDataLoaderService.stream(2, glReversal, account, profitCenter).toList()
 
       when:
       def result = get("$path/${glReversal.id}")
