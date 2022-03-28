@@ -50,6 +50,22 @@ class AccountPayableDistributionService @Inject constructor(
       return transformEntity(accountPayableDistributionRepository.update(toUpdate, company))
    }
 
+   fun update(dto: List<AccountPayableDistributionDTO>, name: String?, company: CompanyEntity): List<AccountPayableDistributionDTO> {
+      //update rather than create entity where profit center already exists for company
+      val updateName = if (name.isNullOrEmpty()) dto[0].name!! else name
+
+      val existProfitCenters = accountPayableDistributionRepository.findProfitCentersByGroupName(company, updateName)
+      val match = existProfitCenters.filter{ e -> dto.any { d -> d.profitCenter?.id == e.profitCenter.myId() } }
+      val mapIds = dto.map { element ->
+         match.lastOrNull {
+            it.profitCenter.myId() == element.profitCenter?.id
+         }.let {element.copy(id = it?.id)}
+      }
+
+      val toUpdate = accountPayableDistributionValidator.validateBulkUpdate(mapIds, company)
+      val updated = accountPayableDistributionRepository.bulkUpdate(toUpdate, company)
+      return updated.map{ transformEntity(it) }.toList()
+   }
    fun delete(id: UUID, company: CompanyEntity) {
       accountPayableDistributionRepository.delete(id, company)
    }

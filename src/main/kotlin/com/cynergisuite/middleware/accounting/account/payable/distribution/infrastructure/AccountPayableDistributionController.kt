@@ -203,6 +203,35 @@ class AccountPayableDistributionController @Inject constructor(
       return response
    }
 
+   @Put(processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["AccountPayableDistributionEndpoints"], summary = "Update multiple AccountPayableDistributionEntity", description = "Update multiple AccountPayableDistributionEntity from a body of AccountPayableDistributionDTO", operationId = "accountPayableDistribution-bulkUpdate")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to update AccountPayableDistribution", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableDistributionDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "404", description = "The requested AccountPayableDistribution was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun update(
+      @QueryValue("name") name: String?,
+      @Body @Valid
+      dto: List<AccountPayableDistributionDTO>,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): List<AccountPayableDistributionDTO> {
+      val user = userService.fetchUser(authentication)
+      val userCompany = user.myCompany()
+      logger.info("Requested Update AccountPayableDistribution {}", dto)
+
+      val response = accountPayableDistributionService.update(dto, name, userCompany)
+
+      logger.debug("Requested Update AccountPayableDistribution {} resulted in {}", dto, response)
+
+      return response
+   }
+
    @Delete(value = "/{id:[0-9a-fA-F\\-]+}")
    @Throws(NotFoundException::class)
    @Operation(tags = ["AccountPayableDistributionEndpoints"], summary = "Delete a single AccountPayableDistribution", description = "Delete a single AccountPayableDistribution", operationId = "accountPayableDistribution-delete")
