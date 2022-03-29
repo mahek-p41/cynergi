@@ -276,9 +276,10 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
    void "create complete financial calendar" () {
       given:
       final beginDate = LocalDate.parse("2021-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
 
       when:
-      def result = post("$path/complete", beginDate)
+      def result = post("$path/complete", financialCalendarDTO)
 
       then:
       notThrown(Exception)
