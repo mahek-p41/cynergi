@@ -194,13 +194,12 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
             paymentDetails.size() == 5
 
             paymentDetails.eachWithIndex { detail, k ->
-               with(detail) {
-                  id == apPaymentDetails[k + i * 5].id
-                  vendorNumber == apPaymentDetails[k + i * 5].vendor.number
-                  invoice == apPaymentDetails[k + i * 5].invoice.invoice
-                  invoiceAmount == apPaymentDetails[k + i * 5].amount
-                  invoiceDate == apPaymentDetails[k + i * 5].invoice.invoiceDate.toString()
-               }
+               final tmpPaymentDetail = apPaymentDetails[k + i * 5]
+               detail.id == tmpPaymentDetail.id
+               detail.vendorNumber == tmpPaymentDetail.vendor.number
+               detail.invoice == tmpPaymentDetail.invoice.invoice
+               detail.invoiceAmount == tmpPaymentDetail.amount
+               detail.invoiceDate == tmpPaymentDetail.invoice.invoiceDate.toString()
             }
          }
       }
