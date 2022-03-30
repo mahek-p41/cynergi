@@ -117,6 +117,89 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
       'Vendors by null vendorStart and vendorEnd'  || 3
    }
 
+   void "fetch all with many vendors"() {
+      given:
+      def company = companyFactoryService.forDatasetCode('tstds1')
+      def store = storeFactoryService.store(3, company)
+      def shipViaIn = shipViaTestDataLoaderService.single(company)
+      def employeeIn = employeeFactoryService.single(company)
+      def payToIn = vendorTestDataLoaderService.single(company, vendorPaymentTermTestDataLoaderService.single(company), shipViaIn)
+      def statusTypeO = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
+      def account = accountTestDataLoaderService.single(company)
+      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+
+      def vendorList = vendorTestDataLoaderService.stream(20, company, vendorPaymentTermTestDataLoaderService.single(company), shipViaIn).toList()
+
+      def purchaseOrderList = []
+      vendorList.each {
+         purchaseOrderList.add(poTestDataLoaderService.single(
+            company,
+            it,
+            employeeFactoryService.single(company),
+            employeeFactoryService.single(company),
+            shipViaIn,
+            store,
+            vendorPaymentTermTestDataLoaderService.single(company),
+            employeeFactoryService.single(company)
+         ))
+      }
+
+      vendorList.eachWithIndex { it, index ->
+         apPaymentDetailDataLoaderService.single(
+            company,
+            vendorList[index],
+            apInvoiceDataLoaderService.single(
+               company,
+               vendorList[index],
+               purchaseOrderList[index],
+               null,
+               employeeIn,
+               null,
+               statusTypeO,
+               payToIn,
+               store
+            ),
+            apPaymentDataLoaderService.single(company, bank, vendorList[index])
+         )
+      }
+
+      def agingDate = LocalDate.now()
+
+      def filterRequest = new AgingReportFilterRequest([sortBy: "number", sortDirection: "ASC"])
+      switch (criteria) {
+         case 'Vendors by vendorStart':
+            filterRequest['vendorStart'] = vendorList[15].number
+            filterRequest['agingDate'] = agingDate
+            break
+         case 'Vendors by vendorEnd':
+            filterRequest['vendorEnd'] = vendorList[4].number
+            filterRequest['agingDate'] = agingDate
+            break
+         case 'Vendors by vendorStart and vendorEnd':
+            filterRequest['vendorStart'] = vendorList[5].number
+            filterRequest['vendorEnd'] = vendorList[14].number
+            filterRequest['agingDate'] = agingDate
+            break
+         case 'Vendors by null vendorStart and vendorEnd':
+            filterRequest['agingDate'] = agingDate
+            break
+      }
+
+      when:
+      def result = get("$path$filterRequest")
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.vendors.size() == vendorCount
+      where:
+      criteria                                     || vendorCount
+      'Vendors by vendorStart'                     || 5
+      'Vendors by vendorEnd'                       || 5
+      'Vendors by vendorStart and vendorEnd'       || 10
+      'Vendors by null vendorStart and vendorEnd'  || 20
+   }
+
    void "fetch all with multiple vendors and invoices sort by vendor name"() {
       given:
       def company = companyFactoryService.forDatasetCode('tstds1')
@@ -413,5 +496,91 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
       result.vendors.vendorTotals.balanceTotal[0] == 28000
       result.vendors.vendorTotals.balanceTotal[1] == 8000
       result.agedTotals.balanceTotal == 36000
+   }
+
+   void "fetch all resulting in empty report"() {
+      given:
+      def company = companyFactoryService.forDatasetCode('tstds1')
+      def store = storeFactoryService.store(3, company)
+      def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
+      def shipViaList = shipViaTestDataLoaderService.stream(4, company).toList()
+
+      def vendor1PmtTerm = vendorPaymentTermList[0]
+      def vendor1ShipVia = shipViaList[0]
+      def vendor1 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor1ShipVia)
+      def vendor2PmtTerm = vendorPaymentTermList[1]
+      def vendor2ShipVia = shipViaList[1]
+      def vendor2 = vendorTestDataLoaderService.single(company, vendor2PmtTerm, vendor2ShipVia)
+      def vendor3 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor2ShipVia)
+
+      def employeeList = employeeFactoryService.stream(4, company).toList()
+      def poApprovedBy = employeeList[0]
+      def poPurchaseAgent = employeeList[1]
+      def poShipVia = shipViaList[2]
+      def poPmtTerm = vendorPaymentTermList[2]
+      def poVendorSubEmp = employeeList[2]
+      def purchaseOrderIn1 = poTestDataLoaderService.single(company, vendor1, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      def purchaseOrderIn2 = poTestDataLoaderService.single(company, vendor2, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      def purchaseOrderIn3 = poTestDataLoaderService.single(company, vendor3, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      def employeeIn = employeeList[3]
+
+      def payToPmtTerm = vendorPaymentTermList[3]
+      def payToShipVia = shipViaList[3]
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def statusTypeH = new AccountPayableInvoiceStatusType(1, "H", "Hold", "hold")
+      def apInvoicesForVend1 = apInvoiceDataLoaderService.stream(3, company, vendor1, purchaseOrderIn1, null, employeeIn, null, statusTypeH, payToIn, store).toList()
+      def apInvoicesForVend2 = apInvoiceDataLoaderService.stream(4, company, vendor2, purchaseOrderIn2, null, employeeIn, null, statusTypeH, payToIn, store).toList()
+      def apInvoicesForVend3 = apInvoiceDataLoaderService.stream(5, company, vendor3, purchaseOrderIn3, null, employeeIn, null, statusTypeH, payToIn, store).toList()
+
+      def account = accountTestDataLoaderService.single(company)
+      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      def apPayment1 = apPaymentDataLoaderService.single(company, bank, vendor1)
+      def apPayment2 = apPaymentDataLoaderService.single(company, bank, vendor2)
+      def apPayment3 = apPaymentDataLoaderService.single(company, bank, vendor3)
+      apInvoicesForVend1.eachWithIndex { it, index ->
+         apPaymentDetailDataLoaderService.single(company, vendor1, it, apPayment1)
+      }
+      apInvoicesForVend2.eachWithIndex { it, index ->
+         apPaymentDetailDataLoaderService.single(company, vendor2, it, apPayment2)
+      }
+      apInvoicesForVend3.eachWithIndex { it, index ->
+         apPaymentDetailDataLoaderService.single(company, vendor3, it, apPayment3)
+      }
+
+      def agingDate = LocalDate.now()
+
+      def filterRequest = new AgingReportFilterRequest([sortBy: "number", sortDirection: "ASC"])
+      switch (criteria) {
+         case 'Vendors by vendorStart':
+            filterRequest['vendorStart'] = vendor1.number
+            filterRequest['agingDate'] = agingDate
+            break
+         case 'Vendors by vendorEnd':
+            filterRequest['vendorEnd'] = vendor1.number
+            filterRequest['agingDate'] = agingDate
+            break
+         case 'Vendors by vendorStart and vendorEnd':
+            filterRequest['vendorStart'] = vendor2.number
+            filterRequest['vendorEnd'] = vendor3.number
+            filterRequest['agingDate'] = agingDate
+            break
+         case 'Vendors by null vendorStart and vendorEnd':
+            filterRequest['agingDate'] = agingDate
+            break
+      }
+
+      when:
+      def result = get("$path$filterRequest")
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.vendors.size() == vendorCount
+      where:
+      criteria                                     || vendorCount
+      'Vendors by vendorStart'                     || 0
+      'Vendors by vendorEnd'                       || 0
+      'Vendors by vendorStart and vendorEnd'       || 0
+      'Vendors by null vendorStart and vendorEnd'  || 0
    }
 }
