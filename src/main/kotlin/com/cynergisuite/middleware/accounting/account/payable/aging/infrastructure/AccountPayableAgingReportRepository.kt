@@ -180,10 +180,7 @@ class AccountPayableAgingReportRepository @Inject constructor(
          } while (rs.next())
 
          // remove vendors with no invoices
-         vendors.forEach {
-            if (it.invoices?.size == 0)
-               vendors.remove(it)
-         }
+         vendors.removeIf { it.invoices?.size == 0 }
       }
 
       val entity = AccountPayableAgingReportEntity(vendors, agedTotals)
