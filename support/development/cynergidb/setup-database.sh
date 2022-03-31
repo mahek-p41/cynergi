@@ -12,5 +12,5 @@ psql -v ON_ERROR_STOP=1 \
   --dbname cynergidb \
   -v fastinfoUserName=fastinfo_dba \
   -v fastinfoPassword=password \
-  -v datasets=corrto,corptp,corrll,cornwv,corrdv,corapw,corrbn,coravt,corron,corfar \
+  -v datasets=corrto,corptp,corrll,cornwv,corrdv,corapw,corrbn,coravt,corron,corfar,cortst \
   -f /tmp/setup-database.sql
