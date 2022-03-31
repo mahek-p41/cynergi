@@ -6,6 +6,7 @@ import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.localization.LocalizationService
+import com.cynergisuite.middleware.vendor.VendorTypeDTO
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.util.Locale
@@ -57,7 +58,8 @@ class AccountService @Inject constructor(
          accountEntity = accountEntity,
          type = AccountTypeDTO(accountEntity.type, localizedTypeDescription),
          normalAccountBalance = NormalAccountBalanceTypeDTO(accountEntity.normalAccountBalance, localizedAccountBalanceTypeDescription),
-         status = AccountStatusTypeValueDTO(accountEntity.status, localizedStatusDescription)
+         status = AccountStatusTypeValueDTO(accountEntity.status, localizedStatusDescription),
+         form1099Field = VendorTypeDTO(accountEntity.form1099Field)
       )
    }
 

@@ -2,6 +2,8 @@ package com.cynergisuite.middleware.accounting.account
 
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.vendor.VendorTypeFactory
+import com.cynergisuite.middleware.vendor.VendorTypeDTO
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
@@ -30,7 +32,7 @@ class AccountTestDataLoader {
             AccountTypeFactory.random(),
             NormalAccountBalanceFactory.random(),
             AccountStatusFactory.random(),
-            random.nextInt(1, 20),
+            VendorTypeFactory.random(),
             random.nextBoolean()
          )
       }
@@ -50,6 +52,7 @@ class AccountTestDataLoader {
             new AccountTypeDTO(AccountTypeFactory.random()),
             new NormalAccountBalanceTypeDTO(NormalAccountBalanceFactory.random()),
             new AccountStatusTypeValueDTO(AccountStatusFactory.random()),
+            new VendorTypeDTO(VendorTypeFactory.random()),
             random.nextInt(1, 20),
             random.nextBoolean()
          )

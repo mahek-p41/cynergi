@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.middleware.vendor.VendorType
 import io.micronaut.core.annotation.Introspected
 import java.util.UUID
 
@@ -13,7 +14,7 @@ data class AccountEntity(
    val type: AccountType,
    val normalAccountBalance: NormalAccountBalanceType,
    val status: AccountStatusType,
-   val form1099Field: Int? = null,
+   val form1099Field: VendorType,
    val corporateAccountIndicator: Boolean
 ) : Identifiable {
 
@@ -21,7 +22,8 @@ data class AccountEntity(
       accountDTO: AccountDTO,
       accountType: AccountType,
       normalAccountBalanceType: NormalAccountBalanceType,
-      accountStatusType: AccountStatusType
+      accountStatusType: AccountStatusType,
+      vendorType: VendorType
    ) :
       this(
          id = accountDTO.id,
@@ -30,7 +32,7 @@ data class AccountEntity(
          type = accountType,
          normalAccountBalance = normalAccountBalanceType,
          status = accountStatusType,
-         form1099Field = accountDTO.form1099Field,
+         form1099Field = vendorType,
          corporateAccountIndicator = accountDTO.corporateAccountIndicator!!
       )
 

@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.middleware.vendor.VendorTypeDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.micronaut.core.annotation.Introspected
@@ -42,7 +43,7 @@ data class AccountDTO(
    var status: AccountStatusTypeValueDTO? = null,
 
    @field:Schema(name = "form 1099 field", required = false, description = "Field # on the 1099 form for this account")
-   var form1099Field: Int? = null,
+   var form1099Field: VendorTypeDTO? = null,
 
    @field:NotNull
    @field:Schema(name = "corporate account indicator", required = true, description = "Corporate account indicator")
@@ -57,7 +58,7 @@ data class AccountDTO(
          type = AccountTypeDTO(accountEntity.type),
          normalAccountBalance = NormalAccountBalanceTypeDTO(accountEntity.normalAccountBalance),
          status = AccountStatusTypeValueDTO(accountEntity.status),
-         form1099Field = accountEntity.form1099Field,
+         form1099Field = VendorTypeDTO(accountEntity.form1099Field),
          corporateAccountIndicator = accountEntity.corporateAccountIndicator
       )
 
@@ -65,7 +66,8 @@ data class AccountDTO(
       accountEntity: AccountEntity,
       type: AccountTypeDTO,
       normalAccountBalance: NormalAccountBalanceTypeDTO,
-      status: AccountStatusTypeValueDTO
+      status: AccountStatusTypeValueDTO,
+      form1099Field: VendorTypeDTO
    ) :
       this(
          id = accountEntity.id,
@@ -74,7 +76,7 @@ data class AccountDTO(
          type = type,
          normalAccountBalance = normalAccountBalance,
          status = status,
-         form1099Field = accountEntity.form1099Field,
+         form1099Field = form1099Field,
          corporateAccountIndicator = accountEntity.corporateAccountIndicator
       )
 
