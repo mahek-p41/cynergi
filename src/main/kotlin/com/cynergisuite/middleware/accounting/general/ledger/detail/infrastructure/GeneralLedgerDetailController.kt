@@ -151,7 +151,7 @@ class GeneralLedgerDetailController @Inject constructor(
       return response
    }
 
-   @Get(uri = "/search{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Get(uri = "{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a General Ledger Search Report", description = "Fetch a General Ledger Search Report", operationId = "generalLedgerJournal-fetchReport")
    @ApiResponses(
       value = [

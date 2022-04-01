@@ -3,7 +3,8 @@ package com.cynergisuite.domain
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
-import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.util.*
 
 @Schema(
    name = "GeneralLedgerSearchReportFilterRequest",
@@ -43,13 +44,13 @@ class GeneralLedgerSearchReportFilterRequest(
    var description: String? = null,
 
    @field:Schema(name = "jeNumber", description = "Journal entry number")
-   var jeNumber: Int? = null,
+   var jeNumber: String? = null,
 
    @field:Schema(name = "frmPmtDt", description = "Beginning payment date")
-   var frmPmtDt: LocalDate? = null,
+   var frmPmtDt: OffsetDateTime? = null,
 
    @field:Schema(name = "thruPmtDt", description = "Ending payment date")
-   var thruPmtDt: LocalDate? = null,
+   var thruPmtDt: OffsetDateTime? = null,
 
 
 
