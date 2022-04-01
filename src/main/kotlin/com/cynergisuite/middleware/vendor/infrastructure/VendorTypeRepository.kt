@@ -3,16 +3,15 @@ package com.cynergisuite.middleware.vendor.infrastructure
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
-import com.cynergisuite.middleware.accounting.account.AccountStatusType
 import com.cynergisuite.middleware.vendor.VendorType
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class VendorTypeRepository @Inject constructor(
