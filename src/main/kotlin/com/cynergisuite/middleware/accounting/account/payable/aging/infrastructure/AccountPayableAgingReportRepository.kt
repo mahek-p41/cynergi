@@ -139,15 +139,25 @@ class AccountPayableAgingReportRepository @Inject constructor(
 
                if (invoiceFlag) {
                   // determine the proper balance display column for the invoice
-                  if (it.invoiceDueDate <= filterRequest.agingDate) {
+                  var daysUntil = it.invoiceDueDate.until(filterRequest.agingDate!!).getDays()
+
+                  // Current - if the invoiceDate is the same or before the agingDate
+                  if (daysUntil <= 0)  {
                      it.balanceDisplay = BalanceDisplayEnum.CURRENT
-                  } else if (it.invoiceDueDate < filterRequest.agingDate!!.plusDays(31)) {
+                  } 
+                  // 1 to 30 - if the invoiceDate is 1 to 30 days after agingDate
+                  else if(daysUntil >= 1 && daysUntil <= 30){
                      it.balanceDisplay = BalanceDisplayEnum.ONETOTHIRTY
-                  } else if (it.invoiceDueDate < filterRequest.agingDate!!.plusDays(61)) {
+                  }
+                  // 31 to 60 - if the invoiceDate is 31 to 60 days after agingDate
+                  else if(daysUntil > 30 && daysUntil <= 60){
                      it.balanceDisplay = BalanceDisplayEnum.THIRTYONETOSIXTY
-                  } else {
+                  }
+                  // Over 60 - if the invoiceDate is 61+ days after agingDate
+                  else if(daysUntil > 60){
                      it.balanceDisplay = BalanceDisplayEnum.OVERSIXTY
                   }
+
 
                   // add invoice balance to running totals for balance and the proper balance display column
                   tempVendor.vendorTotals.balanceTotal = tempVendor.vendorTotals.balanceTotal.plus(it.balance)
