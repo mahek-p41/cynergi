@@ -1,3 +1,4 @@
 "id","uu_row_id","time_created","time_updated","number","last_name","first_name_mi","pass_code","store_number","active","department","cynergi_system_admin","alternative_store_indicator","alternative_area","company_id"
 "3","ce75ec02-05d9-11ec-89af-005056bb008a","2021-08-25 19:22:37.151955","2021-08-25 19:22:37.151955","998","admin",,"$2a$10$In9GULeJWwz4VcvP.sVMU.ZWOar2HbkMAgoq4AMQnagqdiUkPC/DO",,"true",,"true","A","0","157dcbe8-05d9-11ec-882f-005056bb008a"
 "4","d68c714a-05d9-11ec-89b0-005056bb008a","2021-08-25 19:22:50.721319","2021-08-25 19:22:50.721319","998","admin",,"$2a$10$In9GULeJWwz4VcvP.sVMU.ZWOar2HbkMAgoq4AMQnagqdiUkPC/DO",,"true",,"true","A","0","15c8bdba-05d9-11ec-a4c4-005056bb008a"
+"5","d75d843a-05d9-11ec-89b0-005056bb008a","2021-08-25 19:22:50.721319","2021-08-25 19:22:50.721319","998","admin",,"$2a$10$In9GULeJWwz4VcvP.sVMU.ZWOar2HbkMAgoq4AMQnagqdiUkPC/DO",,"true",,"true","A","0","dd0eaec6-b055-11ec-9244-0242ac130003"
