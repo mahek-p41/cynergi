@@ -48,9 +48,9 @@ class GeneralLedgerDetailService @Inject constructor(
    }
 
    fun fetchReport(company: CompanyEntity, filterRequest: GeneralLedgerSearchReportFilterRequest): GeneralLedgerSearchReportTemplate {
-      val found = generalLedgerDetailRepository.findAll(company, filterRequest)
+      val found = generalLedgerDetailRepository.fetchReports(company, filterRequest)
 
-      return GeneralLedgerSearchReportTemplate(found.elements)
+      return GeneralLedgerSearchReportTemplate(found)
    }
 
    fun transfer(company: CompanyEntity, filterRequest: GeneralLedgerRecurringEntriesFilterRequest) {
