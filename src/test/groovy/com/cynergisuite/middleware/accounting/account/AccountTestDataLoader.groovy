@@ -53,7 +53,6 @@ class AccountTestDataLoader {
             new NormalAccountBalanceTypeDTO(NormalAccountBalanceFactory.random()),
             new AccountStatusTypeValueDTO(AccountStatusFactory.random()),
             new VendorTypeDTO(VendorTypeFactory.random()),
-            random.nextInt(1, 20),
             random.nextBoolean()
          )
       }
