@@ -21,11 +21,13 @@ class AccountPayablePaymentDetailTestDataLoader {
       int numberIn = 1,
       VendorEntity vendorIn = null,
       AccountPayableInvoiceEntity invoiceIn,
-      AccountPayablePaymentEntity apPaymentIn
+      AccountPayablePaymentEntity apPaymentIn,
+      BigDecimal amountIn = null
    ) {
       final number = numberIn < 0 ? 1 : numberIn
       final faker = new Faker()
       final random = faker.random()
+      final amount = amountIn ? amountIn : random.nextInt(1, 100000).toBigDecimal()
 
       return IntStream.range(0, number).mapToObj {
          new AccountPayablePaymentDetailEntity(
@@ -33,7 +35,7 @@ class AccountPayablePaymentDetailTestDataLoader {
             vendorIn,
             invoiceIn,
             apPaymentIn,
-            random.nextInt(1, 100000).toBigDecimal(),
+            amount,
             random.nextInt(1, 100000).toBigDecimal()
          )
       }
@@ -77,9 +79,10 @@ class AccountPayablePaymentDetailDataLoaderService {
       CompanyEntity company,
       VendorEntity vendorIn = null,
       AccountPayableInvoiceEntity invoiceIn,
-      AccountPayablePaymentEntity apPaymentIn
+      AccountPayablePaymentEntity apPaymentIn,
+      BigDecimal amountIn = null
    ) {
-      return AccountPayablePaymentDetailTestDataLoader.stream(numberIn, vendorIn, invoiceIn, apPaymentIn)
+      return AccountPayablePaymentDetailTestDataLoader.stream(numberIn, vendorIn, invoiceIn, apPaymentIn, amountIn)
          .map { accountPayablePaymentDetailRepository.insert(it, company) }
    }
 
@@ -87,9 +90,10 @@ class AccountPayablePaymentDetailDataLoaderService {
       CompanyEntity company,
       VendorEntity vendorIn,
       AccountPayableInvoiceEntity invoiceIn,
-      AccountPayablePaymentEntity apPaymentIn
+      AccountPayablePaymentEntity apPaymentIn,
+      BigDecimal amountIn = null
    ) {
-      return stream(1, company, vendorIn, invoiceIn, apPaymentIn).findFirst().orElseThrow { new Exception("Unable to create Account Payable Payment Detail") }
+      return stream(1, company, vendorIn, invoiceIn, apPaymentIn, amountIn).findFirst().orElseThrow { new Exception("Unable to create Account Payable Payment Detail") }
    }
 
    AccountPayablePaymentDetailDTO singleDTO(

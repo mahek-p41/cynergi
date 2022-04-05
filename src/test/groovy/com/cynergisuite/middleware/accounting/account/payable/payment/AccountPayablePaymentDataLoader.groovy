@@ -24,11 +24,17 @@ class AccountPayablePaymentTestDataLoader {
       VendorEntity vendor,
       AccountPayablePaymentStatusType status,
       AccountPayablePaymentTypeType type,
+      LocalDate paymentDateIn = null,
+      LocalDate dateVoidedIn = null,
+      BigDecimal amountIn = null,
       Boolean isCleared
    ) {
       final number = numberIn < 0 ? 1 : numberIn
       final faker = new Faker()
       final random = faker.random()
+      final pmtNum = random.nextInt(1000)
+      final paymentDate = paymentDateIn ? paymentDateIn : LocalDate.now().minusDays(random.nextLong(15))
+      final amount = amountIn ? amountIn : random.nextInt(1000).toBigDecimal()
 
       return IntStream.range(0, number).mapToObj {
          new AccountPayablePaymentEntity(
@@ -37,11 +43,11 @@ class AccountPayablePaymentTestDataLoader {
             vendor,
             status ?: AccountPayablePaymentStatusTypeDataLoader.random(),
             type ?: AccountPayablePaymentTypeTypeDataLoader.random(),
-            LocalDate.now().minusDays(random.nextLong(15)),
+            paymentDate,
             isCleared ? LocalDate.now().minusDays(random.nextLong(15)) : null,
-            LocalDate.now().minusDays(random.nextLong(5)),
+            dateVoidedIn,
             faker.lorem().characters(0,2) + random.nextInt(1000) + faker.lorem().characters(0, 2),
-            random.nextInt(1000).toBigDecimal(),
+            amount,
             Set.of()
          )
       }
@@ -91,9 +97,12 @@ class AccountPayablePaymentDataLoaderService {
       VendorEntity vendor,
       AccountPayablePaymentStatusType status = null,
       AccountPayablePaymentTypeType type = null,
+      LocalDate paymentDateIn = null,
+      LocalDate dateVoidedIn = null,
+      BigDecimal amountIn = null,
       Boolean isCleared = false
    ) {
-      return AccountPayablePaymentTestDataLoader.stream(numberIn, bank, vendor, status, type, isCleared)
+      return AccountPayablePaymentTestDataLoader.stream(numberIn, bank, vendor, status, type, paymentDateIn, dateVoidedIn, amountIn, isCleared)
          .map { apPaymentRepository.insert(it, company) }
    }
 
@@ -110,9 +119,12 @@ class AccountPayablePaymentDataLoaderService {
       BankEntity bank,
       VendorEntity vendor,
       AccountPayablePaymentStatusType status,
-      AccountPayablePaymentTypeType type
+      AccountPayablePaymentTypeType type,
+      LocalDate paymentDateIn = null,
+      LocalDate dateVoidedIn = null,
+      BigDecimal amountIn = null
    ) {
-      return stream(1, company, bank, vendor, status, type).findFirst().orElseThrow { new Exception("Unable to create Account Payable Payment") }
+      return stream(1, company, bank, vendor, status, type, paymentDateIn, dateVoidedIn, amountIn).findFirst().orElseThrow { new Exception("Unable to create Account Payable Payment") }
    }
 
    AccountPayablePaymentDTO singleDTO(

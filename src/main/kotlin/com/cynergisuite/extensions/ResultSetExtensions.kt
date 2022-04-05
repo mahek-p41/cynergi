@@ -1,6 +1,7 @@
 package com.cynergisuite.extensions
 
 import org.apache.commons.lang3.math.NumberUtils
+import java.math.BigDecimal
 import java.math.BigInteger
 import java.sql.ResultSet
 import java.time.LocalDate
@@ -40,6 +41,16 @@ fun ResultSet.getDoubleOrNull(columnLabel: String): Double? {
 
    return if (!column.isNullOrBlank() && column.isNumber()) {
       NumberUtils.toDouble(column)
+   } else {
+      null
+   }
+}
+
+fun ResultSet.getBigDecimalOrNull(columnLabel: String): BigDecimal? {
+   val column = this.getString(columnLabel)?.trimToNull()
+
+   return if (!column.isNullOrBlank() && column.isNumber()) {
+      NumberUtils.toScaledBigDecimal(column)
    } else {
       null
    }

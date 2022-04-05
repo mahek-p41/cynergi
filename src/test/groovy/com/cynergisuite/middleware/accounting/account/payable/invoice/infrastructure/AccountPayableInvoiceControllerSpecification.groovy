@@ -13,9 +13,7 @@ import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
-import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermDTO
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
-import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
@@ -64,7 +62,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final payToShipVia = shipViaList[3]
       final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
 
-      final apInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, employeeIn, payToIn, store)
+      final apInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
 
       when:
       def result = get("$path/${apInvoice.id}")
@@ -161,7 +159,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final payToShipVia = shipViaList[3]
       final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
 
-      def apInvoices = dataLoaderService.stream(20, company, vendorIn, purchaseOrderIn, employeeIn, payToIn, store)
+      def apInvoices = dataLoaderService.stream(20, company, vendorIn, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
          .map { new AccountPayableInvoiceDTO(it)}
          .sorted { o1, o2 -> o1.id <=> o2.id }.toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
@@ -706,7 +704,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final payToShipVia = shipViaList[3]
       final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
 
-      final existingAPInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, employeeIn, payToIn, store)
+      final existingAPInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
       final updatedAPInvoice = dataLoaderService.singleDTO(
          company,
          new SimpleIdentifiableDTO(vendorIn),
@@ -798,7 +796,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final payToShipVia = shipViaList[3]
       final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
 
-      final existingAPInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, employeeIn, payToIn, store)
+      final existingAPInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
       final updatedAPInvoice = dataLoaderService.singleDTO(
          company,
          new SimpleIdentifiableDTO(vendorIn),
@@ -893,7 +891,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final payToShipVia = shipViaList[3]
       final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
 
-      final existingAPInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, employeeIn, payToIn, store)
+      final existingAPInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
       final updatedAPInvoice = dataLoaderService.singleDTO(
          company,
          new SimpleIdentifiableDTO(vendorIn),
@@ -967,7 +965,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final payToShipVia = shipViaList[3]
       final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
 
-      final existingAPInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, employeeIn, payToIn, store)
+      final existingAPInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
       final updatedAPInvoice = dataLoaderService.singleDTO(
          company,
          new SimpleIdentifiableDTO(vendorIn),
