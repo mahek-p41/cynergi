@@ -72,8 +72,8 @@ class AccountRepository @Inject constructor(
                      ON balance_type.id = account.normal_account_balance_type_id
                JOIN account_status_type_domain status
                      ON status.id = account.status_type_id
-               JOIN vendor_1099_type_domain vendor_1099_type
-                     ON vendor_1099_type.id = account.form_1099_field
+               LEFT OUTER JOIN vendor_1099_type_domain vendor_1099_type
+                     ON (vendor_1099_type.id = account.form_1099_field OR account.form_1099_field IS NULL AND VENDOR_1099_type.id IS NULL)
       """
    }
 
@@ -214,7 +214,7 @@ class AccountRepository @Inject constructor(
             "type_id" to account.type.id,
             "normal_account_balance_type_id" to account.normalAccountBalance.id,
             "status_type_id" to account.status.id,
-            "form_1099_field" to account.form1099Field.id,
+            "form_1099_field" to account.form1099Field?.id,
             "corporate_account_indicator" to account.corporateAccountIndicator
          )
       ) { rs, _ ->
@@ -250,7 +250,7 @@ class AccountRepository @Inject constructor(
             "type_id" to account.type.id,
             "normal_account_balance_type_id" to account.normalAccountBalance.id,
             "status_type_id" to account.status.id,
-            "form_1099_field" to account.form1099Field.id,
+            "form_1099_field" to account.form1099Field?.id,
             "corporate_account_indicator" to account.corporateAccountIndicator
          )
       ) { rs, _ ->

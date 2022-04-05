@@ -58,7 +58,7 @@ data class AccountDTO(
          type = AccountTypeDTO(accountEntity.type),
          normalAccountBalance = NormalAccountBalanceTypeDTO(accountEntity.normalAccountBalance),
          status = AccountStatusTypeValueDTO(accountEntity.status),
-         form1099Field = VendorTypeDTO(accountEntity.form1099Field),
+         form1099Field = accountEntity.form1099Field?.let { VendorTypeDTO(it) },
          corporateAccountIndicator = accountEntity.corporateAccountIndicator
       )
 
@@ -67,7 +67,7 @@ data class AccountDTO(
       type: AccountTypeDTO,
       normalAccountBalance: NormalAccountBalanceTypeDTO,
       status: AccountStatusTypeValueDTO,
-      form1099Field: VendorTypeDTO
+      form1099Field: VendorTypeDTO?
    ) :
       this(
          id = accountEntity.id,
