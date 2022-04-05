@@ -137,6 +137,51 @@ class GeneralLedgerReversalEntryControllerSpecification extends ControllerSpecif
       }
    }
 
+   void "create one" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      def glReversalDTO = generalLedgerReversalDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode))
+      final account = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, company)
+      def glReversalDistributionDTOs = GeneralLedgerReversalDistributionDataLoader.streamDTO(
+         1,
+         glReversalDTO,
+         new AccountDTO(account),
+         new SimpleLegacyIdentifiableDTO(profitCenter.myId())
+      ).toList()
+      def glReversalEntryDTO = dataLoaderService.singleDTO(glReversalDTO, glReversalDistributionDTOs)
+
+      when:
+      def result = post(path, glReversalEntryDTO)
+
+      then:
+      notThrown(Exception)
+      result != null
+      with(result) {
+         with(generalLedgerReversal) {
+            id != null
+
+            with(source) {
+               value == glReversalEntryDTO.generalLedgerReversal.source.value
+               description == glReversalEntryDTO.generalLedgerReversal.source.description
+            }
+
+            date == glReversalEntryDTO.generalLedgerReversal.date.toString()
+            reversalDate == glReversalEntryDTO.generalLedgerReversal.reversalDate.toString()
+            comment == glReversalEntryDTO.generalLedgerReversal.comment
+            entryMonth == glReversalEntryDTO.generalLedgerReversal.entryMonth
+            entryNumber == glReversalEntryDTO.generalLedgerReversal.entryNumber
+         }
+
+         generalLedgerReversalDistributions.eachWithIndex { distribution, int i ->
+            glReversalDistributionDTOs.find { element -> element == distribution }
+         }
+
+         balance == BigDecimal.ZERO
+      }
+   }
+
    void "update one" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
@@ -400,5 +445,85 @@ class GeneralLedgerReversalEntryControllerSpecification extends ControllerSpecif
       def response = exception.response.bodyAsJson()
       response.message == "${glReversal.id} was unable to be found"
       response.code == 'system.not.found'
+   }
+
+   void "transfer GL reversal entry to GL details" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      def glReversalDTO = generalLedgerReversalDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode))
+      final acct = accountDataLoaderService.single(company)
+      final store = storeFactoryService.store(3, company)
+      final employee = nineNineEightEmployee
+      def glReversalDistributionDTOs = GeneralLedgerReversalDistributionDataLoader.streamDTO(
+         4,
+         glReversalDTO,
+         new AccountDTO(acct),
+         new SimpleLegacyIdentifiableDTO(store.myId())
+      ).toList()
+      def glReversalEntryDTO = dataLoaderService.singleDTO(glReversalDTO, glReversalDistributionDTOs)
+
+      def glReversalEntryPage = new StandardPageRequest(1, 5, "id", "ASC")
+      def glDetailPage = new StandardPageRequest(1, 5, "id", "ASC")
+
+      when: // GL reversal and GL reversal distributions are posted
+      def postResult = post(path, glReversalEntryDTO)
+
+      then:
+      notThrown(Exception)
+      postResult != null
+      with(postResult) {
+         with(generalLedgerReversal) {
+            id != null
+
+            with(source) {
+               value == glReversalEntryDTO.generalLedgerReversal.source.value
+               description == glReversalEntryDTO.generalLedgerReversal.source.description
+            }
+
+            date == glReversalEntryDTO.generalLedgerReversal.date.toString()
+            reversalDate == glReversalEntryDTO.generalLedgerReversal.reversalDate.toString()
+            comment == glReversalEntryDTO.generalLedgerReversal.comment
+            entryMonth == glReversalEntryDTO.generalLedgerReversal.entryMonth
+            entryNumber == glReversalEntryDTO.generalLedgerReversal.entryNumber
+         }
+
+         generalLedgerReversalDistributions.eachWithIndex { distribution, int i ->
+            glReversalDistributionDTOs.find { element -> element == distribution }
+         }
+
+         balance == BigDecimal.ZERO
+      }
+
+      when: // GL recurring and GL recurring distributions are fetched and GL details are created
+      get("$path/transfer$glReversalEntryPage")
+
+      then:
+      notThrown(Exception)
+
+      when: // new GL detail records are fetched
+      def fetchResult = get("/general-ledger/detail$glDetailPage")
+
+      then:
+      notThrown(Exception)
+      with(fetchResult) {
+         requested.with { new StandardPageRequest(it) } == glDetailPage
+         totalElements == 4
+         totalPages == 1
+         first == true
+         last == true
+         elements.eachWithIndex { pageOneResult, index ->
+            with(pageOneResult) {
+               id != null
+               account.id == glReversalDistributionDTOs[index].generalLedgerReversalDistributionAccount.id
+               date == glReversalDTO.reversalDate.toString()
+               profitCenter.id == glReversalDistributionDTOs[index].generalLedgerReversalDistributionProfitCenter.id
+               source.id == glReversalDTO.source.id
+               amount == glReversalDistributionDTOs[index].generalLedgerReversalDistributionAmount
+               message == glReversalDTO.comment
+               employeeNumberId == employee.number
+            }
+         }
+      }
    }
 }

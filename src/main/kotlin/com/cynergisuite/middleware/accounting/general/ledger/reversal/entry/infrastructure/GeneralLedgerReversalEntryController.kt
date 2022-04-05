@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.inf
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.GeneralLedgerReversalEntryDTO
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.GeneralLedgerReversalEntryService
@@ -16,6 +15,7 @@ import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
@@ -101,6 +101,34 @@ class GeneralLedgerReversalEntryController @Inject constructor(
       return page
    }
 
+   @Post(processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["GeneralLedgerReversalEntryEndpoints"], summary = "Create a single General Ledger Reversal Entry", description = "Create a single GeneralLedgerReversalEntry", operationId = "generalLedgerReversalEntry-create")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerReversalEntryDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The General Ledger Reversal Entry was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun create(
+      @Body @Valid
+      dto: GeneralLedgerReversalEntryDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): GeneralLedgerReversalEntryDTO {
+      logger.debug("Requested Create General Ledger Reversal Entry {}", dto)
+
+      val user = userService.fetchUser(authentication)
+      val response = generalLedgerReversalEntryService.create(dto, user.myCompany())
+
+      logger.debug("Requested Create General Ledger Reversal Entry {} resulted in {}", dto, response)
+
+      return response
+   }
+
    @Put(value = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerReversalEntryEndpoints"], summary = "Update a single General Ledger Reversal Entry", description = "Update a single General Ledger Reversal Entry", operationId = "generalLedgerReversalEntry-update")
@@ -155,28 +183,27 @@ class GeneralLedgerReversalEntryController @Inject constructor(
       return generalLedgerReversalEntryService.delete(id, user.myCompany())
    }
 
-/*
-   @Get(uri = "/transfer-{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/transfer{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerReversalEntryEndpoints"], summary = "Use GL Reversal to post journal entries", description = "Fetch a list of General Ledger Reversal Entries to create General Ledger Detail records", operationId = "generalLedgerReversalEntry-transfer")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerDetailDTO::class))]),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
          ApiResponse(responseCode = "204", description = "The requested General Ledger Reversal Entry was unable to be found, or the result is empty"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
    fun transfer(
-      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
-      @Valid @QueryValue("filterRequest")
-      filterRequest: GeneralLedgerReversalEntryFilterRequest,
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("pageRequest")
+      pageRequest: StandardPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
-      logger.info("Fetching all General Ledger Reversal Entries that meet the criteria {} to create General Ledger Details", filterRequest)
+      logger.info("Fetching all General Ledger Reversal Entries {} to create General Ledger Details", pageRequest)
 
       val user = userService.fetchUser(authentication)
-      generalLedgerDetailService.transfer(user.myCompany(), filterRequest)
+      generalLedgerDetailService.transfer(user, pageRequest)
    }
-*/
 }

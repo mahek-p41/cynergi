@@ -7,6 +7,8 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.infrastructure.GeneralLedgerRecurringEntriesRepository
+import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.infrastructure.GeneralLedgerReversalEntryRepository
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -16,7 +18,8 @@ import java.util.UUID
 class GeneralLedgerDetailService @Inject constructor(
    private val generalLedgerDetailRepository: GeneralLedgerDetailRepository,
    private val generalLedgerDetailValidator: GeneralLedgerDetailValidator,
-   private val generalLedgerRecurringEntriesRepository: GeneralLedgerRecurringEntriesRepository
+   private val generalLedgerRecurringEntriesRepository: GeneralLedgerRecurringEntriesRepository,
+   private val generalLedgerReversalEntryRepository: GeneralLedgerReversalEntryRepository
 ) {
    fun fetchOne(id: UUID, company: CompanyEntity): GeneralLedgerDetailDTO? {
       return generalLedgerDetailRepository.findOne(id, company)?.let { transformEntity(it) }
@@ -68,6 +71,32 @@ class GeneralLedgerDetailService @Inject constructor(
          // update last transfer date in GL recurring
          it.generalLedgerRecurring.lastTransferDate = filterRequest.entryDate!!.toLocalDate()
          generalLedgerRecurringEntriesRepository.update(company, it)
+      }
+   }
+
+   fun transfer(user: User, pageRequest: PageRequest) {
+      val glReversalEntries = generalLedgerReversalEntryRepository.findAll(user.myCompany(), pageRequest).elements
+      var glDetailDTO: GeneralLedgerDetailDTO
+      // todo: check if GL period is open
+      // todo: journalEntryNumber = next available number
+
+      glReversalEntries.forEach {
+         // create GL detail for each distribution
+         it.generalLedgerReversalDistributions.forEach { distribution ->
+            glDetailDTO = GeneralLedgerDetailDTO(
+               null,
+               SimpleIdentifiableDTO(distribution.generalLedgerReversalDistributionAccount),
+               distribution.generalLedgerReversal.reversalDate,
+               SimpleLegacyIdentifiableDTO(distribution.generalLedgerReversalDistributionProfitCenter.myId()),
+               SimpleIdentifiableDTO(distribution.generalLedgerReversal.source),
+               distribution.generalLedgerReversalDistributionAmount,
+               distribution.generalLedgerReversal.comment,
+               user.myEmployeeNumber(),
+               // todo: journalEntryNumber
+            )
+
+            create(glDetailDTO, user.myCompany())
+         }
       }
    }
 
