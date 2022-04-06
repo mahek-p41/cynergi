@@ -167,6 +167,7 @@ services:
       networks:
          - cynerginet
       build:
+         network: host
          context: sftp
          dockerfile: sftp.dockerfile
          args:

@@ -26,6 +26,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.sql.ResultSet
+import java.time.temporal.ChronoUnit
 
 @Singleton
 class AccountPayableAgingReportRepository @Inject constructor(
@@ -139,7 +140,7 @@ class AccountPayableAgingReportRepository @Inject constructor(
 
                if (invoiceFlag) {
                   // determine the proper balance display column for the invoice
-                  var daysUntil = it.invoiceDueDate.until(filterRequest.agingDate!!).getDays()
+                  var daysUntil = filterRequest.agingDate!!.until(it.invoiceDueDate, ChronoUnit.DAYS)
 
                   // Current - if the invoiceDate is the same or before the agingDate
                   if (daysUntil <= 0)  {
