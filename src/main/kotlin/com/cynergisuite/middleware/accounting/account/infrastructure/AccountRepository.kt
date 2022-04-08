@@ -73,7 +73,7 @@ class AccountRepository @Inject constructor(
                JOIN account_status_type_domain status
                      ON status.id = account.status_type_id
                LEFT OUTER JOIN vendor_1099_type_domain vendor_1099_type
-                     ON (vendor_1099_type.id = account.form_1099_field OR account.form_1099_field IS NULL AND VENDOR_1099_type.id IS NULL)
+                     ON vendor_1099_type.id = account.form_1099_field
       """
    }
 
@@ -334,11 +334,12 @@ class AccountRepository @Inject constructor(
          localizationCode = rs.getString("${columnPrefix}localization_code")
       )
 
-   private fun mapVendorStatusType(rs: ResultSet, columnPrefix: String): VendorType =
+   private fun mapVendorStatusType(rs: ResultSet, columnPrefix: String): VendorType? =
+      if (rs.getIntOrNull("${columnPrefix}id") != null )
       VendorType(
-         id = rs.getInt( "${columnPrefix}id"),
-         value = rs.getInt("${columnPrefix}value"),
+         id = rs.getIntOrNull( "${columnPrefix}id"),
+         value = rs.getIntOrNull("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
-      )
+      ) else null
 }
