@@ -337,8 +337,8 @@ class AccountRepository @Inject constructor(
    private fun mapVendorStatusType(rs: ResultSet, columnPrefix: String): VendorType? =
       if (rs.getIntOrNull("${columnPrefix}id") != null )
       VendorType(
-         id = rs.getIntOrNull( "${columnPrefix}id"),
-         value = rs.getIntOrNull("${columnPrefix}value"),
+         id = rs.getIntOrNull( "${columnPrefix}id")!!,
+         value = rs.getIntOrNull("${columnPrefix}value")!!,
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
       ) else null
