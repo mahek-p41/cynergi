@@ -14,7 +14,7 @@ data class AccountEntity(
    val type: AccountType,
    val normalAccountBalance: NormalAccountBalanceType,
    val status: AccountStatusType,
-   val form1099Field: VendorType,
+   val form1099Field: VendorType? = null,
    val corporateAccountIndicator: Boolean
 ) : Identifiable {
 
@@ -23,7 +23,7 @@ data class AccountEntity(
       accountType: AccountType,
       normalAccountBalanceType: NormalAccountBalanceType,
       accountStatusType: AccountStatusType,
-      vendorType: VendorType
+      vendorType: VendorType?
    ) :
       this(
          id = accountDTO.id,

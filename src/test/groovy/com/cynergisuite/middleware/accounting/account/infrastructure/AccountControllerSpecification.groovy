@@ -181,7 +181,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          with(result) {
             id == lastPageAccount[index].id
             name == lastPageAccount[index].name
-            form1099Field == lastPageAccount[index].form1099Field
             corporateAccountIndicator == lastPageAccount[index].corporateAccountIndicator
             with(type) {
                description == lastPageAccount[index].type.description
@@ -415,7 +414,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
             description == account.type.description
             value == account.type.value
          }
-         with(form1099field) {
+         with(form1099Field) {
             description == account.form1099Field.description
             value == account.form1099Field.value
          }
@@ -543,7 +542,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       with(result) {
          id == existingAccount.id
          name == updatedAccountDTO.name
-         form1099Field == updatedAccountDTO.form1099Field
          corporateAccountIndicator == updatedAccountDTO.corporateAccountIndicator
          with(type) {
             description == updatedAccountDTO.type.description
@@ -560,6 +558,10 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          with(type) {
             description == updatedAccountDTO.type.description
             value == updatedAccountDTO.type.value
+         }
+         with(form1099Field) {
+            description == updatedAccountDTO.form1099Field.description
+            value == updatedAccountDTO.form1099Field.value
          }
       }
    }
@@ -607,6 +609,48 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       response[0].path == 'status.value'
       response[0].message == 'Z was unable to be found'
       response[0].code == 'system.not.found'
+   }
+
+
+
+   void "update a invalid account with null 1099 field"() {
+      given:
+      final existingAccount = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final updatedAccountDTO = accountDataLoaderService.singleDTO(nineNineEightEmployee.company)
+      updatedAccountDTO.id = existingAccount.id
+      updatedAccountDTO.number = existingAccount.number
+      updatedAccountDTO.form1099Field = null
+
+      when:
+      def result = put("$path/$existingAccount.id", updatedAccountDTO)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      result.number != null
+      result.number > 0
+
+      with(result) {
+         id == existingAccount.id
+         name == updatedAccountDTO.name
+         corporateAccountIndicator == updatedAccountDTO.corporateAccountIndicator
+         with(type) {
+            description == updatedAccountDTO.type.description
+            value == updatedAccountDTO.type.value
+         }
+         with(normalAccountBalance) {
+            description == updatedAccountDTO.normalAccountBalance.description
+            value == updatedAccountDTO.normalAccountBalance.value
+         }
+         with(status) {
+            description == updatedAccountDTO.status.description
+            value == updatedAccountDTO.status.value
+         }
+         with(type) {
+            description == updatedAccountDTO.type.description
+            value == updatedAccountDTO.type.value
+         }
+      }
    }
 
    void "update a invalid account with duplicate account number"() {
@@ -712,7 +756,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       with(response1) {
          id != null
          name == account.name
-         form1099Field == account.form1099Field
          corporateAccountIndicator == account.corporateAccountIndicator
          with(type) {
             description == account.type.description
@@ -729,6 +772,10 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          with(type) {
             description == account.type.description
             value == account.type.value
+         }
+         with(form1099Field) {
+            description == account.form1099Field.description
+            value == account.form1099Field.value
          }
       }
 
@@ -750,7 +797,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       with(response2) {
          id != null
          name == account.name
-         form1099Field == account.form1099Field
          corporateAccountIndicator == account.corporateAccountIndicator
          with(type) {
             description == account.type.description

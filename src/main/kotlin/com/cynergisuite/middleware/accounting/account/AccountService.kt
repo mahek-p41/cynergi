@@ -59,7 +59,7 @@ class AccountService @Inject constructor(
          type = AccountTypeDTO(accountEntity.type, localizedTypeDescription),
          normalAccountBalance = NormalAccountBalanceTypeDTO(accountEntity.normalAccountBalance, localizedAccountBalanceTypeDescription),
          status = AccountStatusTypeValueDTO(accountEntity.status, localizedStatusDescription),
-         form1099Field = VendorTypeDTO(accountEntity.form1099Field)
+         form1099Field = accountEntity.form1099Field?.let { VendorTypeDTO(it) }
       )
    }
 

@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
+import com.cynergisuite.middleware.vendor.VendorType
 import com.cynergisuite.middleware.vendor.infrastructure.VendorTypeRepository
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -31,19 +32,17 @@ class AccountValidator @Inject constructor(
       val accountType = accountTypeRepository.findOne(value = accountDTO.type?.value!!)
       val balanceType = balanceTypeRepository.findOne(value = accountDTO.normalAccountBalance?.value!!)
       val statusType = statusTypeRepository.findOne(value = accountDTO.status?.value!!)
-      val vendorType = vendorTypeRepository.findOne(value = accountDTO.form1099Field?.value!!)
+      val vendorType = accountDTO.form1099Field?.let{ vendorTypeRepository.findOne(value = it.value!!)}
       val existingAccountByNumber = accountRepository.findByNumber(number = accountDTO.number!!, company = company)
 
       doValidation { errors ->
          accountType ?: errors.add(ValidationError("type.value", NotFound(accountDTO.type?.value!!)))
          balanceType ?: errors.add(ValidationError("normalAccountBalance.value", NotFound(accountDTO.normalAccountBalance?.value!!)))
          statusType ?: errors.add(ValidationError("status.value", NotFound(accountDTO.status?.value!!)))
-         vendorType ?: errors.add(ValidationError("status.value", NotFound(accountDTO.form1099Field?.value!!)))
 
          if (existingAccountByNumber != null) errors.add(ValidationError("number", Duplicate(accountDTO.number!!)))
       }
-
-      return AccountEntity(accountDTO, accountType!!, balanceType!!, statusType!!, vendorType!!)
+      return AccountEntity(accountDTO, accountType!!, balanceType!!, statusType!!, vendorType)
    }
 
    fun validateUpdate(id: UUID, accountDTO: AccountDTO, company: CompanyEntity): AccountEntity {
@@ -51,7 +50,7 @@ class AccountValidator @Inject constructor(
       val accountType = accountTypeRepository.findOne(value = accountDTO.type?.value!!)
       val balanceType = balanceTypeRepository.findOne(value = accountDTO.normalAccountBalance?.value!!)
       val statusType = statusTypeRepository.findOne(value = accountDTO.status?.value!!)
-      val vendorType = vendorTypeRepository.findOne(value = accountDTO.form1099Field?.value!!)
+      val vendorType = accountDTO.form1099Field?.let{ vendorTypeRepository.findOne(value = it.value!!) }
       val existingAccountByNumber = accountRepository.findByNumber(number = accountDTO.number!!, company = company)
 
       doValidation { errors ->
@@ -59,10 +58,9 @@ class AccountValidator @Inject constructor(
          accountType ?: errors.add(ValidationError("type.value", NotFound(accountDTO.type?.value!!)))
          balanceType ?: errors.add(ValidationError("normalAccountBalance.value", NotFound(accountDTO.normalAccountBalance?.value!!)))
          statusType ?: errors.add(ValidationError("status.value", NotFound(accountDTO.status?.value!!)))
-         vendorType ?: errors.add(ValidationError("status.value", NotFound(accountDTO.form1099Field?.value.toString()!!)))
          if (existingAccountByNumber != null && existingAccountByNumber.id != accountDTO.id) errors.add(ValidationError("number", Duplicate(accountDTO.number!!)))
       }
 
-      return AccountEntity(accountDTO, accountType!!, balanceType!!, statusType!!, vendorType!!)
+      return AccountEntity(accountDTO, accountType!!, balanceType!!, statusType!!, vendorType)
    }
 }

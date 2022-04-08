@@ -72,7 +72,7 @@ class AccountRepository @Inject constructor(
                      ON balance_type.id = account.normal_account_balance_type_id
                JOIN account_status_type_domain status
                      ON status.id = account.status_type_id
-               JOIN vendor_1099_type_domain vendor_1099_type
+               LEFT OUTER JOIN vendor_1099_type_domain vendor_1099_type
                      ON vendor_1099_type.id = account.form_1099_field
       """
    }
@@ -214,7 +214,7 @@ class AccountRepository @Inject constructor(
             "type_id" to account.type.id,
             "normal_account_balance_type_id" to account.normalAccountBalance.id,
             "status_type_id" to account.status.id,
-            "form_1099_field" to account.form1099Field.id,
+            "form_1099_field" to account.form1099Field?.id,
             "corporate_account_indicator" to account.corporateAccountIndicator
          )
       ) { rs, _ ->
@@ -250,7 +250,7 @@ class AccountRepository @Inject constructor(
             "type_id" to account.type.id,
             "normal_account_balance_type_id" to account.normalAccountBalance.id,
             "status_type_id" to account.status.id,
-            "form_1099_field" to account.form1099Field.id,
+            "form_1099_field" to account.form1099Field?.id,
             "corporate_account_indicator" to account.corporateAccountIndicator
          )
       ) { rs, _ ->
@@ -334,11 +334,12 @@ class AccountRepository @Inject constructor(
          localizationCode = rs.getString("${columnPrefix}localization_code")
       )
 
-   private fun mapVendorStatusType(rs: ResultSet, columnPrefix: String): VendorType =
+   private fun mapVendorStatusType(rs: ResultSet, columnPrefix: String): VendorType? =
+      if (rs.getIntOrNull("${columnPrefix}id") != null )
       VendorType(
-         id = rs.getInt( "${columnPrefix}id"),
-         value = rs.getInt("${columnPrefix}value"),
+         id = rs.getIntOrNull( "${columnPrefix}id")!!,
+         value = rs.getIntOrNull("${columnPrefix}value")!!,
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
-      )
+      ) else null
 }
