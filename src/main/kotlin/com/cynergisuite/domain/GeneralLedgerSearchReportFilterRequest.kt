@@ -44,7 +44,7 @@ class GeneralLedgerSearchReportFilterRequest(
    var description: String? = null,
 
    @field:Schema(name = "jeNumber", description = "Journal entry number")
-   var jeNumber: String? = null,
+   var jeNumber: Int? = null,
 
    @field:Schema(name = "frmPmtDt", description = "Beginning payment date")
    var frmPmtDt: OffsetDateTime? = null,
