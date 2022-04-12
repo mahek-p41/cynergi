@@ -32,6 +32,6 @@ class DarwillBirthdayJobSpecification extends ServiceSpecificationBase {
       notThrown(Exception)
       result.failureReason() == null
       result.scheduleName() == "Darwill Birthdays"
-      result.rowCount() == 156
+      result.rowCount() == 165
    }
 }
