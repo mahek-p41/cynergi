@@ -192,7 +192,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
       return response
    }
 
-   @Delete(value = "/glRecurringId/{id:[0-9a-fA-F\\-]+}")
+   @Delete(value = "/recurring-id/{id:[0-9a-fA-F\\-]+}")
    @AccessControl
    @Throws(NotFoundException::class)
    @Operation(tags = ["GeneralLedgerRecurringDistributionEndpoints"], summary = "Delete GeneralLedgerRecurringDistributions by GeneralLedgerRecurring ID", description = "Delete GeneralLedgerRecurringDistributions by GeneralLedgerRecurring ID", operationId = "generalLedgerRecurringDistribution-delete")
@@ -213,7 +213,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
 
-      return generalLedgerRecurringDistributionService.deleteAll(id, user.myCompany())
+      return generalLedgerRecurringDistributionService.deleteByRecurringId(id, user.myCompany())
    }
 
    @Delete(value = "/{id:[0-9a-fA-F\\-]+}")
@@ -237,6 +237,6 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
 
-      return generalLedgerRecurringDistributionService.deleteOne(id, user.myCompany())
+      return generalLedgerRecurringDistributionService.deleteByDistributionId(id, user.myCompany())
    }
 }

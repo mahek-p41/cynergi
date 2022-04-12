@@ -375,7 +375,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       final glRecurringDistribution = dataLoaderService.single(glRecurring, account, profitCenter)
 
       when:
-      delete("$path/glRecurringId/${glRecurring.id}")
+      delete("$path/recurring-id/${glRecurring.id}")
 
       then:
       notThrown(Exception)

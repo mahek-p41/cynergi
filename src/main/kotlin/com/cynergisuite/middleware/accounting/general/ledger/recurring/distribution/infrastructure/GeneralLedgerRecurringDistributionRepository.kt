@@ -246,7 +246,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
    }
 
    @Transactional
-   fun deleteAll(id: UUID) {
+   fun deleteByRecurringId(id: UUID) {
       logger.debug("Deleting all GeneralLedgerRecurringDistributions with id={}", id)
       val rowsAffected = jdbc.update(
          """
@@ -262,7 +262,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
    }
 
    @Transactional
-   fun deleteOne(id: UUID) {
+   fun deleteByDistributionId(id: UUID) {
       logger.debug("Deleting GeneralLedgerRecurringDistribution with id={}", id)
       val rowsAffected = jdbc.update(
          """
