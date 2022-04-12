@@ -204,7 +204,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
-   fun delete(
+   fun deleteByRecurringId(
       @QueryValue("id") id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
@@ -228,7 +228,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
-   fun deleteOne(
+   fun deleteByDistributionId(
       @QueryValue("id") id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
