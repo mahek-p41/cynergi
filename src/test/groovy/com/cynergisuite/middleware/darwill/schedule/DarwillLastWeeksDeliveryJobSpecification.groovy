@@ -1,17 +1,20 @@
-package com.cynergisuite.middleware.darwill
+package com.cynergisuite.middleware.darwill.schedule
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
+import com.cynergisuite.middleware.darwill.DarwillTestDataLoaderService
+import com.cynergisuite.middleware.darwill.schedule.DarwillLastWeeksDeliveryJob
 import com.cynergisuite.middleware.schedule.ScheduleTestDataLoaderService
-import com.cynergisuite.middleware.schedule.command.DarwillLastWeeksDelivery
-import com.cynergisuite.middleware.schedule.type.Weekly
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-import java.time.DayOfWeek
 import jakarta.inject.Inject
+import java.time.OffsetDateTime
+
+
+import static java.time.ZoneOffset.UTC
 
 @MicronautTest(transactional = false)
-class DarwillLastWeeksDeliveryServiceSpecification extends ServiceSpecificationBase {
+class DarwillLastWeeksDeliveryJobSpecification extends ServiceSpecificationBase {
 
-   @Inject DarwillLastWeeksDeliveryService darwillLastWeeksDeliveryService
+   @Inject DarwillLastWeeksDeliveryJob darwillLastWeeksDeliveryService
    @Inject DarwillTestDataLoaderService darwillTestDataLoaderService
    @Inject ScheduleTestDataLoaderService scheduleTestDataLoaderService
 
@@ -20,9 +23,10 @@ class DarwillLastWeeksDeliveryServiceSpecification extends ServiceSpecificationB
       final tstds1 = companies.find { it.datasetCode == "tstds1"}
       final darwillSchedules = darwillTestDataLoaderService.enableDarwill(tstds1)
       final scheduleEntity = darwillSchedules.find { it.title == "Darwill Last Weeks Deliveries" }
+      final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)
 
       when:
-      def result = darwillLastWeeksDeliveryService.process(scheduleEntity, DayOfWeek.SUNDAY)
+      def result = darwillLastWeeksDeliveryService.process(scheduleEntity, novemberMonday)
 
       then:
       notThrown(Exception)

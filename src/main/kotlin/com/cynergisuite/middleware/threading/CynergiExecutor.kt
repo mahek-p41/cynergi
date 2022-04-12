@@ -21,7 +21,7 @@ class CynergiExecutor {
 
       execute {
          try {
-            pipeTo(CloseShieldOutputStream(os))
+            pipeTo(CloseShieldOutputStream.wrap(os))
          } finally {
             os.flush()
             os.close()

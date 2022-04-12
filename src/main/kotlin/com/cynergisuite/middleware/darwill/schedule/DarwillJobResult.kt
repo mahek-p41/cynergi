@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.darwill
+package com.cynergisuite.middleware.darwill.schedule
 
 import com.cynergisuite.middleware.schedule.JobResult
 

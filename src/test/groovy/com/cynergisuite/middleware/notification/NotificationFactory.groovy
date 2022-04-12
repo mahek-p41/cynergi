@@ -56,7 +56,7 @@ class NotificationDataLoaderService {
 
    Stream<Notification> stream(int numberIn = 1, String company = "testco", LocalDate  startDate = null, LocalDate expirationDate = null, NotificationType type = null, String sendingEmployee = null) {
       return NotificationTestDataLoader.stream(numberIn, company, startDate, expirationDate, type, sendingEmployee)
-         .filter { notificationTypeDomainRepository.findOne(it.notificationDomainType.id).basicEquality(it.notificationDomainType) } // filter out anything that doesn't match the hard coded values for the ID, value and description from the NotificationTypeDomainTestDataLoader
+         .filter { notificationTypeDomainRepository.findOne(it.notificationDomainType.id).equals(it.notificationDomainType) } // filter out anything that doesn't match the hard coded values for the ID, value and description from the NotificationTypeDomainTestDataLoader
          .map { notificationsRepository.insert(it) }
    }
 

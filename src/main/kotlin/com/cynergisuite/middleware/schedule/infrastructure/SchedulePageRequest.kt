@@ -21,7 +21,9 @@ class SchedulePageRequest(
    sortDirection: String?,
 
    @field:Size(min = 3, max = 25)
-   var command: String? = null // TODO schedule this might be causing a problem with darwill jobs not running.  Can it be removed?
+   var command: String? = null,
+
+   var enabled: Boolean? = true
 
 ) : PageRequestBase<SchedulePageRequest>(page, size, sortBy, sortDirection) {
 

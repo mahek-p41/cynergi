@@ -1,13 +1,13 @@
 package com.cynergisuite.middleware.schedule.type
 
-import com.cynergisuite.domain.TypeDomainEntity
-// TODO schedule need to figure out a way using a sealed class or sealed interface in such a way that we get some compile time checks when a new value is added to the object listing below
-sealed interface ScheduleType : TypeDomainEntity<ScheduleType> {
-   val id: Int
-   val value: String
-   val description: String
-   val localizationCode: String
+import com.cynergisuite.domain.TypeDomain
 
+sealed class ScheduleType(
+   val id: Int,
+   val value: String,
+   val description: String,
+   val localizationCode: String,
+) : TypeDomain() {
    override fun myId(): Int = id
    override fun myValue(): String = value
    override fun myDescription(): String = description
@@ -15,28 +15,36 @@ sealed interface ScheduleType : TypeDomainEntity<ScheduleType> {
 }
 
 open class ScheduleTypeEntity(
-   override val id: Int,
-   override val value: String,
-   override val description: String,
-   override val localizationCode: String
-) : ScheduleType {
-   override fun equals(other: Any?): Boolean {
-      return if (other != null && other is ScheduleType) {
-         super.basicEquality(other)
-      } else {
-         false
-      }
-   }
-
-   override fun hashCode(): Int = super.basicHashCode()
+   val id: Int,
+   val value: String,
+   val description: String,
+   val localizationCode: String
+) : TypeDomain() {
+   override fun myId(): Int = id
+   override fun myValue(): String = value
+   override fun myDescription(): String = description
+   override fun myLocalizationCode(): String = localizationCode
 }
 
-object Weekly : ScheduleTypeEntity(1, "WEEKLY", "Weekly", "schedule.weekly")
-object Daily : ScheduleTypeEntity(1, "WEEKLY", "Weekly", "schedule.weekly") // TODO schedule make this a real value in the database
-object BeginningOfMonth : ScheduleTypeEntity(2, "BEGINNING_OF_MONTH", "Beginning of the month", "schedule.beginning.of.month")
-object EndOfMonth : ScheduleTypeEntity(3, "END_OF_MONTH", "End of the month", "schedule.end.of.month")
-// TODO schedule add additional values here as they are needed
+object Unknown : ScheduleType(0, "UNKNOWN", "Unknown", "schedule.unknown") // DO NOT INSERT THIS VALUE INTO THE DATABASE.  It is a placeholder for use as the fall through case
+object Weekly : ScheduleType(1, "WEEKLY", "Weekly", "schedule.weekly")
+object BeginningOfMonth : ScheduleType(2, "BEGINNING_OF_MONTH", "Beginning of the month", "schedule.beginning.of.month")
+object EndOfMonth : ScheduleType(3, "END_OF_MONTH", "End of the month", "schedule.end.of.month")
+object Daily : ScheduleType(4, "DAILY", "Daily", "schedule.daily")
 
-typealias WEEKLY = Weekly
-typealias BEGINNING_OF_MONTH = BeginningOfMonth
-typealias END_OF_MONTH = EndOfMonth
+fun ScheduleType.toEntity(): ScheduleTypeEntity =
+   ScheduleTypeEntity(
+      id = this.id,
+      value = this.value,
+      description = this.description,
+      localizationCode = this.localizationCode,
+   )
+
+fun ScheduleTypeEntity.toType(): ScheduleType =
+   when (this.id) {
+      Weekly.id -> Weekly
+      BeginningOfMonth.id -> BeginningOfMonth
+      EndOfMonth.id -> EndOfMonth
+      Daily.id -> Daily
+      else -> Unknown // this is the fall through which will force the handling of this case, which will most likely be an error of some kind
+   }

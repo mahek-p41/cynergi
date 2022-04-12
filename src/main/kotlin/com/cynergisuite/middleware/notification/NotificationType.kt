@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.notification
 
-import com.cynergisuite.domain.TypeDomainEntity
+import com.cynergisuite.domain.TypeDomain
 import io.swagger.v3.oas.annotations.media.Schema
 
 @Schema(name = "NotificationType", description = "The type describing a Notification")
@@ -9,7 +9,7 @@ sealed class NotificationType(
    open val value: String,
    open val description: String,
    open val localizationCode: String
-) : TypeDomainEntity<NotificationType> {
+) : TypeDomain() {
 
    override fun myId() = id
    override fun myValue() = value
