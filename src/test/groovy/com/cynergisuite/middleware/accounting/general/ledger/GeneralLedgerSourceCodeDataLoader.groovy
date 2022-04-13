@@ -29,22 +29,6 @@ class GeneralLedgerSourceCodeDataLoader {
       }
    }
 
-   static Stream<GeneralLedgerSourceCodeEntity> streamValue(int numberIn = 1) {
-      final number = numberIn > 0 ? numberIn : 1
-      final faker = new Faker()
-
-      return IntStream.range(0, number).mapToObj {
-         final description = faker.lorem().word()
-         final value = "AAa"
-
-         new GeneralLedgerSourceCodeEntity(
-            null,
-            value,
-            description
-         )
-      }
-   }
-
     static Stream<GeneralLedgerSourceCodeDTO> streamDTO(int numberIn = 1) {
        final number = numberIn > 0 ? numberIn : 1
        final faker = new Faker()
@@ -79,16 +63,7 @@ class GeneralLedgerSourceCodeDataLoaderService {
          .map { repository.insert(it, company) }
    }
 
-   Stream<GeneralLedgerSourceCodeEntity> streamValue(int numberIn = 1, CompanyEntity company) {
-      return GeneralLedgerSourceCodeDataLoader.streamValue(numberIn)
-         .map { repository.insert(it, company) }
-   }
-
    GeneralLedgerSourceCodeEntity single(CompanyEntity company) {
       stream(1, company).findFirst().orElseThrow { new Exception("Unable to find GeneralLedgerSourceCode") }
-   }
-
-   GeneralLedgerSourceCodeEntity singleValue(CompanyEntity company) {
-      streamValue(1, company).findFirst().orElseThrow { new Exception("Unable to find GeneralLedgerSourceCode") }
    }
 }

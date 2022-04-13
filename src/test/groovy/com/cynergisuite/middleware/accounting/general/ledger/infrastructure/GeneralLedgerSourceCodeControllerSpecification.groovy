@@ -128,20 +128,20 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
    void "create invalid source code with duplicate value from same company" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode1 = generalLedgerSourceCodeDataLoaderService.singleValue(tstds1)
+      final glSourceCode1 = generalLedgerSourceCodeDataLoaderService.single(tstds1)
       final glSourceCode2 = GeneralLedgerSourceCodeDataLoader.singleDTO()
-      glSourceCode2.value = "aaa"
+      glSourceCode2.value = glSourceCode1.value.toUpperCase()
 
       when:
       post(path, glSourceCode2)
 
       then:
       final exception = thrown(HttpClientResponseException)
-      exception.response.status == CONFLICT
+      exception.response.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
-      response.size() == 2
-      response.message == 'Requested operation violates data integrity'
-      response.code == 'cynergi.data.constraint.violated'
+      response.size() == 1
+      response[0].message == 'value already exists'
+      response[0].code == 'cynergi.validation.duplicate'
    }
 
    void "create valid source code with duplicate value from different company" () {
