@@ -6,11 +6,9 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.sumByBigDecimal
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
@@ -29,7 +27,6 @@ import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.math.BigDecimal
 import java.sql.ResultSet
 import java.util.UUID
 import javax.transaction.Transactional
@@ -316,9 +313,9 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
       return jdbc.queryForObject(
       """
          SELECT
-         sum(case when general_ledger_distribution_amount >= 0 then general_ledger_distribution_amount end) as debit,
-         sum(ABS(case when general_ledger_distribution_amount < 0 then general_ledger_distribution_amount end)) as credit,
-         sum(general_ledger_distribution_amount ) as total
+         sum(coalesce(case when general_ledger_distribution_amount >= 0 then general_ledger_distribution_amount end)) as debit,
+         sum(coalesce(ABS(case when general_ledger_distribution_amount < 0 then general_ledger_distribution_amount end))) as credit,
+         sum(coalesce(general_ledger_distribution_amount )) as total
          from general_ledger_recurring_distribution glRecurringDist
          WHERE glRecurringDist.general_ledger_recurring_id = :glRecurringId AND glRecurringDist.deleted = FALSE
       """.trimIndent(),

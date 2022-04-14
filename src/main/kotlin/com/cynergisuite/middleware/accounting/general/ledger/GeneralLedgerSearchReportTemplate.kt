@@ -1,9 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.extensions.sumByBigDecimal
-import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentEntity
-import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentReportDTO
-import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailEntity
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.swagger.v3.oas.annotations.media.Schema

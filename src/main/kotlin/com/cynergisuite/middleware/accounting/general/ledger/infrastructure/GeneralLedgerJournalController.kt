@@ -1,14 +1,9 @@
 package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 
-import com.cynergisuite.domain.GeneralLedgerRecurringEntriesFilterRequest
-import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PaymentReportFilterRequest
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalService
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
