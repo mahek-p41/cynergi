@@ -40,8 +40,6 @@ class GeneralLedgerJournalService @Inject constructor(
       return transformEntity(generalLedgerJournalRepository.update(toUpdate, company))
    }
 
-
-
    private fun transformEntity(generalLedgerJournal: GeneralLedgerJournalEntity): GeneralLedgerJournalDTO {
       return GeneralLedgerJournalDTO(entity = generalLedgerJournal)
    }
