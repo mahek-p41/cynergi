@@ -190,6 +190,13 @@ pipeline {
       always {
          script {
             sh "docker network rm ${networkId}"
+            //Emails passed with function call will receive notifications on all merges,
+            //or manualy builds of develop/master/staging.
+            emailNotifications('')
+            if (env.BRANCH_NAME == "develop" && currentBuild.currentResult == 'SUCCESS' ){
+               echo "Starting Cypress E2E test suite."
+               build wait: false, job:'../cynergi-e2e/master'
+            }
          }
          dir('./build/reports/tests/test') {
             sh "rm -rf /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/test-results"
@@ -207,6 +214,29 @@ pipeline {
             sh "cp -r * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/code-coverage"
          }
          junit 'build/test-results/**/*.xml'
+
       }
+   }
+}
+
+def emailNotifications(names){
+   def toMailRecipients = "${names}"
+   def jobName = currentBuild.fullDisplayName
+
+   if (env.BRANCH_NAME == "develop" || env.BRANCH_NAME == "master" || env.BRANCH_NAME == "staging"){
+      echo "Sending email to ${toMailRecipients}, requester and culprits."
+      emailext body: '''${SCRIPT, template="groovy-html.template"}''',
+      subject: "[Jenkins] ${jobName}",
+      to: "${toMailRecipients}",
+      recipientProviders: [[$class: 'CulpritsRecipientProvider'],[$class: 'RequesterRecipientProvider']]
+   } else {
+      //Getting email address from top commit on branch.
+      //Workaround for empty changelist of first build of new branch. 
+      def useremail = sh(script: 'git log -1 --format="%ae"', returnStdout: true).trim()
+      echo "Sending email to ${useremail}, and requester."
+      emailext body: '''${SCRIPT, template="groovy-html.template"}''',
+      subject: "[Jenkins] ${jobName}",
+      to: "${useremail}",
+      recipientProviders: [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
    }
 }
