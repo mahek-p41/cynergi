@@ -130,7 +130,7 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final glSourceCode1 = generalLedgerSourceCodeDataLoaderService.single(tstds1)
       final glSourceCode2 = GeneralLedgerSourceCodeDataLoader.singleDTO()
-      glSourceCode2.value = glSourceCode1.value
+      glSourceCode2.value = glSourceCode1.value.toUpperCase()
 
       when:
       post(path, glSourceCode2)
@@ -140,7 +140,6 @@ class GeneralLedgerSourceCodeControllerSpecification extends ControllerSpecifica
       exception.response.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
       response.size() == 1
-      response[0].path == 'value'
       response[0].message == 'value already exists'
       response[0].code == 'cynergi.validation.duplicate'
    }
