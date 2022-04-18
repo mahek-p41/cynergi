@@ -170,10 +170,7 @@ class GeneralLedgerRecurringEntriesRepository @Inject constructor(
    fun delete(generalLedgerRecurringId: UUID, company: CompanyEntity) {
       logger.debug("Deleting GeneralLedgerRecurringEntries with GL Recurring id={}", generalLedgerRecurringId)
 
-      val glRecurringDistributions = generalLedgerRecurringDistributionRepository.findAllByRecurringId(generalLedgerRecurringId, company)
-      glRecurringDistributions.forEach {
-         it.id?.let { glRecurringDistId -> generalLedgerRecurringDistributionRepository.delete(glRecurringDistId) }
-      }
+      generalLedgerRecurringDistributionRepository.deleteByRecurringId(generalLedgerRecurringId)
 
       generalLedgerRecurringRepository.delete(generalLedgerRecurringId, company)
    }

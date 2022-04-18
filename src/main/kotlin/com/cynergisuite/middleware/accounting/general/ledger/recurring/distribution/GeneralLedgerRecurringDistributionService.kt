@@ -45,8 +45,12 @@ class GeneralLedgerRecurringDistributionService @Inject constructor(
       return transformEntity(generalLedgerRecurringDistributionRepository.update(toUpdate))
    }
 
-   fun delete(id: UUID, company: CompanyEntity) {
-      generalLedgerRecurringDistributionRepository.delete(id)
+   fun deleteByRecurringId(id: UUID, company: CompanyEntity) {
+      generalLedgerRecurringDistributionRepository.deleteByRecurringId(id)
+   }
+
+   fun deleteByDistributionId(id: UUID, company: CompanyEntity) {
+      generalLedgerRecurringDistributionRepository.deleteByDistributionId(id)
    }
 
    private fun transformEntity(entity: GeneralLedgerRecurringDistributionEntity): GeneralLedgerRecurringDistributionDTO {

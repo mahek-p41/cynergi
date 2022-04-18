@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionService
+import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -191,7 +192,32 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
       return response
    }
 
+   @Delete(value = "/recurring-id/{id:[0-9a-fA-F\\-]+}")
+   @AccessControl
+   @Throws(NotFoundException::class)
+   @Operation(tags = ["GeneralLedgerRecurringDistributionEndpoints"], summary = "Delete GeneralLedgerRecurringDistributions by GeneralLedgerRecurring ID", description = "Delete GeneralLedgerRecurringDistributions by GeneralLedgerRecurring ID", operationId = "generalLedgerRecurringDistribution-delete")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If GeneralLedgerRecurringDistributions were successfully deleted"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested GeneralLedgerRecurring was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun deleteByRecurringId(
+      @QueryValue("id") id: UUID,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ) {
+      logger.debug("User {} requested delete GeneralLedgerRecurringDistribution", authentication)
+
+      val user = userService.fetchUser(authentication)
+
+      return generalLedgerRecurringDistributionService.deleteByRecurringId(id, user.myCompany())
+   }
+
    @Delete(value = "/{id:[0-9a-fA-F\\-]+}")
+   @AccessControl
    @Throws(NotFoundException::class)
    @Operation(tags = ["GeneralLedgerRecurringDistributionEndpoints"], summary = "Delete a single GeneralLedgerRecurringDistribution", description = "Delete a single GeneralLedgerRecurringDistribution", operationId = "generalLedgerRecurringDistribution-delete")
    @ApiResponses(
@@ -202,7 +228,7 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
-   fun delete(
+   fun deleteByDistributionId(
       @QueryValue("id") id: UUID,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
@@ -211,6 +237,6 @@ class GeneralLedgerRecurringDistributionController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
 
-      return generalLedgerRecurringDistributionService.delete(id, user.myCompany())
+      return generalLedgerRecurringDistributionService.deleteByDistributionId(id, user.myCompany())
    }
 }
