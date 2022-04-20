@@ -3,8 +3,8 @@ package com.cynergisuite.domain
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
+import java.math.BigDecimal
 import java.time.OffsetDateTime
-import java.util.*
 
 @Schema(
    name = "GeneralLedgerSearchReportFilterRequest",
@@ -35,10 +35,10 @@ class GeneralLedgerSearchReportFilterRequest(
    var typeEntry: String? = null,
 
    @field:Schema(name = "lowAmount", description = "Low amount")
-   var lowAmount: Int? = null,
+   var lowAmount: BigDecimal? = null,
 
    @field:Schema(name = "highAmount", description = "High amount")
-   var highAmount: Int? = null,
+   var highAmount: BigDecimal? = null,
 
    @field:Schema(name = "description", description = "description")
    var description: String? = null,
