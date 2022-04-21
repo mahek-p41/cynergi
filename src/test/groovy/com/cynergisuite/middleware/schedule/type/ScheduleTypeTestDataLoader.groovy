@@ -4,12 +4,15 @@ class ScheduleTypeTestDataLoader {
    private static final List<ScheduleType> types = [
       Weekly.INSTANCE as ScheduleType,
       BeginningOfMonth.INSTANCE as ScheduleType,
-      EndOfMonth.INSTANCE as ScheduleType
+      EndOfMonth.INSTANCE as ScheduleType,
+      Daily.INSTANCE as ScheduleType
    ]
 
-   static ScheduleType weekly() { Weekly.INSTANCE }
+   static ScheduleTypeEntity weekly() { ScheduleTypeKt.toEntity(Weekly.INSTANCE) }
 
-   static ScheduleType random() { types.random() }
+   static ScheduleTypeEntity daily() { ScheduleTypeKt.toEntity(Daily.INSTANCE) }
 
-   static List<ScheduleType> all() { new ArrayList(types) }
+   static ScheduleTypeEntity random() { ScheduleTypeKt.toEntity(types.random()) }
+
+   static List<ScheduleTypeEntity> all() { types.collect { ScheduleTypeKt.toEntity(it) } }
 }

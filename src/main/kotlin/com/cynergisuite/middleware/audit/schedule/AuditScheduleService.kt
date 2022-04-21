@@ -16,7 +16,7 @@ import com.cynergisuite.middleware.notification.NotificationRecipientValueObject
 import com.cynergisuite.middleware.notification.NotificationService
 import com.cynergisuite.middleware.notification.NotificationValueObject
 import com.cynergisuite.middleware.notification.STORE
-import com.cynergisuite.middleware.schedule.OnceDailyJob
+import com.cynergisuite.middleware.schedule.Job
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.ScheduleProcessingException
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
@@ -31,11 +31,12 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.Locale
 import java.util.UUID
 
 @Singleton
-@Named("AuditSchedule")
+@Named("AuditSchedule") // Must match a row in the schedule_command_type_domain
 class AuditScheduleService @Inject constructor(
    private val auditService: AuditService,
    private val auditScheduleValidator: AuditScheduleValidator,
@@ -44,7 +45,7 @@ class AuditScheduleService @Inject constructor(
    private val scheduleRepository: ScheduleRepository,
    private val storeRepository: StoreRepository,
    private val notificationService: NotificationService
-) : OnceDailyJob {
+) : Job {
    private val logger: Logger = LoggerFactory.getLogger(AuditScheduleService::class.java)
 
    fun fetchById(id: UUID, company: CompanyEntity): AuditScheduleDTO? {
@@ -112,10 +113,8 @@ class AuditScheduleService @Inject constructor(
       )
    }
 
-   override fun shouldProcess(schedule: ScheduleEntity, time: DayOfWeek): Boolean = true // always process as we have possible notifications to send out for past due audits
-
    @Throws(ScheduleProcessingException::class)
-   override fun process(schedule: ScheduleEntity, time: DayOfWeek): AuditScheduleResult {
+   override fun process(schedule: ScheduleEntity, time: OffsetDateTime): AuditScheduleResult {
       val company = schedule.company
       val notifications = mutableListOf<NotificationValueObject>()
       val audits = mutableListOf<AuditValueObject>()
@@ -151,7 +150,7 @@ class AuditScheduleService @Inject constructor(
                passCode = employee.passCode
             )
 
-            val (audit, existing) = if (schedule.schedule == time.name) {
+            val (audit, existing) = if (schedule.schedule == time.dayOfWeek.name) {
                logger.info("Find or create an audit")
                auditService.findOrCreate(store, employeeUser, locale) to false
             } else {
@@ -161,6 +160,7 @@ class AuditScheduleService @Inject constructor(
 
             if (audit != null) {
                logger.info("Create notification for audit: {}", audit)
+
                val notificationDescription = if (existing) {
                   localizationService.localize(AuditPastDue(audit.auditNumber))
                } else {
@@ -172,7 +172,7 @@ class AuditScheduleService @Inject constructor(
                   dateCreated = null,
                   expirationDate = LocalDate.now().plusDays(1),
                   company = company.datasetCode,
-                  message = schedule.description!!,
+                  message = schedule.description,
                   sendingEmployee = employee.number.toString(),
                   notificationType = STORE.value,
                   recipients = listOf(NotificationRecipientValueObject(description = notificationDescription, store = store))

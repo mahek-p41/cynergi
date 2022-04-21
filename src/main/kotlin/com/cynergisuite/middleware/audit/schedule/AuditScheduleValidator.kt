@@ -8,9 +8,11 @@ import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotNull
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
-import com.cynergisuite.middleware.schedule.command.AUDIT_SCHEDULE
+import com.cynergisuite.middleware.schedule.command.AuditSchedule
+import com.cynergisuite.middleware.schedule.command.toEntity
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
-import com.cynergisuite.middleware.schedule.type.WEEKLY
+import com.cynergisuite.middleware.schedule.type.Daily
+import com.cynergisuite.middleware.schedule.type.toEntity
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import jakarta.inject.Singleton
@@ -41,7 +43,7 @@ class AuditScheduleValidator(
          arguments.add(
             ScheduleArgumentEntity(
                store.number.toString(),
-               "storeNumber"
+               "storeNumber",
             )
          )
       }
@@ -49,27 +51,35 @@ class AuditScheduleValidator(
       arguments.add(
          ScheduleArgumentEntity(
             user.myEmployeeNumber().toString(),
-            "employeeNumber"
+            "employeeNumber",
          )
       )
 
       arguments.add(
          ScheduleArgumentEntity(
             user.myEmployeeType(),
-            "employeeType"
+            "employeeType",
+         )
+      )
+
+      arguments.add(
+         ScheduleArgumentEntity(
+            dto.schedule!!.name,
+            "dayOfWeek",
          )
       )
 
       return Pair(
          ScheduleEntity(
+            id = dto.id,
             title = dto.title!!,
             description = dto.description,
             schedule = dto.schedule!!.name,
-            command = AUDIT_SCHEDULE,
-            type = WEEKLY,
+            command = AuditSchedule.toEntity(),
+            type = Daily.toEntity(),
+            enabled = dto.enabled!!,
             company = user.myCompany(),
             arguments = arguments,
-            enabled = dto.enabled!!
          ),
          stores
       )
@@ -93,6 +103,7 @@ class AuditScheduleValidator(
       val existingLocale = schedule.arguments.firstOrNull { it.description == "locale" }
       val existingEmployeeNumber = schedule.arguments.firstOrNull { it.description == "employeeNumber" }
       val existingEmployeeType = schedule.arguments.firstOrNull { it.description == "employeeType" }
+      val existingDayOfWeek = schedule.arguments.firstOrNull { it.description == "dayOfWeek" }
       val existingStores: List<Pair<ScheduleArgumentEntity, StoreEntity>> = schedule.arguments.asSequence()
          .filter { it.description == "storeNumber" }
          .map { it to storeRepository.findOne(it.value.toInt(), user.myCompany())!! }
@@ -101,6 +112,7 @@ class AuditScheduleValidator(
       val updateStores: List<StoreEntity> = dto.stores.asSequence()
          .map { storeRepository.findOne(it.id!!, user.myCompany())!! }
          .toList()
+      val updateDayOfWeek = dto.schedule!!.name
       val argsToUpdate = mutableSetOf<ScheduleArgumentEntity>()
 
       for (updateStore in updateStores) {
@@ -119,6 +131,7 @@ class AuditScheduleValidator(
       existingUpdate(existingEmployeeNumber, "employeeNumber") { user.myEmployeeNumber().toString() }.also { argsToUpdate.add(it) }
       existingUpdate(existingEmployeeType, "employeeType") { user.myEmployeeType() }.also { argsToUpdate.add(it) }
       existingUpdate(existingLocale, "locale") { locale.toLanguageTag() }.also { argsToUpdate.add(it) }
+      existingUpdate(existingDayOfWeek, "dayOfWeek") { updateDayOfWeek }
 
       val scheduleToUpdate = schedule.copy(title = dto.title!!, description = dto.description!!, schedule = dto.schedule!!.name, arguments = argsToUpdate, enabled = dto.enabled!!)
 

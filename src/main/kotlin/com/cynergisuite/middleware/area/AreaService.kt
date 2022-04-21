@@ -10,6 +10,6 @@ class AreaService @Inject constructor(
    private val areaRepository: AreaRepository,
 ) {
 
-   fun isDarwillEnabledFor(company: CompanyEntity): Boolean =
-      areaRepository.existsByCompanyAndAreaType(company, DarwillUpload.toAreaTypeEntity())
+   fun isEnabledFor(company: CompanyEntity, areaType: AreaType): Boolean =
+      areaRepository.existsByCompanyAndAreaType(company, areaType.toAreaTypeEntity())
 }

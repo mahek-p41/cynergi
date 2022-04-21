@@ -10,11 +10,11 @@ import com.cynergisuite.middleware.audit.exception.infrastructure.AuditException
 import com.cynergisuite.middleware.audit.infrastructure.AuditPageRequest
 import com.cynergisuite.middleware.audit.infrastructure.AuditRepository
 import com.cynergisuite.middleware.audit.inventory.infrastructure.AuditInventoryRepository
-import com.cynergisuite.middleware.audit.status.APPROVED
-import com.cynergisuite.middleware.audit.status.CANCELED
-import com.cynergisuite.middleware.audit.status.COMPLETED
-import com.cynergisuite.middleware.audit.status.CREATED
-import com.cynergisuite.middleware.audit.status.IN_PROGRESS
+import com.cynergisuite.middleware.audit.status.Approved
+import com.cynergisuite.middleware.audit.status.Canceled
+import com.cynergisuite.middleware.audit.status.Completed
+import com.cynergisuite.middleware.audit.status.Created
+import com.cynergisuite.middleware.audit.status.InProgress
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -146,7 +146,7 @@ class AuditService @Inject constructor(
       val updated = auditRepository.update(existingAudit)
 
       // after update successfully create the inventory snapshot for the completed or canceled audit
-      if (updated.actions.any { it.status.value == COMPLETED.value || it.status.value == CANCELED.value }) {
+      if (updated.actions.any { it.status == Completed || it.status == Canceled }) {
          auditInventoryRepository.createInventorySnapshot(updated)
       }
 
@@ -158,11 +158,11 @@ class AuditService @Inject constructor(
       val actions = existing.actions.toMutableSet()
       val changedBy = employeeRepository.findOne(user) ?: throw NotFoundException(user)
 
-      actions.add(AuditActionEntity(status = APPROVED, changedBy = changedBy))
+      actions.add(AuditActionEntity(status = Approved, changedBy = changedBy))
 
       val updated = auditRepository.update(existing.copy(actions = actions))
 
-      if (updated.currentStatus() == APPROVED) {
+      if (updated.currentStatus() == Approved) {
          auditExceptionRepository.approveAllExceptions(updated, user)
 
          reportalService.generateReportalDocument(updated.store, "IdleInventoryReport${updated.number}", "pdf") { reportalOutputStream ->
@@ -218,10 +218,10 @@ class AuditService @Inject constructor(
       val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
       val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
-      val beginAction = audit.actions.asSequence().sortedByDescending { it.id }.first { it.status == IN_PROGRESS || it.status == CREATED }
+      val beginAction = audit.actions.asSequence().sortedByDescending { it.id }.first { it.status == InProgress || it.status == Created }
       val beginDate = dateFormatter.format(beginAction.timeCreated)
 
-      val endAction = audit.actions.asSequence().firstOrNull { it.status == COMPLETED }
+      val endAction = audit.actions.asSequence().firstOrNull { it.status == Completed }
       val endDate = endAction?.let { dateFormatter.format(it.timeCreated) }
       val endEmployee = endAction?.changedBy?.getEmpName() ?: beginAction.changedBy.getEmpName()
 
@@ -254,7 +254,7 @@ class AuditService @Inject constructor(
       header.makeCell("(By Product)", ALIGN_TOP, ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell(if (onDemand) "(On-Demand)" else "(Final-Reprint)", ALIGN_TOP, ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
-      val beginDateHeader = if (beginAction.status == CREATED) "Created " else "Started "
+      val beginDateHeader = if (beginAction.status == Created) "Created " else "Started "
 
       header.makeCell("$beginDateHeader: $beginDate", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell(EMPTY, ALIGN_TOP, ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
@@ -288,10 +288,10 @@ class AuditService @Inject constructor(
       val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
       val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
-      val beginAction = audit.actions.asSequence().sortedByDescending { it.id }.first { it.status == IN_PROGRESS || it.status == CREATED }
+      val beginAction = audit.actions.asSequence().sortedByDescending { it.id }.first { it.status == InProgress || it.status == Created }
       val beginDate = dateFormatter.format(beginAction.timeCreated)
 
-      val endAction = audit.actions.asSequence().firstOrNull { it.status == COMPLETED }
+      val endAction = audit.actions.asSequence().firstOrNull { it.status == Completed }
       val endDate = endAction?.let { dateFormatter.format(it.timeCreated) }
       val endEmployee = endAction?.changedBy?.getEmpName() ?: beginAction.changedBy.getEmpName()
 
@@ -324,7 +324,7 @@ class AuditService @Inject constructor(
       header.makeCell("(By Product)", ALIGN_TOP, ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell("${if (onDemand) "(On-Demand)" else "(Final-Reprint)"}", ALIGN_TOP, ALIGN_RIGHT, headerFont, leading, padding, headerBorder, ascender, descender)
 
-      val beginDateHeader = if (beginAction.status == CREATED) "Created " else "Started "
+      val beginDateHeader = if (beginAction.status == Created) "Created " else "Started "
 
       header.makeCell("$beginDateHeader: $beginDate", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, headerBorder, ascender, descender)
       header.makeCell(EMPTY, ALIGN_TOP, ALIGN_CENTER, headerFont, leading, padding, headerBorder, ascender, descender)

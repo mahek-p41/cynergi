@@ -327,7 +327,7 @@ class DarwillRepository @Inject constructor(
                email             AS email,
                birth_day         AS birthDay
             FROM fastinfo_prod_import.csv_birthday_customer_vw
-               WHERE dataset = :dataset and extract(MONTH from birth_day) = :numericMonth
+               WHERE dataset = :dataset and extract(MONTH from birth_day) = :numericMonth + 1
             """.trimIndent()
          )
 

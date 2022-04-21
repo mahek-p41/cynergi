@@ -16,10 +16,17 @@ data class ScheduleTypeValueObject(
 
 ) {
 
-   constructor(entity: ScheduleType, localizedDescription: String) :
+   constructor(entity: ScheduleTypeEntity, localizedDescription: String) :
       this(
          id = entity.id,
          value = entity.value,
+         description = localizedDescription,
+      )
+
+   constructor(type: ScheduleType, localizedDescription: String) :
+      this(
+         id = type.id,
+         value = type.value,
          description = localizedDescription
       )
 

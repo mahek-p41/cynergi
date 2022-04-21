@@ -21,7 +21,9 @@ class SchedulePageRequest(
    sortDirection: String?,
 
    @field:Size(min = 3, max = 25)
-   var command: String? = null
+   var command: String? = null,
+
+   var enabled: Boolean? = true
 
 ) : PageRequestBase<SchedulePageRequest>(page, size, sortBy, sortDirection) {
 

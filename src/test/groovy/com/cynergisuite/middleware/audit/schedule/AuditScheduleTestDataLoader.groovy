@@ -4,9 +4,13 @@ import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
+import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeTestDataLoader
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
+import com.cynergisuite.middleware.schedule.type.ScheduleType
+import com.cynergisuite.middleware.schedule.type.ScheduleTypeEntity
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeTestDataLoader
+import com.cynergisuite.middleware.schedule.type.Weekly
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import com.github.javafaker.Faker
@@ -72,11 +76,13 @@ class AuditScheduleTestDataLoader {
       )
 
       return new ScheduleEntity(
+         null,
          chuckNorris.fact().take(36),
-         bool.bool() ? chuckNorris.fact().take(255) : null,
+         chuckNorris.fact().take(255),
          dayOfWeek.name(),
          ScheduleCommandTypeTestDataLoader.auditSchedule(),
-         ScheduleTypeTestDataLoader.weekly(),
+         ScheduleTypeTestDataLoader.daily(),
+         true,
          user.myCompany(),
          arguments
       )

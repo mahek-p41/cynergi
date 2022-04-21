@@ -2,6 +2,7 @@ package com.cynergisuite.extensions
 
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.math.NumberUtils
+import java.time.DayOfWeek
 import java.util.UUID
 
 fun String?.trimToNull(): String? =
@@ -30,3 +31,10 @@ fun String?.truncate(maxWidth: Int): String? =
 
 fun String?.toUuid(): UUID? =
    this?.let { UUID.fromString(this) }
+
+fun String?.toDayOfWeek(): DayOfWeek? =
+   try {
+      this?.let { DayOfWeek.valueOf(this) }
+   } catch (e: java.lang.IllegalArgumentException) {
+      null
+   }

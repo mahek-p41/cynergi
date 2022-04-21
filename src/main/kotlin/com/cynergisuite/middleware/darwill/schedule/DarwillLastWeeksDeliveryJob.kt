@@ -1,9 +1,9 @@
-package com.cynergisuite.middleware.darwill
+package com.cynergisuite.middleware.darwill.schedule
 
 import com.cynergisuite.middleware.area.AreaService
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.darwill.infrastructure.DarwillRepository
-import com.cynergisuite.middleware.schedule.OnceDailyJob
+import com.cynergisuite.middleware.darwill.schedule.spi.DarwillScheduledJob
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
 import com.cynergisuite.middleware.ssh.SftpClientService
 import io.micronaut.transaction.annotation.ReadOnly
@@ -19,23 +19,20 @@ import java.io.BufferedReader
 import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.Path
-import java.time.DayOfWeek
-import java.time.DayOfWeek.MONDAY
+import java.time.OffsetDateTime
 
 @Singleton
-@Named("DarwillLastWeeksDelivery")
-class DarwillLastWeeksDeliveryService @Inject constructor(
+@Named("DarwillLastWeeksDelivery") // Must match a row in the schedule_command_type_domain
+class DarwillLastWeeksDeliveryJob @Inject constructor(
    areaService: AreaService,
    private val darwillRepository: DarwillRepository,
    private val sftpClientService: SftpClientService,
-) : OnceDailyJob, DarwillScheduledService<DayOfWeek>(areaService) {
-   private val logger: Logger = LoggerFactory.getLogger(DarwillLastWeeksDeliveryService::class.java)
-
-   override fun shouldProcess(time: DayOfWeek): Boolean = time == MONDAY
+) : DarwillScheduledJob(areaService) {
+   private val logger: Logger = LoggerFactory.getLogger(DarwillLastWeeksDeliveryJob::class.java)
 
    @ReadOnly
-   override fun process(company: CompanyEntity, sftpClientCredentials: SftpClientCredentials, time: DayOfWeek, fileDate: String): DarwillJobResult {
-      val pushedFileName = "${company.clientCode}-last-week-deliveries-${fileDate}.csv"
+   override fun process(company: CompanyEntity, sftpClientCredentials: SftpClientCredentials, time: OffsetDateTime, fileDate: String): DarwillJobResult {
+      val pushedFileName = "${company.clientCode}-last-week-deliveries-$fileDate.csv"
       val lastWeeksDeliveryTempPath = Files.createTempFile("lastWeeksDelivery", ".csv")
 
       Files.newBufferedWriter(lastWeeksDeliveryTempPath).use { writer ->
