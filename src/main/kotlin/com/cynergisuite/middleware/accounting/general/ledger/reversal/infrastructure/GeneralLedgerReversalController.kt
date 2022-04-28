@@ -12,6 +12,7 @@ import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
@@ -154,5 +155,28 @@ class GeneralLedgerReversalController @Inject constructor(
       logger.debug("Requested Update GeneralLedgerReversal {} resulted in {}", dto, response)
 
       return response
+   }
+
+   @Delete(value = "/{id}")
+   @Throws(NotFoundException::class)
+   @Operation(tags = ["GeneralLedgerReversalEndpoints"], summary = "Delete a single GeneralLedgerReversal", description = "Delete a single GeneralLedgerReversal", operationId = "generalLedgerReversal-delete")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If GeneralLedgerReversal was successfully deleted"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested GeneralLedgerReversal was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun delete(
+      @QueryValue("id") id: UUID,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ) {
+      logger.debug("User {} requested delete GeneralLedgerReversal", authentication)
+
+      val user = userService.fetchUser(authentication)
+
+      return generalLedgerReversalService.delete(id, user.myCompany())
    }
 }

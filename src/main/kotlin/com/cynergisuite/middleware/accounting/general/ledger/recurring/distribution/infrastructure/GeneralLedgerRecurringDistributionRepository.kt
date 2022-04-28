@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.infrastructure
 
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.*
