@@ -151,11 +151,11 @@ class GeneralLedgerDetailController @Inject constructor(
       return response
    }
 
-   @Get(uri = "/search{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Get(uri = "/search-report{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a General Ledger Search Report", description = "Fetch a General Ledger Search Report", operationId = "generalLedgerJournal-fetchReport")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayablePaymentReportTemplate::class))]),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerSearchReportFilterRequest::class))]),
          ApiResponse(responseCode = "204", description = "The requested General Ledger Search Report was unable to be found, or the result is empty"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")

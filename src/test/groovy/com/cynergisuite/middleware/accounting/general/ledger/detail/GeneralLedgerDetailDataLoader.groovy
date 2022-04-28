@@ -83,6 +83,20 @@ class GeneralLedgerDetailDataLoaderService {
       }
    }
 
+   Stream<GeneralLedgerDetailDTO> streamDTO(
+      int numberIn = 1,
+      AccountEntity account,
+      Store profitCenter,
+      GeneralLedgerSourceCodeEntity source
+   ) {
+      return GeneralLedgerDetailDataLoader.streamDTO(
+         numberIn,
+         account,
+         profitCenter,
+         source
+      )
+   }
+
    GeneralLedgerDetailEntity single(
       CompanyEntity company,
       AccountEntity account,

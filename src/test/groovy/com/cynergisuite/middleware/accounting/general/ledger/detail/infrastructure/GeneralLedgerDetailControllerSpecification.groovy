@@ -1,5 +1,8 @@
 package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure
 
+import com.cynergisuite.domain.GeneralLedgerRecurringEntriesFilterRequest
+import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
+import com.cynergisuite.domain.PaymentReportFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
@@ -12,6 +15,8 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 import jakarta.inject.Inject
+
+import java.time.OffsetDateTime
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -417,5 +422,99 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       sortedResponse[2].path == "source.id"
       sortedResponse[2].message == "$nonExistentId was unable to be found"
       sortedResponse[2].code == 'system.not.found'
+   }
+
+   void "filter for report #criteria" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource = sourceCodeDataLoaderService.single(company)
+      final glDetailsDTO = generalLedgerDetailDataLoaderService.streamDTO(6, glAccount, profitCenter, glSource).toList()
+
+      glDetailsDTO[0].amount = 1000
+      glDetailsDTO[0].message = "test"
+      glDetailsDTO[0].date = OffsetDateTime.now().minusDays(30).toLocalDate()
+
+      glDetailsDTO[1].amount = 5000
+      glDetailsDTO[1].date = OffsetDateTime.now().minusDays(20).toLocalDate()
+
+      glDetailsDTO[2].amount = 3000
+      glDetailsDTO[2].date = OffsetDateTime.now().minusDays(15).toLocalDate()
+
+      glDetailsDTO[3].amount = -1000
+      glDetailsDTO[3].date = OffsetDateTime.now().minusDays(15).toLocalDate()
+
+      glDetailsDTO[4].amount = -3000
+      glDetailsDTO[4].date = OffsetDateTime.now().minusDays(20).toLocalDate()
+
+      glDetailsDTO[5].amount = -5000
+      glDetailsDTO[5].date = OffsetDateTime.now().minusDays(10).toLocalDate()
+
+      glDetailsDTO.eachWithIndex { glDetail, index ->
+         post("$path", glDetail)
+      }
+
+      def frmPmtDt = OffsetDateTime.now().minusDays(30)
+      def thruPmtDt = OffsetDateTime.now().minusDays(10)
+
+      def filterRequest = new GeneralLedgerSearchReportFilterRequest([sortBy: "id", sortDirection: "ASC"])
+      switch (criteria) {
+         case 'StartingAccount':
+            filterRequest['startingAccount'] = glAccount.number
+            filterRequest['endingAccount'] = glAccount.number
+            break
+         case 'ProfitCenter':
+            filterRequest['profitCenter'] = glDetailsDTO[0].profitCenter.id
+            break
+         case 'SourceCode':
+            filterRequest['sourceCode'] = glSource.value
+            break
+         case 'TypeEntry':
+            filterRequest['typeEntry'] = null
+            break
+         case 'TypeEntryCredit':
+            filterRequest['typeEntry'] = 'C'
+            break
+         case 'TypeEntryDebit':
+            filterRequest['typeEntry'] = 'D'
+            break
+         case 'Amount':
+            filterRequest['lowAmount'] = -1000
+            filterRequest['highAmount'] =  1000
+            break
+         case 'description':
+            filterRequest['description'] = glDetailsDTO[0].message
+            break
+         case 'jeNumber':
+            filterRequest["jeNumber"] = glDetailsDTO[0].journalEntryNumber
+            break
+         case 'PmtDateCase':
+            filterRequest["frmPmtDt"] = frmPmtDt
+            filterRequest["thruPmtDt"] = thruPmtDt
+            break
+
+      }
+
+      when:
+      def response = get("$path/search-report/$filterRequest")
+
+      then:
+      notThrown(Exception)
+      response != null
+      response.payments.size() == paymentCount
+
+      where:
+      criteria           || paymentCount
+      'StartingAccount'  || 6
+      'ProfitCenter'     || 6
+      'SourceCode'       || 6
+      'TypeEntry'        || 6
+      'TypeEntryCredit'  || 3
+      'TypeEntryDebit'   || 3
+      'Amount'           || 2
+      'description'      || 1
+      'jeNumber'         || 1
+      'PmtDateCase'      || 6
    }
 }
