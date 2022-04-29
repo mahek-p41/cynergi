@@ -12,6 +12,7 @@ import javax.validation.Valid
 import javax.validation.constraints.DecimalMax
 import javax.validation.constraints.DecimalMin
 import javax.validation.constraints.Digits
+import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
@@ -29,8 +30,8 @@ data class VendorPaymentTermDTO(
    @field:Schema(name = "description", minimum = "1", maximum = "30", description = "Describes the vendor payment term")
    var description: String? = null,
 
-   @field:Positive
-   @field:Schema(name = "discountMonth", minimum = "1", required = false, description = "Vendor Payment Term Discount Month")
+   @field:Min(0)
+   @field:Schema(name = "discountMonth", minimum = "0", required = false, description = "Vendor Payment Term Discount Month")
    var discountMonth: Int? = null,
 
    @field:Positive

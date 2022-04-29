@@ -83,7 +83,7 @@ class VendorPaymentTermRepository @Inject constructor(
          count(*) OVER()            AS total_elements
       FROM vendor_payment_term vpt
            JOIN company comp ON vpt.company_id = comp.id AND comp.deleted = FALSE
-           LEFT OUTER JOIN vendor_payment_term_schedule vpts ON vpt.id = vpts.vendor_payment_term_id
+           LEFT OUTER JOIN vendor_payment_term_schedule vpts ON vpt.id = vpts.vendor_payment_term_id AND vpts.deleted = FALSE
    """
 
    @ReadOnly
@@ -169,7 +169,7 @@ class VendorPaymentTermRepository @Inject constructor(
             vpts.due_percent           AS vpts_due_percent,
             vpts.schedule_order_number AS vpts_schedule_order_number
          FROM paged AS p
-            LEFT OUTER JOIN vendor_payment_term_schedule vpts ON p.vpt_id = vpts.vendor_payment_term_id
+            LEFT OUTER JOIN vendor_payment_term_schedule vpts ON p.vpt_id = vpts.vendor_payment_term_id AND vpts.deleted = FALSE
          ORDER BY vpt_${page.snakeSortBy()}, vpts.id ${page.sortDirection()}
       """
 
@@ -237,9 +237,7 @@ class VendorPaymentTermRepository @Inject constructor(
    fun update(entity: VendorPaymentTermEntity): VendorPaymentTermEntity {
       logger.debug("Updating VendorPaymentTerm {}", entity)
 
-      val existing = findOne(entity.id!!, entity.company)
-
-      vendorPaymentTermScheduleRepository.deleteNotIn(entity.id, entity.scheduleRecords)
+      vendorPaymentTermScheduleRepository.deleteNotIn(entity.id!!, entity.scheduleRecords)
 
       val updated = jdbc.updateReturning(
          """
