@@ -1,1 +1,2 @@
 "id","time_created","time_updated","barcode","serial_number","inventory_brand","inventory_model","scanned_by","exception_code","product_code","alt_id","approved","lookup_key","approved_by","audit_id","scan_area_id"
+f50a8507-6789-4966-b3c9-2afe732bd74c,2022-04-29 18:45:59.272398,2022-04-29 18:45:59.272398,619659185060,SQUNR064GGN3,SanDisk,SanDisk Ultra microSDXC UHS-I Card w/ Adapter 64Gb,998,Not Found in Inventory Listing,unknown,000,false,unknown,0,6484a5f4-c721-11ec-9c8b-02420a4d0002,c74394ed-5b52-48f8-adcd-3594f167f7ad
