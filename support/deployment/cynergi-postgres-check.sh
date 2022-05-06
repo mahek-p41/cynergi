@@ -3,7 +3,7 @@ postgresCheck() {
 # 1 = Rejecting connections
 # 2 = No response
 # 3 = Invalid parameters
-  /usr/pgsql-9.3/bin/pg_isready $IS_READY_PARMS   2>/dev/null
+  /usr/pgsql-$POSTGRES_VERSION/bin/pg_isready $IS_READY_PARMS   2>/dev/null
   STATUS_RET=$?
   return $STATUS_RET
 }
