@@ -9,9 +9,12 @@ import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 import jakarta.inject.Inject
+import java.time.OffsetDateTime
+
 
 import static java.time.DayOfWeek.TUESDAY
 import static java.time.DayOfWeek.WEDNESDAY
+import static java.time.ZoneOffset.UTC
 
 @MicronautTest(transactional = false)
 class ScheduleServiceSpecification extends ServiceSpecificationBase {
@@ -27,13 +30,14 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created()] as Set)
       auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
+      final novemberTuesday = OffsetDateTime.of(2021, 11, 23, 0, 0, 0, 0, UTC)
       final employee = employeeFactoryService.single(storeOne)
       final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, false) // make ourselves a user who can see all audits
 
       auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company)
 
       when:
-      def result = scheduleService.runDaily(TUESDAY)
+      def result = scheduleService.runDaily(novemberTuesday, false)
       def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
 
       then:
@@ -53,12 +57,13 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created()] as Set)
       auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       final employee = employeeFactoryService.single(storeOne)
+      final novemberTuesday = OffsetDateTime.of(2021, 11, 23, 0, 0, 0, 0, UTC)
       final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, false) // make ourselves a user who can see all audits
 
       auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company)
 
       when:
-      def result = scheduleService.runDaily(TUESDAY)
+      def result = scheduleService.runDaily(novemberTuesday, false)
       def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
 
       then:
@@ -78,10 +83,11 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       final employee = employeeFactoryService.single(storeOne)
       auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, false) // make ourselves a user who can see all audits
+      final novemberWednesday = OffsetDateTime.of(2021, 11, 24, 0, 0, 0, 0, UTC)
       auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company)
 
       when:
-      def result = scheduleService.runDaily(WEDNESDAY)
+      def result = scheduleService.runDaily(novemberWednesday, false)
       def audit = auditRepository.findOneCreatedOrInProgress(storeOne)
 
       then:

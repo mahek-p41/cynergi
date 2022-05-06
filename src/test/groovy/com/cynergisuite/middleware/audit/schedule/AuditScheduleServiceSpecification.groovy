@@ -11,11 +11,14 @@ import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 import jakarta.inject.Inject
+import java.time.OffsetDateTime
+
 
 import static java.time.DayOfWeek.FRIDAY
 import static java.time.DayOfWeek.MONDAY
 import static java.time.DayOfWeek.TUESDAY
 import static java.time.DayOfWeek.WEDNESDAY
+import static java.time.ZoneOffset.UTC
 
 @MicronautTest(transactional = false)
 class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
@@ -29,10 +32,11 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.single(store).with { new AuthenticatedEmployee(it.id, it, store) }
+      final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)
       final schedule = auditScheduleFactoryService.single(MONDAY, [store], employee, company)
 
       when:
-      def result = auditScheduleService.process(schedule, MONDAY)
+      def result = auditScheduleService.process(schedule, novemberMonday)
 
       then:
       notThrown(ValidationException)
@@ -54,10 +58,11 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final store1 = storeFactoryService.store(1, company)
       final store3 = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.single(store1).with { new AuthenticatedEmployee(it.id, it, store1) }
+      final novemberFriday = OffsetDateTime.of(2021, 11, 26, 0, 0, 0, 0, UTC)
       final schedule = auditScheduleFactoryService.single(FRIDAY, [store1, store3], employee, company)
 
       when:
-      def result = auditScheduleService.process(schedule, FRIDAY)
+      def result = auditScheduleService.process(schedule, novemberFriday)
 
       then:
       notThrown(ValidationException)
@@ -86,10 +91,11 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final store1 = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(store1)
       final createdAudit = auditFactoryService.single(store1, employee, [AuditStatusFactory.created()] as Set)
+      final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)
       final schedule = auditScheduleFactoryService.single(MONDAY, [store1], new AuthenticatedEmployee(employee.id, employee, store1), company)
 
       when:
-      def result = auditScheduleService.process(schedule, MONDAY)
+      def result = auditScheduleService.process(schedule, novemberMonday)
 
       then:
       notThrown(Exception)
@@ -111,10 +117,11 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final user = new AuthenticatedEmployee(employee.id, employee, store1)
       final createdAudit = auditFactoryService.single(store1, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final schedule = auditScheduleFactoryService.single(MONDAY, [store1], new AuthenticatedEmployee(employee.id, employee, store1), company)
+      final novemberTuesday = OffsetDateTime.of(2021, 11, 23, 0, 0, 0, 0, UTC)
       final completedStatus = new AuditStatusValueObject(AuditStatusFactory.completed())
 
       when: "schedule is processed on Tuesday"
-      def result = auditScheduleService.process(schedule, TUESDAY)
+      def result = auditScheduleService.process(schedule, novemberTuesday)
 
       then: "Past due notification should be created with the associated audit"
       notThrown(Exception)
@@ -129,7 +136,8 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
 
       when: "Audit is finally completed with the process running on Wednesday"
       auditService.update(new AuditUpdateDTO(createdAudit.id, completedStatus), user, Locale.getDefault())
-      result = auditScheduleService.process(schedule, WEDNESDAY)
+      final novemberWednesday = OffsetDateTime.of(2021, 11, 24, 0, 0, 0, 0, UTC)
+      result = auditScheduleService.process(schedule, novemberWednesday)
 
       then: "No notifications or audits should be created"
       notThrown(Exception)

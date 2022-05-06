@@ -1,9 +1,9 @@
-package com.cynergisuite.middleware.darwill
+package com.cynergisuite.middleware.darwill.schedule
 
 import com.cynergisuite.middleware.area.AreaService
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.darwill.infrastructure.DarwillRepository
-import com.cynergisuite.middleware.schedule.OnceDailyJob
+import com.cynergisuite.middleware.darwill.schedule.spi.DarwillScheduledJob
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
 import com.cynergisuite.middleware.ssh.SftpClientService
 import io.micronaut.transaction.annotation.ReadOnly
@@ -19,21 +19,19 @@ import java.io.BufferedReader
 import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.Path
-import java.time.DayOfWeek
+import java.time.OffsetDateTime
 
 @Singleton
-@Named("DarwillActiveCustomer")
-class DarwillActiveCustomerService @Inject constructor(
+@Named("DarwillActiveCustomer") // Must match a row in the schedule_command_type_domain
+class DarwillActiveCustomerJob @Inject constructor(
    areaService: AreaService,
    private val darwillRepository: DarwillRepository,
    private val sftpClientService: SftpClientService,
-) : OnceDailyJob, DarwillScheduledService<DayOfWeek>(areaService) {
-   private val logger: Logger = LoggerFactory.getLogger(DarwillActiveCustomerService::class.java)
-
-   override fun shouldProcess(time: DayOfWeek): Boolean = time == DayOfWeek.MONDAY
+) : DarwillScheduledJob(areaService) {
+   private val logger: Logger = LoggerFactory.getLogger(DarwillActiveCustomerJob::class.java)
 
    @ReadOnly
-   override fun process(company: CompanyEntity, sftpClientCredentials: SftpClientCredentials, time: DayOfWeek, fileDate: String): DarwillJobResult {
+   override fun process(company: CompanyEntity, sftpClientCredentials: SftpClientCredentials, time: OffsetDateTime, fileDate: String): DarwillJobResult {
       val pushedFileName = "${company.clientCode}-active-customers-$fileDate.csv"
       val activeCustomerTempPath = Files.createTempFile("activeCustomer", ".csv")
 
@@ -47,15 +45,15 @@ class DarwillActiveCustomerService @Inject constructor(
                activeCustomer.storeId,
                activeCustomer.peopleId,
                activeCustomer.uniqueId,
-               activeCustomer.firstName,
-               activeCustomer.lastName,
-               activeCustomer.address1,
+               activeCustomer.firstName ?: EMPTY,
+               activeCustomer.lastName ?: EMPTY,
+               activeCustomer.address1 ?: EMPTY,
                activeCustomer.address2 ?: EMPTY,
-               activeCustomer.city,
-               activeCustomer.state,
-               activeCustomer.zip,
-               activeCustomer.cellPhoneNumber,
-               activeCustomer.homePhoneNumber,
+               activeCustomer.city ?: EMPTY,
+               activeCustomer.state ?: EMPTY,
+               activeCustomer.zip ?: EMPTY,
+               activeCustomer.cellPhoneNumber ?: EMPTY,
+               activeCustomer.homePhoneNumber ?: EMPTY,
                activeCustomer.email,
                activeCustomer.agreementId,
                activeCustomer.paymentFrequency,

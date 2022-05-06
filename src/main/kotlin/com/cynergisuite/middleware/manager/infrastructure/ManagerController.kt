@@ -53,16 +53,16 @@ class ManagerController @Inject constructor(
 
    @Post("/schedule/run/daily")
    fun runDaily() {
-      logger.info("Daily scheduled jobs run interactively: {}", scheduleJobExecutorService.runDaily())
+      logger.info("Daily scheduled jobs run interactively: {}", scheduleJobExecutorService.runDaily(forceRun = true))
    }
 
    @Post("/schedule/run/beginning/of/month")
    fun runBeginningOfMonth() {
-      logger.info("Beginning of the month scheduled jobs run interactively {}", scheduleJobExecutorService.runBeginningOfMonth())
+      logger.info("Beginning of the month scheduled jobs run interactively {}", scheduleJobExecutorService.runBeginningOfMonth(forceRun = true))
    }
 
    @Post("/schedule/run/end/of/month")
    fun runEndOfMonth() {
-      logger.info("End of month scheduled jobs run interactively {}", scheduleJobExecutorService.runEndOfMonth())
+      logger.info("End of month scheduled jobs run interactively {}", scheduleJobExecutorService.runEndOfMonth(forceRun = true))
    }
 }

@@ -1,17 +1,16 @@
 package com.cynergisuite.middleware.schedule
 
-
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
-import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
+import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeKt
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeTestDataLoader
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.schedule.type.ScheduleType
+import com.cynergisuite.middleware.schedule.type.ScheduleTypeKt
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeTestDataLoader
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.util.stream.IntStream
@@ -20,12 +19,12 @@ import java.util.stream.Stream
 @CompileStatic
 class ScheduleTestDataLoader {
 
-   static Stream<ScheduleEntity> stream(int numberIn = 1, ScheduleType scheduleTypeIn = null, ScheduleCommandTypeEntity commandIn = null, CompanyEntity company) {
+   static Stream<ScheduleEntity> stream(int numberIn = 1, ScheduleType scheduleTypeIn = null, ScheduleCommandType commandIn = null, CompanyEntity company) {
       final number = numberIn > 0 ? numberIn : 1
-      final scheduleType = scheduleTypeIn ?: ScheduleTypeTestDataLoader.random()
+      final scheduleType = scheduleTypeIn != null ? ScheduleTypeKt.toEntity(scheduleTypeIn) : ScheduleTypeTestDataLoader.random()
       final faker = new Faker()
       final team = faker.team()
-      final command = commandIn ?: ScheduleCommandTypeTestDataLoader.random()
+      final command = commandIn != null ? ScheduleCommandTypeKt.toEntity(commandIn) : ScheduleCommandTypeTestDataLoader.random()
 
       return IntStream.range(0, number).mapToObj {
          new ScheduleEntity(
@@ -61,7 +60,7 @@ class ScheduleTestDataLoaderService {
    }
 
    Stream<ScheduleEntity> stream(int numberIn = 1, ScheduleType scheduleTypeIn = null, ScheduleCommandType scheduleCommandTypeIn, CompanyEntity company) {
-      return ScheduleTestDataLoader.stream(numberIn, scheduleTypeIn, new ScheduleCommandTypeEntity(scheduleCommandTypeIn), company)
+      return ScheduleTestDataLoader.stream(numberIn, scheduleTypeIn, scheduleCommandTypeIn, company)
          .map {  scheduleRepository.insert(it) }
    }
 

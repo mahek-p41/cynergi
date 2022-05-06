@@ -16,8 +16,8 @@ class AreaService @Inject constructor(
    private val validator: AreaValidator
 ) {
 
-   fun isDarwillEnabledFor(company: CompanyEntity): Boolean =
-      areaRepository.existsByCompanyAndAreaType(company, DarwillUpload.toAreaTypeEntity())
+   fun isEnabledFor(company: CompanyEntity, areaType: AreaType): Boolean =
+      areaRepository.existsByCompanyAndAreaType(company, areaType.toAreaTypeEntity())
 
    fun fetchAllVisibleWithMenusAndAreas(company: CompanyEntity, locale: Locale): List<AreaDTO> {
       val areas = areaRepository.findAllVisibleByCompany(company).map { transformEntity(it, locale) }
@@ -38,7 +38,7 @@ class AreaService @Inject constructor(
    private fun transformEntity(area: AreaEntity, locale: Locale): AreaDTO =
       AreaDTO(
          area = area,
-         localizedDescription = area.areaType.localizeMyDescription(locale, localizationService),
+         localizedDescription = localizationService.localize(area.areaType.localizationCode, locale),
          // menus = convertMenus(area.areaType.menus, locale)
       )
 }

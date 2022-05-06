@@ -195,6 +195,39 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS update_system_employees_fimvw_trg On employee;
 
+CREATE OR REPLACE FUNCTION refresh_mview_not_blocked() RETURNS INT AS
+$$
+DECLARE
+   block_count INT := 1;
+BEGIN
+   SELECT COUNT(*)
+   FROM (
+     SELECT
+       w.query                          AS waiting_query,
+       w.pid                            AS waiting_pid,
+       w.usename                        AS waiting_user,
+       NOW() - w.query_start            AS waiting_duration,
+       l.query                          AS locking_query,
+       l.pid                            AS locking_pid,
+       l.usename                        AS locking_user,
+       t.schemaname || '.' || t.relname AS tablename,
+       NOW() - l.query_start            AS locking_duration
+     FROM pg_stat_activity w
+       JOIN pg_locks l1 ON w.pid = l1.pid AND NOT l1.granted
+       JOIN pg_locks l2 ON l1.relation = l2.relation AND l2.granted
+       JOIN pg_stat_activity l ON l2.pid = l.pid
+       JOIN pg_stat_user_tables t ON l1.relation = t.relid
+     WHERE w.waiting
+   ) x
+   INTO block_count;
+   IF block_count = 0 THEN
+      PERFORM refresh_fastinfo_materialized_views_fn();
+   END IF;
+
+   RETURN block_count;
+END
+$$ LANGUAGE plpgsql;
+
 CREATE TRIGGER update_system_employees_fimvw_trg
    AFTER INSERT OR UPDATE
    ON employee

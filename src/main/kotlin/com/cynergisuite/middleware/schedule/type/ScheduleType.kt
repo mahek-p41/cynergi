@@ -1,13 +1,13 @@
 package com.cynergisuite.middleware.schedule.type
 
-import com.cynergisuite.domain.TypeDomainEntity
+import com.cynergisuite.domain.TypeDomain
 
-sealed interface ScheduleType : TypeDomainEntity<ScheduleType> {
-   val id: Int
-   val value: String
-   val description: String
-   val localizationCode: String
-
+sealed class ScheduleType(
+   val id: Int,
+   val value: String,
+   val description: String,
+   val localizationCode: String,
+) : TypeDomain() {
    override fun myId(): Int = id
    override fun myValue(): String = value
    override fun myDescription(): String = description
@@ -15,27 +15,36 @@ sealed interface ScheduleType : TypeDomainEntity<ScheduleType> {
 }
 
 open class ScheduleTypeEntity(
-   override val id: Int,
-   override val value: String,
-   override val description: String,
-   override val localizationCode: String
-) : ScheduleType {
-   override fun equals(other: Any?): Boolean {
-      return if (other != null && other is ScheduleType) {
-         super.basicEquality(other)
-      } else {
-         false
-      }
-   }
-
-   override fun hashCode(): Int = super.basicHashCode()
+   val id: Int,
+   val value: String,
+   val description: String,
+   val localizationCode: String
+) : TypeDomain() {
+   override fun myId(): Int = id
+   override fun myValue(): String = value
+   override fun myDescription(): String = description
+   override fun myLocalizationCode(): String = localizationCode
 }
 
-object Weekly : ScheduleTypeEntity(1, "WEEKLY", "Weekly", "schedule.weekly")
-object Daily : ScheduleTypeEntity(1, "WEEKLY", "Weekly", "schedule.weekly") // this is a hack that needs to be cleaned up at some point, since the weekly job actually runs every day
-object BeginningOfMonth : ScheduleTypeEntity(2, "BEGINNING_OF_MONTH", "Beginning of the month", "schedule.beginning.of.month")
-object EndOfMonth : ScheduleTypeEntity(3, "END_OF_MONTH", "End of the month", "schedule.end.of.month")
+object Unknown : ScheduleType(0, "UNKNOWN", "Unknown", "schedule.unknown") // DO NOT INSERT THIS VALUE INTO THE DATABASE.  It is a placeholder for use as the fall through case
+object Weekly : ScheduleType(1, "WEEKLY", "Weekly", "schedule.weekly")
+object BeginningOfMonth : ScheduleType(2, "BEGINNING_OF_MONTH", "Beginning of the month", "schedule.beginning.of.month")
+object EndOfMonth : ScheduleType(3, "END_OF_MONTH", "End of the month", "schedule.end.of.month")
+object Daily : ScheduleType(4, "DAILY", "Daily", "schedule.daily")
 
-typealias WEEKLY = Weekly
-typealias BEGINNING_OF_MONTH = BeginningOfMonth
-typealias END_OF_MONTH = EndOfMonth
+fun ScheduleType.toEntity(): ScheduleTypeEntity =
+   ScheduleTypeEntity(
+      id = this.id,
+      value = this.value,
+      description = this.description,
+      localizationCode = this.localizationCode,
+   )
+
+fun ScheduleTypeEntity.toType(): ScheduleType =
+   when (this.id) {
+      Weekly.id -> Weekly
+      BeginningOfMonth.id -> BeginningOfMonth
+      EndOfMonth.id -> EndOfMonth
+      Daily.id -> Daily
+      else -> Unknown // this is the fall through which will force the handling of this case, which will most likely be an error of some kind
+   }

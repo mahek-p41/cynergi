@@ -15,6 +15,7 @@ import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeEntity
 import com.cynergisuite.middleware.schedule.command.infrastructure.ScheduleCommandTypeRepository
 import com.cynergisuite.middleware.schedule.type.ScheduleType
+import com.cynergisuite.middleware.schedule.type.ScheduleTypeEntity
 import com.cynergisuite.middleware.schedule.type.infrastructure.ScheduleTypeRepository
 import io.micronaut.context.annotation.Value
 import io.micronaut.transaction.annotation.ReadOnly
@@ -134,13 +135,14 @@ class ScheduleRepository @Inject constructor(
       var totalElement: Long? = null
       val elements = mutableListOf<ScheduleEntity>()
       var currentSchedule: ScheduleEntity? = null
-      var where = "WHERE comp.id = :comp_id"
+      var where = "WHERE comp.id = :comp_id AND sched.enabled = :sched_enabled"
       val whereClause = StringBuilder()
       val params = mutableMapOf<String, Any>(
          "limit" to pageRequest.size(),
          "offset" to pageRequest.offset(),
          "comp_id" to company.id!!,
-         "scheduleArgKey" to scheduleArgKey
+         "schedule_arg_key" to scheduleArgKey,
+         "sched_enabled" to (pageRequest.enabled ?: true)
       )
 
       if (command != null) {
@@ -213,7 +215,7 @@ class ScheduleRepository @Inject constructor(
             sa.id                                                              AS sa_id,
             sa.time_created                                                    AS sa_time_created,
             sa.time_updated                                                    AS sa_time_updated,
-            CASE WHEN sa.encrypted THEN pgp_sym_decrypt(decode(sa.value, 'hex'), :scheduleArgKey)
+            CASE WHEN sa.encrypted THEN pgp_sym_decrypt(decode(sa.value, 'hex'), :schedule_arg_key)
                  ELSE sa.value
             END                                                                AS sa_value,
             sa.description                                                     AS sa_description,
@@ -258,7 +260,7 @@ class ScheduleRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun all(type: ScheduleType, company: CompanyEntity): Sequence<ScheduleEntity> {
+   fun allEnabled(type: ScheduleType, company: CompanyEntity): Sequence<ScheduleEntity> {
       var result = findAll(SchedulePageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"), company, type)
 
       return sequence {
@@ -356,7 +358,7 @@ class ScheduleRepository @Inject constructor(
       return updated
    }
 
-   fun deleteByTypesForCompanyCascade(commandTypes: List<ScheduleCommandTypeEntity>, company: CompanyEntity) {
+   fun deleteByTypesForCompanyCascade(commandTypes: List<ScheduleCommandType>, company: CompanyEntity) {
       jdbc.update(
          """
          DELETE FROM schedule CASCADE
@@ -377,8 +379,8 @@ class ScheduleRepository @Inject constructor(
       rs: ResultSet,
       company: CompanyEntity,
       scheduleColumnPrefix: String = "sched_",
-      scheduleTypeProvider: (rs: ResultSet) -> ScheduleType,
-      scheduleCommandProvider: (rs: ResultSet) -> ScheduleCommandType
+      scheduleTypeProvider: (rs: ResultSet) -> ScheduleTypeEntity,
+      scheduleCommandProvider: (rs: ResultSet) -> ScheduleCommandTypeEntity
    ): ScheduleEntity =
       ScheduleEntity(
          id = rs.getUuid("${scheduleColumnPrefix}id"),

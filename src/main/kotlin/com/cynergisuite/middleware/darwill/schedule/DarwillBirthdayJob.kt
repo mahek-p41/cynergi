@@ -1,9 +1,9 @@
-package com.cynergisuite.middleware.darwill
+package com.cynergisuite.middleware.darwill.schedule
 
 import com.cynergisuite.middleware.area.AreaService
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.darwill.infrastructure.DarwillRepository
-import com.cynergisuite.middleware.schedule.BeginningOfMonthJob
+import com.cynergisuite.middleware.darwill.schedule.spi.DarwillScheduledJob
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
 import com.cynergisuite.middleware.ssh.SftpClientService
 import io.micronaut.transaction.annotation.ReadOnly
@@ -12,27 +12,26 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
+import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.io.FileInputStream
 import java.nio.file.Files
 import java.nio.file.Path
-import java.time.Month
+import java.time.OffsetDateTime
 
 @Singleton
-@Named("DarwillBirthday")
-class DarwillBirthdayService @Inject constructor(
+@Named("DarwillBirthday") // Must match a row in the schedule_command_type_domain
+class DarwillBirthdayJob @Inject constructor(
    areaService: AreaService,
    private val darwillRepository: DarwillRepository,
    private val sftpClientService: SftpClientService,
-) : BeginningOfMonthJob, DarwillScheduledService<Month>(areaService) {
-   private val logger: Logger = LoggerFactory.getLogger(DarwillBirthdayService::class.java)
-
-   override fun shouldProcess(time: Month): Boolean = true
+) : DarwillScheduledJob(areaService) {
+   private val logger: Logger = LoggerFactory.getLogger(DarwillBirthdayJob::class.java)
 
    @ReadOnly
-   override fun process(company: CompanyEntity, sftpClientCredentials: SftpClientCredentials, time: Month, fileDate: String): DarwillJobResult {
+   override fun process(company: CompanyEntity, sftpClientCredentials: SftpClientCredentials, time: OffsetDateTime, fileDate: String): DarwillJobResult {
       val pushedFileName = "${company.clientCode}-birthdays-$fileDate.csv"
       val birthdayTempPath = Files.createTempFile("birthday", ".csv")
 
@@ -41,21 +40,21 @@ class DarwillBirthdayService @Inject constructor(
 
          birthdayCsv.printRecord("StoreId", "PeopleID", "UniqueId", "FirstName", "LastName", "Address1", "Address2", "City", "State", "Zip", "CellPhone", "HomePhone", "Email", "BirthDay")
 
-         darwillRepository.findBirthdays(company, time).forEach { birthday ->
+         darwillRepository.findBirthdays(company, time.month).forEach { birthday ->
             birthdayCsv.printRecord(
                birthday.storeId,
                birthday.peopleId,
                birthday.uniqueId,
-               birthday.firstName,
-               birthday.lastName,
-               birthday.address1,
-               birthday.address2,
-               birthday.city,
-               birthday.state,
-               birthday.zip,
-               birthday.cellPhoneNumber,
-               birthday.homePhoneNumber,
-               birthday.email,
+               birthday.firstName ?: EMPTY,
+               birthday.lastName ?: EMPTY,
+               birthday.address1 ?: EMPTY,
+               birthday.address2 ?: EMPTY,
+               birthday.city ?: EMPTY,
+               birthday.state ?: EMPTY,
+               birthday.zip ?: EMPTY,
+               birthday.cellPhoneNumber ?: EMPTY,
+               birthday.homePhoneNumber ?: EMPTY,
+               birthday.email ?: EMPTY,
                birthday.birthDay
             )
          }

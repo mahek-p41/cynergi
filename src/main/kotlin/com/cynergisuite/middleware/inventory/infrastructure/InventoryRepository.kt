@@ -9,8 +9,8 @@ import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.audit.AuditEntity
-import com.cynergisuite.middleware.audit.status.CREATED
-import com.cynergisuite.middleware.audit.status.IN_PROGRESS
+import com.cynergisuite.middleware.audit.status.Created
+import com.cynergisuite.middleware.audit.status.InProgress
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.inventory.InventoryEntity
@@ -314,7 +314,7 @@ class InventoryRepository(
          """
       WITH paged AS (
          ${
-         if (audit.currentStatus() == CREATED || audit.currentStatus() == IN_PROGRESS) {
+         if (audit.currentStatus() == Created || audit.currentStatus() == InProgress) {
             "$selectBase JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location)"
          } else {
             "$selectFromAuditInventory JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location AND a.id = i.audit_id)"
