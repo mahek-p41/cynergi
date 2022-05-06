@@ -1,13 +1,13 @@
 package com.cynergisuite.middleware.accounting.account.payable.recurring
 
-import com.cynergisuite.domain.TypeDomainEntity
+import com.cynergisuite.domain.TypeDomain
 
 data class ExpenseMonthCreationType(
    val id: Int,
    val value: String,
    val description: String,
    val localizationCode: String
-) : TypeDomainEntity<ExpenseMonthCreationType> {
+) : TypeDomain() {
 
    override fun myId(): Int = id
    override fun myValue(): String = value

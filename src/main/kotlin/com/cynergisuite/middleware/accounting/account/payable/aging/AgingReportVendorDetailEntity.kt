@@ -8,4 +8,4 @@ data class AgingReportVendorDetailEntity(
    val vendorName: String,
    val invoices: MutableSet<AgingReportInvoiceDetailEntity>? = LinkedHashSet(),
    var vendorTotals: BalanceDisplayTotalsEntity = BalanceDisplayTotalsEntity()
-) {}
+)

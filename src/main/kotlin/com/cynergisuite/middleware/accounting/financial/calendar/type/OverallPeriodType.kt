@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.accounting.financial.calendar.type
 
-import com.cynergisuite.domain.TypeDomainEntity
+import com.cynergisuite.domain.TypeDomain
 import io.micronaut.core.annotation.Introspected
 
 @Introspected
@@ -10,7 +10,7 @@ data class OverallPeriodType(
    val abbreviation: String,
    val description: String,
    val localizationCode: String
-) : TypeDomainEntity<OverallPeriodType> {
+) : TypeDomain() {
 
    override fun myId(): Int = id
    override fun myValue(): String = value

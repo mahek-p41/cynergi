@@ -74,7 +74,7 @@ class AccountPayableDistributionValidator @Inject constructor(
 
    private fun doBulkValidation(dtoList: List<AccountPayableDistributionDTO>, company: CompanyEntity): List<AccountPayableDistributionEntity> {
       val percentTotal = dtoList.sumOf { dto -> dto.percent!! }
-      val updateEntities : MutableList<AccountPayableDistributionEntity> = mutableListOf()
+      val updateEntities: MutableList<AccountPayableDistributionEntity> = mutableListOf()
 
       for (dto in dtoList) {
          val profitCenter = dto.profitCenter?.id?.let { storeRepository.findOne(it, company) }
@@ -101,6 +101,5 @@ class AccountPayableDistributionValidator @Inject constructor(
       }
 
       return updateEntities
-
    }
 }

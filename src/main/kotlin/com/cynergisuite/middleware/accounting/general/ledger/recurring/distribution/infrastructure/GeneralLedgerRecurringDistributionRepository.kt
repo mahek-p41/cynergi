@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.infrastructure
 
-import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.*
@@ -277,7 +276,6 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
 
       if (rowsAffected == 0) throw NotFoundException(id)
    }
-
 
    @Transactional
    fun deleteNotIn(generalLedgerRecurringId: UUID, distributions: List<GeneralLedgerRecurringDistributionEntity>) {

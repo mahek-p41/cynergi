@@ -285,7 +285,7 @@ class AccountRepository @Inject constructor(
          type = mapAccountType(rs, "${columnPrefix}type_"),
          normalAccountBalance = mapNormalAccountBalanceType(rs, "${columnPrefix}balance_type_"),
          status = mapAccountStatusType(rs, "${columnPrefix}status_"),
-         form1099Field = mapVendorStatusType(rs,"${columnPrefix}vendor_1099_type_"),
+         form1099Field = mapVendorStatusType(rs, "${columnPrefix}vendor_1099_type_"),
          corporateAccountIndicator = rs.getBoolean("${columnPrefix}corporate_account_indicator")
       )
    }
@@ -335,11 +335,11 @@ class AccountRepository @Inject constructor(
       )
 
    private fun mapVendorStatusType(rs: ResultSet, columnPrefix: String): VendorType? =
-      if (rs.getIntOrNull("${columnPrefix}id") != null )
-      VendorType(
-         id = rs.getIntOrNull( "${columnPrefix}id")!!,
-         value = rs.getIntOrNull("${columnPrefix}value")!!,
-         description = rs.getString("${columnPrefix}description"),
-         localizationCode = rs.getString("${columnPrefix}localization_code")
-      ) else null
+      if (rs.getIntOrNull("${columnPrefix}id") != null)
+         VendorType(
+            id = rs.getIntOrNull("${columnPrefix}id")!!,
+            value = rs.getIntOrNull("${columnPrefix}value")!!,
+            description = rs.getString("${columnPrefix}description"),
+            localizationCode = rs.getString("${columnPrefix}localization_code")
+         ) else null
 }

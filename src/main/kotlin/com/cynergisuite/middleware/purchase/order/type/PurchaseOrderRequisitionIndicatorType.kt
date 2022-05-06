@@ -1,13 +1,13 @@
 package com.cynergisuite.middleware.purchase.order.type
 
-import com.cynergisuite.domain.TypeDomainEntity
+import com.cynergisuite.domain.TypeDomain
 
 data class PurchaseOrderRequisitionIndicatorType(
    val id: Int,
    val value: String,
    val description: String,
    val localizationCode: String
-) : TypeDomainEntity<PurchaseOrderRequisitionIndicatorType> {
+) : TypeDomain() {
 
    override fun myId(): Int = id
    override fun myValue(): String = value

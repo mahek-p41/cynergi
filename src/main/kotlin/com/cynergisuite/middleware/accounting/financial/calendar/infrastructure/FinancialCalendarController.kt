@@ -15,7 +15,6 @@ import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
-import io.micronaut.http.annotation.PathVariable
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
@@ -33,7 +32,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
 import java.util.UUID
 import javax.validation.Valid
 
@@ -158,7 +156,7 @@ class FinancialCalendarController @Inject constructor(
       return response
    }
 
-   @Post(uri = "/complete", processes = [APPLICATION_JSON] )
+   @Post(uri = "/complete", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Create a complete Financial Calendar", description = "Create a complete Financial Calendar", operationId = "financialCalendar-create-financial-complete")
    @ApiResponses(

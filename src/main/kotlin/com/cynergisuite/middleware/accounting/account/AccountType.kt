@@ -1,13 +1,13 @@
 package com.cynergisuite.middleware.accounting.account
 
-import com.cynergisuite.domain.TypeDomainEntity
+import com.cynergisuite.domain.TypeDomain
 
 data class AccountType(
    val id: Int,
    val value: String,
    val description: String,
    val localizationCode: String
-) : TypeDomainEntity<AccountType> {
+) : TypeDomain() {
 
    override fun myId(): Int = id
    override fun myValue(): String = value

@@ -1,13 +1,13 @@
 package com.cynergisuite.middleware.accounting.account.payable.payment
 
-import com.cynergisuite.domain.TypeDomainEntity
+import com.cynergisuite.domain.TypeDomain
 
 data class AccountPayablePaymentStatusType(
    val id: Int,
    val value: String,
    val description: String,
    val localizationCode: String
-) : TypeDomainEntity<AccountPayablePaymentStatusType> {
+) : TypeDomain() {
 
    override fun myId(): Int = id
    override fun myValue(): String = value

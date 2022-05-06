@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.area
 
-import com.cynergisuite.domain.TypeDomainEntity
+import com.cynergisuite.domain.TypeDomain
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
@@ -13,26 +13,27 @@ sealed class ModuleType(
    val description: String,
    val localizationCode: String,
    val program: String,
-) : TypeDomainEntity<ModuleType> {
+) : TypeDomain() {
    override fun myId(): Int = id
    override fun myValue(): String = value
    override fun myDescription(): String = description
    override fun myLocalizationCode(): String = localizationCode
 
-   override fun equals(other: Any?): Boolean {
-      return if (other is ModuleType) {
-         EqualsBuilder().appendSuper(basicEquality(this))
-            .append(this.program, other.program)
+   override fun myEquality(typeDomainEntity: TypeDomain): Boolean {
+      return if (typeDomainEntity is ModuleType) {
+         EqualsBuilder()
+            .appendSuper(super.myEquality(typeDomainEntity))
+            .append(this.program, typeDomainEntity.program)
             .build()
       } else {
          false
       }
    }
 
-   override fun hashCode(): Int {
+   override fun myHashCode(): Int {
       return HashCodeBuilder()
-         .appendSuper(basicHashCode())
-         .append(program)
+         .appendSuper(super.myHashCode())
+         .append(this.program)
          .build()
    }
 }
@@ -150,7 +151,7 @@ sealed class AreaType(
    val value: String,
    val description: String,
    val localizationCode: String,
-) : TypeDomainEntity<AreaType> {
+) : TypeDomain() {
    override fun myId(): Int = id
    override fun myValue(): String = value
    override fun myDescription(): String = description
@@ -174,7 +175,7 @@ class AreaTypeEntity(
    val description: String,
    val localizationCode: String,
 
-) : TypeDomainEntity<AreaType> {
+) : TypeDomain() {
 
    constructor(areaType: AreaType) :
       this(
@@ -188,20 +189,6 @@ class AreaTypeEntity(
    override fun myValue(): String = value
    override fun myDescription(): String = description
    override fun myLocalizationCode(): String = localizationCode
-
-   override fun equals(other: Any?): Boolean {
-      return if (other is AreaTypeEntity) {
-         basicEquality(other)
-      } else if (other is AreaType) { // make smart cast happy
-         basicEquality(other)
-      } else {
-         false
-      }
-   }
-
-   override fun hashCode(): Int {
-      return basicHashCode()
-   }
 }
 
 fun AreaTypeEntity.toAreaType(): AreaType =

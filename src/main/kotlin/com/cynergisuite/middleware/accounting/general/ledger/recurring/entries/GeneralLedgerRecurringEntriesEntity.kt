@@ -51,7 +51,7 @@ data class GeneralLedgerRecurringEntriesEntity(
                generalLedgerDistributionAccount = glDistributionAccts[index],
                generalLedgerDistributionProfitCenter = glDistributionProfitCenters[index],
                generalLedgerDistributionAmount = it.generalLedgerDistributionAmount!!
-         )
+            )
          }.toMutableList()
       )
 }

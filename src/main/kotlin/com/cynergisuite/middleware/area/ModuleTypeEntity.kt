@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.area
 
-import com.cynergisuite.domain.TypeDomainEntity
+import com.cynergisuite.domain.TypeDomain
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
@@ -16,7 +16,7 @@ data class ModuleTypeEntity(
    val localizationCode: String,
    val program: String,
 
-) : TypeDomainEntity<ModuleTypeEntity> {
+) : TypeDomain() {
    override fun myId(): Int = id
    override fun myValue(): String = value
    override fun myDescription(): String = description

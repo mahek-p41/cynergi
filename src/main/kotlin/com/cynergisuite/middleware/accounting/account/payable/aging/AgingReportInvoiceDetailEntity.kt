@@ -21,4 +21,4 @@ data class AgingReportInvoiceDetailEntity(
    val apPaymentDetailAmount: BigDecimal?,
    var balance: BigDecimal,
    var balanceDisplay: BalanceDisplayEnum?
-) {}
+)

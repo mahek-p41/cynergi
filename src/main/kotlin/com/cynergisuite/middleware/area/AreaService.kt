@@ -20,7 +20,9 @@ class AreaService @Inject constructor(
       areaRepository.existsByCompanyAndAreaType(company, areaType.toAreaTypeEntity())
 
    fun fetchAllVisibleWithMenusAndAreas(company: CompanyEntity, locale: Locale): List<AreaDTO> {
-      val areas = areaRepository.findAllVisibleByCompany(company).map { transformEntity(it, locale) }
+      val areas = areaRepository.findAllVisibleByCompany(company).map {
+         transformEntity(it, locale)
+      }
 
       return areas
    }

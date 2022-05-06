@@ -1,13 +1,13 @@
 package com.cynergisuite.middleware.shipping.freight.term
 
-import com.cynergisuite.domain.TypeDomainEntity
+import com.cynergisuite.domain.TypeDomain
 
 data class FreightTermType(
    val id: Int,
    val value: String,
    val description: String,
    val localizationCode: String
-) : TypeDomainEntity<FreightTermType> {
+) : TypeDomain() {
 
    override fun myId(): Int = id
    override fun myValue(): String = value

@@ -16,5 +16,4 @@ class FinancialCalendarCompleteDTO {
    @field:NotNull
    @field:Schema(description = "Beginning period.")
    var periodFrom: LocalDate? = null
-
 }

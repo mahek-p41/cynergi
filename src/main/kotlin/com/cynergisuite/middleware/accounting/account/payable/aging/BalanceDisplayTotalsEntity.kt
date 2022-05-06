@@ -8,4 +8,4 @@ data class BalanceDisplayTotalsEntity(
    var oneToThirtyTotal: BigDecimal = BigDecimal.ZERO,
    var thirtyOneToSixtyTotal: BigDecimal = BigDecimal.ZERO,
    var overSixtyTotal: BigDecimal = BigDecimal.ZERO
-) {}
+)

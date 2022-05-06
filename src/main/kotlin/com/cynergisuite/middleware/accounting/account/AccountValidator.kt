@@ -9,7 +9,6 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
-import com.cynergisuite.middleware.vendor.VendorType
 import com.cynergisuite.middleware.vendor.infrastructure.VendorTypeRepository
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -32,7 +31,7 @@ class AccountValidator @Inject constructor(
       val accountType = accountTypeRepository.findOne(value = accountDTO.type?.value!!)
       val balanceType = balanceTypeRepository.findOne(value = accountDTO.normalAccountBalance?.value!!)
       val statusType = statusTypeRepository.findOne(value = accountDTO.status?.value!!)
-      val vendorType = accountDTO.form1099Field?.let{ vendorTypeRepository.findOne(value = it.value!!)}
+      val vendorType = accountDTO.form1099Field?.let { vendorTypeRepository.findOne(value = it.value!!) }
       val existingAccountByNumber = accountRepository.findByNumber(number = accountDTO.number!!, company = company)
 
       doValidation { errors ->
@@ -50,7 +49,7 @@ class AccountValidator @Inject constructor(
       val accountType = accountTypeRepository.findOne(value = accountDTO.type?.value!!)
       val balanceType = balanceTypeRepository.findOne(value = accountDTO.normalAccountBalance?.value!!)
       val statusType = statusTypeRepository.findOne(value = accountDTO.status?.value!!)
-      val vendorType = accountDTO.form1099Field?.let{ vendorTypeRepository.findOne(value = it.value!!) }
+      val vendorType = accountDTO.form1099Field?.let { vendorTypeRepository.findOne(value = it.value!!) }
       val existingAccountByNumber = accountRepository.findByNumber(number = accountDTO.number!!, company = company)
 
       doValidation { errors ->

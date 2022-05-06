@@ -266,7 +266,7 @@ class AccountPayableDistributionRepository @Inject constructor(
    }
 
    @Transactional
-   fun bulkUpdate(entity: List<AccountPayableDistributionEntity>, company: CompanyEntity ): List<AccountPayableDistributionEntity> {
+   fun bulkUpdate(entity: List<AccountPayableDistributionEntity>, company: CompanyEntity): List<AccountPayableDistributionEntity> {
       logger.debug("Updating AccountPayableDistributionEntity {}", entity)
       deleteNotIn(company.id!!, entity)
       val updated = mutableListOf<AccountPayableDistributionEntity>()
@@ -343,20 +343,20 @@ class AccountPayableDistributionRepository @Inject constructor(
    @Transactional
    fun deleteNotIn(id: UUID, apdList: List<AccountPayableDistributionEntity>): Int {
 
-      val result =  jdbc.update(
-        """
+      val result = jdbc.update(
+         """
         UPDATE account_payable_distribution_template
         SET deleted = CASE WHEN profit_center_sfk NOT IN (<profitCenters>) THEN true ELSE false END
         WHERE company_id = :company_id AND name = :name
         RETURNING
            *
-        """.trimIndent(),
-        mapOf(
-           "company_id" to id,
-           "profitCenters" to apdList.asSequence().map { it.profitCenter.myNumber() }.toList(),
-           "name" to apdList[0].name
-        )
-     )
+         """.trimIndent(),
+         mapOf(
+            "company_id" to id,
+            "profitCenters" to apdList.asSequence().map { it.profitCenter.myNumber() }.toList(),
+            "name" to apdList[0].name
+         )
+      )
       return result
    }
 
@@ -372,7 +372,7 @@ class AccountPayableDistributionRepository @Inject constructor(
       val resultList: MutableList<AccountPayableDistributionEntity> = mutableListOf()
 
       jdbc.query(
-      """
+         """
          ${selectBaseQuery()}
          WHERE comp.id = :comp_id AND comp.deleted = FALSE AND apDist.name = :name
 
@@ -381,10 +381,9 @@ class AccountPayableDistributionRepository @Inject constructor(
             "comp_id" to company.id,
             "name" to name
          )
-      )
-         { rs, _ ->
-            resultList.add(mapRow(rs, company, "apDist_"))
-         }
+      ) { rs, _ ->
+         resultList.add(mapRow(rs, company, "apDist_"))
+      }
       return resultList
    }
 }

@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.recurring
 
-import com.cynergisuite.domain.TypeDomainEntity
+import com.cynergisuite.domain.TypeDomain
 import io.micronaut.core.annotation.Introspected
 
 @Introspected
@@ -9,7 +9,7 @@ data class GeneralLedgerRecurringType(
    val value: String,
    val description: String,
    val localizationCode: String
-) : TypeDomainEntity<GeneralLedgerRecurringType> {
+) : TypeDomain() {
 
    override fun myId(): Int = id
    override fun myValue(): String = value

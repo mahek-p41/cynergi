@@ -7,7 +7,7 @@ import javax.validation.constraints.Size
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(name = "VendorType", title = "Vendor 1099 type", description = "Currencies that the banks support")
-data class VendorTypeDTO (
+data class VendorTypeDTO(
 
    @field:NotNull
    @field:Size(min = 1, max = 10)
@@ -18,15 +18,15 @@ data class VendorTypeDTO (
    @field:Schema(description = "A localized description for 1099 Field")
    var description: String? = null
 
-   ) {
+) {
 
-      constructor(vendorType: VendorType) :
+   constructor(vendorType: VendorType) :
       this(
          value = vendorType.value,
          description = vendorType.description
       )
 
-      constructor(vendorType: VendorType, localizedDescription: String) :
+   constructor(vendorType: VendorType, localizedDescription: String) :
       this(
          value = vendorType.value,
          description = localizedDescription

@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.accounting.account
 
-import com.cynergisuite.domain.TypeDomainEntity
+import com.cynergisuite.domain.TypeDomain
 import io.micronaut.core.annotation.Introspected
 
 @Introspected
@@ -9,7 +9,7 @@ data class NormalAccountBalanceType(
    val value: String,
    val description: String,
    val localizationCode: String
-) : TypeDomainEntity<NormalAccountBalanceType> {
+) : TypeDomain() {
 
    override fun myId(): Int = id
    override fun myValue(): String = value

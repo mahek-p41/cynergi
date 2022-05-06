@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.area
 
-import com.cynergisuite.domain.TypeDomainEntity
+import com.cynergisuite.domain.TypeDomain
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
@@ -34,16 +34,16 @@ data class MenuTypeEntity(
    @Relation(ONE_TO_MANY)
    val menus: List<ModuleTypeEntity>
 
-) : TypeDomainEntity<MenuTypeEntity> {
+) : TypeDomain() {
    override fun myId(): Int = id
    override fun myValue(): String = value
    override fun myDescription(): String = description
    override fun myLocalizationCode(): String = localizationCode
 
-   override fun equals(other: Any?): Boolean {
+   override fun myEquality(other: TypeDomain): Boolean {
       return if (other is MenuTypeEntity) {
          EqualsBuilder()
-            .appendSuper(basicEquality(other))
+            .appendSuper(super.myEquality(other))
             .append(this.orderNumber, other.orderNumber)
             .append(this.parent, other.parent)
             .append(this.areaType, other.areaType)
@@ -53,9 +53,9 @@ data class MenuTypeEntity(
       }
    }
 
-   override fun hashCode(): Int {
+   override fun myHashCode(): Int {
       return HashCodeBuilder()
-         .appendSuper(basicHashCode())
+         .appendSuper(super.myHashCode())
          .append(this.orderNumber)
          .append(this.parent)
          .append(this.areaType)
