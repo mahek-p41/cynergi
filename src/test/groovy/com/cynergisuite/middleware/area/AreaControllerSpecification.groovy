@@ -1,15 +1,9 @@
 package com.cynergisuite.middleware.area
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
-import jakarta.inject.Inject
-
-import static io.micronaut.http.HttpStatus.BAD_REQUEST
-import static io.micronaut.http.HttpStatus.NOT_FOUND
 
 @MicronautTest(transactional = false)
 class AreaControllerSpecification extends ControllerSpecificationBase {
