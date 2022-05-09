@@ -1,7 +1,10 @@
 package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure
 
+import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentReportTemplate
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -146,5 +149,28 @@ class GeneralLedgerDetailController @Inject constructor(
       logger.debug("Requested Update GeneralLedgerDetail {} resulted in {}", dto, response)
 
       return response
+   }
+
+   @Get(uri = "/search{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a General Ledger Search Report", description = "Fetch a General Ledger Search Report", operationId = "generalLedgerJournal-fetchReport")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayablePaymentReportTemplate::class))]),
+         ApiResponse(responseCode = "204", description = "The requested General Ledger Search Report was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchReport(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: GeneralLedgerSearchReportFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): GeneralLedgerSearchReportTemplate {
+      logger.info("Fetching all General Ledger Search reports{}")
+
+      val user = userService.fetchUser(authentication)
+      return generalLedgerDetailService.fetchReport(user.myCompany(), filterRequest)
    }
 }

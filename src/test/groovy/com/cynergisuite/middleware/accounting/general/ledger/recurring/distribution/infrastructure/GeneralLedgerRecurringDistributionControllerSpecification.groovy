@@ -10,6 +10,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSource
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionEntity
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
@@ -471,5 +472,29 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
 
       then: "GL recurring distribution of user's company is deleted"
       notThrown(HttpClientResponseException)
+   }
+
+   void "fetch totals" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      final glRecurring1 = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
+      final glRecurring2 = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
+      final account = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, company)
+      final List<GeneralLedgerRecurringDistributionEntity> glRecurringDistributions  = dataLoaderService.stream(3, glRecurring1, account, profitCenter).toList()
+      glRecurringDistributions.add(dataLoaderService.single(glRecurring2, account, profitCenter))
+      glRecurringDistributions.add(dataLoaderService.single(glRecurring2, account, profitCenter))
+
+      when:
+      def result = get("$path/calculate-total/${glRecurring1.id}")
+      then:
+      notThrown(Exception)
+      result != null
+      with(result) {
+         result.credit == Math.abs(glRecurringDistributions.sum { if (it.generalLedgerRecurring.id == glRecurring1.id && it.generalLedgerDistributionAmount < BigDecimal.ZERO) it.generalLedgerDistributionAmount else BigDecimal.ZERO })
+         result.debit == glRecurringDistributions.sum { if (it.generalLedgerRecurring.id == glRecurring1.id && it.generalLedgerDistributionAmount >= BigDecimal.ZERO) it.generalLedgerDistributionAmount else BigDecimal.ZERO }
+         result.total == glRecurringDistributions.sum { if (it.generalLedgerRecurring.id == glRecurring1.id) it.generalLedgerDistributionAmount else BigDecimal.ZERO}
+      }
    }
 }

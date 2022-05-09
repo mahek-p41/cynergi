@@ -35,7 +35,7 @@ class GeneralLedgerRecurringDistributionDataLoader {
             glRecurring,
             glDistributionAcct,
             glDistributionProfitCenter,
-            numbers.randomDouble(2, 1, 1000000).toBigDecimal()
+            numbers.randomDouble(2, -1000000, 1000000).toBigDecimal()
          )
       }
    }
