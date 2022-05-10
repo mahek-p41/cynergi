@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.vendor.rebate
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountStatusTypeRepository
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.AccountIsRequired
@@ -32,6 +33,10 @@ class RebateValidator @Inject constructor(
       logger.trace("Validating Create Rebate {}", dto)
 
       return doSharedValidation(dto, company)
+
+      doValidation { errors -> doCreateValidation(errors, dto, company) }
+
+
    }
 
    fun validateUpdate(id: UUID, dto: RebateDTO, company: CompanyEntity): RebateEntity {
@@ -81,10 +86,6 @@ class RebateValidator @Inject constructor(
             errors.add(ValidationError("generalLedgerDebitAccount", AccountIsRequired(generalLedgerDebitAccount)))
          }
 
-         if (rebateRepository.exists(dto.description!!, company)) {
-            errors.add(ValidationError("value", Duplicate("value")))
-         }
-
          generalLedgerCreditAccount
             ?: errors.add(ValidationError("generalLedgerCreditAccount.id", NotFound(dto.generalLedgerCreditAccount!!.id!!)))
       }
@@ -97,5 +98,13 @@ class RebateValidator @Inject constructor(
          generalLedgerDebitAccount = generalLedgerDebitAccount,
          generalLedgerCreditAccount = generalLedgerCreditAccount!!
       )
+   }
+
+   private fun doCreateValidation(errors: MutableSet<ValidationError>, dto: RebateDTO, company: CompanyEntity) {
+      doSharedValidation(dto, company)
+
+      if (rebateRepository.exists(dto.description!!, company)) {
+         errors.add(ValidationError("value", Duplicate("value")))
+      }
    }
 }
