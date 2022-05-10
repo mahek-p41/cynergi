@@ -6,9 +6,11 @@ import com.cynergisuite.middleware.accounting.account.infrastructure.AccountStat
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.AccountIsRequired
+import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.SelectPercentOrPerUnit
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
+import com.cynergisuite.middleware.vendor.rebate.infrastructure.RebateRepository
 import com.cynergisuite.middleware.vendor.rebate.infrastructure.RebateTypeRepository
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -21,6 +23,7 @@ class RebateValidator @Inject constructor(
    private val vendorRepository: VendorRepository,
    private val accountStatusTypeRepository: AccountStatusTypeRepository,
    private val rebateTypeRepository: RebateTypeRepository,
+   private val rebateRepository: RebateRepository,
    private val accountRepository: AccountRepository
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(RebateValidator::class.java)
@@ -76,6 +79,10 @@ class RebateValidator @Inject constructor(
          }
          if (accrualIndicator == true && generalLedgerDebitAccount == null) {
             errors.add(ValidationError("generalLedgerDebitAccount", AccountIsRequired(generalLedgerDebitAccount)))
+         }
+
+         if (rebateRepository.exists(dto.description!!, company)) {
+            errors.add(ValidationError("value", Duplicate("value")))
          }
 
          generalLedgerCreditAccount

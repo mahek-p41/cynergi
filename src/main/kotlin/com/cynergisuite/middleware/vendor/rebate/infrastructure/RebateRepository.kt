@@ -6,6 +6,7 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
@@ -131,6 +132,19 @@ class RebateRepository @Inject constructor(
             JOIN account glCreditAcct              ON r.general_ledger_credit_account_id = glCreditAcct.account_id AND glCreditAcct.account_deleted = FALSE
             LEFT JOIN account glDebitAcct          ON r.general_ledger_debit_account_id = glDebitAcct.account_id AND glDebitAcct.account_deleted = FALSE
       """
+   }
+
+   @ReadOnly
+   fun exists(description: String, company: CompanyEntity): Boolean {
+      val exists = jdbc.queryForObject(
+         "SELECT EXISTS (SELECT * FROM rebate WHERE description = :description)",
+         mapOf("description" to description, "company_id" to company.id),
+         Boolean::class.java
+      )
+
+      logger.trace("Checking if Rebate: {} exists resulted in {}", description, exists)
+
+      return exists
    }
 
    @ReadOnly
