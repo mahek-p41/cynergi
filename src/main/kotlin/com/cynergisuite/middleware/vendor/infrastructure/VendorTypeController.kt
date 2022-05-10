@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory
 @Controller("/api/vendor/type")
 class VendorTypeController @Inject constructor(
    private val vendorTypeService: VendorTypeService,
-   private val localizationService: LocalizationService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorTypeController::class.java)
 
@@ -37,11 +36,8 @@ class VendorTypeController @Inject constructor(
    fun fetchAll(
       httpRequest: HttpRequest<*>
    ): List<VendorTypeDTO> {
-      val locale = httpRequest.findLocaleWithDefault()
 
-      val vendorTypes = vendorTypeService.fetchAll().map {
-         VendorTypeDTO(it, it.localizeMyDescription(locale, localizationService))
-      }
+      val vendorTypes = vendorTypeService.fetchAll(httpRequest.findLocaleWithDefault())
 
       logger.debug("Listing of Vendor Types resulted in {}", vendorTypes)
 
