@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionService
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
@@ -11,6 +12,7 @@ import java.util.UUID
 @Singleton
 class GeneralLedgerRecurringService @Inject constructor(
    private val generalLedgerRecurringRepository: GeneralLedgerRecurringRepository,
+   private val generalLedgerRecurringDistributionService: GeneralLedgerRecurringDistributionService,
    private val generalLedgerRecurringValidator: GeneralLedgerRecurringValidator
 ) {
 
@@ -38,6 +40,7 @@ class GeneralLedgerRecurringService @Inject constructor(
    }
 
    fun delete(id: UUID, company: CompanyEntity) {
+      generalLedgerRecurringDistributionService.deleteByRecurringId(id, company)
       generalLedgerRecurringRepository.delete(id, company)
    }
 

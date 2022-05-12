@@ -1,7 +1,9 @@
 package com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure
 
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
@@ -356,8 +358,11 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
    void "delete one GL recurring" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final acct1 = accountDataLoaderService.single(tstds1)
+      final profitCenter = storeFactoryService.store(3, tstds1)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
       final glRecurring = generalLedgerRecurringDataLoaderService.single(tstds1, glSourceCode)
+      generalLedgerRecurringDistributionDataLoaderService.single(glRecurring, acct1, profitCenter)
 
       when:
       delete("$path/${glRecurring.id}")
@@ -374,26 +379,6 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       def response = exception.response.bodyAsJson()
       response.message == "${glRecurring.id} was unable to be found"
       response.code == 'system.not.found'
-   }
-
-   void "delete GL recurring still has references" () {
-      given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
-      final glRecurring = generalLedgerRecurringDataLoaderService.single(tstds1, glSourceCode)
-      final account = accountDataLoaderService.single(tstds1)
-      final profitCenter = storeFactoryService.store(3, tstds1)
-      generalLedgerRecurringDistributionDataLoaderService.single(glRecurring, account, profitCenter)
-
-      when:
-      delete("$path/${glRecurring.id}")
-
-      then:
-      final exception = thrown(HttpClientResponseException)
-      exception.response.status == CONFLICT
-      def response = exception.response.bodyAsJson()
-      response.message == "Requested operation violates data integrity"
-      response.code == "cynergi.data.constraint.violated"
    }
 
    void "delete GL recurring from other company is not allowed" () {
@@ -418,9 +403,18 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       final tstds1 = companyFactoryService.forDatasetCode('tstds1')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds1)
       final glRecurring = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
+      final account = accountDataLoaderService.single(tstds1)
+      final profitCenter = storeFactoryService.store(3, tstds1)
+      final glRecurringDistributionDTO = generalLedgerRecurringDistributionDataLoaderService.singleDTO(
+         glRecurring,
+         new AccountDTO(account),
+         new SimpleLegacyIdentifiableDTO(profitCenter.myId())
+      )
 
       when: // create a GL recurring
       def response1 = post(path, glRecurring)
+      glRecurringDistributionDTO.generalLedgerRecurring.id = response1.id
+      post("/accounting/general-ledger/recurring/distribution", glRecurringDistributionDTO)
 
       then:
       notThrown(Exception)
@@ -444,13 +438,17 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       }
 
       when: // delete GL recurring
+
       delete("$path/$response1.id")
 
       then: "GL recurring of user's company is deleted"
       notThrown(HttpClientResponseException)
 
       when: // recreate GL recurring
+
       def response2 = post(path, glRecurring)
+      glRecurringDistributionDTO.generalLedgerRecurring.id = response2.id
+      post("/accounting/general-ledger/recurring/distribution", glRecurringDistributionDTO)
 
       then:
       notThrown(Exception)
