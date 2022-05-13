@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.util.UUID
+import javax.transaction.Transactional
 
 @Singleton
 class GeneralLedgerRecurringService @Inject constructor(
@@ -39,6 +40,7 @@ class GeneralLedgerRecurringService @Inject constructor(
       return transformEntity(generalLedgerRecurringRepository.update(toUpdate, company))
    }
 
+   @Transactional
    fun delete(id: UUID, company: CompanyEntity) {
       generalLedgerRecurringDistributionService.deleteByRecurringId(id, company)
       generalLedgerRecurringRepository.delete(id, company)
