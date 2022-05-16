@@ -6,6 +6,7 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlTestDataLoaderService
+import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -22,10 +23,10 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
    @Inject AccountTestDataLoaderService accountDataLoaderService
    @Inject AccountPayableControlTestDataLoaderService accountPayableControlDataLoaderService
+   @Inject BankFactoryService bankFactoryService
 
    void "fetch one account by id" () {
       given:
-      accountDataLoaderService.single(nineNineEightEmployee.company)
       final account = accountDataLoaderService.single(nineNineEightEmployee.company)
 
       when:
@@ -39,6 +40,48 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          number == account.number
          name == account.name
          corporateAccountIndicator == account.corporateAccountIndicator
+         isBankAccount == false
+         with(type) {
+            description == account.type.description
+            value == account.type.value
+         }
+         with(normalAccountBalance) {
+            description == account.normalAccountBalance.description
+            value == account.normalAccountBalance.value
+         }
+         with(status) {
+            description == account.status.description
+            value == account.status.value
+         }
+         with(type) {
+            description == account.type.description
+            value == account.type.value
+         }
+         with(form1099Field) {
+            description == account.form1099Field.description
+            value == account.form1099Field.value
+         }
+      }
+   }
+
+   void "fetch one account used by bank" () {
+      given:
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      bankFactoryService.single(nineNineEightEmployee.company, store, account)
+
+      when:
+      def result = get("$path/${account.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         id == account.id
+         number == account.number
+         name == account.name
+         corporateAccountIndicator == account.corporateAccountIndicator
+         isBankAccount == true
          with(type) {
             description == account.type.description
             value == account.type.value
@@ -106,6 +149,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
             number == firstPageAccount[index].number
             name == firstPageAccount[index].name
             corporateAccountIndicator == firstPageAccount[index].corporateAccountIndicator
+            isBankAccount == false
             with(type) {
                description == firstPageAccount[index].type.description
                value == firstPageAccount[index].type.value
@@ -144,6 +188,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
             id == secondPageAccount[index].id
             name == secondPageAccount[index].name
             corporateAccountIndicator == secondPageAccount[index].corporateAccountIndicator
+            isBankAccount == false
             with(type) {
                description == secondPageAccount[index].type.description
                value == secondPageAccount[index].type.value
@@ -182,6 +227,150 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
             id == lastPageAccount[index].id
             name == lastPageAccount[index].name
             corporateAccountIndicator == lastPageAccount[index].corporateAccountIndicator
+            isBankAccount == false
+            with(type) {
+               description == lastPageAccount[index].type.description
+               value == lastPageAccount[index].type.value
+            }
+            with(normalAccountBalance) {
+               description == lastPageAccount[index].normalAccountBalance.description
+               value == lastPageAccount[index].normalAccountBalance.value
+            }
+            with(status) {
+               description == lastPageAccount[index].status.description
+               value == lastPageAccount[index].status.value
+            }
+            with(type) {
+               description == lastPageAccount[index].type.description
+               value == lastPageAccount[index].type.value
+            }
+            with(form1099Field) {
+               description == lastPageAccount[index].form1099Field.description
+               value == lastPageAccount[index].form1099Field.value
+            }
+         }
+
+      }
+
+      when:
+      get("$path/${pageFour}")
+
+      then:
+      final notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NO_CONTENT
+   }
+
+   void "fetch all some accounts used by bank" () {
+      given:
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      accountDataLoaderService.stream(5, companyFactoryService.forDatasetCode('tstds2'))
+      final accounts = accountDataLoaderService.stream(12, nineNineEightEmployee.company).toList()
+      def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      def pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
+      def pageLast = new StandardPageRequest(3, 5, "id", "ASC")
+      def pageFour = new StandardPageRequest(4, 5, "id", "ASC")
+      def firstPageAccount = accounts[0..4]
+      def secondPageAccount = accounts[5..9]
+      def lastPageAccount = accounts[10,11]
+      firstPageAccount.each {
+         bankFactoryService.single(nineNineEightEmployee.company, store, it)
+      }
+
+      when:
+      def pageOneResult = get("$path${pageOne}")
+
+      then:
+      pageOneResult.requested.with { new StandardPageRequest(it) } == pageOne
+      pageOneResult.totalElements == 12
+      pageOneResult.totalPages == 3
+      pageOneResult.first == true
+      pageOneResult.last == false
+      pageOneResult.elements.size() == 5
+      pageOneResult.elements.eachWithIndex { result, index ->
+         with(result) {
+            id == firstPageAccount[index].id
+            number == firstPageAccount[index].number
+            name == firstPageAccount[index].name
+            corporateAccountIndicator == firstPageAccount[index].corporateAccountIndicator
+            isBankAccount == true
+            with(type) {
+               description == firstPageAccount[index].type.description
+               value == firstPageAccount[index].type.value
+            }
+            with(normalAccountBalance) {
+               description == firstPageAccount[index].normalAccountBalance.description
+               value == firstPageAccount[index].normalAccountBalance.value
+            }
+            with(status) {
+               description == firstPageAccount[index].status.description
+               value == firstPageAccount[index].status.value
+            }
+            with(type) {
+               description == firstPageAccount[index].type.description
+               value == firstPageAccount[index].type.value
+            }
+            with(form1099Field) {
+               description == firstPageAccount[index].form1099Field.description
+               value == firstPageAccount[index].form1099Field.value
+            }
+         }
+      }
+
+      when:
+      def pageTwoResult = get("$path${pageTwo}")
+
+      then:
+      pageTwoResult.requested.with { new StandardPageRequest(it) } == pageTwo
+      pageTwoResult.totalElements == 12
+      pageTwoResult.totalPages == 3
+      pageTwoResult.first == false
+      pageTwoResult.last == false
+      pageTwoResult.elements.size() == 5
+      pageTwoResult.elements.eachWithIndex { result, index ->
+         with(result) {
+            id == secondPageAccount[index].id
+            name == secondPageAccount[index].name
+            corporateAccountIndicator == secondPageAccount[index].corporateAccountIndicator
+            isBankAccount == false
+            with(type) {
+               description == secondPageAccount[index].type.description
+               value == secondPageAccount[index].type.value
+            }
+            with(normalAccountBalance) {
+               description == secondPageAccount[index].normalAccountBalance.description
+               value == secondPageAccount[index].normalAccountBalance.value
+            }
+            with(status) {
+               description == secondPageAccount[index].status.description
+               value == secondPageAccount[index].status.value
+            }
+            with(type) {
+               description == secondPageAccount[index].type.description
+               value == secondPageAccount[index].type.value
+            }
+            with(form1099Field) {
+               description == secondPageAccount[index].form1099Field.description
+               value == secondPageAccount[index].form1099Field.value
+            }
+         }
+
+      }
+      when:
+      def pageLastResult = get("$path${pageLast}")
+
+      then:
+      pageLastResult.requested.with { new StandardPageRequest(it) } == pageLast
+      pageLastResult.totalElements == 12
+      pageLastResult.totalPages == 3
+      pageLastResult.first == false
+      pageLastResult.last == true
+      pageLastResult.elements.size() == 2
+      pageLastResult.elements.eachWithIndex { result, index ->
+         with(result) {
+            id == lastPageAccount[index].id
+            name == lastPageAccount[index].name
+            corporateAccountIndicator == lastPageAccount[index].corporateAccountIndicator
+            isBankAccount == false
             with(type) {
                description == lastPageAccount[index].type.description
                value == lastPageAccount[index].type.value
@@ -218,6 +407,10 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       given: "A company and a random collection of 50 accounts with a specific account"
       final company = companyFactoryService.forDatasetCode('tstds1')
       final accounts = accountDataLoaderService.stream(50, company).collect()
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      if (accounts[19].isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, accounts[19])
+      }
       final queryString = accounts[20].number
       def pageOne = new SearchPageRequest([page:1, size:5, query:"${ queryString }"])
 
@@ -262,6 +455,16 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       final account1 = accountDataLoaderService.single(company, "East Hill Bank")
       final account2 = accountDataLoaderService.single(company, "7 Hills Bank and Trust")
       final account3 = accountDataLoaderService.single(company, "Bob's Credit Union")
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      if (account1.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1)
+      }
+      if (account2.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account2)
+      }
+      if (account3.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account3)
+      }
 
       when: "fuzzy querying for a name with bank"
       def result = get("$path/search?query=bank")
@@ -322,6 +525,16 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       final account1 = accountDataLoaderService.single(company, "East Hill Bank")
       final account2 = accountDataLoaderService.single(company, "7 Hills Bank and Trust")
       final account3 = accountDataLoaderService.single(company, "Bob's Credit Union")
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      if (account1.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1)
+      }
+      if (account2.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account2)
+      }
+      if (account3.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account3)
+      }
 
       when: "fuzzy querying for number and 'bank'"
       def result = get("$path/search?query=${account1.number}%20bank")
@@ -610,8 +823,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       response[0].message == 'Z was unable to be found'
       response[0].code == 'system.not.found'
    }
-
-
 
    void "update a invalid account with null 1099 field"() {
       given:

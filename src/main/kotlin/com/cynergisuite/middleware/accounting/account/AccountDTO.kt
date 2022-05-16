@@ -47,7 +47,11 @@ data class AccountDTO(
 
    @field:NotNull
    @field:Schema(name = "corporate account indicator", required = true, description = "Corporate account indicator")
-   var corporateAccountIndicator: Boolean? = null
+   var corporateAccountIndicator: Boolean? = null,
+
+   @field:NotNull
+   @field:Schema(name = "is bank account", required = true, description = "Is bank account")
+   var isBankAccount: Boolean? = null
 
 ) : Identifiable {
    constructor(accountEntity: AccountEntity) :
@@ -59,7 +63,8 @@ data class AccountDTO(
          normalAccountBalance = NormalAccountBalanceTypeDTO(accountEntity.normalAccountBalance),
          status = AccountStatusTypeValueDTO(accountEntity.status),
          form1099Field = accountEntity.form1099Field?.let { VendorTypeDTO(it) },
-         corporateAccountIndicator = accountEntity.corporateAccountIndicator
+         corporateAccountIndicator = accountEntity.corporateAccountIndicator,
+         isBankAccount = accountEntity.isBankAccount
       )
 
    constructor(
@@ -77,7 +82,8 @@ data class AccountDTO(
          normalAccountBalance = normalAccountBalance,
          status = status,
          form1099Field = form1099Field,
-         corporateAccountIndicator = accountEntity.corporateAccountIndicator
+         corporateAccountIndicator = accountEntity.corporateAccountIndicator,
+         isBankAccount = accountEntity.isBankAccount
       )
 
    override fun myId(): UUID? = id
