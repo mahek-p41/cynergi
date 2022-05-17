@@ -44,6 +44,14 @@ class VendorPaymentTermScheduleRepository @Inject constructor(
             :due_percent,
             :schedule_order_number
          )
+         ON CONFLICT ON CONSTRAINT vendor_payment_term_schedule_vendor_payment_term_id_schedul_key
+         DO UPDATE SET
+            vendor_payment_term_id = :vendor_payment_term_id,
+            due_month = :due_month,
+            due_days = :due_days,
+            due_percent = :due_percent,
+            schedule_order_number = :schedule_order_number,
+            deleted = false
          RETURNING
             *
          """.trimIndent(),
@@ -87,7 +95,6 @@ class VendorPaymentTermScheduleRepository @Inject constructor(
 
    @Transactional
    fun deleteNotIn(id: UUID, scheduleRecords: List<VendorPaymentTermScheduleEntity>) {
-      val result = mutableListOf<VendorPaymentTermScheduleEntity>()
 
       jdbc.update(
          """
