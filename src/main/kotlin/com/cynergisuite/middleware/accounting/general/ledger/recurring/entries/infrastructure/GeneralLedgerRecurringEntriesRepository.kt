@@ -73,6 +73,15 @@ class GeneralLedgerRecurringEntriesRepository @Inject constructor(
             account.account_status_value                                      AS glRecurringDist_account_status_value,
             account.account_status_description                                AS glRecurringDist_account_status_description,
             account.account_status_localization_code                          AS glRecurringDist_account_status_localization_code,
+            (
+               SELECT
+                  CASE
+                     WHEN COUNT(*) > 0 then TRUE
+                     WHEN COUNT(*) = 0 then FALSE
+                  END
+               FROM bank
+               WHERE bank.general_ledger_account_id = account.account_id
+            ) AS is_bank_account,
             count(*) OVER() AS total_elements
          FROM general_ledger_recurring_distribution glRecurringDist
             JOIN general_ledger_recurring glRecurring ON glRecurringDist.general_ledger_recurring_id = glRecurring.glRecurring_id AND glRecurring.glRecurring_deleted = FALSE

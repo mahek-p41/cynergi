@@ -1,12 +1,9 @@
 package com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
-import com.cynergisuite.middleware.accounting.account.AccountService
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
-import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.control.GeneralLedgerControlDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest

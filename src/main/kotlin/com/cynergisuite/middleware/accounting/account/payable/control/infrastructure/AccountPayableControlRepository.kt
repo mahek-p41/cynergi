@@ -84,6 +84,15 @@ class AccountPayableControlRepository @Inject constructor(
             glInvCleAcct.account_vendor_1099_type_value                         AS glInvCleAcct_vendor_1099_type_value,
             glInvCleAcct.account_vendor_1099_type_description                   AS glInvCleAcct_vendor_1099_type_description,
             glInvCleAcct.account_vendor_1099_type_localization_code             AS glInvCleAcct_vendor_1099_type_localization_code,
+            (
+               SELECT
+                  CASE
+                     WHEN COUNT(*) > 0 then TRUE
+                     WHEN COUNT(*) = 0 then FALSE
+                  END
+               FROM bank
+               WHERE bank.general_ledger_account_id = glInvCleAcct.account_id
+            ) AS is_bank_account,
             glInvAcct.account_id                                     AS glInvAcct_id,
             glInvAcct.account_number                                 AS glInvAcct_number,
             glInvAcct.account_name                                   AS glInvAcct_name,
@@ -105,7 +114,16 @@ class AccountPayableControlRepository @Inject constructor(
             glInvAcct.account_vendor_1099_type_id                            AS glInvAcct_vendor_1099_type_id,
             glInvAcct.account_vendor_1099_type_value                         AS glInvAcct_vendor_1099_type_value,
             glInvAcct.account_vendor_1099_type_description                   AS glInvAcct_vendor_1099_type_description,
-            glInvAcct.account_vendor_1099_type_localization_code             AS glInvAcct_vendor_1099_type_localization_code
+            glInvAcct.account_vendor_1099_type_localization_code             AS glInvAcct_vendor_1099_type_localization_code,
+            (
+               SELECT
+                  CASE
+                     WHEN COUNT(*) > 0 then TRUE
+                     WHEN COUNT(*) = 0 then FALSE
+                  END
+               FROM bank
+               WHERE bank.general_ledger_account_id = glInvAcct.account_id
+            ) AS is_bank_account
          FROM account_payable_control accountPayableControl
             JOIN account_payable_check_form_type_domain checkFormType ON accountPayableControl.check_form_type_id = checkFormType.id
             JOIN print_currency_indicator_type_domain printCurrencyIndType ON accountPayableControl.print_currency_indicator_type_id = printCurrencyIndType.id

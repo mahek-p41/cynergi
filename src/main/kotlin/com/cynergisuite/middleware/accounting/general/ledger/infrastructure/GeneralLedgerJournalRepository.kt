@@ -71,6 +71,15 @@ class GeneralLedgerJournalRepository @Inject constructor(
             account.account_vendor_1099_type_value                          AS glJournal_account_vendor_1099_type_value,
             account.account_vendor_1099_type_description                    AS glJournal_account_vendor_1099_type_description,
             account.account_vendor_1099_type_localization_code              AS glJournal_account_vendor_1099_type_localization_code,
+            (
+               SELECT
+                  CASE
+                     WHEN COUNT(*) > 0 then TRUE
+                     WHEN COUNT(*) = 0 then FALSE
+                  END
+               FROM bank
+               WHERE bank.general_ledger_account_id = account.account_id
+            ) AS is_bank_account,
             glJournal.profit_center_id_sfk                                  AS glJournal_profit_center_id_sfk,
             profitCenter.id                                                 AS glJournal_profitCenter_id,
             profitCenter.number                                             AS glJournal_profitCenter_number,

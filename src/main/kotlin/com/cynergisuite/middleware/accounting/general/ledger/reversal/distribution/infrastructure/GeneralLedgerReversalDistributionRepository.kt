@@ -81,6 +81,15 @@ class GeneralLedgerReversalDistributionRepository @Inject constructor(
             account.account_vendor_1099_type_value                           AS glReversalDist_account_vendor_1099_type_value,
             account.account_vendor_1099_type_description                     AS glReversalDist_account_vendor_1099_type_description,
             account.account_vendor_1099_type_localization_code               AS glReversalDist_account_vendor_1099_type_localization_code,
+            (
+               SELECT
+                  CASE
+                     WHEN COUNT(*) > 0 then TRUE
+                     WHEN COUNT(*) = 0 then FALSE
+                  END
+               FROM bank
+               WHERE bank.general_ledger_account_id = account.account_id
+            ) AS is_bank_account,
             profitCenter.id                                                  AS glReversalDist_profitCenter_id,
             profitCenter.number                                              AS glReversalDist_profitCenter_number,
             profitCenter.name                                                AS glReversalDist_profitCenter_name,

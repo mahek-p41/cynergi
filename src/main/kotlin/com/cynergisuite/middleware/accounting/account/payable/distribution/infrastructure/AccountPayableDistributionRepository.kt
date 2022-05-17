@@ -75,7 +75,16 @@ class AccountPayableDistributionRepository @Inject constructor(
             account.account_vendor_1099_type_id                            AS apDist_account_vendor_1099_type_id,
             account.account_vendor_1099_type_value                         AS apDist_account_vendor_1099_type_value,
             account.account_vendor_1099_type_description                   AS apDist_account_vendor_1099_type_description,
-            account.account_vendor_1099_type_localization_code             AS apDist_account_vendor_1099_type_localization_code
+            account.account_vendor_1099_type_localization_code             AS apDist_account_vendor_1099_type_localization_code,
+            (
+               SELECT
+                  CASE
+                     WHEN COUNT(*) > 0 then TRUE
+                     WHEN COUNT(*) = 0 then FALSE
+                  END
+               FROM bank
+               WHERE bank.general_ledger_account_id = account.account_id
+            ) AS is_bank_account
          FROM account_payable_distribution_template apDist
             JOIN company comp ON apDist.company_id = comp.id AND comp.deleted = FALSE
             JOIN system_stores_fimvw profitCenter
