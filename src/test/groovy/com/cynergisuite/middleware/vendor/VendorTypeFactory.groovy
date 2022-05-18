@@ -111,43 +111,43 @@ class VendorTypeFactory {
          "state.income"
       ),
       new VendorType(
-         18,
+         101,
          101,
          "Nonemployee Compensation",
          "nonemployee.compensation"
       ),
       new VendorType(
-         19,
+         102,
          102,
          "Payer Made Direct Sales Totaling \$5000 or more",
          "payer.made.direct.sales"
       ),
       new VendorType(
-         20,
+         103,
          103,
          "Reserved for Future Use",
          "reserved.future.use"
       ),
       new VendorType(
-         21,
+         104,
          104,
          "Federal Income Tax Withheld",
          "federal.income.tax.withheld"
       ),
       new VendorType(
-         22,
+         105,
          105,
          "State Tax Withheld",
          "state.tax.withheld.box.105"
       ),
       new VendorType(
-         23,
+         106,
          106,
          "State/Payers State No",
          "state.payers.state.no.box.106"
       ),
       new VendorType(
-         24,
+         107,
          107,
          "State Income",
          "state.income.box.107"
@@ -167,11 +167,12 @@ class VendorTypeFactory {
 @CompileStatic
 @Requires(env = ["develop", "test"])
 class VendorTypeFactoryService {
-   VendorType random() {
-      VendorTypeFactory.random()
+
+   def random() {
+      return VendorTypeFactory.random()
    }
 
-   List<VendorType> predefined() {
-      VendorTypeFactory.predefined()
+   def predefined() {
+      return VendorTypeFactory.predefined()
    }
 }
