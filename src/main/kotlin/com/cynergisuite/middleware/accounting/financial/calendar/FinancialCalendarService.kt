@@ -10,7 +10,6 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.time.LocalDate
 import java.util.UUID
-import kotlin.streams.toList
 
 @Singleton
 class FinancialCalendarService @Inject constructor(
@@ -75,6 +74,9 @@ class FinancialCalendarService @Inject constructor(
 
    fun openAPAccountsForPeriods(dateRangeDTO: FinancialCalendarDateRangeDTO, company: CompanyEntity) =
       financialCalendarRepository.openAPAccountsForPeriods(dateRangeDTO, company)
+
+   fun fetchDateRangeWhenGLIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> =
+      financialCalendarRepository.findDateRangeWhenGLIsOpen(company)
 
    private fun transformEntity(financialCalendarEntity: FinancialCalendarEntity): FinancialCalendarDTO {
       return FinancialCalendarDTO(financialCalendarEntity)

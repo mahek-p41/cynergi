@@ -32,6 +32,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 import java.util.UUID
 import javax.validation.Valid
 
@@ -266,5 +267,30 @@ class FinancialCalendarController @Inject constructor(
       val response = financialCalendarService.openAPAccountsForPeriods(dateRangeDTO, user.myCompany())
 
       logger.debug("Requested set APAccounts Open for periods in date range {} resulted in {}", dateRangeDTO, response)
+   }
+
+   @Throws(NotFoundException::class)
+   @Get(value = "/gl-dates-open", produces = [APPLICATION_JSON])
+   @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Fetch the date range when GL is open", description = "Fetch the Financial Calendar date range when the General Ledger is open", operationId = "financialCalendar-fetchDateRangeWhenGLIsOpen")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Pair::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Financial Calendar was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchDateRangeWhenGLIsOpen(
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Pair<LocalDate, LocalDate> {
+      logger.info("Fetching Financial Calendar date range when General Ledger is open")
+
+      val user = userService.fetchUser(authentication)
+      val response = financialCalendarService.fetchDateRangeWhenGLIsOpen(user.myCompany())
+
+      logger.debug("Fetching Financial Calendar date range when General Ledger is open resulted in", response)
+
+      return response
    }
 }
