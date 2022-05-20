@@ -48,7 +48,7 @@ data class AccountPayableDistributionDTO(
          id = entity.id,
          name = entity.name,
          profitCenter = SimpleLegacyIdentifiableDTO(entity.profitCenter.myId()),
-         account = AccountDTO(entity.account.id),
+         account = AccountDTO(entity.account),
          percent = entity.percent
       )
 
