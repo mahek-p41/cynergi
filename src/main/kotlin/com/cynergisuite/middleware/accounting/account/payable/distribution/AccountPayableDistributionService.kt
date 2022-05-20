@@ -58,8 +58,9 @@ class AccountPayableDistributionService @Inject constructor(
       val match = existProfitCenters.filter { e -> dto.any { d -> d.profitCenter?.id == e.profitCenter.myId() } }
       val mapIds = dto.map { element ->
          match.lastOrNull {
-            it.profitCenter.myId() == element.profitCenter?.id
-         }.let { element.copy(id = it?.id) }
+            it.profitCenter.myId() == element.profitCenter?.id &&
+            it.account.id == element.account?.id
+         }.let { element.copy(id = it?.id)  }
       }
 
       val toUpdate = accountPayableDistributionValidator.validateBulkUpdate(mapIds, company)
