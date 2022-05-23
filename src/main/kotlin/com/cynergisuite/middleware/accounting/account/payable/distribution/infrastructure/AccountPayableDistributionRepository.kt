@@ -78,7 +78,7 @@ class AccountPayableDistributionRepository @Inject constructor(
             account.account_vendor_1099_type_localization_code             AS apDist_account_vendor_1099_type_localization_code
          FROM account_payable_distribution_template apDist
             JOIN company comp ON apDist.company_id = comp.id AND comp.deleted = FALSE
-            JOIN fastinfo_prod_import.store_vw profitCenter
+            JOIN system_stores_fimvw profitCenter
                ON profitCenter.dataset = comp.dataset_code
                   AND profitCenter.number = apDist.profit_center_sfk
             JOIN account ON account.account_id = apDist.account_id AND account.account_deleted = FALSE
