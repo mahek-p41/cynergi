@@ -27,6 +27,7 @@ pipeline {
       }
 
       stage('Test') {
+         when { not { anyOf { branch 'master'; branch 'staging'; branch 'develop'; } } }
          steps {
             script {
                def cynergibasedb = docker.build("cynergibasedb:${env.BRANCH_NAME}", "-f ./support/development/cynergibasedb/cynergibasedb.dockerfile ./support/development/cynergibasedb")
@@ -232,7 +233,7 @@ def emailNotifications(names){
       recipientProviders: [[$class: 'CulpritsRecipientProvider'],[$class: 'RequesterRecipientProvider']]
    } else {
       //Getting email address from top commit on branch.
-      //Workaround for empty changelist of first build of new branch. 
+      //Workaround for empty changelist of first build of new branch.
       def useremail = sh(script: 'git log -1 --format="%ae"', returnStdout: true).trim()
       echo "Sending email to ${useremail}, and requester."
       emailext body: '''${SCRIPT, template="groovy-html.template"}''',
