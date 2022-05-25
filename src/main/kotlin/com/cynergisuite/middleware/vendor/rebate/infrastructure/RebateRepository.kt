@@ -83,6 +83,15 @@ class RebateRepository @Inject constructor(
             glDebitAcct.account_vendor_1099_type_value                         AS glDebitAcct_vendor_1099_type_value,
             glDebitAcct.account_vendor_1099_type_description                   AS glDebitAcct_vendor_1099_type_description,
             glDebitAcct.account_vendor_1099_type_localization_code             AS glDebitAcct_vendor_1099_type_localization_code,
+            (
+               SELECT
+                  CASE
+                     WHEN COUNT(*) > 0 then TRUE
+                     WHEN COUNT(*) = 0 then FALSE
+                  END
+               FROM bank
+               WHERE bank.general_ledger_account_id = glDebitAcct.account_id
+            ) AS is_bank_account,
             glCreditAcct.account_id                             AS glCreditAcct_id,
             glCreditAcct.account_number                         AS glCreditAcct_number,
             glCreditAcct.account_name                           AS glCreditAcct_name,
@@ -106,6 +115,15 @@ class RebateRepository @Inject constructor(
             glCreditAcct.account_vendor_1099_type_value                         AS glCreditAcct_vendor_1099_type_value,
             glCreditAcct.account_vendor_1099_type_description                   AS glCreditAcct_vendor_1099_type_description,
             glCreditAcct.account_vendor_1099_type_localization_code             AS glCreditAcct_vendor_1099_type_localization_code,
+            (
+               SELECT
+                  CASE
+                     WHEN COUNT(*) > 0 then TRUE
+                     WHEN COUNT(*) = 0 then FALSE
+                  END
+               FROM bank
+               WHERE bank.general_ledger_account_id = glCreditAcct.account_id
+            ) AS is_bank_account,
             count(*) OVER()                                     AS total_elements
          FROM rebate r
             JOIN account_status_type_domain status ON r.status_type_id = status.id

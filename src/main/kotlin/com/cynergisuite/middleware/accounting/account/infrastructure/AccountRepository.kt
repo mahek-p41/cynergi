@@ -61,8 +61,16 @@ class AccountRepository @Inject constructor(
             vendor_1099_type.id                          AS account_vendor_1099_type_id,
             vendor_1099_type.value                       AS account_vendor_1099_type_value,
             vendor_1099_type.description                 AS account_vendor_1099_type_description,
-            vendor_1099_type.localization_code           AS account_vendor_1099_type_localization_code
-
+            vendor_1099_type.localization_code           AS account_vendor_1099_type_localization_code,
+            (
+               SELECT
+                  CASE
+                     WHEN COUNT(*) > 0 then TRUE
+                     WHEN COUNT(*) = 0 then FALSE
+                  END
+               FROM bank
+               WHERE bank.general_ledger_account_id = account.id
+            ) AS is_bank_account
          FROM account
                JOIN company comp
                      ON comp.id = account.company_id AND comp.deleted = FALSE
@@ -198,7 +206,7 @@ class AccountRepository @Inject constructor(
 
    @Transactional
    fun insert(account: AccountEntity, company: CompanyEntity): AccountEntity {
-      logger.debug("Inserting bank {}", account)
+      logger.debug("Inserting account {}", account)
 
       return jdbc.insertReturning(
          """
@@ -286,7 +294,8 @@ class AccountRepository @Inject constructor(
          normalAccountBalance = mapNormalAccountBalanceType(rs, "${columnPrefix}balance_type_"),
          status = mapAccountStatusType(rs, "${columnPrefix}status_"),
          form1099Field = mapVendorStatusType(rs, "${columnPrefix}vendor_1099_type_"),
-         corporateAccountIndicator = rs.getBoolean("${columnPrefix}corporate_account_indicator")
+         corporateAccountIndicator = rs.getBoolean("${columnPrefix}corporate_account_indicator"),
+         isBankAccount = rs.getBoolean("is_bank_account")
       )
    }
 
@@ -306,7 +315,8 @@ class AccountRepository @Inject constructor(
          normalAccountBalance = account.normalAccountBalance,
          status = account.status,
          form1099Field = account.form1099Field,
-         corporateAccountIndicator = rs.getBoolean("${columnPrefix}corporate_account_indicator")
+         corporateAccountIndicator = rs.getBoolean("${columnPrefix}corporate_account_indicator"),
+         isBankAccount = account.isBankAccount
       )
    }
 

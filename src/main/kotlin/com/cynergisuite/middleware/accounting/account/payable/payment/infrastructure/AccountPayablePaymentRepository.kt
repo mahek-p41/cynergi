@@ -77,6 +77,15 @@ class AccountPayablePaymentRepository @Inject constructor(
             bnk.bank_account_vendor_1099_type_value                   AS apPayment_bank_account_vendor_1099_type_value,
             bnk.bank_account_vendor_1099_type_description             AS apPayment_bank_account_vendor_1099_type_description,
             bnk.bank_account_vendor_1099_type_localization_code       AS apPayment_bank_account_vendor_1099_type_localization_code,
+            (
+               SELECT
+                  CASE
+                     WHEN COUNT(*) > 0 then TRUE
+                     WHEN COUNT(*) = 0 then FALSE
+                  END
+               FROM bank
+               WHERE bnk.bank_account_id = account.id
+            ) AS is_bank_account,
             bnk.bank_glProfitCenter_id                                AS apPayment_bank_glProfitCenter_id,
             bnk.bank_glProfitCenter_number                            AS apPayment_bank_glProfitCenter_number,
             bnk.bank_glProfitCenter_name                              AS apPayment_bank_glProfitCenter_name,
@@ -89,7 +98,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             vend.v_account_number                                     AS apPayment_vendor_account_number,
             vend.v_pay_to_id                                          AS apPayment_vendor_pay_to_id,
             vend.v_freight_on_board_type_id                           AS apPayment_vendor_freight_on_board_type_id,
-            vend.v_vendor_payment_term_id                            AS apPayment_vendor_vendor_payment_term_id,
+            vend.v_vendor_payment_term_id                             AS apPayment_vendor_vendor_payment_term_id,
             vend.v_normal_days                                        AS apPayment_vendor_normal_days,
             vend.v_return_policy                                      AS apPayment_vendor_return_policy,
             vend.v_ship_via_id                                        AS apPayment_vendor_ship_via_id,
@@ -488,6 +497,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             JOIN account_payable_payment_status_type_domain status ON apPayment.account_payable_payment_status_id = status.id
             JOIN account_payable_payment_type_type_domain type ON apPayment.account_payable_payment_type_id = type.id
             LEFT JOIN paymentDetail ON apPayment.id = paymentDetail.apPaymentDetail_payment_number_id
+            JOIN account ON account.id = bnk.bank_account_id AND account.deleted = FALSE
       """
    }
 

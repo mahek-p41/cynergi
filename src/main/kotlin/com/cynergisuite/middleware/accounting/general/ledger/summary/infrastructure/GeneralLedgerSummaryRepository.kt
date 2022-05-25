@@ -79,6 +79,15 @@ class GeneralLedgerSummaryRepository @Inject constructor(
             acct.account_vendor_1099_type_value                       AS glSummary_acct_vendor_1099_type_value,
             acct.account_vendor_1099_type_description                 AS glSummary_acct_vendor_1099_type_description,
             acct.account_vendor_1099_type_localization_code           AS glSummary_acct_vendor_1099_type_localization_code,
+            (
+               SELECT
+                  CASE
+                     WHEN COUNT(*) > 0 then TRUE
+                     WHEN COUNT(*) = 0 then FALSE
+                  END
+               FROM bank
+               WHERE bank.general_ledger_account_id = acct.account_id
+            ) AS is_bank_account,
             profitCenter.id                                           AS glSummary_profitCenter_id,
             profitCenter.number                                       AS glSummary_profitCenter_number,
             profitCenter.name                                         AS glSummary_profitCenter_name,
