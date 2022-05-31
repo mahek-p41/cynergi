@@ -193,23 +193,17 @@ class StoreRepository @Inject constructor(
 
    @ReadOnly
    fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<StoreEntity, PageRequest> {
-      var searchQuery = page.query
+      val searchQuery = page.query
       val where = StringBuilder(" WHERE comp.id = :comp_id AND comp.deleted = FALSE")
       val sortBy = if (!searchQuery.isNullOrEmpty()) {
-         if (page.fuzzy == false) {
-            where.append(" AND (search_vector @@ to_tsquery(:search_query)) ")
-            searchQuery = searchQuery.replace("\\s+".toRegex(), " & ")
-            EMPTY
+         val splitedWords = searchQuery.split(" ")
+         val fieldToSearch = if (splitedWords.first().isNumber() && splitedWords.size == 1) {
+            " store.number::text "
          } else {
-            val splitedWords = searchQuery.split(" ")
-            val fieldToSearch = if (splitedWords.first().isNumber() && splitedWords.size == 1) {
-               " store.number::text "
-            } else {
-               "COALESCE(store.number::text, '') || ' ' || COALESCE(store.name, '')"
-            }
-            where.append(" AND $fieldToSearch <-> :search_query < 0.95 ")
-            " ORDER BY $fieldToSearch <-> :search_query "
+            "COALESCE(store.number::text, '') || ' ' || COALESCE(store.name, '')"
          }
+         where.append(" AND $fieldToSearch <-> :search_query < 0.95 ")
+         " ORDER BY $fieldToSearch <-> :search_query "
       } else {
          EMPTY
       }

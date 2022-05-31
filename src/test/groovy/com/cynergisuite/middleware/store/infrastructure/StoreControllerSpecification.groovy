@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.store.infrastructure
 
+import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -187,4 +188,42 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.first == true
       pageOneResult.last == true
    }
+
+   void "search store by store number and name" () {
+      given:
+      final pageOne = new SearchPageRequest(1, 5, "1", true)
+      final pageTwo = new SearchPageRequest(1, 5, "INDEPENDENCE", true)
+
+      when:
+      def pageOneResult = get("${path}/search${pageOne}")
+
+      then: 'Only store 1 is returned'
+      notThrown(HttpClientResponseException)
+      new SearchPageRequest(pageOneResult.requested) == pageOne
+      pageOneResult.elements != null
+      pageOneResult.elements.size() == 1
+      pageOneResult.elements[0].id == 1
+      pageOneResult.elements[0].storeNumber == 1
+      pageOneResult.elements[0].name == "KANSAS CITY"
+      pageOneResult.elements[0].region.name == regions[0].name
+      pageOneResult.elements[0].region.division.name == divisions[0].name
+      pageOneResult.first == true
+      pageOneResult.last == true
+
+      when:
+      def pageTwoResult = get("${path}/search${pageTwo}")
+
+      then: 'Only Independence store is returned'
+      notThrown(HttpClientResponseException)
+      new SearchPageRequest(pageTwoResult.requested) == pageTwo
+      pageTwoResult.elements != null
+      pageTwoResult.elements.size() == 1
+      pageTwoResult.elements[0].id == 2
+      pageTwoResult.elements[0].storeNumber == 3
+      pageTwoResult.elements[0].name == "INDEPENDENCE"
+      pageTwoResult.elements[0].region == null
+      pageTwoResult.first == true
+      pageTwoResult.last == true
+   }
+
 }

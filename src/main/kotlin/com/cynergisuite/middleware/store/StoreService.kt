@@ -28,8 +28,8 @@ class StoreService @Inject constructor(
    fun search(company: CompanyEntity, pageRequest: SearchPageRequest, locale: Locale): Page<StoreDTO> {
       val found = storeRepository.search(company, pageRequest)
 
-      return found.toPage { store: StoreEntity ->
-         transformEntity(store)
+      return found.toPage { store ->
+         StoreDTO(store)
       }
    }
 
