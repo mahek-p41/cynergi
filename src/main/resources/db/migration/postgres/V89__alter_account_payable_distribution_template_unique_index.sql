@@ -1,0 +1,1 @@
+DROP INDEX account_payable_distribution_unique_idx;
