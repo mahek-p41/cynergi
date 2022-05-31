@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.i
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.util.*
+import java.util.UUID
 
 @Singleton
 class GeneralLedgerRecurringEntriesService @Inject constructor(
