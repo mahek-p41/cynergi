@@ -137,8 +137,8 @@ class RebateRepository @Inject constructor(
    @ReadOnly
    fun exists(description: String, company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
-         "SELECT EXISTS (SELECT * FROM rebate WHERE description = :description)",
-         mapOf("description" to description, "company_id" to company.id),
+         "SELECT EXISTS (SELECT * FROM rebate WHERE UPPER(description) = :description)",
+         mapOf("description" to description.uppercase(), "company_id" to company.id),
          Boolean::class.java
       )
 
