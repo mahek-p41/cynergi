@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.ssh
 
-import com.cynergisuite.middleware.darwill.DarwillManagementDto
+import com.cynergisuite.middleware.manager.SftpClientCredentialsDto
 
 data class SftpClientCredentials(
    val username: String,
@@ -8,7 +8,7 @@ data class SftpClientCredentials(
    val host: String,
    val port: Int,
 ) {
-   constructor(darwillManagementDto: DarwillManagementDto) :
+   constructor(darwillManagementDto: SftpClientCredentialsDto) :
       this(
          username = darwillManagementDto.username!!,
          password = darwillManagementDto.password!!,

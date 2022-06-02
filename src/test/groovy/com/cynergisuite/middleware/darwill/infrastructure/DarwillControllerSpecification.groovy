@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.darwill.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.domain.infrastructure.SimpleTransactionalSql
-import com.cynergisuite.middleware.darwill.DarwillManagementDto
+import com.cynergisuite.middleware.manager.SftpClientCredentialsDto
 import com.cynergisuite.middleware.darwill.DarwillTestDataLoaderService
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpRequest
@@ -28,7 +28,7 @@ class DarwillControllerSpecification extends ServiceSpecificationBase {
       final tstds1 = companies.find { it.datasetCode == "tstds1"}
 
       when:
-      def result = client.toBlocking().exchange(POST("/darwill", new DarwillManagementDto(tstds1.id, "username", "password", "host", 12345)))
+      def result = client.toBlocking().exchange(POST("/darwill", new SftpClientCredentialsDto(tstds1.id, "username", "password", "host", 12345)))
 
       then:
       notThrown(Exception)
@@ -41,7 +41,7 @@ class DarwillControllerSpecification extends ServiceSpecificationBase {
       final tstds1 = companies.find { it.datasetCode == "tstds1"}
 
       when:
-      client.toBlocking().exchange(POST("/darwill", new DarwillManagementDto(null, "username", "password", "host", 12345)), Argument.of(String), Argument.of(String))
+      client.toBlocking().exchange(POST("/darwill", new SftpClientCredentialsDto(null, "username", "password", "host", 12345)), Argument.of(String), Argument.of(String))
 
       then:
       def ex = thrown(HttpClientResponseException)

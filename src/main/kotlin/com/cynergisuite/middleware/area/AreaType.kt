@@ -23,6 +23,8 @@ object BankReconciliation : AreaType(2, "BR", "Bank Reconciliation", "bank.recon
 object GeneralLedger : AreaType(3, "GL", "General Ledger", "general.ledger")
 object PurchaseOrder : AreaType(4, "PO", "Purchase Order", "purchase.order")
 object DarwillUpload : AreaType(5, "DARWILL", "Darwill Upload", "darwill.upload")
+object SignatureCapture : AreaType(6, "SIGNATURE_CAPTURE", "Online Signature Capture", "signature.capture")
+object WowUpload : AreaType(7, "WOW", "Wow Upload", "wow.upload")
 
 @MappedEntity("area_type_domain")
 class AreaTypeEntity(
@@ -57,6 +59,7 @@ fun AreaTypeEntity.toAreaType(): AreaType =
       3 -> GeneralLedger
       4 -> PurchaseOrder
       5 -> DarwillUpload
+      7 -> WowUpload
       else -> Unknown
    }
 
