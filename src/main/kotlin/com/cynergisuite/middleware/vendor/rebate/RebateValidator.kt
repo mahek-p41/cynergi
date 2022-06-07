@@ -82,7 +82,7 @@ class RebateValidator @Inject constructor(
             errors.add(ValidationError("generalLedgerDebitAccount", AccountIsRequired(generalLedgerDebitAccount)))
          }
 
-         if (rebateRepository.exists(dto.description!!, company)) {
+         if (rebateRepository.exists(dto.description!!, company) && dto.id == null) {
             errors.add(ValidationError("value", Duplicate("value")))
          }
          generalLedgerCreditAccount

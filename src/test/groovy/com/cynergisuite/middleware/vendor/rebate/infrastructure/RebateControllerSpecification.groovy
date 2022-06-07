@@ -4,11 +4,14 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
+import com.cynergisuite.middleware.accounting.account.AccountStatusFactory
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
+import com.cynergisuite.middleware.vendor.rebate.RebateEntity
 import com.cynergisuite.middleware.vendor.rebate.RebateTestDataLoaderService
+import com.cynergisuite.middleware.vendor.rebate.RebateTypeDataLoader
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
@@ -17,7 +20,6 @@ import jakarta.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
-import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class RebateControllerSpecification extends ControllerSpecificationBase {
@@ -28,6 +30,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
    @Inject ShipViaTestDataLoaderService shipViaTestDataLoaderService
    @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
    @Inject VendorTestDataLoaderService vendorTestDataLoaderService
+   @Inject RebateRepository rebateRepository
 
    void "fetch one" () {
       given:
@@ -973,4 +976,28 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
          vendor == rebateDTO.vendors[index]
       }
    }
+
+   void "create one with duplicate description" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final glDebitAcct = accountTestDataLoaderService.single(company)
+      final glCreditAcct = accountTestDataLoaderService.single(company)
+      def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
+      updatedRebateDTO.description = 'test 1'
+      final rebateEnt = new RebateEntity(UUID.randomUUID(), updatedRebateDTO, null, AccountStatusFactory.random(),  RebateTypeDataLoader.random(), glDebitAcct, glCreditAcct, )
+      rebateRepository.insert(rebateEnt, company)
+      when:
+
+      def result = post(path, updatedRebateDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson().collect().sort { a,b -> a.path <=> b.path }
+      response.size() == 1
+      response[0].path == "value"
+      response[0].message == "value already exists"
+      response[0].code == 'cynergi.validation.duplicate'
+   }
+
 }
