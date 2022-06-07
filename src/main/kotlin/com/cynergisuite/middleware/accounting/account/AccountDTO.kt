@@ -49,9 +49,8 @@ data class AccountDTO(
    @field:Schema(name = "corporate account indicator", required = true, description = "Corporate account indicator")
    var corporateAccountIndicator: Boolean? = null,
 
-   @field:NotNull
-   @field:Schema(name = "is bank account", required = true, description = "Is bank account")
-   var isBankAccount: Boolean? = null
+   @field:Schema(name = "is bank account", required = false, description = "Is bank account")
+   var isBankAccount: Boolean? = false
 
 ) : Identifiable {
    constructor(accountEntity: AccountEntity) :
