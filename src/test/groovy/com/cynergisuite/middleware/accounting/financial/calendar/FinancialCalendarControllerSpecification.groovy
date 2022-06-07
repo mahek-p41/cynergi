@@ -244,6 +244,28 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       notThrown(Exception)
    }
 
+   void "fetch gl open date range" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
+      final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(3))
+
+      when: 'open GL for a date range'
+      put("$path/open-gl", dateRangeDTO)
+
+      then:
+      notThrown(Exception)
+
+      when: 'fetch date range'
+      def result = get("$path/gl-dates-open")
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.first == dateRangeDTO.periodFrom.toString()
+      result.second == dateRangeDTO.periodTo.plusMonths(1).minusDays(1).toString()
+   }
+
    void "create fiscal calendar year" () {
       given:
       final fiscalYr = FinancialCalendarDataLoader.streamFiscalYearDTO(1).collect()

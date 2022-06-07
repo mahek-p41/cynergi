@@ -6,6 +6,7 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.update
@@ -23,6 +24,7 @@ import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
+import java.time.LocalDate
 import java.util.UUID
 import javax.transaction.Transactional
 
@@ -291,6 +293,31 @@ class FinancialCalendarRepository @Inject constructor(
       )
 
       logger.info("Affected row count when opening APAccounts {}", newAffectedRowCount)
+   }
+
+   @Transactional
+   fun findDateRangeWhenGLIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> {
+      logger.debug("Find periods where GL is open")
+
+      val periods = mutableListOf<FinancialCalendarEntity>()
+
+      jdbc.query(
+         """
+            ${selectBaseQuery()}
+            WHERE r.company_id = :comp_id AND general_ledger_open = :general_ledger_open
+            ORDER BY r_period_from
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "general_ledger_open" to true
+         )
+      ) { rs, _ ->
+         do {
+            periods.add(mapRow(rs, "r_"))
+         } while (rs.next())
+      }
+
+      return Pair(periods.first().periodFrom, periods.last().periodTo)
    }
 
    private fun mapRow(
