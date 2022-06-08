@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.inf
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.GeneralLedgerReversalEntryDTO
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.GeneralLedgerReversalEntryService
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -38,7 +37,6 @@ import javax.validation.Valid
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/accounting/general-ledger/reversal/entry")
 class GeneralLedgerReversalEntryController @Inject constructor(
-   private val generalLedgerDetailService: GeneralLedgerDetailService,
    private val generalLedgerReversalEntryService: GeneralLedgerReversalEntryService,
    private val userService: UserService
 ) {
@@ -181,29 +179,5 @@ class GeneralLedgerReversalEntryController @Inject constructor(
       val user = userService.fetchUser(authentication)
 
       return generalLedgerReversalEntryService.delete(id, user.myCompany())
-   }
-
-   @Throws(PageOutOfBoundsException::class)
-   @Get(uri = "/transfer{?pageRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["GeneralLedgerReversalEntryEndpoints"], summary = "Use GL Reversal to post journal entries", description = "Fetch a list of General Ledger Reversal Entries to create General Ledger Detail records", operationId = "generalLedgerReversalEntry-transfer")
-   @ApiResponses(
-      value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-         ApiResponse(responseCode = "204", description = "The requested General Ledger Reversal Entry was unable to be found, or the result is empty"),
-         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-      ]
-   )
-   fun transfer(
-      @Parameter(name = "pageRequest", `in` = QUERY, required = false)
-      @Valid @QueryValue("pageRequest")
-      pageRequest: StandardPageRequest,
-      authentication: Authentication,
-      httpRequest: HttpRequest<*>
-   ) {
-      logger.info("Fetching all General Ledger Reversal Entries {} to create General Ledger Details", pageRequest)
-
-      val user = userService.fetchUser(authentication)
-      generalLedgerDetailService.transfer(user, pageRequest)
    }
 }
