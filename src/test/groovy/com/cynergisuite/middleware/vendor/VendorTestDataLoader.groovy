@@ -71,7 +71,8 @@ class VendorTestDataLoader {
             random.nextBoolean(),
             it + 1,
             faker.lorem().sentence(),
-            phone.phoneNumber()
+            phone.phoneNumber(),
+            true
          )
       }
    }

@@ -127,6 +127,8 @@ class AccountPayablePaymentRepository @Inject constructor(
             vend.v_auto_submit_purchase_order                         AS apPayment_vendor_auto_submit_purchase_order,
             vend.v_note                                               AS apPayment_vendor_note,
             vend.v_phone_number                                       AS apPayment_vendor_phone_number,
+            vend.v_deleted                                            AS apPayment_vendor_deleted,
+            vend.v_active                                             AS apPayment_vendor_active,
             vend.v_comp_id                                            AS apPayment_vendor_comp_id,
             vend.v_comp_time_created                                  AS apPayment_vendor_comp_time_created,
             vend.v_comp_time_updated                                  AS apPayment_vendor_comp_time_updated,
@@ -270,6 +272,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             paymentDetail.apPaymentDetail_apInvoice_vendor_auto_submit_purchase_order                 AS apPaymentDetail_apInvoice_vendor_auto_submit_purchase_order,
             paymentDetail.apPaymentDetail_apInvoice_vendor_note                                       AS apPaymentDetail_apInvoice_vendor_note,
             paymentDetail.apPaymentDetail_apInvoice_vendor_phone_number                               AS apPaymentDetail_apInvoice_vendor_phone_number,
+            paymentDetail.apPaymentDetail_apInvoice_vendor_active                                     AS apPaymentDetail_apInvoice_vendor_active,
             paymentDetail.apPaymentDetail_apInvoice_vendor_comp_id                                    AS apPaymentDetail_apInvoice_vendor_comp_id,
             paymentDetail.apPaymentDetail_apInvoice_vendor_comp_time_created                          AS apPaymentDetail_apInvoice_vendor_comp_time_created,
             paymentDetail.apPaymentDetail_apInvoice_vendor_comp_time_updated                          AS apPaymentDetail_apInvoice_vendor_comp_time_updated,
@@ -423,6 +426,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             paymentDetail.apPaymentDetail_vendor_auto_submit_purchase_order                           AS apPaymentDetail_vendor_auto_submit_purchase_order,
             paymentDetail.apPaymentDetail_vendor_note                                                 AS apPaymentDetail_vendor_note,
             paymentDetail.apPaymentDetail_vendor_phone_number                                         AS apPaymentDetail_vendor_phone_number,
+            paymentDetail.apPaymentDetail_vendor_active                                               AS apPaymentDetail_vendor_active,
             paymentDetail.apPaymentDetail_vendor_comp_id                                              AS apPaymentDetail_vendor_comp_id,
             paymentDetail.apPaymentDetail_vendor_comp_time_created                                    AS apPaymentDetail_vendor_comp_time_created,
             paymentDetail.apPaymentDetail_vendor_comp_time_updated                                    AS apPaymentDetail_vendor_comp_time_updated,
@@ -493,7 +497,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             count(*) OVER() AS total_elements
          FROM account_payable_payment apPayment
             JOIN bnk ON apPayment.bank_id = bnk.bank_id
-            JOIN vend ON apPayment.vendor_id = vend.v_id
+            JOIN vend ON apPayment.vendor_id = vend.v_id AND vend.v_deleted = FALSE
             JOIN account_payable_payment_status_type_domain status ON apPayment.account_payable_payment_status_id = status.id
             JOIN account_payable_payment_type_type_domain type ON apPayment.account_payable_payment_type_id = type.id
             LEFT JOIN paymentDetail ON apPayment.id = paymentDetail.apPaymentDetail_payment_number_id

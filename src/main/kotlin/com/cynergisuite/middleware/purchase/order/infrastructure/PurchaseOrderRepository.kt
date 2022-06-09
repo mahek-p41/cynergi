@@ -123,6 +123,7 @@ class PurchaseOrderRepository @Inject constructor(
             vendor.v_auto_submit_purchase_order                 AS po_vendor_auto_submit_purchase_order,
             vendor.v_note                                       AS po_vendor_note,
             vendor.v_phone_number                               AS po_vendor_phone_number,
+            vendor.v_active                                     AS po_vendor_active,
             vendor.v_comp_id                                    AS po_vendor_comp_id,
             vendor.v_comp_time_created                          AS po_vendor_comp_time_created,
             vendor.v_comp_time_updated                          AS po_vendor_comp_time_updated,

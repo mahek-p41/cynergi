@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.vendor.infrastructure.VendorPageRequest
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -26,7 +27,7 @@ class VendorService @Inject constructor(
       )
    }
 
-   fun fetchAll(company: CompanyEntity, pageRequest: PageRequest): Page<VendorDTO> {
+   fun fetchAll(company: CompanyEntity, pageRequest: VendorPageRequest): Page<VendorDTO> {
       val found = vendorRepository.findAll(company, pageRequest)
 
       return found.toPage { vendor: VendorEntity ->

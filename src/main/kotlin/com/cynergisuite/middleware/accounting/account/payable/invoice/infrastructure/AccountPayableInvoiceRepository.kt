@@ -109,6 +109,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
             vend.v_auto_submit_purchase_order                         AS apInvoice_vendor_auto_submit_purchase_order,
             vend.v_note                                               AS apInvoice_vendor_note,
             vend.v_phone_number                                       AS apInvoice_vendor_phone_number,
+            vend.v_active                                             AS apInvoice_vendor_active,
             vend.v_comp_id                                            AS apInvoice_vendor_comp_id,
             vend.v_comp_time_created                                  AS apInvoice_vendor_comp_time_created,
             vend.v_comp_time_updated                                  AS apInvoice_vendor_comp_time_updated,

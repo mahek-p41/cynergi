@@ -58,6 +58,8 @@ class AccountPayableAgingReportRepository @Inject constructor(
             vend.company_id                                                AS apInvoiceDetail_vendor_company_id,
             vend.number                                                    AS apInvoiceDetail_vendor_number,
             vend.name                                                      AS apInvoiceDetail_vendor_name,
+            vend.deleted                                                   AS apInvoiceDetail_vendor_deleted,
+            vend.active                                                    AS apInvoiceDetail_vendor_active,
             apPayment.company_id                                           AS apInvoiceDetail_apPayment_company_id,
             apPayment.bank_id                                              AS apInvoiceDetail_apPayment_bank_id,
             apPayment.account_payable_payment_status_id                    AS apInvoiceDetail_apPayment_status_id,
@@ -69,7 +71,7 @@ class AccountPayableAgingReportRepository @Inject constructor(
             apPaymentDetail.amount                                         AS apInvoiceDetail_apPaymentDetail_amount,
             count(*) OVER() AS total_elements
          FROM account_payable_invoice apInvoice
-            JOIN vendor vend ON apInvoice.vendor_id = vend.id
+            JOIN vendor vend ON apInvoice.vendor_id = vend.id AND vend.deleted = FALSE
             JOIN account_payable_invoice_status_type_domain status ON apInvoice.status_id = status.id
             LEFT JOIN account_payable_payment_detail apPaymentDetail ON apInvoice.id = apPaymentDetail.account_payable_invoice_id
             LEFT JOIN account_payable_payment apPayment ON apPaymentDetail.payment_number_id = apPayment.id
