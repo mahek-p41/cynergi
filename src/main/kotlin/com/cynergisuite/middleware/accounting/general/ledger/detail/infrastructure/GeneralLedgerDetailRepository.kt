@@ -6,7 +6,6 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getLocalDate
-import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
@@ -113,7 +112,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
          "SELECT EXISTS (SELECT company_id FROM general_ledger_detail WHERE company_id = :company_id)",
          mapOf("company_id" to company.id),
          Boolean::class.java
-      )!!
+      )
 
       logger.trace("Checking if GeneralLedgerDetail: {} exists resulted in {}", company, exists)
 
@@ -278,7 +277,6 @@ class GeneralLedgerDetailRepository @Inject constructor(
    @ReadOnly
    fun fetchReports(company: CompanyEntity, filterRequest: GeneralLedgerSearchReportFilterRequest): List<GeneralLedgerDetailEntity> {
       val reports = mutableListOf<GeneralLedgerDetailEntity>()
-      var currentEntity: GeneralLedgerDetailEntity? = null
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder("WHERE glDetail.company_id = :comp_id ")
 
@@ -286,7 +284,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
          params["startingAccount"] = filterRequest.startingAccount
          params["endingAccount"] = filterRequest.endingAccount
          whereClause.append(" AND acct.account_number ")
-            .append(buildNumberFilterString("startingAccount", "endingAccount"))
+            .append(buildFilterString( filterRequest.startingAccount != null, filterRequest.endingAccount != null, "startingAccount", "endingAccount"))
       }
 
       if (filterRequest.profitCenter != null) {
@@ -303,11 +301,11 @@ class GeneralLedgerDetailRepository @Inject constructor(
          "C" -> whereClause.append(" AND glDetail.amount <= 0 ")
          "D" -> whereClause.append(" AND glDetail.amount >= 0 ")
       }
-      if(filterRequest.lowAmount != null && filterRequest.highAmount != null) {
+      if(filterRequest.lowAmount != null || filterRequest.highAmount != null) {
          params["lowAmount"] = filterRequest.lowAmount
          params["highAmount"] = filterRequest.highAmount
          whereClause.append(" AND glDetail.amount ")
-            .append(buildNumberFilterString("lowAmount", "highAmount"))
+            .append(buildFilterString(filterRequest.lowAmount != null, filterRequest.highAmount != null, "lowAmount", "highAmount"))
       }
 
       if (filterRequest.description != null ) {
@@ -320,11 +318,11 @@ class GeneralLedgerDetailRepository @Inject constructor(
          whereClause.append(" AND glDetail.journal_entry_number = :jeNumber")
       }
 
-      if (filterRequest.frmPmtDt != null && filterRequest.thruPmtDt != null) {
+      if (filterRequest.frmPmtDt != null || filterRequest.thruPmtDt != null) {
          params["frmPmtDt"] = filterRequest.frmPmtDt
          params["thruPmtDt"] = filterRequest.thruPmtDt
          whereClause.append(" AND glDetail.date ")
-            .append(buildNumberFilterString("frmPmtDt", "thruPmtDt"))
+            .append(buildFilterString(filterRequest.frmPmtDt != null, filterRequest.thruPmtDt != null, "frmPmtDt", "thruPmtDt"))
       }
 
       jdbc.query(
@@ -366,7 +364,11 @@ class GeneralLedgerDetailRepository @Inject constructor(
       )
    }
 
-   private fun buildNumberFilterString(beginningParam: String, endingParam: String): String {
-      return " BETWEEN :$beginningParam AND :$endingParam "
+   private fun buildFilterString(begin: Boolean, end: Boolean, beginningParam: String, endingParam: String): String {
+      return if (begin && end) " BETWEEN :$beginningParam AND :$endingParam "
+      else if (begin) " > :$beginningParam "
+      else " < :$endingParam "
    }
+
+
 }
