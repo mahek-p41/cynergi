@@ -107,6 +107,7 @@ jacoco {
 }
 
 allOpen {
+   annotation("io.micronaut.http.annotation.Controller")
    annotation("io.micronaut.aop.Around")
    annotation("io.micronaut.security.annotation.Secured")
    annotation("jakarta.inject.Singleton")
