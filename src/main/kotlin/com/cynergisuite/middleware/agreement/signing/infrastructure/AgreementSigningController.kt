@@ -61,6 +61,37 @@ class AgreementSigningController(
       return response
    }
 
+   @Throws(NotFoundException::class)
+   @Get(uri = "/upsertPrep/{dataset}/{customerNumber}/{agreementNumber}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["AgreementSigningEndpoints"], summary = "Checking to see if Agreement Signing record already exists", description = "Fetch a single Agreement Signing record by dataset, customer number, and agreement number", operationId = "agreementSigning-alreadyExists")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Agreement Signing record was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchByCustomerAndAgreement(
+      @Parameter(name = "dataset", description = "Dataset associated with the transaction", `in` = ParameterIn.PATH) @QueryValue("dataset")
+      dataset: String,
+      @Parameter(name = "customerNumber", description = "Customer Number associated with the transaction", `in` = ParameterIn.PATH) @QueryValue("customerNumber")
+      customerNumber: Int,
+      @Parameter(name = "agreementNumber", description = "Agreement Number associated with the transaction", `in` = ParameterIn.PATH) @QueryValue("agreementNumber")
+      agreementNumber: Int,
+      httpRequest: HttpRequest<*>
+   ): AgreementSigningDTO {
+      logger.info("Checking to see if Agreement Signing record already exists by {} {} {}", dataset, customerNumber, agreementNumber)
+
+      val company = companyService.fetchByDatasetCodeForEntity(dataset)
+      val response = agreementSigningService.fetchByCustomerAndAgreement(company = company!!, customerNumber, agreementNumber) ?: throw NotFoundException(customerNumber)
+
+      logger.debug("Checking to see if Agreement Signing record exists by {} {} {} resulted in {}", dataset, customerNumber, agreementNumber, response)
+
+      return response
+   }
+
+
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/paged/dataset/{dataset}{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AgreementSigningEndpoints"], summary = "Fetch a listing of agreements in the signing process", description = "Fetch a paginated listing of Document Signing agreements", operationId = "agreementSigning-fetchAll")

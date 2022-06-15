@@ -15,13 +15,11 @@
 import com.cynergisuite.domain.SimpleLegacyNumberDTO
 import com.cynergisuite.middleware.agreement.signing.AgreementSigningDTO
 import com.cynergisuite.middleware.agreement.signing.infrastructure.AgreementSigningPageRequest
-import com.cynergisuite.middleware.company.CompanyEntity
 import picocli.CommandLine.Option
 import picocli.CommandLine.Parameters
 import groovy.transform.Field
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
-import java.util.UUID
 import com.google.common.net.UrlEscapers
 import org.slf4j.bridge.SLF4JBridgeHandler
 import org.apache.hc.client5.http.entity.mime.FileBody
@@ -80,6 +78,10 @@ SLF4JBridgeHandler.install()
 
 System.setProperty("logback.configurationFile", "/tmp/document-upload.xml")
 
+//println reason
+//println location
+//println contactInfo
+
 if (!helpRequested) {
    if (debug) {
       System.properties['org.slf4j.simpleLogger.log.org.apache.hc.client5.http.wire'] = 'trace'
@@ -89,14 +91,7 @@ if (!helpRequested) {
    try (final client = HttpClients.createDefault()) {
       final storeTokenCall = new HttpGet("http://localhost:10900/sign/here/token/store/${storeNumber}/dataset/${dataset}")
       final storeTokenResponse = client.execute(storeTokenCall)
-      final storeTokenSlurp = jsonSlurper.parse(storeTokenResponse.entity.content)
-      final company = storeTokenSlurp.company
-      final companyUUID = UUID.fromString(company.id)
-      final currentCompany = new CompanyEntity(companyUUID, company.name, null, company.clientCode, company.clientId, company.datasetCode, company.federalIdNumber)
-      println currentCompany
-      println "after setting currentCompany"
-      final storeToken = storeTokenSlurp.token
-      println "after setting storeToken"
+      final storeToken = jsonSlurper.parse(storeTokenResponse.entity.content).token
 
       storeTokenResponse.close()
       println storeToken
@@ -119,63 +114,83 @@ if (!helpRequested) {
                }
          }
          println accessToken
+         //println signatories
 
          if (accessToken != null) {
+            //TODO Where do the email addresses come into play?
+            //Changing signers to be the email addresses, when emailAddresses is not null.
             final signers = "signer=" + signatories.toList().withIndex().collect { element, index -> "${element}[${index + 1}]" }.join("&signer=")
-
+            //println signers
+            //println reason
+            //println location
+            //println contactInfo
             //The below Post is hitting DocumentController from high-touch-sign
             final uploadDocumentRequest = new HttpPost("${host}/api/document/${escaper.escape(name)}/${escaper.escape(reason)}/${escaper.escape(location)}/${escaper.escape(contactInfo)}?${signers}")
             println uploadDocumentRequest
-
+            //println signaturePdf.name
             final pdfBody = new FileBody(signaturePdf, ContentType.APPLICATION_PDF, signaturePdf.name)
             final requestEntity = MultipartEntityBuilder.create().addPart("file", pdfBody).build()
 
             uploadDocumentRequest.setHeader("Authorization", "Bearer ${accessToken}")
+            //uploadDocumentRequest.setHeader("Authentication", "Bearer"+"${accessToken}")
+            //println "pdf body"
+            //println pdfBody
+            //println "request Entity"
+            //println requestEntity
             uploadDocumentRequest.setEntity(requestEntity)
+            //println "upload Document Request"
+            //println uploadDocumentRequest
             final uploadResponse = client.execute(uploadDocumentRequest)
             final uploadResponseCode = uploadResponse.getCode()
             //will get back json:
             //requestedDocumentId UUID The id for the root of the whole transaction
             //nextSignatureUri
+            //TODO Do we need to store the requestedDocumentId in the postgres table along with the nextSignatureUri?
+            //TODO Or do we only save the requestedDocumentId, and with that, find the latest when needed?
 
+            println uploadResponse
             final awsResponse = jsonSlurper.parse(uploadResponse.entity.content).nextSignatureUri
+            println  awsResponse
+            //println EntityUtils.toString(awsResponse.nextSignatureUri)
+            //println (awsResponse.nextSignatureUri).toString()
+            //println awsResponse.nextSignatureUri
 
+            //if (uploadResponse.getCode() == 200 || uploadResponse.getCode() == 201) {
             if (uploadResponseCode == 200 || uploadResponseCode == 201) {
+               //println EntityUtils.toString(uploadResponse.getEntity())
                println "past 201"
-
+               println rtoAgreementNumber
+               println primaryCustomerNumber
+               println secondaryCustomerNumber
                //This is where we check then insert/update the agreement_signing table. Must handle rto, club, and/or other.
                if (rtoAgreementNumber != null) {
-                  final checkExisting = new HttpGet("http://localhost:10900/upsertPrep/${dataset}/${primaryCustomerNumber}/${rtoAgreementNumber}")
+                  //final checkRtoAgreementPageRequest = new AgreementSigningPageRequest(1, 5, "asn_agreement_number", "ASC", null, primaryCustomerNumber, rtoAgreementNumber)
+                  final checkRtoAgreementPageRequest = new AgreementSigningPageRequest(1, 5, "asn_agreement_number", "ASC", 1, primaryCustomerNumber, rtoAgreementNumber)
+                  final checkExisting = new HttpGet("${host}/agreement/signing/paged/dataset/${dataset}?${checkRtoAgreementPageRequest}")
                   final existingRtoAgreement = client.execute(checkExisting)
-
-                  final existingRtoAgreementJson = jsonSlurper.parse(existingRtoAgreement.entity.content)
-
-                  final existingRtoAgreementId = existingRtoAgreementJson.id
+                  println existingRtoAgreement
+                  final existingAgreementId = jsonSlurper.parse(existingRtoAgreement.entity.content).id
+                  //final existingAgreementId = existingRtoAgreement.id
 
                   final storeDTO = new SimpleLegacyNumberDTO(storeNumber)
 
-                  final existingRtoAgreementUUID = UUID.fromString(existingRtoAgreementId)
-                  //final agreementToUpsert = new AgreementSigningDTO(null, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, rtoAgreementNumber, "R", 1, awsResponse)
-                  final agreementToUpsert = new AgreementSigningDTO(existingRtoAgreementUUID, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, rtoAgreementNumber, "R", 1, awsResponse)
-                  final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
-                  println agreementToUpsertJson
+                  //Move fields here from the params to construct the dto
+                  final agreementToUpsert = new AgreementSigningDTO(null, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, rtoAgreementNumber, "R", 1, awsResponse.nextSignatureUri)
 
-                  //TODO Not sure if this check will work yet
-                  if (existingRtoAgreementId != null) {
-                  //Update the record
-                    final updateRtoAgreement = new HttpPut("http://localhost:10900/agreement/signing/${existingRtoAgreementUUID}/dataset/${dataset}")
-                    updateRtoAgreement.setHeader("Content-Type", "application/json")
-                    updateRtoAgreement.setEntity(new StringEntity(agreementToUpsertJson))
-                    final updateResponse = client.execute(updateRtoAgreement)
-                    println updateResponse
-                    println "Update"
+                  //try this if the import does not work
+                  //final agreementToUpsert = [key1: companyId, key2: storeNumber, etc.]
+                  //
+                  //Will a paged Get return null if no record found? If not, what do I check for? Do I need a non-paged findByCustomerAndAgreement?
+                  //TODO updateAgreementTable(customerNumber, agreementNumber, dataset, location, "NEW" (status), uploadResponse.LINK?)
+                  if (existingRtoAgreement != null) {
+                     //Update the record
+                     final updateRtoAgreement = new HttpPut("${host}/agreement/signing/${existingAgreementId}/dataset/${dataset}, ${agreementToUpsert}")
+                     final updateResponse = client.execute(updateRtoAgreement)
+                     println "Update"
                   } else {
-                  //Insert the record
-                     final createRtoAgreement = new HttpPost("http://localhost:10900/agreement/signing/dataset/${dataset}")
-                     createRtoAgreement.setHeader("Content-Type", "application/json")
-                     createRtoAgreement.setEntity(new StringEntity(agreementToUpsertJson))
+                     //Insert the record
+                     final createRtoAgreement = new HttpPost("${host}/agreement/signing/dataset/${dataset}, ${agreementToUpsert}")
                      final createResponse = client.execute(createRtoAgreement)
-                     println createResponse
                      println "Insert"
                   }
                }
