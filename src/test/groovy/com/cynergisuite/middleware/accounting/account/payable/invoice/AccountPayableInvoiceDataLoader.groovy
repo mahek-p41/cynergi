@@ -22,6 +22,8 @@ import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 import java.math.RoundingMode
 import java.time.LocalDate
+import java.time.ZoneId
+import java.util.concurrent.TimeUnit
 import java.util.stream.IntStream
 import java.util.stream.Stream
 import jakarta.inject.Singleton
@@ -45,6 +47,8 @@ class AccountPayableInvoiceDataLoader {
       final random = faker.random()
       final lorem = faker.lorem()
       final numbers = faker.number()
+      final date = faker.date()
+      final invoiceDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
       final invoiceAmount = invoiceAmountIn ? invoiceAmountIn : numbers.randomDouble(2, 1, 1000000).toBigDecimal()
       def paidAmount
       if (paidAmountIn >= BigDecimal.ZERO) {
@@ -60,7 +64,7 @@ class AccountPayableInvoiceDataLoader {
             vendorIn,
             lorem.characters(3, 20),
             purchaseOrderIn?.with { po -> new SimpleIdentifiableEntity(po) },
-            LocalDate.now(),
+            invoiceDate,
             invoiceAmount,
             numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
             random.nextInt(1, 100).toBigDecimal().divide(BigDecimal.valueOf(100)).setScale(7, RoundingMode.HALF_EVEN),
@@ -101,6 +105,8 @@ class AccountPayableInvoiceDataLoader {
       final random = faker.random()
       final lorem = faker.lorem()
       final numbers = faker.number()
+      final date = faker.date()
+      final invoiceDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
 
       return IntStream.range(0, number).mapToObj {
          new AccountPayableInvoiceDTO(
@@ -108,7 +114,7 @@ class AccountPayableInvoiceDataLoader {
             vendorIn,
             lorem.characters(3, 20),
             purchaseOrderIn,
-            LocalDate.now(),
+            invoiceDate,
             numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
             numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
             random.nextInt(1, 99).toBigDecimal().divide(BigDecimal.valueOf(100)).setScale(6, RoundingMode.HALF_EVEN),
