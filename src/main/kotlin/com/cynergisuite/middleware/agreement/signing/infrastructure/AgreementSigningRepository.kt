@@ -83,6 +83,25 @@ class AgreementSigningRepository(
    }
 
    @ReadOnly
+   fun findOneByCustomerAndAgreement(company: CompanyEntity, customerNumber: Int, agreementNumber: Int): AgreementSigningEntity? {
+      logger.debug("Finding Agreement Signing record by customer {} and agreement {}", customerNumber, agreementNumber)
+
+      val agreementSigningRecord = jdbc.findFirstOrNull(
+         """
+         $selectBase
+         WHERE comp.id = :comp_id AND
+               asn.primary_customer_number = :primary_customer_number AND
+               asn.agreement_number = :agreement_number
+         """.trimIndent(),
+         mapOf("primary_customer_number" to customerNumber, "agreement_number" to agreementNumber, "comp_id" to company.id)
+      ) { rs, _ -> mapRow(rs) }
+
+      logger.debug("Search for Agreement Signing record by customer {} and agreement {} produced {}", customerNumber, agreementNumber, agreementSigningRecord)
+
+      return agreementSigningRecord
+   }
+
+   @ReadOnly
    override fun exists(id: Long, company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
          """

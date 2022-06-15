@@ -15,6 +15,7 @@ import jakarta.inject.Inject
 
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.PUT
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
@@ -43,6 +44,47 @@ class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
       result.store.number == store.number
       result.primaryCustomerNumber == agreementSigning.primaryCustomerNumber
       result.agreementNumber == agreementSigning.agreementNumber
+   }
+
+   void "Upsert Prep with existing agreement record" () {
+      given: 'store number 1 is assigned to a region of company tstds1'
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.random(company)
+      final dataset = 'tstds1'
+      final agreementSigning = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, "ABC123")
+
+      when:
+      def result = signingClient.toBlocking().exchange(GET("/upsertPrep/${dataset}/123456/654321"),
+         Argument.of(String),
+         Argument.of(String)
+      ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.id == agreementSigning.id
+      result.store.number == store.number
+      result.primaryCustomerNumber == agreementSigning.primaryCustomerNumber
+      result.agreementNumber == agreementSigning.agreementNumber
+   }
+
+   void "Upsert Prep without existing agreement record" () {
+      given: 'store number 1 is assigned to a region of company tstds1'
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.random(company)
+      final dataset = 'tstds1'
+      //final agreementSigning = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, "ABC123")
+
+      when:
+      def result = signingClient.toBlocking().exchange(GET("/upsertPrep/${dataset}/123456/654321"),
+         Argument.of(String),
+         Argument.of(String)
+      ).bodyAsJson()
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.status == NOT_FOUND
+      final body = exception.response.bodyAsJson()
+      body.code == "system.not.found"
    }
 
    void "fetch three agreement_signing records for customer# 123456" () {
