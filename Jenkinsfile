@@ -126,6 +126,7 @@ pipeline {
                   cp /home/jenkins/cynergi-middleware/support/development/cynergidb/setup-database.sql /opt/cyn/v01/cynmid/data/
                   cp /home/jenkins/cynergi-middleware/build/libs/cynergi-middleware.jar /opt/cyn/v01/cynmid/cynergi-middleware.jar
                   mkdir -p /opt/cyn/v01/cynmid/java/openj9/${VER_BUILD}/jitcache
+                  rm -f /home/jenkins/cynergi-middleware/build/libs/cynergi-middleware.tar.xz
                   tar -c --owner=0 --group=0 --to-stdout /opt/cyn | xz -6 - > /home/jenkins/cynergi-middleware/build/libs/cynergi-middleware.tar.xz
                   '''
                }
@@ -198,17 +199,18 @@ pipeline {
             sh "mkdir -p /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/test-results"
             sh "cp -r * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/test-results"
          }
-         dir('./build/reports/openapi') {
-            sh "rm -rf /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/api-docs"
-            sh "mkdir -p /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/api-docs"
-            sh "cp -r * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/api-docs"
-         }
          dir('./build/reports/jacoco/test/html') {
             sh "rm -rf /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/code-coverage"
             sh "mkdir -p /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/code-coverage"
             sh "cp -r * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/code-coverage"
          }
          junit 'build/test-results/**/*.xml'
+
+         dir('./build/reports/openapi') {
+            sh "rm -rf /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/api-docs"
+            sh "mkdir -p /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/api-docs"
+            sh "cp -r * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/api-docs"
+         }
       }
    }
 }
