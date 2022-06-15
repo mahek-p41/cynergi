@@ -61,9 +61,18 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
       def payToShipVia = shipViaList[3]
       def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
       def statusTypeO = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
-      def apInvoicesForVend1 = apInvoiceDataLoaderService.stream(4, company, vendor1, purchaseOrderIn1, null, employeeIn, null, statusTypeO, payToIn, store).toList()
-      def apInvoicesForVend2 = apInvoiceDataLoaderService.stream(4, company, vendor2, purchaseOrderIn2, null, employeeIn, null, statusTypeO, payToIn, store).toList()
-      def apInvoicesForVend3 = apInvoiceDataLoaderService.stream(4, company, vendor3, purchaseOrderIn3, null, employeeIn, null, statusTypeO, payToIn, store).toList()
+      def apInvoicesForVend1 = []
+      for(int i = 0; i < 4; i++) {
+         apInvoicesForVend1.add(apInvoiceDataLoaderService.single(company, vendor1, purchaseOrderIn1, null, employeeIn, null, statusTypeO, payToIn, store))
+      }
+      def apInvoicesForVend2 = []
+      for(int i = 0; i < 4; i++) {
+         apInvoicesForVend2.add(apInvoiceDataLoaderService.single(company, vendor2, purchaseOrderIn2, null, employeeIn, null, statusTypeO, payToIn, store))
+      }
+      def apInvoicesForVend3 = []
+      for(int i = 0; i < 4; i++) {
+         apInvoicesForVend3.add(apInvoiceDataLoaderService.single(company, vendor3, purchaseOrderIn3, null, employeeIn, null, statusTypeO, payToIn, store))
+      }
 
       def account = accountTestDataLoaderService.single(company)
       def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
