@@ -28,10 +28,10 @@ class SignHereTokenRepository(
    private val selectBase =
       """
       SELECT
-         at.id AS at_id,
-         at.company_id AS at_company_id,
-         at.store_number_sfk AS at_store_number_sfk,
-         at.token AS at_token,
+         sht.id AS sht_id,
+         sht.company_id AS sht_company_id,
+         sht.store_number_sfk AS sht_store_number_sfk,
+         sht.token AS sht_token,
          comp.id AS comp_id,
          comp.time_created AS comp_time_created,
          comp.time_updated AS comp_time_updated,
@@ -45,9 +45,9 @@ class SignHereTokenRepository(
          store.number AS store_number,
          store.name AS store_name,
          store.dataset AS store_dataset
-      FROM aws_token at
-           JOIN company comp ON comp.id = at.company_id
-           JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND at.store_number_sfk = store.number
+      FROM sign_here_token sht
+           JOIN company comp ON comp.id = sht.company_id
+           JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND sht.store_number_sfk = store.number
       """.trimIndent()
 
    @ReadOnly
@@ -58,7 +58,7 @@ class SignHereTokenRepository(
          """
          $selectBase
          WHERE comp.id = :comp_id
-               AND at.id = :id
+               AND sht.id = :id
          """.trimIndent(),
          mapOf(
             "comp_id" to company.id,
@@ -79,7 +79,7 @@ class SignHereTokenRepository(
          """
          $selectBase
          WHERE comp.id = :comp_id
-               AND at.store_number_sfk = :store_number_sfk
+               AND sht.store_number_sfk = :store_number_sfk
          """.trimIndent(),
          mapOf(
             "comp_id" to company.id,
@@ -96,12 +96,12 @@ class SignHereTokenRepository(
    override fun exists(id: Long, company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
          """
-         SELECT count(at.id) > 0
+         SELECT count(sht.id) > 0
          FROM company comp
-              JOIN aws_token at ON comp.dataset_code = at.dataset
-         WHERE at.id = :at_id AND comp.id = :comp_id
+              JOIN sign_here_token sht ON comp.dataset_code = sht.dataset
+         WHERE sht.id = :sht_id AND comp.id = :comp_id
          """.trimIndent(),
-         mapOf("at_id" to id, "comp_id" to company.id),
+         mapOf("sht_id" to id, "comp_id" to company.id),
          Boolean::class.java
       )
 
@@ -119,7 +119,7 @@ class SignHereTokenRepository(
 
       val token = jdbc.insertReturning(
          """
-         INSERT INTO aws_token(company_id, store_number_sfk, token)
+         INSERT INTO sign_here_token(company_id, store_number_sfk, token)
          VALUES (
             :company_id,
             :store_number_sfk,
@@ -144,7 +144,7 @@ class SignHereTokenRepository(
 
       val updated = jdbc.updateReturning(
          """
-         UPDATE aws_token
+         UPDATE sign_here_token
          SET
             store_number_sfk = :store_number_sfk,
             token = :token
@@ -178,10 +178,10 @@ class SignHereTokenRepository(
       val company = companyRepository.mapRow(rs, "comp_")
 
       return SignHereTokenEntity(
-         id = rs.getUuid("at_id"),
+         id = rs.getUuid("sht_id"),
          company = company,
          store = mapStore(rs, company, "store"),
-         token = rs.getString("at_token"),
+         token = rs.getString("sht_token"),
       )
    }
 
