@@ -355,14 +355,16 @@ class AccountPayableDistributionRepository @Inject constructor(
       val result = jdbc.update(
          """
         UPDATE account_payable_distribution_template
-        SET deleted = CASE WHEN profit_center_sfk NOT IN (<profitCenters>) THEN true ELSE false END
+        SET deleted = TRUE
         WHERE company_id = :company_id AND name = :name
+        AND id NOT IN(<ids>)
+        AND deleted = FALSE
         RETURNING
            *
          """.trimIndent(),
          mapOf(
             "company_id" to id,
-            "profitCenters" to apdList.asSequence().map { it.profitCenter.myNumber() }.toList(),
+            "ids" to apdList.asSequence().map { it.id }.toList().filterNotNull(),
             "name" to apdList[0].name
          )
       )
