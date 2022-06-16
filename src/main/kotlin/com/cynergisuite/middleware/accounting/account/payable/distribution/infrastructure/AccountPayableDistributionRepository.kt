@@ -277,7 +277,10 @@ class AccountPayableDistributionRepository @Inject constructor(
    @Transactional
    fun bulkUpdate(entity: List<AccountPayableDistributionEntity>, company: CompanyEntity): List<AccountPayableDistributionEntity> {
       logger.debug("Updating AccountPayableDistributionEntity {}", entity)
-      deleteNotIn(company.id!!, entity)
+
+      if(entity.any{ it.id != null }) {
+         deleteNotIn(company.id!!, entity)
+      }
       val updated = mutableListOf<AccountPayableDistributionEntity>()
 
       entity.map { upsert(it, company) }
@@ -355,10 +358,9 @@ class AccountPayableDistributionRepository @Inject constructor(
       val result = jdbc.update(
          """
         UPDATE account_payable_distribution_template
-        SET deleted = TRUE
+        SET deleted = CASE WHEN id NOT IN (<ids>) THEN true ELSE false END
         WHERE company_id = :company_id AND name = :name
-        AND id NOT IN(<ids>)
-        AND deleted = FALSE
+
         RETURNING
            *
          """.trimIndent(),
