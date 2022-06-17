@@ -372,3 +372,93 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_inactive_customer_vw (
    amount_paid VARCHAR,
    customer_rating VARCHAR
 ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-inactive-customer.csv', format 'csv', header 'TRUE');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_active_inventory_vw (
+    dataset VARCHAR,
+    store_number INTEGER,
+    sku VARCHAR,
+    item_name VARCHAR,
+    item_description VARCHAR,
+    total_quantity INTEGER
+ ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-active-inventory.csv', format 'csv', header 'TRUE');
+
+ CREATE FOREIGN TABLE fastinfo_prod_import.csv_single_agreement_vw (
+     dataset VARCHAR,
+     store_number INTEGER,
+     customer_number VARCHAR,
+     first_name VARCHAR,
+     last_name VARCHAR,
+     email VARCHAR,
+     agreement_number VARCHAR,
+     product VARCHAR,
+     description VARCHAR,
+     payments_remaining INTEGER
+  ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-single-agreement.csv', format 'csv', header 'TRUE');
+
+ CREATE FOREIGN TABLE fastinfo_prod_import.csv_final_payment_vw (
+       dataset VARCHAR,
+       store_number INTEGER,
+       customer_number VARCHAR,
+       first_name VARCHAR,
+       last_name VARCHAR,
+       email VARCHAR,
+       agreement_number VARCHAR,
+       product VARCHAR,
+       payout_date DATE
+    ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-final-payment.csv', format 'csv', header 'TRUE');
+
+
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_birthday_v2_vw (
+   dataset VARCHAR,
+   store_number INTEGER,
+   customer_number VARCHAR,
+   first_name VARCHAR,
+   last_name VARCHAR,
+   email VARCHAR,
+   birth_day DATE
+) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-birthday-v2.csv', format 'csv', header 'TRUE');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_v2_vw (
+       dataset VARCHAR,
+       store_number INTEGER,
+       customer_number VARCHAR,
+       first_name VARCHAR,
+       last_name VARCHAR,
+       email VARCHAR,
+       agreement_number VARCHAR,
+       days_overdue INTEGER,
+       overdue_amount NUMERIC,
+       product VARCHAR
+    ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-collection-v2.csv', format 'csv', header 'TRUE');
+
+ CREATE FOREIGN TABLE fastinfo_prod_import.csv_account_summary_vw (
+       dataset VARCHAR,
+       store_number INTEGER,
+       customer_number VARCHAR,
+       first_name VARCHAR,
+       last_name VARCHAR,
+       email VARCHAR,
+       agreement_number VARCHAR,
+       date_rented DATE,
+       due_date DATE,
+       percent_ownership NUMERIC,
+       product VARCHAR,
+       terms INTEGER,
+       next_payment_amount NUMERIC,
+       address_1 VARCHAR,
+       address_2 VARCHAR,
+       city VARCHAR,
+       state VARCHAR,
+       zip VARCHAR,
+       payments_remaining INTEGER,
+       projected_payout_date DATE,
+       weeks_remaining INTEGER,
+       months_remaining INTEGER,
+       past_due VARCHAR,
+       days_overdue INTEGER,
+       overdue_amount NUMERIC,
+       club_member VARCHAR,
+       club_number VARCHAR,
+       club_fee NUMERIC,
+       autopay VARCHAR
+  ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-account-summary.csv', format 'csv', header 'TRUE');

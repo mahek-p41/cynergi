@@ -43,6 +43,12 @@ object DarwillBirthday : ScheduleCommandType(4, "DarwillBirthday", "Darwill Birt
 object DarwillCollection : ScheduleCommandType(5, "DarwillCollection", "Darwill Collection", "darwill.collection")
 object DarwillLastWeeksDelivery : ScheduleCommandType(6, "DarwillLastWeeksDelivery", "Darwill Last Weeks Deliveries", "darwill.last.weeks.deliveries")
 object DarwillLastWeeksPayout : ScheduleCommandType(7, "DarwillLastWeeksPayout", "Darwill Last Weeks Payouts", "darwill.last.weeks.payouts")
+object WowActiveInventory : ScheduleCommandType(8, "WowActiveInventory", "Wow Active Inventory", "wow.active.inventory")
+object WowAccountSummary : ScheduleCommandType(9, "WowAccountSummary", "Wow Account Summary", "wow.account.summary")
+object WowBirthday : ScheduleCommandType(10, "WowBirthday", "Wow Birthday", "wow.birthday")
+object WowCollection : ScheduleCommandType(11, "WowCollection", "Wow Collection", "wow.collection")
+object WowFinalPayment : ScheduleCommandType(12, "WowFinalPayment", "Wow Final Payment", "wow.final.payment")
+object WowSingleAgreement : ScheduleCommandType(13, "WowSingleAgreement", "Wow Single Agreement", "wow.single.agreement")
 
 fun ScheduleCommandType.toEntity(): ScheduleCommandTypeEntity =
    ScheduleCommandTypeEntity(
@@ -61,5 +67,11 @@ fun ScheduleCommandTypeEntity.toType(): ScheduleCommandType =
       DarwillCollection.id -> DarwillCollection
       DarwillLastWeeksDelivery.id -> DarwillLastWeeksDelivery
       DarwillLastWeeksPayout.id -> DarwillLastWeeksPayout
+      WowActiveInventory.id -> WowActiveInventory
+      WowAccountSummary.id -> WowAccountSummary
+      WowBirthday.id -> WowBirthday
+      WowCollection.id -> WowCollection
+      WowFinalPayment.id -> WowFinalPayment
+      WowSingleAgreement.id -> WowSingleAgreement
       else -> Unknown // this is the fall through which will force the handling of this case, which will most likely be an error of some kind
    }
