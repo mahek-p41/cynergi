@@ -13,7 +13,7 @@ VALUES (1, 'NEW', 'New', 'new'),
        (3, 'FULLY_SIGNED', 'Fully_Signed', 'fully_signed'),
        (4, 'CANCELLED', 'Cancelled', 'cancelled');
 
-CREATE TABLE agreement_signing (
+CREATE TABLE IF NOT EXISTS agreement_signing (
     id                        UUID        DEFAULT uuid_generate_v1()          NOT NULL PRIMARY KEY,
     time_created              TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()           NOT NULL,
     time_updated              TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()           NOT NULL,
@@ -40,7 +40,7 @@ CREATE INDEX agreement_signing_agreement_idx
 ALTER TABLE agreement_signing
    ADD CONSTRAINT company_customer_agreement_uq UNIQUE (company_id, primary_customer_number, secondary_customer_number, agreement_number);
 
-CREATE TABLE aws_token (
+CREATE TABLE sign_here_token (
     id                        UUID        DEFAULT uuid_generate_v1()          NOT NULL PRIMARY KEY,
     time_created              TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()           NOT NULL,
     time_updated              TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()           NOT NULL,
@@ -48,12 +48,12 @@ CREATE TABLE aws_token (
     store_number_sfk          BIGINT                                          NOT NULL,
     token                     VARCHAR(60)                                     NOT NULL
 );
-CREATE TRIGGER update_aws_token_trg
+CREATE TRIGGER update_sign_here_token_trg
 BEFORE UPDATE
-   ON aws_token
+   ON sign_here_token
 FOR EACH ROW
 EXECUTE PROCEDURE update_user_table_fn();
-CREATE INDEX aws_token_store_number_sfk_idx
-   ON aws_token (store_number_sfk);
-ALTER TABLE aws_token
+CREATE INDEX sign_here_token_store_number_sfk_idx
+   ON sign_here_token (store_number_sfk);
+ALTER TABLE sign_here_token
    ADD CONSTRAINT company_store_token_uq UNIQUE (company_id, store_number_sfk, token);
