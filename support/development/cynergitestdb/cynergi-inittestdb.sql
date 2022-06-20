@@ -408,7 +408,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_active_inventory_vw (
     ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-final-payment.csv', format 'csv', header 'TRUE');
 
 
-CREATE FOREIGN TABLE fastinfo_prod_import.csv_birthday_v2_vw (
+CREATE FOREIGN TABLE fastinfo_prod_import.csv_birthday_customer_v2_vw (
    dataset VARCHAR,
    store_number INTEGER,
    customer_number VARCHAR,
@@ -416,7 +416,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_birthday_v2_vw (
    last_name VARCHAR,
    email VARCHAR,
    birth_day DATE
-) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-birthday-v2.csv', format 'csv', header 'TRUE');
+) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-birthday-customer-v2.csv', format 'csv', header 'TRUE');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_v2_vw (
        dataset VARCHAR,
