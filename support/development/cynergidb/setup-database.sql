@@ -1066,7 +1066,7 @@ DECLARE
    sqlToExec VARCHAR;
    unionAll VARCHAR;
 BEGIN
-   sqlToExec := 'CREATE OR REPLACE VIEW csv_birthday_v2_vw AS';
+   sqlToExec := 'CREATE OR REPLACE VIEW csv_birthday_customer_v2_vw AS';
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_birthday_customer_v2_vw') THEN
@@ -1507,7 +1507,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_birthday_customer_v2_vw (
    last_name VARCHAR,
    email VARCHAR,
    birth_day DATE
-) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_birthday_v2_vw', SCHEMA_NAME 'public');
+) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_birthday_customer_v2_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_v2_vw (
        dataset VARCHAR,

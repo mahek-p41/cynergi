@@ -179,7 +179,7 @@ class WowRepository @Inject constructor(
                last_name         AS lastName,
                email             AS email,
                birth_day         AS birthDay
-            FROM fastinfo_prod_import.csv_birthday_v2_vw
+            FROM fastinfo_prod_import.csv_birthday_customer_v2_vw
                WHERE dataset = :dataset
             """.trimIndent()
          )
