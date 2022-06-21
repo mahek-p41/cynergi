@@ -275,15 +275,15 @@ class AccountPayableDistributionRepository @Inject constructor(
    }
 
    @Transactional
-   fun bulkUpdate(entity: List<AccountPayableDistributionEntity>, company: CompanyEntity): List<AccountPayableDistributionEntity> {
-      logger.debug("Updating AccountPayableDistributionEntity {}", entity)
+   fun bulkUpdate(entities: List<AccountPayableDistributionEntity>, company: CompanyEntity): List<AccountPayableDistributionEntity> {
+      logger.debug("Updating AccountPayableDistributionEntity {}", entities)
 
-      if(entity.any{ it.id != null }) {
-         deleteNotIn(company.id!!, entity)
+      if(entities.any{ it.id != null }) {
+         deleteNotIn(company.id!!, entities)
       }
       val updated = mutableListOf<AccountPayableDistributionEntity>()
 
-      entity.map { upsert(it, company) }
+      entities.map { upsert(it, company) }
          .forEach { updated.add(it) }
 
       return updated
