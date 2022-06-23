@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.darwill
+package com.cynergisuite.middleware.manager
 
 import io.micronaut.core.annotation.Introspected
 import java.util.UUID
@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @Introspected
-data class DarwillManagementDto(
+data class SftpClientCredentialsDto(
 
    @field:NotNull
    @field:NotBlank

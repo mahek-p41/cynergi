@@ -66,7 +66,7 @@ class AuditDetailController @Inject constructor(
       val user = userService.fetchUser(authentication)
       val response = auditDetailService.fetchById(id = id, company = user.myCompany()) ?: throw NotFoundException(id)
 
-      logger.debug("Fetching AuditDetail by {} resulted in", id, response)
+      logger.debug("Fetching AuditDetail by {} resulted in {}", id, response)
 
       return transformEntity(response)
    }

@@ -1,8 +1,9 @@
 package com.cynergisuite.middleware.manager.infrastructure
 
 import com.cynergisuite.middleware.company.CompanyService
-import com.cynergisuite.middleware.darwill.DarwillManagementDto
+import com.cynergisuite.middleware.manager.SftpClientCredentialsDto
 import com.cynergisuite.middleware.darwill.DarwillService
+import com.cynergisuite.middleware.wow.WowService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.schedule.ScheduleJobExecutorService
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
@@ -25,13 +26,14 @@ import javax.validation.Valid
 class ManagerController @Inject constructor(
    private val companyService: CompanyService,
    private val darwillService: DarwillService,
+   private val wowService: WowService,
    private val scheduleJobExecutorService: ScheduleJobExecutorService,
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ManagerController::class.java)
 
    @Post("/darwill", consumes = [APPLICATION_JSON])
    fun enableDarwill(
-      @Valid @Body darwillManagement: DarwillManagementDto
+      @Valid @Body darwillManagement: SftpClientCredentialsDto
    ) {
       val company = companyService.fetchOne(darwillManagement.companyId!!) ?: throw NotFoundException(darwillManagement.companyId)
 
@@ -49,6 +51,28 @@ class ManagerController @Inject constructor(
       logger.info("Disabling darwill for {}", company.datasetCode)
 
       darwillService.disableFor(company)
+   }
+
+   @Post("/wow", consumes = [APPLICATION_JSON])
+   fun enableWow(
+      @Valid @Body wowManagement: SftpClientCredentialsDto
+   ) {
+      val company = companyService.fetchOne(wowManagement.companyId!!) ?: throw NotFoundException(wowManagement.companyId)
+
+      logger.info("Enabling wow for {}", company.datasetCode)
+
+      wowService.enableFor(company, SftpClientCredentials(wowManagement))
+   }
+
+   @Delete("/wow/{companyId}")
+   fun disableWow(
+      @Parameter("companyId") companyId: UUID
+   ) {
+      val company = companyService.fetchOne(companyId) ?: throw NotFoundException(companyId)
+
+      logger.info("Disabling wow for {}", company.datasetCode)
+
+      wowService.disableFor(company)
    }
 
    @Post("/schedule/run/daily")
