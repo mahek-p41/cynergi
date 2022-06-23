@@ -27,7 +27,6 @@ pipeline {
       }
 
       stage('Test') {
-         when { not { anyOf { branch 'master'; branch 'staging'; branch 'develop'; } } }
          steps {
             script {
                def cynergibasedb = docker.build("cynergibasedb:${env.BRANCH_NAME}", "-f ./support/development/cynergibasedb/cynergibasedb.dockerfile ./support/development/cynergibasedb")
