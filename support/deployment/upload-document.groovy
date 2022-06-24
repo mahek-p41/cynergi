@@ -14,14 +14,12 @@
 @picocli.groovy.PicocliScript
 import com.cynergisuite.domain.SimpleLegacyNumberDTO
 import com.cynergisuite.middleware.agreement.signing.AgreementSigningDTO
-import com.cynergisuite.middleware.agreement.signing.infrastructure.AgreementSigningPageRequest
 import com.cynergisuite.middleware.company.CompanyEntity
 import picocli.CommandLine.Option
 import picocli.CommandLine.Parameters
 import groovy.transform.Field
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
-import java.util.UUID
 import com.google.common.net.UrlEscapers
 import org.slf4j.bridge.SLF4JBridgeHandler
 import org.apache.hc.client5.http.entity.mime.FileBody

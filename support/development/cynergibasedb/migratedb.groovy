@@ -13,13 +13,13 @@
 )
 @picocli.groovy.PicocliScript
 import org.flywaydb.core.Flyway
-
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.FileSystems
 import java.util.zip.ZipFile
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.FilenameUtils
+import picocli.CommandLine.Option
 
 @Option(names = ["-u", "--user"], defaultValue = "cynergiuser", description = "db username")
 @Field String user
