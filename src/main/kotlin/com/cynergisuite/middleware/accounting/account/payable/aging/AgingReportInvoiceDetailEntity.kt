@@ -18,6 +18,7 @@ data class AgingReportInvoiceDetailEntity(
    val invoiceDueDate: LocalDate,
    val apPaymentPaymentDate: LocalDate?,
    val apPaymentDateVoided: LocalDate?,
+   val apPaymentIsVoided: Boolean,
    val apPaymentDetailAmount: BigDecimal?,
    var balance: BigDecimal,
    var balanceDisplay: BalanceDisplayEnum?
