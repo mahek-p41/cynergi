@@ -13,6 +13,7 @@
 )
 @picocli.groovy.PicocliScript
 import org.flywaydb.core.Flyway
+import groovy.transform.Field
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.FileSystems
@@ -45,7 +46,7 @@ import picocli.CommandLine.Option
 @Option(names = ["-h", "--help"], defaultValue = false, description = "'this help message")
 @Field boolean helpRequested
 
-boolean isCst143() {
+static boolean isCst143() {
    try {
       return (InetAddress.getLocalHost().getHostName() == "cst143")
    } catch(Throwable e) {
