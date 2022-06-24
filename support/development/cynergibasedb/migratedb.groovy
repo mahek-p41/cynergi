@@ -40,10 +40,10 @@ import picocli.CommandLine.Option
 @Option(names = ["-m", "--migrations"], defaultValue = "/opt/cyn/v01/cynmid/cynergi-middleware.jar", description = "'location of migration files")
 @Field String migrations
 
-@Option(names = ["-c", "--clean"], defaultValue = false, description = "'Reset the database back to zero")
+@Option(names = ["-c", "--clean"], defaultValue = "false", description = "'Reset the database back to zero")
 @Field boolean force_clean
 
-@Option(names = ["-h", "--help"], defaultValue = false, description = "'this help message")
+@Option(names = ["-h", "--help"], defaultValue = "false", description = "'this help message")
 @Field boolean helpRequested
 
 static boolean isCst143() {
