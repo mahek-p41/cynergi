@@ -78,6 +78,9 @@ class FinancialCalendarService @Inject constructor(
    fun fetchDateRangeWhenGLIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> =
       financialCalendarRepository.findDateRangeWhenGLIsOpen(company)
 
+   fun fetchByDate(company: CompanyEntity, date: LocalDate): FinancialCalendarDTO? =
+      financialCalendarRepository.fetchByDate(company, date)?.let { FinancialCalendarDTO(it) }
+
    private fun transformEntity(financialCalendarEntity: FinancialCalendarEntity): FinancialCalendarDTO {
       return FinancialCalendarDTO(financialCalendarEntity)
    }

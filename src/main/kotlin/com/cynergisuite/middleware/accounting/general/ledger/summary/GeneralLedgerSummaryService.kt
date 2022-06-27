@@ -37,6 +37,10 @@ class GeneralLedgerSummaryService @Inject constructor(
       return transformEntity(generalLedgerSummaryRepository.update(toUpdate, company))
    }
 
+   fun fetchOneByBusinessKey(company: CompanyEntity, accountId: UUID, profitCenterId: Long, overallPeriodId: Int): GeneralLedgerSummaryDTO? {
+      return generalLedgerSummaryRepository.findOneByBusinessKey(company, accountId, profitCenterId, overallPeriodId)?.let { transformEntity(it)}
+   }
+
    private fun transformEntity(generalLedgerSummary: GeneralLedgerSummaryEntity): GeneralLedgerSummaryDTO {
       return GeneralLedgerSummaryDTO(entity = generalLedgerSummary)
    }

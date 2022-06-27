@@ -173,4 +173,31 @@ class GeneralLedgerDetailController @Inject constructor(
       val user = userService.fetchUser(authentication)
       return generalLedgerDetailService.fetchReport(user.myCompany(), filterRequest)
    }
+
+
+   @Post(uri = "/subroutine", processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Create a GeneralLedgerDetailEntity", description = "Create an GeneralLedgerDetailEntity", operationId = "generalLedgerDetail-create")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerDetailDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun subroutine(
+      @Body @Valid
+      dto: GeneralLedgerDetailDTO,
+      authentication: Authentication
+   ): GeneralLedgerDetailDTO {
+      val user = userService.fetchUser(authentication)
+      val userCompany = user.myCompany()
+      logger.info("Requested Create GeneralLedgerDetail {}", dto)
+
+      val response = generalLedgerDetailService.postEntry(dto, userCompany)
+
+      logger.debug("Requested Create GeneralLedgerDetail {} resulted in {}", dto, response)
+
+      return response
+   }
 }

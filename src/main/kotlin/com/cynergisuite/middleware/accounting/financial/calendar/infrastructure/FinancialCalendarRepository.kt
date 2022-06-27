@@ -100,6 +100,26 @@ class FinancialCalendarRepository @Inject constructor(
    }
 
    @ReadOnly
+   fun fetchByDate(company: CompanyEntity, date: LocalDate): FinancialCalendarEntity? {
+      return jdbc.findFirstOrNull(
+         """
+            ${selectBaseQuery()}
+            WHERE r.company_id = :comp_id AND :date BETWEEN r.period_from AND r.period_to
+
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "date" to date
+         )
+      ) { rs, _ ->
+         mapRow(
+            rs,
+            "r_"
+         )
+      }
+   }
+
+   @ReadOnly
    fun exists(company: CompanyEntity, overallPeriodTypeId: Int, period: Int): Boolean {
       val params = mutableMapOf("comp_id" to company.id, "overallPeriodId" to overallPeriodTypeId, "period" to period)
       val exists = jdbc.queryForObject(
