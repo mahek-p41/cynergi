@@ -1,4 +1,4 @@
-#!/opt/cyn/v01/cynmid/groovy/bin/groovy -cp /opt/cyn/v01/cynmid/cynergi-middleware.jar
+#!/opt/cyn/v01/cynmid/groovy/current/bin/groovy -cp /opt/cyn/v01/cynmid/cynergi-middleware.jar
 @GrabConfig(systemClassLoader = true)
 @Grab(group = 'org.slf4j', module = 'jul-to-slf4j', version = '1.7.36')
 @Grab(group = 'org.apache.httpcomponents.core5', module = 'httpcore5', version='5.1.3')
@@ -132,30 +132,43 @@ if (!helpRequested) {
 
             final awsResponse = jsonSlurper.parse(uploadResponse.entity.content).nextSignatureUri
 
-            if (uploadResponseCode == 200 || uploadResponseCode == 201) {
+            if (uploadResponseCode >= 200 && uploadResponseCode < 400) {
                if (rtoAgreementNumber != null) { //This is where we check then insert/update the agreement_signing table. Must handle rto, club, and/or other.
-                  final checkExisting = new HttpGet("http://localhost:10900/upsertPrep/${dataset}/${primaryCustomerNumber}/${rtoAgreementNumber}")
-                  final existingRtoAgreement = client.execute(checkExisting)
-
-                  final existingRtoAgreementJson = jsonSlurper.parse(existingRtoAgreement.entity.content)
-
-                  final existingRtoAgreementId = existingRtoAgreementJson.id
-
                   final storeDTO = new SimpleLegacyNumberDTO(storeNumber)
+                  final checkExisting = new HttpGet("http://localhost:10900/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${rtoAgreementNumber}")
+                  final existingRtoAgreement = client.execute(checkExisting)
+                  final existingRtoAgreementResponseCode = existingRtoAgreement.getCode()
 
-                  final agreementToUpsert = new AgreementSigningDTO(existingRtoAgreementUUID, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, rtoAgreementNumber, "R", 1, awsResponse)
-                  final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
+                  if (existingRtoAgreementResponseCode == 404) {
+                     //Insert the record
+                     final agreementToUpsert = new AgreementSigningDTO(null, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, rtoAgreementNumber, "R", 1, awsResponse)
+                     final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
+                     final createRtoAgreement = new HttpPost("http://localhost:10900/agreement/signing/dataset/${dataset}")
+                     createRtoAgreement.setHeader("Content-Type", "application/json")
+                     createRtoAgreement.setEntity(new StringEntity(agreementToUpsertJson))
 
-                  //TODO Not sure if this check will work yet
-                  if (existingRtoAgreementId != null) {
+                     final createResponse = client.execute(createRtoAgreement)
+                     final responseCode = createResponse.getCode()
+
+                     if (responseCode >= 200 && responseCode < 400) {
+                        println "Successfully created agreement"
+                     } else {
+                        println "${uploadResponse.getCode()} -> ${EntityUtils.toString(createResponse.getEntity())}"
+                        System.exit(-2)
+                     }
+                  } else if (existingRtoAgreementResponseCode == 200) {
                      //Update the record
+                     final existingRtoAgreementJson = jsonSlurper.parse(existingRtoAgreement.entity.content)
+                     final existingRtoAgreementId = existingRtoAgreementJson.id
                      final existingRtoAgreementUUID = UUID.fromString(existingRtoAgreementId)
+                     final agreementToUpsert = new AgreementSigningDTO(existingRtoAgreementUUID, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, rtoAgreementNumber, "R", 1, awsResponse)
+                     final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
                      final updateRtoAgreement = new HttpPut("http://localhost:10900/agreement/signing/${existingRtoAgreementUUID}/dataset/${dataset}")
                      updateRtoAgreement.setHeader("Content-Type", "application/json")
                      updateRtoAgreement.setEntity(new StringEntity(agreementToUpsertJson))
 
                      final updateResponse = client.execute(updateRtoAgreement)
-                     final responseCode = updateResponse.code
+                     final responseCode = updateResponse.getCode()
 
                      if (responseCode >= 200 && responseCode < 400) {
                         println "Successfully updated agreement"
@@ -164,20 +177,8 @@ if (!helpRequested) {
                         System.exit(-1)
                      }
                   } else {
-                     //Insert the record
-                     final createRtoAgreement = new HttpPost("http://localhost:10900/agreement/signing/dataset/${dataset}")
-                     createRtoAgreement.setHeader("Content-Type", "application/json")
-                     createRtoAgreement.setEntity(new StringEntity(agreementToUpsertJson))
-
-                     final createResponse = client.execute(createRtoAgreement)
-                     final responseCode = createResponse.code
-
-                     if (responseCode >= 200 && responseCode < 400) {
-                        println "Successfully created agreement"
-                     } else {
-                        println "${uploadResponse.getCode()} -> ${EntityUtils.toString(createResponse.getEntity())}"
-                        System.exit(-2)
-                     }
+                     println "Unhandled response from server $existingRtoAgreementResponseCode"
+                     System.exit(-3)
                   }
                }
 
