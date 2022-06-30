@@ -64,6 +64,16 @@ dependencies {
    runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
    // end micronaut launch dependencies
 
+   // document-upload.groovy additional dependencies
+   implementation("org.slf4j:jul-to-slf4j:1.7.36")
+   implementation("org.apache.httpcomponents.core5:httpcore5:5.1.3")
+   implementation("org.apache.httpcomponents.client5:httpclient5:5.1.3")
+   implementation("info.picocli:picocli:4.6.3")
+   implementation("info.picocli:picocli-groovy:4.6.3")
+   implementation("org.codehaus.groovy:groovy:${groovyVersion}")
+   implementation("org.codehaus.groovy:groovy-json:${groovyVersion}")
+   // document-upload.groovy additional dependencies
+
    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.1.5")
 
@@ -85,7 +95,6 @@ dependencies {
    testImplementation("io.micronaut.flyway:micronaut-flyway")
    testImplementation "io.micronaut.test:micronaut-test-junit5"
    testImplementation("io.micronaut:micronaut-http-client")
-   testImplementation("org.codehaus.groovy:groovy-json")
    testImplementation("org.codehaus.groovy:groovy-sql")
    testImplementation("com.github.javafaker:javafaker:1.0.2")
 }
@@ -129,6 +138,10 @@ tasks {
       }
    }
 }
+
+compileGroovy.dependsOn compileKotlin
+compileGroovy.classpath += files(compileKotlin.destinationDir)
+classes.dependsOn compileGroovy
 
 task flywayMigrateCynergiDb(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
    url = "jdbc:postgresql://localhost:6432/cynergidb"
