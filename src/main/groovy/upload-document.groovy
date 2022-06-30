@@ -1,16 +1,7 @@
-#!/opt/cyn/v01/cynmid/groovy/current/bin/groovy -cp /opt/cyn/v01/cynmid/cynergi-middleware.jar
-@GrabConfig(systemClassLoader = true)
-@Grab(group = 'org.slf4j', module = 'jul-to-slf4j', version = '1.7.36')
-@Grab(group = 'org.apache.httpcomponents.core5', module = 'httpcore5', version='5.1.3')
-@Grab(group = 'org.apache.httpcomponents.client5', module = 'httpclient5', version = '5.1.3')
-@Grab(group = 'info.picocli', module = 'picocli', version = '4.6.3')
-@Grab(group = 'info.picocli', module = 'picocli-groovy', version = '4.6.3')
-@Grab(group = 'org.apache.groovy', module = 'groovy-json', version = '4.0.3')
-@Grab(group = 'com.google.guava', module = 'guava', version = '31.1-jre')
 @picocli.CommandLine.Command(
    description = "Sign Here Please agreement upload script"
 )
-@picocli.groovy.PicocliScript
+@picocli.groovy.PicocliScript2
 import com.cynergisuite.domain.SimpleLegacyNumberDTO
 import com.cynergisuite.middleware.agreement.signing.AgreementSigningDTO
 import com.cynergisuite.middleware.company.CompanyEntity
