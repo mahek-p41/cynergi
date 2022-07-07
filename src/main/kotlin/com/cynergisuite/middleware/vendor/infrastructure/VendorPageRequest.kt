@@ -25,6 +25,15 @@ class VendorPageRequest(
 
    @ValidPageSortBy("id")
    override fun sortByMe(): String = sortBy()
+
+   override fun myCopyPage(page: Int, size: Int, sortBy: String, sortDirection: String) =
+      VendorPageRequest(
+         page = page,
+         size = size,
+         sortBy = sortBy,
+         sortDirection = sortDirection
+      ).also { it.active = active }
+
    override fun myToStringValues(): List<Pair<String, Any?>> =
       listOf(
          "active" to active,

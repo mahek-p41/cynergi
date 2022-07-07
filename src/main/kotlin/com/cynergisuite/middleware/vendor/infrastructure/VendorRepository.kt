@@ -189,7 +189,7 @@ class VendorRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findAll(company: CompanyEntity, page: VendorPageRequest): RepositoryPage<VendorEntity, PageRequest> {
+   fun findAll(company: CompanyEntity, page: VendorPageRequest): RepositoryPage<VendorEntity, VendorPageRequest> {
       val whereClause = StringBuilder(" WHERE comp.id = :comp_id AND v.deleted = FALSE ")
 
       if (page.active != null) {
