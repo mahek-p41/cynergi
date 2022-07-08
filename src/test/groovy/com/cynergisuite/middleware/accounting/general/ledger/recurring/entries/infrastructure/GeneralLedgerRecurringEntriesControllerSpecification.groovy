@@ -911,7 +911,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       }
 
       when: // GL recurring and GL recurring distributions are fetched and GL details are created
-      get("$path/transfer-$filterRequest")
+      post("$path/transfer$filterRequest", null)
 
       then:
       notThrown(Exception)

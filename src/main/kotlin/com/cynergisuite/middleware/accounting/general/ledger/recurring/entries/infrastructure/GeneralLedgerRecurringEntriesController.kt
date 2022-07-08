@@ -207,7 +207,7 @@ class GeneralLedgerRecurringEntriesController @Inject constructor(
       return generalLedgerRecurringEntriesService.delete(id, user.myCompany())
    }
 
-   @Get(uri = "/transfer-{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Post(uri = "/transfer{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerRecurringEntriesEndpoints"], summary = "Use GL Recurring to post journal entries", description = "Fetch a list of General Ledger Recurring Entries to create General Ledger Detail records", operationId = "generalLedgerRecurringEntries-transfer")
    @ApiResponses(
       value = [

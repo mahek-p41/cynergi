@@ -16,6 +16,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.sql.ResultSet
+import java.time.OffsetDateTime
 import java.util.UUID
 import javax.transaction.Transactional
 
@@ -93,13 +94,14 @@ class GeneralLedgerRecurringEntriesRepository @Inject constructor(
    fun findOne(generalLedgerRecurringId: UUID, company: CompanyEntity): GeneralLedgerRecurringEntriesEntity? {
       val params = mutableMapOf<String, Any?>("id" to generalLedgerRecurringId, "comp_id" to company.id)
       val query = "${selectBaseQuery()} WHERE glRecurring.glRecurring_id = :id AND glRecurring.glRecurring_company_id = :comp_id AND glRecurringDist.deleted = FALSE"
+      logger.info("Searching for GeneralLedgerRecurringEntries {}: \nQuery: {}", params, query)
       val found = jdbc.findFirstOrNull(
          query, params
       ) { rs, _ ->
          mapRow(rs, company)
       }
 
-      logger.trace("Searching for GeneralLedgerRecurringEntries: resulted in {}", found)
+      logger.info("Searching for GeneralLedgerRecurringEntries resulted in {}", found)
 
       return found
    }
@@ -121,15 +123,24 @@ class GeneralLedgerRecurringEntriesRepository @Inject constructor(
 
       filterRequest.entryDate?.let {
          params["entryDate"] = filterRequest.entryDate
-         whereClause.append(" AND :entryDate BETWEEN glRecurring.glRecurring_begin_date AND glRecurring.glRecurring_end_date ")
+         whereClause.append("""
+            AND (
+               (:entryDate BETWEEN glRecurring.glRecurring_begin_date AND glRecurring.glRecurring_end_date)
+               OR (:entryDate > glRecurring.glRecurring_begin_date AND glRecurring.glRecurring_end_date IS NULL)
+            )
+         """.trimMargin())
       }
 
-      val glRecurringEntriesList: List<GeneralLedgerRecurringEntriesEntity> = jdbc.queryFullList(
-         """
+      val query = """
             ${selectBaseQuery()}
             $whereClause
             ORDER BY glRecurringDist_id
-         """.trimIndent(),
+         """.trimIndent()
+
+      logger.trace("Fetching for all GeneralLedgerRecurringEntriesEntity {}: \nQuery {}", params, query)
+
+      val glRecurringEntriesList: List<GeneralLedgerRecurringEntriesEntity> = jdbc.queryFullList(
+         query,
          params
       ) { rs, _, elements ->
          do {
@@ -160,8 +171,6 @@ class GeneralLedgerRecurringEntriesRepository @Inject constructor(
    @Transactional
    fun update(company: CompanyEntity, entity: GeneralLedgerRecurringEntriesEntity): GeneralLedgerRecurringEntriesEntity {
       logger.debug("Updating GeneralLedgerRecurringEntries {}", entity)
-
-      val existing = findOne(entity.generalLedgerRecurring.id!!, company)
 
       generalLedgerRecurringDistributionRepository.deleteNotIn(entity.generalLedgerRecurring.id!!, entity.generalLedgerRecurringDistributions)
 

@@ -9,6 +9,7 @@ import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.infrastructure.GeneralLedgerRecurringEntriesRepository
+import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -18,6 +19,7 @@ import java.util.UUID
 class GeneralLedgerDetailService @Inject constructor(
    private val generalLedgerDetailRepository: GeneralLedgerDetailRepository,
    private val generalLedgerDetailValidator: GeneralLedgerDetailValidator,
+   private val generalLedgerRecurringRepository: GeneralLedgerRecurringRepository,
    private val generalLedgerRecurringEntriesRepository: GeneralLedgerRecurringEntriesRepository
 ) {
    fun fetchOne(id: UUID, company: CompanyEntity): GeneralLedgerDetailDTO? {
@@ -75,7 +77,8 @@ class GeneralLedgerDetailService @Inject constructor(
 
          // update last transfer date in GL recurring
          it.generalLedgerRecurring.lastTransferDate = filterRequest.entryDate!!.toLocalDate()
-         generalLedgerRecurringEntriesRepository.update(company, it)
+
+         generalLedgerRecurringRepository.update(it.generalLedgerRecurring, company)
       }
    }
 
