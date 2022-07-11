@@ -5,31 +5,33 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
-import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDetailDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionTemplateDTO
+import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionTemplateDataLoaderService
 import com.cynergisuite.middleware.store.StoreTestDataLoader
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import jakarta.inject.Inject
 import spock.lang.Unroll
 
-import jakarta.inject.Inject
-
-import static io.micronaut.http.HttpStatus.BAD_REQUEST
-import static io.micronaut.http.HttpStatus.NO_CONTENT
-import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.*
 
 @MicronautTest(transactional = false)
-class AccountPayableDistributionControllerSpecification extends ControllerSpecificationBase {
-   private static String path = '/accounting/account-payable/distribution'
+class AccountPayableDistributionDetailControllerSpecification extends ControllerSpecificationBase {
+   private static String path = '/accounting/account-payable/distribution/detail'
 
-   @Inject AccountPayableDistributionDataLoaderService dataLoaderService
+   @Inject AccountPayableDistributionDetailDataLoaderService dataLoaderService
+   @Inject AccountPayableDistributionTemplateDataLoaderService templateDataLoaderService
+
    @Inject AccountTestDataLoaderService accountDataLoaderService
 
-   void "fetch one account payable distribution by id" () {
+   void "fetch one account payable distribution detail by id" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final apDistribution = dataLoaderService.single(store, acct, company)
+      final template = templateDataLoaderService.single(company)
+      final apDistribution = dataLoaderService.single(store, acct, company, template)
 
       when:
       def result = get("$path/${apDistribution.id}")
@@ -39,7 +41,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
 
       with(result) {
          id == apDistribution.id
-         name == apDistribution.name
+         distributionTemplate.id == apDistribution.distributionTemplate.id
          profitCenter.id == apDistribution.profitCenter.id
          account.id == apDistribution.account.id
          percent == apDistribution.percent
@@ -66,7 +68,8 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final apDistributions = dataLoaderService.stream(12, store, acct, company).toList()
+      final template = templateDataLoaderService.single(company)
+      final apDistributions = dataLoaderService.stream(12,store, acct, company, template).toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       def pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       def pageLast = new StandardPageRequest(3, 5, "id", "ASC")
@@ -88,10 +91,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       pageOneResult.elements.eachWithIndex { result, index ->
          with(result) {
             id == firstPageAPDist[index].id
-            name == firstPageAPDist[index].name
-            profitCenter.id == firstPageAPDist[index].profitCenter.id
-            account.id == firstPageAPDist[index].account.id
-            percent == firstPageAPDist[index].percent
+            distributionTemplate.id == firstPageAPDist[index].distributionTemplate.id
          }
       }
 
@@ -108,10 +108,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       pageTwoResult.elements.eachWithIndex { result, index ->
          with(result) {
             id == secondPageAPDist[index].id
-            name == secondPageAPDist[index].name
-            profitCenter.id == secondPageAPDist[index].profitCenter.id
-            account.id == secondPageAPDist[index].account.id
-            percent == secondPageAPDist[index].percent
+            distributionTemplate.id == secondPageAPDist[index].distributionTemplate.id
          }
       }
 
@@ -128,10 +125,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       pageLastResult.elements.eachWithIndex { result, index ->
          with(result) {
             id == lastPageAPDist[index].id
-            name == lastPageAPDist[index].name
-            profitCenter.id == lastPageAPDist[index].profitCenter.id
-            account.id == lastPageAPDist[index].account.id
-            percent == lastPageAPDist[index].percent
+            distributionTemplate.id == lastPageAPDist[index].distributionTemplate.id
          }
       }
 
@@ -143,46 +137,26 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       notFoundException.status == NO_CONTENT
    }
 
-   void "fetch a list of account payable distribution groups" () {
+   void "fetch all account payable distributions by template id" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final apDistributions = dataLoaderService.stream(12, store, acct, company).sorted { o1, o2 ->
-         o1.name <=> o2.name
-      }.toList()
-      final pageRequest = new StandardPageRequest(1, 20, "name", "ASC")
-
-      when:
-      def result = get("$path/groups${pageRequest}")
-
-      then:
-      result.requested.with { new StandardPageRequest(it) } == pageRequest
-      result.totalElements == 12
-      result.totalPages == 1
-      result.first == true
-      result.last == true
-      result.elements.size() == 12
-      result.elements == apDistributions.collect { it.name }.toList()
-   }
-
-   void "fetch all account payable distributions by group" () {
-      given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final acct = accountDataLoaderService.single(company)
       final acct2 = accountDataLoaderService.single(company)
+      final template1 = templateDataLoaderService.single(company)
+      final template2 = templateDataLoaderService.single(company)
       def accountingGroup = []
       def insuranceGroup = []
 
       2.times {
-         accountingGroup.add(dataLoaderService.single(StoreTestDataLoader.stores(company)[it], acct, company, 'Accounting'))
+         accountingGroup.add(dataLoaderService.single(StoreTestDataLoader.stores(company)[it], acct, company, template1))
       }
       2.times {
-         insuranceGroup.add(dataLoaderService.single(StoreTestDataLoader.stores(company)[it], acct2, company, 'Insurance'))
+         insuranceGroup.add(dataLoaderService.single(StoreTestDataLoader.stores(company)[it], acct2, company, template2))
       }
 
       when:
-      def result = get("$path/name/Accounting")
+      def result = get("$path/template/${accountingGroup[0].distributionTemplate.id}")
 
       then:
       result.totalElements == 2
@@ -190,7 +164,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       result.first == true
       result.last == true
       result.elements.size() == 2
-      result.elements.every { it.name == 'Accounting' }
+      result.elements.every { it.distributionTemplate.name == template1.name }
 
    }
 
@@ -199,7 +173,8 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final apDistribution = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), null)
+      final template = templateDataLoaderService.single(company)
+      final apDistribution = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), new AccountPayableDistributionTemplateDTO(template))
 
       when:
       def result = post("$path/", apDistribution)
@@ -209,7 +184,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
 
       with(result) {
          id != null
-         name == apDistribution.name
+         distributionTemplate.name == apDistribution.distributionTemplate.name
          profitCenter.id == apDistribution.profitCenter.id
          account.id == apDistribution.account.id
          percent == apDistribution.percent
@@ -222,7 +197,8 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), null)
+      final template = templateDataLoaderService.single(company)
+      final apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), new AccountPayableDistributionTemplateDTO(template))
       apDistributionDTO["$nonNullableProp"] = null
 
       when:
@@ -240,7 +216,6 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       where:
       nonNullableProp                              || errorResponsePath
       'account'                                    || 'account'
-      'name'                                       || 'name'
       'percent'                                    || 'percent'
       'profitCenter'                               || 'profitCenter'
    }
@@ -250,7 +225,8 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), null)
+      final template = templateDataLoaderService.single(company)
+      final apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), new AccountPayableDistributionTemplateDTO(template))
       final invalidValue = new SimpleLegacyIdentifiableDTO(999999)
       apDistributionDTO["profitCenter"] = invalidValue
 
@@ -272,7 +248,8 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), null)
+      final template = templateDataLoaderService.single(company)
+      final apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), new AccountPayableDistributionTemplateDTO(template))
       final badDTO = new AccountDTO(acct)
       badDTO.id = UUID.fromString("ee2359b6-c88c-11eb-8098-02420a4d0702")
       final invalidValue =  badDTO
@@ -297,7 +274,8 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), null)
+      final template = templateDataLoaderService.single(company)
+      final apDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), new AccountPayableDistributionTemplateDTO(template))
       apDistributionDTO["$percent"] = invalidPercent
 
       when:
@@ -323,9 +301,10 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final accounts = accountDataLoaderService.stream(5, company).toList()
+      final template = templateDataLoaderService.single(company)
       def apDistributions = []
       accounts.eachWithIndex { account, index ->
-         apDistributions.add(dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(account), "test"))
+         apDistributions.add(dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(account), new AccountPayableDistributionTemplateDTO(template)))
       }
       apDistributions[4].percent = 1
 
@@ -350,8 +329,9 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final existingAPDistribution = dataLoaderService.single(store, acct, company)
-      final updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), null)
+      final template = templateDataLoaderService.single(company)
+      final existingAPDistribution = dataLoaderService.single(store, acct, company, template)
+      final updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), new AccountPayableDistributionTemplateDTO(template))
       updatedAPDistributionDTO.id = existingAPDistribution.id
 
       when:
@@ -362,7 +342,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
 
       with(result) {
          id == existingAPDistribution.id
-         name == updatedAPDistributionDTO.name
+         distributionTemplate.name == updatedAPDistributionDTO.distributionTemplate.name
          profitCenter.id == updatedAPDistributionDTO.profitCenter.id
          account.id == updatedAPDistributionDTO.account.id
          percent == updatedAPDistributionDTO.percent
@@ -374,10 +354,11 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final existingAPDistribution = dataLoaderService.single(store, acct, company)
-      def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), null)
+      final template = templateDataLoaderService.single(company)
+      final existingAPDistribution = dataLoaderService.single(store, acct, company, template)
+      def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), new AccountPayableDistributionTemplateDTO(template))
       updatedAPDistributionDTO.account = null
-      updatedAPDistributionDTO.name = null
+      updatedAPDistributionDTO.distributionTemplate = null
       updatedAPDistributionDTO.percent = null
       updatedAPDistributionDTO.profitCenter = null
 
@@ -390,7 +371,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       def response = exception.response.bodyAsJson().collect().sort { a,b -> a.path <=> b.path }
       response.size() == 4
       response[0].path == 'account'
-      response[1].path == 'name'
+      response[1].path == 'distributionTemplate'
       response[2].path == 'percent'
       response[3].path == 'profitCenter'
       response.collect { it.message } as Set == ['Is required'] as Set
@@ -402,8 +383,9 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final existingAPDistribution = dataLoaderService.single(store, acct, company)
-      final updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), null)
+      final template = templateDataLoaderService.single(company)
+      final existingAPDistribution = dataLoaderService.single(store, acct, company, template)
+      final updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), new AccountPayableDistributionTemplateDTO(template))
       updatedAPDistributionDTO.account.id = nonExistentAccountId
       updatedAPDistributionDTO.profitCenter.id = 999999
 
@@ -429,8 +411,9 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final existingAPDistribution = dataLoaderService.single(store, acct, company)
-      def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), null)
+      final template = templateDataLoaderService.single(company)
+      final existingAPDistribution = dataLoaderService.single(store, acct, company, template)
+      def updatedAPDistributionDTO = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), new AccountPayableDistributionTemplateDTO(template))
       updatedAPDistributionDTO["$percent"] = invalidPercent
 
       when:
@@ -456,11 +439,12 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final accounts = accountDataLoaderService.stream(5, company).toList()
+      final template = templateDataLoaderService.single(company)
       def existingAPDistributions = []
       def updatedAPDistDTOs = []
       accounts.eachWithIndex { account, index ->
-         existingAPDistributions.add(dataLoaderService.single(store, account, company))
-         updatedAPDistDTOs.add(dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(account), "test"))
+         existingAPDistributions.add(dataLoaderService.single(store, account, company, template))
+         updatedAPDistDTOs.add(dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(account), new AccountPayableDistributionTemplateDTO(template)))
       }
       updatedAPDistDTOs.eachWithIndex{ dto, index ->
          dto.id = existingAPDistributions[index].id
@@ -488,7 +472,8 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final apDistribution = dataLoaderService.single(store, acct, company)
+      final template = templateDataLoaderService.single(company)
+      final apDistribution = dataLoaderService.single(store, acct, company, template)
 
       when:
       delete("$path/${apDistribution.id}")
@@ -512,7 +497,8 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
       final store = storeFactoryService.store(3, tstds2)
       final acct = accountDataLoaderService.single(tstds2)
-      final apDistribution = dataLoaderService.single(store, acct, tstds2)
+      final template = templateDataLoaderService.single(tstds2)
+      final apDistribution = dataLoaderService.single(store, acct, tstds2, template)
 
       when:
       delete("$path/${apDistribution.id}")
@@ -530,7 +516,8 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
-      final apDistribution = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), null)
+      final template = templateDataLoaderService.single(company)
+      final apDistribution = dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(acct), new AccountPayableDistributionTemplateDTO(template))
 
       when: // create a account payable distribution
       def response1 = post("$path/", apDistribution)
@@ -540,7 +527,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
 
       with(response1) {
          id != null
-         name == apDistribution.name
+         distributionTemplate.name == apDistribution.distributionTemplate.name
          profitCenter.id == apDistribution.profitCenter.id
          account.id == apDistribution.account.id
          percent == apDistribution.percent
@@ -560,7 +547,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
 
       with(response2) {
          id != null
-         name == apDistribution.name
+         distributionTemplate.name == apDistribution.distributionTemplate.name
          profitCenter.id == apDistribution.profitCenter.id
          account.id == apDistribution.account.id
          percent == apDistribution.percent
@@ -577,11 +564,12 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.store(3, company)
       final accounts = accountDataLoaderService.stream(5, company).toList()
+      final template = templateDataLoaderService.single(company)
       def existingAPDistributions = []
       def updatedAPDistDTOs = []
       accounts.eachWithIndex { account, index ->
-         existingAPDistributions.add(dataLoaderService.single(store, account, company))
-         updatedAPDistDTOs.add(dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(account), "test"))
+         existingAPDistributions.add(dataLoaderService.single(store, account, company, template))
+         updatedAPDistDTOs.add(dataLoaderService.singleDTO(new SimpleLegacyIdentifiableDTO(store.myId()), new AccountDTO(account), new AccountPayableDistributionTemplateDTO(template)))
       }
       updatedAPDistDTOs.eachWithIndex{ dto, index ->
          dto.id = existingAPDistributions[index].id
@@ -596,7 +584,7 @@ class AccountPayableDistributionControllerSpecification extends ControllerSpecif
          result.eachWithIndex { dto, index ->
             with(dto) {
                id == dto.id
-               name == dto.name
+               distributionTemplate.name == dto.distributionTemplate.name
                profitCenter.id == dto.profitCenter.id
                account.id == dto.account.id
                percent == dto.percent
