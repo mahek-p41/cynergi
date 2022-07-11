@@ -90,6 +90,8 @@ class VendorRepository @Inject constructor(
             v.auto_submit_purchase_order          AS v_auto_submit_purchase_order,
             v.note                                AS v_note,
             v.phone_number                        AS v_phone_number,
+            v.deleted                             AS v_deleted,
+            v.active                              AS v_active,
             comp.id                               AS v_comp_id,
             comp.time_created                     AS v_comp_time_created,
             comp.time_updated                     AS v_comp_time_updated,
@@ -187,18 +189,25 @@ class VendorRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<VendorEntity, PageRequest> {
+   fun findAll(company: CompanyEntity, page: VendorPageRequest): RepositoryPage<VendorEntity, VendorPageRequest> {
+      val whereClause = StringBuilder(" WHERE comp.id = :comp_id AND v.deleted = FALSE ")
+
+      if (page.active != null) {
+         whereClause.append(" AND v.active = ${page.active} ")
+      }
+
       return jdbc.queryPaged(
          """
       ${baseSelectQuery()}
-      WHERE comp.id = :comp_id AND v.deleted = FALSE
+      $whereClause
       ORDER BY v.${page.snakeSortBy()} ${page.sortDirection()}
       LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
             "comp_id" to company.id,
             "limit" to page.size(),
-            "offset" to page.offset()
+            "offset" to page.offset(),
+            "active" to page.active
          ),
          page
       ) { rs, elements ->
@@ -325,7 +334,8 @@ class VendorRepository @Inject constructor(
             allow_drop_ship_to_customer,
             auto_submit_purchase_order,
             note,
-            phone_number
+            phone_number,
+            active
          )
          VALUES (
             :company_id,
@@ -362,7 +372,8 @@ class VendorRepository @Inject constructor(
             :allow_drop_ship_to_customer,
             :auto_submit_purchase_order,
             :note,
-            :phone_number
+            :phone_number,
+            :active
          )
          RETURNING
             *
@@ -402,7 +413,8 @@ class VendorRepository @Inject constructor(
             "allow_drop_ship_to_customer" to entity.allowDropShipToCustomer,
             "auto_submit_purchase_order" to entity.autoSubmitPurchaseOrder,
             "note" to entity.note,
-            "phone_number" to entity.phone
+            "phone_number" to entity.phone,
+            "active" to entity.isActive
          )
       ) { rs, _ ->
          mapRowUpsert(
@@ -471,7 +483,8 @@ class VendorRepository @Inject constructor(
             allow_drop_ship_to_customer = :allow_drop_ship_to_customer,
             auto_submit_purchase_order = :auto_submit_purchase_order,
             note = :note,
-            phone_number = :phone_number
+            phone_number = :phone_number,
+            active = :active
          WHERE id = :id
          RETURNING
             *
@@ -512,7 +525,8 @@ class VendorRepository @Inject constructor(
             "allow_drop_ship_to_customer" to toUpdate.allowDropShipToCustomer,
             "auto_submit_purchase_order" to toUpdate.autoSubmitPurchaseOrder,
             "note" to toUpdate.note,
-            "phone_number" to toUpdate.phone
+            "phone_number" to toUpdate.phone,
+            "active" to toUpdate.isActive
          )
       ) { rs, _ ->
          mapRowUpsert(
@@ -591,7 +605,8 @@ class VendorRepository @Inject constructor(
          autoSubmitPurchaseOrder = rs.getBoolean("${columnPrefix}auto_submit_purchase_order"),
          number = rs.getInt("${columnPrefix}number"),
          note = rs.getString("${columnPrefix}note"),
-         phone = rs.getString("${columnPrefix}phone_number")
+         phone = rs.getString("${columnPrefix}phone_number"),
+         isActive = rs.getBoolean("${columnPrefix}active")
       )
    }
 
@@ -651,7 +666,8 @@ class VendorRepository @Inject constructor(
          autoSubmitPurchaseOrder = rs.getBoolean("auto_submit_purchase_order"),
          number = rs.getInt("number"),
          note = rs.getString("note"),
-         phone = rs.getString("phone_number")
+         phone = rs.getString("phone_number"),
+         isActive = rs.getBoolean("active")
       )
    }
 

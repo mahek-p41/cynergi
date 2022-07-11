@@ -48,8 +48,10 @@ data class VendorEntity(
    val autoSubmitPurchaseOrder: Boolean = false,
    val number: Int? = null,
    val note: String?,
-   val phone: String?
+   val phone: String?,
+   val isActive: Boolean = true
 ) : Identifiable {
+
 
    constructor(id: UUID? = null, dto: VendorDTO, vendorPaymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, vendorGroup: VendorGroupEntity?, company: CompanyEntity, freightOnboardType: FreightOnboardType, freightMethodType: FreightCalcMethodType, payTo: Identifiable? = null) :
       this(
@@ -88,7 +90,8 @@ data class VendorEntity(
          allowDropShipToCustomer = dto.allowDropShipToCustomer!!,
          autoSubmitPurchaseOrder = dto.autoSubmitPurchaseOrder!!,
          note = dto.note,
-         phone = dto.phone
+         phone = dto.phone,
+         isActive = dto.isActive
       )
 
    constructor(existingVendor: VendorEntity, vendorPaymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, dto: VendorDTO, vendorGroup: VendorGroupEntity?, freightOnboardType: FreightOnboardType, freightMethodType: FreightCalcMethodType, payTo: Identifiable? = null) :

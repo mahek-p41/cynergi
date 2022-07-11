@@ -176,7 +176,10 @@ data class VendorDTO(
 
    @field:Size(min = 3, max = 21)
    @field:Schema(name = "phone", description = "Vendor phone number")
-   var phone: String? = null
+   var phone: String? = null,
+
+   @field:Schema(name = "Active vendor indicator", required = false, description = "Active vendor indicator")
+   var isActive: Boolean = true
 
 ) : Identifiable {
 
@@ -217,7 +220,8 @@ data class VendorDTO(
          autoSubmitPurchaseOrder = entity.autoSubmitPurchaseOrder,
          number = entity.number,
          note = entity.note,
-         phone = entity.phone
+         phone = entity.phone,
+         isActive = entity.isActive
       )
 
    override fun myId(): UUID? = id

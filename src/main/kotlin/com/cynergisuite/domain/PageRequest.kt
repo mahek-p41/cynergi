@@ -141,7 +141,7 @@ abstract class PageRequestBase<out PAGE : PageRequest>(
    allOf = [PageRequestBase::class]
 )
 @Introspected
-class StandardPageRequest(
+open class StandardPageRequest(
    page: Int? = null,
    size: Int? = null,
    sortBy: String? = null,

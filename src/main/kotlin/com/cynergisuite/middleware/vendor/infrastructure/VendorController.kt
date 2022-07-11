@@ -83,7 +83,7 @@ class VendorController @Inject constructor(
    )
    fun fetchAll(
       @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") @Valid
-      pageRequest: StandardPageRequest,
+      pageRequest: VendorPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<VendorDTO> {
