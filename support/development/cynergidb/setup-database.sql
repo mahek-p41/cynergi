@@ -899,7 +899,7 @@ BEGIN
                     JOIN
                       ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
                     JOIN
-                      ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.agreement_id = agreement_version_inventories.agreement_version_id
+                      ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.id = agreement_version_inventories.agreement_version_id
                     JOIN
                       ' || r.schema_name || '.level2_inventories as inventories on agreement_version_inventories.inventory_id = inventories.id
                     JOIN
@@ -967,7 +967,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
             JOIN
-           ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.agreement_id = agreement_version_inventories.agreement_version_id
+           ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.id = agreement_version_inventories.agreement_version_id
             JOIN
            ' || r.schema_name || '.level2_inventories as inventories on agreement_version_inventories.inventory_id = inventories.id
             JOIN
@@ -1037,7 +1037,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
             JOIN
-            ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.agreement_id = agreement_version_inventories.agreement_version_id
+            ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.id = agreement_version_inventories.agreement_version_id
             JOIN
             ' || r.schema_name || '.level2_inventories as inventories on agreement_version_inventories.inventory_id = inventories.id
             JOIN
@@ -1156,14 +1156,14 @@ BEGIN
                               when agreement_versions.agreement_payment_terms = ''B'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2))
                               else Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2))
                           end ::INTEGER * 30)) as projected_payout_date,
-            sum
+            min
               (case
                   when agreement_versions.agreement_payment_terms = ''M'' then Round(trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2)* 4.33)
                   when agreement_versions.agreement_payment_terms = ''W'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2)))
                   when agreement_versions.agreement_payment_terms = ''B'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2 * 4.33))
                   else Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) * 2))
               end) AS weeks_remaining,
-             sum
+             min
                (case
                     when agreement_versions.agreement_payment_terms = ''M'' then Round(trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2))
                     when agreement_versions.agreement_payment_terms = ''W'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 4.33))
@@ -1181,20 +1181,21 @@ BEGIN
               then current_date - agreement_versions.agreement_next_due_date
               else null
               end AS days_overdue,
-             sum
-               (case
-                   when agreement_versions.agreement_payment_terms = ''M'' and agreement_versions.agreement_open_flag = ''Y''
-                        and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(((current_date - agreement_versions.agreement_next_due_date) / 30) + 1,0)
-                   when agreement_versions.agreement_payment_terms = ''W'' and agreement_versions.agreement_open_flag = ''Y''
-                        and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(((current_date - agreement_versions.agreement_next_due_date) / 7) + 1,0)
-                   when agreement_versions.agreement_payment_terms = ''B'' or agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
-                        and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(((current_date - agreement_versions.agreement_next_due_date) / 15) + 1,0)
-            		 else 0
-                end) AS overdue_amount,
+
+            (case
+              when agreement_versions.agreement_payment_terms = ''M'' and agreement_versions.agreement_open_flag = ''Y''
+                  and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * case when ((current_date - agreement_versions.agreement_next_due_date)) < 30 then 1 else CEIL((current_date + 30 - agreement_versions.agreement_next_due_date)/30) end
+              when agreement_versions.agreement_payment_terms = ''W'' and agreement_versions.agreement_open_flag = ''Y''
+                  and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 7 - agreement_versions.agreement_next_due_date) / 7),0),2)
+              when agreement_versions.agreement_payment_terms = ''B'' or agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
+                  and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
+              else 0
+              end) AS overdue_amount,
+
 
             case when (select count(customer_id) from ' || r.schema_name || '.level2_agreements ag where ag.agreement_type = ''F'' and ag.customer_id = customers.id)> 0 then ''Y'' else ''N'' end as club_member,
-            (select sum(agreement_number) from ' || r.schema_name || '.level2_agreements ag2 where ag2.agreement_type = ''F'' and ag2.customer_id = customers.id) as club_number,
-                        (select coalesce(sum(av2.agreement_payment_amt),0) from ' || r.schema_name || '.level2_agreements ag23
+            (select min(agreement_number) from ' || r.schema_name || '.level2_agreements ag2 where ag2.agreement_type = ''F'' and ag2.customer_id = customers.id) as club_number,
+                        (select coalesce(min(av2.agreement_payment_amt),0) from ' || r.schema_name || '.level2_agreements ag23
             			  JOIN ' || r.schema_name || '.level2_agreement_versions av2 on ag23.id = av2.agreement_id
             			  where ag23.agreement_type = ''F'' and ag23.customer_id = customers.id) as club_fee,
          agreement_versions.agreement_recur_pmt_switch as autopay
@@ -1206,7 +1207,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
             JOIN
-            ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.agreement_id = agreement_version_inventories.agreement_version_id
+            ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.id = agreement_version_inventories.agreement_version_id
            JOIN
             ' || r.schema_name || '.level2_inventories as inventories on agreement_version_inventories.inventory_id = inventories.id
             JOIN
