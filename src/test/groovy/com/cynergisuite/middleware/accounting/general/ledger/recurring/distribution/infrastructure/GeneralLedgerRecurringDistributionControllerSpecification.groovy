@@ -47,7 +47,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       result != null
       with(result) {
          id == glRecurringDistribution.id
-         generalLedgerRecurring.id == glRecurringDistribution.generalLedgerRecurring.id
+         generalLedgerRecurring.id == glRecurringDistribution.generalLedgerRecurringId
          generalLedgerDistributionAccount.id == glRecurringDistribution.generalLedgerDistributionAccount.myId()
          generalLedgerDistributionProfitCenter.id == glRecurringDistribution.generalLedgerDistributionProfitCenter.myId()
          generalLedgerDistributionAmount == glRecurringDistribution.generalLedgerDistributionAmount
@@ -94,7 +94,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
          elements.eachWithIndex { pageOneResult, index ->
             with(pageOneResult) {
                id == glRecurringDistributions[index].id
-               generalLedgerRecurring.id == glRecurringDistributions[index].generalLedgerRecurring.id
+               generalLedgerRecurring.id == glRecurringDistributions[index].generalLedgerRecurringId
                generalLedgerDistributionAccount.id == glRecurringDistributions[index].generalLedgerDistributionAccount.myId()
                generalLedgerDistributionProfitCenter.id == glRecurringDistributions[index].generalLedgerDistributionProfitCenter.myId()
                generalLedgerDistributionAmount == glRecurringDistributions[index].generalLedgerDistributionAmount
@@ -138,7 +138,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
          elements.eachWithIndex { pageOneResult, index ->
             with(pageOneResult) {
                id == glRecurringDistributions[index].id
-               generalLedgerRecurring.id == glRecurringDistributions[index].generalLedgerRecurring.id
+               generalLedgerRecurring.id == glRecurringDistributions[index].generalLedgerRecurringId
                generalLedgerDistributionAccount.id == glRecurringDistributions[index].generalLedgerDistributionAccount.myId()
                generalLedgerDistributionProfitCenter.id == glRecurringDistributions[index].generalLedgerDistributionProfitCenter.myId()
                generalLedgerDistributionAmount == glRecurringDistributions[index].generalLedgerDistributionAmount
@@ -160,7 +160,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
          elements.eachWithIndex { pageOneResult, index ->
             with(pageOneResult) {
                id == glRecurringDistributions[index + 3].id
-               generalLedgerRecurring.id == glRecurringDistributions[index + 3].generalLedgerRecurring.id
+               generalLedgerRecurring.id == glRecurringDistributions[index + 3].generalLedgerRecurringId
                generalLedgerDistributionAccount.id == glRecurringDistributions[index + 3].generalLedgerDistributionAccount.myId()
                generalLedgerDistributionProfitCenter.id == glRecurringDistributions[index + 3].generalLedgerDistributionProfitCenter.myId()
                generalLedgerDistributionAmount == glRecurringDistributions[index + 3].generalLedgerDistributionAmount
@@ -492,9 +492,9 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       notThrown(Exception)
       result != null
       with(result) {
-         result.credit == Math.abs(glRecurringDistributions.sum { if (it.generalLedgerRecurring.id == glRecurring1.id && it.generalLedgerDistributionAmount < BigDecimal.ZERO) it.generalLedgerDistributionAmount else BigDecimal.ZERO })
-         result.debit == glRecurringDistributions.sum { if (it.generalLedgerRecurring.id == glRecurring1.id && it.generalLedgerDistributionAmount >= BigDecimal.ZERO) it.generalLedgerDistributionAmount else BigDecimal.ZERO }
-         result.total == glRecurringDistributions.sum { if (it.generalLedgerRecurring.id == glRecurring1.id) it.generalLedgerDistributionAmount else BigDecimal.ZERO}
+         result.credit == Math.abs(glRecurringDistributions.sum { if (it.generalLedgerRecurringId == glRecurring1.id && it.generalLedgerDistributionAmount < BigDecimal.ZERO) it.generalLedgerDistributionAmount else BigDecimal.ZERO })
+         result.debit == glRecurringDistributions.sum { if (it.generalLedgerRecurringId == glRecurring1.id && it.generalLedgerDistributionAmount >= BigDecimal.ZERO) it.generalLedgerDistributionAmount else BigDecimal.ZERO }
+         result.total == glRecurringDistributions.sum { if (it.generalLedgerRecurringId == glRecurring1.id) it.generalLedgerDistributionAmount else BigDecimal.ZERO}
       }
    }
 }

@@ -12,7 +12,6 @@ import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastru
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
-import com.cynergisuite.middleware.localization.BalanceMustBeZero
 import com.cynergisuite.middleware.localization.EndDateBeforeStart
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.Store
@@ -21,8 +20,7 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.math.BigDecimal
-import java.util.*
+import java.util.UUID
 
 @Singleton
 class GeneralLedgerRecurringEntriesValidator @Inject constructor(
@@ -77,11 +75,6 @@ class GeneralLedgerRecurringEntriesValidator @Inject constructor(
          dto.generalLedgerRecurringDistributions.forEach {
             accountRepository.findOne(it.generalLedgerDistributionAccount!!.id!!, company) ?: errors.add(ValidationError("generalLedgerRecurringDistributions[index].generalLedgerDistributionAccount.id", NotFound(it.generalLedgerDistributionAccount!!.id!!)))
             storeRepository.findOne(it.generalLedgerDistributionProfitCenter!!.id!!, company) ?: errors.add(ValidationError("generalLedgerRecurringDistributions[index].generalLedgerDistributionProfitCenter.id", NotFound(it.generalLedgerDistributionProfitCenter!!.id!!)))
-         }
-
-         // balance must be zero before records can be inserted/updated
-         if (dto.balance?.compareTo(BigDecimal.ZERO) != 0) {
-            errors.add(ValidationError("balance", BalanceMustBeZero(dto.balance!!)))
          }
       }
 

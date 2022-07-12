@@ -8,8 +8,10 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
+import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.GeneralLedgerRecurringEntriesDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.infrastructure.GeneralLedgerRecurringEntriesRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -52,7 +54,8 @@ class GeneralLedgerDetailService @Inject constructor(
       return GeneralLedgerSearchReportTemplate(found)
    }
 
-   fun transfer(company: CompanyEntity, filterRequest: GeneralLedgerRecurringEntriesFilterRequest) {
+   fun transfer(user: User, filterRequest: GeneralLedgerRecurringEntriesFilterRequest) {
+      val company = user.myCompany()
       val glRecurringEntries = generalLedgerRecurringEntriesRepository.findAll(company, filterRequest)
       var glDetailDTO: GeneralLedgerDetailDTO
       val journalEntryNumber = generalLedgerDetailRepository.findNextJENumber(company)
@@ -63,11 +66,11 @@ class GeneralLedgerDetailService @Inject constructor(
             glDetailDTO = GeneralLedgerDetailDTO(
                null,
                SimpleIdentifiableDTO(distribution.generalLedgerDistributionAccount.id),
-               filterRequest.entryDate!!.toLocalDate(),
+               filterRequest.entryDate,
                SimpleLegacyIdentifiableDTO(distribution.generalLedgerDistributionProfitCenter.myId()),
-               SimpleIdentifiableDTO(distribution.generalLedgerRecurring.source.id),
+               SimpleIdentifiableDTO(it.generalLedgerRecurring.source),
                distribution.generalLedgerDistributionAmount,
-               distribution.generalLedgerRecurring.message,
+               it.generalLedgerRecurring.message,
                filterRequest.employeeNumber,
                journalEntryNumber
             )
@@ -76,10 +79,36 @@ class GeneralLedgerDetailService @Inject constructor(
          }
 
          // update last transfer date in GL recurring
-         it.generalLedgerRecurring.lastTransferDate = filterRequest.entryDate!!.toLocalDate()
+         it.generalLedgerRecurring.lastTransferDate = filterRequest.entryDate
 
          generalLedgerRecurringRepository.update(it.generalLedgerRecurring, company)
       }
+   }
+
+   fun transfer(user: User, dto: GeneralLedgerRecurringEntriesDTO) {
+      val company = user.myCompany()
+      val glRecurringEntry = generalLedgerRecurringEntriesRepository.findOne(dto.generalLedgerRecurring?.id!!, company)
+      var glDetailDTO: GeneralLedgerDetailDTO
+
+      // create GL detail for each distribution
+      glRecurringEntry!!.generalLedgerRecurringDistributions.forEach { distribution ->
+         glDetailDTO = GeneralLedgerDetailDTO(
+            null,
+            SimpleIdentifiableDTO(distribution.generalLedgerDistributionAccount.id),
+            dto.entryDate,
+            SimpleLegacyIdentifiableDTO(distribution.generalLedgerDistributionProfitCenter.myId()),
+            SimpleIdentifiableDTO(glRecurringEntry.generalLedgerRecurring.source),
+            distribution.generalLedgerDistributionAmount,
+            dto.generalLedgerRecurring!!.message,
+            user.myEmployeeNumber(),
+            null
+         )
+         create(glDetailDTO, company)
+      }
+
+      // update last transfer date in GL recurring
+      glRecurringEntry.generalLedgerRecurring.lastTransferDate = dto.entryDate
+      generalLedgerRecurringRepository.update(glRecurringEntry.generalLedgerRecurring, company)
    }
 
    private fun transformEntity(generalLedgerDetail: GeneralLedgerDetailEntity): GeneralLedgerDetailDTO {

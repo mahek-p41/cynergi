@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.infrastructure
 
 import com.cynergisuite.domain.GeneralLedgerRecurringEntriesFilterRequest
-import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.queryForObjectOrNull
 import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.infrastructure.GeneralLedgerRecurringDistributionRepository
@@ -14,9 +14,7 @@ import jakarta.inject.Singleton
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.math.BigDecimal
 import java.sql.ResultSet
-import java.time.OffsetDateTime
 import java.util.UUID
 import javax.transaction.Transactional
 
@@ -95,7 +93,7 @@ class GeneralLedgerRecurringEntriesRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("id" to generalLedgerRecurringId, "comp_id" to company.id)
       val query = "${selectBaseQuery()} WHERE glRecurring.glRecurring_id = :id AND glRecurring.glRecurring_company_id = :comp_id AND glRecurringDist.deleted = FALSE"
       logger.info("Searching for GeneralLedgerRecurringEntries {}: \nQuery: {}", params, query)
-      val found = jdbc.findFirstOrNull(
+      val found = jdbc.queryForObjectOrNull(
          query, params
       ) { rs, _ ->
          mapRow(rs, company)
@@ -158,7 +156,7 @@ class GeneralLedgerRecurringEntriesRepository @Inject constructor(
       val glRecurringEntity = generalLedgerRecurringRepository.insert(entity.generalLedgerRecurring, company)
 
       val list = entity.generalLedgerRecurringDistributions.map {
-         it.generalLedgerRecurring = glRecurringEntity
+         it.generalLedgerRecurringId = glRecurringEntity.id
          generalLedgerRecurringDistributionRepository.insert(it)
       }.toList()
 
@@ -200,7 +198,6 @@ class GeneralLedgerRecurringEntriesRepository @Inject constructor(
       return GeneralLedgerRecurringEntriesEntity(
          generalLedgerRecurring = glRecurring,
          generalLedgerRecurringDistributions = glRecurringDistributions!!,
-         balance = BigDecimal.ZERO
       )
    }
 }

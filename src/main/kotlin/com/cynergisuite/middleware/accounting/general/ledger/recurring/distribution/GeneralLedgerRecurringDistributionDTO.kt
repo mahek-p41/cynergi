@@ -44,7 +44,7 @@ data class GeneralLedgerRecurringDistributionDTO(
    ) :
       this(
          id = entity.id,
-         generalLedgerRecurring = SimpleIdentifiableDTO(entity.generalLedgerRecurring),
+         generalLedgerRecurring = SimpleIdentifiableDTO(entity.generalLedgerRecurringId),
          generalLedgerDistributionAccount = SimpleIdentifiableDTO(entity.generalLedgerDistributionAccount),
          generalLedgerDistributionProfitCenter = SimpleLegacyIdentifiableDTO(entity.generalLedgerDistributionProfitCenter.myId()),
          generalLedgerDistributionAmount = entity.generalLedgerDistributionAmount

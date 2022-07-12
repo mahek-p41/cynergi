@@ -32,7 +32,7 @@ class GeneralLedgerRecurringDistributionDataLoader {
       return IntStream.range(0, number).mapToObj {
          new GeneralLedgerRecurringDistributionEntity(
             null,
-            glRecurring,
+            glRecurring.id,
             glDistributionAcct,
             glDistributionProfitCenter,
             numbers.randomDouble(2, -1000000, 1000000).toBigDecimal()

@@ -7,6 +7,8 @@ import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 
 import jakarta.inject.Singleton
+
+import java.time.LocalDate
 import java.util.stream.IntStream
 import java.util.stream.Stream
 
@@ -24,7 +26,7 @@ class GeneralLedgerRecurringEntriesDataLoader {
          new GeneralLedgerRecurringEntriesDTO(
             glRecurring,
             glRecurringDistributions,
-            BigDecimal.ZERO
+            LocalDate.now()
          )
       }
    }
