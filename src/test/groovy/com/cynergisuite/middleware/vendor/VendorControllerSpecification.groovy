@@ -24,6 +24,7 @@ import com.cynergisuite.middleware.vendor.group.VendorGroupTestDataLoaderService
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorPageRequest
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
+import com.cynergisuite.middleware.vendor.infrastructure.VendorSearchPageRequest
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
@@ -781,27 +782,27 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       vendorRepository.insert(vendorEntity1).with { new VendorDTO(it) }
       final vendorEntity2 = new VendorEntity(null, company, "Vendor 2", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, "Note something", null, true)
       vendorRepository.insert(vendorEntity2).with { new VendorDTO(it) }
-      final vendorEntity3 = new VendorEntity(null, company, "Vendor 3", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, null, "316317318", true)
+      final vendorEntity3 = new VendorEntity(null, company, "Vendor 3", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, null, "316317318", false)
       vendorRepository.insert(vendorEntity3).with { new VendorDTO(it) }
       final vendorEntity4 = new VendorEntity(null, company, "Out of search result 1", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, "Other note", "316123456", true)
       vendorRepository.insert(vendorEntity4).with { new VendorDTO(it) }
       final vendorEntity5 = new VendorEntity(null, company, "Out of search result 2", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, null, null, true)
       vendorRepository.insert(vendorEntity5).with { new VendorDTO(it) }
-      def searchOne = new SearchPageRequest([query:"Vandor%202"])
-      def searchFivePageOne = new SearchPageRequest([page:1, size:5, query:"Vandor%202"])
-      def searchFivePageTwo = new SearchPageRequest([page:2, size:5, query:"Vandor%202"])
-      def searchSqlInjection = new SearchPageRequest([query: urlFragmentEscaper.escape("or 1=1;drop table account;--")])
+      def searchOne = new VendorSearchPageRequest([query:"Vandor%202", active:true])
+      def searchFivePageOne = new VendorSearchPageRequest([page:1, size:5, query:"Vandor%202", active:true])
+      def searchFivePageTwo = new VendorSearchPageRequest([page:2, size:5, query:"Vandor%202"])
+      def searchSqlInjection = new VendorSearchPageRequest([query: urlFragmentEscaper.escape("or 1=1;drop table account;--")])
 
       when:
       def searchOneResult = get("$path/search${searchOne}")
 
       then:
       notThrown(HttpClientException)
-      searchOneResult.totalElements == 3
+      searchOneResult.totalElements == 2
       searchOneResult.totalPages == 1
       searchOneResult.first == true
       searchOneResult.last == true
-      searchOneResult.elements.size() == 3
+      searchOneResult.elements.size() == 2
       searchOneResult.elements[0].name == 'Vendor 2'
 
       when:
@@ -809,12 +810,12 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientException)
-      searchTwoPageOneResult.requested.with { new SearchPageRequest(it) } == searchFivePageOne
-      searchTwoPageOneResult.totalElements == 3
+      searchTwoPageOneResult.requested.with { new VendorSearchPageRequest(it) } == searchFivePageOne
+      searchTwoPageOneResult.totalElements == 2
       searchTwoPageOneResult.totalPages == 1
       searchTwoPageOneResult.first == true
       searchTwoPageOneResult.last == true
-      searchTwoPageOneResult.elements.size() == 3
+      searchTwoPageOneResult.elements.size() == 2
       searchTwoPageOneResult.elements[0].name == 'Vendor 2'
 
       when:

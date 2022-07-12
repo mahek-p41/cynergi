@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull
    description = "Defines the parameters available to for a paging request to the all search endpoint. Example ?page=1&size=10&query=Search%20some%20string",
    allOf = [PageRequestBase::class]
 )
-class SearchPageRequest(
+open class SearchPageRequest(
    page: Int? = null,
    size: Int? = null,
 
