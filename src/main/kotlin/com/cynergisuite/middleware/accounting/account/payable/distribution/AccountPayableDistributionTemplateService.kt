@@ -11,6 +11,7 @@ import java.util.UUID
 @Singleton
 class AccountPayableDistributionTemplateService @Inject constructor(
    private val accountPayableDistributionTemplateRepository: AccountPayableDistributionTemplateRepository,
+   private val accountPayableDistributionDetailService: AccountPayableDistributionDetailService
 ) {
    fun fetchOne(id: UUID, company: CompanyEntity): AccountPayableDistributionTemplateDTO? =
       accountPayableDistributionTemplateRepository.findOne(id, company)?.let { transformEntity(it) }
@@ -35,6 +36,7 @@ class AccountPayableDistributionTemplateService @Inject constructor(
    }
 
    fun delete(id: UUID, company: CompanyEntity) {
+      accountPayableDistributionDetailService.deleteByTemplateId(id, company)
       accountPayableDistributionTemplateRepository.delete(id, company)
    }
 

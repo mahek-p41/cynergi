@@ -2,8 +2,11 @@ package com.cynergisuite.middleware.accounting.account.payable.distribution.infr
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDetailDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionTemplateDataLoaderService
+import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
@@ -17,6 +20,7 @@ class AccountPayableDistributionTemplateControllerSpecification extends Controll
    private static String path = '/accounting/account-payable/distribution/template'
 
    @Inject AccountPayableDistributionTemplateDataLoaderService dataLoaderService
+   @Inject AccountPayableDistributionDetailDataLoaderService detailDataLoaderService
    @Inject AccountTestDataLoaderService accountDataLoaderService
 
    void "fetch one account payable distribution template by id" () {
@@ -126,7 +130,7 @@ class AccountPayableDistributionTemplateControllerSpecification extends Controll
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final apDistribution = dataLoaderService.singleDTO()
-      apDistribution.name = "test"
+      final apDistributionDetail = apDistribution.name = "test"
 
       when:
       def result = post("$path/", apDistribution)
@@ -165,7 +169,10 @@ class AccountPayableDistributionTemplateControllerSpecification extends Controll
    void "delete one account payable distribution" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final acct = accountDataLoaderService.single(company)
       final apDistribution = dataLoaderService.single(company)
+      final detail = detailDataLoaderService.single(store, acct, company, apDistribution)
 
       when:
       delete("$path/${apDistribution.id}")
@@ -187,7 +194,10 @@ class AccountPayableDistributionTemplateControllerSpecification extends Controll
    void "delete account payable distribution from other company is not allowed" () {
       given:
       final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final store = storeFactoryService.store(3, tstds2)
+      final acct = accountDataLoaderService.single(tstds2)
       final apDistribution = dataLoaderService.single(tstds2)
+      final detail = detailDataLoaderService.single(store, acct, tstds2, apDistribution)
 
       when:
       delete("$path/${apDistribution.id}")
@@ -203,10 +213,16 @@ class AccountPayableDistributionTemplateControllerSpecification extends Controll
    void "recreate deleted account payable distribution" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(3, company)
+      final acct = accountDataLoaderService.single(company)
       final apDistribution = dataLoaderService.singleDTO()
+      final apDistDetail = detailDataLoaderService.singleDTO(new StoreDTO(store), new AccountDTO(acct), apDistribution)
+
 
       when: // create a account payable distribution
       def response1 = post("$path/", apDistribution)
+      apDistDetail.distributionTemplate.id = response1.id
+      post("/accounting/account-payable/distribution/detail", apDistDetail)
 
       then:
       notThrown(HttpClientResponseException)
@@ -224,6 +240,8 @@ class AccountPayableDistributionTemplateControllerSpecification extends Controll
 
       when: // recreate account payable distribution
       def response2 = post("$path/", apDistribution)
+      apDistDetail.distributionTemplate.id = response2.id
+      post("/accounting/account-payable/distribution/detail", apDistDetail)
 
       then:
       notThrown(HttpClientResponseException)

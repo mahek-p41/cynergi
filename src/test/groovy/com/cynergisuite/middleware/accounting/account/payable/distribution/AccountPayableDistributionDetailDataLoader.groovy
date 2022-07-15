@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.payable.distribution.infrastructure.AccountPayableDistributionDetailRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreDTO
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
@@ -37,7 +38,7 @@ class AccountPayableDistributionDetailDataLoader {
       }
    }
 
-   static Stream<AccountPayableDistributionDetailDTO> streamDTO(int numberIn = 1, SimpleLegacyIdentifiableDTO profitCenter, AccountDTO account, AccountPayableDistributionTemplateDTO template) {
+   static Stream<AccountPayableDistributionDetailDTO> streamDTO(int numberIn = 1, StoreDTO profitCenter, AccountDTO account, AccountPayableDistributionTemplateDTO template) {
       final number = numberIn > 0 ? numberIn : 1
       final faker = new Faker()
       final lorem = faker.lorem()
@@ -78,7 +79,7 @@ class AccountPayableDistributionDetailDataLoaderService {
          .findFirst().orElseThrow { new Exception("Unable to create AccountPayableDistribution") }
    }
 
-   AccountPayableDistributionDetailDTO singleDTO(SimpleLegacyIdentifiableDTO profitCenterIn, AccountDTO accountIn, AccountPayableDistributionTemplateDTO template) {
+   AccountPayableDistributionDetailDTO singleDTO(StoreDTO profitCenterIn, AccountDTO accountIn, AccountPayableDistributionTemplateDTO template) {
       return AccountPayableDistributionDetailDataLoader.streamDTO(1, profitCenterIn, accountIn, template).findFirst().orElseThrow { new Exception("Unable to create AccountPayableDistributionDetail") }
    }
 }

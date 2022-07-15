@@ -204,7 +204,7 @@ class AccountPayableDistributionDetailRepository @Inject constructor(
             "account_id" to entity.account.id,
             "company_id" to company.id,
             "percent" to entity.percent,
-            "template_id" to entity.distributionTemplate!!.myId()
+            "template_id" to entity.distributionTemplate.myId()
          )
       ) { rs, _ ->
          mapRow(rs, entity)
@@ -234,7 +234,7 @@ class AccountPayableDistributionDetailRepository @Inject constructor(
             "account_id" to entity.account.id,
             "company_id" to company.id,
             "percent" to entity.percent,
-            "template_id" to entity.distributionTemplate!!.myId()
+            "template_id" to entity.distributionTemplate.myId()
          )
       ) { rs, _ ->
          mapRow(rs, entity)
@@ -246,7 +246,7 @@ class AccountPayableDistributionDetailRepository @Inject constructor(
       logger.debug("Updating AccountPayableDistributionTemplateEntity {}", entities)
 
       if(entities.any{ it.id != null }) {
-         deleteNotIn(entities[0].distributionTemplate!!.myId()!!, entities)
+         deleteNotIn(entities[0].distributionTemplate.myId()!!, entities)
       }
       val updated = mutableListOf<AccountPayableDistributionDetailEntity>()
 
@@ -272,6 +272,24 @@ class AccountPayableDistributionDetailRepository @Inject constructor(
       logger.info("Row affected {}", rowsAffected)
 
       if (rowsAffected == 0) throw NotFoundException(id)
+   }
+
+   @Transactional
+   fun deleteByTemplateId(id: UUID, company: CompanyEntity) {
+      logger.debug("Deleting all AccountPayableDistributionDetails with template id={}", id)
+
+      val rowsAffected = jdbc.update(
+         """
+            UPDATE account_payable_distribution_template_detail
+            SET deleted = TRUE
+            WHERE template_id = :id AND deleted = FALSE
+         """,
+         mapOf("id" to id)
+      )
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(id)
+
    }
 
    @ReadOnly

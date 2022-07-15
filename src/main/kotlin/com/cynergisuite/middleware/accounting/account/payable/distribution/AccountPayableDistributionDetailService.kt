@@ -54,6 +54,9 @@ class AccountPayableDistributionDetailService @Inject constructor(
       accountPayableDistributionDetailRepository.delete(id, company)
    }
 
+   fun deleteByTemplateId(id: UUID, company: CompanyEntity) {
+      accountPayableDistributionDetailRepository.deleteByTemplateId(id, company)
+   }
    private fun transformEntity(accountPayableDistribution: AccountPayableDistributionDetailEntity): AccountPayableDistributionDetailDTO {
       return AccountPayableDistributionDetailDTO(entity = accountPayableDistribution)
    }
