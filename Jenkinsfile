@@ -142,9 +142,9 @@ pipeline {
 
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep all\\.jar | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.DEVELOP-${releaseVersion}.jar
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.DEVELOP-${releaseVersion}.tar.xz
-               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW scp -oStrictHostKeyChecking=no ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17:/home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-${releaseVersion}.tar.xz
-               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'ln -f /home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-${releaseVersion}.tar.xz /home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-current.tar.xz'"
-               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'touch /home/jenkins/ELIMINATION/DEVELOP/build.trigger'"
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW scp -oStrictHostKeyChecking=no -oHostKeyAlgorithms=+ssh-rsa ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17:/home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-${releaseVersion}.tar.xz
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no -oHostKeyAlgorithms=+ssh-rsa $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'ln -f /home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-${releaseVersion}.tar.xz /home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-current.tar.xz'"
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no -oHostKeyAlgorithms=+ssh-rsa $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'touch /home/jenkins/ELIMINATION/DEVELOP/build.trigger'"
                '''
             }
          }
@@ -160,9 +160,9 @@ pipeline {
 
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep all\\.jar | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.STAGING-${releaseVersion}.jar
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.STAGING-${releaseVersion}.tar.xz
-               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW scp -oStrictHostKeyChecking=no ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17:/home/jenkins/ELIMINATION/STAGING/cynergi-middleware-${releaseVersion}.tar.xz
-               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'ln -f /home/jenkins/ELIMINATION/STAGING/cynergi-middleware-${releaseVersion}.tar.xz /home/jenkins/ELIMINATION/STAGING/cynergi-middleware-current.tar.xz'"
-               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'touch /home/jenkins/ELIMINATION/STAGING/build.trigger'"
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW scp -oStrictHostKeyChecking=no -oHostKeyAlgorithms=+ssh-rsa ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17:/home/jenkins/ELIMINATION/STAGING/cynergi-middleware-${releaseVersion}.tar.xz
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no -oHostKeyAlgorithms=+ssh-rsa $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'ln -f /home/jenkins/ELIMINATION/STAGING/cynergi-middleware-${releaseVersion}.tar.xz /home/jenkins/ELIMINATION/STAGING/cynergi-middleware-current.tar.xz'"
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no -oHostKeyAlgorithms=+ssh-rsa $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'touch /home/jenkins/ELIMINATION/STAGING/build.trigger'"
                '''
             }
          }
@@ -178,9 +178,9 @@ pipeline {
 
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep all\\.jar | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-RELEASE/cynergi-middleware.RELEASE-${releaseVersion}.jar
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-RELEASE/cynergi-middleware.RELEASE-${releaseVersion}.tar.xz
-               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW scp -oStrictHostKeyChecking=no ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17:/home/jenkins/ELIMINATION/RELEASE/cynergi-middleware-${releaseVersion}.tar.xz
-               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'ln -f /home/jenkins/ELIMINATION/RELEASE/cynergi-middleware-${releaseVersion}.tar.xz /home/jenkins/ELIMINATION/RELEASE/cynergi-middleware-current.tar.xz'"
-               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'touch /home/jenkins/ELIMINATION/RELEASE/build.trigger'"
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW scp -oStrictHostKeyChecking=no -oHostKeyAlgorithms=+ssh-rsa ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17:/home/jenkins/ELIMINATION/RELEASE/cynergi-middleware-${releaseVersion}.tar.xz
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no -oHostKeyAlgorithms=+ssh-rsa $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'ln -f /home/jenkins/ELIMINATION/RELEASE/cynergi-middleware-${releaseVersion}.tar.xz /home/jenkins/ELIMINATION/RELEASE/cynergi-middleware-current.tar.xz'"
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no -oHostKeyAlgorithms=+ssh-rsa $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'touch /home/jenkins/ELIMINATION/RELEASE/build.trigger'"
                '''
             }
          }
