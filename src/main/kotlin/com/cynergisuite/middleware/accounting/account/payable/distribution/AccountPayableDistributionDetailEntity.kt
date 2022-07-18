@@ -6,21 +6,26 @@ import com.cynergisuite.middleware.store.Store
 import java.math.BigDecimal
 import java.util.UUID
 
-data class AccountPayableDistributionEntity(
+data class AccountPayableDistributionDetailEntity(
    val id: UUID? = null,
-   val name: String,
    val profitCenter: Store,
    val account: AccountEntity,
-   val percent: BigDecimal
+   val percent: BigDecimal,
+   val distributionTemplate: AccountPayableDistributionTemplateEntity
 ) : Identifiable {
 
-   constructor(dto: AccountPayableDistributionDTO, profitCenter: Store, account: AccountEntity) :
+   constructor(
+      dto: AccountPayableDistributionDetailDTO,
+      profitCenter: Store,
+      account: AccountEntity,
+      distributionTemplate: AccountPayableDistributionTemplateEntity
+   ) :
       this(
          id = dto.id,
-         name = dto.name!!,
          profitCenter = profitCenter,
          account = account,
-         percent = dto.percent!!
+         percent = dto.percent!!,
+         distributionTemplate = distributionTemplate
       )
 
    override fun myId(): UUID? = id
