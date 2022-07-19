@@ -1,9 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.infrastructure
 
-import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlTestDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
@@ -403,195 +401,211 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       notFoundException.status == NO_CONTENT
    }
 
-   void "search accounts by number" () {
-      given: "A company and a random collection of 50 accounts with a specific account"
+   void "search accounts with fuzzy searching" () {
+      given:
       final company = companyFactoryService.forDatasetCode('tstds1')
-      final accounts = accountDataLoaderService.stream(50, company).collect()
+      final account1234 = accountDataLoaderService.single(company, "5670 Acct", 1234)
+      final account1235 = accountDataLoaderService.single(company, "Bank Acct", 1235)
+      final account1236 = accountDataLoaderService.single(company, "Bank of America", 1236)
+      final account5678 = accountDataLoaderService.single(company, "Test Acct", 5678)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      if (accounts[19].isBankAccount) {
-         bankFactoryService.single(nineNineEightEmployee.company, store, accounts[19])
+      if (account1234.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1234)
       }
-      final queryString = accounts[20].number
-      def pageOne = new SearchPageRequest([page:1, size:5, query:"${ queryString }"])
+      if (account1235.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1235)
+      }
+      if (account1236.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1236)
+      }
+      if (account5678.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account5678)
+      }
 
-      when: "strict querying for a number"
-      def result = get("$path/search?query=${accounts[19].number}&fuzzy=false")
+      def query = ""
+      switch (criteria) {
+         case '123':
+            query = "123"
+            break
+         case '567':
+            query = "567"
+            break
+         case 'bank':
+            query = "bank"
+            break
+         case '5670 Acct':
+            query = "5670%20Acct"
+            break
+         case '5678':
+            query = "5678"
+            break
+      }
 
-      then: "return single account"
+      when:
+      def result = get("$path/search?query=$query")
+
+      then:
       notThrown(HttpClientException)
       result != null
-      with(result) {
-         totalElements == 1
-         totalPages == 1
-         elements.size() == 1
-         new AccountDTO(elements[0]) == new AccountDTO(accounts[19])
+      result.elements.size() == searchResultsCount
+      where:
+      criteria       || searchResultsCount
+      '123'          || 3
+      '567'          || 2
+      'bank'         || 2
+      '5670 Acct'    || 1
+      '5678'         || 1
+   }
+
+   void "search accounts with fuzzy searching no results found" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final account1234 = accountDataLoaderService.single(company, "5670 Acct", 1234)
+      final account1235 = accountDataLoaderService.single(company, "Bank Acct", 1235)
+      final account1236 = accountDataLoaderService.single(company, "Bank of America", 1236)
+      final account5678 = accountDataLoaderService.single(company, "Test Acct", 5678)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      if (account1234.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1234)
+      }
+      if (account1235.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1235)
+      }
+      if (account1236.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1236)
+      }
+      if (account5678.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account5678)
       }
 
-      when: "fuzzy querying for a number"
-      def pageOneResult = get("$path/search?query=${accounts[19].number}")
+      def query = ""
+      switch (criteria) {
+         case 'Acct':
+            query = "Acct"
+            break
+         case '23':
+            query = "23"
+            break
+      }
 
-      then: 'the result for 20 should be [20, 29, 28, 27...21] according to Postgres algorithm for fuzzy search'
+      when:
+      get("$path/search?fuzzy=false&query=$query")
+
+      then:
+      def ex = thrown(HttpClientResponseException)
+      ex.response.status == response
+      where:
+      criteria       || response
+      'Acct'         || NO_CONTENT
+      '23'           || NO_CONTENT
+   }
+
+   void "search accounts with strict searching" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final account1234 = accountDataLoaderService.single(company, "5670 Acct", 1234)
+      final account1235 = accountDataLoaderService.single(company, "Bank Acct", 1235)
+      final account1236 = accountDataLoaderService.single(company, "Bank of America", 1236)
+      final account5678 = accountDataLoaderService.single(company, "Test Acct", 5678)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      if (account1234.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1234)
+      }
+      if (account1235.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1235)
+      }
+      if (account1236.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1236)
+      }
+      if (account5678.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account5678)
+      }
+
+      def query = ""
+      switch (criteria) {
+         case '567':
+            query = "567"
+            break
+         case 'bank':
+            query = "bank"
+            break
+         case '5670 Acct':
+            query = "5670%20Acct"
+            break
+         case '5678':
+            query = "5678"
+            break
+      }
+
+      when:
+      def result = get("$path/search?fuzzy=false&query=$query")
+
+      then:
       notThrown(HttpClientException)
-      pageOneResult.first == true
-      pageOneResult.elements.size() == 10
+      result != null
+      result.elements.size() == searchResultsCount
+      where:
+      criteria       || searchResultsCount
+      '567'          || 1
+      'bank'         || 2
+      '5670 Acct'    || 1
+      '5678'         || 1
+   }
 
-      with(pageOneResult.elements[0]) {
-         id == accounts[19].id
-         name == accounts[19].name
-         number == accounts[19].number
+   void "search accounts with strict searching no results found" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final account1234 = accountDataLoaderService.single(company, "5670 Acct", 1234)
+      final account1235 = accountDataLoaderService.single(company, "Bank Acct", 1235)
+      final account1236 = accountDataLoaderService.single(company, "Bank of America", 1236)
+      final account5678 = accountDataLoaderService.single(company, "Test Acct", 5678)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      if (account1234.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1234)
+      }
+      if (account1235.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1235)
+      }
+      if (account1236.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1236)
+      }
+      if (account5678.isBankAccount) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account5678)
       }
 
+      def query = ""
+      switch (criteria) {
+         case '123':
+            query = "123"
+            break
+         case 'Acct':
+            query = "Acct"
+            break
+         case '23':
+            query = "23"
+            break
+      }
+
+      when:
+      get("$path/search?fuzzy=false&query=$query")
+
+      then:
+      def ex = thrown(HttpClientResponseException)
+      ex.response.status == response
+      where:
+      criteria       || response
+      '123'          || NO_CONTENT
+      'Acct'         || NO_CONTENT
+      '23'           || NO_CONTENT
+   }
+
+   void "search accounts sql injection" () {
       when: "Throw SQL Injection at it"
       get("$path/search?query=%20or%201=1;drop%20table%20account;--")
 
       then:
       def ex = thrown(HttpClientResponseException)
       ex.response.status == NO_CONTENT
-   }
-
-   void "search accounts by name" () {
-      given: "A company and 3 accounts 2 of them with bank in the name"
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final account1 = accountDataLoaderService.single(company, "East Hill Bank")
-      final account2 = accountDataLoaderService.single(company, "7 Hills Bank and Trust")
-      final account3 = accountDataLoaderService.single(company, "Bob's Credit Union")
-      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      if (account1.isBankAccount) {
-         bankFactoryService.single(nineNineEightEmployee.company, store, account1)
-      }
-      if (account2.isBankAccount) {
-         bankFactoryService.single(nineNineEightEmployee.company, store, account2)
-      }
-      if (account3.isBankAccount) {
-         bankFactoryService.single(nineNineEightEmployee.company, store, account3)
-      }
-
-      when: "fuzzy querying for a name with bank"
-      def result = get("$path/search?query=bank")
-
-      then:
-      notThrown(HttpClientException)
-      with(result) {
-         totalElements == 2
-         totalPages == 1
-         elements.size() == 2
-         elements.collect { new AccountDTO(it) }.sort { o1, o2 -> o1.id <=> o2.id } == [
-            new AccountDTO(account1),
-            new AccountDTO(account2)
-         ]
-      }
-
-      when: "fuzzy searching for band"
-      result = get("$path/search?query=band")
-
-      then:
-      notThrown(HttpClientException)
-      with(result) {
-         totalElements == 2
-         totalPages == 1
-         elements.size() == 2
-         elements.collect { new AccountDTO(it) }.sort { o1, o2 -> o1.id <=> o2.id } == [
-            new AccountDTO(account1),
-            new AccountDTO(account2)
-         ]
-      }
-
-      when: "strict searching for bank"
-      result = get("$path/search?query=bank&fuzzy=false")
-
-      then:
-      notThrown(HttpClientException)
-      with(result) {
-         totalElements == 2
-         totalPages == 1
-         elements.size() == 2
-         elements.collect { new AccountDTO(it) }.sort { o1, o2 -> o1.id <=> o2.id } == [
-            new AccountDTO(account1),
-            new AccountDTO(account2)
-         ]
-      }
-
-      when: "strict searching for band"
-      get("$path/search?query=band&fuzzy=false")
-
-      then:
-      def ex = thrown(HttpClientResponseException)
-      ex.response.status == NO_CONTENT
-   }
-
-   void "search accounts by number and name" () {
-      given: "A company and 3 accounts 2 of them with bank in the name"
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final account1 = accountDataLoaderService.single(company, "East Hill Bank")
-      final account2 = accountDataLoaderService.single(company, "7 Hills Bank and Trust")
-      final account3 = accountDataLoaderService.single(company, "Bob's Credit Union")
-      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      if (account1.isBankAccount) {
-         bankFactoryService.single(nineNineEightEmployee.company, store, account1)
-      }
-      if (account2.isBankAccount) {
-         bankFactoryService.single(nineNineEightEmployee.company, store, account2)
-      }
-      if (account3.isBankAccount) {
-         bankFactoryService.single(nineNineEightEmployee.company, store, account3)
-      }
-
-      when: "fuzzy querying for number and 'bank'"
-      def result = get("$path/search?query=${account1.number}%20bank")
-
-      then: "both accounts with 'bank' are returned"
-      notThrown(HttpClientException)
-      with(result) {
-         totalElements == 2
-         totalPages == 1
-         elements.size() == 2
-         elements.collect { new AccountDTO(it) }.sort { o1, o2 -> o1.id <=> o2.id } == [
-            new AccountDTO(account1),
-            new AccountDTO(account2)
-         ]
-      }
-
-      when: "strict querying for number and 'bank'"
-      result = get("$path/search?query=${account1.number}%20bank&fuzzy=false")
-
-      then: "only one account is returned"
-      notThrown(HttpClientException)
-      with(result) {
-         totalElements == 1
-         totalPages == 1
-         elements.size() == 1
-         elements.collect { new AccountDTO(it) }.sort { o1, o2 -> o1.id <=> o2.id } == [
-            new AccountDTO(account1)
-         ]
-      }
-
-      when: "fuzzy querying for number and 'credit'"
-      result = get("$path/search?query=${account3.number}%20Credit")
-
-      then: "only one account is returned"
-      notThrown(HttpClientException)
-      with(result) {
-         totalElements == 1
-         totalPages == 1
-         elements.size() == 1
-         elements.collect { new AccountDTO(it) }.sort { o1, o2 -> o1.id <=> o2.id } == [
-            new AccountDTO(account3)
-         ]
-      }
-
-      when: "strict querying for number and full account name"
-      result = get("$path/search?query=${account3.number}%20Bob's%20Credit%20Union&fuzzy=false")
-
-      then: "only one account is returned"
-      notThrown(HttpClientException)
-      with(result) {
-         totalElements == 1
-         totalPages == 1
-         elements.size() == 1
-         elements.collect { new AccountDTO(it) }.sort { o1, o2 -> o1.id <=> o2.id } == [
-            new AccountDTO(account3)
-         ]
-      }
    }
 
    void "create a valid account"() {

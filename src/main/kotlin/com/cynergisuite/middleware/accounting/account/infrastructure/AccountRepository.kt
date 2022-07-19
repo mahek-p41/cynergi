@@ -156,25 +156,23 @@ class AccountRepository @Inject constructor(
 
    @ReadOnly
    fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<AccountEntity, PageRequest> {
-      var searchQuery = page.query
+      val searchQuery = page.query
       val where = StringBuilder(" WHERE comp.id = :comp_id AND account.deleted = FALSE")
-      val sortBy = if (!searchQuery.isNullOrEmpty()) {
-         if (page.fuzzy == false) {
-            where.append(" AND (search_vector @@ to_tsquery(:search_query)) ")
-            searchQuery = searchQuery.replace("\\s+".toRegex(), " & ")
-            EMPTY
-         } else {
-            val splitedWords = searchQuery.split(" ")
-            val fieldToSearch = if (splitedWords.first().isNumber() && splitedWords.size == 1) {
-               " account.number::text "
+      val sortBy = StringBuilder("")
+      if (!searchQuery.isNullOrEmpty()) {
+         where.append(" AND (")
+         sortBy.append("ORDER BY ")
+         val searchQueryBeginsWith = "$searchQuery%"
+         if (searchQuery.isNumber()) {
+            if (page.fuzzy == false) {
+               where.append("account.number::text LIKE \'$searchQuery\' OR ")
             } else {
-               "COALESCE(account.number::text, '') || ' ' || COALESCE(account.name, '')"
+               where.append("account.number::text LIKE \'$searchQueryBeginsWith\' OR ")
+               sortBy.append("account.number::text <-> :search_query, account.number::text ASC, ")
             }
-            where.append(" AND $fieldToSearch <-> :search_query < 0.865 ")
-            " ORDER BY $fieldToSearch <-> :search_query "
          }
-      } else {
-         EMPTY
+         where.append("account.name ILIKE \'$searchQueryBeginsWith\')")
+         sortBy.append("account.name <-> :search_query, account.name ASC")
       }
 
       return jdbc.queryPaged(
