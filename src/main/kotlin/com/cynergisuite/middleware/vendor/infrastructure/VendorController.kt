@@ -112,7 +112,7 @@ class VendorController @Inject constructor(
    )
    fun search(
       @Parameter(name = "pageRequest", `in` = QUERY, required = false) @QueryValue("pageRequest") @Valid
-      pageRequest: SearchPageRequest,
+      pageRequest: VendorSearchPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<VendorDTO> {

@@ -237,9 +237,14 @@ class VendorRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<VendorEntity, PageRequest> {
+   fun search(company: CompanyEntity, page: VendorSearchPageRequest): RepositoryPage<VendorEntity, PageRequest> {
       var searchQuery = page.query
       val where = StringBuilder(" WHERE comp.id = :comp_id AND v.deleted = FALSE ")
+
+      if (page.active != null) {
+         where.append(" AND v.active = ${page.active} ")
+      }
+
       val sortBy = if (!searchQuery.isNullOrEmpty()) {
          if (page.fuzzy == false) {
             where.append(" AND (search_vector @@ to_tsquery(:search_query)) ")

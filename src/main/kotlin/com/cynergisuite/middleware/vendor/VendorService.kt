@@ -6,6 +6,7 @@ import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorPageRequest
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
+import com.cynergisuite.middleware.vendor.infrastructure.VendorSearchPageRequest
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.util.UUID
@@ -35,7 +36,7 @@ class VendorService @Inject constructor(
       }
    }
 
-   fun search(company: CompanyEntity, pageRequest: SearchPageRequest): Page<VendorDTO> {
+   fun search(company: CompanyEntity, pageRequest: VendorSearchPageRequest): Page<VendorDTO> {
       val found = vendorRepository.search(company, pageRequest)
 
       return found.toPage { vendor: VendorEntity ->
