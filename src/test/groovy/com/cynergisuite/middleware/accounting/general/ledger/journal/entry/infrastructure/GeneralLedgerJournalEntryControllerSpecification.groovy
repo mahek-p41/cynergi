@@ -1,8 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.journal.entry.infrastructure
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
@@ -11,6 +10,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSource
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDataLoader
+import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -40,14 +40,14 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       final profitCenter = storeFactoryService.store(3, company)
       def glJournalEntryDetailDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
          2,
-         new SimpleIdentifiableDTO(account),
-         new SimpleLegacyIdentifiableDTO(profitCenter.myId()),
+         new AccountDTO(account),
+         new StoreDTO(profitCenter),
          10000 as BigDecimal
       ).toList()
       def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
          2,
-         new SimpleIdentifiableDTO(account),
-         new SimpleLegacyIdentifiableDTO(profitCenter.myId()),
+         new AccountDTO(account),
+         new StoreDTO(profitCenter),
          -10000 as BigDecimal
       ).toList()
       glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
@@ -97,14 +97,14 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       final profitCenter = storeFactoryService.store(3, company)
       def glJournalEntryDetailDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
          2,
-         new SimpleIdentifiableDTO(account),
-         new SimpleLegacyIdentifiableDTO(profitCenter.myId()),
+         new AccountDTO(account),
+         new StoreDTO(profitCenter),
          10000 as BigDecimal
       ).toList()
       def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
          2,
-         new SimpleIdentifiableDTO(account),
-         new SimpleLegacyIdentifiableDTO(profitCenter.myId()),
+         new AccountDTO(account),
+         new StoreDTO(profitCenter),
          -10000 as BigDecimal
       ).toList()
       glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
@@ -155,14 +155,14 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       final profitCenter = storeFactoryService.store(3, company)
       def glJournalEntryDetailDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
          2,
-         new SimpleIdentifiableDTO(account1),
-         new SimpleLegacyIdentifiableDTO(profitCenter.myId()),
+         new AccountDTO(account1),
+         new StoreDTO(profitCenter),
          10000 as BigDecimal
       ).toList()
       def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
          2,
-         new SimpleIdentifiableDTO(account2),
-         new SimpleLegacyIdentifiableDTO(profitCenter.myId()),
+         new AccountDTO(account2),
+         new StoreDTO(profitCenter),
          -10000 as BigDecimal
       ).toList()
       glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
@@ -208,14 +208,14 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       final profitCenter = storeFactoryService.store(3, company)
       def glJournalEntryDetailDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
          2,
-         new SimpleIdentifiableDTO(account),
-         new SimpleLegacyIdentifiableDTO(profitCenter.myId()),
+         new AccountDTO(account),
+         new StoreDTO(profitCenter),
          10000 as BigDecimal
       ).toList()
       def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
          2,
-         new SimpleIdentifiableDTO(account),
-         new SimpleLegacyIdentifiableDTO(profitCenter.myId()),
+         new AccountDTO(account),
+         new StoreDTO(profitCenter),
          -10000 as BigDecimal
       ).toList()
       glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)

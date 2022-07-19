@@ -26,7 +26,6 @@ class GeneralLedgerJournalEntryDataLoader {
    ) {
       final number = numberIn > 0 ? numberIn : 1
       final faker = new Faker()
-      final random = faker.random()
       final message = faker.lorem().sentence()
 
       return IntStream.range(0, number).mapToObj {
@@ -51,7 +50,6 @@ class GeneralLedgerJournalEntryDataLoader {
    ) {
       final number = numberIn > 0 ? numberIn : 1
       final faker = new Faker()
-      final random = faker.random()
       final message = faker.lorem().sentence()
 
       return IntStream.range(0, number).mapToObj {

@@ -7,7 +7,6 @@ import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
-import com.cynergisuite.middleware.localization.BalanceMustBeZero
 import com.cynergisuite.middleware.localization.GLNotOpen
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -15,7 +14,6 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.math.BigDecimal
 
 @Singleton
 class GeneralLedgerJournalEntryValidator @Inject constructor(

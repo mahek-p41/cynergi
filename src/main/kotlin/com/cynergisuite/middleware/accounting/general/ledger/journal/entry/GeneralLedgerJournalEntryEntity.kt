@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.journal.entry
 
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
-import java.math.BigDecimal
 import java.time.LocalDate
 
 data class GeneralLedgerJournalEntryEntity(

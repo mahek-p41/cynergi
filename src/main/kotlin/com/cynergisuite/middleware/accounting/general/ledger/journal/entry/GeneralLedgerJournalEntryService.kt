@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.journal.entry
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
@@ -32,9 +33,9 @@ class GeneralLedgerJournalEntryService @Inject constructor(
       dto.journalEntryDetails.forEach { journalEntryDetail ->
          glDetailDTO = GeneralLedgerDetailDTO(
             null,
-            journalEntryDetail.account,
+            SimpleIdentifiableDTO(journalEntryDetail.account!!.id),
             dto.entryDate,
-            journalEntryDetail.profitCenter,
+            SimpleLegacyIdentifiableDTO(journalEntryDetail.profitCenter!!.id),
             SimpleIdentifiableDTO(dto.source!!),
             journalEntryDetail.amount,
             dto.message,
@@ -79,8 +80,8 @@ class GeneralLedgerJournalEntryService @Inject constructor(
          glReversalDistributionDTO = GeneralLedgerReversalDistributionDTO(
             null,
             SimpleIdentifiableDTO(glReversalDTO),
-            journalEntryDetail.account,
-            journalEntryDetail.profitCenter,
+            SimpleIdentifiableDTO(journalEntryDetail.account!!.id),
+            SimpleLegacyIdentifiableDTO(journalEntryDetail.profitCenter!!.id),
             journalEntryDetail.amount!!.times(BigDecimal(-1))
          )
          glReversalDistributionDTOs.add(glReversalDistributionDTO)
