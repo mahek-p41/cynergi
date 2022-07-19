@@ -1020,7 +1020,7 @@ BEGIN
             agreements.agreement_number       AS agreement_number,
             current_date - agreement_versions.agreement_next_due_date AS days_overdue,
 
-            (case when
+            cast((case when
    		          (case
               		      when agreement_versions.agreement_payment_terms = ''M'' and agreement_versions.agreement_open_flag = ''Y''
                  	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * case when ((current_date - agreement_versions.agreement_next_due_date)) < 30 then 1 else round(trunc(1.00 * ((current_date + 30 - agreement_versions.agreement_next_due_date)/30)),2) end
@@ -1041,7 +1041,7 @@ BEGIN
                          and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
                      else 0
                      end)
-             end) AS overdue_amount,
+             end)AS NUMERIC(11,2))::VARCHAR AS overdue_amount,
 
            models.itemfile_desc_1 AS product
          FROM ' || r.schema_name || '.level2_agreements as agreements
@@ -1197,7 +1197,7 @@ BEGIN
               else null
               end AS days_overdue,
 
-            (case when
+            Cast((case when
    		             (case
                 		      when agreement_versions.agreement_payment_terms = ''M'' and agreement_versions.agreement_open_flag = ''Y''
                   	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * case when ((current_date - agreement_versions.agreement_next_due_date)) < 30 then 1 else round(trunc(1.00 * ((current_date + 30 - agreement_versions.agreement_next_due_date)/30)),2) end
@@ -1218,7 +1218,7 @@ BEGIN
                             and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
                        else 0
                        end)
-             end) AS overdue_amount,
+             end) AS Numeric(11,2))::VARCHAR AS overdue_amount,
 
              case when (select count(customer_id) from ' || r.schema_name || '.level2_agreements ag join ' || r.schema_name || '.level2_agreement_versions av4 on av4.agreement_id = ag.id where ag.agreement_type = ''F'' and av4.agreement_open_flag = ''Y'' and ag.customer_id = customers.id)> 0 then ''Y'' else ''N'' end as club_member,
                    (select min(agreement_number) from ' || r.schema_name || '.level2_agreements ag2 join ' || r.schema_name || '.level2_agreement_versions av5 on av5.agreement_id = ag2.id where ag2.agreement_type = ''F'' and av5.agreement_open_flag = ''Y'' and ag2.customer_id = customers.id) as club_number,
