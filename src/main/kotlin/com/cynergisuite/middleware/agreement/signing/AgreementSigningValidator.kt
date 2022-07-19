@@ -54,9 +54,6 @@ class AgreementSigningValidator @Inject constructor(
 
          val existingAgreement = agreementSigningRepository.findOne(id, company)
 
-         //If it does not exist, that doesn't automatically mean we should insert, so how to handle upsert stuff?
-         //We make sure the error sent back explains what happened. In the case of the document upload script,
-         //if it gets back that the agmt does not yet exist, then it can decide to kick off an insert instead.
          if (existingAgreement == null) {
             errors.add(ValidationError("id", NotFound(id)))
          }

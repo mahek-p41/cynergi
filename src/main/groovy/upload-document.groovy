@@ -37,47 +37,8 @@ SLF4JBridgeHandler.install()
 @Option(names = ["-d", "--debug"], description = "Enable debug logging")
 @Field boolean debug = false
 
-@Parameters(index = "0", arity = "1", paramLabel = "args", description = "Arguments to be passed to the signature service")
+@Parameters(index = "0", arity = "1", paramLabel = "argsFile", description = "Arguments to be passed to the signature service")
 @Field File argsFile
-
-/*@Parameters(index = "0", arity = "1", paramLabel = "dataset", description = "Customer number used to look up agreement")
-@Field String dataset
-
-@Parameters(index = "1", arity = "1", paramLabel = "storeNumber", description = "Documents must be stored at least until the retention date")
-@Field Integer storeNumber
-
-@Parameters(index = "2", arity = "1", paramLabel = "pdf", description = "PDF to be uploaded for signature")
-@Field File signaturePdf
-
-@Parameters(index = "3", arity = "1", paramLabel = "name", description = "Name to be put on the signed document")
-@Field String name
-
-@Parameters(index = "4", arity = "1", paramLabel = "reason", description = "Reason to be put on the signed document")
-@Field String reason
-
-@Parameters(index = "5", arity = "1", paramLabel = "location", description = "Location to be put on the signed document")
-@Field String location
-
-@Parameters(index = "6", arity = "1", paramLabel = "contactInfo", description = "Contact Info to be put on the signed document")
-@Field String contactInfo
-
-@Parameters(index = "7", arity = "1", paramLabel = "primaryCustomerNumber", description = "Primary customer number used to look up agreement")
-@Field Integer primaryCustomerNumber
-
-@Parameters(index = "8", arity = "1", paramLabel = "secondaryCustomerNumber", description = "Secondary customer number used to look up agreement")
-@Field Integer secondaryCustomerNumber
-
-@Parameters(index = "9", arity = "1", paramLabel = "rtoAgreementNumber", description = "RTO agreement number")
-@Field Integer rtoAgreementNumber
-
-@Parameters(index = "10", arity = "1", paramLabel = "clubAgreementNumber", description = "Club agreement number")
-@Field Integer clubAgreementNumber
-
-@Parameters(index = "11", arity = "1", paramLabel = "otherAgreementNumber", description = "Other agreement number")
-@Field Integer otherAgreementNumber
-
-@Parameters(index = "12", arity = "1..*", paramLabel = "signatories", description = "The people who need to sign the document")
-@Field String[] signatories*/
 
 //System.setProperty("logback.configurationFile", "/tmp/document-upload.xml")
 //System.properties["logback.configurationFile"] = "/tmp/document-upload.xml"
@@ -91,13 +52,26 @@ if (!helpRequested) {
 
    if (argsFile.exists() && argsFile.isFile()) {
       try (final argsReader = new FileReader(argsFile)) {
+         final escaper = UrlEscapers.urlPathSegmentEscaper()
          try (final csvParser = new CSVParser(argsReader, CSVFormat.EXCEL.builder().setHeader().setDelimiter('|').build())) {
             final csvData = csvParser.first() // just grab the first record after the head
-            final dataset = csvData["dataset"]
+            final dataset = csvData["dataset"].toString().trim()
             final storeNumber = Integer.valueOf(csvData["storeNumber"].trim())
-            // TODO put other params here
+            final pdfFile = csvData["signaturePdf"].toString().trim()
+            final signaturePdf = new File(pdfFile)
+            final name = escaper.escape(csvData["name"].toString().trim())
+            final reason = escaper.escape(csvData["reason"].toString().trim())
+            final location = escaper.escape(csvData["location"].toString().trim())
+            final contactInfo = escaper.escape(csvData["contactInfo"].toString().trim())
+            final primaryCustomerNumber = Integer.valueOf(csvData["primaryCustomerNumber"].trim())
+            final secondaryCustomerNumber = Integer.valueOf(csvData["secondaryCustomerNumber"].trim())
+            final rtoAgreementNumber = Integer.valueOf(csvData["rtoAgreementNumber"].trim())
+            final clubAgreementNumber = Integer.valueOf(csvData["clubAgreementNumber"].trim())
+            final otherAgreementNumber = Integer.valueOf(csvData["otherAgreementNumber"].trim())
             final signatories = StringUtils.split(csvData["signatories"].trim(), ',')
-            final escaper = UrlEscapers.urlPathSegmentEscaper()
+            for (int i = 0; i < signatories.length; i++)
+               signatories[i] = signatories[i].trim()
+
             final jsonSlurper = new JsonSlurper()
 
             try (final client = HttpClients.createDefault()) {
@@ -133,7 +107,7 @@ if (!helpRequested) {
                      }.join("&signer=")
 
                      //The below Post is hitting DocumentController from high-touch-sign
-                     final uploadDocumentRequest = new HttpPost("${host}/api/document/${escaper.escape(name)}/${escaper.escape(reason)}/${escaper.escape(location)}/${escaper.escape(contactInfo)}?${signers}")
+                     final uploadDocumentRequest = new HttpPost("${host}/api/document/${name}/${reason}/${location}/${contactInfo}?${signers}")
 
                      final pdfBody = new FileBody(signaturePdf, ContentType.APPLICATION_PDF, signaturePdf.name)
                      final requestEntity = MultipartEntityBuilder.create().addPart("file", pdfBody).build()
@@ -149,7 +123,7 @@ if (!helpRequested) {
                      final awsResponse = jsonSlurper.parse(uploadResponse.entity.content).nextSignatureUri
 
                      if (uploadResponseCode >= 200 && uploadResponseCode < 400) {
-                        if (rtoAgreementNumber != 0) { //This is where we check then insert/update the agreement_signing table. Must handle rto, club, and/or other.
+                        if (rtoAgreementNumber != 0) { //This is where we check then insert/update the agreement_signing table for rto.
                            final storeDTO = new SimpleLegacyNumberDTO(storeNumber)
                            final checkExisting = new HttpGet("http://localhost:10900/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${rtoAgreementNumber}")
                            final existingRtoAgreement = client.execute(checkExisting)
@@ -198,7 +172,7 @@ if (!helpRequested) {
                            }
                         }
 
-                        if (clubAgreementNumber != 0) { //This is where we check then insert/update the agreement_signing table. Must handle rto, club, and/or other.
+                        if (clubAgreementNumber != 0) { //This is where we check then insert/update the agreement_signing table for club.
                            final storeDTO = new SimpleLegacyNumberDTO(storeNumber)
                            final checkExisting = new HttpGet("http://localhost:10900/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${clubAgreementNumber}")
                            final existingClubAgreement = client.execute(checkExisting)
@@ -247,7 +221,7 @@ if (!helpRequested) {
                            }
                         }
 
-                        if (otherAgreementNumber != 0) { //This is where we check then insert/update the agreement_signing table. Must handle rto, club, and/or other.
+                        if (otherAgreementNumber != 0) { //This is where we check then insert/update the agreement_signing table for other.
                            final storeDTO = new SimpleLegacyNumberDTO(storeNumber)
                            final checkExisting = new HttpGet("http://localhost:10900/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${otherAgreementNumber}")
                            final existingOtherAgreement = client.execute(checkExisting)
