@@ -3,12 +3,15 @@ package com.cynergisuite.middleware.vendor.rebate
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountStatusTypeRepository
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.AccountIsRequired
+import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.SelectPercentOrPerUnit
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
+import com.cynergisuite.middleware.vendor.rebate.infrastructure.RebateRepository
 import com.cynergisuite.middleware.vendor.rebate.infrastructure.RebateTypeRepository
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -21,6 +24,7 @@ class RebateValidator @Inject constructor(
    private val vendorRepository: VendorRepository,
    private val accountStatusTypeRepository: AccountStatusTypeRepository,
    private val rebateTypeRepository: RebateTypeRepository,
+   private val rebateRepository: RebateRepository,
    private val accountRepository: AccountRepository
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(RebateValidator::class.java)
@@ -78,6 +82,9 @@ class RebateValidator @Inject constructor(
             errors.add(ValidationError("generalLedgerDebitAccount", AccountIsRequired(generalLedgerDebitAccount)))
          }
 
+         if (rebateRepository.exists(dto.description!!, company) && dto.id == null) {
+            errors.add(ValidationError("value", Duplicate("value")))
+         }
          generalLedgerCreditAccount
             ?: errors.add(ValidationError("generalLedgerCreditAccount.id", NotFound(dto.generalLedgerCreditAccount!!.id!!)))
       }
