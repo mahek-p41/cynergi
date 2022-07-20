@@ -842,7 +842,7 @@ BEGIN
           where
           inventory_statuses.status_code = ''N'' or inventory_statuses.status_code = ''R''
           group by
-          stores.loc_tran_loc, stores.loc_transfer_desc, inventory_statuses.status_code, models.itemfile_nbr, inventories.inv_desc, models.itemfile_desc_2
+          stores.loc_tran_loc, stores.loc_transfer_desc,models.itemfile_nbr, inventories.inv_desc,models.itemfile_desc_2
        ';
 
       unionAll := ' UNION ALL ';
@@ -899,7 +899,7 @@ BEGIN
                     JOIN
                       ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
                     JOIN
-                      ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.agreement_id = agreement_version_inventories.agreement_version_id
+                      ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.id = agreement_version_inventories.agreement_version_id
                     JOIN
                       ' || r.schema_name || '.level2_inventories as inventories on agreement_version_inventories.inventory_id = inventories.id
                     JOIN
@@ -920,11 +920,12 @@ BEGIN
                               and av3.agreement_open_flag = ''Y''
                        GROUP BY cust_acct_nbr)b   on b.cust_acct_nbr = a.customer_number
          WHERE agr_count = 1
+
          ';
 
       unionAll := ' UNION ALL ';
    END LOOP;
-   sqlToExec := sqlToExec || 'ORDER BY store_number ASC';
+   sqlToExec := sqlToExec || 'ORDER BY store_number, customer_number, agreement_number ASC';
 
    EXECUTE sqlToExec;
 END $$;
@@ -967,7 +968,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
             JOIN
-           ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.agreement_id = agreement_version_inventories.agreement_version_id
+           ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.id = agreement_version_inventories.agreement_version_id
             JOIN
            ' || r.schema_name || '.level2_inventories as inventories on agreement_version_inventories.inventory_id = inventories.id
             JOIN
@@ -984,7 +985,7 @@ BEGIN
 
       unionAll := ' UNION ALL ';
    END LOOP;
-   sqlToExec := sqlToExec || 'ORDER BY store_number ASC';
+   sqlToExec := sqlToExec || 'ORDER BY store_number, customer_number, agreement_number ASC';
 
    EXECUTE sqlToExec;
 END $$;
@@ -1018,16 +1019,30 @@ BEGIN
             customers.cust_email_address      AS email,
             agreements.agreement_number       AS agreement_number,
             current_date - agreement_versions.agreement_next_due_date AS days_overdue,
-            sum
-                (case
-                      when agreement_versions.agreement_payment_terms = ''M''and agreement_versions.agreement_open_flag = ''Y''
-                             and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(((current_date - agreement_versions.agreement_next_due_date) / 30) + 1,0)
-                      when agreement_versions.agreement_payment_terms = ''W'' and agreement_versions.agreement_open_flag = ''Y''
-                             and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(((current_date - agreement_versions.agreement_next_due_date) / 7) + 1,0)
-                      when agreement_versions.agreement_payment_terms = ''B'' or agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
-                             and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(((current_date - agreement_versions.agreement_next_due_date) / 15) + 1,0)
-                 		 else 0
-                      end) AS overdue_amount,
+
+            cast((case when
+   		          (case
+              		      when agreement_versions.agreement_payment_terms = ''M'' and agreement_versions.agreement_open_flag = ''Y''
+                 	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * case when ((current_date - agreement_versions.agreement_next_due_date)) < 30 then 1 else round(trunc(1.00 * ((current_date + 30 - agreement_versions.agreement_next_due_date)/30)),2) end
+              		      when agreement_versions.agreement_payment_terms = ''W'' and agreement_versions.agreement_open_flag = ''Y''
+                 	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 7 - agreement_versions.agreement_next_due_date) / 7),0),2)
+             	         when agreement_versions.agreement_payment_terms = ''B'' or agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
+                 	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
+              	 	 else 0
+              		 end) > agreement_versions.agreement_contract_balance
+            then agreement_versions.agreement_contract_balance
+            else
+                    (case
+                         when agreement_versions.agreement_payment_terms = ''M'' and agreement_versions.agreement_open_flag = ''Y''
+                         and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * case when ((current_date - agreement_versions.agreement_next_due_date)) < 30 then 1 else CEIL((current_date + 30 - agreement_versions.agreement_next_due_date)/30) end
+                         when agreement_versions.agreement_payment_terms = ''W'' and agreement_versions.agreement_open_flag = ''Y''
+                         and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 7 - agreement_versions.agreement_next_due_date) / 7),0),2)
+                         when agreement_versions.agreement_payment_terms = ''B'' or agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
+                         and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
+                     else 0
+                     end)
+             end)AS NUMERIC(11,2))::VARCHAR AS overdue_amount,
+
            models.itemfile_desc_1 AS product
          FROM ' || r.schema_name || '.level2_agreements as agreements
             JOIN
@@ -1037,7 +1052,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
             JOIN
-            ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.agreement_id = agreement_version_inventories.agreement_version_id
+            ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.id = agreement_version_inventories.agreement_version_id
             JOIN
             ' || r.schema_name || '.level2_inventories as inventories on agreement_version_inventories.inventory_id = inventories.id
             JOIN
@@ -1049,12 +1064,13 @@ BEGIN
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
             customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,
             customers.cust_cell_phone,customers.cust_home_phone,customers.cust_email_address,
-            agreements.agreement_number,agreement_versions.agreement_open_flag,agreement_versions.agreement_next_due_date,agreement_versions.agreement_payment_amt, product
+            agreements.agreement_number,agreement_versions.agreement_open_flag,agreement_versions.agreement_next_due_date,agreement_versions.agreement_payment_amt,
+            agreement_versions.agreement_payment_terms, agreement_versions.agreement_contract_balance,product
          ';
 
       unionAll := ' UNION ALL ';
    END LOOP;
-   sqlToExec := sqlToExec || 'ORDER BY store_number ASC';
+   sqlToExec := sqlToExec || 'ORDER BY store_number, customer_number, agreement_number ASC';
 
    EXECUTE sqlToExec;
 END $$;
@@ -1096,7 +1112,6 @@ BEGIN
          WHERE
             agreements.agreement_type = ''O''
             and agreement_versions.agreement_open_flag = ''Y'' and EXTRACT(MONTH FROM customers.cust_birth_date) = EXTRACT(MONTH FROM current_date)
-            and EXTRACT(DAY FROM customers.cust_birth_date) = EXTRACT(DAY FROM current_date)
          GROUP BY
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
             customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,
@@ -1105,7 +1120,7 @@ BEGIN
 
       unionAll := ' UNION ALL ';
    END LOOP;
-   sqlToExec := sqlToExec || 'ORDER BY store_number ASC';
+   sqlToExec := sqlToExec || 'ORDER BY store_number, customer_number ASC';
 
    EXECUTE sqlToExec;
 END $$;
@@ -1156,14 +1171,14 @@ BEGIN
                               when agreement_versions.agreement_payment_terms = ''B'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2))
                               else Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2))
                           end ::INTEGER * 30)) as projected_payout_date,
-            sum
+            min
               (case
                   when agreement_versions.agreement_payment_terms = ''M'' then Round(trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2)* 4.33)
                   when agreement_versions.agreement_payment_terms = ''W'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2)))
                   when agreement_versions.agreement_payment_terms = ''B'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2 * 4.33))
                   else Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) * 2))
               end) AS weeks_remaining,
-             sum
+             min
                (case
                     when agreement_versions.agreement_payment_terms = ''M'' then Round(trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2))
                     when agreement_versions.agreement_payment_terms = ''W'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 4.33))
@@ -1181,23 +1196,38 @@ BEGIN
               then current_date - agreement_versions.agreement_next_due_date
               else null
               end AS days_overdue,
-             sum
-               (case
-                   when agreement_versions.agreement_payment_terms = ''M'' and agreement_versions.agreement_open_flag = ''Y''
-                        and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(((current_date - agreement_versions.agreement_next_due_date) / 30) + 1,0)
-                   when agreement_versions.agreement_payment_terms = ''W'' and agreement_versions.agreement_open_flag = ''Y''
-                        and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(((current_date - agreement_versions.agreement_next_due_date) / 7) + 1,0)
-                   when agreement_versions.agreement_payment_terms = ''B'' or agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
-                        and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(((current_date - agreement_versions.agreement_next_due_date) / 15) + 1,0)
-            		 else 0
-                end) AS overdue_amount,
 
-            case when (select count(customer_id) from ' || r.schema_name || '.level2_agreements ag where ag.agreement_type = ''F'' and ag.customer_id = customers.id)> 0 then ''Y'' else ''N'' end as club_member,
-            (select sum(agreement_number) from ' || r.schema_name || '.level2_agreements ag2 where ag2.agreement_type = ''F'' and ag2.customer_id = customers.id) as club_number,
-                        (select coalesce(sum(av2.agreement_payment_amt),0) from ' || r.schema_name || '.level2_agreements ag23
-            			  JOIN ' || r.schema_name || '.level2_agreement_versions av2 on ag23.id = av2.agreement_id
-            			  where ag23.agreement_type = ''F'' and ag23.customer_id = customers.id) as club_fee,
-         agreement_versions.agreement_recur_pmt_switch as autopay
+            Cast((case when
+   		             (case
+                		      when agreement_versions.agreement_payment_terms = ''M'' and agreement_versions.agreement_open_flag = ''Y''
+                  	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * case when ((current_date - agreement_versions.agreement_next_due_date)) < 30 then 1 else round(trunc(1.00 * ((current_date + 30 - agreement_versions.agreement_next_due_date)/30)),2) end
+                		      when agreement_versions.agreement_payment_terms = ''W'' and agreement_versions.agreement_open_flag = ''Y''
+                   	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 7 - agreement_versions.agreement_next_due_date) / 7),0),2)
+                 	         when agreement_versions.agreement_payment_terms = ''B'' or agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
+                   	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
+                	 	 else 0
+                		 end) > agreement_versions.agreement_contract_balance
+            then agreement_versions.agreement_contract_balance
+            else
+                       (case
+                            when agreement_versions.agreement_payment_terms = ''M'' and agreement_versions.agreement_open_flag = ''Y''
+                            and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * case when ((current_date - agreement_versions.agreement_next_due_date)) < 30 then 1 else CEIL((current_date + 30 - agreement_versions.agreement_next_due_date)/30) end
+                            when agreement_versions.agreement_payment_terms = ''W'' and agreement_versions.agreement_open_flag = ''Y''
+                            and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 7 - agreement_versions.agreement_next_due_date) / 7),0),2)
+                            when agreement_versions.agreement_payment_terms = ''B'' or agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
+                            and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
+                       else 0
+                       end)
+             end) AS Numeric(11,2))::VARCHAR AS overdue_amount,
+
+             case when (select count(customer_id) from ' || r.schema_name || '.level2_agreements ag join ' || r.schema_name || '.level2_agreement_versions av4 on av4.agreement_id = ag.id where ag.agreement_type = ''F'' and av4.agreement_open_flag = ''Y'' and ag.customer_id = customers.id)> 0 then ''Y'' else ''N'' end as club_member,
+                   (select min(agreement_number) from ' || r.schema_name || '.level2_agreements ag2 join ' || r.schema_name || '.level2_agreement_versions av5 on av5.agreement_id = ag2.id where ag2.agreement_type = ''F'' and av5.agreement_open_flag = ''Y'' and ag2.customer_id = customers.id) as club_number,
+                           (select coalesce(min(av2.agreement_payment_amt),0) from ' || r.schema_name || '.level2_agreements ag23
+                         			  JOIN ' || r.schema_name || '.level2_agreement_versions av2 on ag23.id = av2.agreement_id
+                         			  where ag23.agreement_type = ''F'' and av2.agreement_open_flag = ''Y'' and ag23.customer_id = customers.id) as club_fee,
+
+             agreement_versions.agreement_recur_pmt_switch as autopay
+
          FROM ' || r.schema_name || '.level2_agreements as agreements
             JOIN
             ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
@@ -1206,7 +1236,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
             JOIN
-            ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.agreement_id = agreement_version_inventories.agreement_version_id
+            ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.id = agreement_version_inventories.agreement_version_id
            JOIN
             ' || r.schema_name || '.level2_inventories as inventories on agreement_version_inventories.inventory_id = inventories.id
             JOIN
@@ -1226,7 +1256,7 @@ BEGIN
 
       unionAll := ' UNION ALL ';
    END LOOP;
-   sqlToExec := sqlToExec || 'ORDER BY store_number ASC';
+   sqlToExec := sqlToExec || 'ORDER BY store_number, customer_number, agreement_number ASC';
 
    EXECUTE sqlToExec;
 END $$;
