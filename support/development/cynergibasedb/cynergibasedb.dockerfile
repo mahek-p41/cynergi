@@ -23,8 +23,8 @@ RUN chmod 0600 /root/.pgpass && \
     chmod u+x /opt/scripts/migratedb.groovy && \
     chmod u+x /opt/scripts/* && \
     dos2unix /opt/scripts/* && \
-    mkdir -p /opt/cyn/v01/cynmid/groovy/bin/ && \
-    ln -s /opt/groovy/bin/groovy /opt/cyn/v01/cynmid/groovy/bin/groovy
+    mkdir -p /opt/cyn/v01/cynmid/groovy/current/bin/ && \
+    ln -s /opt/groovy/bin/groovy /opt/cyn/v01/cynmid/groovy/current/bin/groovy
 
 COPY --from=groovyImage /opt /opt
 
