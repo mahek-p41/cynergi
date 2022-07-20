@@ -68,9 +68,7 @@ if (!helpRequested) {
             final rtoAgreementNumber = Integer.valueOf(csvData["rtoAgreementNumber"].trim())
             final clubAgreementNumber = Integer.valueOf(csvData["clubAgreementNumber"].trim())
             final otherAgreementNumber = Integer.valueOf(csvData["otherAgreementNumber"].trim())
-            final signatories = StringUtils.split(csvData["signatories"].trim(), ',')
-            for (int i = 0; i < signatories.length; i++)
-               signatories[i] = signatories[i].trim()
+            final signatories = StringUtils.split(csvData["signatories"].trim(), ',').collect {it.trim()}
 
             final jsonSlurper = new JsonSlurper()
 
@@ -99,6 +97,7 @@ if (!helpRequested) {
                      } else {
                         println "Unable to login with access token"
                         return null
+                        System.exit(-1)
                      }
                   }
 
@@ -164,11 +163,11 @@ if (!helpRequested) {
                                  println "Successfully updated rto agreement"
                               } else {
                                  println "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
-                                 System.exit(-1)
+                                 System.exit(-3)
                               }
                            } else {
                               println "Unhandled response from server $existingRtoAgreementResponseCode"
-                              System.exit(-3)
+                              System.exit(-4)
                            }
                         }
 
@@ -193,7 +192,7 @@ if (!helpRequested) {
                                  println "Successfully created club agreement"
                               } else {
                                  println "${uploadResponse.getCode()} -> ${EntityUtils.toString(createResponse.getEntity())}"
-                                 System.exit(-2)
+                                 System.exit(-5)
                               }
                            } else if (existingClubAgreementResponseCode == 200) {
                               //Update the record
@@ -213,11 +212,11 @@ if (!helpRequested) {
                                  println "Successfully updated club agreement"
                               } else {
                                  println "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
-                                 System.exit(-1)
+                                 System.exit(-6)
                               }
                            } else {
                               println "Unhandled response from server $existingRtoAgreementResponseCode"
-                              System.exit(-3)
+                              System.exit(-7)
                            }
                         }
 
@@ -242,7 +241,7 @@ if (!helpRequested) {
                                  println "Successfully created other agreement"
                               } else {
                                  println "${uploadResponse.getCode()} -> ${EntityUtils.toString(createResponse.getEntity())}"
-                                 System.exit(-2)
+                                 System.exit(-8)
                               }
                            } else if (existingOtherAgreementResponseCode == 200) {
                               //Update the record
@@ -262,22 +261,23 @@ if (!helpRequested) {
                                  println "Successfully updated other agreement"
                               } else {
                                  println "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
-                                 System.exit(-1)
+                                 System.exit(-9)
                               }
                            } else {
                               println "Unhandled response from server $existingRtoAgreementResponseCode"
-                              System.exit(-3)
+                              System.exit(-10)
                            }
                         }
 
                      } else {
                         println "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
+                        System.exit(-11)
                      }
 
                      uploadResponse.close()
                   } else {
                      println "Invalid token provided for uploading"
-                     System.exit(-3)
+                     System.exit(-12)
                   }
                }
             }
@@ -285,5 +285,6 @@ if (!helpRequested) {
       }
    } else {
       println "${argsFile} is not a csv file"
+      System.exit(-13)
    }
 }
