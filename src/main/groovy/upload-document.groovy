@@ -13,6 +13,8 @@ import picocli.CommandLine.Parameters
 import groovy.transform.Field
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
+import java.time.format.DateTimeFormatter
+import java.time.LocalDate
 import com.google.common.net.UrlEscapers
 import org.slf4j.bridge.SLF4JBridgeHandler
 import org.apache.hc.client5.http.entity.mime.FileBody
@@ -70,6 +72,10 @@ if (!helpRequested) {
             final otherAgreementNumber = Integer.valueOf(csvData["otherAgreementNumber"].trim())
             final signatories = StringUtils.split(csvData["signatories"].trim(), ',').collect {it.trim()}
 
+            final expirationDate = (csvData["retentionDate"].toString().trim())
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yy", Locale.ENGLISH);
+            LocalDate retentionDate = LocalDate.parse(expirationDate, formatter);
+
             final jsonSlurper = new JsonSlurper()
 
             try (final client = HttpClients.createDefault()) {
@@ -106,7 +112,7 @@ if (!helpRequested) {
                      }.join("&signer=")
 
                      //The below Post is hitting DocumentController from high-touch-sign
-                     final uploadDocumentRequest = new HttpPost("${host}/api/document/${name}/${reason}/${location}/${contactInfo}?${signers}")
+                     final uploadDocumentRequest = new HttpPost("${host}/api/document/${name}/${reason}/${location}/${contactInfo}/${retentionDate}?${signers}")
 
                      final pdfBody = new FileBody(signaturePdf, ContentType.APPLICATION_PDF, signaturePdf.name)
                      final requestEntity = MultipartEntityBuilder.create().addPart("file", pdfBody).build()
