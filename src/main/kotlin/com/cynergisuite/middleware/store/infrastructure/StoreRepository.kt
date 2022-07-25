@@ -1,11 +1,14 @@
 package com.cynergisuite.middleware.store.infrastructure
 
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.isNumber
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.update
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -189,6 +192,50 @@ class StoreRepository @Inject constructor(
    }
 
    @ReadOnly
+   fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<StoreEntity, PageRequest> {
+      val searchQuery = page.query
+      val where = StringBuilder(" WHERE comp.id = :comp_id AND comp.deleted = FALSE")
+      val sortBy = if (!searchQuery.isNullOrEmpty()) {
+         val splitedWords = searchQuery.split(" ")
+         val fieldToSearch = if (splitedWords.first().isNumber() && splitedWords.size == 1) {
+            " store.number::text "
+         } else {
+            "COALESCE(store.number::text, '') || ' ' || COALESCE(store.name, '')"
+         }
+         where.append(" AND $fieldToSearch <-> :search_query < 0.95 ")
+         " ORDER BY $fieldToSearch <-> :search_query "
+      } else {
+         EMPTY
+      }
+
+      return jdbc.queryPaged(
+         """
+         WITH paged AS (
+            ${selectBaseQuery()}
+            $where
+            $sortBy
+         )
+         SELECT
+            p.*,
+            count(*) OVER() as total_elements
+         FROM paged AS p
+         LIMIT :limit OFFSET :offset
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "limit" to page.size(),
+            "offset" to page.offset(),
+            "search_query" to searchQuery
+         ),
+         page
+      ) { rs, elements ->
+         do {
+            elements.add(mapRowWithRegion(rs, company, "store_"))
+         } while (rs.next())
+      }
+   }
+
+   @ReadOnly
    override fun exists(id: Long, company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
          """
@@ -269,9 +316,9 @@ class StoreRepository @Inject constructor(
 
    fun mapRowWithRegion(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): StoreEntity =
       StoreEntity(
-         id = rs.getLong("${columnPrefix}id"),
-         number = rs.getInt("${columnPrefix}number"),
-         name = rs.getString("${columnPrefix}name"),
+         id = rs.getLong("id"),
+         number = rs.getInt("number"),
+         name = rs.getString("name"),
          region = regionRepository.mapRowOrNull(rs, company, "reg_"),
          company = company,
       )
