@@ -115,6 +115,22 @@ class BankRepository @Inject constructor(
    }
 
    @ReadOnly
+   fun findByGlAccount(id: UUID, company: CompanyEntity): BankEntity? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
+      val query = "${selectBaseQuery()} WHERE bank.general_ledger_account_id = :id AND bank.deleted = FALSE AND comp.deleted = FALSE"
+      val found = jdbc.findFirstOrNull(
+         query,
+         params
+      ) { rs, _ ->
+         mapRow(rs, company, "bank_")
+      }
+
+      logger.trace("Searching for Bank id {}: \nQuery {} \nResulted in {}", id, query, found)
+
+      return found
+   }
+
+   @ReadOnly
    fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<BankEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val query =

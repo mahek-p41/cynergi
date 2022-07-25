@@ -3,10 +3,13 @@ package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastruct
 import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentReportTemplate
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
+import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDTO
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -188,13 +191,15 @@ class GeneralLedgerDetailController @Inject constructor(
    fun subroutine(
       @Body @Valid
       dto: GeneralLedgerDetailDTO,
-      authentication: Authentication
+      je: GeneralLedgerJournalEntryDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
    ): GeneralLedgerDetailDTO {
       val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Requested Create GeneralLedgerDetail {}", dto)
 
-      val response = generalLedgerDetailService.postEntry(dto, userCompany)
+      val response = generalLedgerDetailService.postEntry(dto, userCompany, je, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Create GeneralLedgerDetail {} resulted in {}", dto, response)
 

@@ -6,10 +6,18 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.accounting.account.AccountService
+import com.cynergisuite.middleware.accounting.bank.BankService
+import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDTO
+import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationService
+import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarService
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeService
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
+import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.GeneralLedgerRecurringEntriesDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.infrastructure.GeneralLedgerRecurringEntriesRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
@@ -22,7 +30,7 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.math.BigDecimal
-import java.util.UUID
+import java.util.*
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.memberProperties
@@ -34,8 +42,11 @@ class GeneralLedgerDetailService @Inject constructor(
    private val generalLedgerRecurringEntriesRepository: GeneralLedgerRecurringEntriesRepository,
    private val financialCalendarService: FinancialCalendarService,
    private val generalLedgerSourceCodeService: GeneralLedgerSourceCodeService,
+   private val generalLedgerSummaryService: GeneralLedgerSummaryService,
+   private val accountService: AccountService,
+   private val bankService: BankService,
+   private val bankReconciliationService: BankReconciliationService
    private val generalLedgerSummaryRepository: GeneralLedgerSummaryRepository,
-   private val generalLedgerSummaryService: GeneralLedgerSummaryService
    private val generalLedgerRecurringRepository: GeneralLedgerRecurringRepository,
 ) {
    fun fetchOne(id: UUID, company: CompanyEntity): GeneralLedgerDetailDTO? {
@@ -129,7 +140,7 @@ class GeneralLedgerDetailService @Inject constructor(
       return GeneralLedgerDetailDTO(entity = generalLedgerDetail)
    }
 
-   fun postEntry(generalLedgerDetail: GeneralLedgerDetailDTO, company: CompanyEntity): GeneralLedgerDetailDTO {
+   fun postEntry(generalLedgerDetail: GeneralLedgerDetailDTO, company: CompanyEntity, journalEntry: GeneralLedgerJournalEntryDTO? = null,  locale: Locale): GeneralLedgerDetailDTO {
       val periodOpen = financialCalendarService.fetchDateRangeWhenGLIsOpen(company)
       val cal = financialCalendarService.fetchByDate(company, generalLedgerDetail.date!!)!!
       val overallPeriod =
@@ -143,6 +154,7 @@ class GeneralLedgerDetailService @Inject constructor(
       var summary = generalLedgerSummaryService.fetchOneByBusinessKey(company, generalLedgerDetail.account?.id!!, generalLedgerDetail.profitCenter?.myId()!!, overallPeriod)
 
       if(cal.generalLedgerOpen == true) {
+
       } else {
          // gl not open for this period. Posting aborted
       }
@@ -161,6 +173,17 @@ class GeneralLedgerDetailService @Inject constructor(
 
          generalLedgerSummaryService.update(summary?.id!!, summary!!, company)
       }
+      val glAccount = accountService.fetchById(generalLedgerDetail.myId()!!, company, locale)
+      if(glAccount?.isBankAccount!! ) {
+         val bank = bankService.fetchByGLAccount(generalLedgerDetail.account!!.id!!, company)
+         val bankType = BankReconciliationTypeDTO("M", "test")
+         val bankReconciliationDto = BankReconciliationDTO(null, SimpleIdentifiableDTO(bank!!.myId()), bankType, generalLedgerDetail.date, null, generalLedgerDetail.amount,
+         "GL " + generalLedgerDetail.profitCenter!!.id.toString() + " " + glSourceCode.toString(), journalEntry!!.entryDate.toString() )
+         bankReconciliationService.create(bankReconciliationDto, company)
+      }
+
+      val je = journalEntry!!.journalEntryDetails.filter { it.account!!.id == generalLedgerDetail.account!!.id  }
+
       return generalLedgerDetail
       }
 }
