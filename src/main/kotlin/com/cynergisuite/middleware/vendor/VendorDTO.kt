@@ -167,7 +167,7 @@ data class VendorDTO(
    var autoSubmitPurchaseOrder: Boolean? = null,
 
    @field:Positive
-   @field:Schema(name = "number", minimum = "1", required = false, description = "Vendor numbe")
+   @field:Schema(name = "number", minimum = "1", required = false, description = "Vendor number")
    var number: Int? = null,
 
    @field:Size(min = 4, max = 200)

@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.vendor.infrastructure
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
@@ -10,6 +9,7 @@ import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.isNumber
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.queryPaged
@@ -238,25 +238,28 @@ class VendorRepository @Inject constructor(
 
    @ReadOnly
    fun search(company: CompanyEntity, page: VendorSearchPageRequest): RepositoryPage<VendorEntity, PageRequest> {
-      var searchQuery = page.query
+      val searchQuery = page.query
       val where = StringBuilder(" WHERE comp.id = :comp_id AND v.deleted = FALSE ")
 
       if (page.active != null) {
          where.append(" AND v.active = ${page.active} ")
       }
 
-      val sortBy = if (!searchQuery.isNullOrEmpty()) {
-         if (page.fuzzy == false) {
-            where.append(" AND (search_vector @@ to_tsquery(:search_query)) ")
-            searchQuery = searchQuery.replace("\\s+".toRegex(), " & ")
-            EMPTY
-         } else {
-            val fieldToSearch = " v.name "
-            where.append(" AND $fieldToSearch <-> :search_query < 0.9 ")
-            " ORDER BY $fieldToSearch <-> :search_query "
+      val sortBy = StringBuilder("")
+      if (!searchQuery.isNullOrEmpty()) {
+         where.append("AND (")
+         sortBy.append("ORDER BY ")
+         val searchQueryBeginsWith = "$searchQuery%"
+         if (searchQuery.isNumber()) {
+            if (page.fuzzy == false) {
+               where.append("v.number::text LIKE \'$searchQuery\' OR ")
+            } else {
+               where.append("v.number::text LIKE \'$searchQueryBeginsWith\' OR ")
+               sortBy.append("v.number::text <-> :search_query, v.number::text ASC, ")
+            }
          }
-      } else {
-         EMPTY
+         where.append("v.name ILIKE \'$searchQueryBeginsWith\')")
+         sortBy.append("v.name <-> :search_query, v.name ASC")
       }
 
       return jdbc.queryPaged(
@@ -338,6 +341,7 @@ class VendorRepository @Inject constructor(
             purchase_order_submit_email_address,
             allow_drop_ship_to_customer,
             auto_submit_purchase_order,
+            number,
             note,
             phone_number,
             active
@@ -376,6 +380,7 @@ class VendorRepository @Inject constructor(
             :purchase_order_submit_email_address,
             :allow_drop_ship_to_customer,
             :auto_submit_purchase_order,
+            :number,
             :note,
             :phone_number,
             :active
@@ -417,6 +422,7 @@ class VendorRepository @Inject constructor(
             "purchase_order_submit_email_address" to entity.purchaseOrderSubmitEmailAddress,
             "allow_drop_ship_to_customer" to entity.allowDropShipToCustomer,
             "auto_submit_purchase_order" to entity.autoSubmitPurchaseOrder,
+            "number" to entity.number,
             "note" to entity.note,
             "phone_number" to entity.phone,
             "active" to entity.isActive
@@ -487,6 +493,7 @@ class VendorRepository @Inject constructor(
             purchase_order_submit_email_address = :purchase_order_submit_email_address,
             allow_drop_ship_to_customer = :allow_drop_ship_to_customer,
             auto_submit_purchase_order = :auto_submit_purchase_order,
+            number = :number,
             note = :note,
             phone_number = :phone_number,
             active = :active
@@ -529,6 +536,7 @@ class VendorRepository @Inject constructor(
             "purchase_order_submit_email_address" to toUpdate.purchaseOrderSubmitEmailAddress,
             "allow_drop_ship_to_customer" to toUpdate.allowDropShipToCustomer,
             "auto_submit_purchase_order" to toUpdate.autoSubmitPurchaseOrder,
+            "number" to toUpdate.number,
             "note" to toUpdate.note,
             "phone_number" to toUpdate.phone,
             "active" to toUpdate.isActive
