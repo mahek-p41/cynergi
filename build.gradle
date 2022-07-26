@@ -97,6 +97,7 @@ dependencies {
    testImplementation("io.micronaut:micronaut-http-client")
    testImplementation("org.codehaus.groovy:groovy-sql")
    testImplementation("com.github.javafaker:javafaker:1.0.2")
+   testImplementation 'com.github.tomakehurst:wiremock-jre8-standalone:2.33.2'
 }
 
 test.classpath += configurations.developmentOnly

@@ -42,19 +42,16 @@ SLF4JBridgeHandler.install()
 @Parameters(index = "0", arity = "1", paramLabel = "argsFile", description = "Arguments to be passed to the signature service")
 @Field File argsFile
 
-//System.setProperty("logback.configurationFile", "/tmp/document-upload.xml")
-//System.properties["logback.configurationFile"] = "/tmp/document-upload.xml"
-//System.properties['logback.configurationFile'] = '/tmp/document-upload.xml'
-
 if (!helpRequested) {
-   //if (debug) {
-   System.properties['org.slf4j.simpleLogger.log.org.apache.hc.client5.http.wire'] = 'trace'
-   System.properties['logback.configurationFile'] = 'logback-debug-stdout.xml'
-   //}
+   if (debug) {
+      System.properties['org.slf4j.simpleLogger.log.org.apache.hc.client5.http.wire'] = 'trace'
+      System.properties['logback.configurationFile'] = 'logback-debug-stdout.xml'
+   }
 
    if (argsFile.exists() && argsFile.isFile()) {
       try (final argsReader = new FileReader(argsFile)) {
          final escaper = UrlEscapers.urlPathSegmentEscaper()
+
          try (final csvParser = new CSVParser(argsReader, CSVFormat.EXCEL.builder().setHeader().setDelimiter('|').build())) {
             final csvData = csvParser.first() // just grab the first record after the head
             final dataset = csvData["dataset"].toString().trim()
@@ -101,15 +98,12 @@ if (!helpRequested) {
                      if (tokenLoginResponse.code == 200) {
                         return jsonSlurper.parse(tokenLoginResponse.entity.content).access_token
                      } else {
-                        println "Unable to login with access token"
-                        return null
-                        System.exit(-1)
+                        println "Unable to login to sign here system with access token. ${tokenLoginResponse.reasonPhrase} ${EntityUtils.toString(tokenLoginResponse.entity)}"
                      }
                   }
 
                   if (accessToken != null) {
-                     final signers = "signer=" + signatories.toList().withIndex().collect {element, index -> "${element}[${index + 1}]"
-                     }.join("&signer=")
+                     final signers = "signer=" + signatories.toList().withIndex().collect {element, index -> "${element}[${index + 1}]" }.join("&signer=")
 
                      //The below Post is hitting DocumentController from high-touch-sign
                      final uploadDocumentRequest = new HttpPost("${host}/api/document/${name}/${reason}/${location}/${contactInfo}/${retentionDate}?${signers}")
@@ -118,6 +112,11 @@ if (!helpRequested) {
                      final requestEntity = MultipartEntityBuilder.create().addPart("file", pdfBody).build()
 
                      uploadDocumentRequest.setHeader("Authorization", "Bearer ${accessToken}")
+                     uploadDocumentRequest.setHeader("X-Sig-Meta-Type", "agreement")
+                     uploadDocumentRequest.setHeader("X-Sig-Meta-Store", storeNumber.toString())
+                     uploadDocumentRequest.setHeader("X-Sig-Meta-Dataset", dataset)
+                     uploadDocumentRequest.setHeader("X-Sig-Meta-Agreement-No", rtoAgreementNumber.toString())
+                     uploadDocumentRequest.setHeader("X-Sig-Meta-Customer-No", primaryCustomerNumber.toString())
                      uploadDocumentRequest.setEntity(requestEntity)
                      final uploadResponse = client.execute(uploadDocumentRequest)
                      final uploadResponseCode = uploadResponse.getCode()

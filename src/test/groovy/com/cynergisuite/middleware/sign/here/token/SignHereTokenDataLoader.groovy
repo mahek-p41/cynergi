@@ -42,8 +42,8 @@ class SignHereTokenTestDataLoaderService {
       this.signHereTokenRepository = signHereTokenRepository
    }
 
-   SignHereTokenEntity single(int numberIn = 1, CompanyEntity company, StoreEntity store, String token) {
-      return SignHereTokenTestDataLoader.stream(numberIn, company, store, token)
+   SignHereTokenEntity single(CompanyEntity company, StoreEntity store, String token) {
+      return SignHereTokenTestDataLoader.stream(company, store, token)
          .map { signHereTokenRepository.insert(it) }
          .findFirst().orElseThrow { new Exception("Unable to create AgreementSigningEntity") }
    }

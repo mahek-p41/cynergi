@@ -129,7 +129,7 @@ class AgreementSigningRepository(
    ): RepositoryPage<AgreementSigningEntity, AgreementSigningPageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<AgreementSigningEntity>()
-      var companyId = company.id
+      val companyId = company.id
       val params = mutableMapOf<String, Any?>(
          "comp_id" to companyId,
          "limit" to pageRequest.size(),
