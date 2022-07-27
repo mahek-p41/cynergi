@@ -44,11 +44,11 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final vendorPmtTerm = vendorPaymentTermList[0]
       final vendorShipVia = shipViaList[0]
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       final poVendorPmtTerm = vendorPaymentTermList[1]
       final poVendorShipVia = shipViaList[1]
-      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia, null, 2)
       final poApprovedBy = employeeList[0]
       final poPurchaseAgent = employeeList[1]
       final poShipVia = shipViaList[2]
@@ -60,7 +60,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final payToPmtTerm = vendorPaymentTermList[3]
       final payToShipVia = shipViaList[3]
-      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 3)
 
       final apInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
 
@@ -141,11 +141,11 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final vendorPmtTerm = vendorPaymentTermList[0]
       final vendorShipVia = shipViaList[0]
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       final poVendorPmtTerm = vendorPaymentTermList[1]
       final poVendorShipVia = shipViaList[1]
-      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia, null, 2)
       final poApprovedBy = employeeList[0]
       final poPurchaseAgent = employeeList[1]
       final poShipVia = shipViaList[2]
@@ -157,7 +157,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final payToPmtTerm = vendorPaymentTermList[3]
       final payToShipVia = shipViaList[3]
-      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 3)
 
       def apInvoices = dataLoaderService.stream(20, company, vendorIn, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
          .map { new AccountPayableInvoiceDTO(it)}
@@ -368,11 +368,11 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final vendorPmtTerm = vendorPaymentTermList[0]
       final vendorShipVia = shipViaList[0]
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       final poVendorPmtTerm = vendorPaymentTermList[1]
       final poVendorShipVia = shipViaList[1]
-      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia, null, 2)
       final poApprovedBy = employeeList[0]
       final poPurchaseAgent = employeeList[1]
       final poShipVia = shipViaList[2]
@@ -384,7 +384,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final payToPmtTerm = vendorPaymentTermList[3]
       final payToShipVia = shipViaList[3]
-      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 3)
 
       final apInvoiceDTO = dataLoaderService.singleDTO(
          company,
@@ -457,11 +457,11 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final vendorPmtTerm = vendorPaymentTermList[0]
       final vendorShipVia = shipViaList[0]
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       final poVendorPmtTerm = vendorPaymentTermList[1]
       final poVendorShipVia = shipViaList[1]
-      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia, null, 2)
       final poApprovedBy = employeeList[0]
       final poPurchaseAgent = employeeList[1]
       final poShipVia = shipViaList[2]
@@ -473,7 +473,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final payToPmtTerm = vendorPaymentTermList[3]
       final payToShipVia = shipViaList[3]
-      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 3)
 
       final apInvoiceDTO = dataLoaderService.singleDTO(
          company,
@@ -550,11 +550,11 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final vendorPmtTerm = vendorPaymentTermList[0]
       final vendorShipVia = shipViaList[0]
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       final poVendorPmtTerm = vendorPaymentTermList[1]
       final poVendorShipVia = shipViaList[1]
-      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia, null, 2)
       final poApprovedBy = employeeList[0]
       final poPurchaseAgent = employeeList[1]
       final poShipVia = shipViaList[2]
@@ -566,7 +566,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final payToPmtTerm = vendorPaymentTermList[3]
       final payToShipVia = shipViaList[3]
-      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 3)
 
       final apInvoiceDTO = dataLoaderService.singleDTO(
          company,
@@ -622,11 +622,11 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final vendorPmtTerm = vendorPaymentTermList[0]
       final vendorShipVia = shipViaList[0]
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       final poVendorPmtTerm = vendorPaymentTermList[1]
       final poVendorShipVia = shipViaList[1]
-      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia, null, 2)
       final poApprovedBy = employeeList[0]
       final poPurchaseAgent = employeeList[1]
       final poShipVia = shipViaList[2]
@@ -638,7 +638,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final payToPmtTerm = vendorPaymentTermList[3]
       final payToShipVia = shipViaList[3]
-      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 3)
 
       final apInvoiceDTO = dataLoaderService.singleDTO(
          company,
@@ -686,11 +686,11 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final vendorPmtTerm = vendorPaymentTermList[0]
       final vendorShipVia = shipViaList[0]
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       final poVendorPmtTerm = vendorPaymentTermList[1]
       final poVendorShipVia = shipViaList[1]
-      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia, null, 2)
       final poApprovedBy = employeeList[0]
       final poPurchaseAgent = employeeList[1]
       final poShipVia = shipViaList[2]
@@ -702,7 +702,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final payToPmtTerm = vendorPaymentTermList[3]
       final payToShipVia = shipViaList[3]
-      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 3)
 
       final existingAPInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
       final updatedAPInvoice = dataLoaderService.singleDTO(
@@ -778,11 +778,11 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final vendorPmtTerm = vendorPaymentTermList[0]
       final vendorShipVia = shipViaList[0]
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       final poVendorPmtTerm = vendorPaymentTermList[1]
       final poVendorShipVia = shipViaList[1]
-      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia, null, 2)
       final poApprovedBy = employeeList[0]
       final poPurchaseAgent = employeeList[1]
       final poShipVia = shipViaList[2]
@@ -794,7 +794,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final payToPmtTerm = vendorPaymentTermList[3]
       final payToShipVia = shipViaList[3]
-      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 3)
 
       final existingAPInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
       final updatedAPInvoice = dataLoaderService.singleDTO(
@@ -873,11 +873,11 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final vendorPmtTerm = vendorPaymentTermList[0]
       final vendorShipVia = shipViaList[0]
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       final poVendorPmtTerm = vendorPaymentTermList[1]
       final poVendorShipVia = shipViaList[1]
-      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia, null, 2)
       final poApprovedBy = employeeList[0]
       final poPurchaseAgent = employeeList[1]
       final poShipVia = shipViaList[2]
@@ -889,7 +889,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final payToPmtTerm = vendorPaymentTermList[3]
       final payToShipVia = shipViaList[3]
-      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 3)
 
       final existingAPInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
       final updatedAPInvoice = dataLoaderService.singleDTO(
@@ -947,11 +947,11 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final vendorPmtTerm = vendorPaymentTermList[0]
       final vendorShipVia = shipViaList[0]
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       final poVendorPmtTerm = vendorPaymentTermList[1]
       final poVendorShipVia = shipViaList[1]
-      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia, null, 2)
       final poApprovedBy = employeeList[0]
       final poPurchaseAgent = employeeList[1]
       final poShipVia = shipViaList[2]
@@ -963,7 +963,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       final payToPmtTerm = vendorPaymentTermList[3]
       final payToShipVia = shipViaList[3]
-      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 3)
 
       final existingAPInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
       final updatedAPInvoice = dataLoaderService.singleDTO(

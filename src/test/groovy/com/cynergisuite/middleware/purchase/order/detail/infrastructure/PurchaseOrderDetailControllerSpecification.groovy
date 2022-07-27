@@ -38,7 +38,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final shipViaList = shipViaTestDataLoaderService.stream(2, company).toList()
       final vendorShipVia = shipViaList[0]
-      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia as ShipViaEntity)
+      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia as ShipViaEntity, null, 1)
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
@@ -55,7 +55,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          paymentTermTypeIn,
          vendorSubmittedEmployeeIn
       )
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia as ShipViaEntity)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia as ShipViaEntity, null, 2)
       final poDetail = purchaseOrderDetailTestDataLoaderService.single(company, purchaseOrderIn, shipToIn, vendorIn)
 
       when:
@@ -126,7 +126,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final shipViaList = shipViaTestDataLoaderService.stream(2, company).toList()
       final vendorShipVia = shipViaList[0]
-      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia as ShipViaEntity)
+      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia as ShipViaEntity, null, 1)
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
@@ -143,7 +143,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          paymentTermTypeIn,
          vendorSubmittedEmployeeIn
       )
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia as ShipViaEntity)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia as ShipViaEntity, null, 2)
       def poDetails = purchaseOrderDetailTestDataLoaderService.stream(20, company, purchaseOrderIn, shipToIn, vendorIn)
          .map { new PurchaseOrderDetailDTO(it)}.sorted { o1, o2 -> o1.id <=> o2.id }.toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
@@ -336,7 +336,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final shipViaList = shipViaTestDataLoaderService.stream(2, company).toList()
       final vendorShipVia = shipViaList[0]
-      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia, null, 1)
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
@@ -353,7 +353,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          paymentTermTypeIn,
          vendorSubmittedEmployeeIn
       )
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia, null, 2)
       final poDetailDTO = purchaseOrderDetailTestDataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleLegacyIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
 
       when:
@@ -411,7 +411,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final shipViaList = shipViaTestDataLoaderService.stream(2, company).toList()
       final vendorShipVia = shipViaList[0]
-      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia, null, 1)
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
@@ -428,7 +428,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          paymentTermTypeIn,
          vendorSubmittedEmployeeIn
       )
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia, null, 2)
       final poDetailDTO = purchaseOrderDetailTestDataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleLegacyIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
       poDetailDTO.message = null
       poDetailDTO.color = null
@@ -498,7 +498,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final shipViaList = shipViaTestDataLoaderService.stream(2, company).toList()
       final vendorShipVia = shipViaList[0]
-      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia, null, 1)
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
@@ -515,7 +515,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          paymentTermTypeIn,
          vendorSubmittedEmployeeIn
       )
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia, null, 2)
       final poDetailDTO = purchaseOrderDetailTestDataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleLegacyIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
       poDetailDTO["$nonNullableProp"] = null
 
@@ -552,7 +552,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final shipViaList = shipViaTestDataLoaderService.stream(2, company).toList()
       final vendorShipVia = shipViaList[0]
-      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia, null, 1)
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
@@ -569,7 +569,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          paymentTermTypeIn,
          vendorSubmittedEmployeeIn
       )
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia, null, 2)
       final existingPODetail = purchaseOrderDetailTestDataLoaderService.single(company, purchaseOrderIn, shipToIn, vendorIn)
       final updatedPODetailDTO = purchaseOrderDetailTestDataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleLegacyIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
       updatedPODetailDTO.id = existingPODetail.id
@@ -628,7 +628,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final shipViaList = shipViaTestDataLoaderService.stream(2, company).toList()
       final vendorShipVia = shipViaList[0]
-      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia, null, 1)
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
@@ -645,7 +645,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          paymentTermTypeIn,
          vendorSubmittedEmployeeIn
       )
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia, null, 2)
       final existingPODetail = purchaseOrderDetailTestDataLoaderService.single(company, purchaseOrderIn, shipToIn, vendorIn)
       final updatedPODetailDTO = purchaseOrderDetailTestDataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleLegacyIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
       updatedPODetailDTO.id = existingPODetail.id
@@ -717,7 +717,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final shipViaList = shipViaTestDataLoaderService.stream(2, company).toList()
       final vendorShipVia = shipViaList[0]
-      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia, null, 1)
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
@@ -734,7 +734,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          paymentTermTypeIn,
          vendorSubmittedEmployeeIn
       )
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia, null, 2)
       final existingPODetail = purchaseOrderDetailTestDataLoaderService.single(company, purchaseOrderIn, shipToIn, vendorIn)
       final updatedPODetailDTO = purchaseOrderDetailTestDataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleLegacyIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
       updatedPODetailDTO.id = existingPODetail.id
@@ -773,7 +773,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final shipViaList = shipViaTestDataLoaderService.stream(2, company).toList()
       final vendorShipVia = shipViaList[0]
-      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia, null, 1)
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
@@ -790,7 +790,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          paymentTermTypeIn,
          vendorSubmittedEmployeeIn
       )
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia, null, 2)
       final poDetail = purchaseOrderDetailTestDataLoaderService.single(company, purchaseOrderIn, shipToIn, vendorIn)
 
       when:
@@ -816,7 +816,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final shipViaList = shipViaTestDataLoaderService.stream(2, company).toList()
       final vendorShipVia = shipViaList[0]
-      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final poVendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia, null, 1)
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
@@ -833,7 +833,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
          paymentTermTypeIn,
          vendorSubmittedEmployeeIn
       )
-      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia)
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPaymentTerm, vendorShipVia, null, 2)
       final poDetailDTO = purchaseOrderDetailTestDataLoaderService.singleDTO(new PurchaseOrderDTO(purchaseOrderIn), new SimpleLegacyIdentifiableDTO(shipToIn.myId()), new SimpleIdentifiableDTO(vendorIn))
 
       when: // create a purchase order detail

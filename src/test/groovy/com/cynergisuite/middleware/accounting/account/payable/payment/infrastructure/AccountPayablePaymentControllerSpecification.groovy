@@ -55,7 +55,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def vendorPmtTerm = vendorPaymentTermList[0]
       def vendorShipVia = shipViaList[0]
-      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
@@ -69,7 +69,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 2)
       def apInvoice = payableInvoiceDataLoaderService.single(company, vendor, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
 
       def apPayment = dataLoaderService.single(company, bank, vendor)
@@ -138,7 +138,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def vendorPmtTerm = vendorPaymentTermList[0]
       def vendorShipVia = shipViaList[0]
-      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
@@ -152,7 +152,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 2)
       def apInvoice = payableInvoiceDataLoaderService.single(company, vendor, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
       def apPayments = dataLoaderService.stream(2, company, bank, vendor).toList()
       def reportPaidTotal = Optional.ofNullable(apPayments.findAll { it.status.value == 'P' }.sum { it.amount }).orElse(0)
@@ -233,7 +233,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 10)
       def apInvoice = payableInvoiceDataLoaderService.single(company, vendors[0], purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
       def pmtStatuses = AccountPayablePaymentStatusTypeDataLoader.predefined()
       def pmtTypes = AccountPayablePaymentTypeTypeDataLoader.predefined()
@@ -392,7 +392,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def vendorPmtTerm = vendorPaymentTermList[0]
       def vendorShipVia = shipViaList[0]
-      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
@@ -406,7 +406,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 2)
 
       def apPayment = dataLoaderService.singleDTO(bank, vendor)
 
@@ -451,7 +451,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def vendorPmtTerm = vendorPaymentTermList[0]
       def vendorShipVia = shipViaList[0]
-      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
@@ -465,7 +465,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 2)
 
       def apPayment = dataLoaderService.singleDTO(bank, vendor)
       apPayment.dateCleared = null
@@ -513,7 +513,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def vendorPmtTerm = vendorPaymentTermList[0]
       def vendorShipVia = shipViaList[0]
-      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, )
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
@@ -527,7 +527,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 2)
 
       def apPayment = dataLoaderService.singleDTO(bank, vendor)
       apPayment["$nonNullableProp"] = null
@@ -566,7 +566,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def vendorPmtTerm = vendorPaymentTermList[0]
       def vendorShipVia = shipViaList[0]
-      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, )
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
@@ -580,7 +580,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 2)
 
       def apPayment = dataLoaderService.singleDTO(bank, vendor)
       apPayment["$testProp"] = invalidValue
@@ -629,7 +629,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 10)
 
       def existingPayment = dataLoaderService.single(company, bank, vendors[0])
       def updatedPayment = dataLoaderService.singleDTO(bank, vendors[1])
@@ -690,7 +690,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 10)
 
       def existingPayment = dataLoaderService.single(company, bank, vendors[0])
       def updatedPayment = dataLoaderService.singleDTO(bank, vendors[1])
@@ -753,7 +753,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 10)
 
       def existingPayment = dataLoaderService.single(company, bank, vendors[0])
       def updatedPayment = dataLoaderService.singleDTO(bank, vendors[1])
@@ -808,7 +808,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 10)
 
       def existingPayment = dataLoaderService.single(company, bank, vendors[0])
       def updatedPayment = dataLoaderService.singleDTO(bank, vendors[1])
@@ -845,7 +845,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def vendorPmtTerm = vendorPaymentTermList[0]
       def vendorShipVia = shipViaList[0]
-      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
@@ -859,7 +859,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 2)
       def apInvoice = payableInvoiceDataLoaderService.single(company, vendor, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
 
       def apPayment = dataLoaderService.single(company, bank, vendor)
@@ -893,7 +893,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def vendorPmtTerm = vendorPaymentTermList[0]
       def vendorShipVia = shipViaList[0]
-      def vendor = vendorTestDataLoaderService.single(tstds2, vendorPmtTerm, vendorShipVia)
+      def vendor = vendorTestDataLoaderService.single(tstds2, vendorPmtTerm, vendorShipVia, null, 1)
 
       def employeeList = employeeFactoryService.stream(4, tstds2).toList()
       def poApprovedBy = employeeList[0]
@@ -907,7 +907,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(tstds2, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(tstds2, payToPmtTerm, payToShipVia, null, 2)
       def apInvoice = payableInvoiceDataLoaderService.single(tstds2, vendor, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
 
       def apPayment = dataLoaderService.single(tstds2, bank, vendor)
@@ -935,7 +935,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def vendorPmtTerm = vendorPaymentTermList[0]
       def vendorShipVia = shipViaList[0]
-      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
@@ -948,7 +948,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 2)
       def apInvoice = payableInvoiceDataLoaderService.single(company, vendor, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
 
       def apPayment = dataLoaderService.single(company, bank, vendor)

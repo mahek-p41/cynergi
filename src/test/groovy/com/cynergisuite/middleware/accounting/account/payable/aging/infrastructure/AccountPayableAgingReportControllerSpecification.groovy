@@ -40,11 +40,11 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
 
       def vendor1PmtTerm = vendorPaymentTermList[0]
       def vendor1ShipVia = shipViaList[0]
-      def vendor1 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor1ShipVia)
+      def vendor1 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor1ShipVia, null, 1)
       def vendor2PmtTerm = vendorPaymentTermList[1]
       def vendor2ShipVia = shipViaList[1]
-      def vendor2 = vendorTestDataLoaderService.single(company, vendor2PmtTerm, vendor2ShipVia)
-      def vendor3 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor2ShipVia)
+      def vendor2 = vendorTestDataLoaderService.single(company, vendor2PmtTerm, vendor2ShipVia, null, 2)
+      def vendor3 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor2ShipVia, null, 3)
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
@@ -59,7 +59,7 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 10)
       def statusTypeO = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
       def apInvoicesForVend1 = []
       for(int i = 0; i < 4; i++) {
@@ -130,14 +130,15 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
       given:
       def company = companyFactoryService.forDatasetCode('tstds1')
       def store = storeFactoryService.store(3, company)
+      def vendorPmtTermIn = vendorPaymentTermTestDataLoaderService.single(company)
       def shipViaIn = shipViaTestDataLoaderService.single(company)
       def employeeIn = employeeFactoryService.single(company)
-      def payToIn = vendorTestDataLoaderService.single(company, vendorPaymentTermTestDataLoaderService.single(company), shipViaIn)
+      def payToIn = vendorTestDataLoaderService.single(company, vendorPmtTermIn, shipViaIn, null, 30)
       def statusTypeO = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
       def account = accountTestDataLoaderService.single(company)
       def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
 
-      def vendorList = vendorTestDataLoaderService.stream(20, company, vendorPaymentTermTestDataLoaderService.single(company), shipViaIn).toList()
+      def vendorList = vendorTestDataLoaderService.stream(20, company, vendorPmtTermIn, shipViaIn).toList()
 
       def purchaseOrderList = []
       vendorList.each {
@@ -218,11 +219,11 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
 
       def vendor1PmtTerm = vendorPaymentTermList[0]
       def vendor1ShipVia = shipViaList[0]
-      def vendor1 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor1ShipVia)
+      def vendor1 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor1ShipVia, null, 1)
       def vendor2PmtTerm = vendorPaymentTermList[1]
       def vendor2ShipVia = shipViaList[1]
-      def vendor2 = vendorTestDataLoaderService.single(company, vendor2PmtTerm, vendor2ShipVia)
-      def vendor3 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor2ShipVia)
+      def vendor2 = vendorTestDataLoaderService.single(company, vendor2PmtTerm, vendor2ShipVia, null, 2)
+      def vendor3 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor2ShipVia, null, 3)
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
@@ -237,7 +238,7 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 10)
       def statusTypeO = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
       def apInvoicesForVend1 = apInvoiceDataLoaderService.stream(4, company, vendor1, purchaseOrderIn1, null, employeeIn, null, statusTypeO, payToIn, store).toList()
       def apInvoicesForVend2 = apInvoiceDataLoaderService.stream(4, company, vendor2, purchaseOrderIn2, null, employeeIn, null, statusTypeO, payToIn, store).toList()
@@ -304,11 +305,11 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
 
       def vendor1PmtTerm = vendorPaymentTermList[0]
       def vendor1ShipVia = shipViaList[0]
-      def vendor1 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor1ShipVia)
+      def vendor1 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor1ShipVia, null, 1)
       def vendor2PmtTerm = vendorPaymentTermList[1]
       def vendor2ShipVia = shipViaList[1]
-      def vendor2 = vendorTestDataLoaderService.single(company, vendor2PmtTerm, vendor2ShipVia)
-      def vendor3 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor2ShipVia)
+      def vendor2 = vendorTestDataLoaderService.single(company, vendor2PmtTerm, vendor2ShipVia, null, 2)
+      def vendor3 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor2ShipVia, null, 3)
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
@@ -323,7 +324,7 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 10)
       def statusTypeH = new AccountPayableInvoiceStatusType(1, "H", "Hold", "hold")
       def statusTypeO = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
       def apInvoicesForVend1 = apInvoiceDataLoaderService.stream(3, company, vendor1, purchaseOrderIn1, null, employeeIn, null, statusTypeO, payToIn, store).toList()
@@ -390,7 +391,7 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
 
       def vendorPmtTerm = vendorPaymentTermList[0]
       def vendorShipVia = shipViaList[0]
-      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      def vendor = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia, null, 1)
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
@@ -403,7 +404,7 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 2)
       def statusTypeIn = new AccountPayableInvoiceStatusType(3, "P", "Paid", "paid")
       def apInvoice = apInvoiceDataLoaderService.single(company, vendor, purchaseOrderIn, 15000, employeeIn, 15000, statusTypeIn, payToIn, store)
 
@@ -447,10 +448,10 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
 
       def vendor1PmtTerm = vendorPaymentTermList[0]
       def vendor1ShipVia = shipViaList[0]
-      def vendor1 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor1ShipVia)
+      def vendor1 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor1ShipVia, null, 1)
       def vendor2PmtTerm = vendorPaymentTermList[1]
       def vendor2ShipVia = shipViaList[1]
-      def vendor2 = vendorTestDataLoaderService.single(company, vendor2PmtTerm, vendor2ShipVia)
+      def vendor2 = vendorTestDataLoaderService.single(company, vendor2PmtTerm, vendor2ShipVia, null, 2)
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
@@ -464,7 +465,7 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 10)
       def statusTypeO = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
       def statusTypeP = new AccountPayableInvoiceStatusType(3, "P", "Paid", "paid")
       def apInvoicesForVend1 = apInvoiceDataLoaderService.stream(4, company, vendor1, purchaseOrderIn1, 15000, employeeIn, 15000, statusTypeP, payToIn, store).toList()
@@ -516,11 +517,11 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
 
       def vendor1PmtTerm = vendorPaymentTermList[0]
       def vendor1ShipVia = shipViaList[0]
-      def vendor1 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor1ShipVia)
+      def vendor1 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor1ShipVia, null, 1)
       def vendor2PmtTerm = vendorPaymentTermList[1]
       def vendor2ShipVia = shipViaList[1]
-      def vendor2 = vendorTestDataLoaderService.single(company, vendor2PmtTerm, vendor2ShipVia)
-      def vendor3 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor2ShipVia)
+      def vendor2 = vendorTestDataLoaderService.single(company, vendor2PmtTerm, vendor2ShipVia, null, 2)
+      def vendor3 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor2ShipVia, null, 3)
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
@@ -535,7 +536,7 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
 
       def payToPmtTerm = vendorPaymentTermList[3]
       def payToShipVia = shipViaList[3]
-      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia, null, 10)
       def statusTypeH = new AccountPayableInvoiceStatusType(1, "H", "Hold", "hold")
       def apInvoicesForVend1 = apInvoiceDataLoaderService.stream(3, company, vendor1, purchaseOrderIn1, null, employeeIn, null, statusTypeH, payToIn, store).toList()
       def apInvoicesForVend2 = apInvoiceDataLoaderService.stream(4, company, vendor2, purchaseOrderIn2, null, employeeIn, null, statusTypeH, payToIn, store).toList()
