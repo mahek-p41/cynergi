@@ -7,6 +7,7 @@ import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
+import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.infrastructure.GeneralLedgerReversalEntryRepository
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -16,6 +17,7 @@ import java.util.UUID
 
 @Singleton
 class GeneralLedgerReversalEntryService @Inject constructor(
+   private val generalLedgerDetailRepository: GeneralLedgerDetailRepository,
    private val generalLedgerDetailService: GeneralLedgerDetailService,
    private val generalLedgerReversalEntryRepository: GeneralLedgerReversalEntryRepository,
    private val generalLedgerReversalEntryValidator: GeneralLedgerReversalEntryValidator,
@@ -60,6 +62,7 @@ class GeneralLedgerReversalEntryService @Inject constructor(
       val entity = generalLedgerReversalEntryRepository.findOne(dto.generalLedgerReversal!!.id!!, user.myCompany())
 
       // create GL details
+      val journalEntryNumber = generalLedgerDetailRepository.findNextJENumber(user.myCompany())
       var glDetailDTO: GeneralLedgerDetailDTO
       entity!!.generalLedgerReversalDistributions.forEach { distribution ->
          glDetailDTO = GeneralLedgerDetailDTO(
@@ -71,7 +74,7 @@ class GeneralLedgerReversalEntryService @Inject constructor(
             distribution.generalLedgerReversalDistributionAmount,
             distribution.generalLedgerReversal.comment,
             user.myEmployeeNumber(),
-            null
+            journalEntryNumber
          )
 
          glDetailDTO = generalLedgerDetailService.create(glDetailDTO, user.myCompany())

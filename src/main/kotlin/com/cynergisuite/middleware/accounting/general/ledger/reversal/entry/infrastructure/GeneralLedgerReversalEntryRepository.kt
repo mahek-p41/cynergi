@@ -2,9 +2,9 @@ package com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.inf
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
+import com.cynergisuite.middleware.accounting.general.ledger.reversal.distribution.GeneralLedgerReversalDistributionEntity
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.distribution.infrastructure.GeneralLedgerReversalDistributionRepository
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.GeneralLedgerReversalEntryEntity
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.infrastructure.GeneralLedgerReversalRepository
@@ -94,17 +94,20 @@ class GeneralLedgerReversalEntryRepository @Inject constructor(
 
    @ReadOnly
    fun findOne(generalLedgerReversalId: UUID, company: CompanyEntity): GeneralLedgerReversalEntryEntity? {
-      val params = mutableMapOf<String, Any?>("id" to generalLedgerReversalId, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE glReversal.glReversal_id = :id AND glReversal.glReversal_company_id = :comp_id AND glReversalDist.deleted = FALSE"
-      val found = jdbc.findFirstOrNull(
-         query, params
-      ) { rs, _ ->
-         mapRow(rs, company)
+      val generalLedgerReversal = generalLedgerReversalRepository.findOne(generalLedgerReversalId, company)
+      val generalLedgerReversalDistributions = generalLedgerReversalDistributionRepository.findAllByReversalId(generalLedgerReversalId, company)
+
+      var generalLedgerReversalEntryEntity: GeneralLedgerReversalEntryEntity? = null
+      if (generalLedgerReversal != null) {
+         generalLedgerReversalEntryEntity = GeneralLedgerReversalEntryEntity(
+            generalLedgerReversal,
+            generalLedgerReversalDistributions as MutableList<GeneralLedgerReversalDistributionEntity>
+         )
       }
 
-      logger.trace("Searching for GeneralLedgerReversalEntry: resulted in {}", found)
+      logger.trace("Searching for GeneralLedgerReversalEntry: resulted in {}", generalLedgerReversalEntryEntity)
 
-      return found
+      return generalLedgerReversalEntryEntity
    }
 
    @ReadOnly

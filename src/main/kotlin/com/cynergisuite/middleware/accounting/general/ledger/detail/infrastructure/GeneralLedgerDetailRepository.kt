@@ -10,6 +10,7 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
@@ -176,6 +177,30 @@ class GeneralLedgerDetailRepository @Inject constructor(
                )
             )
          } while (rs.next())
+      }
+   }
+
+   @ReadOnly
+   fun findNextJENumber(company: CompanyEntity): Int? {
+      val found = jdbc.queryFullList(
+         """
+            SELECT journal_entry_number
+            FROM general_ledger_detail
+            WHERE company_id = :comp_id ORDER BY journal_entry_number DESC
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id
+         )
+      ) { rs, _, elements: MutableList<Int> ->
+         do {
+            elements.add(rs.getInt("journal_entry_number"))
+         } while (rs.next())
+      }
+
+      return if (found.isEmpty()) {
+         1
+      } else {
+         found[0] + 1
       }
    }
 
