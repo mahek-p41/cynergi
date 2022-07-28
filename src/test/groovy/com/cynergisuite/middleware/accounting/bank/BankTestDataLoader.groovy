@@ -1,11 +1,11 @@
 package com.cynergisuite.middleware.accounting.bank
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreDTO
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
@@ -43,8 +43,8 @@ class BankFactory {
          new BankDTO([
             'number': bankNumber.getAndIncrement(),
             'name': faker.company().name(),
-            'generalLedgerProfitCenter': new SimpleLegacyIdentifiableDTO(generalLedgerProfitCenter.myId()),
-            'generalLedgerAccount': new SimpleIdentifiableDTO(accountEntity.id)
+            'generalLedgerProfitCenter': new StoreDTO(generalLedgerProfitCenter),
+            'generalLedgerAccount': new AccountDTO(accountEntity)
          ])
       }
    }

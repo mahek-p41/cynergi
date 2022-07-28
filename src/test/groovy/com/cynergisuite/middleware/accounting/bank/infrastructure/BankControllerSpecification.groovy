@@ -1,12 +1,15 @@
 package com.cynergisuite.middleware.accounting.bank.infrastructure
 
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankDTO
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDataLoaderService
+import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.ErrorDTO
+import com.cynergisuite.middleware.region.RegionDTO
 import groovy.json.JsonOutput
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -43,7 +46,9 @@ class BankControllerSpecification extends ControllerSpecificationBase {
          id == bank.id
          name == bank.name
          generalLedgerProfitCenter.id == bank.generalLedgerProfitCenter.myId()
+         generalLedgerProfitCenter.storeNumber == bank.generalLedgerProfitCenter.myNumber()
          generalLedgerAccount.id == bank.generalLedgerAccount.id
+         generalLedgerAccount.number == bank.generalLedgerAccount.number
       }
    }
 
@@ -143,8 +148,15 @@ class BankControllerSpecification extends ControllerSpecificationBase {
    void "create a valid bank"() {
       given:
       final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final division = divisionFactoryService.single(nineNineEightEmployee.company)
+      final region = regionFactoryService.single(division)
+      def regionDTO = new RegionDTO(region)
+      def employeeVO = new EmployeeValueObject(nineNineEightEmployee)
+      regionDTO.division.divisionalManager = new SimpleLegacyIdentifiableDTO(employeeVO)
+      regionDTO.regionalManager.id = employeeVO.id
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final bankDTO = bankFactoryService.singleDTO(store, account)
+      bankDTO.generalLedgerProfitCenter.region = regionDTO
       final jsonBank = jsonOutput.toJson(bankDTO)
 
       when:
@@ -156,8 +168,10 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       with(result) {
          id != null
          name == bankDTO.name
-         generalLedgerProfitCenter.id == bankDTO.generalLedgerProfitCenter.id
+         generalLedgerProfitCenter.id == bankDTO.generalLedgerProfitCenter.myId()
+         generalLedgerProfitCenter.storeNumber == bankDTO.generalLedgerProfitCenter.storeNumber
          generalLedgerAccount.id == bankDTO.generalLedgerAccount.id
+         generalLedgerAccount.number == bankDTO.generalLedgerAccount.number
       }
    }
 
@@ -165,8 +179,15 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       given:
       final company2 = companyFactoryService.forDatasetCode('tstds2')
       final account = accountFactoryService.single(company2)
+      final division = divisionFactoryService.single(nineNineEightEmployee.company)
+      final region = regionFactoryService.single(division)
+      def regionDTO = new RegionDTO(region)
+      def employeeVO = new EmployeeValueObject(nineNineEightEmployee)
+      regionDTO.division.divisionalManager = new SimpleLegacyIdentifiableDTO(employeeVO)
+      regionDTO.regionalManager.id = employeeVO.id
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final bankDTO = bankFactoryService.singleDTO(store, account)
+      bankDTO.generalLedgerProfitCenter.region = regionDTO
 
       when:
       post("$path/", bankDTO)
@@ -185,8 +206,15 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       given:
       final company2 = companyFactoryService.forDatasetCode('tstds2')
       final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final division = divisionFactoryService.single(company2)
+      final region = regionFactoryService.single(division)
+      def regionDTO = new RegionDTO(region)
+      def employeeVO = new EmployeeValueObject(nineNineEightEmployee)
+      regionDTO.division.divisionalManager = new SimpleLegacyIdentifiableDTO(employeeVO)
+      regionDTO.regionalManager.id = employeeVO.id
       final store = storeFactoryService.store(3, company2)
       final bankDTO = bankFactoryService.singleDTO(store, account)
+      bankDTO.generalLedgerProfitCenter.region = regionDTO
 
       when:
       post("$path/", bankDTO)
@@ -204,9 +232,16 @@ class BankControllerSpecification extends ControllerSpecificationBase {
    void "create invalid bank with duplicate bank number" () {
       given:
       final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final division = divisionFactoryService.single(nineNineEightEmployee.company)
+      final region = regionFactoryService.single(division)
+      def regionDTO = new RegionDTO(region)
+      def employeeVO = new EmployeeValueObject(nineNineEightEmployee)
+      regionDTO.division.divisionalManager = new SimpleLegacyIdentifiableDTO(employeeVO)
+      regionDTO.regionalManager.id = employeeVO.id
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       final bankDTO = bankFactoryService.singleDTO(store, account)
+      bankDTO.generalLedgerProfitCenter.region = regionDTO
       bankDTO.number = existingBank.number
 
       when:
@@ -226,9 +261,15 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       given:
       final company2 = companyFactoryService.forDatasetCode('tstds2')
       final account = accountFactoryService.single(nineNineEightEmployee.company)
-      final store = storeFactoryService.store(3, company2)
-
+      final division = divisionFactoryService.single(nineNineEightEmployee.company)
+      final region = regionFactoryService.single(division)
+      def regionDTO = new RegionDTO(region)
+      def employeeVO = new EmployeeValueObject(nineNineEightEmployee)
+      regionDTO.division.divisionalManager = new SimpleLegacyIdentifiableDTO(employeeVO)
+      regionDTO.regionalManager.id = employeeVO.id
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final bankDTO = bankFactoryService.singleDTO(store, account)
+      bankDTO.generalLedgerProfitCenter.region = regionDTO
       bankDTO["$nonNullableProp"] = null
 
       when:
@@ -254,10 +295,17 @@ class BankControllerSpecification extends ControllerSpecificationBase {
    void "update a valid bank's profit center"() {
       given: 'Update existingBank in DB with all new data in jsonBank'
       final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final division = divisionFactoryService.single(nineNineEightEmployee.company)
+      final region = regionFactoryService.single(division)
+      def regionDTO = new RegionDTO(region)
+      def employeeVO = new EmployeeValueObject(nineNineEightEmployee)
+      regionDTO.division.divisionalManager = new SimpleLegacyIdentifiableDTO(employeeVO)
+      regionDTO.regionalManager.id = employeeVO.id
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final updateStore = storeFactoryService.store(1, nineNineEightEmployee.company)
       final existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       def updatedBankDTO = bankFactoryService.singleDTO(store, account)
+      updatedBankDTO.generalLedgerProfitCenter.region = regionDTO
       updatedBankDTO.id = existingBank.id
       updatedBankDTO.generalLedgerProfitCenter.id = updateStore.id
 
@@ -279,9 +327,16 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       given: 'Update existingBank in DB with all new data in jsonBank'
       final account = accountFactoryService.single(nineNineEightEmployee.company)
       final updateAccount = accountFactoryService.single(nineNineEightEmployee.company)
+      final division = divisionFactoryService.single(nineNineEightEmployee.company)
+      final region = regionFactoryService.single(division)
+      def regionDTO = new RegionDTO(region)
+      def employeeVO = new EmployeeValueObject(nineNineEightEmployee)
+      regionDTO.division.divisionalManager = new SimpleLegacyIdentifiableDTO(employeeVO)
+      regionDTO.regionalManager.id = employeeVO.id
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       final updatedBankDTO = bankFactoryService.singleDTO(store, account)
+      updatedBankDTO.generalLedgerProfitCenter.region = regionDTO
       updatedBankDTO.id = existingBank.id
       updatedBankDTO.generalLedgerAccount.id = updateAccount.id
 
@@ -333,10 +388,17 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       final company = nineNineEightEmployee.company
       final account1 = accountFactoryService.single(company)
       final account2 = accountFactoryService.single(company)
-      final store = storeFactoryService.store(3, company)
+      final division = divisionFactoryService.single(nineNineEightEmployee.company)
+      final region = regionFactoryService.single(division)
+      def regionDTO = new RegionDTO(region)
+      def employeeVO = new EmployeeValueObject(nineNineEightEmployee)
+      regionDTO.division.divisionalManager = new SimpleLegacyIdentifiableDTO(employeeVO)
+      regionDTO.regionalManager.id = employeeVO.id
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final existingBank1 = bankFactoryService.single(company, store, account1)
       final existingBank2 = bankFactoryService.single(company, store, account2)
       final bankDTO = bankFactoryService.singleDTO(store, account1)
+      bankDTO.generalLedgerProfitCenter.region = regionDTO
       bankDTO.id = existingBank1.id
       bankDTO.number = existingBank2.number
 
@@ -356,9 +418,16 @@ class BankControllerSpecification extends ControllerSpecificationBase {
    void "update a valid bank with no id"() {
       given: 'Update existingBank in DB with all new data'
       final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final division = divisionFactoryService.single(nineNineEightEmployee.company)
+      final region = regionFactoryService.single(division)
+      def regionDTO = new RegionDTO(region)
+      def employeeVO = new EmployeeValueObject(nineNineEightEmployee)
+      regionDTO.division.divisionalManager = new SimpleLegacyIdentifiableDTO(employeeVO)
+      regionDTO.regionalManager.id = employeeVO.id
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final existingBank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       final updatedBankDTO = new BankDTO(existingBank)
+      updatedBankDTO.generalLedgerProfitCenter.region = regionDTO
       updatedBankDTO.id = existingBank.id
 
       when:
@@ -443,8 +512,15 @@ class BankControllerSpecification extends ControllerSpecificationBase {
    void "recreate deleted bank" () {
       given:
       final account = accountFactoryService.single(nineNineEightEmployee.company)
+      final division = divisionFactoryService.single(nineNineEightEmployee.company)
+      final region = regionFactoryService.single(division)
+      def regionDTO = new RegionDTO(region)
+      def employeeVO = new EmployeeValueObject(nineNineEightEmployee)
+      regionDTO.division.divisionalManager = new SimpleLegacyIdentifiableDTO(employeeVO)
+      regionDTO.regionalManager.id = employeeVO.id
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final bankDTO = bankFactoryService.singleDTO(store, account)
+      bankDTO.generalLedgerProfitCenter.region = regionDTO
 
       when: // create a bank
       def response1 = post("$path/", bankDTO)

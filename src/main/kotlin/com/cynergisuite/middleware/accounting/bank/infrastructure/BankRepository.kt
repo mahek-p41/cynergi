@@ -71,7 +71,7 @@ class BankRepository @Inject constructor(
             glProfitCenter.dataset                         AS bank_glProfitCenter_dataset
          FROM bank
                JOIN company comp ON bank.company_id = comp.id AND comp.deleted = FALSE
-               JOIN fastinfo_prod_import.store_vw glProfitCenter
+               JOIN system_stores_fimvw glProfitCenter
                     ON glProfitCenter.dataset = comp.dataset_code
                        AND glProfitCenter.number = bank.general_ledger_profit_center_sfk
                JOIN account ON account.id = bank.general_ledger_account_id AND account.deleted = FALSE
