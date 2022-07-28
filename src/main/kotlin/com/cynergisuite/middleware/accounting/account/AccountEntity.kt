@@ -16,7 +16,7 @@ data class AccountEntity(
    val status: AccountStatusType,
    val form1099Field: VendorType? = null,
    val corporateAccountIndicator: Boolean,
-   val isBankAccount: Boolean
+   val bankId: UUID? = null
 ) : Identifiable {
 
    constructor(
@@ -35,7 +35,7 @@ data class AccountEntity(
          status = accountStatusType,
          form1099Field = vendorType,
          corporateAccountIndicator = accountDTO.corporateAccountIndicator!!,
-         isBankAccount = accountDTO.isBankAccount!!
+         bankId = accountDTO.bankId
       )
 
    override fun myId(): UUID? = id

@@ -74,12 +74,13 @@ class GeneralLedgerJournalRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank.id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bank.general_ledger_account_id = account.account_id
-            ) AS is_bank_account,
+               GROUP BY bank.id LIMIT 1
+            ) AS glJournal_account_bank_id,
             glJournal.profit_center_id_sfk                                  AS glJournal_profit_center_id_sfk,
             profitCenter.id                                                 AS glJournal_profitCenter_id,
             profitCenter.number                                             AS glJournal_profitCenter_number,

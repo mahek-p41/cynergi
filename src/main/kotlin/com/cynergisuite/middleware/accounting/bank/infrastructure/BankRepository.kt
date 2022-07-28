@@ -70,12 +70,13 @@ class BankRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank.id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bank.general_ledger_account_id = account.account_id
-            ) AS is_bank_account,
+               GROUP BY bank.id LIMIT 1
+            ) AS bank_account_bank_id,
             glProfitCenter.id                                              AS bank_glProfitCenter_id,
             glProfitCenter.number                                          AS bank_glProfitCenter_number,
             glProfitCenter.name                                            AS bank_glProfitCenter_name,

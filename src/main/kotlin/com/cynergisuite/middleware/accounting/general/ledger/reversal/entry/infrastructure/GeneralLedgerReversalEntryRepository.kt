@@ -79,12 +79,13 @@ class GeneralLedgerReversalEntryRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank.id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bank.general_ledger_account_id = account.account_id
-            ) AS is_bank_account,
+               GROUP BY bank.id LIMIT 1
+            ) AS glReversalDist_account_bank_id,
             count(*) OVER() AS total_elements
          FROM general_ledger_reversal_distribution glReversalDist
             JOIN general_ledger_reversal glReversal ON glReversalDist.general_ledger_reversal_id = glReversal.glReversal_id AND glReversal.glReversal_deleted = FALSE

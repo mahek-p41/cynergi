@@ -80,12 +80,13 @@ class AccountPayablePaymentRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank.id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bnk.bank_account_id = account.id
-            ) AS is_bank_account,
+               GROUP BY bank.id LIMIT 1
+            ) AS apPayment_bank_account_bank_id,
             bnk.bank_glProfitCenter_id                                AS apPayment_bank_glProfitCenter_id,
             bnk.bank_glProfitCenter_number                            AS apPayment_bank_glProfitCenter_number,
             bnk.bank_glProfitCenter_name                              AS apPayment_bank_glProfitCenter_name,

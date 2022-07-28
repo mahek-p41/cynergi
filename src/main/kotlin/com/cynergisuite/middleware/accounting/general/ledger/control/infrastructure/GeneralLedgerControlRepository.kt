@@ -70,12 +70,13 @@ class GeneralLedgerControlRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank.id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bank.general_ledger_account_id = defAPAcct.account_id
-            ) AS is_bank_account,
+               GROUP BY bank.id LIMIT 1
+            ) AS defAPAcct_bank_id,
             defAPDiscAcct.account_id                                          AS defAPDiscAcct_id,
             defAPDiscAcct.account_number                                      AS defAPDiscAcct_number,
             defAPDiscAcct.account_name                                        AS defAPDiscAcct_name,
@@ -102,12 +103,13 @@ class GeneralLedgerControlRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank.id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bank.general_ledger_account_id = defAPDiscAcct.account_id
-            ) AS is_bank_account,
+               GROUP BY bank.id LIMIT 1
+            ) AS defAPDiscAcct_bank_id,
             defARAcct.account_id                                              AS defARAcct_id,
             defARAcct.account_number                                          AS defARAcct_number,
             defARAcct.account_name                                            AS defARAcct_name,
@@ -134,12 +136,13 @@ class GeneralLedgerControlRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank.id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bank.general_ledger_account_id = defARAcct.account_id
-            ) AS is_bank_account,
+               GROUP BY bank.id LIMIT 1
+            ) AS defARAcct_bank_id,
             defARDiscAcct.account_id                                          AS defARDiscAcct_id,
             defARDiscAcct.account_number                                      AS defARDiscAcct_number,
             defARDiscAcct.account_name                                        AS defARDiscAcct_name,
@@ -166,12 +169,13 @@ class GeneralLedgerControlRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank.id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bank.general_ledger_account_id = defARDiscAcct.account_id
-            ) AS is_bank_account,
+               GROUP BY bank.id LIMIT 1
+            ) AS defARDiscAcct_bank_id,
             defAcctMiscInvAcct.account_id                                     AS defAcctMiscInvAcct_id,
             defAcctMiscInvAcct.account_number                                 AS defAcctMiscInvAcct_number,
             defAcctMiscInvAcct.account_name                                   AS defAcctMiscInvAcct_name,
@@ -198,12 +202,13 @@ class GeneralLedgerControlRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank.id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bank.general_ledger_account_id = defAcctMiscInvAcct.account_id
-            ) AS is_bank_account,
+               GROUP BY bank.id LIMIT 1
+            ) AS defAcctMiscInvAcct_bank_id,
             defAcctSerializedInvAcct.account_id                               AS defAcctSerializedInvAcct_id,
             defAcctSerializedInvAcct.account_number                           AS defAcctSerializedInvAcct_number,
             defAcctSerializedInvAcct.account_name                             AS defAcctSerializedInvAcct_name,
@@ -230,12 +235,13 @@ class GeneralLedgerControlRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank.id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bank.general_ledger_account_id = defAcctSerializedInvAcct.account_id
-            ) AS is_bank_account,
+               GROUP BY bank.id LIMIT 1
+            ) AS defAcctSerializedInvAcct_bank_id,
             defAcctUnbilledInvAcct.account_id                                 AS defAcctUnbilledInvAcct_id,
             defAcctUnbilledInvAcct.account_number                             AS defAcctUnbilledInvAcct_number,
             defAcctUnbilledInvAcct.account_name                               AS defAcctUnbilledInvAcct_name,
@@ -262,12 +268,13 @@ class GeneralLedgerControlRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank.id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bank.general_ledger_account_id = defAcctUnbilledInvAcct.account_id
-            ) AS is_bank_account,
+               GROUP BY bank.id LIMIT 1
+            ) AS defAcctUnbilledInvAcct_bank_id,
             defAcctFreightAcct.account_id                                     AS defAcctFreightAcct_id,
             defAcctFreightAcct.account_number                                 AS defAcctFreightAcct_number,
             defAcctFreightAcct.account_name                                   AS defAcctFreightAcct_name,
@@ -294,12 +301,13 @@ class GeneralLedgerControlRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank.id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bank.general_ledger_account_id = defAcctFreightAcct.account_id
-            ) AS is_bank_account
+               GROUP BY bank.id LIMIT 1
+            ) AS defAcctFreightAcct_bank_id
          FROM general_ledger_control glCtrl
             JOIN company comp ON glCtrl.company_id = comp.id AND comp.deleted = FALSE
             JOIN fastinfo_prod_import.store_vw profitCenter

@@ -87,12 +87,13 @@ class RebateRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank.id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bank.general_ledger_account_id = glDebitAcct.account_id
-            ) AS is_bank_account,
+               GROUP BY bank.id LIMIT 1
+            ) AS glDebitAcct_bank_id,
             glCreditAcct.account_id                             AS glCreditAcct_id,
             glCreditAcct.account_number                         AS glCreditAcct_number,
             glCreditAcct.account_name                           AS glCreditAcct_name,
@@ -119,12 +120,13 @@ class RebateRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank.id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bank.general_ledger_account_id = glCreditAcct.account_id
-            ) AS is_bank_account,
+               GROUP BY bank.id LIMIT 1
+            ) AS glCreditAcct_bank_id,
             count(*) OVER()                                     AS total_elements
          FROM rebate r
             JOIN account_status_type_domain status ON r.status_type_id = status.id

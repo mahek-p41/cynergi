@@ -87,12 +87,13 @@ class AccountPayableControlRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank.id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bank.general_ledger_account_id = glInvCleAcct.account_id
-            ) AS is_bank_account,
+               GROUP BY bank.id LIMIT 1
+            ) AS glInvCleAcct_bank_id,
             glInvAcct.account_id                                     AS glInvAcct_id,
             glInvAcct.account_number                                 AS glInvAcct_number,
             glInvAcct.account_name                                   AS glInvAcct_name,
@@ -118,12 +119,13 @@ class AccountPayableControlRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank.id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bank.general_ledger_account_id = glInvAcct.account_id
-            ) AS is_bank_account
+               GROUP BY bank.id LIMIT 1
+            ) AS glInvAcct_bank_id
          FROM account_payable_control accountPayableControl
             JOIN account_payable_check_form_type_domain checkFormType ON accountPayableControl.check_form_type_id = checkFormType.id
             JOIN print_currency_indicator_type_domain printCurrencyIndType ON accountPayableControl.print_currency_indicator_type_id = printCurrencyIndType.id

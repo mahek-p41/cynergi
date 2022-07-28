@@ -5,6 +5,7 @@ import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepo
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountStatusTypeRepository
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountTypeRepository
 import com.cynergisuite.middleware.accounting.account.infrastructure.NormalAccountBalanceTypeRepository
+import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.Duplicate
@@ -21,6 +22,7 @@ class AccountValidator @Inject constructor(
    private val accountRepository: AccountRepository,
    private val accountTypeRepository: AccountTypeRepository,
    private val balanceTypeRepository: NormalAccountBalanceTypeRepository,
+   private val bankRepository: BankRepository,
    private val statusTypeRepository: AccountStatusTypeRepository,
    private val vendorTypeRepository: VendorTypeRepository
 ) : ValidatorBase() {
@@ -50,6 +52,7 @@ class AccountValidator @Inject constructor(
       val balanceType = balanceTypeRepository.findOne(value = accountDTO.normalAccountBalance?.value!!)
       val statusType = statusTypeRepository.findOne(value = accountDTO.status?.value!!)
       val vendorType = accountDTO.form1099Field?.let { vendorTypeRepository.findOne(value = it.value!!) }
+      val bank = accountDTO.bankId?.let { bankRepository.findOne(it, company) }
       val existingAccountByNumber = accountRepository.findByNumber(number = accountDTO.number!!, company = company)
 
       doValidation { errors ->
@@ -57,6 +60,11 @@ class AccountValidator @Inject constructor(
          accountType ?: errors.add(ValidationError("type.value", NotFound(accountDTO.type?.value!!)))
          balanceType ?: errors.add(ValidationError("normalAccountBalance.value", NotFound(accountDTO.normalAccountBalance?.value!!)))
          statusType ?: errors.add(ValidationError("status.value", NotFound(accountDTO.status?.value!!)))
+
+         if (accountDTO.bankId != null) {
+            bank ?: errors.add(ValidationError("bank.id", NotFound(accountDTO.bankId!!)))
+         }
+
          if (existingAccountByNumber != null && existingAccountByNumber.id != accountDTO.id) errors.add(ValidationError("number", Duplicate(accountDTO.number!!)))
       }
 

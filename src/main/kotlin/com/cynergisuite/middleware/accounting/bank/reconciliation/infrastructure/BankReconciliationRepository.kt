@@ -75,12 +75,13 @@ class BankReconciliationRepository @Inject constructor(
             (
                SELECT
                   CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
+                     WHEN COUNT(*) > 0 then bank_id
+                     WHEN COUNT(*) = 0 then NULL
                   END
                FROM bank
                WHERE bank.bank_account_id = account.id
-            ) AS is_bank_account,
+               GROUP BY bank_id LIMIT 1
+            ) AS bank_account_bank_id,
             bank.bank_glProfitCenter_id                       AS bank_glProfitCenter_id,
             bank.bank_glProfitCenter_number                   AS bank_glProfitCenter_number,
             bank.bank_glProfitCenter_name                     AS bank_glProfitCenter_name,
