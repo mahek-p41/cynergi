@@ -11,7 +11,6 @@ import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
-import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringEntity
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionEntity
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionTotalsDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
@@ -53,19 +52,6 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
             glRecurringDist.general_ledger_distribution_amount                AS glRecurringDist_general_ledger_distribution_amount,
             glRecurringDist.deleted                                           AS glRecurringDist_deleted,
             glRecurring.glRecurring_id                                        AS glRecurringDist_glRecurring_id,
-            glRecurring.glRecurring_company_id                                AS glRecurringDist_glRecurring_company_id,
-            glRecurring.glRecurring_reverse_indicator                         AS glRecurringDist_glRecurring_reverse_indicator,
-            glRecurring.glRecurring_message                                   AS glRecurringDist_glRecurring_message,
-            glRecurring.glRecurring_begin_date                                AS glRecurringDist_glRecurring_begin_date,
-            glRecurring.glRecurring_end_date                                  AS glRecurringDist_glRecurring_end_date,
-            glRecurring.glRecurring_last_transfer_date                        AS glRecurringDist_glRecurring_last_transfer_date,
-            glRecurring.glRecurring_source_id                                 AS glRecurringDist_glRecurring_source_id,
-            glRecurring.glRecurring_source_value                              AS glRecurringDist_glRecurring_source_value,
-            glRecurring.glRecurring_source_description                        AS glRecurringDist_glRecurring_source_description,
-            glRecurring.glRecurring_type_id                                   AS glRecurringDist_glRecurring_type_id,
-            glRecurring.glRecurring_type_value                                AS glRecurringDist_glRecurring_type_value,
-            glRecurring.glRecurring_type_description                          AS glRecurringDist_glRecurring_type_description,
-            glRecurring.glRecurring_type_localization_code                    AS glRecurringDist_glRecurring_type_localization_code,
             account.account_id                                                AS glRecurringDist_account_id,
             account.account_number                                            AS glRecurringDist_account_number,
             account.account_name                                              AS glRecurringDist_account_name,
@@ -224,7 +210,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
             *
          """.trimIndent(),
          mapOf(
-            "general_ledger_recurring_id" to entity.generalLedgerRecurring.id,
+            "general_ledger_recurring_id" to entity.generalLedgerRecurringId,
             "general_ledger_distribution_account_id" to entity.generalLedgerDistributionAccount.myId(),
             "general_ledger_distribution_profit_center_id_sfk" to entity.generalLedgerDistributionProfitCenter.myNumber(),
             "general_ledger_distribution_amount" to entity.generalLedgerDistributionAmount
@@ -252,7 +238,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
          """.trimIndent(),
          mapOf(
             "id" to entity.id,
-            "general_ledger_recurring_id" to entity.generalLedgerRecurring.id,
+            "general_ledger_recurring_id" to entity.generalLedgerRecurringId,
             "general_ledger_distribution_account_id" to entity.generalLedgerDistributionAccount.myId(),
             "general_ledger_distribution_profit_center_id_sfk" to entity.generalLedgerDistributionProfitCenter.myNumber(),
             "general_ledger_distribution_amount" to entity.generalLedgerDistributionAmount
@@ -341,7 +327,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
    ): GeneralLedgerRecurringDistributionEntity {
       return GeneralLedgerRecurringDistributionEntity(
          id = rs.getUuid("${columnPrefix}id"),
-         generalLedgerRecurring = generalLedgerRecurringRepository.mapRow(rs, "${columnPrefix}glRecurring_"),
+         generalLedgerRecurringId = rs.getUuid("${columnPrefix}glRecurring_id"),
          generalLedgerDistributionAccount = accountRepository.mapRow(rs, company, "${columnPrefix}account_"),
          generalLedgerDistributionProfitCenter = storeRepository.mapRow(rs, company, "${columnPrefix}profitCenter_"),
          generalLedgerDistributionAmount = rs.getBigDecimal("${columnPrefix}general_ledger_distribution_amount")
@@ -355,7 +341,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
    ): GeneralLedgerRecurringDistributionEntity {
       return GeneralLedgerRecurringDistributionEntity(
          id = rs.getUuid("${columnPrefix}id"),
-         generalLedgerRecurring = entity.generalLedgerRecurring,
+         generalLedgerRecurringId = entity.generalLedgerRecurringId,
          generalLedgerDistributionAccount = entity.generalLedgerDistributionAccount,
          generalLedgerDistributionProfitCenter = entity.generalLedgerDistributionProfitCenter,
          generalLedgerDistributionAmount = rs.getBigDecimal("${columnPrefix}general_ledger_distribution_amount")
@@ -365,13 +351,12 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
    fun mapRow(
       rs: ResultSet,
       company: CompanyEntity,
-      glRecurring: GeneralLedgerRecurringEntity,
       profitCenter: Store,
       columnPrefix: String = EMPTY
    ): GeneralLedgerRecurringDistributionEntity {
       return GeneralLedgerRecurringDistributionEntity(
          id = rs.getUuid("${columnPrefix}id"),
-         generalLedgerRecurring = glRecurring,
+         generalLedgerRecurringId = rs.getUuid("${columnPrefix}glRecurring_id"),
          generalLedgerDistributionAccount = accountRepository.mapRow(rs, company, "${columnPrefix}account_"),
          generalLedgerDistributionProfitCenter = profitCenter,
          generalLedgerDistributionAmount = rs.getBigDecimal("${columnPrefix}general_ledger_distribution_amount")

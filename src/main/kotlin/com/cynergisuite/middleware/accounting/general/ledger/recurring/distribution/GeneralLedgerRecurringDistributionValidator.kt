@@ -55,6 +55,6 @@ class GeneralLedgerRecurringDistributionValidator @Inject constructor(
          glDistributionProfitCenter ?: errors.add(ValidationError("generalLedgerDistributionProfitCenter.id", NotFound(dto.generalLedgerDistributionProfitCenter!!.id!!)))
       }
 
-      return GeneralLedgerRecurringDistributionEntity(existingGlRecurringDistribution?.id, dto, glRecurring!!, glDistributionAcct!!, glDistributionProfitCenter!!)
+      return GeneralLedgerRecurringDistributionEntity(existingGlRecurringDistribution?.id, dto, glDistributionAcct!!, glDistributionProfitCenter!!)
    }
 }

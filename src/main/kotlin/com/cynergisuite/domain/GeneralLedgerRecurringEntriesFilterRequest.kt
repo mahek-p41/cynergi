@@ -3,7 +3,7 @@ package com.cynergisuite.domain
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
-import java.time.OffsetDateTime
+import java.time.LocalDate
 
 @Schema(
    name = "GeneralLedgerRecurringEntriesFilterRequest",
@@ -24,7 +24,7 @@ class GeneralLedgerRecurringEntriesFilterRequest(
    var sourceCode: String? = null,
 
    @field:Schema(name = "entryDate", description = "Entry date must fall in general ledger recurring date range (for transfer only)")
-   var entryDate: OffsetDateTime? = null,
+   var entryDate: LocalDate? = null,
 
    @field:Schema(name = "employeeNumber", description = "Employee number of user executing the general ledger recurring transfer (for transfer only)")
    var employeeNumber: Int? = null,

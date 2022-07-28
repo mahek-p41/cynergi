@@ -33,7 +33,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
+import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
@@ -102,7 +102,7 @@ class GeneralLedgerRecurringEntriesController @Inject constructor(
       return page
    }
 
-   @Get(uri = "report-{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Get(uri = "report{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerRecurringEntriesEndpoints"], summary = "Fetch a General Ledger Recurring Entries report", description = "Fetch a General Ledger Recurring Entries report", operationId = "generalLedgerRecurringEntries-fetchReport")
    @ApiResponses(
       value = [
@@ -207,7 +207,7 @@ class GeneralLedgerRecurringEntriesController @Inject constructor(
       return generalLedgerRecurringEntriesService.delete(id, user.myCompany())
    }
 
-   @Get(uri = "/transfer-{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Post(uri = "/transfer{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerRecurringEntriesEndpoints"], summary = "Use GL Recurring to post journal entries", description = "Fetch a list of General Ledger Recurring Entries to create General Ledger Detail records", operationId = "generalLedgerRecurringEntries-transfer")
    @ApiResponses(
       value = [
@@ -217,7 +217,7 @@ class GeneralLedgerRecurringEntriesController @Inject constructor(
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
-   fun transfer(
+   fun transferMultipleEntries(
       @Parameter(name = "filterRequest", `in` = QUERY, required = false)
       @Valid @QueryValue("filterRequest")
       filterRequest: GeneralLedgerRecurringEntriesFilterRequest,
@@ -227,6 +227,28 @@ class GeneralLedgerRecurringEntriesController @Inject constructor(
       logger.info("Fetching all General Ledger Recurring Entries that meet the criteria {} to create General Ledger Details", filterRequest)
 
       val user = userService.fetchUser(authentication)
-      generalLedgerDetailService.transfer(user.myCompany(), filterRequest)
+      generalLedgerDetailService.transfer(user, filterRequest)
+   }
+
+   @Post(uri = "/transfer/single", produces = [APPLICATION_JSON])
+   @Operation(tags = ["GeneralLedgerRecurringEntriesEndpoints"], summary = "Use GL Recurring to post a single journal entry", description = "Create General Ledger Detail records from a requested General Ledger Recurring Entry", operationId = "generalLedgerRecurringEntry-singletransfer")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerDetailDTO::class))]),
+         ApiResponse(responseCode = "204", description = "The requested General Ledger Recurring Entry was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun transferSingleEntry(
+      @Body @Valid
+      dto: GeneralLedgerRecurringEntriesDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ) {
+      logger.info("Transfer a single General Ledger Recurring Entry to create General Ledger Details", dto)
+
+      val user = userService.fetchUser(authentication)
+      generalLedgerDetailService.transfer(user, dto)
    }
 }

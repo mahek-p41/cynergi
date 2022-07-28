@@ -41,6 +41,15 @@ class GeneralLedgerDetailValidator @Inject constructor(
       return doSharedValidation(dto, company, generalLedgerDetailEntity)
    }
 
+   @Throws(ValidationException::class)
+   fun validateTransfer(id: UUID, dto: GeneralLedgerDetailDTO, company: CompanyEntity): GeneralLedgerDetailEntity {
+      logger.debug("Validating Update GeneralLedgerDetail {}", dto)
+
+      val generalLedgerDetailEntity = generalLedgerDetailRepository.findOne(id, company) ?: throw NotFoundException(id)
+
+      return doSharedValidation(dto, company, generalLedgerDetailEntity)
+   }
+
    private fun doSharedValidation(
       dto: GeneralLedgerDetailDTO,
       company: CompanyEntity,

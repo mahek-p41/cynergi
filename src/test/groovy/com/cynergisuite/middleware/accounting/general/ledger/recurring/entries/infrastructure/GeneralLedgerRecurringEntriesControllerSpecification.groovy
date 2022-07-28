@@ -78,8 +78,6 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
             distribution.generalLedgerDistributionProfitCenter.id == glRecurringDistributions[index].generalLedgerDistributionProfitCenter.myId()
             distribution.generalLedgerDistributionAmount == glRecurringDistributions[index].generalLedgerDistributionAmount
          }
-
-         balance == BigDecimal.ZERO
       }
    }
 
@@ -148,8 +146,6 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
                generalLedgerRecurringDistributions.eachWithIndex{ distribution, int i ->
                   glRecurringDistributions.find{ element -> element == distribution }
                }
-
-               balance == BigDecimal.ZERO
             }
          }
       }
@@ -204,7 +200,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       when:
       post(path, glRecurringEntriesDTO1)
       post(path, glRecurringEntriesDTO2)
-      def response = get("$path/report-$filterRequest")
+      def response = get("$path/report$filterRequest")
 
       then:
       notThrown(Exception)
@@ -265,8 +261,6 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
             distribution.generalLedgerDistributionProfitCenter.id == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionProfitCenter.myId()
             distribution.generalLedgerDistributionAmount == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionAmount
          }
-
-         balance == BigDecimal.ZERO
       }
    }
 
@@ -300,7 +294,6 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
       where:
       nonNullableProp                        || errorResponsePath
-      'balance'                              || 'balance'
       'generalLedgerRecurring'               || 'generalLedgerRecurring'
    }
 
@@ -403,34 +396,6 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       response[0].message == "\"End date of ${glRecurringEntriesDTO.generalLedgerRecurring.endDate} was before start date of ${glRecurringEntriesDTO.generalLedgerRecurring.beginDate}\""
    }
 
-   void "create invalid GL recurring entry with non-zero balance" () {
-      given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
-      def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
-      final account = accountDataLoaderService.single(company)
-      final profitCenter = storeFactoryService.store(3, company)
-      def glRecurringDistributionDTOs = GeneralLedgerRecurringDistributionDataLoader.streamDTO(
-         1,
-         glRecurringDTO,
-         new AccountDTO(account),
-         new SimpleLegacyIdentifiableDTO(profitCenter.myId())
-      ).toList()
-      def glRecurringEntriesDTO = dataLoaderService.singleDTO(glRecurringDTO, glRecurringDistributionDTOs)
-      glRecurringEntriesDTO.balance = 1500
-
-      when:
-      post(path, glRecurringEntriesDTO)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'balance'
-      response[0].message == 'Balance must total zero'
-   }
-
    void "update one" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
@@ -487,8 +452,6 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
             distribution.generalLedgerDistributionProfitCenter.id == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionProfitCenter.myId()
             distribution.generalLedgerDistributionAmount == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionAmount
          }
-
-         balance == BigDecimal.ZERO
       }
    }
 
@@ -531,7 +494,6 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
       where:
       nonNullableProp                        || errorResponsePath
-      'balance'                              || 'balance'
       'generalLedgerRecurring'               || 'generalLedgerRecurring'
    }
 
@@ -661,43 +623,6 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       response[0].message == "\"End date of ${glRecurringEntriesDTO.generalLedgerRecurring.endDate} was before start date of ${glRecurringEntriesDTO.generalLedgerRecurring.beginDate}\""
    }
 
-   void "update invalid GL recurring entry with non-zero balance" () {
-      given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
-      final account = accountDataLoaderService.single(company)
-      final profitCenter = storeFactoryService.store(3, company)
-
-      final glRecurringEntity = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
-      def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
-      glRecurringDTO.id = glRecurringEntity.id
-
-      final glRecurringDistributions = generalLedgerRecurringDistributionDataLoaderService.stream(1, glRecurringEntity, account, profitCenter).toList()
-      def glRecurringDistributionDTOs = GeneralLedgerRecurringDistributionDataLoader.streamDTO(
-         1,
-         glRecurringDTO,
-         new AccountDTO(account),
-         new SimpleLegacyIdentifiableDTO(profitCenter.myId())
-      ).toList()
-      glRecurringDistributionDTOs.eachWithIndex { it, index ->
-         it.id = glRecurringDistributions[index].id
-      }
-
-      def glRecurringEntriesDTO = dataLoaderService.singleDTO(glRecurringDTO, glRecurringDistributionDTOs)
-      glRecurringEntriesDTO.balance = 1500
-
-      when:
-      put("$path/${glRecurringEntity.id}", glRecurringEntriesDTO)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == 'balance'
-      response[0].message == 'Balance must total zero'
-   }
-
    void "delete one GL recurring entry" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
@@ -794,8 +719,6 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
             distribution.generalLedgerDistributionProfitCenter.id == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionProfitCenter.myId()
             distribution.generalLedgerDistributionAmount == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionAmount
          }
-
-         balance == BigDecimal.ZERO
       }
 
       when: // delete GL recurring entry
@@ -837,8 +760,6 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
             distribution.generalLedgerDistributionProfitCenter.id == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionProfitCenter.myId()
             distribution.generalLedgerDistributionAmount == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionAmount
          }
-
-         balance == BigDecimal.ZERO
       }
 
       when: // delete GL recurring entry again
@@ -868,7 +789,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       def filterRequest = new GeneralLedgerRecurringEntriesFilterRequest([sortBy: "id", sortDirection: "ASC"])
       filterRequest['entryType'] = glRecurringDTO.type.value
       filterRequest['sourceCode'] = glRecurringDTO.source.value
-      filterRequest['entryDate'] = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toOffsetDateTime()
+      filterRequest['entryDate'] = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
       filterRequest['employeeNumber'] = employee.number
 
       final glDetailPage = new StandardPageRequest(1, 5, "id", "ASC")
@@ -906,12 +827,10 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
             distribution.generalLedgerDistributionProfitCenter.id == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionProfitCenter.myId()
             distribution.generalLedgerDistributionAmount == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionAmount
          }
-
-         balance == BigDecimal.ZERO
       }
 
       when: // GL recurring and GL recurring distributions are fetched and GL details are created
-      get("$path/transfer-$filterRequest")
+      post("$path/transfer$filterRequest", null)
 
       then:
       notThrown(Exception)
@@ -940,5 +859,74 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
             }
          }
       }
+   }
+
+   void "transfer a single GL recurring entry to GL details" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
+      glRecurringDTO.endDate = LocalDate.now()
+      final acct = accountDataLoaderService.single(company)
+      final store = storeFactoryService.store(3, company)
+      final employee = employeeFactoryService.single(store)
+      def glRecurringDistributionDTOs = GeneralLedgerRecurringDistributionDataLoader.streamDTO(
+         1,
+         glRecurringDTO,
+         new AccountDTO(acct),
+         new SimpleLegacyIdentifiableDTO(store.myId())
+      ).toList()
+      def glRecurringEntriesDTO = dataLoaderService.singleDTO(glRecurringDTO, glRecurringDistributionDTOs)
+
+      def filterRequest = new GeneralLedgerRecurringEntriesFilterRequest([sortBy: "id", sortDirection: "ASC"])
+      filterRequest['entryType'] = glRecurringDTO.type.value
+      filterRequest['sourceCode'] = glRecurringDTO.source.value
+      filterRequest['entryDate'] = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
+      filterRequest['employeeNumber'] = employee.number
+
+      final glDetailPage = new StandardPageRequest(1, 5, "id", "ASC")
+
+      when: // GL recurring and GL recurring distributions are posted
+      def postResult = post(path, glRecurringEntriesDTO)
+
+      then:
+      notThrown(Exception)
+      postResult != null
+      with(postResult) {
+         with(generalLedgerRecurring) {
+            id != null
+
+            with(type) {
+               value == glRecurringEntriesDTO.generalLedgerRecurring.type.value
+               description == glRecurringEntriesDTO.generalLedgerRecurring.type.description
+            }
+
+            with(source) {
+               value == glRecurringEntriesDTO.generalLedgerRecurring.source.value
+               description == glRecurringEntriesDTO.generalLedgerRecurring.source.description
+            }
+
+            reverseIndicator == glRecurringEntriesDTO.generalLedgerRecurring.reverseIndicator
+            message == glRecurringEntriesDTO.generalLedgerRecurring.message
+            beginDate == glRecurringEntriesDTO.generalLedgerRecurring.beginDate.toString()
+            endDate == glRecurringEntriesDTO.generalLedgerRecurring.endDate.toString()
+         }
+
+         generalLedgerRecurringDistributions.eachWithIndex{ distribution, index ->
+            distribution.id != null
+            distribution.generalLedgerRecurring.id == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerRecurring.id
+            distribution.generalLedgerDistributionAccount.id == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionAccount.id
+            distribution.generalLedgerDistributionProfitCenter.id == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionProfitCenter.myId()
+            distribution.generalLedgerDistributionAmount == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionAmount
+         }
+      }
+
+      when:
+      postResult.entryDate = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
+      post("$path/transfer/single", postResult)
+
+      then:
+      notThrown(Exception)
+
    }
 }
