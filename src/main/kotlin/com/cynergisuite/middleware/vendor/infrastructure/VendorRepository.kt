@@ -238,7 +238,8 @@ class VendorRepository @Inject constructor(
 
    @ReadOnly
    fun search(company: CompanyEntity, page: VendorSearchPageRequest): RepositoryPage<VendorEntity, PageRequest> {
-      val searchQuery = page.query
+      var searchQuery = page.query
+      searchQuery = searchQuery?.trim()
       val where = StringBuilder(" WHERE comp.id = :comp_id AND v.deleted = FALSE ")
 
       if (page.active != null) {
@@ -251,8 +252,8 @@ class VendorRepository @Inject constructor(
          sortBy.append("ORDER BY ")
          val searchQueryBeginsWith = "$searchQuery%"
          if (searchQuery.isNumber()) {
-            if (page.fuzzy == false) {
-               where.append("v.number::text LIKE \'$searchQuery\' OR ")
+            if (!page.fuzzy!!) {
+               where.append("v.number = $searchQuery OR ")
             } else {
                where.append("v.number::text LIKE \'$searchQueryBeginsWith\' OR ")
                sortBy.append("v.number::text <-> :search_query, v.number::text ASC, ")

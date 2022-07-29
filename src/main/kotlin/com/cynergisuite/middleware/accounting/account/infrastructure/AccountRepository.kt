@@ -156,7 +156,8 @@ class AccountRepository @Inject constructor(
 
    @ReadOnly
    fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<AccountEntity, PageRequest> {
-      val searchQuery = page.query
+      var searchQuery = page.query
+      searchQuery = searchQuery?.trim()
       val where = StringBuilder(" WHERE comp.id = :comp_id AND account.deleted = FALSE")
       val sortBy = StringBuilder("")
       if (!searchQuery.isNullOrEmpty()) {
@@ -164,8 +165,8 @@ class AccountRepository @Inject constructor(
          sortBy.append("ORDER BY ")
          val searchQueryBeginsWith = "$searchQuery%"
          if (searchQuery.isNumber()) {
-            if (page.fuzzy == false) {
-               where.append("account.number::text LIKE \'$searchQuery\' OR ")
+            if (!page.fuzzy!!) {
+               where.append("account.number = $searchQuery OR ")
             } else {
                where.append("account.number::text LIKE \'$searchQueryBeginsWith\' OR ")
                sortBy.append("account.number::text <-> :search_query, account.number::text ASC, ")

@@ -222,7 +222,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final ex = thrown(HttpClientResponseException)
       ex.status == BAD_REQUEST
       final response = ex.response.bodyAsJson()
-      response.size() == 16
+      response.size() == 17
       response.collect { new ErrorDTO(it.message, it.code, it.path) }.sort { o1, o2 -> o1 <=> o2 } == [
          new ErrorDTO("Cannot be blank", "javax.validation.constraints.NotNull.message", "name"),
          new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "allowDropShipToCustomer"),
@@ -235,6 +235,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
          new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "freightCalcMethodType"),
          new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "freightOnboardType"),
          new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "name"),
+         new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "number"),
          new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "paymentTerm"),
          new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "returnPolicy"),
          new ErrorDTO("Is required", "javax.validation.constraints.NotNull.message", "separateCheck"),
@@ -484,6 +485,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       'purchaseOrderSubmitEmailAddress'      || 'purchaseOrderSubmitEmailAddress'
       'allowDropShipToCustomer'              || 'allowDropShipToCustomer'
       'autoSubmitPurchaseOrder'              || 'autoSubmitPurchaseOrder'
+      'number'                               || 'number'
    }
 
    @Unroll
@@ -699,6 +701,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       'purchaseOrderSubmitEmailAddress'      || 'purchaseOrderSubmitEmailAddress'
       'allowDropShipToCustomer'              || 'allowDropShipToCustomer'
       'autoSubmitPurchaseOrder'              || 'autoSubmitPurchaseOrder'
+      'number'                               || 'number'
    }
 
    void "update vendor with invalid po submit email address" () {
@@ -792,14 +795,14 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
 
       def query = ""
       switch (criteria) {
-         case '123':
-            query = "123"
+         case ' 123':
+            query = "%20123"
             break
          case '567':
             query = "567"
             break
-         case 'vendor':
-            query = "vendor"
+         case 'vendor ':
+            query = "vendor%20"
             break
          case '5670 vendor':
             query = "5670%20vendor"
@@ -818,9 +821,9 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       result.elements.size() == searchResultsCount
       where:
       criteria       || searchResultsCount
-      '123'          || 3
+      ' 123'         || 3
       '567'          || 2
-      'vendor'       || 1
+      'vendor '      || 1
       '5670 vendor'  || 1
       '5678'         || 1
    }
@@ -915,8 +918,8 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
 
       def query = ""
       switch (criteria) {
-         case '567':
-            query = "567"
+         case '   567  ':
+            query = "%20%20%20567%20%20"
             break
          case 'vendor':
             query = "vendor"
@@ -938,7 +941,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       result.elements.size() == searchResultsCount
       where:
       criteria       || searchResultsCount
-      '567'          || 1
+      '   567  '     || 1
       'vendor'       || 1
       '5670 vendor'  || 1
       '5678'         || 1

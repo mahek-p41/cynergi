@@ -424,14 +424,14 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
       def query = ""
       switch (criteria) {
-         case '123':
-            query = "123"
+         case ' 123':
+            query = "%20123"
             break
          case '567':
             query = "567"
             break
-         case 'bank':
-            query = "bank"
+         case 'bank ':
+            query = "bank%20"
             break
          case '5670 Acct':
             query = "5670%20Acct"
@@ -450,9 +450,9 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       result.elements.size() == searchResultsCount
       where:
       criteria       || searchResultsCount
-      '123'          || 3
+      ' 123'         || 3
       '567'          || 2
-      'bank'         || 2
+      'bank '        || 2
       '5670 Acct'    || 1
       '5678'         || 1
    }
@@ -523,8 +523,8 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
 
       def query = ""
       switch (criteria) {
-         case '567':
-            query = "567"
+         case '   567  ':
+            query = "%20%20%20567%20%20"
             break
          case 'bank':
             query = "bank"
@@ -546,7 +546,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       result.elements.size() == searchResultsCount
       where:
       criteria       || searchResultsCount
-      '567'          || 1
+      '   567  '     || 1
       'bank'         || 2
       '5670 Acct'    || 1
       '5678'         || 1
