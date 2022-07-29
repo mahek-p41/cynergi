@@ -2,7 +2,12 @@ package com.cynergisuite.middleware.agreement.signing.infrastructure
 
 import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.agreement.signing.AgreementSigningEntity
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -183,6 +188,20 @@ class AgreementSigningRepository(
       )
    }
 
+   @ReadOnly
+   fun findAgreementNumberFromSignatureId(externalSignatureId: UUID): String? { // FIXME handle RTO, Club and Other Agreement Types with separate data points?
+      return jdbc.findFirstOrNull("SELECT agreement_number FROM agreement_signing WHERE external_signature_id = :externalSignatureId LIMIT 1", mapOf("externalSignatureId" to externalSignatureId)) { rs, _ ->
+         rs.getString("agreement_number")
+      }
+   }
+
+   @ReadOnly
+   fun findCustomerNumberFromSignatureId(externalSignatureId: UUID): String? {
+      return jdbc.findFirstOrNull("SELECT primary_customer_number FROM agreement_signing WHERE external_signature_id = :externalSignatureId LIMIT 1", mapOf("externalSignatureId" to externalSignatureId)) { rs, _ ->
+         rs.getString("primary_customer_number")
+      }
+   }
+
    @Transactional
    fun insert(entity: AgreementSigningEntity): AgreementSigningEntity {
       logger.debug("Inserting Agreement Signing record {}", entity)
@@ -257,7 +276,7 @@ class AgreementSigningRepository(
          agreementNumber = rs.getInt("agreement_number"),
          agreementType = rs.getString("agreement_type"),
          statusId = rs.getInt("status_id"),
-         externalSignatureId = rs.getString("external_signature_id"),
+         externalSignatureId = rs.getUuid("external_signature_id"),
       )
    }
 
@@ -273,7 +292,7 @@ class AgreementSigningRepository(
          agreementNumber = rs.getInt("asn_agreement_number"),
          agreementType = rs.getString("asn_agreement_type"),
          statusId = rs.getInt("asn_status_id"),
-         externalSignatureId = rs.getString("asn_external_signature_id"),
+         externalSignatureId = rs.getUuid("asn_external_signature_id"),
       )
    }
 

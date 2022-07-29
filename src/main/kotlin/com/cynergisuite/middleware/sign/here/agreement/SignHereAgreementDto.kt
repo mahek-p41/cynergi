@@ -16,20 +16,12 @@ data class SignHereAgreementDto(
    val id: UUID,
 
    @field:Schema(name = "agreementNumber", minimum = "1", required = true, nullable = false, description = "Agreement number being signed")
-   val agreementNumber: Long?,
+   val agreementNumber: String?,
 
    @field:Schema(name = "customerNumber", minimum = "1", required = true, nullable = false, description = "Customer number associated with agreement")
-   val customerNumber: Long?,
+   val customerNumber: String?,
 
    @field:Schema(name = "timeCreated", required = true, nullable = false, description = "Timestamp of when the request was made to the Sign Here service")
    val timeCreated: OffsetDateTime
 
-) {
-   constructor(documentSignatureRequestDto: DocumentSignatureRequestDto):
-      this(
-         id = documentSignatureRequestDto.id,
-         agreementNumber = documentSignatureRequestDto.meta["Agreement-No"]?.toString()?.toLong(),
-         customerNumber = documentSignatureRequestDto.meta["Customer-No"]?.toString()?.toLong(),
-         timeCreated = documentSignatureRequestDto.timeCreated
-      )
-}
+)

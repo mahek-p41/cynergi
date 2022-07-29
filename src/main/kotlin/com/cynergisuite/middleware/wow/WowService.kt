@@ -9,19 +9,18 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
 import com.cynergisuite.middleware.schedule.argument.infrastructure.ScheduleArgumentRepository
+import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
+import com.cynergisuite.middleware.schedule.command.WowAccountSummary
 import com.cynergisuite.middleware.schedule.command.WowActiveInventory
 import com.cynergisuite.middleware.schedule.command.WowBirthday
 import com.cynergisuite.middleware.schedule.command.WowCollection
-import com.cynergisuite.middleware.schedule.command.WowSingleAgreement
 import com.cynergisuite.middleware.schedule.command.WowFinalPayment
-import com.cynergisuite.middleware.schedule.command.WowAccountSummary
-import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
+import com.cynergisuite.middleware.schedule.command.WowSingleAgreement
 import com.cynergisuite.middleware.schedule.command.toEntity
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import com.cynergisuite.middleware.schedule.type.BeginningOfMonth
 import com.cynergisuite.middleware.schedule.type.Daily
 import com.cynergisuite.middleware.schedule.type.ScheduleType
-import com.cynergisuite.middleware.schedule.type.Weekly
 import com.cynergisuite.middleware.schedule.type.toEntity
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
 import jakarta.inject.Inject
@@ -66,7 +65,7 @@ class WowService @Inject constructor(
 
       if (area != null) {
          areaRepository.delete(area)
-         scheduleRepository.deleteByTypesForCompanyCascade(listOf(WowActiveInventory, WowAccountSummary, WowBirthday, WowCollection, WowFinalPayment,WowSingleAgreement), company)
+         scheduleRepository.deleteByTypesForCompanyCascade(listOf(WowActiveInventory, WowAccountSummary, WowBirthday, WowCollection, WowFinalPayment, WowSingleAgreement), company)
       }
    }
 

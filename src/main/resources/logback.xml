@@ -12,6 +12,7 @@
     <logger name="io.micronaut" level="INFO" />
     <logger name="io.micronaut.cache" level="TRACE" />
     <logger name="com.hightouchinc" level="TRACE" />
+    <logger name="io.micronaut.http.client" level="TRACE"/>
     <logger name="org.flywaydb" level="INFO" />
 
     <root level="TRACE">

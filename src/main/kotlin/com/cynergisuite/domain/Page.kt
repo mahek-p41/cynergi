@@ -31,7 +31,6 @@ data class Page<I>(
 ) {
    fun isNotEmpty(): Boolean = elements.isNotEmpty()
 
-
    fun <N> mapElements(mapper: (i: I) -> N): Page<N> =
       Page(
          elements = elements.map(mapper),

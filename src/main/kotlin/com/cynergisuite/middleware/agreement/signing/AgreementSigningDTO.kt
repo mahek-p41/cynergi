@@ -5,7 +5,7 @@ import com.cynergisuite.domain.SimpleLegacyNumberDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
-import java.util.*
+import java.util.UUID
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -43,9 +43,8 @@ data class AgreementSigningDTO(
    val statusId: Int? = null,
 
    @field:NotNull
-   @field:Size(min = 1, max = 200) // TODO What is the actual min and max?
-   @field:Schema(name = "externalSignatureId", description = "Link to QR code")
-   var externalSignatureId: String? = null
+   @field:Schema(name = "externalSignatureId", description = "Sign Here Please external UUID")
+   var externalSignatureId: UUID? = null
 
 ) : Identifiable {
 

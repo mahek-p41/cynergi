@@ -6,7 +6,7 @@ import com.cynergisuite.domain.ValidatorBase.Companion.logger
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.util.*
+import java.util.UUID
 
 @Singleton
 class CompanyService @Inject constructor(

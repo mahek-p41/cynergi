@@ -2,10 +2,10 @@ package com.cynergisuite.middleware.wow.schedule
 
 import com.cynergisuite.middleware.area.AreaService
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.wow.infrastructure.WowRepository
-import com.cynergisuite.middleware.wow.schedule.spi.WowScheduledJob
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
 import com.cynergisuite.middleware.ssh.SftpClientService
+import com.cynergisuite.middleware.wow.infrastructure.WowRepository
+import com.cynergisuite.middleware.wow.schedule.spi.WowScheduledJob
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Named
@@ -24,9 +24,9 @@ import java.time.OffsetDateTime
 @Singleton
 @Named("WowAccountSummary") // Must match a row in the schedule_command_type_domain
 class WowAccountSummaryJob @Inject constructor(
-        areaService: AreaService,
-        private val wowRepository: WowRepository,
-        private val sftpClientService: SftpClientService,
+   areaService: AreaService,
+   private val wowRepository: WowRepository,
+   private val sftpClientService: SftpClientService,
 ) : WowScheduledJob(areaService) {
    private val logger: Logger = LoggerFactory.getLogger(WowAccountSummaryJob::class.java)
 
@@ -38,7 +38,7 @@ class WowAccountSummaryJob @Inject constructor(
       Files.newBufferedWriter(accountSummaryTempPath).use { writer ->
          val accountSummaryCsv = CSVPrinter(writer, CSVFormat.EXCEL)
 
-         accountSummaryCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay")
+         accountSummaryCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product", "Terms", "NextPaymentAmount", "Address1", "Address2", "City", "State", "Zip", "PaymentsRemaining", "ProjectedPayoutDate", "WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount", "ClubMember", "ClubNumber", "ClubFee", "AutoPay")
 
          wowRepository.findAccountSummary(company).forEach { accountSummary ->
             accountSummaryCsv.printRecord(

@@ -4,7 +4,7 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.core.annotation.Introspected
-import java.util.*
+import java.util.UUID
 
 @Introspected
 data class AgreementSigningEntity(
@@ -16,7 +16,7 @@ data class AgreementSigningEntity(
    val agreementNumber: Int,
    val agreementType: String,
    val statusId: Int,
-   val externalSignatureId: String,
+   val externalSignatureId: UUID,
 ) : Identifiable {
 
    override fun myId(): UUID? = id

@@ -1,18 +1,21 @@
 package com.cynergisuite.middleware.sign.here.agreement
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.micronaut.core.annotation.Introspected
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
 @Introspected
+@JsonInclude(NON_NULL)
 data class DocumentSignatureRequestDto(
-   val id: UUID,
-   val timeCreated: OffsetDateTime,
-   val signingDetail: DocumentSignatureSigningDetailDto,
-   val requestedSignatures: List<String>,
-   val expiration: LocalDate,
-   val meta: HashMap<*, *> = HashMap<String, Any>()
+   var id: UUID? = null,
+   var timeCreated: OffsetDateTime? = null,
+   var signingDetail: DocumentSignatureSigningDetailDto? = null,
+   var requestedSignatures: List<String> = emptyList(),
+   var expiration: LocalDate? = null,
+   var meta: HashMap<*, *> = HashMap<String, Any>(),
 )
 
 @Introspected

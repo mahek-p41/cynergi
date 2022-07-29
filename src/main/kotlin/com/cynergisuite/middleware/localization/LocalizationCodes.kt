@@ -81,4 +81,4 @@ class Unknown : SystemCode("system.word.unknown", arrayOf())
 class UnableToParseJson(jsonParseErrorMessage: String) : SystemCode("system.json.unable.parse", arrayOf(jsonParseErrorMessage))
 class PageOutOfBounds(page: Int?, size: Int?, sortBy: String?, sortDirection: String?) : SystemCode("system.page.out.of.bounds", arrayOf(page, size, sortBy, sortDirection))
 
-class SignHerePleaseNotEnabled(location: Location, company: CompanyEntity): LocalizationCodeImpl("sign.here.please.not.enabled", arrayOf(location.myNumber(), company.datasetCode))
+class SignHerePleaseNotEnabled(location: Location, company: CompanyEntity) : LocalizationCodeImpl("sign.here.please.not.enabled", arrayOf(location.myNumber(), company.datasetCode))

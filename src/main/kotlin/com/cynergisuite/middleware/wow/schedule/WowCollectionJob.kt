@@ -2,10 +2,10 @@ package com.cynergisuite.middleware.wow.schedule
 
 import com.cynergisuite.middleware.area.AreaService
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.wow.infrastructure.WowRepository
-import com.cynergisuite.middleware.wow.schedule.spi.WowScheduledJob
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
 import com.cynergisuite.middleware.ssh.SftpClientService
+import com.cynergisuite.middleware.wow.infrastructure.WowRepository
+import com.cynergisuite.middleware.wow.schedule.spi.WowScheduledJob
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Named

@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.wow
 
 import com.cynergisuite.middleware.company.CompanyEntity
-import java.math.BigInteger
 import java.time.LocalDate
 
 class WowFinalPaymentEntity(

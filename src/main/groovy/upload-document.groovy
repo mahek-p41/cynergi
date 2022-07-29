@@ -115,6 +115,7 @@ if (!helpRequested) {
                      uploadDocumentRequest.setHeader("X-Sig-Meta-Type", "agreement")
                      uploadDocumentRequest.setHeader("X-Sig-Meta-Store", storeNumber.toString())
                      uploadDocumentRequest.setHeader("X-Sig-Meta-Dataset", dataset)
+                     uploadDocumentRequest.setHeader("X-Sig-Meta-Name", name)
                      uploadDocumentRequest.setHeader("X-Sig-Meta-Agreement-No", rtoAgreementNumber.toString())
                      uploadDocumentRequest.setHeader("X-Sig-Meta-Customer-No", primaryCustomerNumber.toString())
                      uploadDocumentRequest.setEntity(requestEntity)
@@ -124,7 +125,7 @@ if (!helpRequested) {
                      //requestedDocumentId UUID The id for the root of the whole transaction
                      //nextSignatureUri
 
-                     final awsResponse = jsonSlurper.parse(uploadResponse.entity.content).nextSignatureUri
+                     final awsResponse = UUID.fromString(jsonSlurper.parse(uploadResponse.entity.content).requestedDocumentId)
 
                      if (uploadResponseCode >= 200 && uploadResponseCode < 400) {
                         if (rtoAgreementNumber != 0) { //This is where we check then insert/update the agreement_signing table for rto.

@@ -50,7 +50,7 @@ interface PageRequest {
    }
 
    fun toSortDirection() =
-      when(sortBy().uppercase()) {
+      when (sortBy().uppercase()) {
          "ASC" -> ASC
          "DESC" -> DESC
          else -> DESC
