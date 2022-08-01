@@ -76,20 +76,12 @@ class GeneralLedgerReversalEntryRepository @Inject constructor(
             account.account_vendor_1099_type_value                                    AS glReversalDist_account_vendor_1099_type_value,
             account.account_vendor_1099_type_description                              AS glReversalDist_account_vendor_1099_type_description,
             account.account_vendor_1099_type_localization_code                        AS glReversalDist_account_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then bank.id
-                     WHEN COUNT(*) = 0 then NULL
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = account.account_id
-               GROUP BY bank.id LIMIT 1
-            ) AS glReversalDist_account_bank_id,
+            bank.id                                                                   AS glReversalDist_account_bank_id,
             count(*) OVER() AS total_elements
          FROM general_ledger_reversal_distribution glReversalDist
             JOIN general_ledger_reversal glReversal ON glReversalDist.general_ledger_reversal_id = glReversal.glReversal_id AND glReversal.glReversal_deleted = FALSE
             JOIN account ON glReversalDist.general_ledger_reversal_distribution_account_id = account.account_id AND account.account_deleted = FALSE
+            LEFT OUTER JOIN bank ON bank.general_ledger_account_id = account.account_id AND bank.deleted = FALSE
       """
    }
 

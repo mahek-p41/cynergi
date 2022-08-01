@@ -31,7 +31,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       given:
       final account = accountFactoryService.single(nineNineEightEmployee.company)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      bankFactoryService.single(nineNineEightEmployee.company, store, account)
       final bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
 
       when:
@@ -331,12 +330,15 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "update invalid bank with duplicate bank number" () {
       given:
-      final account = accountFactoryService.single(nineNineEightEmployee.company)
-      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      final existingBanks = bankFactoryService.stream(2, store, account).collect()
-      final bankDTO = bankFactoryService.singleDTO(store, account)
-      bankDTO.id = existingBanks[0].id
-      bankDTO.number = existingBanks[1].number
+      final company = nineNineEightEmployee.company
+      final account1 = accountFactoryService.single(company)
+      final account2 = accountFactoryService.single(company)
+      final store = storeFactoryService.store(3, company)
+      final existingBank1 = bankFactoryService.single(company, store, account1)
+      final existingBank2 = bankFactoryService.single(company, store, account2)
+      final bankDTO = bankFactoryService.singleDTO(store, account1)
+      bankDTO.id = existingBank1.id
+      bankDTO.number = existingBank2.number
 
       when:
       put("$path/$bankDTO.id", bankDTO)

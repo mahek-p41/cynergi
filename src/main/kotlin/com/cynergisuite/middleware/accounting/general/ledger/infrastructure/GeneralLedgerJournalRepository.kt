@@ -71,16 +71,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
             account.account_vendor_1099_type_value                          AS glJournal_account_vendor_1099_type_value,
             account.account_vendor_1099_type_description                    AS glJournal_account_vendor_1099_type_description,
             account.account_vendor_1099_type_localization_code              AS glJournal_account_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then bank.id
-                     WHEN COUNT(*) = 0 then NULL
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = account.account_id
-               GROUP BY bank.id LIMIT 1
-            ) AS glJournal_account_bank_id,
+            bank.id                                                         AS glJournal_account_bank_id,
             glJournal.profit_center_id_sfk                                  AS glJournal_profit_center_id_sfk,
             profitCenter.id                                                 AS glJournal_profitCenter_id,
             profitCenter.number                                             AS glJournal_profitCenter_number,
@@ -99,6 +90,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
                ON profitCenter.dataset = comp.dataset_code
                   AND profitCenter.id = glJournal.profit_center_id_sfk
             JOIN general_ledger_source_codes source ON glJournal.source_id = source.id AND source.deleted = FALSE
+            LEFT OUTER JOIN bank ON bank.general_ledger_account_id = account.account_id AND bank.deleted = FALSE
       """
    }
 

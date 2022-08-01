@@ -85,16 +85,7 @@ class AccountPayableDistributionDetailRepository @Inject constructor(
             account.account_vendor_1099_type_value                         AS apDistDetail_account_vendor_1099_type_value,
             account.account_vendor_1099_type_description                   AS apDistDetail_account_vendor_1099_type_description,
             account.account_vendor_1099_type_localization_code             AS apDistDetail_account_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then bank.id
-                     WHEN COUNT(*) = 0 then NULL
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = account.account_id
-               GROUP BY bank.id LIMIT 1
-            ) AS apDistDetail_account_bank_id,
+            bank.id                                                        AS apDistDetail_account_bank_id,
             count(*) OVER() as total_elements
          FROM account_payable_distribution_template_detail apDistDetail
             JOIN account_payable_distribution_template apDist ON apDistDetail.template_id = apDist.apDist_id
@@ -103,6 +94,7 @@ class AccountPayableDistributionDetailRepository @Inject constructor(
                ON profitCenter.dataset = comp.dataset_code
                   AND profitCenter.number = apDistDetail.profit_center_sfk
             JOIN account ON apDistDetail.account_id = account.account_id AND account.account_deleted = FALSE
+            LEFT OUTER JOIN bank ON bank.general_ledger_account_id = account.account_id AND bank.deleted = FALSE
       """
    }
 

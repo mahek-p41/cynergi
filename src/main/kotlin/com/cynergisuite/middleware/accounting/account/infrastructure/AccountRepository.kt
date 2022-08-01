@@ -63,16 +63,7 @@ class AccountRepository @Inject constructor(
             vendor_1099_type.value                       AS account_vendor_1099_type_value,
             vendor_1099_type.description                 AS account_vendor_1099_type_description,
             vendor_1099_type.localization_code           AS account_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then bank.id
-                     WHEN COUNT(*) = 0 then NULL
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = account.id
-               GROUP BY bank.id LIMIT 1
-            ) AS account_bank_id
+            bank.id                                      AS account_bank_id
          FROM account
                JOIN company comp
                      ON comp.id = account.company_id AND comp.deleted = FALSE
@@ -84,6 +75,8 @@ class AccountRepository @Inject constructor(
                      ON status.id = account.status_type_id
                LEFT OUTER JOIN vendor_1099_type_domain vendor_1099_type
                      ON vendor_1099_type.id = account.form_1099_field
+               LEFT OUTER JOIN bank
+                     ON bank.general_ledger_account_id = account.id AND bank.deleted = FALSE
       """
    }
 

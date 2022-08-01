@@ -67,16 +67,7 @@ class GeneralLedgerControlRepository @Inject constructor(
             defAPAcct.account_vendor_1099_type_value                          AS defAPAcct_vendor_1099_type_value,
             defAPAcct.account_vendor_1099_type_description                    AS defAPAcct_vendor_1099_type_description,
             defAPAcct.account_vendor_1099_type_localization_code              AS defAPAcct_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then bank.id
-                     WHEN COUNT(*) = 0 then NULL
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = defAPAcct.account_id
-               GROUP BY bank.id LIMIT 1
-            ) AS defAPAcct_bank_id,
+            defAPAcctBank.id                                                  AS defAPAcct_bank_id,
             defAPDiscAcct.account_id                                          AS defAPDiscAcct_id,
             defAPDiscAcct.account_number                                      AS defAPDiscAcct_number,
             defAPDiscAcct.account_name                                        AS defAPDiscAcct_name,
@@ -100,16 +91,7 @@ class GeneralLedgerControlRepository @Inject constructor(
             defAPDiscAcct.account_vendor_1099_type_value                      AS defAPDiscAcct_vendor_1099_type_value,
             defAPDiscAcct.account_vendor_1099_type_description                AS defAPDiscAcct_vendor_1099_type_description,
             defAPDiscAcct.account_vendor_1099_type_localization_code          AS defAPDiscAcct_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then bank.id
-                     WHEN COUNT(*) = 0 then NULL
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = defAPDiscAcct.account_id
-               GROUP BY bank.id LIMIT 1
-            ) AS defAPDiscAcct_bank_id,
+            defAPDiscAcctBank.id                                              AS defAPDiscAcct_bank_id,
             defARAcct.account_id                                              AS defARAcct_id,
             defARAcct.account_number                                          AS defARAcct_number,
             defARAcct.account_name                                            AS defARAcct_name,
@@ -133,16 +115,7 @@ class GeneralLedgerControlRepository @Inject constructor(
             defARAcct.account_vendor_1099_type_value                          AS defARAcct_vendor_1099_type_value,
             defARAcct.account_vendor_1099_type_description                    AS defARAcct_vendor_1099_type_description,
             defARAcct.account_vendor_1099_type_localization_code              AS defARAcct_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then bank.id
-                     WHEN COUNT(*) = 0 then NULL
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = defARAcct.account_id
-               GROUP BY bank.id LIMIT 1
-            ) AS defARAcct_bank_id,
+            defARAcctBank.id                                                  AS defARAcct_bank_id,
             defARDiscAcct.account_id                                          AS defARDiscAcct_id,
             defARDiscAcct.account_number                                      AS defARDiscAcct_number,
             defARDiscAcct.account_name                                        AS defARDiscAcct_name,
@@ -166,16 +139,7 @@ class GeneralLedgerControlRepository @Inject constructor(
             defARDiscAcct.account_vendor_1099_type_value                      AS defARDiscAcct_vendor_1099_type_value,
             defARDiscAcct.account_vendor_1099_type_description                AS defARDiscAcct_vendor_1099_type_description,
             defARDiscAcct.account_vendor_1099_type_localization_code          AS defARDiscAcct_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then bank.id
-                     WHEN COUNT(*) = 0 then NULL
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = defARDiscAcct.account_id
-               GROUP BY bank.id LIMIT 1
-            ) AS defARDiscAcct_bank_id,
+            defARDiscAcctBank.id                                              AS defARDiscAcct_bank_id,
             defAcctMiscInvAcct.account_id                                     AS defAcctMiscInvAcct_id,
             defAcctMiscInvAcct.account_number                                 AS defAcctMiscInvAcct_number,
             defAcctMiscInvAcct.account_name                                   AS defAcctMiscInvAcct_name,
@@ -199,16 +163,7 @@ class GeneralLedgerControlRepository @Inject constructor(
             defAcctMiscInvAcct.account_vendor_1099_type_value                 AS defAcctMiscInvAcct_vendor_1099_type_value,
             defAcctMiscInvAcct.account_vendor_1099_type_description           AS defAcctMiscInvAcct_vendor_1099_type_description,
             defAcctMiscInvAcct.account_vendor_1099_type_localization_code     AS defAcctMiscInvAcct_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then bank.id
-                     WHEN COUNT(*) = 0 then NULL
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = defAcctMiscInvAcct.account_id
-               GROUP BY bank.id LIMIT 1
-            ) AS defAcctMiscInvAcct_bank_id,
+            defAcctMiscInvAcctBank.id                                         AS defAcctMiscInvAcct_bank_id,
             defAcctSerializedInvAcct.account_id                               AS defAcctSerializedInvAcct_id,
             defAcctSerializedInvAcct.account_number                           AS defAcctSerializedInvAcct_number,
             defAcctSerializedInvAcct.account_name                             AS defAcctSerializedInvAcct_name,
@@ -232,16 +187,7 @@ class GeneralLedgerControlRepository @Inject constructor(
             defAcctSerializedInvAcct.account_vendor_1099_type_value                 AS defAcctSerializedInvAcct_vendor_1099_type_value,
             defAcctSerializedInvAcct.account_vendor_1099_type_description           AS defAcctSerializedInvAcct_vendor_1099_type_description,
             defAcctSerializedInvAcct.account_vendor_1099_type_localization_code     AS defAcctSerializedInvAcct_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then bank.id
-                     WHEN COUNT(*) = 0 then NULL
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = defAcctSerializedInvAcct.account_id
-               GROUP BY bank.id LIMIT 1
-            ) AS defAcctSerializedInvAcct_bank_id,
+            defAcctSerializedInvAcctBank.id                                   AS defAcctSerializedInvAcct_bank_id,
             defAcctUnbilledInvAcct.account_id                                 AS defAcctUnbilledInvAcct_id,
             defAcctUnbilledInvAcct.account_number                             AS defAcctUnbilledInvAcct_number,
             defAcctUnbilledInvAcct.account_name                               AS defAcctUnbilledInvAcct_name,
@@ -265,16 +211,7 @@ class GeneralLedgerControlRepository @Inject constructor(
             defAcctUnbilledInvAcct.account_vendor_1099_type_value                 AS defAcctUnbilledInvAcct_vendor_1099_type_value,
             defAcctUnbilledInvAcct.account_vendor_1099_type_description           AS defAcctUnbilledInvAcct_vendor_1099_type_description,
             defAcctUnbilledInvAcct.account_vendor_1099_type_localization_code     AS defAcctUnbilledInvAcct_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then bank.id
-                     WHEN COUNT(*) = 0 then NULL
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = defAcctUnbilledInvAcct.account_id
-               GROUP BY bank.id LIMIT 1
-            ) AS defAcctUnbilledInvAcct_bank_id,
+            defAcctUnbilledInvAcctBank.id                                     AS defAcctUnbilledInvAcct_bank_id,
             defAcctFreightAcct.account_id                                     AS defAcctFreightAcct_id,
             defAcctFreightAcct.account_number                                 AS defAcctFreightAcct_number,
             defAcctFreightAcct.account_name                                   AS defAcctFreightAcct_name,
@@ -298,16 +235,7 @@ class GeneralLedgerControlRepository @Inject constructor(
             defAcctFreightAcct.account_vendor_1099_type_value                 AS defAcctFreightAcct_vendor_1099_type_value,
             defAcctFreightAcct.account_vendor_1099_type_description           AS defAcctFreightAcct_vendor_1099_type_description,
             defAcctFreightAcct.account_vendor_1099_type_localization_code     AS defAcctFreightAcct_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then bank.id
-                     WHEN COUNT(*) = 0 then NULL
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = defAcctFreightAcct.account_id
-               GROUP BY bank.id LIMIT 1
-            ) AS defAcctFreightAcct_bank_id
+            defAcctFreightAcctBank.id                                         AS defAcctFreightAcct_bank_id
          FROM general_ledger_control glCtrl
             JOIN company comp ON glCtrl.company_id = comp.id AND comp.deleted = FALSE
             JOIN fastinfo_prod_import.store_vw profitCenter
@@ -321,6 +249,14 @@ class GeneralLedgerControlRepository @Inject constructor(
             LEFT JOIN account defAcctSerializedInvAcct ON glCtrl.default_account_serialized_inventory_account_id = defAcctSerializedInvAcct.account_id AND defAcctSerializedInvAcct.account_deleted = FALSE
             LEFT JOIN account defAcctUnbilledInvAcct ON glCtrl.default_account_unbilled_inventory_account_id = defAcctUnbilledInvAcct.account_id AND defAcctUnbilledInvAcct.account_deleted = FALSE
             LEFT JOIN account defAcctFreightAcct ON glCtrl.default_account_freight_account_id = defAcctFreightAcct.account_id AND defAcctFreightAcct.account_deleted = FALSE
+            LEFT OUTER JOIN bank defAPAcctBank ON defAPAcctBank.general_ledger_account_id = defAPAcct.account_id AND defAPAcctBank.deleted = FALSE
+            LEFT OUTER JOIN bank defAPDiscAcctBank ON defAPDiscAcctBank.general_ledger_account_id = defAPDiscAcct.account_id AND defAPDiscAcctBank.deleted = FALSE
+            LEFT OUTER JOIN bank defARAcctBank ON defARAcctBank.general_ledger_account_id = defARAcct.account_id AND defARAcctBank.deleted = FALSE
+            LEFT OUTER JOIN bank defARDiscAcctBank ON defARDiscAcctBank.general_ledger_account_id = defARDiscAcct.account_id AND defARDiscAcctBank.deleted = FALSE
+            LEFT OUTER JOIN bank defAcctMiscInvAcctBank ON defAcctMiscInvAcctBank.general_ledger_account_id = defAcctMiscInvAcct.account_id AND defAcctMiscInvAcctBank.deleted = FALSE
+            LEFT OUTER JOIN bank defAcctSerializedInvAcctBank ON defAcctSerializedInvAcctBank.general_ledger_account_id = defAcctSerializedInvAcct.account_id AND defAcctSerializedInvAcctBank.deleted = FALSE
+            LEFT OUTER JOIN bank defAcctUnbilledInvAcctBank ON defAcctUnbilledInvAcctBank.general_ledger_account_id = defAcctUnbilledInvAcct.account_id AND defAcctUnbilledInvAcctBank.deleted = FALSE
+            LEFT OUTER JOIN bank defAcctFreightAcctBank ON defAcctFreightAcctBank.general_ledger_account_id = defAcctFreightAcct.account_id AND defAcctFreightAcctBank.deleted = FALSE
       """
    }
 

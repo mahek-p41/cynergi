@@ -81,16 +81,7 @@ class GeneralLedgerReversalDistributionRepository @Inject constructor(
             account.account_vendor_1099_type_value                           AS glReversalDist_account_vendor_1099_type_value,
             account.account_vendor_1099_type_description                     AS glReversalDist_account_vendor_1099_type_description,
             account.account_vendor_1099_type_localization_code               AS glReversalDist_account_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then bank.id
-                     WHEN COUNT(*) = 0 then NULL
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = account.account_id
-               GROUP BY bank.id LIMIT 1
-            ) AS glReversalDist_account_bank_id,
+            bank.id                                                          AS glReversalDist_account_bank_id,
             profitCenter.id                                                  AS glReversalDist_profitCenter_id,
             profitCenter.number                                              AS glReversalDist_profitCenter_number,
             profitCenter.name                                                AS glReversalDist_profitCenter_name,
@@ -103,6 +94,7 @@ class GeneralLedgerReversalDistributionRepository @Inject constructor(
             JOIN fastinfo_prod_import.store_vw profitCenter
                ON profitCenter.dataset = comp.dataset_code
                   AND profitCenter.number = glReversalDist.general_ledger_reversal_distribution_profit_center_id_sfk
+            LEFT OUTER JOIN bank ON bank.general_ledger_account_id = account.account_id AND bank.deleted = FALSE
       """
    }
 
