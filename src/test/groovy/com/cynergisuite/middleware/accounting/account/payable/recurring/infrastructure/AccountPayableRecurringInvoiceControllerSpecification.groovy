@@ -31,8 +31,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 1)
-      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 2)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final accountPayableRecurringInvoiceEntity = accountPayableRecurringInvoiceDataLoaderService.single(company, vendor, payTo)
 
       when:
@@ -86,8 +86,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 1)
-      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 2)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final accountPayableRecurringInvoiceEntity = accountPayableRecurringInvoiceDataLoaderService.stream(7, company, vendor, payTo).toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
@@ -208,8 +208,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 1)
-      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 2)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(vendor, payTo)
 
       when:
@@ -265,8 +265,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 1)
-      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 2)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(vendor, payTo)
       accountPayableRecurringInvoiceDTO.message = null
       accountPayableRecurringInvoiceDTO.codeIndicator = null
@@ -330,8 +330,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 1)
-      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 2)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(vendor, payTo)
       accountPayableRecurringInvoiceDTO["$nonNullableProp"] = null
 
@@ -373,8 +373,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 1)
-      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 2)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(vendor, payTo)
       accountPayableRecurringInvoiceDTO["$testProp"] = invalidValue
 
@@ -403,8 +403,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 1)
-      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 2)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final accountPayableRecurringInvoiceEntity = accountPayableRecurringInvoiceDataLoaderService.single(company, vendor, payTo)
       final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(vendor, payTo)
       accountPayableRecurringInvoiceDTO.id = accountPayableRecurringInvoiceEntity.id
@@ -461,8 +461,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 1)
-      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 2)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final accountPayableRecurringInvoiceEntity = accountPayableRecurringInvoiceDataLoaderService.single(company, vendor, payTo)
       final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(vendor, payTo)
       accountPayableRecurringInvoiceDTO.id = accountPayableRecurringInvoiceEntity.id
@@ -529,8 +529,8 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final company = companyFactoryService.forDatasetCode('tstds1')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 1)
-      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia, null, 2)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final accountPayableRecurringInvoiceEntity = accountPayableRecurringInvoiceDataLoaderService.single(company, vendor, payTo)
       final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(vendor, payTo)
       accountPayableRecurringInvoiceDTO.id = accountPayableRecurringInvoiceEntity.id

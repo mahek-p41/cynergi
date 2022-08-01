@@ -21,7 +21,7 @@ import java.util.stream.Stream
 @CompileStatic
 class VendorTestDataLoader {
 
-   static Stream<VendorEntity> stream(int numberIn = 1, CompanyEntity companyIn, AddressEntity addressIn, VendorPaymentTermEntity paymentTermIn, ShipViaEntity shipViaIn, VendorGroupEntity vendorGroupIn = null, String nameIn = null, Integer vendorNumberIn = null) {
+   static Stream<VendorEntity> stream(int numberIn = 1, CompanyEntity companyIn, AddressEntity addressIn, VendorPaymentTermEntity paymentTermIn, ShipViaEntity shipViaIn, VendorGroupEntity vendorGroupIn = null, String nameIn = null) {
       final faker = new Faker()
       final random = faker.random()
       final number = numberIn < 0 ? 1 : numberIn
@@ -68,7 +68,7 @@ class VendorTestDataLoader {
             email.safeEmailAddress(),
             random.nextBoolean(),
             random.nextBoolean(),
-            vendorNumberIn ? vendorNumberIn : it + 1,
+            it + 1,
             faker.lorem().sentence(),
             phone.phoneNumber(),
             true
@@ -91,8 +91,8 @@ class VendorTestDataLoaderService {
       this.vendorRepository = vendorRepository
    }
 
-   Stream<VendorEntity> stream(int numberIn = 1, CompanyEntity companyIn, AddressEntity addressIn = null, VendorPaymentTermEntity paymentTermIn, ShipViaEntity shipViaIn, VendorGroupEntity vendorGroupIn = null, String nameIn = null, Integer vendorNumberIn = null) {
-      return VendorTestDataLoader.stream(numberIn, companyIn, addressIn, paymentTermIn, shipViaIn, vendorGroupIn, nameIn, vendorNumberIn)
+   Stream<VendorEntity> stream(int numberIn = 1, CompanyEntity companyIn, AddressEntity addressIn = null, VendorPaymentTermEntity paymentTermIn, ShipViaEntity shipViaIn, VendorGroupEntity vendorGroupIn = null, String nameIn = null) {
+      return VendorTestDataLoader.stream(numberIn, companyIn, addressIn, paymentTermIn, shipViaIn, vendorGroupIn, nameIn)
          .map { vendorRepository.insert(it) }
    }
 
@@ -105,8 +105,8 @@ class VendorTestDataLoaderService {
       return stream(1, companyEntity, null, vendorPaymentTermEntity, shipViaEntity, null).findFirst().orElseThrow { new Exception("Unable to create VendorEntity") }
    }
 
-   VendorEntity single(CompanyEntity companyEntity, VendorPaymentTermEntity vendorPaymentTermEntity, ShipViaEntity shipViaEntity, String nameIn, Integer vendorNumberIn) {
-      return stream(1, companyEntity, null, vendorPaymentTermEntity, shipViaEntity, null, nameIn, vendorNumberIn).findFirst().orElseThrow { new Exception("Unable to create VendorEntity") }
+   VendorEntity single(CompanyEntity companyEntity, VendorPaymentTermEntity vendorPaymentTermEntity, ShipViaEntity shipViaEntity, String nameIn) {
+      return stream(1, companyEntity, null, vendorPaymentTermEntity, shipViaEntity, null, nameIn).findFirst().orElseThrow { new Exception("Unable to create VendorEntity") }
    }
 
    VendorEntity single(CompanyEntity companyEntity, AddressEntity addressIn, VendorPaymentTermEntity vendorPaymentTermEntity, ShipViaEntity shipViaEntity) {

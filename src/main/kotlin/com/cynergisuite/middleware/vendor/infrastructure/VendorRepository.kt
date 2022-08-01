@@ -342,7 +342,6 @@ class VendorRepository @Inject constructor(
             purchase_order_submit_email_address,
             allow_drop_ship_to_customer,
             auto_submit_purchase_order,
-            number,
             note,
             phone_number,
             active
@@ -381,7 +380,6 @@ class VendorRepository @Inject constructor(
             :purchase_order_submit_email_address,
             :allow_drop_ship_to_customer,
             :auto_submit_purchase_order,
-            :number,
             :note,
             :phone_number,
             :active
@@ -423,7 +421,6 @@ class VendorRepository @Inject constructor(
             "purchase_order_submit_email_address" to entity.purchaseOrderSubmitEmailAddress,
             "allow_drop_ship_to_customer" to entity.allowDropShipToCustomer,
             "auto_submit_purchase_order" to entity.autoSubmitPurchaseOrder,
-            "number" to entity.number,
             "note" to entity.note,
             "phone_number" to entity.phone,
             "active" to entity.isActive
@@ -494,7 +491,6 @@ class VendorRepository @Inject constructor(
             purchase_order_submit_email_address = :purchase_order_submit_email_address,
             allow_drop_ship_to_customer = :allow_drop_ship_to_customer,
             auto_submit_purchase_order = :auto_submit_purchase_order,
-            number = :number,
             note = :note,
             phone_number = :phone_number,
             active = :active
@@ -537,7 +533,6 @@ class VendorRepository @Inject constructor(
             "purchase_order_submit_email_address" to toUpdate.purchaseOrderSubmitEmailAddress,
             "allow_drop_ship_to_customer" to toUpdate.allowDropShipToCustomer,
             "auto_submit_purchase_order" to toUpdate.autoSubmitPurchaseOrder,
-            "number" to toUpdate.number,
             "note" to toUpdate.note,
             "phone_number" to toUpdate.phone,
             "active" to toUpdate.isActive

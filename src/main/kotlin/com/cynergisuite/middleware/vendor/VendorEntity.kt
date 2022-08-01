@@ -89,7 +89,6 @@ data class VendorEntity(
          purchaseOrderSubmitEmailAddress = dto.purchaseOrderSubmitEmailAddress,
          allowDropShipToCustomer = dto.allowDropShipToCustomer!!,
          autoSubmitPurchaseOrder = dto.autoSubmitPurchaseOrder!!,
-         number = dto.number,
          note = dto.note,
          phone = dto.phone,
          isActive = dto.isActive
