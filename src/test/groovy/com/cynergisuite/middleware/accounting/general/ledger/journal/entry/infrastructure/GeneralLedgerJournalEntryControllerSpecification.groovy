@@ -245,4 +245,104 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       'reverse'               || 'reverse'
       'source'                || 'source'
    }
+
+   void "create multiple journal entries" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
+      final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
+
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      final account1 = accountDataLoaderService.single(company)
+      final account2 = accountDataLoaderService.single(company)
+      final profitCenter1 = storeFactoryService.store(1, company)
+      final profitCenter2 = storeFactoryService.store(3, company)
+
+      def firstGLJournalEntryDetailDebitDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
+         2,
+         new AccountDTO(account1),
+         new StoreDTO(profitCenter2),
+         10000 as BigDecimal
+      ).toList()
+      def firstGLJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
+         2,
+         new AccountDTO(account2),
+         new StoreDTO(profitCenter1),
+         -10000 as BigDecimal
+      ).toList()
+      firstGLJournalEntryDetailDebitDTOs.addAll(firstGLJournalEntryDetailCreditDTOs)
+      def firstGLJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, firstGLJournalEntryDetailDebitDTOs, false)
+
+      def secondGLJournalEntryDetailDebitDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
+         3,
+         new AccountDTO(account2),
+         new StoreDTO(profitCenter1),
+         99000 as BigDecimal
+      ).toList()
+      def secondGLJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
+         3,
+         new AccountDTO(account1),
+         new StoreDTO(profitCenter2),
+         -99000 as BigDecimal
+      ).toList()
+      secondGLJournalEntryDetailDebitDTOs.addAll(secondGLJournalEntryDetailCreditDTOs)
+      def secondGLJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, secondGLJournalEntryDetailDebitDTOs, false)
+
+      when: 'open GL in financial calendar'
+      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+
+      then:
+      notThrown(Exception)
+
+      when: 'create first journal entry'
+      def result = post(path, firstGLJournalEntryDTO)
+
+      then:
+      notThrown(Exception)
+      result != null
+      with(result) {
+         entryDate == firstGLJournalEntryDTO.entryDate.toString()
+
+         with(source) {
+            value == firstGLJournalEntryDTO.source.value
+            description == firstGLJournalEntryDTO.source.description
+         }
+
+         reverse == firstGLJournalEntryDTO.reverse
+         journalEntryNumber == 1
+
+         journalEntryDetails.eachWithIndex { journalEntryDetail, int i ->
+            firstGLJournalEntryDetailDebitDTOs.find { element -> element == journalEntryDetail }
+         }
+
+         message == firstGLJournalEntryDTO.message
+         postReversingEntry == firstGLJournalEntryDTO.postReversingEntry
+      }
+
+      when: 'create multiple journal entries'
+      post(path, secondGLJournalEntryDTO)
+      result = post(path, secondGLJournalEntryDTO)
+
+      then:
+      notThrown(Exception)
+      result != null
+      with(result) {
+         entryDate == secondGLJournalEntryDTO.entryDate.toString()
+
+         with(source) {
+            value == secondGLJournalEntryDTO.source.value
+            description == secondGLJournalEntryDTO.source.description
+         }
+
+         reverse == secondGLJournalEntryDTO.reverse
+         journalEntryNumber > 1
+
+         journalEntryDetails.eachWithIndex { journalEntryDetail, int i ->
+            secondGLJournalEntryDetailDebitDTOs.find { element -> element == journalEntryDetail }
+         }
+
+         message == secondGLJournalEntryDTO.message
+         postReversingEntry == secondGLJournalEntryDTO.postReversingEntry
+      }
+   }
 }
