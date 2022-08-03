@@ -181,26 +181,23 @@ class GeneralLedgerDetailRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findNextJENumber(company: CompanyEntity): Int? {
-      val found = jdbc.queryFullList(
+   fun findNextJENumber(company: CompanyEntity): Int {
+      val lastJENumber = jdbc.queryForObject(
          """
-            SELECT journal_entry_number
+            SELECT MAX(journal_entry_number)
             FROM general_ledger_detail
-            WHERE company_id = :comp_id ORDER BY journal_entry_number DESC
+            WHERE company_id = :comp_id
          """.trimIndent(),
          mapOf(
             "comp_id" to company.id
-         )
-      ) { rs, _, elements: MutableList<Int> ->
-         do {
-            elements.add(rs.getInt("journal_entry_number"))
-         } while (rs.next())
-      }
+         ),
+         Int::class.java
+      )
 
-      return if (found.isEmpty()) {
-         1
+      return if (lastJENumber > 0) {
+         lastJENumber + 1
       } else {
-         found[0] + 1
+         1
       }
    }
 
