@@ -4,12 +4,11 @@ import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentReportTemplate
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalDTO
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingDTO
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingResponseDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
-import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDTO
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -183,23 +182,22 @@ class GeneralLedgerDetailController @Inject constructor(
    @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Create a GeneralLedgerDetailEntity", description = "Create an GeneralLedgerDetailEntity", operationId = "generalLedgerDetail-create")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerDetailDTO::class))]),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerAccountPostingResponseDTO::class))]),
          ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
    fun subroutine(
       @Body @Valid
-      dto: GeneralLedgerDetailDTO,
-      je: GeneralLedgerJournalEntryDTO,
+      dto: GeneralLedgerAccountPostingDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): GeneralLedgerDetailDTO {
+   ): GeneralLedgerAccountPostingResponseDTO {
       val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
       logger.info("Requested Create GeneralLedgerDetail {}", dto)
 
-      val response = generalLedgerDetailService.postEntry(dto, userCompany, je, httpRequest.findLocaleWithDefault())
+      val response = generalLedgerDetailService.postEntry(dto, userCompany, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Create GeneralLedgerDetail {} resulted in {}", dto, response)
 
