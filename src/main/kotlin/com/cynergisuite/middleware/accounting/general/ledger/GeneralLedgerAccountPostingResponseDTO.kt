@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull
 
 @Introspected
 @JsonInclude(NON_NULL)
-@Schema(name = "General Ledger Account Posting DTO", title = "DTO for transferring GL Details AND GL Journal Entries", description = "DTO for transferring GL Details AND GL Journal Entries")
+@Schema(name = "General Ledger Account Posting Response DTO", title = "DTO for transferring GL Details AND GL Journal Entries", description = "DTO for transferring GL Details AND GL Journal Entries")
 data class GeneralLedgerAccountPostingResponseDTO(
 
    @field:Schema(description = "General Ledger Summary")
