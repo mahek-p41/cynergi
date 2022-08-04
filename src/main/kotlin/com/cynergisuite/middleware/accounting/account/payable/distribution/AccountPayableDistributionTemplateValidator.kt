@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.distribution
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.payable.distribution.infrastructure.AccountPayableDistributionTemplateRepository
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.Duplicate
 import jakarta.inject.Inject
@@ -20,20 +21,27 @@ class AccountPayableDistributionTemplateValidator @Inject constructor(
    fun validateCreate(dto: AccountPayableDistributionTemplateDTO, company: CompanyEntity): AccountPayableDistributionTemplateEntity {
       logger.debug("Validating Create AccountPayableDistributionDetail {}", dto)
 
-      return doSharedValidation(dto, company)
+      val existingTemplateByName = accountPayableDistributionTemplateRepository.findByName(dto.name!!, company)
+      return doSharedValidation(existingTemplateByName = existingTemplateByName, dto = dto)
    }
 
    fun validateUpdate(id: UUID, dto: AccountPayableDistributionTemplateDTO, company: CompanyEntity): AccountPayableDistributionTemplateEntity {
       logger.debug("Validating Update AccountPayableDistributionDetail {}", dto)
 
-      return doSharedValidation(dto, company)
+      val existingTemplate = accountPayableDistributionTemplateRepository.findOne(id, company) ?: throw NotFoundException(id)
+      val existingTemplateByName = accountPayableDistributionTemplateRepository.findByName(dto.name!!, company)
+      return doSharedValidation(existingTemplate = existingTemplate, existingTemplateByName = existingTemplateByName, dto)
    }
 
-   private fun doSharedValidation(dto: AccountPayableDistributionTemplateDTO, company: CompanyEntity): AccountPayableDistributionTemplateEntity {
-      val name = accountPayableDistributionTemplateRepository.findByName(dto.name!!, company)
+   private fun doSharedValidation(
+      existingTemplate: AccountPayableDistributionTemplateEntity? = null,
+      existingTemplateByName: AccountPayableDistributionTemplateEntity? = null,
+      dto: AccountPayableDistributionTemplateDTO)
+   : AccountPayableDistributionTemplateEntity {
 
       doValidation { errors ->
-         if (name != null) errors.add(ValidationError("name", Duplicate(dto.name)))
+         if (existingTemplate == null && existingTemplateByName != null) errors.add(ValidationError("name", Duplicate(dto.name)))
+         if (existingTemplate != null && existingTemplateByName != null && existingTemplateByName.id != existingTemplate.id) errors.add(ValidationError("name", Duplicate(dto.name)))
 
       }
 
