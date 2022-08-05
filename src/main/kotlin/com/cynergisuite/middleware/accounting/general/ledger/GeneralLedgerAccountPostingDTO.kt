@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull
 class GeneralLedgerAccountPostingDTO {
 
    @field:NotNull
-   @field:Schema(description = "General Ledger Distribution")
+   @field:Schema(description = "General Ledger Distribution", required = true)
    var glDetail: GeneralLedgerDetailDTO? = null
 
    @field:Schema(description = "General Journal Entry")

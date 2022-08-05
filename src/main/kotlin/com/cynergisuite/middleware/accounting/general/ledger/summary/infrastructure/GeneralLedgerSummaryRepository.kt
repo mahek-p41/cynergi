@@ -137,9 +137,9 @@ class GeneralLedgerSummaryRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findOneByBusinessKey(company: CompanyEntity, accountId: UUID, profitCenterId: Long, overallPeriodId: Int): GeneralLedgerSummaryEntity? {
-      val params = mutableMapOf("comp_id" to company.id, "accountId" to accountId, "profitCenterId" to profitCenterId, "overallPeriodId" to overallPeriodId)
-      val query = "${selectBaseQuery()}\nWHERE glSummary.company_id = :comp_id AND glSummary.account_id = :accountId AND glSummary.profit_center_id_sfk = :profitCenterId AND glSummary.overall_period_id = :overallPeriodId"
+   fun findOneByBusinessKey(company: CompanyEntity, accountId: UUID, profitCenterId: Long, overallPeriodValue: String): GeneralLedgerSummaryEntity? {
+      val params = mutableMapOf("comp_id" to company.id, "accountId" to accountId, "profitCenterId" to profitCenterId, "overallPeriodValue" to overallPeriodValue)
+      val query = "${selectBaseQuery()}\nWHERE glSummary.company_id = :comp_id AND glSummary.account_id = :accountId AND glSummary.profit_center_id_sfk = :profitCenterId AND overallPeriod.value = :overallPeriodValue"
 
       logger.debug("Searching for GeneralLedgerSummary using {} {}", query, params)
 

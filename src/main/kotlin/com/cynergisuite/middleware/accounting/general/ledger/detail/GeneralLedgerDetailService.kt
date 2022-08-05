@@ -143,18 +143,12 @@ class GeneralLedgerDetailService @Inject constructor(
       val generalLedgerDetail = dto.glDetail!!
       val je = dto.jeJournal
       val cal = financialCalendarService.fetchByDate(company, generalLedgerDetail.date!!)!!
-      val overallPeriod =
-         when (cal.overallPeriod?.value) {
-            "R" -> 1
-            "P" -> 2
-            "C" -> 3
-            else -> 4
-         }
+      val overallPeriod = cal.overallPeriod!!.value
       val summaryUpdated : UUID?
       val bankRecon : UUID?
       val summary = generalLedgerSummaryService.fetchOneByBusinessKey(company, generalLedgerDetail.account?.id!!, generalLedgerDetail.profitCenter?.myId()!!, overallPeriod)
 
-      if(cal.generalLedgerOpen == false) {
+      if (cal.generalLedgerOpen == false) {
          val errors: Set<ValidationError> = mutableSetOf(ValidationError("GL not open for this period.", GLNotOpen(cal.periodFrom!!)))
          throw ValidationException(errors)
       } else {
@@ -164,12 +158,12 @@ class GeneralLedgerDetailService @Inject constructor(
             generalLedgerSummaryService.update(summary.id!!, summary, company).id
          } else {
             //get netActivityPeriodX where is X is financialCalendar.period and add glDetail.amount to that netActivityPeriod
-            val netActivity = "netActivityPeriod" + cal.period.toString()
+            val netActivity = "netActivityPeriod" + cal.period
             val prop = GeneralLedgerSummaryDTO::class.memberProperties.find { it -> it.name == netActivity }!!
             if (prop is KMutableProperty1) {
-               val test: BigDecimal = (prop as KMutableProperty1<GeneralLedgerSummaryDTO, BigDecimal>).get(summary!!)
-               val result = (generalLedgerDetail.amount ?: BigDecimal.ZERO) + (test ?: BigDecimal.ZERO)
-               (prop as KMutableProperty1<GeneralLedgerSummaryDTO, Any>).set(summary, result)
+               val netActivityAmount: BigDecimal = (prop as KMutableProperty1<GeneralLedgerSummaryDTO, BigDecimal>).get(summary!!)
+               val result = (generalLedgerDetail.amount)?.plus((netActivityAmount))
+               (prop as KMutableProperty1<GeneralLedgerSummaryDTO, BigDecimal?>).set(summary, result)
             }
 
             generalLedgerSummaryService.update(summary?.id!!, summary, company).id
@@ -178,15 +172,15 @@ class GeneralLedgerDetailService @Inject constructor(
          val checkCodes = listOf("AP", "SUM", "BAL")
          bankRecon = if (glAccount?.isBankAccount!! && glSourceCode!!.value !in checkCodes) {
             val bank = bankService.fetchByGLAccount(generalLedgerDetail.account!!.id!!, company)
-            val bankType = BankReconciliationTypeDTO("M", "test")
+            val bankType = BankReconciliationTypeDTO("M", "Miscellaneous")
             val bankReconciliationDto = BankReconciliationDTO(
                null, SimpleIdentifiableDTO(bank!!.myId()),
-               if (je != null) je.bankType else bankType,
+               je?.bankType ?: bankType,
                generalLedgerDetail.date,
                null,
                generalLedgerDetail.amount,
-               "GL " + generalLedgerDetail.profitCenter!!.id.toString() + " " + glSourceCode.value.toString(),
-               "test"
+               "GL " + generalLedgerDetail.profitCenter!!.id + " " + glSourceCode.value,
+               generalLedgerDetail.date.toString().replace("-","")
             )
             bankReconciliationService.create(bankReconciliationDto, company).id
          } else null

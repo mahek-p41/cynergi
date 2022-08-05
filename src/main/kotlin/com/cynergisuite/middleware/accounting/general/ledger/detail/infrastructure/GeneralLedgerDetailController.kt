@@ -154,7 +154,7 @@ class GeneralLedgerDetailController @Inject constructor(
    }
 
    @Get(uri = "/search-report{?filterRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a General Ledger Search Report", description = "Fetch a General Ledger Search Report", operationId = "generalLedgerJournal-fetchReport")
+   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Fetch a General Ledger Search Report", description = "Fetch a General Ledger Search Report", operationId = "generalLedgerJournal-fetchReport")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerSearchReportFilterRequest::class))]),
@@ -179,7 +179,7 @@ class GeneralLedgerDetailController @Inject constructor(
 
    @Post(uri = "/subroutine", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Create a GeneralLedgerDetailEntity", description = "Create an GeneralLedgerDetailEntity", operationId = "generalLedgerDetail-create")
+   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Post an accounting entry to the GL ", description = "Post an accounting entry to the GL", operationId = "generalLedgerDetail-subroutine")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerAccountPostingResponseDTO::class))]),
@@ -195,11 +195,11 @@ class GeneralLedgerDetailController @Inject constructor(
    ): GeneralLedgerAccountPostingResponseDTO {
       val user = userService.fetchUser(authentication)
       val userCompany = user.myCompany()
-      logger.info("Requested Create GeneralLedgerDetail {}", dto)
+      logger.info("Posting accounting entry to the General Ledger {}", dto)
 
       val response = generalLedgerDetailService.postEntry(dto, userCompany, httpRequest.findLocaleWithDefault())
 
-      logger.debug("Requested Create GeneralLedgerDetail {} resulted in {}", dto, response)
+      logger.debug("Posting GeneralLedgerDetail {} resulted in {}", dto, response)
 
       return response
    }
