@@ -73,8 +73,10 @@ if (options != null && !options.h) {
 
       if (Files.exists(migrationLocation)) {
          if (Files.isDirectory(migrationLocation)) {
+            println "Migrating Flyway scripts."
             migrate(migrationLocation, "jdbc:postgresql://${options.H}:${options.P}/${options.d}", options.u, options.p, options.c)
          } else if (jarPathMatch.matches(migrationLocation)) {
+            println "Migrating Flyway scripts using flywaytemp folder."
             final migrationJar = new ZipFile(migrationLocation.toFile())
             final flywayTemp = Files.createTempDirectory("flywaytemp")
 
