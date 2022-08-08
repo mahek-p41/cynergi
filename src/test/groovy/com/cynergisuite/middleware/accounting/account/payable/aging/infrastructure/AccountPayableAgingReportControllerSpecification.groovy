@@ -130,14 +130,15 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
       given:
       def company = companyFactoryService.forDatasetCode('tstds1')
       def store = storeFactoryService.store(3, company)
+      def vendorPmtTermIn = vendorPaymentTermTestDataLoaderService.single(company)
       def shipViaIn = shipViaTestDataLoaderService.single(company)
       def employeeIn = employeeFactoryService.single(company)
-      def payToIn = vendorTestDataLoaderService.single(company, vendorPaymentTermTestDataLoaderService.single(company), shipViaIn)
+      def payToIn = vendorTestDataLoaderService.single(company, vendorPmtTermIn, shipViaIn)
       def statusTypeO = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
       def account = accountTestDataLoaderService.single(company)
       def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
 
-      def vendorList = vendorTestDataLoaderService.stream(20, company, vendorPaymentTermTestDataLoaderService.single(company), shipViaIn).toList()
+      def vendorList = vendorTestDataLoaderService.stream(20, company, vendorPmtTermIn, shipViaIn).toList()
 
       def purchaseOrderList = []
       vendorList.each {

@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.vendor
 
-
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressTestDataLoader
 import com.cynergisuite.middleware.company.CompanyEntity
