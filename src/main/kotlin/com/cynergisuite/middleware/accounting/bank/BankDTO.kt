@@ -29,12 +29,10 @@ data class BankDTO(
    var name: String? = null,
 
    @field:NotNull
-   @field:Valid
    @field:Schema(name = "generalLedgerProfitCenter", required = true, description = "Store the bank is associated with.")
    var generalLedgerProfitCenter: StoreDTO? = null,
 
    @field:NotNull
-   @field:Valid
    @field:Schema(name = "generalLedgerAccount", required = true, description = "Account the bank is associated with.")
    var generalLedgerAccount: AccountDTO? = null
 
