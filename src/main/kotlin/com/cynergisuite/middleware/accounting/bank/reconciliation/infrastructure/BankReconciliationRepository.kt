@@ -72,15 +72,7 @@ class BankReconciliationRepository @Inject constructor(
             bank.bank_account_vendor_1099_type_value                            AS bank_account_vendor_1099_type_value,
             bank.bank_account_vendor_1099_type_description                      AS bank_account_vendor_1099_type_description,
             bank.bank_account_vendor_1099_type_localization_code                AS bank_account_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
-                  END
-               FROM bank
-               WHERE bank.bank_account_id = account.id
-            ) AS is_bank_account,
+            bank.bank_id                                      AS bank_account_bank_id,
             bank.bank_glProfitCenter_id                       AS bank_glProfitCenter_id,
             bank.bank_glProfitCenter_number                   AS bank_glProfitCenter_number,
             bank.bank_glProfitCenter_name                     AS bank_glProfitCenter_name,

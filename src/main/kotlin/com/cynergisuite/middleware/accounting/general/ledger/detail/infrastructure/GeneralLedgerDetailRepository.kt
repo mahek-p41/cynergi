@@ -78,15 +78,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
             acct.account_vendor_1099_type_value                       AS acct_vendor_1099_type_value,
             acct.account_vendor_1099_type_description                 AS acct_vendor_1099_type_description,
             acct.account_vendor_1099_type_localization_code           AS acct_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = acct.account_id
-            ) AS is_bank_account,
+            bank.id                                                   AS acct_bank_id,
             profitCenter.id                                           AS profitCenter_id,
             profitCenter.number                                       AS profitCenter_number,
             profitCenter.name                                         AS profitCenter_name,
@@ -104,6 +96,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
                        AND profitCenter.number = glDetail.profit_center_id_sfk
             JOIN account acct ON glDetail.account_id = acct.account_id AND acct.account_deleted = FALSE
             JOIN general_ledger_source_codes source ON glDetail.source_id = source.id AND source.deleted = FALSE
+            LEFT OUTER JOIN bank ON bank.general_ledger_account_id = acct.account_id AND bank.deleted = FALSE
       """
    }
 

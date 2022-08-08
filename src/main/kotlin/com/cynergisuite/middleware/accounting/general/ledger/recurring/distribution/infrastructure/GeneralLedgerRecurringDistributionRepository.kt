@@ -79,15 +79,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
             account.account_vendor_1099_type_value                            AS glRecurringDist_account_vendor_1099_type_value,
             account.account_vendor_1099_type_description                      AS glRecurringDist_account_vendor_1099_type_description,
             account.account_vendor_1099_type_localization_code                AS glRecurringDist_account_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = account.account_id
-            ) AS is_bank_account,
+            bank.id                                                           AS glRecurringDist_account_bank_id,
             count(*) OVER() AS total_elements
          FROM general_ledger_recurring_distribution glRecurringDist
             JOIN general_ledger_recurring glRecurring ON glRecurringDist.general_ledger_recurring_id = glRecurring.glRecurring_id AND glRecurring.glRecurring_deleted = FALSE
@@ -96,6 +88,7 @@ class GeneralLedgerRecurringDistributionRepository @Inject constructor(
             JOIN fastinfo_prod_import.store_vw profitCenter
                ON profitCenter.dataset = comp.dataset_code
                   AND profitCenter.number = glRecurringDist.general_ledger_distribution_profit_center_id_sfk
+            LEFT OUTER JOIN bank ON bank.general_ledger_account_id = account.account_id AND bank.deleted = FALSE
       """
    }
 

@@ -6,6 +6,7 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.isNumber
 import com.cynergisuite.extensions.query
@@ -62,15 +63,7 @@ class AccountRepository @Inject constructor(
             vendor_1099_type.value                       AS account_vendor_1099_type_value,
             vendor_1099_type.description                 AS account_vendor_1099_type_description,
             vendor_1099_type.localization_code           AS account_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = account.id
-            ) AS is_bank_account
+            bank.id                                      AS account_bank_id
          FROM account
                JOIN company comp
                      ON comp.id = account.company_id AND comp.deleted = FALSE
@@ -82,6 +75,8 @@ class AccountRepository @Inject constructor(
                      ON status.id = account.status_type_id
                LEFT OUTER JOIN vendor_1099_type_domain vendor_1099_type
                      ON vendor_1099_type.id = account.form_1099_field
+               LEFT OUTER JOIN bank
+                     ON bank.general_ledger_account_id = account.id AND bank.deleted = FALSE
       """
    }
 
@@ -294,7 +289,7 @@ class AccountRepository @Inject constructor(
          status = mapAccountStatusType(rs, "${columnPrefix}status_"),
          form1099Field = mapVendorStatusType(rs, "${columnPrefix}vendor_1099_type_"),
          corporateAccountIndicator = rs.getBoolean("${columnPrefix}corporate_account_indicator"),
-         isBankAccount = rs.getBoolean("is_bank_account")
+         bankId = rs.getUuidOrNull("${columnPrefix}bank_id")
       )
    }
 
@@ -315,7 +310,7 @@ class AccountRepository @Inject constructor(
          status = account.status,
          form1099Field = account.form1099Field,
          corporateAccountIndicator = rs.getBoolean("${columnPrefix}corporate_account_indicator"),
-         isBankAccount = account.isBankAccount
+         bankId = account.bankId
       )
    }
 

@@ -1,8 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure
 
-import com.cynergisuite.domain.GeneralLedgerRecurringEntriesFilterRequest
 import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
-import com.cynergisuite.domain.PaymentReportFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest

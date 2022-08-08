@@ -57,6 +57,7 @@ class AccountValidator @Inject constructor(
          accountType ?: errors.add(ValidationError("type.value", NotFound(accountDTO.type?.value!!)))
          balanceType ?: errors.add(ValidationError("normalAccountBalance.value", NotFound(accountDTO.normalAccountBalance?.value!!)))
          statusType ?: errors.add(ValidationError("status.value", NotFound(accountDTO.status?.value!!)))
+
          if (existingAccountByNumber != null && existingAccountByNumber.id != accountDTO.id) errors.add(ValidationError("number", Duplicate(accountDTO.number!!)))
       }
 

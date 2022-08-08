@@ -38,7 +38,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          number == account.number
          name == account.name
          corporateAccountIndicator == account.corporateAccountIndicator
-         isBankAccount == false
+         bankId == null
          with(type) {
             description == account.type.description
             value == account.type.value
@@ -66,7 +66,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       given:
       final account = accountDataLoaderService.single(nineNineEightEmployee.company)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
 
       when:
       def result = get("$path/${account.id}")
@@ -79,7 +79,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
          number == account.number
          name == account.name
          corporateAccountIndicator == account.corporateAccountIndicator
-         isBankAccount == true
+         bankId == bank.id.toString()
          with(type) {
             description == account.type.description
             value == account.type.value
@@ -147,7 +147,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
             number == firstPageAccount[index].number
             name == firstPageAccount[index].name
             corporateAccountIndicator == firstPageAccount[index].corporateAccountIndicator
-            isBankAccount == false
+            bankId == null
             with(type) {
                description == firstPageAccount[index].type.description
                value == firstPageAccount[index].type.value
@@ -186,7 +186,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
             id == secondPageAccount[index].id
             name == secondPageAccount[index].name
             corporateAccountIndicator == secondPageAccount[index].corporateAccountIndicator
-            isBankAccount == false
+            bankId == null
             with(type) {
                description == secondPageAccount[index].type.description
                value == secondPageAccount[index].type.value
@@ -208,8 +208,8 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
                value == secondPageAccount[index].form1099Field.value
             }
          }
-
       }
+
       when:
       def pageLastResult = get("$path${pageLast}")
 
@@ -225,7 +225,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
             id == lastPageAccount[index].id
             name == lastPageAccount[index].name
             corporateAccountIndicator == lastPageAccount[index].corporateAccountIndicator
-            isBankAccount == false
+            bankId == null
             with(type) {
                description == lastPageAccount[index].type.description
                value == lastPageAccount[index].type.value
@@ -247,7 +247,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
                value == lastPageAccount[index].form1099Field.value
             }
          }
-
       }
 
       when:
@@ -270,8 +269,9 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       def firstPageAccount = accounts[0..4]
       def secondPageAccount = accounts[5..9]
       def lastPageAccount = accounts[10,11]
+      def banks = []
       firstPageAccount.each {
-         bankFactoryService.single(nineNineEightEmployee.company, store, it)
+         banks.add(bankFactoryService.single(nineNineEightEmployee.company, store, it))
       }
 
       when:
@@ -290,7 +290,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
             number == firstPageAccount[index].number
             name == firstPageAccount[index].name
             corporateAccountIndicator == firstPageAccount[index].corporateAccountIndicator
-            isBankAccount == true
+            bankId == banks[index].id.toString()
             with(type) {
                description == firstPageAccount[index].type.description
                value == firstPageAccount[index].type.value
@@ -329,7 +329,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
             id == secondPageAccount[index].id
             name == secondPageAccount[index].name
             corporateAccountIndicator == secondPageAccount[index].corporateAccountIndicator
-            isBankAccount == false
+            bankId == null
             with(type) {
                description == secondPageAccount[index].type.description
                value == secondPageAccount[index].type.value
@@ -351,8 +351,8 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
                value == secondPageAccount[index].form1099Field.value
             }
          }
-
       }
+
       when:
       def pageLastResult = get("$path${pageLast}")
 
@@ -368,7 +368,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
             id == lastPageAccount[index].id
             name == lastPageAccount[index].name
             corporateAccountIndicator == lastPageAccount[index].corporateAccountIndicator
-            isBankAccount == false
+            bankId == null
             with(type) {
                description == lastPageAccount[index].type.description
                value == lastPageAccount[index].type.value
@@ -390,7 +390,6 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
                value == lastPageAccount[index].form1099Field.value
             }
          }
-
       }
 
       when:
@@ -409,16 +408,16 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       final account1236 = accountDataLoaderService.single(company, "Bank of America", 1236)
       final account5678 = accountDataLoaderService.single(company, "Test Acct", 5678)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      if (account1234.isBankAccount) {
+      if (account1234.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account1234)
       }
-      if (account1235.isBankAccount) {
+      if (account1235.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account1235)
       }
-      if (account1236.isBankAccount) {
+      if (account1236.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account1236)
       }
-      if (account5678.isBankAccount) {
+      if (account5678.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account5678)
       }
 
@@ -465,16 +464,16 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       final account1236 = accountDataLoaderService.single(company, "Bank of America", 1236)
       final account5678 = accountDataLoaderService.single(company, "Test Acct", 5678)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      if (account1234.isBankAccount) {
+      if (account1234.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account1234)
       }
-      if (account1235.isBankAccount) {
+      if (account1235.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account1235)
       }
-      if (account1236.isBankAccount) {
+      if (account1236.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account1236)
       }
-      if (account5678.isBankAccount) {
+      if (account5678.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account5678)
       }
 
@@ -508,16 +507,16 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       final account1236 = accountDataLoaderService.single(company, "Bank of America", 1236)
       final account5678 = accountDataLoaderService.single(company, "Test Acct", 5678)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      if (account1234.isBankAccount) {
+      if (account1234.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account1234)
       }
-      if (account1235.isBankAccount) {
+      if (account1235.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account1235)
       }
-      if (account1236.isBankAccount) {
+      if (account1236.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account1236)
       }
-      if (account5678.isBankAccount) {
+      if (account5678.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account5678)
       }
 
@@ -560,16 +559,16 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       final account1236 = accountDataLoaderService.single(company, "Bank of America", 1236)
       final account5678 = accountDataLoaderService.single(company, "Test Acct", 5678)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
-      if (account1234.isBankAccount) {
+      if (account1234.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account1234)
       }
-      if (account1235.isBankAccount) {
+      if (account1235.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account1235)
       }
-      if (account1236.isBankAccount) {
+      if (account1236.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account1236)
       }
-      if (account5678.isBankAccount) {
+      if (account5678.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account5678)
       }
 

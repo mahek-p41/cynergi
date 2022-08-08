@@ -77,15 +77,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             bnk.bank_account_vendor_1099_type_value                   AS apPayment_bank_account_vendor_1099_type_value,
             bnk.bank_account_vendor_1099_type_description             AS apPayment_bank_account_vendor_1099_type_description,
             bnk.bank_account_vendor_1099_type_localization_code       AS apPayment_bank_account_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
-                  END
-               FROM bank
-               WHERE bnk.bank_account_id = account.id
-            ) AS is_bank_account,
+            bnk.bank_id                                               AS apPayment_bank_account_bank_id,
             bnk.bank_glProfitCenter_id                                AS apPayment_bank_glProfitCenter_id,
             bnk.bank_glProfitCenter_number                            AS apPayment_bank_glProfitCenter_number,
             bnk.bank_glProfitCenter_name                              AS apPayment_bank_glProfitCenter_name,

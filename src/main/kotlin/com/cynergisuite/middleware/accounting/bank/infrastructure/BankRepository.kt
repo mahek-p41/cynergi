@@ -35,57 +35,50 @@ class BankRepository @Inject constructor(
 
    fun selectBaseQuery(): String {
       return """
-         WITH account AS (
-            ${accountRepository.selectBaseQuery()}
-         )
          SELECT
-            bank.id                                                        AS bank_id,
-            bank.name                                                      AS bank_name,
-            bank.number                                                    AS bank_number,
-            bank.company_id                                                AS bank_comp_id,
-            bank.deleted                                                   AS bank_deleted,
-            account.account_id                                             AS bank_account_id,
-            account.account_number                                         AS bank_account_number,
-            account.account_name                                           AS bank_account_name,
-            account.account_form_1099_field                                AS bank_account_form_1099_field,
-            account.account_corporate_account_indicator                    AS bank_account_corporate_account_indicator,
-            account.account_comp_id                                        AS bank_account_comp_id,
-            account.account_deleted                                        AS bank_account_deleted,
-            account.account_type_id                                        AS bank_account_type_id,
-            account.account_type_value                                     AS bank_account_type_value,
-            account.account_type_description                               AS bank_account_type_description,
-            account.account_type_localization_code                         AS bank_account_type_localization_code,
-            account.account_balance_type_id                                AS bank_account_balance_type_id,
-            account.account_balance_type_value                             AS bank_account_balance_type_value,
-            account.account_balance_type_description                       AS bank_account_balance_type_description,
-            account.account_balance_type_localization_code                 AS bank_account_balance_type_localization_code,
-            account.account_status_id                                      AS bank_account_status_id,
-            account.account_status_value                                   AS bank_account_status_value,
-            account.account_status_description                             AS bank_account_status_description,
-            account.account_status_localization_code                       AS bank_account_status_localization_code,
-            account.account_vendor_1099_type_id                            AS bank_account_vendor_1099_type_id,
-            account.account_vendor_1099_type_value                         AS bank_account_vendor_1099_type_value,
-            account.account_vendor_1099_type_description                   AS bank_account_vendor_1099_type_description,
-            account.account_vendor_1099_type_localization_code             AS bank_account_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = account.account_id
-            ) AS is_bank_account,
-            glProfitCenter.id                                              AS bank_glProfitCenter_id,
-            glProfitCenter.number                                          AS bank_glProfitCenter_number,
-            glProfitCenter.name                                            AS bank_glProfitCenter_name,
-            glProfitCenter.dataset                                         AS bank_glProfitCenter_dataset
+            bank.id                                        AS bank_id,
+            bank.name                                      AS bank_name,
+            bank.number                                    AS bank_number,
+            bank.company_id                                AS bank_comp_id,
+            bank.deleted                                   AS bank_deleted,
+            account.id                                     AS bank_account_id,
+            account.number                                 AS bank_account_number,
+            account.name                                   AS bank_account_name,
+            account.form_1099_field                        AS bank_account_form_1099_field,
+            account.corporate_account_indicator            AS bank_account_corporate_account_indicator,
+            account.company_id                             AS bank_account_comp_id,
+            account.deleted                                AS bank_account_deleted,
+            type.id                                        AS bank_account_type_id,
+            type.value                                     AS bank_account_type_value,
+            type.description                               AS bank_account_type_description,
+            type.localization_code                         AS bank_account_type_localization_code,
+            balance_type.id                                AS bank_account_balance_type_id,
+            balance_type.value                             AS bank_account_balance_type_value,
+            balance_type.description                       AS bank_account_balance_type_description,
+            balance_type.localization_code                 AS bank_account_balance_type_localization_code,
+            status.id                                      AS bank_account_status_id,
+            status.value                                   AS bank_account_status_value,
+            status.description                             AS bank_account_status_description,
+            status.localization_code                       AS bank_account_status_localization_code,
+            vendor_1099_type.id                            AS bank_account_vendor_1099_type_id,
+            vendor_1099_type.value                         AS bank_account_vendor_1099_type_value,
+            vendor_1099_type.description                   AS bank_account_vendor_1099_type_description,
+            vendor_1099_type.localization_code             AS bank_account_vendor_1099_type_localization_code,
+            bank.id                                        AS bank_account_bank_id,
+            glProfitCenter.id                              AS bank_glProfitCenter_id,
+            glProfitCenter.number                          AS bank_glProfitCenter_number,
+            glProfitCenter.name                            AS bank_glProfitCenter_name,
+            glProfitCenter.dataset                         AS bank_glProfitCenter_dataset
          FROM bank
                JOIN company comp ON bank.company_id = comp.id AND comp.deleted = FALSE
                JOIN fastinfo_prod_import.store_vw glProfitCenter
                     ON glProfitCenter.dataset = comp.dataset_code
                        AND glProfitCenter.number = bank.general_ledger_profit_center_sfk
-               JOIN account ON account.account_id = bank.general_ledger_account_id AND account.account_deleted = FALSE
+               JOIN account ON account.id = bank.general_ledger_account_id AND account.deleted = FALSE
+               JOIN account_type_domain type ON type.id = account.type_id
+               JOIN normal_account_balance_type_domain balance_type ON balance_type.id = account.normal_account_balance_type_id
+               JOIN account_status_type_domain status ON status.id = account.status_type_id
+               LEFT OUTER JOIN vendor_1099_type_domain vendor_1099_type ON vendor_1099_type.id = account.form_1099_field
       """
    }
 

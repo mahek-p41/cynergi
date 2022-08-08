@@ -84,15 +84,7 @@ class RebateRepository @Inject constructor(
             glDebitAcct.account_vendor_1099_type_value                         AS glDebitAcct_vendor_1099_type_value,
             glDebitAcct.account_vendor_1099_type_description                   AS glDebitAcct_vendor_1099_type_description,
             glDebitAcct.account_vendor_1099_type_localization_code             AS glDebitAcct_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = glDebitAcct.account_id
-            ) AS is_bank_account,
+            glDebitAcctBank.id                                  AS glDebitAcct_bank_id,
             glCreditAcct.account_id                             AS glCreditAcct_id,
             glCreditAcct.account_number                         AS glCreditAcct_number,
             glCreditAcct.account_name                           AS glCreditAcct_name,
@@ -116,21 +108,15 @@ class RebateRepository @Inject constructor(
             glCreditAcct.account_vendor_1099_type_value                         AS glCreditAcct_vendor_1099_type_value,
             glCreditAcct.account_vendor_1099_type_description                   AS glCreditAcct_vendor_1099_type_description,
             glCreditAcct.account_vendor_1099_type_localization_code             AS glCreditAcct_vendor_1099_type_localization_code,
-            (
-               SELECT
-                  CASE
-                     WHEN COUNT(*) > 0 then TRUE
-                     WHEN COUNT(*) = 0 then FALSE
-                  END
-               FROM bank
-               WHERE bank.general_ledger_account_id = glCreditAcct.account_id
-            ) AS is_bank_account,
+            glCreditAcctBank.id                                 AS glCreditAcct_bank_id,
             count(*) OVER()                                     AS total_elements
          FROM rebate r
             JOIN account_status_type_domain status ON r.status_type_id = status.id
             JOIN rebate_type_domain rebate         ON r.rebate_type_id = rebate.id
             JOIN account glCreditAcct              ON r.general_ledger_credit_account_id = glCreditAcct.account_id AND glCreditAcct.account_deleted = FALSE
             LEFT JOIN account glDebitAcct          ON r.general_ledger_debit_account_id = glDebitAcct.account_id AND glDebitAcct.account_deleted = FALSE
+            LEFT OUTER JOIN bank glCreditAcctBank ON glCreditAcctBank.general_ledger_account_id = glCreditAcct.account_id AND glCreditAcctBank.deleted = FALSE
+            LEFT OUTER JOIN bank glDebitAcctBank ON glDebitAcctBank.general_ledger_account_id = glDebitAcct.account_id AND glDebitAcctBank.deleted = FALSE
       """
    }
 

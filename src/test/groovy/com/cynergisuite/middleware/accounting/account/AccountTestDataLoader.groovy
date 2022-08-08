@@ -34,7 +34,7 @@ class AccountTestDataLoader {
             AccountStatusFactory.random(),
             VendorTypeFactory.random(),
             random.nextBoolean(),
-            random.nextBoolean()
+            null
          )
       }
    }
@@ -55,7 +55,7 @@ class AccountTestDataLoader {
             new AccountStatusTypeValueDTO(AccountStatusFactory.random()),
             new VendorTypeDTO(VendorTypeFactory.random()),
             random.nextBoolean(),
-            random.nextBoolean()
+            null
          )
       }
    }
