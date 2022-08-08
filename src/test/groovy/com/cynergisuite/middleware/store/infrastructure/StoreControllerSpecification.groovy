@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.store.infrastructure
 import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
@@ -226,4 +227,114 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.last == true
    }
 
+   void "search stores with fuzzy searching" () {
+      given:
+      def query = ""
+      switch (criteria) {
+         case ' 1':
+            query = "%201"
+            break
+         case '90 ':
+            query = "90%20"
+            break
+         case 'home off':
+            query = "home%20off"
+            break
+      }
+
+      when:
+      def result = get("$path/search?query=$query")
+
+      then:
+      notThrown(HttpClientException)
+      result != null
+      result.elements.size() == searchResultsCount
+      where:
+      criteria       || searchResultsCount
+      ' 1'           || 1
+      '90 '          || 1
+      'home off'     || 1
+   }
+
+   void "search stores with fuzzy searching no results found" () {
+      given:
+      def query = ""
+      switch (criteria) {
+         case 'CITY':
+            query = "CITY"
+            break
+         case '23':
+            query = "23"
+            break
+      }
+
+      when:
+      get("$path/search?fuzzy=false&query=$query")
+
+      then:
+      def ex = thrown(HttpClientResponseException)
+      ex.response.status == response
+      where:
+      criteria       || response
+      'CITY'         || NO_CONTENT
+      '23'           || NO_CONTENT
+   }
+
+   void "search stores with strict searching" () {
+      given:
+      def query = ""
+      switch (criteria) {
+         case '   3  ':
+            query = "%20%20%203%20%20"
+            break
+         case 'home off':
+            query = "home%20off"
+            break
+      }
+
+      when:
+      def result = get("$path/search?fuzzy=false&query=$query")
+
+      then:
+      notThrown(HttpClientException)
+      result != null
+      result.elements.size() == searchResultsCount
+      where:
+      criteria       || searchResultsCount
+      '   3  '       || 1
+      'home off'     || 1
+   }
+
+   void "search stores with strict searching no results found" () {
+      given:
+      def query = ""
+      switch (criteria) {
+         case 'CITY':
+            query = "CITY"
+            break
+         case '90':
+            query = "90"
+            break
+      }
+
+      when:
+      get("$path/search?fuzzy=false&query=$query")
+
+      then:
+      def ex = thrown(HttpClientResponseException)
+      ex.response.status == response
+      where:
+      criteria       || response
+      'CITY'         || NO_CONTENT
+      '90'           || NO_CONTENT
+   }
+
+   void "search stores sql injection" () {
+      when: "Throw SQL Injection at it"
+      get("$path/search?query=%20or%201=1;drop%20table%20system_stores_fimvw;--")
+
+      then:
+      def ex = thrown(HttpClientResponseException)
+      ex.response.status == NO_CONTENT
+   }
 }
