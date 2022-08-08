@@ -183,12 +183,11 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       final glRecurring = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
       final account = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, company)
-      def glRecurringDistributionDTO = dataLoaderService.singleDTO(
+      final glRecurringDistributionDTO = dataLoaderService.singleDTO(
          new GeneralLedgerRecurringDTO(glRecurring),
          new AccountDTO(account),
          new SimpleLegacyIdentifiableDTO(profitCenter.myId())
       )
-      glRecurringDistributionDTO.generalLedgerDistributionAmount = 99999999999.99
 
       when:
       def result = post(path, glRecurringDistributionDTO)
