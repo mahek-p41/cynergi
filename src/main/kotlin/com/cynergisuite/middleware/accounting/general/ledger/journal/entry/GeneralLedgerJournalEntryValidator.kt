@@ -41,17 +41,25 @@ class GeneralLedgerJournalEntryValidator @Inject constructor(
 
          // GL journal entry detail validations
          dto.journalEntryDetails.forEach {
-            accountRepository.findOne(it.account!!.id!!, company) ?: errors.add(
+            val account = accountRepository.findOne(it.account!!.id!!, company)
+            val store = storeRepository.findOne(it.profitCenter!!.id!!, company)
+
+            account ?: errors.add(
                ValidationError("journalEntryDetails[index].account.id", NotFound(it.account!!.id!!))
             )
+
+            store ?: errors.add(
+               ValidationError("journalEntryDetails[index].profitCenter.id", NotFound(it.profitCenter!!.id!!))
+            )
+
+            // account is bank account validations
             if (it.bankType != null) {
                bankReconciliationTypeRepository.findOne(it.bankType!!.value) ?: errors.add(
                   ValidationError("journalEntryDetails[index].bankType.value", NotFound(it.bankType!!.value))
                )
+
+               //if (account.)
             }
-            storeRepository.findOne(it.profitCenter!!.id!!, company) ?: errors.add(
-               ValidationError("journalEntryDetails[index].profitCenter.id", NotFound(it.profitCenter!!.id!!))
-            )
          }
       }
 
