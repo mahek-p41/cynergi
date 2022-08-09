@@ -885,12 +885,13 @@ BEGIN
                      models.itemfile_desc_2 AS description,
                      inventories.inv_serial_nbr_key,
                      sum
-                     (case
-                          when agreement_versions.agreement_payment_terms = ''M'' then Round(trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2))
-                          when agreement_versions.agreement_payment_terms = ''W'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 4.33))
-                          when agreement_versions.agreement_payment_terms = ''B'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2))
-                          else Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2))
-                      end) AS payments_remaining
+                     (case when
+                              CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0)) = 0
+                           then 1
+                          	else
+                              CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0))
+                           end)as payments_remaining
+
                     FROM ' || r.schema_name || '.level2_agreements as agreements
                     JOIN
                       ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
@@ -1019,31 +1020,33 @@ BEGIN
             customers.cust_email_address      AS email,
             agreements.agreement_number       AS agreement_number,
             current_date - agreement_versions.agreement_next_due_date AS days_overdue,
-
             cast((case when
-   		          (case
-              		      when agreement_versions.agreement_payment_terms = ''M'' and agreement_versions.agreement_open_flag = ''Y''
-                 	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * case when ((current_date - agreement_versions.agreement_next_due_date)) < 30 then 1 else round(trunc(1.00 * ((current_date + 30 - agreement_versions.agreement_next_due_date)/30)),2) end
-              		      when agreement_versions.agreement_payment_terms = ''W'' and agreement_versions.agreement_open_flag = ''Y''
-                 	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 7 - agreement_versions.agreement_next_due_date) / 7),0),2)
-             	         when agreement_versions.agreement_payment_terms = ''B'' or agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
-                 	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
-              	 	 else 0
-              		 end) > agreement_versions.agreement_contract_balance
-            then agreement_versions.agreement_contract_balance
-            else
-                    (case
-                         when agreement_versions.agreement_payment_terms = ''M'' and agreement_versions.agreement_open_flag = ''Y''
-                         and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * case when ((current_date - agreement_versions.agreement_next_due_date)) < 30 then 1 else CEIL((current_date + 30 - agreement_versions.agreement_next_due_date)/30) end
-                         when agreement_versions.agreement_payment_terms = ''W'' and agreement_versions.agreement_open_flag = ''Y''
-                         and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 7 - agreement_versions.agreement_next_due_date) / 7),0),2)
-                         when agreement_versions.agreement_payment_terms = ''B'' or agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
-                         and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
-                     else 0
-                     end)
-             end)AS NUMERIC(11,2))::VARCHAR AS overdue_amount,
-
-           models.itemfile_desc_1 AS product
+        		              (case
+                              when agreement_versions.agreement_payment_terms = ''M'' and agreement_versions.agreement_open_flag = ''Y''
+                               and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * case when ((current_date - agreement_versions.agreement_next_due_date)) < 30 then 1 else round(trunc(1.00 * ((current_date + 30 - agreement_versions.agreement_next_due_date)/30)),2) end
+                              when agreement_versions.agreement_payment_terms = ''W'' and agreement_versions.agreement_open_flag = ''Y''
+                               and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 7 - agreement_versions.agreement_next_due_date) / 7),0),2)
+                              when agreement_versions.agreement_payment_terms = ''B'' and agreement_versions.agreement_open_flag = ''Y''
+                               and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
+                              when agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
+                               and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
+                          else 0
+                          end) > agreement_versions.agreement_contract_balance
+                      then agreement_versions.agreement_contract_balance
+                      else
+                          (case
+                              when agreement_versions.agreement_payment_terms = ''M'' and agreement_versions.agreement_open_flag = ''Y''
+                               and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * case when ((current_date - agreement_versions.agreement_next_due_date)) < 30 then 1 else CEIL((current_date + 30 - agreement_versions.agreement_next_due_date)/30) end
+                              when agreement_versions.agreement_payment_terms = ''W'' and agreement_versions.agreement_open_flag = ''Y''
+                               and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 7 - agreement_versions.agreement_next_due_date) / 7),0),2)
+                              when agreement_versions.agreement_payment_terms = ''B'' and agreement_versions.agreement_open_flag = ''Y''
+                               and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
+                              when agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
+                               and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
+                             else 0
+                             end)
+                       end)AS NUMERIC(11,2))::VARCHAR AS overdue_amount,
+         models.itemfile_desc_1 AS product
          FROM ' || r.schema_name || '.level2_agreements as agreements
             JOIN
             ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
@@ -1163,7 +1166,13 @@ BEGIN
             customers.cust_city              AS city,
             customers.cust_state             AS state,
             customers.cust_zip_pc            AS zip,
-            round(agreement_versions.agreement_contract_balance/agreement_versions.agreement_payment_amt,0) AS payments_remaining,
+            (case when
+                     CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0)) = 0
+            then 1
+            else
+                     CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0))
+            end)as payments_remaining,
+
             (select current_date +
             				(case
                               when agreement_versions.agreement_payment_terms = ''M'' then Round(trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2))
@@ -1171,20 +1180,41 @@ BEGIN
                               when agreement_versions.agreement_payment_terms = ''B'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2))
                               else Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2))
                           end ::INTEGER * 30)) as projected_payout_date,
-            min
-              (case
-                  when agreement_versions.agreement_payment_terms = ''M'' then Round(trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2)* 4.33)
-                  when agreement_versions.agreement_payment_terms = ''W'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2)))
-                  when agreement_versions.agreement_payment_terms = ''B'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2 * 4.33))
-                  else Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) * 2))
-              end) AS weeks_remaining,
+
              min
-               (case
-                    when agreement_versions.agreement_payment_terms = ''M'' then Round(trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2))
-                    when agreement_versions.agreement_payment_terms = ''W'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 4.33))
-                    when agreement_versions.agreement_payment_terms = ''B'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2))
-                    else Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2))
-               end) AS months_remaining,
+             (case when
+                      (case
+                          when agreement_versions.agreement_payment_terms = ''M'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0) * 4.33)
+                          when agreement_versions.agreement_payment_terms = ''W'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0))
+                          when agreement_versions.agreement_payment_terms = ''B'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0)/ 2 * 4.33)
+                       else CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0)*2)
+                       end) = 0 then 1
+             else
+                 		 (case
+                          when agreement_versions.agreement_payment_terms = ''M'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0) * 4.33)
+                          when agreement_versions.agreement_payment_terms = ''W'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0))
+                          when agreement_versions.agreement_payment_terms = ''B'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0)/ 2 * 4.33)
+                      else CEIL((agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0)/ 2) * 4.33)
+                      end)
+            end) AS weeks_remaining,
+
+            min
+            (case when
+                     (case
+                         when agreement_versions.agreement_payment_terms = ''M'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0))
+                         when agreement_versions.agreement_payment_terms = ''W'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0) / 4.33)
+                         when agreement_versions.agreement_payment_terms = ''B'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0) / 2)
+                     else CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0) / 2)
+                     end) = 0 then 1
+             else
+               	    (case
+                          when agreement_versions.agreement_payment_terms = ''M'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0))
+                          when agreement_versions.agreement_payment_terms = ''W'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0) / 4.33)
+                          when agreement_versions.agreement_payment_terms = ''B'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0) / 2)
+                       else CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0) / 2)
+                       end)
+             end) AS months_remaining,
+
             case
               when agreement_versions.agreement_open_flag = ''Y''
                    and agreement_versions.agreement_next_due_date < current_date
@@ -1203,8 +1233,10 @@ BEGIN
                   	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * case when ((current_date - agreement_versions.agreement_next_due_date)) < 30 then 1 else round(trunc(1.00 * ((current_date + 30 - agreement_versions.agreement_next_due_date)/30)),2) end
                 		      when agreement_versions.agreement_payment_terms = ''W'' and agreement_versions.agreement_open_flag = ''Y''
                    	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 7 - agreement_versions.agreement_next_due_date) / 7),0),2)
-                 	         when agreement_versions.agreement_payment_terms = ''B'' or agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
+                 	         when agreement_versions.agreement_payment_terms = ''B'' and agreement_versions.agreement_open_flag = ''Y''
                    	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
+                	 	      when agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
+                           and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
                 	 	 else 0
                 		 end) > agreement_versions.agreement_contract_balance
             then agreement_versions.agreement_contract_balance
@@ -1214,7 +1246,9 @@ BEGIN
                             and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * case when ((current_date - agreement_versions.agreement_next_due_date)) < 30 then 1 else CEIL((current_date + 30 - agreement_versions.agreement_next_due_date)/30) end
                             when agreement_versions.agreement_payment_terms = ''W'' and agreement_versions.agreement_open_flag = ''Y''
                             and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 7 - agreement_versions.agreement_next_due_date) / 7),0),2)
-                            when agreement_versions.agreement_payment_terms = ''B'' or agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
+                            when agreement_versions.agreement_payment_terms = ''B'' and agreement_versions.agreement_open_flag = ''Y''
+                            and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
+                            when agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
                             and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
                        else 0
                        end)
