@@ -4,11 +4,13 @@ import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.payable.distribution.infrastructure.AccountPayableDistributionDetailRepository
 import com.cynergisuite.middleware.accounting.account.payable.distribution.infrastructure.AccountPayableDistributionTemplateRepository
+import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.MustBeInRangeOf
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.PercentTotalGreaterThan100
+import com.cynergisuite.middleware.localization.ProfitCenterMustMatchBankProfitCenter
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -23,7 +25,8 @@ class AccountPayableDistributionDetailValidator @Inject constructor(
    private val accountRepository: AccountRepository,
    private val accountPayableDistributionDetailRepository: AccountPayableDistributionDetailRepository,
    private val accountPayableDistributionTemplateRepository: AccountPayableDistributionTemplateRepository,
-   private val storeRepository: StoreRepository
+   private val storeRepository: StoreRepository,
+   private val bankRepository: BankRepository
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableDistributionDetailValidator::class.java)
 
@@ -69,6 +72,14 @@ class AccountPayableDistributionDetailValidator @Inject constructor(
          if (percentTotal > ONE) {
             errors.add(ValidationError("percent", PercentTotalGreaterThan100(percent!!)))
          }
+
+         if (account!!.bankId != null) {
+            val bank = bankRepository.findOne(account.bankId!!, company)
+
+            if (profitCenter!!.id != bank!!.generalLedgerProfitCenter.myId()) {
+               errors.add(ValidationError("profitCenter", ProfitCenterMustMatchBankProfitCenter(profitCenter)))
+            }
+         }
       }
 
       return AccountPayableDistributionDetailEntity(
@@ -105,6 +116,14 @@ class AccountPayableDistributionDetailValidator @Inject constructor(
 
             if (percentTotal > ONE) {
                errors.add(ValidationError("percent", PercentTotalGreaterThan100(percent!!)))
+            }
+
+            if (account!!.bankId != null) {
+               val bank = bankRepository.findOne(account.bankId!!, company)
+
+               if (profitCenter!!.id != bank!!.generalLedgerProfitCenter.myId()) {
+                  errors.add(ValidationError("profitCenter", ProfitCenterMustMatchBankProfitCenter(profitCenter)))
+               }
             }
          }
 
