@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.accounting.bank
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.AccountDTO
+import com.cynergisuite.middleware.store.StoreDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.micronaut.core.annotation.Introspected
@@ -29,14 +29,12 @@ data class BankDTO(
    var name: String? = null,
 
    @field:NotNull
-   @field:Valid
    @field:Schema(name = "generalLedgerProfitCenter", required = true, description = "Store the bank is associated with.")
-   var generalLedgerProfitCenter: SimpleLegacyIdentifiableDTO? = null,
+   var generalLedgerProfitCenter: StoreDTO? = null,
 
    @field:NotNull
-   @field:Valid
    @field:Schema(name = "generalLedgerAccount", required = true, description = "Account the bank is associated with.")
-   var generalLedgerAccount: SimpleIdentifiableDTO? = null
+   var generalLedgerAccount: AccountDTO? = null
 
 ) : Identifiable {
    constructor(bankEntity: BankEntity) :
@@ -44,8 +42,8 @@ data class BankDTO(
          id = bankEntity.id,
          number = bankEntity.number,
          name = bankEntity.name,
-         generalLedgerProfitCenter = SimpleLegacyIdentifiableDTO(bankEntity.generalLedgerProfitCenter.myId()),
-         generalLedgerAccount = SimpleIdentifiableDTO(bankEntity.generalLedgerAccount.myId())
+         generalLedgerProfitCenter = StoreDTO(bankEntity.generalLedgerProfitCenter),
+         generalLedgerAccount = AccountDTO(bankEntity.generalLedgerAccount)
       )
 
    override fun myId(): UUID? = id
