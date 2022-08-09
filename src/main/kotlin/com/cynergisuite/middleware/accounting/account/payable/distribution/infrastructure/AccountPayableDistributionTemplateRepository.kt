@@ -95,6 +95,22 @@ class AccountPayableDistributionTemplateRepository @Inject constructor(
       )
    }
 
+   @ReadOnly
+   fun findByName( name: String, company: CompanyEntity ) : AccountPayableDistributionTemplateEntity? {
+      val params = mutableMapOf<String, Any?>("name" to name, "comp_id" to company.id)
+      val query = "${selectBaseQuery()} WHERE apDist.name = :name AND apDist.deleted = FALSE AND apDist.company_id = :comp_id AND comp.deleted = FALSE"
+      val found = jdbc.findFirstOrNull(
+         query,
+         params
+      ) { rs, _ ->
+         mapRow(rs, company, "apDist_")
+      }
+
+      logger.trace("Searching for AccountPayableDistributionTemplate name {}: \nQuery {} \nResulted in {}", name, query, found)
+
+      return found
+   }
+
    @Transactional
    fun insert(entity: AccountPayableDistributionTemplateEntity, company: CompanyEntity): AccountPayableDistributionTemplateEntity {
       logger.debug("Inserting AccountPayableDistributionTemplate {}", entity)

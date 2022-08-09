@@ -11,6 +11,7 @@ import java.util.UUID
 @Singleton
 class AccountPayableDistributionTemplateService @Inject constructor(
    private val accountPayableDistributionTemplateRepository: AccountPayableDistributionTemplateRepository,
+   private val accountPayableDistributionTemplateValidator: AccountPayableDistributionTemplateValidator,
    private val accountPayableDistributionDetailService: AccountPayableDistributionDetailService
 ) {
    fun fetchOne(id: UUID, company: CompanyEntity): AccountPayableDistributionTemplateDTO? =
@@ -25,12 +26,12 @@ class AccountPayableDistributionTemplateService @Inject constructor(
    }
 
    fun create(dto: AccountPayableDistributionTemplateDTO, company: CompanyEntity): AccountPayableDistributionTemplateDTO {
-      val toCreate = AccountPayableDistributionTemplateEntity(dto)
+      val toCreate = accountPayableDistributionTemplateValidator.validateCreate(dto, company)
       return transformEntity(accountPayableDistributionTemplateRepository.insert(toCreate, company))
    }
 
    fun update(id: UUID, dto: AccountPayableDistributionTemplateDTO, company: CompanyEntity): AccountPayableDistributionTemplateDTO {
-      val toUpdate = AccountPayableDistributionTemplateEntity(dto)
+      val toUpdate = accountPayableDistributionTemplateValidator.validateUpdate(id, dto, company)
 
       return transformEntity(accountPayableDistributionTemplateRepository.update(toUpdate, company))
    }
