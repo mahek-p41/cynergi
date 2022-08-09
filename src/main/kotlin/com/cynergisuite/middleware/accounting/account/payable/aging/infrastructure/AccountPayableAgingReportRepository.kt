@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.math.BigDecimal
 import java.sql.ResultSet
 import java.time.temporal.ChronoUnit
 
@@ -66,6 +65,7 @@ class AccountPayableAgingReportRepository @Inject constructor(
             apPayment.payment_number                                       AS apInvoiceDetail_apPayment_payment_number,
             apPayment.payment_date                                         AS apInvoiceDetail_apPayment_payment_date,
             apPayment.date_voided                                          AS apInvoiceDetail_apPayment_date_voided,
+            apPayment.void_interfaced_indicator                            AS apInvoiceDetail_apPayment_void_interfaced_indicator,
             apPaymentDetail.company_id                                     AS apInvoiceDetail_apPaymentDetail_company_id,
             apPaymentDetail.payment_number_id                              AS apInvoiceDetail_apPaymentDetail_payment_number_id,
             apPaymentDetail.amount                                         AS apInvoiceDetail_apPaymentDetail_amount,
@@ -123,10 +123,10 @@ class AccountPayableAgingReportRepository @Inject constructor(
             var invoiceFlag = false
             mapRowInvoiceDetail(rs, "apInvoiceDetail_").let {
                // determine if invoice should be included on report
-               if (it.invoiceStatus.id == 2) {
+               if (it.invoiceStatus.id == 2 && !it.apPaymentIsVoided) {
                   tempVendor.invoices?.add(it) // include invoice if invoice status = 2 (Open)
                   invoiceFlag = true
-               } else if (it.invoiceStatus.id == 3 && it.invoicePaidAmount > BigDecimal.ZERO) {
+               } else if (it.invoiceStatus.id == 3) {
                   // perform back date inquiry
                   if (it.apPaymentPaymentDate!! > filterRequest.agingDate && it.apPaymentDateVoided == null) {
                      it.invoiceStatus = AccountPayableInvoiceStatusType(2, "O", "Open", "open")
@@ -232,6 +232,7 @@ class AccountPayableAgingReportRepository @Inject constructor(
          invoiceDueDate = rs.getLocalDate("${columnPrefix}apInvoice_due_date"),
          apPaymentPaymentDate = rs.getLocalDateOrNull("${columnPrefix}apPayment_payment_date"),
          apPaymentDateVoided = rs.getLocalDateOrNull("${columnPrefix}apPayment_date_voided"),
+         apPaymentIsVoided = rs.getBoolean("${columnPrefix}apPayment_void_interfaced_indicator"),
          apPaymentDetailAmount = rs.getBigDecimalOrNull("${columnPrefix}apPaymentDetail_amount"),
          balance = balance,
          balanceDisplay = null
