@@ -329,6 +329,59 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       '90'           || NO_CONTENT
    }
 
+   void "search stores by both number and name" () {
+      given:
+      def query = ""
+      switch (criteria) {
+         case '1 - Kansas':
+            query = "1%20-%20Kansas"
+            break
+         case '9000 - home office':
+            query = "9000%20-%20home%20office"
+            break
+      }
+
+      when:
+      def result = get("$path/search?query=$query")
+
+      then:
+      notThrown(HttpClientException)
+      result != null
+      result.elements.size() == searchResultsCount
+      where:
+      criteria                || searchResultsCount
+      '1 - Kansas'            || 1
+      '9000 - home office'    || 1
+   }
+
+   void "search stores by both number and name no results found" () {
+      given:
+      def query = ""
+      switch (criteria) {
+         case '1 -Kansas':
+            query = "1%20-Kansas"
+            break
+         case '1 - Independence':
+            query = "1%20-%20Independence"
+            break
+         case '900 - home office':
+            query = "900%20-%20home%20office"
+            break
+      }
+
+      when:
+      get("$path/search?query=$query")
+
+      then:
+      def ex = thrown(HttpClientResponseException)
+      ex.response.status == response
+      where:
+      criteria                || response
+      '1 -Kansas'             || NO_CONTENT
+      '1 - Independence'      || NO_CONTENT
+      '900 - home office'     || NO_CONTENT
+   }
+
    void "search stores sql injection" () {
       when: "Throw SQL Injection at it"
       get("$path/search?query=%20or%201=1;drop%20table%20system_stores_fimvw;--")

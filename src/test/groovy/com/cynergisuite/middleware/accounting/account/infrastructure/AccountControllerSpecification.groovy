@@ -599,6 +599,87 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       '23'           || NO_CONTENT
    }
 
+   void "search accounts by both number and name" () {
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final account1235 = accountDataLoaderService.single(company, "Bank Acct", 1235)
+      final account1236 = accountDataLoaderService.single(company, "Bank of America", 1236)
+      final account5678 = accountDataLoaderService.single(company, "1235 - Bank Account", 5678)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      if (account1235.bankId != null) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1235)
+      }
+      if (account1236.bankId != null) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1236)
+      }
+      if (account5678.bankId != null) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account5678)
+      }
+
+      def query = ""
+      switch (criteria) {
+         case '1235 - bank':
+            query = "1235%20-%20bank"
+            break
+         case '1236 - Bank of america':
+            query = "1236%20-%20Bank%20of%20america"
+            break
+      }
+
+      when:
+      def result = get("$path/search?query=$query")
+
+      then:
+      notThrown(HttpClientException)
+      result != null
+      result.elements.size() == searchResultsCount
+      where:
+      criteria                      || searchResultsCount
+      '1235 - bank'                 || 2
+      '1236 - Bank of america'      || 1
+   }
+
+   void "search accounts by both number and name no results found" () {
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final account1235 = accountDataLoaderService.single(company, "Bank Acct", 1235)
+      final account1236 = accountDataLoaderService.single(company, "Bank of America", 1236)
+      final account5678 = accountDataLoaderService.single(company, "1235 - Bank Account", 5678)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      if (account1235.bankId != null) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1235)
+      }
+      if (account1236.bankId != null) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1236)
+      }
+      if (account5678.bankId != null) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account5678)
+      }
+
+      def query = ""
+      switch (criteria) {
+         case '1234 - bank':
+            query = "1234%20-%20bank"
+            break
+         case '1235 - Banks':
+            query = "1235%20-%20Banks"
+            break
+         case '1235 -Bank':
+            query = "1235%20-Bank"
+            break
+      }
+
+      when:
+      get("$path/search?query=$query")
+
+      then:
+      def ex = thrown(HttpClientResponseException)
+      ex.response.status == response
+      where:
+      criteria       || response
+      '1234 - bank'  || NO_CONTENT
+      '1235 - Banks' || NO_CONTENT
+      '1235 -Bank'   || NO_CONTENT
+   }
+
    void "search accounts sql injection" () {
       when: "Throw SQL Injection at it"
       get("$path/search?query=%20or%201=1;drop%20table%20account;--")

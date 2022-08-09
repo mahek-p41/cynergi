@@ -152,13 +152,15 @@ class AccountRepository @Inject constructor(
    @ReadOnly
    fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<AccountEntity, PageRequest> {
       var searchQuery = page.query
-      searchQuery = searchQuery?.trim()
       val where = StringBuilder(" WHERE comp.id = :comp_id AND account.deleted = FALSE")
       val sortBy = StringBuilder("")
       if (!searchQuery.isNullOrEmpty()) {
+         searchQuery = searchQuery.trim()
+         val splitSearchQuery = searchQuery.split(" - ")
+         val searchQueryBeginsWith = "$searchQuery%"
+
          where.append(" AND (")
          sortBy.append("ORDER BY ")
-         val searchQueryBeginsWith = "$searchQuery%"
          if (searchQuery.isNumber()) {
             if (!page.fuzzy!!) {
                where.append("account.number = $searchQuery OR ")
@@ -166,6 +168,10 @@ class AccountRepository @Inject constructor(
                where.append("account.number::text LIKE \'$searchQueryBeginsWith\' OR ")
                sortBy.append("account.number::text <-> :search_query, account.number::text ASC, ")
             }
+         }
+         else if (splitSearchQuery.first().isNumber()) {
+            val nameBeginsWith = "${splitSearchQuery.last()}%"
+            where.append("account.number = ${splitSearchQuery.first()} AND account.name ILIKE \'$nameBeginsWith\' OR ")
          }
          where.append("account.name ILIKE \'$searchQueryBeginsWith\')")
          sortBy.append("account.name <-> :search_query, account.name ASC")

@@ -194,13 +194,15 @@ class StoreRepository @Inject constructor(
    @ReadOnly
    fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<StoreEntity, PageRequest> {
       var searchQuery = page.query
-      searchQuery = searchQuery?.trim()
       val where = StringBuilder(" WHERE comp.id = :comp_id AND comp.deleted = FALSE")
       val sortBy = StringBuilder("")
       if (!searchQuery.isNullOrEmpty()) {
+         searchQuery = searchQuery.trim()
+         val splitSearchQuery = searchQuery.split(" - ")
+         val searchQueryBeginsWith = "$searchQuery%"
+
          where.append(" AND (")
          sortBy.append("ORDER BY ")
-         val searchQueryBeginsWith = "$searchQuery%"
          if (searchQuery.isNumber()) {
             if (!page.fuzzy!!) {
                where.append("store.number = $searchQuery OR ")
@@ -208,6 +210,10 @@ class StoreRepository @Inject constructor(
                where.append("store.number::text LIKE \'$searchQueryBeginsWith\' OR ")
                sortBy.append("store.number::text <-> :search_query, store.number::text ASC, ")
             }
+         }
+         else if (splitSearchQuery.first().isNumber()) {
+            val nameBeginsWith = "${splitSearchQuery.last()}%"
+            where.append("store.number = ${splitSearchQuery.first()} AND store.name ILIKE \'$nameBeginsWith\' OR ")
          }
          where.append("store.name ILIKE \'$searchQueryBeginsWith\')")
          sortBy.append("store.name <-> :search_query, store.name ASC")
