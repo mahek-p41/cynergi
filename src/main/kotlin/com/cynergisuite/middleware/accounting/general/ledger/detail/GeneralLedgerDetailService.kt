@@ -170,7 +170,7 @@ class GeneralLedgerDetailService @Inject constructor(
          }
          val glAccount = accountService.fetchById(generalLedgerDetail.account!!.id!!, company, locale)
          val checkCodes = listOf("AP", "SUM", "BAL")
-         bankRecon = if (glAccount?.isBankAccount!! && glSourceCode!!.value !in checkCodes) {
+         bankRecon = if (glAccount?.bankId != null && glSourceCode!!.value !in checkCodes) {
             val bank = bankService.fetchByGLAccount(generalLedgerDetail.account!!.id!!, company)
             val bankType = BankReconciliationTypeDTO("M", "Miscellaneous")
             val bankReconciliationDto = BankReconciliationDTO(

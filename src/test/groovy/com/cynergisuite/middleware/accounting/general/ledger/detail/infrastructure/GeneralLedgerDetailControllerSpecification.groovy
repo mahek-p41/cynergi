@@ -606,7 +606,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       then:
       notThrown(Exception)
       //glSummary updated netActivityPeriodX
-      def test = generalLedgerSummaryService.fetchOneByBusinessKey(company, glDetailsDTO.account.id, glDetailsDTO.profitCenter.myId(), calEnt.overallPeriod.id )
+      def test = generalLedgerSummaryService.fetchOneByBusinessKey(company, glDetailsDTO.account.id, glDetailsDTO.profitCenter.myId(), calEnt.overallPeriod.value )
       sumEnt.netActivityPeriod1 != test.netActivityPeriod1
       sumEnt.netActivityPeriod1 == test.netActivityPeriod1 - glDetailsDTO.amount
    }
