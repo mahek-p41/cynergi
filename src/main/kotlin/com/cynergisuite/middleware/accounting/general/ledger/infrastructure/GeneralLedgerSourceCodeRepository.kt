@@ -28,7 +28,7 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
    private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerSourceCodeRepository::class.java)
-   private fun selectBaseQuery() =
+   fun selectBaseQuery() =
       """
       SELECT
          glSrcCodes.id               AS glSrcCodes_id,

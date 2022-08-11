@@ -111,4 +111,17 @@ class GeneralLedgerDetailDataLoaderService {
          source
       ).findFirst().orElseThrow { new Exception("Unable to create GeneralLedgerDetail") }
    }
+
+   GeneralLedgerDetailDTO singleDTO(
+      AccountEntity account,
+      Store profitCenter,
+      GeneralLedgerSourceCodeEntity source
+   ) {
+      return GeneralLedgerDetailDataLoader.streamDTO(
+         1,
+         account,
+         profitCenter,
+         source
+      ).findFirst().orElseThrow { new Exception("Unable to create GeneralLedgerDetailDTO") }
+   }
 }
