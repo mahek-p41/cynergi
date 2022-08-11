@@ -151,11 +151,10 @@ class AccountRepository @Inject constructor(
 
    @ReadOnly
    fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<AccountEntity, PageRequest> {
-      var searchQuery = page.query
+      val searchQuery = page.query?.trim()
       val where = StringBuilder(" WHERE comp.id = :comp_id AND account.deleted = FALSE")
       val sortBy = StringBuilder("")
       if (!searchQuery.isNullOrEmpty()) {
-         searchQuery = searchQuery.trim()
          val splitSearchQuery = searchQuery.split(" - ")
          val searchQueryBeginsWith = "$searchQuery%"
 

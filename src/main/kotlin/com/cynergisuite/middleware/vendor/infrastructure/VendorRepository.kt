@@ -238,7 +238,7 @@ class VendorRepository @Inject constructor(
 
    @ReadOnly
    fun search(company: CompanyEntity, page: VendorSearchPageRequest): RepositoryPage<VendorEntity, PageRequest> {
-      var searchQuery = page.query
+      val searchQuery = page.query?.trim()
       val where = StringBuilder(" WHERE comp.id = :comp_id AND v.deleted = FALSE ")
 
       if (page.active != null) {
@@ -247,7 +247,6 @@ class VendorRepository @Inject constructor(
 
       val sortBy = StringBuilder("")
       if (!searchQuery.isNullOrEmpty()) {
-         searchQuery = searchQuery.trim()
          val splitSearchQuery = searchQuery.split(" - ")
          val searchQueryBeginsWith = "$searchQuery%"
 

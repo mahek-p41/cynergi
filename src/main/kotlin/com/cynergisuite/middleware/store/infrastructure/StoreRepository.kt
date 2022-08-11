@@ -193,11 +193,10 @@ class StoreRepository @Inject constructor(
 
    @ReadOnly
    fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<StoreEntity, PageRequest> {
-      var searchQuery = page.query
+      val searchQuery = page.query?.trim()
       val where = StringBuilder(" WHERE comp.id = :comp_id AND comp.deleted = FALSE")
       val sortBy = StringBuilder("")
       if (!searchQuery.isNullOrEmpty()) {
-         searchQuery = searchQuery.trim()
          val splitSearchQuery = searchQuery.split(" - ")
          val searchQueryBeginsWith = "$searchQuery%"
 
