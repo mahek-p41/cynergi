@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.
 
 import com.cynergisuite.domain.GeneralLedgerRecurringEntriesFilterRequest
 import com.cynergisuite.domain.Page
+import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.GeneralLedgerRecurringEntriesDTO
@@ -227,7 +228,8 @@ class GeneralLedgerRecurringEntriesController @Inject constructor(
       logger.info("Fetching all General Ledger Recurring Entries that meet the criteria {} to create General Ledger Details", filterRequest)
 
       val user = userService.fetchUser(authentication)
-      generalLedgerDetailService.transfer(user, filterRequest)
+      val locale = httpRequest.findLocaleWithDefault()
+      generalLedgerDetailService.transfer(user, filterRequest, locale)
    }
 
    @Post(uri = "/transfer/single", produces = [APPLICATION_JSON])
@@ -249,6 +251,7 @@ class GeneralLedgerRecurringEntriesController @Inject constructor(
       logger.info("Transfer a single General Ledger Recurring Entry to create General Ledger Details", dto)
 
       val user = userService.fetchUser(authentication)
-      generalLedgerDetailService.transfer(user, dto)
+      val locale = httpRequest.findLocaleWithDefault()
+      generalLedgerDetailService.transfer(user, dto, locale)
    }
 }

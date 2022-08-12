@@ -567,7 +567,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final sumEnt = new GeneralLedgerSummaryEntity(summary, glAccount, profitCenter, new OverallPeriodType( calEnt.overallPeriod.myId(), summary.overallPeriod.description, summary.overallPeriod.value, summary.overallPeriod.abbreviation, calEnt.overallPeriod.localizationCode))
       generalLedgerSummaryRepository.insert(sumEnt, company)
       new GeneralLedgerJournalEntryDetailDTO(new AccountDTO(glAccount), new BankReconciliationTypeDTO(bankType), new StoreDTO(profitCenter), 315.00)
-      final postingDTO = new GeneralLedgerAccountPostingDTO([glDetail: glDetailsDTO, jeJournal: null])
+      final postingDTO = new GeneralLedgerAccountPostingDTO([glDetail: glDetailsDTO, bankType: null])
       when:
       def response = post("$path/subroutine/", postingDTO)
 
@@ -599,7 +599,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final sumEnt = new GeneralLedgerSummaryEntity(summary, glAccount, profitCenter, new OverallPeriodType( calEnt.overallPeriod.myId(), summary.overallPeriod.description, summary.overallPeriod.value, summary.overallPeriod.abbreviation, calEnt.overallPeriod.localizationCode))
       generalLedgerSummaryRepository.insert(sumEnt, company)
       final jeJournal = new GeneralLedgerJournalEntryDetailDTO(new AccountDTO(glAccount), new BankReconciliationTypeDTO(bankType), new StoreDTO(profitCenter), 315.00)
-      final postingDTO = new GeneralLedgerAccountPostingDTO([glDetail: glDetailsDTO, jeJournal: null])
+      final postingDTO = new GeneralLedgerAccountPostingDTO([glDetail: glDetailsDTO, bankType: null])
       when:
       def response = post("$path/subroutine/", postingDTO)
 

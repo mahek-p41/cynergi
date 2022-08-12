@@ -5,6 +5,9 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringDataLoaderService
@@ -35,6 +38,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
    @Inject GeneralLedgerRecurringEntriesDataLoaderService dataLoaderService
    @Inject GeneralLedgerRecurringTypeDataLoaderService generalLedgerRecurringTypeDataLoaderService
    @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
+   @Inject FinancialCalendarDataLoaderService financialCalendarDataLoaderService
 
    void "fetch one" () {
       given:
@@ -763,14 +767,22 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
          new StoreDTO(store)
       ).toList()
       def glRecurringEntriesDTO = dataLoaderService.singleDTO(glRecurringDTO, glRecurringDistributionDTOs)
-
+      def entryDate = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
       def filterRequest = new GeneralLedgerRecurringEntriesFilterRequest([sortBy: "id", sortDirection: "ASC"])
       filterRequest['entryType'] = glRecurringDTO.type.value
       filterRequest['sourceCode'] = glRecurringDTO.source.value
       filterRequest['entryDate'] = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
       filterRequest['employeeNumber'] = employee.number
 
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate).collect()
+      final dateRangeDTO = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(80))
       final glDetailPage = new StandardPageRequest(1, 5, "id", "ASC")
+
+      when: 'open GL in financial calendar'
+      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+
+      then:
+      notThrown(Exception)
 
       when: // GL recurring and GL recurring distributions are posted
       def postResult = post(path, glRecurringEntriesDTO)
@@ -855,14 +867,21 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
          new StoreDTO(store)
       ).toList()
       def glRecurringEntriesDTO = dataLoaderService.singleDTO(glRecurringDTO, glRecurringDistributionDTOs)
-
+      def entryDate = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
       def filterRequest = new GeneralLedgerRecurringEntriesFilterRequest([sortBy: "id", sortDirection: "ASC"])
       filterRequest['entryType'] = glRecurringDTO.type.value
       filterRequest['sourceCode'] = glRecurringDTO.source.value
-      filterRequest['entryDate'] = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
+      filterRequest['entryDate'] = entryDate
       filterRequest['employeeNumber'] = employee.number
 
-      final glDetailPage = new StandardPageRequest(1, 5, "id", "ASC")
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate).collect()
+      final dateRangeDTO = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(80))
+
+      when: 'open GL in financial calendar'
+      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+
+      then:
+      notThrown(Exception)
 
       when: // GL recurring and GL recurring distributions are posted
       def postResult = post(path, glRecurringEntriesDTO)

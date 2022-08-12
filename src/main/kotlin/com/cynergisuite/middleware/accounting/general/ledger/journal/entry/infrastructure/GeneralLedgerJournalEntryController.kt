@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.journal.entry.infrastructure
 
+import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDTO
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryService
 import io.micronaut.security.annotation.Secured
@@ -53,7 +54,8 @@ class GeneralLedgerJournalEntryController @Inject constructor(
       logger.debug("Requested Create GeneralLedgerJournalEntry {}", dto)
 
       val user = userService.fetchUser(authentication)
-      val response = journalEntryService.create(dto, user)
+      val locale = httpRequest.findLocaleWithDefault()
+      val response = journalEntryService.create(dto, user, locale)
 
       logger.debug("Requested Create GeneralLedgerJournalEntry {} resulted in {}", dto, response)
 

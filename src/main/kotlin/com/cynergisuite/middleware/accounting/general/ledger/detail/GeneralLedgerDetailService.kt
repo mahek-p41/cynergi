@@ -32,6 +32,7 @@ import jakarta.inject.Singleton
 import java.math.BigDecimal
 import java.util.UUID
 import java.util.Locale
+import javax.transaction.Transactional
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.memberProperties
 
@@ -78,7 +79,8 @@ class GeneralLedgerDetailService @Inject constructor(
       return GeneralLedgerSearchReportTemplate(found)
    }
 
-   fun transfer(user: User, filterRequest: GeneralLedgerRecurringEntriesFilterRequest) {
+   @Transactional
+   fun transfer(user: User, filterRequest: GeneralLedgerRecurringEntriesFilterRequest, locale: Locale) {
       val company = user.myCompany()
       val glRecurringEntries = generalLedgerRecurringEntriesRepository.findAll(company, filterRequest)
       var glDetailDTO: GeneralLedgerDetailDTO
@@ -100,6 +102,9 @@ class GeneralLedgerDetailService @Inject constructor(
             )
 
             create(glDetailDTO, company)
+            // post accounting entries CYN-930
+            val glAccountPostingDTO = GeneralLedgerAccountPostingDTO(glDetailDTO)
+            postEntry(glAccountPostingDTO, user.myCompany(), locale)
          }
 
          // update last transfer date in GL recurring
@@ -109,7 +114,8 @@ class GeneralLedgerDetailService @Inject constructor(
       }
    }
 
-   fun transfer(user: User, dto: GeneralLedgerRecurringEntriesDTO) {
+   @Transactional
+   fun transfer(user: User, dto: GeneralLedgerRecurringEntriesDTO, locale: Locale) {
       val company = user.myCompany()
       val glRecurringEntry = generalLedgerRecurringEntriesRepository.findOne(dto.generalLedgerRecurring?.id!!, company)
       var glDetailDTO: GeneralLedgerDetailDTO
@@ -128,6 +134,9 @@ class GeneralLedgerDetailService @Inject constructor(
             null
          )
          create(glDetailDTO, company)
+         // post accounting entries CYN-930
+         val glAccountPostingDTO = GeneralLedgerAccountPostingDTO(glDetailDTO)
+         postEntry(glAccountPostingDTO, user.myCompany(), locale)
       }
 
       // update last transfer date in GL recurring
@@ -141,7 +150,6 @@ class GeneralLedgerDetailService @Inject constructor(
 
    fun postEntry(dto: GeneralLedgerAccountPostingDTO, company: CompanyEntity, locale: Locale): GeneralLedgerAccountPostingResponseDTO {
       val generalLedgerDetail = dto.glDetail!!
-      val je = dto.jeJournal
       val cal = financialCalendarService.fetchByDate(company, generalLedgerDetail.date!!)!!
       val overallPeriod = cal.overallPeriod!!.value
       val summaryUpdated : UUID?
@@ -161,7 +169,7 @@ class GeneralLedgerDetailService @Inject constructor(
             val netActivity = "netActivityPeriod" + cal.period
             val prop = GeneralLedgerSummaryDTO::class.memberProperties.find { it -> it.name == netActivity }!!
             if (prop is KMutableProperty1) {
-               val netActivityAmount: BigDecimal = (prop as KMutableProperty1<GeneralLedgerSummaryDTO, BigDecimal>).get(summary!!)
+               val netActivityAmount: BigDecimal = (prop as KMutableProperty1<GeneralLedgerSummaryDTO, BigDecimal?>).get(summary!!) ?: BigDecimal.ZERO
                val result = (generalLedgerDetail.amount)?.plus((netActivityAmount))
                (prop as KMutableProperty1<GeneralLedgerSummaryDTO, BigDecimal?>).set(summary, result)
             }
@@ -172,10 +180,10 @@ class GeneralLedgerDetailService @Inject constructor(
          val checkCodes = listOf("AP", "SUM", "BAL")
          bankRecon = if (glAccount?.bankId != null && glSourceCode!!.value !in checkCodes) {
             val bank = bankService.fetchByGLAccount(generalLedgerDetail.account!!.id!!, company)
-            val bankType = BankReconciliationTypeDTO("M", "Miscellaneous")
+            val bankType = dto.bankType ?: BankReconciliationTypeDTO("M", "Miscellaneous")
             val bankReconciliationDto = BankReconciliationDTO(
                null, SimpleIdentifiableDTO(bank!!.myId()),
-               je?.bankType ?: bankType,
+               bankType,
                generalLedgerDetail.date,
                null,
                generalLedgerDetail.amount,

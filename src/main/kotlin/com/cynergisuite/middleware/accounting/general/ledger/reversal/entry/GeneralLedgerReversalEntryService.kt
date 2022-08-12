@@ -5,6 +5,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
@@ -13,6 +14,7 @@ import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.Locale
 import java.util.UUID
 
 @Singleton
@@ -58,7 +60,7 @@ class GeneralLedgerReversalEntryService @Inject constructor(
       return !(reversalDate!!.isBefore(glOpenDateRange.first) || reversalDate.isAfter(glOpenDateRange.second))
    }
 
-   fun postReversalEntry(dto: GeneralLedgerReversalEntryDTO, user: User) {
+   fun postReversalEntry(dto: GeneralLedgerReversalEntryDTO, user: User, locale: Locale) {
       val entity = generalLedgerReversalEntryRepository.findOne(dto.generalLedgerReversal!!.id!!, user.myCompany())
 
       // create GL details
@@ -81,6 +83,8 @@ class GeneralLedgerReversalEntryService @Inject constructor(
 
          // post glDetailDTO to GL summary
          // todo: post accounting entries CYN-930
+         val glAccountPostingDTO = GeneralLedgerAccountPostingDTO(glDetailDTO)
+         generalLedgerDetailService.postEntry(glAccountPostingDTO, user.myCompany(), locale)
       }
 
       // delete GL reversal records
