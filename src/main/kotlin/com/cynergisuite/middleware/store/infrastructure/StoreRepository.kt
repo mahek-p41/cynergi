@@ -193,19 +193,29 @@ class StoreRepository @Inject constructor(
 
    @ReadOnly
    fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<StoreEntity, PageRequest> {
-      val searchQuery = page.query
+      val searchQuery = page.query?.trim()
       val where = StringBuilder(" WHERE comp.id = :comp_id AND comp.deleted = FALSE")
-      val sortBy = if (!searchQuery.isNullOrEmpty()) {
-         val splitedWords = searchQuery.split(" ")
-         val fieldToSearch = if (splitedWords.first().isNumber() && splitedWords.size == 1) {
-            " store.number::text "
-         } else {
-            "COALESCE(store.number::text, '') || ' ' || COALESCE(store.name, '')"
+      val sortBy = StringBuilder("")
+      if (!searchQuery.isNullOrEmpty()) {
+         val splitSearchQuery = searchQuery.split(" - ")
+         val searchQueryBeginsWith = "$searchQuery%"
+
+         where.append(" AND (")
+         sortBy.append("ORDER BY ")
+         if (searchQuery.isNumber()) {
+            if (!page.fuzzy!!) {
+               where.append("store.number = $searchQuery OR ")
+            } else {
+               where.append("store.number::text LIKE \'$searchQueryBeginsWith\' OR ")
+               sortBy.append("store.number::text <-> :search_query, store.number::text ASC, ")
+            }
          }
-         where.append(" AND $fieldToSearch <-> :search_query < 0.95 ")
-         " ORDER BY $fieldToSearch <-> :search_query "
-      } else {
-         EMPTY
+         else if (splitSearchQuery.first().isNumber()) {
+            val nameBeginsWith = "${splitSearchQuery.last()}%"
+            where.append("store.number = ${splitSearchQuery.first()} AND store.name ILIKE \'$nameBeginsWith\' OR ")
+         }
+         where.append("store.name ILIKE \'$searchQueryBeginsWith\')")
+         sortBy.append("store.name <-> :search_query, store.name ASC")
       }
 
       return jdbc.queryPaged(

@@ -238,8 +238,7 @@ class VendorRepository @Inject constructor(
 
    @ReadOnly
    fun search(company: CompanyEntity, page: VendorSearchPageRequest): RepositoryPage<VendorEntity, PageRequest> {
-      var searchQuery = page.query
-      searchQuery = searchQuery?.trim()
+      val searchQuery = page.query?.trim()
       val where = StringBuilder(" WHERE comp.id = :comp_id AND v.deleted = FALSE ")
 
       if (page.active != null) {
@@ -248,9 +247,11 @@ class VendorRepository @Inject constructor(
 
       val sortBy = StringBuilder("")
       if (!searchQuery.isNullOrEmpty()) {
+         val splitSearchQuery = searchQuery.split(" - ")
+         val searchQueryBeginsWith = "$searchQuery%"
+
          where.append("AND (")
          sortBy.append("ORDER BY ")
-         val searchQueryBeginsWith = "$searchQuery%"
          if (searchQuery.isNumber()) {
             if (!page.fuzzy!!) {
                where.append("v.number = $searchQuery OR ")
@@ -258,6 +259,10 @@ class VendorRepository @Inject constructor(
                where.append("v.number::text LIKE \'$searchQueryBeginsWith\' OR ")
                sortBy.append("v.number::text <-> :search_query, v.number::text ASC, ")
             }
+         }
+         else if (splitSearchQuery.first().isNumber()) {
+            val nameBeginsWith = "${splitSearchQuery.last()}%"
+            where.append("v.number = ${splitSearchQuery.first()} AND v.name ILIKE \'$nameBeginsWith\' OR ")
          }
          where.append("v.name ILIKE \'$searchQueryBeginsWith\')")
          sortBy.append("v.name <-> :search_query, v.name ASC")
