@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.localization
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.store.StoreEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.apache.commons.lang3.builder.ToStringBuilder
 import java.math.BigDecimal
@@ -55,6 +56,7 @@ class AccountIsRequired(account: AccountEntity?) : Cynergi("cynergi.validation.a
 class PercentTotalGreaterThan100(percent: BigDecimal) : Cynergi("cynergi.validation.percent.total.greater.than.100", arrayOf(percent))
 class BalanceMustBeZero(balance: BigDecimal) : Cynergi("cynergi.validation.balance.must.be.zero", arrayOf(balance))
 class GLNotOpen(date: LocalDate) : Cynergi("cynergi.validation.gl.not.open", arrayOf(date))
+class ProfitCenterMustMatchBankProfitCenter(profitCenter: StoreEntity) : Cynergi("cynergi.validation.profit.center.must.match.bank.profit.center", arrayOf(profitCenter))
 
 class AuditStatusNotFound(auditStatus: String) : Cynergi("cynergi.audit.status.not.found", arrayOf(auditStatus))
 class AuditUnableToChangeStatusFromTo(auditId: UUID, toStatus: String, fromStatus: String) : Cynergi("cynergi.audit.unable.to.change.status.from.to", arrayOf(auditId, toStatus, fromStatus))

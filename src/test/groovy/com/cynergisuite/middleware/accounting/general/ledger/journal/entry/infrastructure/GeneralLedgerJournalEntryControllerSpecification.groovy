@@ -3,6 +3,9 @@ package com.cynergisuite.middleware.accounting.general.ledger.journal.entry.infr
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
+import com.cynergisuite.middleware.accounting.bank.BankFactoryService
+import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
+import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
@@ -25,6 +28,8 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
    private static final String path = "/accounting/general-ledger/journal-entry"
 
    @Inject AccountTestDataLoaderService accountDataLoaderService
+   @Inject BankFactoryService bankFactoryService
+   @Inject BankReconciliationTypeDataLoaderService bankReconciliationTypeDataLoaderService
    @Inject FinancialCalendarDataLoaderService financialCalendarDataLoaderService
    @Inject GeneralLedgerJournalEntryDataLoaderService dataLoaderService
    @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
@@ -244,6 +249,147 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       'entryDate'             || 'entryDate'
       'reverse'               || 'reverse'
       'source'                || 'source'
+   }
+
+   void "create invalid journal entry with non-existing source code" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
+      final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
+
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      final account = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, company)
+      def glJournalEntryDetailDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
+         2,
+         new AccountDTO(account),
+         new StoreDTO(profitCenter),
+         10000 as BigDecimal
+      ).toList()
+      def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
+         2,
+         new AccountDTO(account),
+         new StoreDTO(profitCenter),
+         -10000 as BigDecimal
+      ).toList()
+      glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
+      def glJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs, false)
+      glJournalEntryDTO.source = new GeneralLedgerSourceCodeDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702'), 'Z', 'Invalid DTO')
+
+      when: 'open GL in financial calendar'
+      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+
+      then:
+      notThrown(Exception)
+
+      when: 'create journal entry'
+      post(path, glJournalEntryDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == 'source.id'
+      response[0].message == 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
+   }
+
+   void "create invalid journal entry with non-existing journal entry detail bank type" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
+      final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
+
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      final account = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, company)
+      def glJournalEntryDetailDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
+         1,
+         new AccountDTO(account),
+         new StoreDTO(profitCenter),
+         10000 as BigDecimal
+      ).toList()
+      def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
+         1,
+         new AccountDTO(account),
+         new StoreDTO(profitCenter),
+         -10000 as BigDecimal
+      ).toList()
+      glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
+      def glJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs, false)
+      glJournalEntryDTO.journalEntryDetails.forEach {
+         it.bankType = new BankReconciliationTypeDTO('Z', 'Invalid DTO')
+      }
+      bankFactoryService.single(company, profitCenter, account)
+
+      when: 'open GL in financial calendar'
+      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+
+      then:
+      notThrown(Exception)
+
+      when: 'create journal entry'
+      post(path, glJournalEntryDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 2
+      response[0].path == 'journalEntryDetails[index].bankType.value'
+      response[1].path == 'journalEntryDetails[index].bankType.value'
+      response[0].message == "Z was unable to be found"
+      response[1].message == "Z was unable to be found"
+   }
+
+   void "create invalid journal entry with bank account and incorrect profit center" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
+      final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
+
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      final account = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, company)
+      def glJournalEntryDetailDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
+         1,
+         new AccountDTO(account),
+         new StoreDTO(profitCenter),
+         10000 as BigDecimal
+      ).toList()
+      def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
+         1,
+         new AccountDTO(account),
+         new StoreDTO(profitCenter),
+         -10000 as BigDecimal
+      ).toList()
+      glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
+      def glJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs, false)
+
+      final store = storeFactoryService.store(1, company)
+      bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      glJournalEntryDTO.journalEntryDetails.forEach {
+         it.bankType = new BankReconciliationTypeDTO(bankReconciliationTypeDataLoaderService.random())
+      }
+
+      when: 'open GL in financial calendar'
+      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+
+      then:
+      notThrown(Exception)
+
+      when: 'create journal entry'
+      post(path, glJournalEntryDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 2
+      response[0].path == 'journalEntryDetails[index].profitCenter'
+      response[1].path == 'journalEntryDetails[index].profitCenter'
+      response[0].message == "Profit center $profitCenter does not match bank profit center"
+      response[1].message == "Profit center $profitCenter does not match bank profit center"
    }
 
    void "create multiple journal entries" () {

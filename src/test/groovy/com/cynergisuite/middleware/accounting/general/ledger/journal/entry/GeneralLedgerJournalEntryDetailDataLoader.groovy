@@ -2,8 +2,6 @@ package com.cynergisuite.middleware.accounting.general.ledger.journal.entry
 
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
-import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
-import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDataLoader
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreDTO
 import groovy.transform.CompileStatic
@@ -25,7 +23,7 @@ class GeneralLedgerJournalEntryDetailDataLoader {
       return IntStream.range(0, number).mapToObj {
          new GeneralLedgerJournalEntryDetailEntity(
             accountIn,
-            BankReconciliationTypeDataLoader.random(),
+            null,
             profitCenterIn,
             amountIn
          )
@@ -43,7 +41,7 @@ class GeneralLedgerJournalEntryDetailDataLoader {
       return IntStream.range(0, number).mapToObj {
          new GeneralLedgerJournalEntryDetailDTO(
             accountIn,
-            new BankReconciliationTypeDTO(BankReconciliationTypeDataLoader.random()),
+            null,
             profitCenterIn,
             amountIn
          )
