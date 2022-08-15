@@ -66,4 +66,8 @@ class GeneralLedgerSourceCodeDataLoaderService {
    GeneralLedgerSourceCodeEntity single(CompanyEntity company) {
       stream(1, company).findFirst().orElseThrow { new Exception("Unable to find GeneralLedgerSourceCode") }
    }
+
+   GeneralLedgerSourceCodeDTO singleDTO( ) {
+      return GeneralLedgerSourceCodeDataLoader.singleDTO()
+   }
 }

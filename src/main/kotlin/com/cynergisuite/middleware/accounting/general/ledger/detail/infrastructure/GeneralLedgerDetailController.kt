@@ -3,7 +3,9 @@ package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastruct
 import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentReportTemplate
+import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingDTO
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingResponseDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
@@ -152,7 +154,7 @@ class GeneralLedgerDetailController @Inject constructor(
    }
 
    @Get(uri = "/search-report{?filterRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a General Ledger Search Report", description = "Fetch a General Ledger Search Report", operationId = "generalLedgerJournal-fetchReport")
+   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Fetch a General Ledger Search Report", description = "Fetch a General Ledger Search Report", operationId = "generalLedgerJournal-fetchReport")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerSearchReportFilterRequest::class))]),
@@ -172,5 +174,33 @@ class GeneralLedgerDetailController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
       return generalLedgerDetailService.fetchReport(user.myCompany(), filterRequest)
+   }
+
+
+   @Post(uri = "/subroutine", processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Post an accounting entry to the GL ", description = "Post an accounting entry to the GL", operationId = "generalLedgerDetail-subroutine")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerAccountPostingResponseDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun subroutine(
+      @Body @Valid
+      dto: GeneralLedgerAccountPostingDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): GeneralLedgerAccountPostingResponseDTO {
+      val user = userService.fetchUser(authentication)
+      val userCompany = user.myCompany()
+      logger.info("Posting accounting entry to the General Ledger {}", dto)
+
+      val response = generalLedgerDetailService.postEntry(dto, userCompany, httpRequest.findLocaleWithDefault())
+
+      logger.debug("Posting GeneralLedgerDetail {} resulted in {}", dto, response)
+
+      return response
    }
 }

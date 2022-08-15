@@ -5,10 +5,31 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
+import com.cynergisuite.middleware.accounting.bank.BankFactory
+import com.cynergisuite.middleware.accounting.bank.BankFactoryService
+import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
+import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDataLoaderService
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarEntity
+import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodType
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
+import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDTO
+import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryEntity
+import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryService
+import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository
+import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
@@ -27,6 +48,14 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
    @Inject AccountTestDataLoaderService accountDataLoaderService
    @Inject GeneralLedgerSourceCodeDataLoaderService sourceCodeDataLoaderService
    @Inject GeneralLedgerDetailDataLoaderService generalLedgerDetailDataLoaderService
+   @Inject BankReconciliationTypeDataLoaderService bankReconciliationTypeDataLoaderService
+   @Inject FinancialCalendarDataLoaderService financialCalendarDataLoaderService
+   @Inject GeneralLedgerSummaryDataLoaderService generalLedgerSummaryDataLoaderService
+   @Inject FinancialCalendarRepository financialCalendarRepository
+   @Inject GeneralLedgerSummaryRepository generalLedgerSummaryRepository
+   @Inject GeneralLedgerSourceCodeRepository generalLedgerSourceCodeRepository
+   @Inject GeneralLedgerSummaryService generalLedgerSummaryService
+   @Inject BankFactoryService bankFactoryService
 
    void "fetch one general ledger detail by company" () {
       given:
@@ -514,5 +543,71 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       'description'      || 1
       'jeNumber'         || 1
       'PmtDateCase'      || 6
+   }
+
+   void "post account entries where gl source code is NOT BAL and gl Account is bank account" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      bankFactoryService.single(company, profitCenter, glAccount)
+      final glSrcCode = sourceCodeDataLoaderService.singleDTO()
+      glSrcCode.value = "TST"
+      final glSource = new GeneralLedgerSourceCodeEntity(glSrcCode)
+      final sourceEnt = generalLedgerSourceCodeRepository.insert(glSource, company)
+      final bankType = bankReconciliationTypeDataLoaderService.random()
+      final glDetailsDTO = new GeneralLedgerDetailDTO(generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, sourceEnt))
+      final calendar = financialCalendarDataLoaderService.singleDTO()
+      calendar.generalLedgerOpen = true
+      final calEnt = new FinancialCalendarEntity(calendar, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
+      financialCalendarRepository.insert(calEnt, company)
+      glDetailsDTO.date = calendar.periodFrom
+      final summary = generalLedgerSummaryDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glAccount.myId()), new SimpleLegacyIdentifiableDTO(profitCenter.myId()))
+      summary.overallPeriod = new OverallPeriodTypeDTO(OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
+      final sumEnt = new GeneralLedgerSummaryEntity(summary, glAccount, profitCenter, new OverallPeriodType( calEnt.overallPeriod.myId(), summary.overallPeriod.description, summary.overallPeriod.value, summary.overallPeriod.abbreviation, calEnt.overallPeriod.localizationCode))
+      generalLedgerSummaryRepository.insert(sumEnt, company)
+      new GeneralLedgerJournalEntryDetailDTO(new AccountDTO(glAccount), new BankReconciliationTypeDTO(bankType), new StoreDTO(profitCenter), 315.00)
+      final postingDTO = new GeneralLedgerAccountPostingDTO([glDetail: glDetailsDTO, jeJournal: null])
+      when:
+      def response = post("$path/subroutine/", postingDTO)
+
+      then:
+      notThrown(Exception)
+      //bankRecon service created a new bank reconciliation
+      response.bankRecon != null
+   }
+
+
+   void "post account entries where gl source code not BAL and gl Account is not bank account" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSrcCode = sourceCodeDataLoaderService.singleDTO()
+      glSrcCode.value = "TST"
+      final glSource = new GeneralLedgerSourceCodeEntity(glSrcCode)
+      final sourceEnt = generalLedgerSourceCodeRepository.insert(glSource, company)
+      final bankType = bankReconciliationTypeDataLoaderService.random()
+      final glDetailsDTO = new GeneralLedgerDetailDTO(generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, sourceEnt))
+      final calendar = financialCalendarDataLoaderService.singleDTO()
+      calendar.generalLedgerOpen = true
+      final calEnt = new FinancialCalendarEntity(calendar, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
+      financialCalendarRepository.insert(calEnt, company)
+      glDetailsDTO.date = calendar.periodFrom
+      final summary = generalLedgerSummaryDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glAccount.myId()), new SimpleLegacyIdentifiableDTO(profitCenter.myId()))
+      summary.overallPeriod = new OverallPeriodTypeDTO(OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
+      final sumEnt = new GeneralLedgerSummaryEntity(summary, glAccount, profitCenter, new OverallPeriodType( calEnt.overallPeriod.myId(), summary.overallPeriod.description, summary.overallPeriod.value, summary.overallPeriod.abbreviation, calEnt.overallPeriod.localizationCode))
+      generalLedgerSummaryRepository.insert(sumEnt, company)
+      final jeJournal = new GeneralLedgerJournalEntryDetailDTO(new AccountDTO(glAccount), new BankReconciliationTypeDTO(bankType), new StoreDTO(profitCenter), 315.00)
+      final postingDTO = new GeneralLedgerAccountPostingDTO([glDetail: glDetailsDTO, jeJournal: null])
+      when:
+      def response = post("$path/subroutine/", postingDTO)
+
+      then:
+      notThrown(Exception)
+      //glSummary updated netActivityPeriodX
+      def test = generalLedgerSummaryService.fetchOneByBusinessKey(company, glDetailsDTO.account.id, glDetailsDTO.profitCenter.myId(), calEnt.overallPeriod.value )
+      sumEnt.netActivityPeriod1 != test.netActivityPeriod1
+      sumEnt.netActivityPeriod1 == test.netActivityPeriod1 - glDetailsDTO.amount
    }
 }

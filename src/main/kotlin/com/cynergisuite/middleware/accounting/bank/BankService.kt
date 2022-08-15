@@ -23,6 +23,9 @@ class BankService @Inject constructor(
       return found.toPage { bank: BankEntity -> BankDTO(bank) }
    }
 
+   fun fetchByGLAccount(id: UUID, company: CompanyEntity): BankDTO? =
+      bankRepository.findByGlAccount(id, company)?.let{ BankDTO(it) }
+
    fun create(dto: BankDTO, company: CompanyEntity): BankDTO {
       val toCreate = bankValidator.validateCreate(dto, company)
 
