@@ -484,18 +484,22 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
       final account = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, company)
       final List<GeneralLedgerRecurringDistributionEntity> glRecurringDistributions  = dataLoaderService.stream(3, glRecurring1, account, profitCenter).toList()
+      final recurring1CreditSum = glRecurringDistributions.findAll {it.generalLedgerDistributionAmount < BigDecimal.ZERO }.sum {-it.generalLedgerDistributionAmount }
+      final recurring1DebitSum = glRecurringDistributions.findAll {it.generalLedgerDistributionAmount >= BigDecimal.ZERO }.sum {it.generalLedgerDistributionAmount }
+      final recurring1Total = glRecurringDistributions.sum {it.generalLedgerDistributionAmount }
       glRecurringDistributions.add(dataLoaderService.single(glRecurring2, account, profitCenter))
       glRecurringDistributions.add(dataLoaderService.single(glRecurring2, account, profitCenter))
 
       when:
       def result = get("$path/calculate-total/${glRecurring1.id}")
+
       then:
       notThrown(Exception)
       result != null
       with(result) {
-         result.credit == Math.abs(glRecurringDistributions.sum { if (it.generalLedgerRecurringId == glRecurring1.id && it.generalLedgerDistributionAmount < BigDecimal.ZERO) it.generalLedgerDistributionAmount else BigDecimal.ZERO })
-         result.debit == glRecurringDistributions.sum { if (it.generalLedgerRecurringId == glRecurring1.id && it.generalLedgerDistributionAmount >= BigDecimal.ZERO) it.generalLedgerDistributionAmount else BigDecimal.ZERO }
-         result.total == glRecurringDistributions.sum { if (it.generalLedgerRecurringId == glRecurring1.id) it.generalLedgerDistributionAmount else BigDecimal.ZERO}
+         result.credit == recurring1CreditSum
+         result.debit == recurring1DebitSum
+         result.total == recurring1Total
       }
    }
 }
