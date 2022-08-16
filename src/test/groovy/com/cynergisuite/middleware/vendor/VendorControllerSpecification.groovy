@@ -164,6 +164,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final vendors = vendorTestDataLoaderService.stream(7, company, vendorPaymentTerm, shipVia).toList().sort { o1, o2 -> o1.id <=> o2.id }
+      final firstFiveVendors = vendors[0..4].collect { new VendorDTO(it) }
       final pageOne = new VendorPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC"])
       final pageTwo = new VendorPageRequest([page: 2, size: 5, sortBy: "id", sortDirection: "ASC", active: false])
 
@@ -179,7 +180,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
          first == true
          last == false
          elements.collect { new VendorDTO(it) }
-            .sort {o1, o2 -> o1.id <=> o2.id} == vendors[0..4].collect { new VendorDTO(it) }
+            .sort {o1, o2 -> o1.id <=> o2.id} == firstFiveVendors
       }
 
       when:

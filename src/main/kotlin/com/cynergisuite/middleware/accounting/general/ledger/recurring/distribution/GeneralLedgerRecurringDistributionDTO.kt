@@ -2,7 +2,8 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring.distribu
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.AccountDTO
+import com.cynergisuite.middleware.store.StoreDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.micronaut.core.annotation.Introspected
@@ -25,14 +26,13 @@ data class GeneralLedgerRecurringDistributionDTO(
    @field:Schema(description = "General ledger recurring")
    var generalLedgerRecurring: SimpleIdentifiableDTO? = null,
 
-   @field:Valid
    @field:NotNull
    @field:Schema(description = "General ledger distribution account")
-   var generalLedgerDistributionAccount: SimpleIdentifiableDTO? = null,
+   var generalLedgerDistributionAccount: AccountDTO? = null,
 
    @field:NotNull
    @field:Schema(description = "General ledger distribution profit center")
-   var generalLedgerDistributionProfitCenter: SimpleLegacyIdentifiableDTO? = null,
+   var generalLedgerDistributionProfitCenter: StoreDTO? = null,
 
    @field:NotNull
    @field:Schema(description = "General ledger distribution amount")
@@ -45,8 +45,8 @@ data class GeneralLedgerRecurringDistributionDTO(
       this(
          id = entity.id,
          generalLedgerRecurring = SimpleIdentifiableDTO(entity.generalLedgerRecurringId),
-         generalLedgerDistributionAccount = SimpleIdentifiableDTO(entity.generalLedgerDistributionAccount),
-         generalLedgerDistributionProfitCenter = SimpleLegacyIdentifiableDTO(entity.generalLedgerDistributionProfitCenter.myId()),
+         generalLedgerDistributionAccount = AccountDTO(entity.generalLedgerDistributionAccount),
+         generalLedgerDistributionProfitCenter = StoreDTO(entity.generalLedgerDistributionProfitCenter),
          generalLedgerDistributionAmount = entity.generalLedgerDistributionAmount
       )
 
