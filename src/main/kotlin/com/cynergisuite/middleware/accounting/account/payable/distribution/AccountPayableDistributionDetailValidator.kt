@@ -73,8 +73,8 @@ class AccountPayableDistributionDetailValidator @Inject constructor(
             errors.add(ValidationError("percent", PercentTotalGreaterThan100(percent!!)))
          }
 
-         if (account!!.bankId != null) {
-            val bank = bankRepository.findOne(account.bankId!!, company)
+         if (account?.bankId != null) {
+            val bank = bankRepository.findOne(account.bankId, company)
 
             if (profitCenter!!.id != bank!!.generalLedgerProfitCenter.myId()) {
                errors.add(ValidationError("profitCenter", ProfitCenterMustMatchBankProfitCenter(profitCenter)))
@@ -118,8 +118,8 @@ class AccountPayableDistributionDetailValidator @Inject constructor(
                errors.add(ValidationError("percent", PercentTotalGreaterThan100(percent!!)))
             }
 
-            if (account!!.bankId != null) {
-               val bank = bankRepository.findOne(account.bankId!!, company)
+            if (account?.bankId != null) {
+               val bank = bankRepository.findOne(account.bankId, company)
 
                if (profitCenter!!.id != bank!!.generalLedgerProfitCenter.myId()) {
                   errors.add(ValidationError("profitCenter", ProfitCenterMustMatchBankProfitCenter(profitCenter)))
