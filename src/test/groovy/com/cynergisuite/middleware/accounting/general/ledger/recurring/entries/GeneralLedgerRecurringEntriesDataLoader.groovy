@@ -5,7 +5,6 @@ import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribut
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.infrastructure.GeneralLedgerRecurringEntriesRepository
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-
 import jakarta.inject.Singleton
 
 import java.time.LocalDate

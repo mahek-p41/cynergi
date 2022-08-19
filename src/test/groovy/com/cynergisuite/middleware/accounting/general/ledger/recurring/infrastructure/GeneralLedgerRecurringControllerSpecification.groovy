@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure
 
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
@@ -10,14 +9,13 @@ import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSource
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringTypeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionDataLoaderService
+import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import jakarta.inject.Inject
 import spock.lang.Unroll
 
-import jakarta.inject.Inject
-
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
-import static io.micronaut.http.HttpStatus.CONFLICT
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
@@ -225,9 +223,9 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       response[0].message == errorMessage
 
       where:
-      testProp  | invalidValue                                              || errorResponsePath    | errorMessage
-      'source' | new GeneralLedgerSourceCodeDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702'), 'Z', 'Invalid DTO') || 'source.id'  | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
-      'type'   | new GeneralLedgerRecurringTypeDTO('Z', 'Invalid DTO')                                                       || 'type.value' | 'Z was unable to be found'
+      testProp | invalidValue                                                                                                || errorResponsePath     | errorMessage
+      'source' | new GeneralLedgerSourceCodeDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702'), 'Z', 'Invalid DTO') || 'source.id'           | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
+      'type'   | new GeneralLedgerRecurringTypeDTO('Z', 'Invalid DTO')                                                       || 'type.value'          | 'Z was unable to be found'
    }
 
    void "update one" () {
@@ -350,9 +348,9 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       response[0].message == errorMessage
 
       where:
-      testProp  | invalidValue                                              || errorResponsePath    | errorMessage
-      'source'  | new GeneralLedgerSourceCodeDTO (UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702'), 'Z', 'Invalid DTO')  || 'source.id'          | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
-      'type'    | new GeneralLedgerRecurringTypeDTO ('Z', 'Invalid DTO')    || 'type.value'         | 'Z was unable to be found'
+      testProp  | invalidValue                                                                                                   || errorResponsePath    | errorMessage
+      'source'  | new GeneralLedgerSourceCodeDTO (UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702'), 'Z', 'Invalid DTO')   || 'source.id'          | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
+      'type'    | new GeneralLedgerRecurringTypeDTO ('Z', 'Invalid DTO')                                                         || 'type.value'         | 'Z was unable to be found'
    }
 
    void "delete one GL recurring" () {
@@ -408,7 +406,7 @@ class GeneralLedgerRecurringControllerSpecification extends ControllerSpecificat
       final glRecurringDistributionDTO = generalLedgerRecurringDistributionDataLoaderService.singleDTO(
          glRecurring,
          new AccountDTO(account),
-         new SimpleLegacyIdentifiableDTO(profitCenter.myId())
+         new StoreDTO(profitCenter)
       )
 
       when: // create a GL recurring
