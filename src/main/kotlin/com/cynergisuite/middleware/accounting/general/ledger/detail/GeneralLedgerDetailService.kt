@@ -12,6 +12,8 @@ import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconcilia
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationService
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarService
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeService
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingResponseDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
@@ -48,6 +50,7 @@ class GeneralLedgerDetailService @Inject constructor(
    private val bankService: BankService,
    private val bankReconciliationService: BankReconciliationService,
    private val generalLedgerRecurringRepository: GeneralLedgerRecurringRepository,
+   private val overallPeriodTypeService: OverallPeriodTypeService
 ) {
    fun fetchOne(id: UUID, company: CompanyEntity): GeneralLedgerDetailDTO? {
       return generalLedgerDetailRepository.findOne(id, company)?.let { transformEntity(it) }
@@ -154,8 +157,10 @@ class GeneralLedgerDetailService @Inject constructor(
       val overallPeriod = cal.overallPeriod!!.value
       val summaryUpdated : UUID?
       val bankRecon : UUID?
-      val summary = generalLedgerSummaryService.fetchOneByBusinessKey(company, generalLedgerDetail.account?.id!!, generalLedgerDetail.profitCenter?.myId()!!, overallPeriod)
-
+      // If summary record not found, create them, then set the appropriate one
+      var summary = generalLedgerSummaryService.fetchOneByBusinessKey(company, generalLedgerDetail.account?.id!!, generalLedgerDetail.profitCenter?.myId()!!, overallPeriod)
+         ?:
+         createSummaries(generalLedgerDetail, company, overallPeriod)
       if (cal.generalLedgerOpen == false) {
          val errors: Set<ValidationError> = mutableSetOf(ValidationError("GL not open for this period.", GLNotOpen(cal.periodFrom!!)))
          throw ValidationException(errors)
@@ -194,5 +199,37 @@ class GeneralLedgerDetailService @Inject constructor(
          } else null
          return GeneralLedgerAccountPostingResponseDTO(summaryUpdated, bankRecon)
       }
+   }
+   fun createSummaries(generalLedgerDetail: GeneralLedgerDetailDTO, company: CompanyEntity, currentOverallPeriod: String): GeneralLedgerSummaryDTO? {
+      val overallPeriodTypes = overallPeriodTypeService.fetchAll()
+      var createdSummaryDTO : GeneralLedgerSummaryDTO? = null
+      var summaryDTO : GeneralLedgerSummaryDTO
+      for (type in overallPeriodTypes) {
+         summaryDTO = GeneralLedgerSummaryDTO(
+            null,
+            SimpleIdentifiableDTO(generalLedgerDetail.account?.id!!),
+            SimpleLegacyIdentifiableDTO(generalLedgerDetail.profitCenter?.myId()),
+            OverallPeriodTypeDTO(type),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+         )
+         if (summaryDTO.overallPeriod!!.value == currentOverallPeriod) {
+            createdSummaryDTO = generalLedgerSummaryService.create(summaryDTO, company)
+         } else
+         generalLedgerSummaryService.create(summaryDTO, company)
+      }
+      return createdSummaryDTO
    }
 }

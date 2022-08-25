@@ -47,13 +47,13 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
          2,
          new AccountDTO(account),
          new StoreDTO(profitCenter),
-         99999999999.99 as BigDecimal
+         9999999999.99 as BigDecimal
       ).toList()
       def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
          2,
          new AccountDTO(account),
          new StoreDTO(profitCenter),
-         -99999999999.99 as BigDecimal
+         -9999999999.99 as BigDecimal
       ).toList()
       glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
       def glJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs, false)
@@ -162,13 +162,13 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
          2,
          new AccountDTO(account1),
          new StoreDTO(profitCenter),
-         99999999999.99 as BigDecimal
+         9999999999.99 as BigDecimal
       ).toList()
       def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
          2,
          new AccountDTO(account2),
          new StoreDTO(profitCenter),
-         -99999999999.99 as BigDecimal
+         -9999999999.99 as BigDecimal
       ).toList()
       glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
       def glJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), true, glJournalEntryDetailDTOs, true)
