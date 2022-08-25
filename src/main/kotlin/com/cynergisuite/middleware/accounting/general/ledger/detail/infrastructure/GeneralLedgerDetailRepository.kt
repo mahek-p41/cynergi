@@ -313,7 +313,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
       }
 
       when (filterRequest.typeEntry) {
-         "C" -> whereClause.append(" AND glDetail.amount <= 0 ")
+         "C" -> whereClause.append(" AND glDetail.amount < 0 ")
          "D" -> whereClause.append(" AND glDetail.amount >= 0 ")
       }
       if(filterRequest.lowAmount != null || filterRequest.highAmount != null) {
