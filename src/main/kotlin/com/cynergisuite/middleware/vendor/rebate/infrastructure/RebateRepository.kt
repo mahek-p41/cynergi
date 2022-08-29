@@ -134,6 +134,19 @@ class RebateRepository @Inject constructor(
    }
 
    @ReadOnly
+   fun findByDescription(description: String, company: CompanyEntity): RebateEntity? {
+      val params = mutableMapOf<String, Any?>("description" to description, "comp_id" to company.id)
+      val query = "${selectBaseQuery()}\n WHERE r.description = :description AND r.company_id = :comp_id"
+
+      val found = jdbc.findFirstOrNull(query, params) {rs, _ ->
+         val rebate = mapRow(rs, company, "r_")
+
+         rebate
+      }
+
+      return found
+   }
+   @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): RebateEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()}\nWHERE r.id = :id AND r.company_id = :comp_id"
@@ -154,7 +167,7 @@ class RebateRepository @Inject constructor(
    @ReadOnly
    fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<RebateEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to page.size(), "offset" to page.offset())
-      var whereClause = StringBuilder(" WHERE r.company_id = :comp_id ")
+      val whereClause = StringBuilder(" WHERE r.company_id = :comp_id ")
       if (page is RebatePageRequest && !page.vendorIds.isNullOrEmpty()) {
          params["vendor_ids"] = page.vendorIds
          whereClause.append(" AND r.id IN (SELECT DISTINCT rebate_id FROM rebate_to_vendor WHERE vendor_id in (<vendor_ids>)) ")

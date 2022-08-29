@@ -31,17 +31,21 @@ class RebateValidator @Inject constructor(
 
    fun validateCreate(dto: RebateDTO, company: CompanyEntity): RebateEntity {
       logger.trace("Validating Create Rebate {}", dto)
-
-      return doSharedValidation(dto, company)
+      val existingDescription = rebateRepository.findByDescription(dto.description!!, company)
+      return doSharedValidation(existingDescription = existingDescription, dto = dto, company = company)
    }
 
    fun validateUpdate(id: UUID, dto: RebateDTO, company: CompanyEntity): RebateEntity {
       logger.debug("Validating Update Rebate {}", dto)
-
-      return doSharedValidation(dto, company)
+      val existingDescription = rebateRepository.findByDescription(dto.description!!, company)
+      val existingRebate = rebateRepository.findOne(id, company)
+      return doSharedValidation(existingDescription = existingDescription, existingRebate = existingRebate, dto, company)
    }
 
-   private fun doSharedValidation(dto: RebateDTO, company: CompanyEntity): RebateEntity {
+   private fun doSharedValidation(
+      existingDescription: RebateEntity? = null,
+      existingRebate: RebateEntity? = null,
+      dto: RebateDTO, company: CompanyEntity): RebateEntity {
       val generalLedgerDebitAccountId = dto.generalLedgerDebitAccount?.id
 
       val status = accountStatusTypeRepository.findOne(dto.status!!.value!!)
@@ -52,7 +56,6 @@ class RebateValidator @Inject constructor(
       val accrualIndicator = dto.accrualIndicator
       val generalLedgerDebitAccount = dto.generalLedgerDebitAccount?.id?.let { accountRepository.findOne(it, company) }
       val generalLedgerCreditAccount = dto.generalLedgerCreditAccount!!.id.let { accountRepository.findOne(it!!, company) }
-
       doValidation { errors ->
          if (dto.vendors != null) {
             for ((i, vendor) in dto.vendors!!.withIndex()) {
@@ -82,9 +85,15 @@ class RebateValidator @Inject constructor(
             errors.add(ValidationError("generalLedgerDebitAccount", AccountIsRequired(generalLedgerDebitAccount)))
          }
 
-         if (rebateRepository.exists(dto.description!!, company) && dto.id == null) {
-            errors.add(ValidationError("value", Duplicate("value")))
+         if (existingRebate == null && existingDescription != null ) {
+            errors.add(ValidationError("description", Duplicate(dto.description)))
          }
+
+         if (existingRebate != null && existingDescription != null && existingDescription.id != existingRebate.id)
+            errors.add(ValidationError("description", Duplicate(dto.description)))
+
+
+
          generalLedgerCreditAccount
             ?: errors.add(ValidationError("generalLedgerCreditAccount.id", NotFound(dto.generalLedgerCreditAccount!!.id!!)))
       }

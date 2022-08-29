@@ -995,8 +995,8 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson().collect().sort { a,b -> a.path <=> b.path }
       response.size() == 1
-      response[0].path == "value"
-      response[0].message == "value already exists"
+      response[0].path == "description"
+      response[0].message == "test 1 already exists"
       response[0].code == 'cynergi.validation.duplicate'
    }
 
