@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger
 
+import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDTO
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -11,13 +12,11 @@ import javax.validation.constraints.NotNull
 @Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "General Ledger Account Posting DTO", title = "DTO for transferring GL Details AND GL Journal Entries", description = "DTO for transferring GL Details AND GL Journal Entries")
-class GeneralLedgerAccountPostingDTO {
-
+class GeneralLedgerAccountPostingDTO (
    @field:NotNull
    @field:Schema(description = "General Ledger Distribution", required = true)
-   var glDetail: GeneralLedgerDetailDTO? = null
+   var glDetail: GeneralLedgerDetailDTO? = null,
 
-   @field:Schema(description = "General Journal Entry")
-   var jeJournal: GeneralLedgerJournalEntryDetailDTO? = null
-
-}
+   @field:Schema(name = "bankType", description = "Bank reconciliation type", required = false)
+   var bankType: BankReconciliationTypeDTO? = null,
+)

@@ -7,7 +7,6 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
-import com.cynergisuite.middleware.accounting.bank.BankFactory
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDataLoaderService
@@ -567,7 +566,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final sumEnt = new GeneralLedgerSummaryEntity(summary, glAccount, profitCenter, new OverallPeriodType( calEnt.overallPeriod.myId(), summary.overallPeriod.description, summary.overallPeriod.value, summary.overallPeriod.abbreviation, calEnt.overallPeriod.localizationCode))
       generalLedgerSummaryRepository.insert(sumEnt, company)
       new GeneralLedgerJournalEntryDetailDTO(new AccountDTO(glAccount), new BankReconciliationTypeDTO(bankType), new StoreDTO(profitCenter), 315.00)
-      final postingDTO = new GeneralLedgerAccountPostingDTO([glDetail: glDetailsDTO, jeJournal: null])
+      final postingDTO = new GeneralLedgerAccountPostingDTO([glDetail: glDetailsDTO, bankType: null])
       when:
       def response = post("$path/subroutine/", postingDTO)
 
@@ -598,10 +597,10 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       summary.overallPeriod = new OverallPeriodTypeDTO(OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
       final sumEnt = new GeneralLedgerSummaryEntity(summary, glAccount, profitCenter, new OverallPeriodType( calEnt.overallPeriod.myId(), summary.overallPeriod.description, summary.overallPeriod.value, summary.overallPeriod.abbreviation, calEnt.overallPeriod.localizationCode))
       generalLedgerSummaryRepository.insert(sumEnt, company)
-      final jeJournal = new GeneralLedgerJournalEntryDetailDTO(new AccountDTO(glAccount), new BankReconciliationTypeDTO(bankType), new StoreDTO(profitCenter), 315.00)
-      final postingDTO = new GeneralLedgerAccountPostingDTO([glDetail: glDetailsDTO, jeJournal: null])
+      new GeneralLedgerJournalEntryDetailDTO(new AccountDTO(glAccount), new BankReconciliationTypeDTO(bankType), new StoreDTO(profitCenter), 315.00)
+      final postingDTO = new GeneralLedgerAccountPostingDTO([glDetail: glDetailsDTO, bankType: null])
       when:
-      def response = post("$path/subroutine/", postingDTO)
+      post("$path/subroutine/", postingDTO)
 
       then:
       notThrown(Exception)
@@ -609,5 +608,40 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       def test = generalLedgerSummaryService.fetchOneByBusinessKey(company, glDetailsDTO.account.id, glDetailsDTO.profitCenter.myId(), calEnt.overallPeriod.value )
       sumEnt.netActivityPeriod1 != test.netActivityPeriod1
       sumEnt.netActivityPeriod1 == test.netActivityPeriod1 - glDetailsDTO.amount
+   }
+
+   void "post account entries where summary doesnt exist" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSrcCode = sourceCodeDataLoaderService.singleDTO()
+      glSrcCode.value = "TST"
+      final glSource = new GeneralLedgerSourceCodeEntity(glSrcCode)
+      final sourceEnt = generalLedgerSourceCodeRepository.insert(glSource, company)
+      final bankType = bankReconciliationTypeDataLoaderService.random()
+      final glDetailsDTO = new GeneralLedgerDetailDTO(generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, sourceEnt))
+      final calendar = financialCalendarDataLoaderService.singleDTO()
+      calendar.generalLedgerOpen = true
+      final calEnt = new FinancialCalendarEntity(calendar, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
+      financialCalendarRepository.insert(calEnt, company)
+      glDetailsDTO.date = calendar.periodFrom
+      new GeneralLedgerJournalEntryDetailDTO(new AccountDTO(glAccount), new BankReconciliationTypeDTO(bankType), new StoreDTO(profitCenter), 315.00)
+      final postingDTO = new GeneralLedgerAccountPostingDTO([glDetail: glDetailsDTO, bankType: null])
+      when:
+      def summary = generalLedgerSummaryService.fetchOneByBusinessKey(company, glDetailsDTO.account.id, glDetailsDTO.profitCenter.myId(), calEnt.overallPeriod.value)
+
+      then:
+      notThrown(Exception)
+      summary == null
+
+      when:
+      post("$path/subroutine/", postingDTO)
+
+      then:
+      notThrown(Exception)
+      def test = generalLedgerSummaryService.fetchOneByBusinessKey(company, glDetailsDTO.account.id, glDetailsDTO.profitCenter.myId(), calEnt.overallPeriod.value )
+      test != null
+
    }
 }

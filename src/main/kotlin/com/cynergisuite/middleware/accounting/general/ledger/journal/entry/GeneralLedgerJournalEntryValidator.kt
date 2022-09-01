@@ -16,6 +16,7 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 
 @Singleton
 class GeneralLedgerJournalEntryValidator @Inject constructor(
@@ -28,15 +29,18 @@ class GeneralLedgerJournalEntryValidator @Inject constructor(
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerJournalEntryValidator::class.java)
 
+   fun isDateInRangeOfOpenGL(date: LocalDate, company: CompanyEntity): Boolean {
+      val (glOpenBegin, glOpenEnd) = financialCalendarRepository.findDateRangeWhenGLIsOpen(company)
+      return date.isBefore(glOpenBegin) || date.isAfter(glOpenEnd)
+   }
+
    fun validateCreate(dto: GeneralLedgerJournalEntryDTO, company: CompanyEntity): GeneralLedgerJournalEntryDTO {
       logger.trace("Validating create GeneralLedgerJournalEntry {}", dto)
-
-      val (glOpenBegin, glOpenEnd) = financialCalendarRepository.findDateRangeWhenGLIsOpen(company)
       val source = sourceCodeRepository.findOne(dto.source!!.id!!, company)
 
       doValidation { errors ->
          // GL journal entry validations
-         if (dto.entryDate!!.isBefore(glOpenBegin) || dto.entryDate!!.isAfter(glOpenEnd)) {
+         if (isDateInRangeOfOpenGL(dto.entryDate!!, company)) {
             errors.add(ValidationError("entryDate", GLNotOpen(dto.entryDate!!)))
          }
 

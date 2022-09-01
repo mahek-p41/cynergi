@@ -12,6 +12,8 @@ import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconcilia
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationService
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarService
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeService
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingResponseDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
@@ -32,6 +34,7 @@ import jakarta.inject.Singleton
 import java.math.BigDecimal
 import java.util.UUID
 import java.util.Locale
+import javax.transaction.Transactional
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.memberProperties
 
@@ -47,6 +50,7 @@ class GeneralLedgerDetailService @Inject constructor(
    private val bankService: BankService,
    private val bankReconciliationService: BankReconciliationService,
    private val generalLedgerRecurringRepository: GeneralLedgerRecurringRepository,
+   private val overallPeriodTypeService: OverallPeriodTypeService
 ) {
    fun fetchOne(id: UUID, company: CompanyEntity): GeneralLedgerDetailDTO? {
       return generalLedgerDetailRepository.findOne(id, company)?.let { transformEntity(it) }
@@ -78,7 +82,8 @@ class GeneralLedgerDetailService @Inject constructor(
       return GeneralLedgerSearchReportTemplate(found)
    }
 
-   fun transfer(user: User, filterRequest: GeneralLedgerRecurringEntriesFilterRequest) {
+   @Transactional
+   fun transfer(user: User, filterRequest: GeneralLedgerRecurringEntriesFilterRequest, locale: Locale) {
       val company = user.myCompany()
       val glRecurringEntries = generalLedgerRecurringEntriesRepository.findAll(company, filterRequest)
       var glDetailDTO: GeneralLedgerDetailDTO
@@ -100,6 +105,9 @@ class GeneralLedgerDetailService @Inject constructor(
             )
 
             create(glDetailDTO, company)
+            // post accounting entries CYN-930
+            val glAccountPostingDTO = GeneralLedgerAccountPostingDTO(glDetailDTO)
+            postEntry(glAccountPostingDTO, user.myCompany(), locale)
          }
 
          // update last transfer date in GL recurring
@@ -109,7 +117,8 @@ class GeneralLedgerDetailService @Inject constructor(
       }
    }
 
-   fun transfer(user: User, dto: GeneralLedgerRecurringEntriesDTO) {
+   @Transactional
+   fun transfer(user: User, dto: GeneralLedgerRecurringEntriesDTO, locale: Locale) {
       val company = user.myCompany()
       val glRecurringEntry = generalLedgerRecurringEntriesRepository.findOne(dto.generalLedgerRecurring?.id!!, company)
       var glDetailDTO: GeneralLedgerDetailDTO
@@ -128,6 +137,9 @@ class GeneralLedgerDetailService @Inject constructor(
             null
          )
          create(glDetailDTO, company)
+         // post accounting entries CYN-930
+         val glAccountPostingDTO = GeneralLedgerAccountPostingDTO(glDetailDTO)
+         postEntry(glAccountPostingDTO, user.myCompany(), locale)
       }
 
       // update last transfer date in GL recurring
@@ -141,13 +153,14 @@ class GeneralLedgerDetailService @Inject constructor(
 
    fun postEntry(dto: GeneralLedgerAccountPostingDTO, company: CompanyEntity, locale: Locale): GeneralLedgerAccountPostingResponseDTO {
       val generalLedgerDetail = dto.glDetail!!
-      val je = dto.jeJournal
       val cal = financialCalendarService.fetchByDate(company, generalLedgerDetail.date!!)!!
       val overallPeriod = cal.overallPeriod!!.value
       val summaryUpdated : UUID?
       val bankRecon : UUID?
-      val summary = generalLedgerSummaryService.fetchOneByBusinessKey(company, generalLedgerDetail.account?.id!!, generalLedgerDetail.profitCenter?.myId()!!, overallPeriod)
-
+      // If summary record not found, create them, then set the appropriate one
+      var summary = generalLedgerSummaryService.fetchOneByBusinessKey(company, generalLedgerDetail.account?.id!!, generalLedgerDetail.profitCenter?.myId()!!, overallPeriod)
+         ?:
+         createSummaries(generalLedgerDetail, company, overallPeriod)
       if (cal.generalLedgerOpen == false) {
          val errors: Set<ValidationError> = mutableSetOf(ValidationError("GL not open for this period.", GLNotOpen(cal.periodFrom!!)))
          throw ValidationException(errors)
@@ -161,7 +174,7 @@ class GeneralLedgerDetailService @Inject constructor(
             val netActivity = "netActivityPeriod" + cal.period
             val prop = GeneralLedgerSummaryDTO::class.memberProperties.find { it -> it.name == netActivity }!!
             if (prop is KMutableProperty1) {
-               val netActivityAmount: BigDecimal = (prop as KMutableProperty1<GeneralLedgerSummaryDTO, BigDecimal>).get(summary!!)
+               val netActivityAmount: BigDecimal = (prop as KMutableProperty1<GeneralLedgerSummaryDTO, BigDecimal?>).get(summary!!) ?: BigDecimal.ZERO
                val result = (generalLedgerDetail.amount)?.plus((netActivityAmount))
                (prop as KMutableProperty1<GeneralLedgerSummaryDTO, BigDecimal?>).set(summary, result)
             }
@@ -172,10 +185,10 @@ class GeneralLedgerDetailService @Inject constructor(
          val checkCodes = listOf("AP", "SUM", "BAL")
          bankRecon = if (glAccount?.bankId != null && glSourceCode!!.value !in checkCodes) {
             val bank = bankService.fetchByGLAccount(generalLedgerDetail.account!!.id!!, company)
-            val bankType = BankReconciliationTypeDTO("M", "Miscellaneous")
+            val bankType = dto.bankType ?: BankReconciliationTypeDTO("M", "Miscellaneous")
             val bankReconciliationDto = BankReconciliationDTO(
                null, SimpleIdentifiableDTO(bank!!.myId()),
-               je?.bankType ?: bankType,
+               bankType,
                generalLedgerDetail.date,
                null,
                generalLedgerDetail.amount,
@@ -186,5 +199,37 @@ class GeneralLedgerDetailService @Inject constructor(
          } else null
          return GeneralLedgerAccountPostingResponseDTO(summaryUpdated, bankRecon)
       }
+   }
+   fun createSummaries(generalLedgerDetail: GeneralLedgerDetailDTO, company: CompanyEntity, currentOverallPeriod: String): GeneralLedgerSummaryDTO? {
+      val overallPeriodTypes = overallPeriodTypeService.fetchAll()
+      var createdSummaryDTO : GeneralLedgerSummaryDTO? = null
+      var summaryDTO : GeneralLedgerSummaryDTO
+      for (type in overallPeriodTypes) {
+         summaryDTO = GeneralLedgerSummaryDTO(
+            null,
+            SimpleIdentifiableDTO(generalLedgerDetail.account?.id!!),
+            SimpleLegacyIdentifiableDTO(generalLedgerDetail.profitCenter?.myId()),
+            OverallPeriodTypeDTO(type),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+         )
+         if (summaryDTO.overallPeriod!!.value == currentOverallPeriod) {
+            createdSummaryDTO = generalLedgerSummaryService.create(summaryDTO, company)
+         } else
+         generalLedgerSummaryService.create(summaryDTO, company)
+      }
+      return createdSummaryDTO
    }
 }
