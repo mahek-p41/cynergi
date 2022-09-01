@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure
 
 import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
+import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
@@ -10,12 +11,12 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
-import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportSourceDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailEntity
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -28,6 +29,7 @@ import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
 import java.sql.ResultSet
 import java.util.UUID
 import javax.transaction.Transactional
@@ -357,6 +359,127 @@ class GeneralLedgerDetailRepository @Inject constructor(
       }
 
       return reports
+   }
+
+   @ReadOnly
+   fun fetchSourceReportSourceDetails(company: CompanyEntity, filterRequest: GeneralLedgerSourceReportFilterRequest): List<GeneralLedgerSourceReportSourceDetailDTO> {
+      // fetch source codes
+      val sourceCodes = mutableListOf<GeneralLedgerSourceCodeEntity>()
+      val whereClause = StringBuilder("WHERE glSrcCodes.company_id = :comp_id AND glSrcCodes.deleted = FALSE")
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+
+      if (filterRequest.startSource != null && filterRequest.endSource != null) {
+         whereClause.append(" AND glSrcCodes.value BETWEEN ${filterRequest.startSource} AND ${filterRequest.endSource}")
+      } else if (filterRequest.startSource != null) {
+         whereClause.append(" AND glSrcCodes.value = ${filterRequest.startSource}")
+      } else if (filterRequest.endSource != null) {
+         whereClause.append(" AND glSrcCodes.value = ${filterRequest.endSource}")
+      }
+
+      jdbc.query(
+         """
+            ${sourceCodeRepository.selectBaseQuery()}
+            $whereClause
+            ORDER BY glSrcCodes.value ASC
+         """.trimIndent(),
+         params
+      ) { rs, _ ->
+         do {
+            sourceCodes.add(sourceCodeRepository.mapRow(rs, "glSrcCodes_"))
+         } while (rs.next())
+      }
+
+      // fetch GL details for each source code
+      val sourceDetailDTOs = mutableListOf<GeneralLedgerSourceReportSourceDetailDTO>()
+      sourceCodes.forEach {
+         val glDetailList = fetchSourceReportDetails(company, filterRequest, it)
+         sourceDetailDTOs.add(GeneralLedgerSourceReportSourceDetailDTO(glDetailList))
+      }
+
+      // calculate description totals
+      if (filterRequest.sortBy == "message") {
+         sourceDetailDTOs.forEach { sourceDetail ->
+            var runningDescTotalDebit = BigDecimal.ZERO
+            var runningDescTotalCredit = BigDecimal.ZERO
+            var desc = sourceDetail.details?.get(0)?.message
+
+            sourceDetail.details?.forEach {
+               if (desc == it.message) {
+                  if (it.debitAmount != null) {
+                     runningDescTotalDebit += it.debitAmount!!
+                     it.runningDescTotalDebit = runningDescTotalDebit
+                     it.runningDescTotalCredit = runningDescTotalCredit
+                  } else {
+                     runningDescTotalCredit += it.creditAmount!!.abs()
+                     it.runningDescTotalDebit = runningDescTotalDebit
+                     it.runningDescTotalCredit = runningDescTotalCredit
+                  }
+               } else {
+                  desc = it.message
+                  runningDescTotalDebit = BigDecimal.ZERO
+                  runningDescTotalCredit = BigDecimal.ZERO
+
+                  if (it.debitAmount != null) {
+                     runningDescTotalDebit += it.debitAmount!!
+                     it.runningDescTotalDebit = runningDescTotalDebit
+                     it.runningDescTotalCredit = runningDescTotalCredit
+                  } else {
+                     runningDescTotalCredit += it.creditAmount!!.abs()
+                     it.runningDescTotalDebit = runningDescTotalDebit
+                     it.runningDescTotalCredit = runningDescTotalCredit
+                  }
+               }
+            }
+         }
+      }
+
+      return sourceDetailDTOs
+   }
+
+   @ReadOnly
+   fun fetchSourceReportDetails(company: CompanyEntity, filterRequest: GeneralLedgerSourceReportFilterRequest, sourceCodeEntity: GeneralLedgerSourceCodeEntity): List<GeneralLedgerDetailEntity> {
+      val glDetails = mutableListOf<GeneralLedgerDetailEntity>()
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "source_code_value" to sourceCodeEntity.value)
+      val whereClause = StringBuilder("WHERE glDetail.company_id = :comp_id AND source.value = :source_code_value")
+      val sortBy = StringBuilder("")
+
+      if (filterRequest.profitCenter != null) {
+         params["profitCenter"] = filterRequest.profitCenter
+         whereClause.append(" AND profitCenter.id = :profitCenter")
+      }
+
+      if (filterRequest.startDate != null || filterRequest.endDate != null) {
+         params["startDate"] = filterRequest.startDate
+         params["endDate"] = filterRequest.endDate
+         whereClause.append(" AND glDetail.date ")
+            .append(buildFilterString(filterRequest.startDate != null, filterRequest.endDate != null, "startDate", "endDate"))
+      }
+
+      if (filterRequest.jeNumber != null) {
+         params["jeNumber"] = filterRequest.jeNumber
+         whereClause.append(" AND glDetail.journal_entry_number = :jeNumber")
+      }
+
+      sortBy.append("glDetail.${filterRequest.sortBy} ASC, glDetail.account_id ASC, glDetail.profit_center_id_sfk ASC")
+
+      jdbc.query(
+         """
+            ${selectBaseQuery()}
+            $whereClause
+            ORDER BY $sortBy
+         """.trimIndent(),
+         params
+      ) { rs, _ ->
+         do {
+            val account = accountRepository.mapRow(rs, company, "acct_")
+            val profitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
+            val sourceCode = sourceCodeRepository.mapRow(rs, "source_")
+            val currentEntity = mapRow(rs, account, profitCenter, sourceCode, "glDetail_")
+            glDetails.add(currentEntity)
+         } while (rs.next())
+      }
+
+      return glDetails
    }
 
    fun mapRow(

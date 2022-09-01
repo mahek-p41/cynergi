@@ -1,12 +1,14 @@
 package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure
 
 import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
+import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingResponseDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -174,6 +176,29 @@ class GeneralLedgerDetailController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
       return generalLedgerDetailService.fetchReport(user.myCompany(), filterRequest)
+   }
+
+   @Get(uri = "/source-report{?sourceReportFilterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a General Ledger Source Report", description = "Fetch a General Ledger Source Report", operationId = "generalLedgerJournal-fetchSourceReport")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerSourceReportFilterRequest::class))]),
+         ApiResponse(responseCode = "204", description = "The requested General Ledger Source Report was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchSourceReport(
+      @Parameter(name = "sourceReportFilterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("sourceReportFilterRequest")
+      sourceReportFilterRequest: GeneralLedgerSourceReportFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): GeneralLedgerSourceReportTemplate {
+      logger.info("Fetching General Ledger Details for the General Ledger Source Report {}")
+
+      val user = userService.fetchUser(authentication)
+      return generalLedgerDetailService.fetchSourceReport(user.myCompany(), sourceReportFilterRequest)
    }
 
 

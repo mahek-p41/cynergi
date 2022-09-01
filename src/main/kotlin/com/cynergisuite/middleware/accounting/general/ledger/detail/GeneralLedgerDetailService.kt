@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.detail
 
 import com.cynergisuite.domain.GeneralLedgerRecurringEntriesFilterRequest
 import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
+import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
@@ -17,6 +18,7 @@ import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPer
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingResponseDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeService
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.GeneralLedgerRecurringEntriesDTO
@@ -80,6 +82,12 @@ class GeneralLedgerDetailService @Inject constructor(
       val found = generalLedgerDetailRepository.fetchReports(company, filterRequest)
 
       return GeneralLedgerSearchReportTemplate(found)
+   }
+
+   fun fetchSourceReport(company: CompanyEntity, filterRequest: GeneralLedgerSourceReportFilterRequest): GeneralLedgerSourceReportTemplate {
+      val found = generalLedgerDetailRepository.fetchSourceReportSourceDetails(company, filterRequest)
+
+      return GeneralLedgerSourceReportTemplate(found)
    }
 
    @Transactional

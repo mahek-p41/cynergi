@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure
 
 import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
+import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
@@ -542,6 +543,168 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       'description'      || 1
       'jeNumber'         || 1
       'PmtDateCase'      || 6
+   }
+
+   void "filter for source report #criteria" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount1 = accountDataLoaderService.single(company)
+      final glAccount2 = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource1 = sourceCodeDataLoaderService.single(company)
+      final glSource2 = sourceCodeDataLoaderService.single(company)
+      final glDetailsDTO = generalLedgerDetailDataLoaderService.streamDTO(1, glAccount1, profitCenter, glSource1).toList()
+      glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount2, profitCenter, glSource1))
+      glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount1, profitCenter, glSource1))
+      glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount2, profitCenter, glSource1))
+      glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount1, profitCenter, glSource2))
+      glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount2, profitCenter, glSource2))
+
+      glDetailsDTO[0].amount = 100
+      glDetailsDTO[0].message = "test"
+      glDetailsDTO[0].date = OffsetDateTime.now().minusDays(30).toLocalDate()
+      glDetailsDTO[0].journalEntryNumber = 1
+
+      glDetailsDTO[1].amount = -100
+      glDetailsDTO[1].message = "test"
+      glDetailsDTO[1].date = OffsetDateTime.now().minusDays(20).toLocalDate()
+      glDetailsDTO[1].journalEntryNumber = 1
+
+      glDetailsDTO[2].amount = 200
+      glDetailsDTO[2].message = "test description"
+      glDetailsDTO[2].date = OffsetDateTime.now().minusDays(15).toLocalDate()
+      glDetailsDTO[2].journalEntryNumber = 2
+
+      glDetailsDTO[3].amount = -200
+      glDetailsDTO[3].message = "test description"
+      glDetailsDTO[3].date = OffsetDateTime.now().minusDays(15).toLocalDate()
+      glDetailsDTO[3].journalEntryNumber = 2
+
+      glDetailsDTO[4].amount = 300
+      glDetailsDTO[4].message = "test"
+      glDetailsDTO[4].date = OffsetDateTime.now().minusDays(20).toLocalDate()
+      glDetailsDTO[4].journalEntryNumber = 3
+
+      glDetailsDTO[5].amount = -300
+      glDetailsDTO[5].message = "test"
+      glDetailsDTO[5].date = OffsetDateTime.now().minusDays(10).toLocalDate()
+      glDetailsDTO[5].journalEntryNumber = 3
+
+      glDetailsDTO.eachWithIndex { glDetail, index ->
+         post("$path", glDetail)
+      }
+
+      def filterRequest = new GeneralLedgerSourceReportFilterRequest()
+      switch (criteria) {
+         case 'Sort by account':
+            filterRequest['sortBy'] = "account_id"
+            break
+         case 'Sort by journal entry number':
+            filterRequest['sortBy'] = "journal_entry_number"
+            break
+         case 'Sort by description':
+            filterRequest['sortBy'] = "message"
+            break
+      }
+
+      when:
+      def response = get("$path/source-report/$filterRequest")
+
+      then:
+      notThrown(Exception)
+      response != null
+      response.sourceCodes.size() == sourceCodeCount
+      response.reportTotalDebit == totalDebit
+      response.reportTotalCredit == totalCredit
+
+      where:
+      criteria                            || sourceCodeCount | totalDebit | totalCredit
+      'Sort by account'                   || 2               | 600        | 600
+      'Sort by journal entry number'      || 2               | 600        | 600
+      'Sort by description'               || 2               | 600        | 600
+   }
+
+   void "filter for source report sort by description" () {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource = sourceCodeDataLoaderService.single(company)
+      final glDetailsDTO = generalLedgerDetailDataLoaderService.streamDTO(10, glAccount, profitCenter, glSource).toList()
+
+      glDetailsDTO[0].amount = 57
+      glDetailsDTO[0].message = null
+      glDetailsDTO[0].date = OffsetDateTime.now().minusDays(30).toLocalDate()
+      glDetailsDTO[0].journalEntryNumber = 1
+
+      glDetailsDTO[1].amount = -57
+      glDetailsDTO[1].message = null
+      glDetailsDTO[1].date = OffsetDateTime.now().minusDays(20).toLocalDate()
+      glDetailsDTO[1].journalEntryNumber = 1
+
+      glDetailsDTO[2].amount = 21
+      glDetailsDTO[2].message = "second test message"
+      glDetailsDTO[2].date = OffsetDateTime.now().minusDays(15).toLocalDate()
+      glDetailsDTO[2].journalEntryNumber = 2
+
+      glDetailsDTO[3].amount = 21
+      glDetailsDTO[3].message = "second test message"
+      glDetailsDTO[3].date = OffsetDateTime.now().minusDays(15).toLocalDate()
+      glDetailsDTO[3].journalEntryNumber = 2
+
+      glDetailsDTO[4].amount = -42
+      glDetailsDTO[4].message = "second test message"
+      glDetailsDTO[4].date = OffsetDateTime.now().minusDays(20).toLocalDate()
+      glDetailsDTO[4].journalEntryNumber = 2
+
+      glDetailsDTO[5].amount = 62
+      glDetailsDTO[5].message = null
+      glDetailsDTO[5].date = OffsetDateTime.now().minusDays(10).toLocalDate()
+      glDetailsDTO[5].journalEntryNumber = 3
+
+      glDetailsDTO[6].amount = -31
+      glDetailsDTO[6].message = null
+      glDetailsDTO[6].date = OffsetDateTime.now().minusDays(10).toLocalDate()
+      glDetailsDTO[6].journalEntryNumber = 3
+
+      glDetailsDTO[7].amount = -31
+      glDetailsDTO[7].message = null
+      glDetailsDTO[7].date = OffsetDateTime.now().minusDays(10).toLocalDate()
+      glDetailsDTO[7].journalEntryNumber = 3
+
+      glDetailsDTO[8].amount = 124
+      glDetailsDTO[8].message = "first test message"
+      glDetailsDTO[8].date = OffsetDateTime.now().minusDays(10).toLocalDate()
+      glDetailsDTO[8].journalEntryNumber = 4
+
+      glDetailsDTO[9].amount = -124
+      glDetailsDTO[9].message = "first test message"
+      glDetailsDTO[9].date = OffsetDateTime.now().minusDays(10).toLocalDate()
+      glDetailsDTO[9].journalEntryNumber = 4
+
+      glDetailsDTO.eachWithIndex { glDetail, index ->
+         post("$path", glDetail)
+      }
+
+      def filterRequest = new GeneralLedgerSourceReportFilterRequest([sortBy: "message"])
+
+      when:
+      def response = get("$path/source-report/$filterRequest")
+
+      then:
+      notThrown(Exception)
+      response != null
+      with(response) {
+         sourceCodes.size() == 1
+         reportTotalDebit == 285
+         reportTotalCredit == 285
+         sourceCodes[0].details[1].runningDescTotalDebit == 124
+         sourceCodes[0].details[1].runningDescTotalCredit == 124
+         sourceCodes[0].details[4].runningDescTotalDebit == 42
+         sourceCodes[0].details[4].runningDescTotalCredit == 42
+         sourceCodes[0].details[9].runningDescTotalDebit == 119
+         sourceCodes[0].details[9].runningDescTotalCredit == 119
+      }
    }
 
    void "post account entries where gl source code is NOT BAL and gl Account is bank account" () {
