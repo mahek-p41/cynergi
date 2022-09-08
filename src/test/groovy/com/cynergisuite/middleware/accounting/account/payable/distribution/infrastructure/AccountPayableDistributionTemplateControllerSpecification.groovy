@@ -12,6 +12,7 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 import jakarta.inject.Inject
 
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 
@@ -142,6 +143,37 @@ class AccountPayableDistributionTemplateControllerSpecification extends Controll
          id != null
          name == apDistribution.name
       }
+   }
+
+   void "create invalid account payable distribution with duplicate name"() {
+      given:
+      final apDistribution1 = dataLoaderService.singleDTO()
+      final apDistribution2 = dataLoaderService.singleDTO()
+      apDistribution1.name = "temp1"
+      apDistribution2.name = "Temp1"
+
+      when: 'first distribution created'
+      def result = post("$path/", apDistribution1)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result) {
+         id != null
+         name == apDistribution1.name
+      }
+
+      when: 'second distribution created with same name as first'
+      post("$path/", apDistribution2)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 1
+      response[0].path == "name"
+      response[0].message == "${apDistribution2.name} already exists"
+      response[0].code == "cynergi.validation.duplicate"
    }
 
    void "update valid account payable distribution template" () {
