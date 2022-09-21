@@ -15,7 +15,7 @@ import java.util.stream.Stream
 
 class AgreementSigningTestDataLoader {
 
-   static Stream<AgreementSigningEntity> stream(int numberIn = 1, CompanyEntity company, StoreEntity store, int primaryCustomerNumber, int secondaryCustomerNumber, int agreementNumber, String agreementType, int statusId, String externalSignatureId) {
+   static Stream<AgreementSigningEntity> stream(int numberIn = 1, CompanyEntity company, StoreEntity store, int primaryCustomerNumber, int secondaryCustomerNumber, int agreementNumber, String agreementType, int statusId, UUID externalSignatureId) {
       final number = numberIn > 0 ? numberIn : 1
       final faker = new Faker()
       final random = faker.random()
@@ -48,7 +48,7 @@ class AgreementSigningTestDataLoaderService {
       this.agreementSigningRepository = agreementSigningRepository
    }
 
-   AgreementSigningEntity single(int numberIn = 1, CompanyEntity company, StoreEntity store, int primaryCustomerNumber, int secondaryCustomerNumber, int agreementNumber, String agreementType, int statusId, String externalSignatureId) {
+   AgreementSigningEntity single(int numberIn = 1, CompanyEntity company, StoreEntity store, int primaryCustomerNumber, int secondaryCustomerNumber, int agreementNumber, String agreementType, int statusId, UUID externalSignatureId) {
       return AgreementSigningTestDataLoader.stream(numberIn, company, store, primaryCustomerNumber, secondaryCustomerNumber, agreementNumber, agreementType, statusId, externalSignatureId)
          .map { agreementSigningRepository.insert(it) }
          .findFirst().orElseThrow { new Exception("Unable to create AgreementSigningEntity") }

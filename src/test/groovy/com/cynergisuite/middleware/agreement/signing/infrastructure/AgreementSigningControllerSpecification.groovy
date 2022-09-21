@@ -30,7 +30,7 @@ class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.random(company)
       final dataset = 'tstds1'
-      final agreementSigning = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, "ABC123")
+      final agreementSigning = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, UUID.randomUUID())
 
       when:
       def result = signingClient.toBlocking().exchange(GET("/${agreementSigning.id}/dataset/${dataset}"),
@@ -51,7 +51,7 @@ class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.random(company)
       final dataset = 'tstds1'
-      final agreementSigning = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, "ABC123")
+      final agreementSigning = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, UUID.randomUUID())
 
       when:
       def result = signingClient.toBlocking().exchange(GET("/upsertPrep/${dataset}/123456/654321"),
@@ -72,7 +72,6 @@ class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final store = storeFactoryService.random(company)
       final dataset = 'tstds1'
-      //final agreementSigning = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, "ABC123")
 
       when:
       def result = signingClient.toBlocking().exchange(GET("/upsertPrep/${dataset}/123456/654321"),
@@ -92,11 +91,11 @@ class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final dataset = 'tstds1'
       final store = storeFactoryService.random(company)
-      final agreementSigning1 = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, "ABC123")
-      final agreementSigning2 = agreementSigningService.single(company, store, 123456, 111111, 876543, "R", 1, "ABC789")
-      final agreementSigning3 = agreementSigningService.single(company, store, 123456, 111111, 987654, "R", 1, "ABC456")
-      final agreementSigning4 = agreementSigningService.single(company, store, 222222, 333333, 444444, "R", 1, "ABC101")
-      final agreementSigning5 = agreementSigningService.single(company, store, 222222, 333333, 555555, "R", 1, "ABC112")
+      final agreementSigning1 = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, UUID.randomUUID())
+      final agreementSigning2 = agreementSigningService.single(company, store, 123456, 111111, 876543, "R", 1, UUID.randomUUID())
+      final agreementSigning3 = agreementSigningService.single(company, store, 123456, 111111, 987654, "R", 1, UUID.randomUUID())
+      final agreementSigning4 = agreementSigningService.single(company, store, 222222, 333333, 444444, "R", 1, UUID.randomUUID())
+      final agreementSigning5 = agreementSigningService.single(company, store, 222222, 333333, 555555, "R", 1, UUID.randomUUID())
       final agreementSigningArray = [agreementSigning1, agreementSigning2, agreementSigning3, agreementSigning4, agreementSigning5]
       final agreementSigningPage1 = new AgreementSigningPageRequest(1, 5, "asn_agreement_number", "ASC", store.myNumber(), 123456, null)
 
@@ -113,7 +112,7 @@ class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
             primaryCustomerNumber == agreementSigningArray[index].primaryCustomerNumber
             agreementNumber == agreementSigningArray[index].agreementNumber
             agreementType == agreementSigningArray[index].agreementType
-            externalSignatureId == agreementSigningArray[index].externalSignatureId
+            externalSignatureId == agreementSigningArray[index].externalSignatureId.toString()
          }
       }
       result.elements != null
@@ -129,11 +128,11 @@ class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final dataset = 'tstds1'
       final store = storeFactoryService.random(company)
-      final agreementSigning1 = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, "ABC123")
-      final agreementSigning2 = agreementSigningService.single(company, store, 123456, 111111, 876543, "R", 1, "ABC789")
-      final agreementSigning3 = agreementSigningService.single(company, store, 123456, 111111, 987654, "R", 1, "ABC456")
-      final agreementSigning4 = agreementSigningService.single(company, store, 222222, 333333, 444444, "R", 1, "ABC101")
-      final agreementSigning5 = agreementSigningService.single(company, store, 222222, 333333, 555555, "R", 1, "ABC112")
+      final agreementSigning1 = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, UUID.randomUUID())
+      final agreementSigning2 = agreementSigningService.single(company, store, 123456, 111111, 876543, "R", 1, UUID.randomUUID())
+      final agreementSigning3 = agreementSigningService.single(company, store, 123456, 111111, 987654, "R", 1, UUID.randomUUID())
+      final agreementSigning4 = agreementSigningService.single(company, store, 222222, 333333, 444444, "R", 1, UUID.randomUUID())
+      final agreementSigning5 = agreementSigningService.single(company, store, 222222, 333333, 555555, "R", 1, UUID.randomUUID())
       final agreementSigningPage1 = new AgreementSigningPageRequest(1, 5, "asn_agreement_number", "ASC", null, 999999, null)
 
       when:
@@ -153,11 +152,11 @@ class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
       final dataset = 'tstds1'
       final store1 = storeFactoryService.store(1, company)
       final store3 = storeFactoryService.store(3, company)
-      final agreementSigning1 = agreementSigningService.single(company, store1 as StoreEntity, 123456, 111111, 654321, "R", 1, "ABC654")
-      final agreementSigning2 = agreementSigningService.single(company, store1 as StoreEntity, 123456, 111111,876543, "R", 1, "ABC876")
-      final agreementSigning3 = agreementSigningService.single(company, store1 as StoreEntity, 123456, 111111,987654, "R", 1, "ABC987")
-      final agreementSigning4 = agreementSigningService.single(company, store1 as StoreEntity, 222222, 333333,990000, "R", 1, "ABC990")
-      final agreementSigning5 = agreementSigningService.single(company, store3 as StoreEntity, 222222, 333333,999999, "R", 1, "ABC999")
+      final agreementSigning1 = agreementSigningService.single(company, store1 as StoreEntity, 123456, 111111, 654321, "R", 1, UUID.randomUUID())
+      final agreementSigning2 = agreementSigningService.single(company, store1 as StoreEntity, 123456, 111111,876543, "R", 1, UUID.randomUUID())
+      final agreementSigning3 = agreementSigningService.single(company, store1 as StoreEntity, 123456, 111111,987654, "R", 1, UUID.randomUUID())
+      final agreementSigning4 = agreementSigningService.single(company, store1 as StoreEntity, 222222, 333333,990000, "R", 1, UUID.randomUUID())
+      final agreementSigning5 = agreementSigningService.single(company, store3 as StoreEntity, 222222, 333333,999999, "R", 1, UUID.randomUUID())
       final agreementSigningArray = [agreementSigning1, agreementSigning2, agreementSigning3, agreementSigning4, agreementSigning5]
       final agreementSigningPage1 = new AgreementSigningPageRequest(1, 5, "asn_agreement_number", "ASC", store1.myNumber(), null, null)
 
@@ -174,7 +173,7 @@ class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
             primaryCustomerNumber == agreementSigningArray[index].primaryCustomerNumber
             agreementNumber == agreementSigningArray[index].agreementNumber
             agreementType == agreementSigningArray[index].agreementType
-            externalSignatureId == agreementSigningArray[index].externalSignatureId
+            externalSignatureId == agreementSigningArray[index].externalSignatureId.toString()
          }
       }
       result.elements != null
@@ -191,8 +190,9 @@ class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
       final dataset = 'tstds1'
       final store = storeFactoryService.random(company)
       final SLN = new SimpleLegacyNumberDTO(store.number)
-      final agreementSigning = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, "ABC123")
-      final newDTO = new AgreementSigningDTO(agreementSigning.id, company, SLN, 123456, 111111, 654321, "R", 1, "XYZ456")
+      final externalId = UUID.randomUUID()
+      final agreementSigning = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, externalId)
+      final newDTO = new AgreementSigningDTO(agreementSigning.id, company, SLN, 123456, 111111, 654321, "R", 1, externalId)
 
       when:
       def result = signingClient.toBlocking().exchange(PUT("/${agreementSigning.id}/dataset/${dataset}", newDTO),
@@ -202,8 +202,8 @@ class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      final extraDTO = new AgreementSigningDTO(agreementSigning.id, company, SLN, 123456, 111111, 654321, "R", 1, "XYZ456")
+      final extraDTO = new AgreementSigningDTO(agreementSigning.id, company, SLN, 123456, 111111, 654321, "R", 1, externalId)
       result.agreementType == extraDTO.agreementType
-      result.externalSignatureId == extraDTO.externalSignatureId
+      result.externalSignatureId == extraDTO.externalSignatureId.toString()
    }
 }

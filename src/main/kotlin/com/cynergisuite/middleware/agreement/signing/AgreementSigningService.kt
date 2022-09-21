@@ -5,7 +5,7 @@ import com.cynergisuite.middleware.agreement.signing.infrastructure.AgreementSig
 import com.cynergisuite.middleware.agreement.signing.infrastructure.AgreementSigningRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Singleton
-import java.util.*
+import java.util.UUID
 
 @Singleton
 class AgreementSigningService(

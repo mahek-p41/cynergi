@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.sign.here.token
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.sign.here.token.infrastructure.SignHereTokenRepository
 import jakarta.inject.Singleton
-import java.util.*
+import java.util.UUID
 
 @Singleton
 class SignHereTokenService(

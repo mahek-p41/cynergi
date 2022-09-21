@@ -19,6 +19,7 @@
     <logger name="org.flywaydb.core.internal.scanner.classpath" level="INFO"/>
     <logger name="io.micronaut.http.client" level="TRACE"/>
     <logger name="com.cynergisuite" level="TRACE"/>
+    <logger name="wiremock.org" level="ERROR"/>
 
     <root level="TRACE">
         <appender-ref ref="STDOUT"/>

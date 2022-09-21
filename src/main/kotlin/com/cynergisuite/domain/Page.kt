@@ -28,4 +28,13 @@ data class Page<I>(
 
    @field:Schema(name = "last", description = "Boolean value to show whether or not this is the last page", required = true)
    val last: Boolean = requested.page().toLong() == totalPages
-)
+) {
+   fun isNotEmpty(): Boolean = elements.isNotEmpty()
+
+   fun <N> mapElements(mapper: (i: I) -> N): Page<N> =
+      Page(
+         elements = elements.map(mapper),
+         requested = this.requested,
+         totalElements = this.totalElements
+      )
+}
