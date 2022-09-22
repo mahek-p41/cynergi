@@ -97,7 +97,7 @@ class GeneralLedgerDetailService @Inject constructor(
       var glDetailDTO: GeneralLedgerDetailDTO
       val journalEntryNumber = generalLedgerDetailRepository.findNextJENumber(company)
 
-      glRecurringEntries.forEach {
+      glRecurringEntries.elements.forEach {
          // create GL detail for each distribution
          it.generalLedgerRecurringDistributions.forEach { distribution ->
             glDetailDTO = GeneralLedgerDetailDTO(

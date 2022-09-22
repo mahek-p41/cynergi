@@ -1,13 +1,19 @@
 package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 
+import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarEntity
+import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import spock.lang.Unroll
@@ -26,6 +32,9 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
    @Inject GeneralLedgerJournalDataLoaderService dataLoaderService
    @Inject AccountTestDataLoaderService accountDataLoaderService
    @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
+   @Inject FinancialCalendarDataLoaderService financialCalendarDataLoaderService
+   @Inject FinancialCalendarRepository financialCalendarRepository
+   @Inject GeneralLedgerSourceCodeRepository glSrcRepo
 
    void "fetch one" () {
       given:
@@ -82,10 +91,10 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glJournals = dataLoaderService.stream(12, company, acct, store, LocalDate.now(), glSourceCode).toList()
       dataLoaderService.stream(1, company2, acct, store, LocalDate.now(), glSourceCode).toList()
-      def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
-      def pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
-      def pageLast = new StandardPageRequest(3, 5, "id", "ASC")
-      def pageFour = new StandardPageRequest(4, 5, "id", "ASC")
+      def pageOne = new GeneralLedgerJournalFilterRequest(1, 5, "id", "ASC", null, null, null, null, null)
+      def pageTwo = new GeneralLedgerJournalFilterRequest(2, 5, "id", "ASC", null, null, null, null, null)
+      def pageLast = new GeneralLedgerJournalFilterRequest(3, 5, "id", "ASC", null, null, null, null, null)
+      def pageFour = new GeneralLedgerJournalFilterRequest(4, 5, "id", "ASC", null, null, null, null, null)
       def firstPageAccount = glJournals[0..4]
       def secondPageAccount = glJournals[5..9]
       def lastPageAccount = glJournals[10,11]
@@ -187,11 +196,15 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final company = companyFactoryService.forDatasetCode('tstds1')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
+      final calendar = financialCalendarDataLoaderService.singleDTO()
+      calendar.generalLedgerOpen = true
+      final calEnt = new FinancialCalendarEntity(calendar, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
+      financialCalendarRepository.insert(calEnt, company)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glJournalDTO = dataLoaderService.singleDTO(
          new SimpleIdentifiableDTO(acct.myId()),
          new SimpleLegacyIdentifiableDTO(store.myId()),
-         LocalDate.now(),
+         calendar.periodFrom,
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
 
@@ -223,11 +236,15 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final company = companyFactoryService.forDatasetCode('tstds1')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
+      final calendar = financialCalendarDataLoaderService.singleDTO()
+      calendar.generalLedgerOpen = true
+      final calEnt = new FinancialCalendarEntity(calendar, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
+      financialCalendarRepository.insert(calEnt, company)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glJournalDTO = dataLoaderService.singleDTO(
          new SimpleIdentifiableDTO(acct.myId()),
          new SimpleLegacyIdentifiableDTO(store.myId()),
-         LocalDate.now(),
+         calendar.periodFrom,
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
       glJournalDTO.message = null
@@ -295,12 +312,16 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final company = companyFactoryService.forDatasetCode('tstds1')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
+      final calendar = financialCalendarDataLoaderService.singleDTO()
+      calendar.generalLedgerOpen = true
+      final calEnt = new FinancialCalendarEntity(calendar, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
+      financialCalendarRepository.insert(calEnt, company)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final existingGLJournal = dataLoaderService.single(company, acct, store, LocalDate.now(), glSourceCode)
       final updatedGLJournal = dataLoaderService.singleDTO(
          new SimpleIdentifiableDTO(acct.myId()),
          new SimpleLegacyIdentifiableDTO(store.myId()),
-         LocalDate.now(),
+         calendar.periodFrom,
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
       updatedGLJournal.id = existingGLJournal.id
@@ -333,12 +354,16 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final company = companyFactoryService.forDatasetCode('tstds1')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
+      final calendar = financialCalendarDataLoaderService.singleDTO()
+      calendar.generalLedgerOpen = true
+      final calEnt = new FinancialCalendarEntity(calendar, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
+      financialCalendarRepository.insert(calEnt, company)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final existingGLJournal = dataLoaderService.single(company, acct, store, LocalDate.now(), glSourceCode)
       final updatedGLJournal = dataLoaderService.singleDTO(
          new SimpleIdentifiableDTO(acct.myId()),
          new SimpleLegacyIdentifiableDTO(store.myId()),
-         LocalDate.now(),
+         calendar.periodFrom,
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
       updatedGLJournal.id = existingGLJournal.id
@@ -402,5 +427,77 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       'date'              || 'date'
       'profitCenter'      || 'profitCenter'
       'source'            || 'source'
+   }
+
+   void "filter for criteria" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final acct = accountDataLoaderService.single(company)
+      final store = storeFactoryService.store(3, company)
+      final calendar = financialCalendarDataLoaderService.singleDTO()
+      calendar.generalLedgerOpen = true
+      final calEnt = new FinancialCalendarEntity(calendar, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
+      financialCalendarRepository.insert(calEnt, company)
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      final glSrcA = generalLedgerSourceCodeDataLoaderService.singleDTO()
+      final glSrcB = generalLedgerSourceCodeDataLoaderService.singleDTO()
+      final glSrcC = generalLedgerSourceCodeDataLoaderService.singleDTO()
+
+      glSrcA.value = "AAA"
+      glSrcA.description = "AAA"
+      glSrcB.value = "BBB"
+      glSrcB.description = "BBB"
+      glSrcC.value = "CCC"
+      glSrcC.description = "CCC"
+      def glsrcAEnt = glSrcRepo.insert(new GeneralLedgerSourceCodeEntity(glSrcA), company)
+      def glsrcBEnt = glSrcRepo.insert(new GeneralLedgerSourceCodeEntity(glSrcB), company)
+      def glsrcCEnt = glSrcRepo.insert(new GeneralLedgerSourceCodeEntity(glSrcC), company)
+
+      final glJournals = dataLoaderService.streamDTO(6, acct, store, calendar.periodFrom, glSourceCode).toList()
+
+      glJournals[0].source = new GeneralLedgerSourceCodeDTO(glsrcAEnt)
+      glJournals[1].source = new GeneralLedgerSourceCodeDTO(glsrcBEnt)
+      glJournals[2].source = new GeneralLedgerSourceCodeDTO(glsrcCEnt)
+      glJournals[3].source = new GeneralLedgerSourceCodeDTO(glsrcCEnt)
+      glJournals[4].source = new GeneralLedgerSourceCodeDTO(glsrcCEnt)
+      glJournals[4].date = calendar.periodFrom.plusDays(8)
+      glJournals[5].source = new GeneralLedgerSourceCodeDTO(glsrcCEnt)
+      glJournals[5].date = calendar.periodFrom.plusDays(9)
+
+      glJournals.eachWithIndex { glJournal, index ->
+         post("$path", glJournal)
+      }
+
+      def frmPmtDt = calendar.periodFrom
+      def thruPmtDt = calendar.periodFrom.plusDays(7)
+
+      def filterRequest = new GeneralLedgerJournalFilterRequest([sortBy: "id", sortDirection: "ASC"])
+      switch (criteria) {
+         case 'ProfitCenter':
+            filterRequest['profitCenter'] = glJournals[0].profitCenter.id
+            break
+         case 'SourceCode':
+            filterRequest['beginSourceCode'] = "AAA"
+            filterRequest['endSourceCode'] = "BBB"
+            break
+         case 'PmtDateCase':
+            filterRequest["fromDate"] = frmPmtDt
+            filterRequest["thruDate"] = thruPmtDt
+            break
+      }
+
+      when:
+      def response = get("$path${filterRequest}")
+
+      then:
+      notThrown(Exception)
+      response != null
+      response.elements.size == size
+
+      where:
+      criteria       || size
+      'ProfitCenter' || 6
+      'SourceCode'   || 2
+      'PmtDateCase'  || 4
    }
 }

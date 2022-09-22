@@ -21,9 +21,7 @@ class GeneralLedgerRecurringEntriesService @Inject constructor(
    fun fetchAll(company: CompanyEntity, filterRequest: GeneralLedgerRecurringEntriesFilterRequest): Page<GeneralLedgerRecurringEntriesDTO> {
       val found = generalLedgerRecurringEntriesRepository.findAll(company, filterRequest)
 
-      val page = RepositoryPage(found, found.size.toLong(), filterRequest)
-
-      return page.toPage { entity: GeneralLedgerRecurringEntriesEntity ->
+      return found.toPage { entity: GeneralLedgerRecurringEntriesEntity ->
          GeneralLedgerRecurringEntriesDTO(entity)
       }
    }
@@ -32,7 +30,7 @@ class GeneralLedgerRecurringEntriesService @Inject constructor(
       val found = generalLedgerRecurringEntriesRepository.findAll(company, filterRequest)
       val foundDTOs = mutableListOf<GeneralLedgerRecurringEntriesDTO>()
 
-      for (entity in found) {
+      for (entity in found.elements) {
          foundDTOs.add(transformEntity(entity))
       }
 
