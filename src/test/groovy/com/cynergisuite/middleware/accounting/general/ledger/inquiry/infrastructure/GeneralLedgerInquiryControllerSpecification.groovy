@@ -6,12 +6,10 @@ import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderServi
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarCompleteDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDataLoaderService
-import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
-import java.time.LocalDate
 
-import static io.micronaut.http.HttpStatus.NOT_FOUND
+import java.time.LocalDate
 
 @MicronautTest(transactional = false)
 class GeneralLedgerInquiryControllerSpecification extends ControllerSpecificationBase {

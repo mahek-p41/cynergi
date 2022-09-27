@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.control
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
+
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
@@ -9,9 +9,10 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
+
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import jakarta.inject.Singleton
 
 @CompileStatic
 class GeneralLedgerControlDataLoader {

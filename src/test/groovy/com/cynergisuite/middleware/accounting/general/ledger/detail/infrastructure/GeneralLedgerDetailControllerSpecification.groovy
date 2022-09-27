@@ -4,7 +4,6 @@ import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
 import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
-import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
@@ -23,6 +22,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSource
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailPageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDataLoaderService
@@ -32,7 +32,6 @@ import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastruct
 import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
 
 import java.time.OffsetDateTime
@@ -108,19 +107,29 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       given:
       final company = nineNineEightEmployee.company
       final glAccount = accountDataLoaderService.single(company)
+      final glAccount2 = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
       final generalLedgerDetails = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource).toList()
-      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
-      final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
+      final filterOne = new GeneralLedgerDetailPageRequest([account: glAccount.number, profitCenter: profitCenter.myId(), from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
+      final filterTwo = new GeneralLedgerDetailPageRequest([account: glAccount2.number, profitCenter: profitCenter.myId(), from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
+      final filterThree = new GeneralLedgerDetailPageRequest([account: glAccount.number, from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
 
       when:
-      def result = get("$path$pageOne")
+      def result = get("$path$filterOne")
 
       then:
       notThrown(Exception)
       with(result) {
-         requested.with { new StandardPageRequest(it) } == pageOne
+         requested.with {
+            page = filterOne.page
+            size = filterOne.size
+            sortBy = filterOne.sortBy
+            sortDirection = filterOne.sortDirection
+            from = filterOne.from
+            thru = filterOne.thru
+            account = filterOne.account
+         }
          totalElements == 3
          totalPages == 1
          first == true
@@ -141,11 +150,32 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       }
 
       when:
-      get("$path$pageTwo")
+      get("$path$filterTwo")
 
       then:
       final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
+
+      when:
+      get("$path$filterThree")
+
+      then:
+      notThrown(Exception)
+      with(result) {
+         requested.with {
+            page = filterThree.page
+            size = filterThree.size
+            sortBy = filterThree.sortBy
+            sortDirection = filterThree.sortDirection
+            from = filterThree.from
+            thru = filterThree.thru
+            account = filterThree.account
+         }
+         totalElements == 3
+         totalPages == 1
+         first == true
+         last == true
+      }
    }
 
    void "create valid general ledger detail" () {
@@ -276,9 +306,9 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
       def generalLedgerDetail = GeneralLedgerDetailDataLoader.streamDTO(1, glAccount, profitCenter, glSource).findFirst().get()
-      generalLedgerDetail.account = new SimpleIdentifiableDTO(nonExistentId)
-      generalLedgerDetail.profitCenter = new SimpleLegacyIdentifiableDTO(0)
-      generalLedgerDetail.source = new SimpleIdentifiableDTO(nonExistentId)
+      generalLedgerDetail.account.id = nonExistentId
+      generalLedgerDetail.profitCenter.id = 999999
+      generalLedgerDetail.source.id = nonExistentId
 
       when:
       post("$path", generalLedgerDetail)
@@ -292,7 +322,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       response[0].message == "$nonExistentId was unable to be found"
       response[0].code == 'system.not.found'
       response[1].path == "profitCenter.id"
-      response[1].message == "0 was unable to be found"
+      response[1].message == "999999 was unable to be found"
       response[1].code == 'system.not.found'
       response[2].path == "source.id"
       response[2].message == "$nonExistentId was unable to be found"
@@ -427,9 +457,9 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final existingGLDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
       final updatedGLDetail = GeneralLedgerDetailDataLoader.streamDTO(1, glAccount, profitCenter, glSource).findFirst().get()
       updatedGLDetail.id = existingGLDetail.id
-      updatedGLDetail.account = new SimpleIdentifiableDTO(nonExistentId)
-      updatedGLDetail.profitCenter = new SimpleLegacyIdentifiableDTO(0)
-      updatedGLDetail.source = new SimpleIdentifiableDTO(nonExistentId)
+      updatedGLDetail.account.id = nonExistentId
+      updatedGLDetail.profitCenter.id = 999999
+      updatedGLDetail.source.id = nonExistentId
 
       when:
       put("$path/$existingGLDetail.id", updatedGLDetail)
@@ -444,7 +474,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       sortedResponse[0].message == "$nonExistentId was unable to be found"
       sortedResponse[0].code == 'system.not.found'
       sortedResponse[1].path == "profitCenter.id"
-      sortedResponse[1].message == "0 was unable to be found"
+      sortedResponse[1].message == "999999 was unable to be found"
       sortedResponse[1].code == 'system.not.found'
       sortedResponse[2].path == "source.id"
       sortedResponse[2].message == "$nonExistentId was unable to be found"

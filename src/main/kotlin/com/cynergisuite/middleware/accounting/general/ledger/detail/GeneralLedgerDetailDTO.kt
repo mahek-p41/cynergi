@@ -1,15 +1,15 @@
 package com.cynergisuite.middleware.accounting.general.ledger.detail
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.AccountDTO
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
+import com.cynergisuite.middleware.store.StoreDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.util.UUID
 import javax.validation.constraints.NotNull
 
@@ -23,7 +23,7 @@ data class GeneralLedgerDetailDTO(
 
    @field:NotNull
    @field:Schema(description = "General ledger detail account")
-   var account: SimpleIdentifiableDTO?,
+   var account: AccountDTO?,
 
    @field:NotNull
    @field:Schema(description = "General ledger detail date")
@@ -31,11 +31,11 @@ data class GeneralLedgerDetailDTO(
 
    @field:NotNull
    @field:Schema(description = "General ledger profit center")
-   var profitCenter: SimpleLegacyIdentifiableDTO? = null,
+   var profitCenter: StoreDTO? = null,
 
    @field:NotNull
    @field:Schema(description = "General ledger source code")
-   var source: SimpleIdentifiableDTO? = null,
+   var source: GeneralLedgerSourceCodeDTO? = null,
 
    @field:NotNull
    @field:Schema(description = "General ledger detail amount")
@@ -56,10 +56,10 @@ data class GeneralLedgerDetailDTO(
    ) :
       this(
          id = entity.id,
-         account = SimpleIdentifiableDTO(entity.account),
+         account = AccountDTO(entity.account),
          date = entity.date,
-         profitCenter = SimpleLegacyIdentifiableDTO(entity.profitCenter.myId()),
-         source = SimpleIdentifiableDTO(entity.source),
+         profitCenter = StoreDTO(entity.profitCenter),
+         source = GeneralLedgerSourceCodeDTO(entity.source),
          amount = entity.amount,
          message = entity.message,
          employeeNumberId = entity.employeeNumberId,

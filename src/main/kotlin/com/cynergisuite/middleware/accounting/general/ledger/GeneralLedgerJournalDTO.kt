@@ -1,8 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.core.annotation.Introspected

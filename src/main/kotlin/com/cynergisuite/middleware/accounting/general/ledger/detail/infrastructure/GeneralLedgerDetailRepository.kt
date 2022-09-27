@@ -18,6 +18,7 @@ import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepo
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportSourceDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailEntity
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailPageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
@@ -142,19 +143,31 @@ class GeneralLedgerDetailRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<GeneralLedgerDetailEntity, PageRequest> {
+   fun findAll(company: CompanyEntity, page: GeneralLedgerDetailPageRequest): RepositoryPage<GeneralLedgerDetailEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to page.size(), "offset" to page.offset())
+      val whereClause = StringBuilder(" WHERE glDetail.company_id = :comp_id ")
+      if (page.from != null || page.thru != null) {
+         params["from"] = page.from
+         params["thru"] = page.thru
+         whereClause.append(" AND glDetail.date ")
+            .append(buildFilterString(page.from != null, page.thru != null, "from", "thru"))
+      }
+      if (page.profitCenter != null) {
+         params["profitCenter"] = page.profitCenter
+         whereClause.append(" AND profitCenter.id = :profitCenter")
+      }
+      if (page.account != null) {
+         params["account"] = page.account
+         whereClause.append(" AND acct.account_number = :account")
+      }
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
-            WHERE glDetail.company_id = :comp_id
+            $whereClause
             ORDER BY glDetail_${page.snakeSortBy()} ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
-         mapOf(
-            "comp_id" to company.id,
-            "limit" to page.size(),
-            "offset" to page.offset()
-         ),
+         params,
          page
       ) { rs, elements ->
          val account = accountRepository.mapRow(rs, company, "acct_")

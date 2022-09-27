@@ -3,15 +3,17 @@ package com.cynergisuite.middleware.accounting.general.ledger.reversal.entry
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingDTO
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.infrastructure.GeneralLedgerReversalEntryRepository
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.store.StoreDTO
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.util.Locale
@@ -69,10 +71,10 @@ class GeneralLedgerReversalEntryService @Inject constructor(
       entity!!.generalLedgerReversalDistributions.forEach { distribution ->
          glDetailDTO = GeneralLedgerDetailDTO(
             null,
-            SimpleIdentifiableDTO(distribution.generalLedgerReversalDistributionAccount.id),
+            AccountDTO(distribution.generalLedgerReversalDistributionAccount.id),
             distribution.generalLedgerReversal.reversalDate,
-            SimpleLegacyIdentifiableDTO(distribution.generalLedgerReversalDistributionProfitCenter.myId()),
-            SimpleIdentifiableDTO(distribution.generalLedgerReversal.source.id),
+            StoreDTO(distribution.generalLedgerReversalDistributionProfitCenter),
+            GeneralLedgerSourceCodeDTO(distribution.generalLedgerReversal.source),
             distribution.generalLedgerReversalDistributionAmount,
             distribution.generalLedgerReversal.comment,
             user.myEmployeeNumber(),
