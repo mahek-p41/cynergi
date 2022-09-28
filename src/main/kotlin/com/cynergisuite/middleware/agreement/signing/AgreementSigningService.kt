@@ -19,6 +19,9 @@ class AgreementSigningService(
    fun fetchByCustomerAndAgreement(company: CompanyEntity, customerNumber: Int, agreementNumber: Int): AgreementSigningDTO? =
       agreementSigningRepository.findOneByCustomerAndAgreement(company, customerNumber, agreementNumber)?.let { AgreementSigningDTO(it) }
 
+   fun findAgreementsByCustomer(company: CompanyEntity, customerNumber: Int): List<AgreementSigningEntity> =
+      agreementSigningRepository.fetchAgreementsByCustomerNumber(company, customerNumber)
+
    fun fetchAll(pageRequest: AgreementSigningPageRequest, company: CompanyEntity): Page<AgreementSigningDTO> {
       val signingAgreements = agreementSigningRepository.findAll(pageRequest, company)
 
