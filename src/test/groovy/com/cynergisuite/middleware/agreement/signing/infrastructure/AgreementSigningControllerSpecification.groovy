@@ -206,4 +206,51 @@ class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
       result.agreementType == extraDTO.agreementType
       result.externalSignatureId == extraDTO.externalSignatureId.toString()
    }
+
+   void "fetch list of agreements for a single customer" () {
+      given: 'store number 1 is assigned to a region of company tstds1'
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.random(company)
+      final dataset = 'tstds1'
+      final customerNumber = 123456
+      final agreement1 = agreementSigningService.single(company, store, 123456, 111111, 654322, "R", 1, UUID.randomUUID())
+      final agreement2 = agreementSigningService.single(company, store, 123456, 111111, 654323, "R", 1, UUID.randomUUID())
+      final agreement3 = agreementSigningService.single(company, store, 123456, 111111, 654324, "R", 1, UUID.randomUUID())
+      final agreement4 = agreementSigningService.single(company, store, 123456, 111111, 654325, "R", 1, UUID.randomUUID())
+
+      when:
+      def result = signingClient.toBlocking().exchange(GET("/customerAgreements/${dataset}/${customerNumber}/"),
+         Argument.of(String),
+         Argument.of(String)
+      ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      result[0].agreementNumber == 654322
+      result[1].agreementNumber == 654323
+      result[2].agreementNumber == 654324
+      result[3].agreementNumber == 654325
+   }
+
+   void "fetch list of agreements for a single customer that does not exist" () {
+      given: 'store number 1 is assigned to a region of company tstds1'
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.random(company)
+      final dataset = 'tstds1'
+      final customerNumber = 222222
+      final agreement1 = agreementSigningService.single(company, store, 123456, 111111, 654322, "R", 1, UUID.randomUUID())
+      final agreement2 = agreementSigningService.single(company, store, 123456, 111111, 654323, "R", 1, UUID.randomUUID())
+      final agreement3 = agreementSigningService.single(company, store, 123456, 111111, 654324, "R", 1, UUID.randomUUID())
+      final agreement4 = agreementSigningService.single(company, store, 123456, 111111, 654325, "R", 1, UUID.randomUUID())
+
+      when:
+      def result = signingClient.toBlocking().exchange(GET("/customerAgreements/${dataset}/${customerNumber}/"),
+         Argument.of(String),
+         Argument.of(String)
+      ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      result[0] == null
+   }
 }

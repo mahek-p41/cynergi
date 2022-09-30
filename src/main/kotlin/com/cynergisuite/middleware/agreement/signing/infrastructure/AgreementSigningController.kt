@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.HttpRequest
+import io.micronaut.http.MediaType
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -92,6 +93,34 @@ class AgreementSigningController(
       val response = agreementSigningService.fetchByCustomerAndAgreement(company = company!!, customerNumber, agreementNumber) ?: throw NotFoundException(customerNumber)
 
       logger.debug("Checking to see if Agreement Signing record exists by {} {} {} resulted in {}", dataset, customerNumber, agreementNumber, response)
+
+      return response
+   }
+
+   @Throws(NotFoundException::class)
+   @Get(uri = "/customerAgreements/{dataset}/{customerNumber}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["AgreementSigningEndpoints"], summary = "Checking for all agreements for a customer", description = "Fetch all Agreements by dataset and customer number", operationId = "agreementSigning-allCustomerAgreements")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Agreement Signing record was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchAllSigningAgreementsByCustomerNumber(
+      @Parameter(name = "dataset", description = "Dataset associated with the transaction", `in` = ParameterIn.PATH) @QueryValue("dataset")
+      dataset: String,
+      @Parameter(name = "customerNumber", description = "Customer Number associated with the transaction", `in` = ParameterIn.PATH) @QueryValue("customerNumber")
+      customerNumber: Int,
+      httpRequest: HttpRequest<*>
+   ): List<AgreementSigningDTO> {
+      logger.info("Retrieving all signing agreements for a specific customer number {} {}", dataset, customerNumber)
+
+      val company = companyService.fetchByDatasetCodeForEntity(dataset)
+      val response = agreementSigningService.findAgreementsByCustomer(company = company!!, customerNumber).map(::AgreementSigningDTO)
+
+      logger.debug("Retrieving all signing agreements for a specific customer number {} {} resulted in {}", dataset, customerNumber, response)
 
       return response
    }

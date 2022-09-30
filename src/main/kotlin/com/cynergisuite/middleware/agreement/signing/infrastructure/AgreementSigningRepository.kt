@@ -88,6 +88,28 @@ class AgreementSigningRepository(
    }
 
    @ReadOnly
+   fun fetchAgreementsByCustomerNumber(
+      company: CompanyEntity,
+      customerNumber: Int,
+   ): List<AgreementSigningEntity> {
+      val sql = """
+      $selectBase
+      WHERE comp.id = :companyId AND
+            asn.primary_customer_number = :customerNumber
+      """.trimIndent()
+
+      logger.debug("Querying for agreements by customer number {} {}", customerNumber, sql)
+
+      return jdbc.query(sql, mapOf(
+         "companyId" to company.id,
+         "customerNumber" to customerNumber
+         )
+      ) { rs, _ ->
+         mapRow(rs)
+      }
+   }
+
+   @ReadOnly
    fun findOneByCustomerAndAgreement(company: CompanyEntity, customerNumber: Int, agreementNumber: Int): AgreementSigningEntity? {
       logger.debug("Finding Agreement Signing record by customer {} and agreement {}", customerNumber, agreementNumber)
 
