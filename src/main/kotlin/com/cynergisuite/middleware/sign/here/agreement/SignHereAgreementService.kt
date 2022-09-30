@@ -16,6 +16,7 @@ import io.micronaut.context.annotation.Value
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.client.ProxyHttpClient
+import io.micronaut.retry.annotation.Retryable
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.apache.commons.lang3.StringUtils
@@ -34,32 +35,51 @@ class SignHereAgreementService @Inject constructor(
 ) {
    private val logger = LoggerFactory.getLogger(SignHereAgreementService::class.java)
 
+   @Retryable(attempts = "3")
    fun findRequestsByStore(location: Location, company: CompanyEntity, documentPageRequest: DocumentPageRequest): SignHereAgreementPage {
+      logger.info("findRequestsByStore -> Looking up token for company/location {}/{}", company.id, location.myNumber())
       val token = signHereTokenRepository.findOneByStoreNumber(location.myNumber(), company) ?: throw ValidationException(ValidationError(localizationCode = SignHerePleaseNotEnabled(location, company)))
+
+      logger.info("findRequestsByStore -> Logging into sign here please service")
       val signHereToken = SignHereTokenDto(token)
       val signHereLogin = signHereClient.login(signHereToken)
+      logger.info("findRequestsByStore -> Logged into sign here please service")
 
-      return signHereClient.fetchAgreements("Bearer ${signHereLogin.accessToken}", documentPageRequest)
+      val agreements = signHereClient.fetchAgreements("Bearer ${signHereLogin.accessToken}", documentPageRequest)
+
+      logger.info("findRequestsByStore -> successfully loaded agreements")
+
+      return agreements
    }
 
+   @Retryable(attempts = "3")
    fun findAssociated(location: Location, company: CompanyEntity, signatureRequestedId: UUID, pageRequest: StandardPageRequest): SignHereAssociatedPage {
+      logger.info("findAssociated -> Looking up token for company/location {}/{}", company.id, location.myNumber())
       val token = signHereTokenRepository.findOneByStoreNumber(location.myNumber(), company) ?: throw ValidationException(ValidationError(localizationCode = SignHerePleaseNotEnabled(location, company)))
+
+      logger.info("findAssociated -> Logging into sign here please service")
       val signHereToken = SignHereTokenDto(token)
       val signHereLogin = signHereClient.login(signHereToken)
+      logger.info("findAssociated -> Logged into sign here please service")
 
-      return signHereClient.fetchAssociated("Bearer ${signHereLogin.accessToken}", signatureRequestedId, pageRequest)
+      val associated = signHereClient.fetchAssociated("Bearer ${signHereLogin.accessToken}", signatureRequestedId, pageRequest)
+
+      logger.info("findAssociated -> successfully loaded associated")
+
+      return associated
    }
 
+   @Retryable(attempts = "3")
    fun retrieveDocument(location: Location, company: CompanyEntity, documentId: UUID, httpRequest: HttpRequest<*>): Publisher<MutableHttpResponse<*>> {
+      logger.info("retrieveDocument -> Looking up token for company/location {}/{}", company.id, location.myNumber())
       val token = signHereTokenRepository.findOneByStoreNumber(location.myNumber(), company) ?: throw ValidationException(ValidationError(localizationCode = SignHerePleaseNotEnabled(location, company)))
+
+      logger.info("retrieveDocument -> Logging into sign here please service")
       val signHereToken = SignHereTokenDto(token)
       val signHereLogin = signHereClient.login(signHereToken)
+      logger.info("retrieveDocument -> Logged into sign here please service")
 
-      logger.debug("token {}", token)
-      logger.debug("signHereToken {}", signHereToken)
-      logger.debug("signHereLogin {}", signHereLogin.accessToken)
-
-      return signHereProxyClient.proxy(
+      val result = signHereProxyClient.proxy(
          httpRequest.mutate()
             .headers { headers -> headers.remove("Authorization") }
             .bearerAuth(signHereLogin.accessToken)
@@ -70,5 +90,9 @@ class SignHereAgreementService @Inject constructor(
                replacePath(StringUtils.remove(httpRequest.path, "/sign/here/agreement"))
             }
       )
+
+      logger.info("retrieveDocument -> successfully loaded document")
+
+      return result
    }
 }
