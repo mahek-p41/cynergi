@@ -34,8 +34,13 @@ object Application {
          System.setProperty("logback.configurationFile", "logback-prod.xml")
       }
 
-      if (isCst && mnEnvironment != "cstdevelop") {
-         System.setProperty("micronaut.environments", "cst")
+
+      if (isCst) {
+         if (mnEnvironment != "cstdevelop") {
+            System.setProperty("micronaut.environments", "cst")
+         }
+
+         System.setProperty("logback.configurationFile", "logback-cst.xml")
       }
 
       Micronaut.build()
