@@ -1,8 +1,10 @@
 package com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.infrastructure
 
 import com.cynergisuite.domain.GeneralLedgerRecurringEntriesFilterRequest
+import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.queryForObjectOrNull
 import com.cynergisuite.extensions.queryFullList
+import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.infrastructure.GeneralLedgerRecurringDistributionRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.GeneralLedgerRecurringEntriesEntity
@@ -98,8 +100,8 @@ class GeneralLedgerRecurringEntriesRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findAll(company: CompanyEntity, filterRequest: GeneralLedgerRecurringEntriesFilterRequest): List<GeneralLedgerRecurringEntriesEntity> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+   fun findAll(company: CompanyEntity, filterRequest: GeneralLedgerRecurringEntriesFilterRequest): RepositoryPage<GeneralLedgerRecurringEntriesEntity, GeneralLedgerRecurringEntriesFilterRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder(" WHERE glRecurring.glRecurring_company_id = :comp_id AND glRecurringDist.deleted = FALSE ")
 
       filterRequest.entryType?.let {
@@ -122,24 +124,22 @@ class GeneralLedgerRecurringEntriesRepository @Inject constructor(
          """.trimMargin())
       }
 
-      val query = """
+      val repoPage: RepositoryPage<GeneralLedgerRecurringEntriesEntity, GeneralLedgerRecurringEntriesFilterRequest> = jdbc.queryPaged(
+         """
             ${selectBaseQuery()}
             $whereClause
             ORDER BY glRecurringDist_id
-         """.trimIndent()
-
-      logger.trace("Fetching for all GeneralLedgerRecurringEntriesEntity {}: \nQuery {}", params, query)
-
-      val glRecurringEntriesList: List<GeneralLedgerRecurringEntriesEntity> = jdbc.queryFullList(
-         query,
-         params
-      ) { rs, _, elements ->
+            LIMIT :limit OFFSET :offset
+         """.trimIndent(),
+         params,
+         filterRequest
+      ) { rs, elements ->
          do {
             elements.add(mapRow(rs, company))
          } while (rs.next())
       }
 
-      return glRecurringEntriesList.distinct()
+      return RepositoryPage(repoPage.elements.distinct(), repoPage.elements.distinct().size.toLong(), repoPage.requested)
    }
 
    @Transactional

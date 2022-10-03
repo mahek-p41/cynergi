@@ -1,18 +1,22 @@
 package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 
+import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalEntity
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.transaction.annotation.ReadOnly
@@ -97,7 +101,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): GeneralLedgerJournalEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${selectBaseQuery()}\nWHERE glJournal.id = :id AND glJournal.company_id = :comp_id"
+      val query = "${selectBaseQuery()}\nWHERE glJournal.id = :id AND glJournal.company_id = :comp_id AND glJournal.deleted = FALSE"
 
       logger.debug("Searching for GeneralLedgerJournal using {} {}", query, params)
 
@@ -113,23 +117,37 @@ class GeneralLedgerJournalRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findAll(
-      pageRequest: PageRequest,
-      company: CompanyEntity
-   ): RepositoryPage<GeneralLedgerJournalEntity, PageRequest> {
+   fun findAll(company: CompanyEntity, filterRequest: GeneralLedgerJournalFilterRequest) : RepositoryPage<GeneralLedgerJournalEntity, GeneralLedgerJournalFilterRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
+      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id")
+
+      if (filterRequest.profitCenter != null) {
+         params["profitCenter"] = filterRequest.profitCenter
+         whereClause.append(" AND profitCenter.id = :profitCenter")
+      }
+
+      if (filterRequest.beginSourceCode != null || filterRequest.endSourceCode != null) {
+         params["beginSource"] = filterRequest.beginSourceCode
+         params["endSource"] = filterRequest.endSourceCode
+         whereClause.append(" AND source.value ")
+            .append(buildFilterString(filterRequest.beginSourceCode != null, filterRequest.endSourceCode != null, "beginSource", "endSource"))
+      }
+
+      if (filterRequest.fromDate != null || filterRequest.thruDate != null) {
+         params["fromDate"] = filterRequest.fromDate
+         params["thruDate"] = filterRequest.thruDate
+         whereClause.append(" AND glJournal.date ")
+            .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
+      }
+
       return jdbc.queryPaged(
          """
-         ${selectBaseQuery()}
-         WHERE glJournal.company_id = :comp_id
-         ORDER BY glJournal.${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
-         LIMIT :limit OFFSET :offset
+            ${selectBaseQuery()}
+            $whereClause
+            LIMIT :limit OFFSET :offset
          """.trimIndent(),
-         mapOf(
-            "comp_id" to company.id,
-            "limit" to pageRequest.size(),
-            "offset" to pageRequest.offset()
-         ),
-         pageRequest
+         params,
+         filterRequest
       ) { rs, elements ->
          do {
             elements.add(mapRow(rs, company, "glJournal_"))
@@ -212,6 +230,25 @@ class GeneralLedgerJournalRepository @Inject constructor(
       return updated
    }
 
+   @Transactional
+   fun delete(id: UUID, company: CompanyEntity) {
+      logger.debug("Deleting GeneralLedgerJournal with id={}", id)
+
+      val rowsAffected = jdbc.softDelete(
+         """
+         UPDATE general_ledger_journal
+         SET deleted = TRUE
+         WHERE id = :id AND company_id = :company_id AND deleted = FALSE
+         """,
+         mapOf("id" to id, "company_id" to company.id),
+         "general_ledger_journal"
+      )
+
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(id)
+   }
+
    private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): GeneralLedgerJournalEntity {
       return GeneralLedgerJournalEntity(
          id = rs.getUuid("${columnPrefix}id"),
@@ -240,5 +277,11 @@ class GeneralLedgerJournalRepository @Inject constructor(
          amount = rs.getBigDecimal("${columnPrefix}amount"),
          message = rs.getString("${columnPrefix}message")
       )
+   }
+
+   private fun buildFilterString(begin: Boolean, end: Boolean, beginningParam: String, endingParam: String): String {
+      return if (begin && end) " BETWEEN :$beginningParam AND :$endingParam "
+      else if (begin) " > :$beginningParam "
+      else " < :$endingParam "
    }
 }

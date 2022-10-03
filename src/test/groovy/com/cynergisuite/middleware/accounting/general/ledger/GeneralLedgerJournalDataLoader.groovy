@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerJournalRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -37,6 +38,11 @@ class GeneralLedgerJournalDataLoader {
             message
          )
       }
+   }
+
+   static Stream<GeneralLedgerJournalDTO> streamDTO(int numberIn = 1, AccountEntity accountIn, Store profitCenterIn, LocalDate dateIn, GeneralLedgerSourceCodeEntity sourceIn) {
+      return stream(numberIn, accountIn, profitCenterIn, dateIn, sourceIn).map {new GeneralLedgerJournalDTO(it)}
+
    }
 
    static Stream<GeneralLedgerJournalDTO> streamDTO(int numberIn = 1, SimpleIdentifiableDTO accountIn, SimpleLegacyIdentifiableDTO profitCenterIn, LocalDate dateIn, GeneralLedgerSourceCodeDTO sourceIn) {
@@ -79,5 +85,9 @@ class GeneralLedgerJournalDataLoaderService {
 
    GeneralLedgerJournalDTO singleDTO(SimpleIdentifiableDTO accountIn, SimpleLegacyIdentifiableDTO profitCenterIn, LocalDate dateIn, GeneralLedgerSourceCodeDTO sourceIn) {
       return GeneralLedgerJournalDataLoader.streamDTO(1, accountIn, profitCenterIn, dateIn, sourceIn).findFirst().orElseThrow { Exception("Unable to create GeneralLedgerJournal") }
+   }
+
+   Stream<GeneralLedgerJournalDTO> streamDTO(int numberIn = 1, AccountEntity accountIn, Store profitCenterIn, LocalDate dateIn, GeneralLedgerSourceCodeEntity sourceIn) {
+      return GeneralLedgerJournalDataLoader.streamDTO(numberIn, accountIn, profitCenterIn, dateIn, sourceIn)
    }
 }

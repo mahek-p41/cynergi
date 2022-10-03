@@ -2,11 +2,13 @@ package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarService
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerJournalRepository
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
+import com.cynergisuite.middleware.localization.GLNotOpen
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import jakarta.inject.Inject
@@ -21,6 +23,7 @@ class GeneralLedgerJournalValidator @Inject constructor(
    private val generalLedgerJournalRepository: GeneralLedgerJournalRepository,
    private val generalLedgerSourceCodeRepository: GeneralLedgerSourceCodeRepository,
    private val storeRepository: StoreRepository,
+   private val financialCalendarService: FinancialCalendarService
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerJournalValidator::class.java)
 
@@ -46,6 +49,7 @@ class GeneralLedgerJournalValidator @Inject constructor(
       val account = dto.account?.id?.let { accountRepository.findOne(it, company) }
       val profitCenter = dto.profitCenter?.id?.let { storeRepository.findOne(it, company) }
       val source = dto.source?.id?.let { generalLedgerSourceCodeRepository.findOne(it, company) }
+      val cal = financialCalendarService.fetchByDate(company, dto.date!!)
 
       doValidation { errors ->
          // non-nullable validations
@@ -56,6 +60,10 @@ class GeneralLedgerJournalValidator @Inject constructor(
          // nullable validation
          if (dto.source?.id != null && source == null) {
             errors.add(ValidationError("source.id", NotFound(dto.source!!.id!!)))
+         }
+
+         if (!cal!!.generalLedgerOpen!! ) {
+            errors.add(ValidationError("entryDate", GLNotOpen(dto.date!!)))
          }
       }
 

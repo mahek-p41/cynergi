@@ -112,7 +112,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
          glRecurringDistributions = generalLedgerRecurringDistributionDataLoaderService.stream(2, it, account, profitCenter).toList()
       }
 
-      def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
+      def pageOne = new GeneralLedgerRecurringEntriesFilterRequest(1, 5, "id", "ASC", null, null, null, null)
 
       when:
       def result = get("$path$pageOne")
@@ -125,6 +125,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
          totalPages == 1
          first == true
          last == true
+         elements.size == 3
          elements.eachWithIndex { pageOneResult, index ->
             with(pageOneResult) {
                with(generalLedgerRecurring) {
