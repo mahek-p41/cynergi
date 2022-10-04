@@ -49,6 +49,10 @@ class GeneralLedgerReversalDistributionService @Inject constructor(
       generalLedgerReversalDistributionRepository.delete(id)
    }
 
+   fun deleteByReversalId(id: UUID, company: CompanyEntity) {
+      generalLedgerReversalDistributionRepository.deleteByReversalId(id)
+   }
+
    private fun transformEntity(entity: GeneralLedgerReversalDistributionEntity): GeneralLedgerReversalDistributionDTO {
       return GeneralLedgerReversalDistributionDTO(entity)
    }
