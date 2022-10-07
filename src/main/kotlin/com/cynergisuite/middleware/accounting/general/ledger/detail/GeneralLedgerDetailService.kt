@@ -22,6 +22,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSource
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeService
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
+import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerNetChangeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.GeneralLedgerRecurringEntriesDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.infrastructure.GeneralLedgerRecurringEntriesRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
@@ -168,7 +169,7 @@ class GeneralLedgerDetailService @Inject constructor(
       val summaryUpdated : UUID?
       val bankRecon : UUID?
       // If summary record not found, create them, then set the appropriate one
-      var summary = generalLedgerSummaryService.fetchOneByBusinessKey(company, generalLedgerDetail.account?.id!!, generalLedgerDetail.profitCenter?.myId()!!, overallPeriod)
+      var summary = generalLedgerSummaryService.fetchOneByBusinessKey(company, generalLedgerDetail.account?.id!!, generalLedgerDetail.profitCenter?.storeNumber!!, overallPeriod)
          ?:
          createSummaries(generalLedgerDetail, company, overallPeriod)
       if (cal.generalLedgerOpen == false) {
@@ -241,5 +242,9 @@ class GeneralLedgerDetailService @Inject constructor(
          generalLedgerSummaryService.create(summaryDTO, company)
       }
       return createdSummaryDTO
+   }
+
+   fun fetchNetChange(company: CompanyEntity, filterRequest: GeneralLedgerDetailFilterRequest): GeneralLedgerNetChangeDTO? {
+      return generalLedgerDetailRepository.findNetChange(company, filterRequest)
    }
 }

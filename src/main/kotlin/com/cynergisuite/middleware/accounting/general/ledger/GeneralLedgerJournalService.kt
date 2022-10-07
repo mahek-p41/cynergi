@@ -2,9 +2,6 @@ package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
-import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
@@ -15,8 +12,8 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.StoreDTO
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.util.UUID
 import java.util.Locale
+import java.util.UUID
 import javax.transaction.Transactional
 
 @Singleton

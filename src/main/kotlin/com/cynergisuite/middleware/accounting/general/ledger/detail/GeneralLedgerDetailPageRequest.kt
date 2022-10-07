@@ -8,6 +8,7 @@ import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_SORT_DIRECTION
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.ValidPageSortBy
 import io.swagger.v3.oas.annotations.media.Schema
+import org.jetbrains.annotations.NotNull
 import java.time.LocalDate
 
 @Schema(
@@ -23,9 +24,11 @@ class GeneralLedgerDetailPageRequest(
    sortDirection: String? = DEFAULT_SORT_DIRECTION,
 ) : StandardPageRequest(page, size, sortBy, sortDirection) {
 
+   @field:NotNull
    @field:Schema(name = "from", description = "Bottom end of the range which will be used to filter GL Details.  If from is found thru is required.  If both from and thru are empty then the result will include all GL Details")
    var from: LocalDate? = null
 
+   @field:NotNull
    @field:Schema(name = "thru", description = "Top end of the range which will be used to filter GL Details.  If from is found thru is required.  If both from and thru are empty then the result will include all GL Details")
    var thru: LocalDate? = null
 

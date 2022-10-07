@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring.entries
 
 import com.cynergisuite.domain.GeneralLedgerRecurringEntriesFilterRequest
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.infrastructure.GeneralLedgerRecurringEntriesRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject

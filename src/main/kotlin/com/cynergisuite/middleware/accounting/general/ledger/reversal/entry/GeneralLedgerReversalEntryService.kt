@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.accounting.general.ledger.reversal.entry
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingDTO

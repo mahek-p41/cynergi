@@ -474,7 +474,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       def filterRequest = new GeneralLedgerJournalFilterRequest([sortBy: "id", sortDirection: "ASC"])
       switch (criteria) {
          case 'ProfitCenter':
-            filterRequest['profitCenter'] = glJournals[0].profitCenter.id
+            filterRequest['profitCenter'] = glJournals[0].profitCenter.storeNumber
             break
          case 'SourceCode':
             filterRequest['beginSourceCode'] = "AAA"

@@ -93,7 +93,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
             JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
             JOIN fastinfo_prod_import.store_vw profitCenter
                     ON profitCenter.dataset = comp.dataset_code
-                       AND profitCenter.id = glSummary.profit_center_id_sfk
+                       AND profitCenter.number = glSummary.profit_center_id_sfk
             JOIN account acct ON glSummary.account_id = acct.account_id AND acct.account_deleted = FALSE
             JOIN overall_period_type_domain overallPeriod ON glSummary.overall_period_id = overallPeriod.id
             LEFT OUTER JOIN bank ON bank.general_ledger_account_id = acct.account_id AND bank.deleted = FALSE
@@ -137,9 +137,9 @@ class GeneralLedgerSummaryRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findOneByBusinessKey(company: CompanyEntity, accountId: UUID, profitCenterId: Long, overallPeriodValue: String): GeneralLedgerSummaryEntity? {
-      val params = mutableMapOf("comp_id" to company.id, "accountId" to accountId, "profitCenterId" to profitCenterId, "overallPeriodValue" to overallPeriodValue)
-      val query = "${selectBaseQuery()}\nWHERE glSummary.company_id = :comp_id AND glSummary.account_id = :accountId AND glSummary.profit_center_id_sfk = :profitCenterId AND overallPeriod.value = :overallPeriodValue"
+   fun findOneByBusinessKey(company: CompanyEntity, accountId: UUID, storeNumber: Int, overallPeriodValue: String): GeneralLedgerSummaryEntity? {
+      val params = mutableMapOf("comp_id" to company.id, "accountId" to accountId, "storeNumber" to storeNumber, "overallPeriodValue" to overallPeriodValue)
+      val query = "${selectBaseQuery()}\nWHERE glSummary.company_id = :comp_id AND glSummary.account_id = :accountId AND glSummary.profit_center_id_sfk = :storeNumber AND overallPeriod.value = :overallPeriodValue"
 
       logger.debug("Searching for GeneralLedgerSummary using {} {}", query, params)
 
@@ -243,7 +243,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          mapOf(
             "company_id" to company.id,
             "account_id" to entity.account.myId(),
-            "profit_center_id_sfk" to entity.profitCenter.myId(),
+            "profit_center_id_sfk" to entity.profitCenter.myNumber(),
             "overall_period_id" to entity.overallPeriod.id,
             "net_activity_period_1" to entity.netActivityPeriod1,
             "net_activity_period_2" to entity.netActivityPeriod2,
@@ -297,7 +297,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
             "id" to entity.id,
             "company_id" to company.id,
             "account_id" to entity.account.myId(),
-            "profit_center_id_sfk" to entity.profitCenter.myId(),
+            "profit_center_id_sfk" to entity.profitCenter.myNumber(),
             "overall_period_id" to entity.overallPeriod.id,
             "net_activity_period_1" to entity.netActivityPeriod1,
             "net_activity_period_2" to entity.netActivityPeriod2,

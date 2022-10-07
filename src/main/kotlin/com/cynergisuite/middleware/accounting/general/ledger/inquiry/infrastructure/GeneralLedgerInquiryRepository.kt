@@ -76,7 +76,7 @@ class GeneralLedgerInquiryRepository @Inject constructor(
             JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
             JOIN fastinfo_prod_import.store_vw profitCenter
                     ON profitCenter.dataset = comp.dataset_code
-                       AND profitCenter.id = glSummary.profit_center_id_sfk
+                       AND profitCenter.number = glSummary.profit_center_id_sfk
             JOIN account acct ON glSummary.account_id = acct.account_id AND acct.account_deleted = FALSE
             JOIN overall_period_type_domain overallPeriod ON glSummary.overall_period_id = overallPeriod.id
             JOIN general_ledger_summary glSummaryPrior ON glSummary.company_id = glSummaryPrior.company_id
@@ -118,7 +118,7 @@ class GeneralLedgerInquiryRepository @Inject constructor(
 
       if (filterRequest.profitCenter != null) {
          params["profitCenter"] = filterRequest.profitCenter
-         whereClause.append(" AND profitCenter.id = :profitCenter")
+         whereClause.append(" AND profitCenter.number = :profitCenter")
       }
       if (filterRequest.account != null) {
          params["account"] = filterRequest.account

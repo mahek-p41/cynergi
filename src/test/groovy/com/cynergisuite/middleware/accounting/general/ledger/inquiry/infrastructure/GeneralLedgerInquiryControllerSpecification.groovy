@@ -27,7 +27,7 @@ class GeneralLedgerInquiryControllerSpecification extends ControllerSpecificatio
       final glSummary2 = dataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(2))
       final beginDate = LocalDate.parse("2021-11-09")
       final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
-      final filterRequest = new GeneralLedgerInquiryFilterRequest([account: acct.number, profitCenter: store.myId(), fiscalYear: 2022])
+      final filterRequest = new GeneralLedgerInquiryFilterRequest([account: acct.number, profitCenter: store.myNumber(), fiscalYear: 2022])
 
       when:
       def result2 = post("/accounting/financial-calendar/complete", financialCalendarDTO)
