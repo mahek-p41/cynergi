@@ -182,10 +182,14 @@ if (!helpRequested) {
                            final checkExisting = new HttpGet("http://localhost:10900/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${clubAgreementNumber}")
                            final existingClubAgreement = client.execute(checkExisting)
                            final existingClubAgreementResponseCode = existingClubAgreement.getCode()
+                           var clubOrLoaner = "C"
+                           if (reason == "Loaner Agreement") {
+                              clubOrLoaner = "L"
+                           }
 
                            if (existingClubAgreementResponseCode == 404) {
                               //Insert the record
-                              final agreementToUpsert = new AgreementSigningDTO(null, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, clubAgreementNumber, "R", 1, awsResponse)
+                              final agreementToUpsert = new AgreementSigningDTO(null, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, clubAgreementNumber, clubOrLoaner, 1, awsResponse)
                               final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
                               final createClubAgreement = new HttpPost("http://localhost:10900/agreement/signing/dataset/${dataset}")
                               createClubAgreement.setHeader("Content-Type", "application/json")
@@ -205,7 +209,7 @@ if (!helpRequested) {
                               final existingClubAgreementJson = jsonSlurper.parse(existingClubAgreement.entity.content)
                               final existingClubAgreementId = existingClubAgreementJson.id
                               final existingClubAgreementUUID = UUID.fromString(existingClubAgreementId)
-                              final agreementToUpsert = new AgreementSigningDTO(existingClubAgreementUUID, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, clubAgreementNumber, "R", 1, awsResponse)
+                              final agreementToUpsert = new AgreementSigningDTO(existingClubAgreementUUID, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, clubAgreementNumber, clubOrLoaner, 1, awsResponse)
                               final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
                               final updateClubAgreement = new HttpPut("http://localhost:10900/agreement/signing/${existingClubAgreementUUID}/dataset/${dataset}")
                               updateClubAgreement.setHeader("Content-Type", "application/json")
@@ -234,7 +238,7 @@ if (!helpRequested) {
 
                            if (existingOtherAgreementResponseCode == 404) {
                               //Insert the record
-                              final agreementToUpsert = new AgreementSigningDTO(null, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, otherAgreementNumber, "R", 1, awsResponse)
+                              final agreementToUpsert = new AgreementSigningDTO(null, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, otherAgreementNumber, "O", 1, awsResponse)
                               final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
                               final createOtherAgreement = new HttpPost("http://localhost:10900/agreement/signing/dataset/${dataset}")
                               createOtherAgreement.setHeader("Content-Type", "application/json")
@@ -254,7 +258,7 @@ if (!helpRequested) {
                               final existingOtherAgreementJson = jsonSlurper.parse(existingOtherAgreement.entity.content)
                               final existingOtherAgreementId = existingOtherAgreementJson.id
                               final existingOtherAgreementUUID = UUID.fromString(existingOtherAgreementId)
-                              final agreementToUpsert = new AgreementSigningDTO(existingOtherAgreementUUID, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, otherAgreementNumber, "R", 1, awsResponse)
+                              final agreementToUpsert = new AgreementSigningDTO(existingOtherAgreementUUID, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, otherAgreementNumber, "O", 1, awsResponse)
                               final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
                               final updateOtherAgreement = new HttpPut("http://localhost:10900/agreement/signing/${existingOtherAgreementUUID}/dataset/${dataset}")
                               updateOtherAgreement.setHeader("Content-Type", "application/json")

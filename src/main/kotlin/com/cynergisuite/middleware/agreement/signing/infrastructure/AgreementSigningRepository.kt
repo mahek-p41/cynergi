@@ -110,20 +110,21 @@ class AgreementSigningRepository(
    }
 
    @ReadOnly
-   fun findOneByCustomerAndAgreement(company: CompanyEntity, customerNumber: Int, agreementNumber: Int): AgreementSigningEntity? {
-      logger.debug("Finding Agreement Signing record by customer {} and agreement {}", customerNumber, agreementNumber)
+   fun findOneByCustomerAndAgreement(company: CompanyEntity, customerNumber: Int, agreementNumber: Int, agreementType: String): AgreementSigningEntity? {
+      logger.debug("Finding Agreement Signing record by customer {} and agreement {} and type {}", customerNumber, agreementNumber, agreementType)
 
       val agreementSigningRecord = jdbc.findFirstOrNull(
          """
          $selectBase
          WHERE comp.id = :comp_id AND
                asn.primary_customer_number = :primary_customer_number AND
-               asn.agreement_number = :agreement_number
+               asn.agreement_number = :agreement_number AND
+               asn.agreement_type = :agreement_type
          """.trimIndent(),
-         mapOf("primary_customer_number" to customerNumber, "agreement_number" to agreementNumber, "comp_id" to company.id)
+         mapOf("primary_customer_number" to customerNumber, "agreement_number" to agreementNumber, "comp_id" to company.id, "agreement_type" to agreementType)
       ) { rs, _ -> mapRow(rs) }
 
-      logger.debug("Search for Agreement Signing record by customer {} and agreement {} produced {}", customerNumber, agreementNumber, agreementSigningRecord)
+      logger.debug("Search for Agreement Signing record by customer {} and agreement {} and type {} produced {}", customerNumber, agreementNumber, agreementType, agreementSigningRecord)
 
       return agreementSigningRecord
    }
