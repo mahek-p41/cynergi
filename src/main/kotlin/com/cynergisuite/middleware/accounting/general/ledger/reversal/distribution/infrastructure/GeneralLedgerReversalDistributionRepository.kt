@@ -264,6 +264,22 @@ class GeneralLedgerReversalDistributionRepository @Inject constructor(
    }
 
    @Transactional
+   fun deleteByReversalId(id: UUID) {
+      logger.debug("Deleting all GeneralLedgerReversalDistributions with id={}", id)
+      val rowsAffected = jdbc.update(
+         """
+            UPDATE general_ledger_reversal_distribution
+            SET deleted = TRUE
+            WHERE general_ledger_reversal_id = :id AND deleted = FALSE
+         """,
+         mapOf("id" to id)
+      )
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(id)
+   }
+
+   @Transactional
    fun deleteNotIn(generalLedgerReversalId: UUID, distributions: List<GeneralLedgerReversalDistributionEntity>) {
       val result = mutableListOf<GeneralLedgerReversalDistributionEntity>()
 

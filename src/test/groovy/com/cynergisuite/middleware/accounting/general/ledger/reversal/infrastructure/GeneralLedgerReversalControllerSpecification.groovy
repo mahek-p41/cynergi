@@ -386,11 +386,17 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
       delete("$path/${generalLedgerReversal.id}")
 
       then:
+      notThrown(Exception)
+
+      when:
+      get("$path/${generalLedgerReversal.id}")
+
+      then:
       final exception = thrown(HttpClientResponseException)
-      exception.response.status == CONFLICT
+      exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.message == "Requested operation violates data integrity"
-      response.code == "cynergi.data.constraint.violated"
+      response.message == "${generalLedgerReversal.id} was unable to be found"
+      response.code == 'system.not.found'
    }
 
    void "delete GL reversal from other company is not allowed" () {
