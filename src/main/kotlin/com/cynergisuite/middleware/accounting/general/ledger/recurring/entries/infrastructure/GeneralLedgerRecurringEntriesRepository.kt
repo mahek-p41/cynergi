@@ -2,13 +2,12 @@ package com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.
 
 import com.cynergisuite.domain.GeneralLedgerRecurringEntriesFilterRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.queryForObjectOrNull
-import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.infrastructure.GeneralLedgerRecurringDistributionRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.GeneralLedgerRecurringEntriesEntity
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
+import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionEntity
 import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
@@ -85,18 +84,20 @@ class GeneralLedgerRecurringEntriesRepository @Inject constructor(
 
    @ReadOnly
    fun findOne(generalLedgerRecurringId: UUID, company: CompanyEntity): GeneralLedgerRecurringEntriesEntity? {
-      val params = mutableMapOf<String, Any?>("id" to generalLedgerRecurringId, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE glRecurring.glRecurring_id = :id AND glRecurring.glRecurring_company_id = :comp_id AND glRecurringDist.deleted = FALSE"
-      logger.info("Searching for GeneralLedgerRecurringEntries {}: \nQuery: {}", params, query)
-      val found = jdbc.queryForObjectOrNull(
-         query, params
-      ) { rs, _ ->
-         mapRow(rs, company)
+      val generalLedgerRecurring = generalLedgerRecurringRepository.findOne(generalLedgerRecurringId, company)
+      val generalLedgerRecurringDistributions = generalLedgerRecurringDistributionRepository.findAllByRecurringId(generalLedgerRecurringId, company)
+
+      var generalLedgerRecurringEntriesEntity: GeneralLedgerRecurringEntriesEntity? = null
+      if (generalLedgerRecurring != null) {
+         generalLedgerRecurringEntriesEntity = GeneralLedgerRecurringEntriesEntity(
+            generalLedgerRecurring,
+            generalLedgerRecurringDistributions as MutableList<GeneralLedgerRecurringDistributionEntity>
+         )
       }
 
-      logger.info("Searching for GeneralLedgerRecurringEntries resulted in {}", found)
+      logger.trace("Searching for GeneralLedgerRecurringEntries: resulted in {}", generalLedgerRecurringEntriesEntity)
 
-      return found
+      return generalLedgerRecurringEntriesEntity
    }
 
    @ReadOnly
