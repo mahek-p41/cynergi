@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.journal.entry
 
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import java.time.LocalDate
+import java.util.UUID
 
 data class GeneralLedgerJournalEntryEntity(
   val entryDate: LocalDate,
@@ -10,5 +11,6 @@ data class GeneralLedgerJournalEntryEntity(
   val journalEntryNumber: Int,
   val journalEntryDetails: MutableList<GeneralLedgerJournalEntryDetailEntity>,
   val message: String? = null,
-  val postReversingEntry: Boolean
+  val postReversingEntry: Boolean,
+  val reversalId: UUID?
 )

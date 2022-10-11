@@ -31,7 +31,7 @@ class GeneralLedgerJournalEntryValidator @Inject constructor(
 
    fun isDateInRangeOfOpenGL(date: LocalDate, company: CompanyEntity): Boolean {
       val (glOpenBegin, glOpenEnd) = financialCalendarRepository.findDateRangeWhenGLIsOpen(company)
-      return date.isBefore(glOpenBegin) || date.isAfter(glOpenEnd)
+      return !(date.isBefore(glOpenBegin) || date.isAfter(glOpenEnd))
    }
 
    fun validateCreate(dto: GeneralLedgerJournalEntryDTO, company: CompanyEntity): GeneralLedgerJournalEntryDTO {
@@ -40,7 +40,7 @@ class GeneralLedgerJournalEntryValidator @Inject constructor(
 
       doValidation { errors ->
          // GL journal entry validations
-         if (isDateInRangeOfOpenGL(dto.entryDate!!, company)) {
+         if (!isDateInRangeOfOpenGL(dto.entryDate!!, company)) {
             errors.add(ValidationError("entryDate", GLNotOpen(dto.entryDate!!)))
          }
 
