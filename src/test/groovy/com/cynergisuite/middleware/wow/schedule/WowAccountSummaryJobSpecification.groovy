@@ -32,6 +32,6 @@ class WowAccountSummaryJobSpecification extends ServiceSpecificationBase{
       notThrown(Exception)
       result.failureReason() == null
       result.scheduleName() == "Wow Account Summary"
-      result.rowCount() == 2383
+      result.rowCount() == 2390
    }
 }

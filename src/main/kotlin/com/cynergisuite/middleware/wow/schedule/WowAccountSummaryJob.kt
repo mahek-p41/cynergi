@@ -38,7 +38,7 @@ class WowAccountSummaryJob @Inject constructor(
       Files.newBufferedWriter(accountSummaryTempPath).use { writer ->
          val accountSummaryCsv = CSVPrinter(writer, CSVFormat.EXCEL)
 
-         accountSummaryCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay")
+         accountSummaryCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay", "PaymentTerms")
 
          wowRepository.findAccountSummary(company).forEach { accountSummary ->
             accountSummaryCsv.printRecord(
@@ -68,7 +68,8 @@ class WowAccountSummaryJob @Inject constructor(
                accountSummary.clubMember ?: EMPTY,
                accountSummary.clubNumber ?: EMPTY,
                accountSummary.clubFee,
-               accountSummary.autopay ?: EMPTY
+               accountSummary.autopay ?: EMPTY,
+               accountSummary.paymentTerms ?: EMPTY
             )
          }
 

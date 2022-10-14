@@ -32,7 +32,7 @@ class WowControllerSpecification extends ServiceSpecificationBase {
       then:
       notThrown(Exception)
       result.status == OK
-      sql.firstRow("SELECT count(*) AS schedules FROM schedule WHERE title LIKE 'Wow%'").schedules == 6
+      sql.firstRow("SELECT count(*) AS schedules FROM schedule WHERE title LIKE 'Wow%'").schedules == 13
    }
 
    void "enable with a null company" () {
@@ -63,6 +63,6 @@ class WowControllerSpecification extends ServiceSpecificationBase {
       then:
       notThrown(Exception)
       result.status == OK
-      sql.firstRow("SELECT count(*) AS schedules FROM schedule WHERE title LIKE 'Wow%'").schedules == 0
+      sql.firstRow("SELECT count(*) AS schedules FROM schedule WHERE title LIKE 'Wow%'").schedules == 7
    }
 }
