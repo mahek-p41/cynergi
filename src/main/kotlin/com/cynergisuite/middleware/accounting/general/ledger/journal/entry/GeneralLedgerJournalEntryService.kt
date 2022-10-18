@@ -57,10 +57,12 @@ class GeneralLedgerJournalEntryService @Inject constructor(
 
       if (dto.reverse!!) {
          val glReversalEntryDTO = createGLReversalEntry(dto, user)
+         dto.reversalId = glReversalEntryDTO.generalLedgerReversal!!.id
 
          // post reversing entry
          if (dto.postReversingEntry!! && generalLedgerJournalEntryValidator.isDateInRangeOfOpenGL(glReversalEntryDTO.generalLedgerReversal!!.reversalDate!!, user.myCompany())) {
-            generalLedgerReversalEntryService.postReversalEntry(glReversalEntryDTO, user, locale)
+            generalLedgerReversalEntryService.postReversalEntry(glReversalEntryDTO.generalLedgerReversal!!.id!!, user, locale)
+            dto.reversalId = null
          }
       }
 

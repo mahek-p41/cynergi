@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
+import java.util.UUID
 import javax.validation.constraints.NotNull
 
 @Introspected
@@ -35,6 +36,9 @@ data class GeneralLedgerJournalEntryDTO(
    var message: String? = null,
 
    @field:Schema(name = "postReversingEntry", description = "Determines if the GL Reversal Entry will be posted (only available if the GL is open for the reversal date)")
-   var postReversingEntry: Boolean? = false
+   var postReversingEntry: Boolean? = false,
+
+   @field:Schema(name = "reversalId", description = "GL Reversal id, if a GL Reversal Entry was created but not posted", required = false)
+   var reversalId: UUID? = null
 
 )

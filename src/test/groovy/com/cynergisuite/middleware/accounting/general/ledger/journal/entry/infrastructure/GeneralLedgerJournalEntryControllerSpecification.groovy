@@ -88,27 +88,29 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
 
          message == glJournalEntryDTO.message
          postReversingEntry == glJournalEntryDTO.postReversingEntry
+         reversalId == null
       }
    }
 
-   void "create valid journal entry with reversal but without posting reversal" () {
+   void "create valid journal entry with posting reversal later" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
       final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
 
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
-      final account = accountDataLoaderService.single(company)
+      final account1 = accountDataLoaderService.single(company)
+      final account2 = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, company)
       def glJournalEntryDetailDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
          2,
-         new AccountDTO(account),
+         new AccountDTO(account1),
          new StoreDTO(profitCenter),
          10000 as BigDecimal
       ).toList()
       def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(
          2,
-         new AccountDTO(account),
+         new AccountDTO(account2),
          new StoreDTO(profitCenter),
          -10000 as BigDecimal
       ).toList()
@@ -145,7 +147,14 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
 
          message == glJournalEntryDTO.message
          postReversingEntry == glJournalEntryDTO.postReversingEntry
+         reversalId != null
       }
+
+      when: 'post reversal entry'
+      get("/accounting/general-ledger/reversal/entry/${result.reversalId}")
+
+      then:
+      notThrown(Exception)
    }
 
    void "create valid journal entry with posting reversal" () {
@@ -198,6 +207,7 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
 
          message == glJournalEntryDTO.message
          postReversingEntry == glJournalEntryDTO.postReversingEntry
+         reversalId == null
       }
    }
 
@@ -463,6 +473,7 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
 
          message == firstGLJournalEntryDTO.message
          postReversingEntry == firstGLJournalEntryDTO.postReversingEntry
+         reversalId == null
       }
 
       when: 'create multiple journal entries'
@@ -489,6 +500,7 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
 
          message == secondGLJournalEntryDTO.message
          postReversingEntry == secondGLJournalEntryDTO.postReversingEntry
+         reversalId == null
       }
    }
 }

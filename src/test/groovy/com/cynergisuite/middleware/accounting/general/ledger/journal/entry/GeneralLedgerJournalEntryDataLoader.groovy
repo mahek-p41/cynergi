@@ -36,7 +36,8 @@ class GeneralLedgerJournalEntryDataLoader {
             journalEntryNumber.getAndIncrement() as int,
             glDetailsIn,
             message,
-            postReversingEntryIn
+            postReversingEntryIn,
+            null
          )
       }
    }
@@ -60,7 +61,8 @@ class GeneralLedgerJournalEntryDataLoader {
             journalEntryNumber.getAndIncrement() as int,
             glDetailsIn,
             message,
-            postReversingEntryIn
+            postReversingEntryIn,
+            null
          )
       }
    }

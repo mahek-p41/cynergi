@@ -60,8 +60,8 @@ class GeneralLedgerReversalEntryService @Inject constructor(
       return !(reversalDate!!.isBefore(glOpenDateRange.first) || reversalDate.isAfter(glOpenDateRange.second))
    }
 
-   fun postReversalEntry(dto: GeneralLedgerReversalEntryDTO, user: User, locale: Locale) {
-      val entity = generalLedgerReversalEntryRepository.findOne(dto.generalLedgerReversal!!.id!!, user.myCompany())
+   fun postReversalEntry(id: UUID, user: User, locale: Locale) {
+      val entity = generalLedgerReversalEntryRepository.findOne(id, user.myCompany())
 
       // create GL details
       val journalEntryNumber = generalLedgerDetailRepository.findNextJENumber(user.myCompany())
@@ -82,7 +82,6 @@ class GeneralLedgerReversalEntryService @Inject constructor(
          glDetailDTO = generalLedgerDetailService.create(glDetailDTO, user.myCompany())
 
          // post glDetailDTO to GL summary
-         // todo: post accounting entries CYN-930
          val glAccountPostingDTO = GeneralLedgerAccountPostingDTO(glDetailDTO)
          generalLedgerDetailService.postEntry(glAccountPostingDTO, user.myCompany(), locale)
       }
