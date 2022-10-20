@@ -497,6 +497,25 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       authResponse.access_token != null
    }
 
+   void "login with sysz user who provides pass_code with exact pass_code of 4 and an address" () {
+      given:
+      final address = addressTestDataLoaderService.single()
+      final company = companyFactoryService.forDatasetCode('tstds1')
+
+      when:
+      companyRepository.update(company, company.copyMeWithNewAddress(address))
+      def authResponse = httpClient.toBlocking()
+         .exchange(
+            POST("/login", new LoginCredentials("105", "pass", 1, "tstds1")),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      authResponse.access_token != null
+   }
+
    void "login with sysz user who provides pass_code with 8 characters and uses the wrong passcode that is only 4 characters" () {
       when:
       httpClient.toBlocking()
