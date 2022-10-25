@@ -68,7 +68,8 @@ class SignHereAgreementProxyControllerSpecification extends ControllerSpecificat
                LocalDate.now().plusYears(7),
                [
                   'Agreement-No': '987654321',
-                  'Customer-No': '123456789'
+                  'Customer-No': '123456789',
+                  'Agreement-Type': 'R'
                ]
             ),
          ], new DocumentPageRequest(), 1, 1, true, true)
@@ -87,6 +88,7 @@ class SignHereAgreementProxyControllerSpecification extends ControllerSpecificat
          id != null
          agreementNumber == "987654321"
          customerNumber == "123456789"
+         agreementType == "R"
          timeCreated != null
       }
    }

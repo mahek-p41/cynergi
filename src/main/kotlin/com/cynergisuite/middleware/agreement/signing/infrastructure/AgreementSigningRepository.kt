@@ -225,6 +225,13 @@ class AgreementSigningRepository(
       }
    }
 
+   @ReadOnly
+   fun findAgreementTypeFromSignatureId(externalSignatureId: UUID): String? {
+      return jdbc.findFirstOrNull("SELECT agreement_type FROM agreement_signing WHERE external_signature_id = :externalSignatureId LIMIT 1", mapOf("externalSignatureId" to externalSignatureId)) { rs, _ ->
+         rs.getString("agreement_type")
+      }
+   }
+
    @Transactional
    fun insert(entity: AgreementSigningEntity): AgreementSigningEntity {
       logger.debug("Inserting Agreement Signing record {}", entity)
