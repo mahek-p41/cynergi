@@ -1,13 +1,11 @@
 package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 
 import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
-import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
@@ -92,7 +90,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
             JOIN account ON glJournal.account_id = account.account_id AND account.account_deleted = FALSE
             JOIN fastinfo_prod_import.store_vw profitCenter
                ON profitCenter.dataset = comp.dataset_code
-                  AND profitCenter.id = glJournal.profit_center_id_sfk
+                  AND profitCenter.number = glJournal.profit_center_id_sfk
             JOIN general_ledger_source_codes source ON glJournal.source_id = source.id AND source.deleted = FALSE
             LEFT OUTER JOIN bank ON bank.general_ledger_account_id = account.account_id AND bank.deleted = FALSE
       """
@@ -123,7 +121,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
 
       if (filterRequest.profitCenter != null) {
          params["profitCenter"] = filterRequest.profitCenter
-         whereClause.append(" AND profitCenter.id = :profitCenter")
+         whereClause.append(" AND profitCenter.number = :profitCenter")
       }
 
       if (filterRequest.beginSourceCode != null || filterRequest.endSourceCode != null) {
@@ -185,7 +183,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
          mapOf(
             "company_id" to company.id,
             "account_id" to entity.account.id,
-            "profit_center_id_sfk" to entity.profitCenter.myId(),
+            "profit_center_id_sfk" to entity.profitCenter.myNumber(),
             "date" to entity.date,
             "source_id" to entity.source.id,
             "amount" to entity.amount,
@@ -217,7 +215,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
             "id" to entity.id,
             "company_id" to company.id,
             "account_id" to entity.account.id,
-            "profit_center_id_sfk" to entity.profitCenter.myId(),
+            "profit_center_id_sfk" to entity.profitCenter.myNumber(),
             "date" to entity.date,
             "source_id" to entity.source.id,
             "amount" to entity.amount,

@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.AccountDTO
+import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
@@ -20,11 +20,11 @@ data class GeneralLedgerJournalDTO(
 
    @field:NotNull
    @field:Schema(name = "account", description = "Account ID")
-   var account: SimpleIdentifiableDTO? = null,
+   var account: AccountDTO? = null,
 
    @field:NotNull
    @field:Schema(name = "profitCenter", description = "Profit center ID")
-   var profitCenter: SimpleLegacyIdentifiableDTO? = null,
+   var profitCenter: StoreDTO? = null,
 
    @field:NotNull
    @field:Schema(name = "date", description = "Date")
@@ -46,8 +46,8 @@ data class GeneralLedgerJournalDTO(
    constructor(entity: GeneralLedgerJournalEntity) :
       this(
          id = entity.id,
-         account = SimpleIdentifiableDTO(entity.account.id),
-         profitCenter = SimpleLegacyIdentifiableDTO(entity.profitCenter.myId()),
+         account = AccountDTO(entity.account),
+         profitCenter = StoreDTO(entity.profitCenter),
          date = entity.date,
          source = GeneralLedgerSourceCodeDTO(entity.source),
          amount = entity.amount,

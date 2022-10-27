@@ -5,6 +5,7 @@ import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getBigDecimalOrNull
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
@@ -18,7 +19,10 @@ import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepo
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportSourceDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailEntity
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailFilterRequest
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailPageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
+import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerNetChangeDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -102,6 +106,34 @@ class GeneralLedgerDetailRepository @Inject constructor(
       """
    }
 
+   fun selectNetChangeQuery(): String {
+      return """
+         WITH account AS (
+            ${accountRepository.selectBaseQuery()}
+         )
+         SELECT
+             glDetail.company_id                                                    AS glDetail_company_id,
+             glDetail.profit_center_id_sfk                                          AS glDetail_profit_center_id_sfk,
+             acct.account_number                                                    AS acct_number,
+             SUM (case when glDetail.amount >= 0 then glDetail.amount else 0 end)   AS debit,
+             SUM (case when glDetail.amount < 0 then glDetail.amount else 0 end)    AS credit,
+             SUM (glDetail.amount)                                                  AS net_change,
+             glSummary.beginning_balance                                            AS begin_balance,
+             glSummary.beginning_balance + SUM (glDetail.amount)                    AS end_balance
+         FROM general_ledger_detail glDetail
+             JOIN company comp ON glDetail.company_id = comp.id AND comp.deleted = FALSE
+             JOIN fastinfo_prod_import.store_vw profitCenter
+                     ON profitCenter.dataset = comp.dataset_code
+                        AND profitCenter.number = glDetail.profit_center_id_sfk
+             JOIN account acct ON glDetail.account_id = acct.account_id AND acct.account_deleted = FALSE
+             JOIN general_ledger_source_codes source ON glDetail.source_id = source.id AND source.deleted = FALSE
+             LEFT OUTER JOIN bank ON bank.general_ledger_account_id = acct.account_id AND bank.deleted = FALSE
+             JOIN general_ledger_summary glSummary ON glSummary.company_id = glDetail.company_id
+                 AND glSummary.account_id = glDetail.account_id
+                 AND glSummary.profit_center_id_sfk = glDetail.profit_center_id_sfk
+      """
+   }
+
    @ReadOnly
    fun exists(company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
@@ -142,19 +174,69 @@ class GeneralLedgerDetailRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<GeneralLedgerDetailEntity, PageRequest> {
+   fun findNetChange(company: CompanyEntity, filterRequest: GeneralLedgerDetailFilterRequest): GeneralLedgerNetChangeDTO? {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val whereClause = StringBuilder("""WHERE glDetail.company_id = :comp_id AND glSummary.overall_period_id =
+         ( SELECT DISTINCT overall_period_id
+           FROM financial_calendar
+           WHERE glDetail.date BETWEEN period_from AND period_to) """.trimIndent())
+      val groupBy = " GROUP BY glDetail.company_id, glDetail.profit_center_id_sfk,acct.account_number,glSummary.beginning_balance "
+      if (filterRequest.from != null || filterRequest.thru != null) {
+         params["from"] = filterRequest.from
+         params["thru"] = filterRequest.thru
+         whereClause.append(" AND glDetail.date ")
+            .append(buildFilterString(filterRequest.from != null, filterRequest.thru != null, "from", "thru"))
+      }
+      if (filterRequest.profitCenter != null) {
+         params["profitCenter"] = filterRequest.profitCenter
+         whereClause.append(" AND profitCenter.number = :profitCenter")
+      }
+      if (filterRequest.account != null) {
+         params["account"] = filterRequest.account
+         whereClause.append(" AND acct.account_number = :account")
+      }
+      val query =
+         "${selectNetChangeQuery()}\n$whereClause\n$groupBy"
+
+      logger.debug("Querying for General Ledger Inquiry Net Change using {} {}", query, params)
+
+      val found = jdbc.findFirstOrNull(query, params) { rs, _  ->
+         val generalLedgerInquiry = mapNetChange(rs)
+
+         generalLedgerInquiry
+      }
+
+      logger.trace("Querying for General Ledger Inquiry Net Change resulted in {}", found)
+
+      return found
+   }
+
+   @ReadOnly
+   fun findAll(company: CompanyEntity, page: GeneralLedgerDetailPageRequest): RepositoryPage<GeneralLedgerDetailEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to page.size(), "offset" to page.offset())
+      val whereClause = StringBuilder(" WHERE glDetail.company_id = :comp_id ")
+      if (page.from != null || page.thru != null) {
+         params["from"] = page.from
+         params["thru"] = page.thru
+         whereClause.append(" AND glDetail.date ")
+            .append(buildFilterString(page.from != null, page.thru != null, "from", "thru"))
+      }
+      if (page.profitCenter != null) {
+         params["profitCenter"] = page.profitCenter
+         whereClause.append(" AND profitCenter.number = :profitCenter")
+      }
+      if (page.account != null) {
+         params["account"] = page.account
+         whereClause.append(" AND acct.account_number = :account")
+      }
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
-            WHERE glDetail.company_id = :comp_id
+            $whereClause
             ORDER BY glDetail_${page.snakeSortBy()} ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
-         mapOf(
-            "comp_id" to company.id,
-            "limit" to page.size(),
-            "offset" to page.offset()
-         ),
+         params,
          page
       ) { rs, elements ->
          val account = accountRepository.mapRow(rs, company, "acct_")
@@ -306,7 +388,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
 
       if (filterRequest.profitCenter != null) {
          params["profitCenter"] = filterRequest.profitCenter
-         whereClause.append(" AND profitCenter.id = :profitCenter")
+         whereClause.append(" AND profitCenter.number = :profitCenter")
       }
 
       if (filterRequest.sourceCode != null) {
@@ -445,7 +527,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
 
       if (filterRequest.profitCenter != null) {
          params["profitCenter"] = filterRequest.profitCenter
-         whereClause.append(" AND profitCenter.id = :profitCenter")
+         whereClause.append(" AND profitCenter.number = :profitCenter")
       }
 
       if (filterRequest.startDate != null || filterRequest.endDate != null) {
@@ -499,6 +581,19 @@ class GeneralLedgerDetailRepository @Inject constructor(
          message = rs.getString("${columnPrefix}message"),
          employeeNumberId = rs.getIntOrNull("${columnPrefix}employee_number_id_sfk"),
          journalEntryNumber = rs.getIntOrNull("${columnPrefix}journal_entry_number")
+      )
+   }
+
+   fun mapNetChange(
+      rs: ResultSet,
+      columnPrefix: String = EMPTY
+   ): GeneralLedgerNetChangeDTO {
+      return GeneralLedgerNetChangeDTO(
+         debit = rs.getBigDecimalOrNull("${columnPrefix}debit") ?: BigDecimal.ZERO,
+         credit = rs.getBigDecimalOrNull("${columnPrefix}credit") ?: BigDecimal.ZERO,
+         beginBalance = rs.getBigDecimalOrNull("${columnPrefix}begin_balance") ?: BigDecimal.ZERO,
+         endBalance = rs.getBigDecimalOrNull("${columnPrefix}end_balance") ?: BigDecimal.ZERO,
+         netChange = rs.getBigDecimalOrNull("${columnPrefix}net_change") ?: BigDecimal.ZERO,
       )
    }
 

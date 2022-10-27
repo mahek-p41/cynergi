@@ -4,13 +4,13 @@ import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
 import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
-import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDataLoaderService
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarCompleteDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarEntity
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
@@ -23,6 +23,8 @@ import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSource
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailFilterRequest
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailPageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDataLoaderService
@@ -32,9 +34,9 @@ import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastruct
 import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
 
+import java.time.LocalDate
 import java.time.OffsetDateTime
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
@@ -108,19 +110,29 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       given:
       final company = nineNineEightEmployee.company
       final glAccount = accountDataLoaderService.single(company)
+      final glAccount2 = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
       final generalLedgerDetails = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource).toList()
-      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
-      final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
+      final filterOne = new GeneralLedgerDetailPageRequest([account: glAccount.number, profitCenter: profitCenter.myNumber(), from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
+      final filterTwo = new GeneralLedgerDetailPageRequest([account: glAccount2.number, profitCenter: profitCenter.myNumber(), from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
+      final filterThree = new GeneralLedgerDetailPageRequest([account: glAccount.number, from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
 
       when:
-      def result = get("$path$pageOne")
+      def result = get("$path$filterOne")
 
       then:
       notThrown(Exception)
       with(result) {
-         requested.with { new StandardPageRequest(it) } == pageOne
+         requested.with {
+            page = filterOne.page
+            size = filterOne.size
+            sortBy = filterOne.sortBy
+            sortDirection = filterOne.sortDirection
+            from = filterOne.from
+            thru = filterOne.thru
+            account = filterOne.account
+         }
          totalElements == 3
          totalPages == 1
          first == true
@@ -130,7 +142,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
                id == generalLedgerDetails[index].id
                account.id == generalLedgerDetails[index].account.id
                date == generalLedgerDetails[index].date.toString()
-               profitCenter.id == generalLedgerDetails[index].profitCenter.id
+               profitCenter.number == generalLedgerDetails[index].profitCenter.number
                source.id == generalLedgerDetails[index].source.id
                amount == generalLedgerDetails[index].amount
                message == generalLedgerDetails[index].message
@@ -141,11 +153,32 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       }
 
       when:
-      get("$path$pageTwo")
+      get("$path$filterTwo")
 
       then:
       final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
+
+      when:
+      get("$path$filterThree")
+
+      then:
+      notThrown(Exception)
+      with(result) {
+         requested.with {
+            page = filterThree.page
+            size = filterThree.size
+            sortBy = filterThree.sortBy
+            sortDirection = filterThree.sortDirection
+            from = filterThree.from
+            thru = filterThree.thru
+            account = filterThree.account
+         }
+         totalElements == 3
+         totalPages == 1
+         first == true
+         last == true
+      }
    }
 
    void "create valid general ledger detail" () {
@@ -276,9 +309,9 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
       def generalLedgerDetail = GeneralLedgerDetailDataLoader.streamDTO(1, glAccount, profitCenter, glSource).findFirst().get()
-      generalLedgerDetail.account = new SimpleIdentifiableDTO(nonExistentId)
-      generalLedgerDetail.profitCenter = new SimpleLegacyIdentifiableDTO(0)
-      generalLedgerDetail.source = new SimpleIdentifiableDTO(nonExistentId)
+      generalLedgerDetail.account.id = nonExistentId
+      generalLedgerDetail.profitCenter.id = 999999
+      generalLedgerDetail.source.id = nonExistentId
 
       when:
       post("$path", generalLedgerDetail)
@@ -292,7 +325,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       response[0].message == "$nonExistentId was unable to be found"
       response[0].code == 'system.not.found'
       response[1].path == "profitCenter.id"
-      response[1].message == "0 was unable to be found"
+      response[1].message == "999999 was unable to be found"
       response[1].code == 'system.not.found'
       response[2].path == "source.id"
       response[2].message == "$nonExistentId was unable to be found"
@@ -427,9 +460,9 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final existingGLDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
       final updatedGLDetail = GeneralLedgerDetailDataLoader.streamDTO(1, glAccount, profitCenter, glSource).findFirst().get()
       updatedGLDetail.id = existingGLDetail.id
-      updatedGLDetail.account = new SimpleIdentifiableDTO(nonExistentId)
-      updatedGLDetail.profitCenter = new SimpleLegacyIdentifiableDTO(0)
-      updatedGLDetail.source = new SimpleIdentifiableDTO(nonExistentId)
+      updatedGLDetail.account.id = nonExistentId
+      updatedGLDetail.profitCenter.id = 999999
+      updatedGLDetail.source.id = nonExistentId
 
       when:
       put("$path/$existingGLDetail.id", updatedGLDetail)
@@ -444,7 +477,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       sortedResponse[0].message == "$nonExistentId was unable to be found"
       sortedResponse[0].code == 'system.not.found'
       sortedResponse[1].path == "profitCenter.id"
-      sortedResponse[1].message == "0 was unable to be found"
+      sortedResponse[1].message == "999999 was unable to be found"
       sortedResponse[1].code == 'system.not.found'
       sortedResponse[2].path == "source.id"
       sortedResponse[2].message == "$nonExistentId was unable to be found"
@@ -492,7 +525,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
             filterRequest['endingAccount'] = glAccount.number
             break
          case 'ProfitCenter':
-            filterRequest['profitCenter'] = glDetailsDTO[0].profitCenter.id
+            filterRequest['profitCenter'] = glDetailsDTO[0].profitCenter.storeNumber
             break
          case 'SourceCode':
             filterRequest['sourceCode'] = glSource.value
@@ -724,7 +757,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final calEnt = new FinancialCalendarEntity(calendar, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
       financialCalendarRepository.insert(calEnt, company)
       glDetailsDTO.date = calendar.periodFrom
-      final summary = generalLedgerSummaryDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glAccount.myId()), new SimpleLegacyIdentifiableDTO(profitCenter.myId()))
+      final summary = generalLedgerSummaryDataLoaderService.singleDTO(new SimpleIdentifiableDTO(glAccount.myId()), new SimpleLegacyIdentifiableDTO(profitCenter.myNumber()))
       summary.overallPeriod = new OverallPeriodTypeDTO(OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
       final sumEnt = new GeneralLedgerSummaryEntity(summary, glAccount, profitCenter, new OverallPeriodType( calEnt.overallPeriod.myId(), summary.overallPeriod.description, summary.overallPeriod.value, summary.overallPeriod.abbreviation, calEnt.overallPeriod.localizationCode))
       generalLedgerSummaryRepository.insert(sumEnt, company)
@@ -768,12 +801,12 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       then:
       notThrown(Exception)
       //glSummary updated netActivityPeriodX
-      def test = generalLedgerSummaryService.fetchOneByBusinessKey(company, glDetailsDTO.account.id, glDetailsDTO.profitCenter.myId(), calEnt.overallPeriod.value )
+      def test = generalLedgerSummaryService.fetchOneByBusinessKey(company, glDetailsDTO.account.id, glDetailsDTO.profitCenter.storeNumber, calEnt.overallPeriod.value )
       sumEnt.netActivityPeriod1 != test.netActivityPeriod1
       sumEnt.netActivityPeriod1 == test.netActivityPeriod1 - glDetailsDTO.amount
    }
 
-   void "post account entries where summary doesnt exist" () {
+   void "post account entries where summary doesn't exist" () {
       given:
       final company = nineNineEightEmployee.company
       final glAccount = accountDataLoaderService.single(company)
@@ -792,7 +825,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       new GeneralLedgerJournalEntryDetailDTO(new AccountDTO(glAccount), new BankReconciliationTypeDTO(bankType), new StoreDTO(profitCenter), 315.00)
       final postingDTO = new GeneralLedgerAccountPostingDTO([glDetail: glDetailsDTO, bankType: null])
       when:
-      def summary = generalLedgerSummaryService.fetchOneByBusinessKey(company, glDetailsDTO.account.id, glDetailsDTO.profitCenter.myId(), calEnt.overallPeriod.value)
+      def summary = generalLedgerSummaryService.fetchOneByBusinessKey(company, glDetailsDTO.account.id, glDetailsDTO.profitCenter.storeNumber, calEnt.overallPeriod.value)
 
       then:
       notThrown(Exception)
@@ -803,8 +836,60 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
 
       then:
       notThrown(Exception)
-      def test = generalLedgerSummaryService.fetchOneByBusinessKey(company, glDetailsDTO.account.id, glDetailsDTO.profitCenter.myId(), calEnt.overallPeriod.value )
+      def test = generalLedgerSummaryService.fetchOneByBusinessKey(company, glDetailsDTO.account.id, glDetailsDTO.profitCenter.storeNumber, calEnt.overallPeriod.value )
       test != null
 
+   }
+
+   void "fetch net change" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final glSrcCode = sourceCodeDataLoaderService.single(company)
+      final acct = accountDataLoaderService.single(company)
+      final store = storeFactoryService.store(3, company)
+      final glSummary1 = generalLedgerSummaryDataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(1))
+      final glSummary2 = generalLedgerSummaryDataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(2))
+      final beginDate = LocalDate.parse("2021-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+      final glDetails = generalLedgerDetailDataLoaderService.single(company, acct, store, glSrcCode)
+      final filterRequest1 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().minusYears(3).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: acct.number, profitCenter: store.myNumber()])
+      final filterRequest2 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().minusYears(3).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: 9999, profitCenter: store.myNumber()])
+      final creditAmount = (glDetails.amount < 0) ? glDetails.amount : 0
+      final debitAmount = (glDetails.amount > 0) ? glDetails.amount : 0
+
+      when:
+      def result1 = post("/accounting/financial-calendar/complete", financialCalendarDTO)
+
+      then:
+      notThrown(Exception)
+      result1 != null
+
+      when:
+      def result2 = get("$path/netchange$filterRequest1")
+
+      then:
+      notThrown(Exception)
+      result2 != null
+      with(result2) {
+         beginBalance == glSummary2.beginningBalance
+         credit == creditAmount
+         debit == debitAmount
+         netChange == creditAmount + debitAmount
+         endBalance == glSummary2.beginningBalance + glDetails.amount
+      }
+
+      when:
+      get("$path/netchange$filterRequest2")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status() == NOT_FOUND
+
+      when:
+      get("$path/netchange")
+
+      then:
+      final exception2 = thrown(HttpClientResponseException)
+      exception2.response.status() == BAD_REQUEST
    }
 }

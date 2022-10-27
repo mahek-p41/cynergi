@@ -1,16 +1,10 @@
 package com.cynergisuite.middleware.accounting.general.ledger
 
-import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDTO
-import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
-import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
-import java.util.*
-import javax.validation.constraints.NotNull
+import java.util.UUID
 
 @Introspected
 @JsonInclude(NON_NULL)

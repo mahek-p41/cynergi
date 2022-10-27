@@ -2,19 +2,18 @@ package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
-import com.cynergisuite.domain.infrastructure.RepositoryPage
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerJournalRepository
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.store.StoreDTO
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.util.UUID
 import java.util.Locale
+import java.util.UUID
 import javax.transaction.Transactional
 
 @Singleton
@@ -66,10 +65,10 @@ class GeneralLedgerJournalService @Inject constructor(
          // create GL detail for each distribution
             glDetailDTO = GeneralLedgerDetailDTO(
                null,
-               SimpleIdentifiableDTO(it.id),
+               AccountDTO(it.account),
                it.date,
-               SimpleLegacyIdentifiableDTO(it.profitCenter.myId()),
-               SimpleIdentifiableDTO(it.source),
+               StoreDTO(it.profitCenter),
+               GeneralLedgerSourceCodeDTO(it.source),
                it.amount,
                it.message,
                user.myEmployeeNumber(),
@@ -90,10 +89,10 @@ class GeneralLedgerJournalService @Inject constructor(
       // create GL detail
       var glDetailDTO: GeneralLedgerDetailDTO = GeneralLedgerDetailDTO(
             null,
-            SimpleIdentifiableDTO(dto.id!!),
+            dto.account,
             dto.date,
-            SimpleLegacyIdentifiableDTO(dto.profitCenter!!.myId()),
-            SimpleIdentifiableDTO(dto.source!!.id),
+            dto.profitCenter,
+            dto.source,
             dto.amount,
             dto.message,
             user.myEmployeeNumber(),

@@ -1,10 +1,9 @@
 package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 
 import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
-import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarEntity
@@ -14,16 +13,17 @@ import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJourna
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
+import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import jakarta.inject.Inject
 import spock.lang.Unroll
 
-import jakarta.inject.Inject
 import java.time.LocalDate
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
-import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class GeneralLedgerJournalControllerSpecification extends ControllerSpecificationBase {
@@ -202,8 +202,8 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       financialCalendarRepository.insert(calEnt, company)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glJournalDTO = dataLoaderService.singleDTO(
-         new SimpleIdentifiableDTO(acct.myId()),
-         new SimpleLegacyIdentifiableDTO(store.myId()),
+         new AccountDTO(acct),
+         new StoreDTO(store),
          calendar.periodFrom,
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
@@ -242,8 +242,8 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       financialCalendarRepository.insert(calEnt, company)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glJournalDTO = dataLoaderService.singleDTO(
-         new SimpleIdentifiableDTO(acct.myId()),
-         new SimpleLegacyIdentifiableDTO(store.myId()),
+         new AccountDTO(acct),
+         new StoreDTO(store),
          calendar.periodFrom,
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
@@ -280,8 +280,8 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final store = storeFactoryService.store(3, company)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glJournalDTO = dataLoaderService.singleDTO(
-         new SimpleIdentifiableDTO(acct.myId()),
-         new SimpleLegacyIdentifiableDTO(store.myId()),
+         new AccountDTO(acct),
+         new StoreDTO(store),
          LocalDate.now(),
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
@@ -319,8 +319,8 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final existingGLJournal = dataLoaderService.single(company, acct, store, LocalDate.now(), glSourceCode)
       final updatedGLJournal = dataLoaderService.singleDTO(
-         new SimpleIdentifiableDTO(acct.myId()),
-         new SimpleLegacyIdentifiableDTO(store.myId()),
+         new AccountDTO(acct),
+         new StoreDTO(store),
          calendar.periodFrom,
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
@@ -361,8 +361,8 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final existingGLJournal = dataLoaderService.single(company, acct, store, LocalDate.now(), glSourceCode)
       final updatedGLJournal = dataLoaderService.singleDTO(
-         new SimpleIdentifiableDTO(acct.myId()),
-         new SimpleLegacyIdentifiableDTO(store.myId()),
+         new AccountDTO(acct),
+         new StoreDTO(store),
          calendar.periodFrom,
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
@@ -401,8 +401,8 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final existingGLJournal = dataLoaderService.single(company, acct, store, LocalDate.now(), glSourceCode)
       final updatedGLJournal = dataLoaderService.singleDTO(
-         new SimpleIdentifiableDTO(acct.myId()),
-         new SimpleLegacyIdentifiableDTO(store.myId()),
+         new AccountDTO(acct),
+         new StoreDTO(store),
          LocalDate.now(),
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
@@ -474,7 +474,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       def filterRequest = new GeneralLedgerJournalFilterRequest([sortBy: "id", sortDirection: "ASC"])
       switch (criteria) {
          case 'ProfitCenter':
-            filterRequest['profitCenter'] = glJournals[0].profitCenter.id
+            filterRequest['profitCenter'] = glJournals[0].profitCenter.storeNumber
             break
          case 'SourceCode':
             filterRequest['beginSourceCode'] = "AAA"

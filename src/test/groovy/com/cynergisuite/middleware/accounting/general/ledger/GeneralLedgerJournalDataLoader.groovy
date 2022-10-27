@@ -1,20 +1,20 @@
 package com.cynergisuite.middleware.accounting.general.ledger
 
-import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerJournalRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreDTO
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
+
 import java.math.RoundingMode
 import java.time.LocalDate
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import jakarta.inject.Singleton
 
 @CompileStatic
 class GeneralLedgerJournalDataLoader {
@@ -45,7 +45,7 @@ class GeneralLedgerJournalDataLoader {
 
    }
 
-   static Stream<GeneralLedgerJournalDTO> streamDTO(int numberIn = 1, SimpleIdentifiableDTO accountIn, SimpleLegacyIdentifiableDTO profitCenterIn, LocalDate dateIn, GeneralLedgerSourceCodeDTO sourceIn) {
+   static Stream<GeneralLedgerJournalDTO> streamDTO(int numberIn = 1, AccountDTO accountIn, StoreDTO profitCenterIn, LocalDate dateIn, GeneralLedgerSourceCodeDTO sourceIn) {
       final number = numberIn > 0 ? numberIn : 1
       final faker = new Faker()
       final numbers = faker.number()
@@ -83,7 +83,7 @@ class GeneralLedgerJournalDataLoaderService {
       return stream(1, company, accountIn, profitCenterIn, dateIn, sourceIn).findFirst().orElseThrow { Exception("Unable to find GeneralLedgerJournal") }
    }
 
-   GeneralLedgerJournalDTO singleDTO(SimpleIdentifiableDTO accountIn, SimpleLegacyIdentifiableDTO profitCenterIn, LocalDate dateIn, GeneralLedgerSourceCodeDTO sourceIn) {
+   GeneralLedgerJournalDTO singleDTO(AccountDTO accountIn, StoreDTO profitCenterIn, LocalDate dateIn, GeneralLedgerSourceCodeDTO sourceIn) {
       return GeneralLedgerJournalDataLoader.streamDTO(1, accountIn, profitCenterIn, dateIn, sourceIn).findFirst().orElseThrow { Exception("Unable to create GeneralLedgerJournal") }
    }
 

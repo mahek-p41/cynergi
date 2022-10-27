@@ -3,16 +3,17 @@ package com.cynergisuite.middleware.accounting.general.ledger.summary
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodType
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository
-import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-
 import jakarta.inject.Singleton
+
 import java.math.RoundingMode
 import java.util.stream.IntStream
 import java.util.stream.Stream
@@ -20,7 +21,7 @@ import java.util.stream.Stream
 @CompileStatic
 class GeneralLedgerSummaryDataLoader {
 
-   static Stream<GeneralLedgerSummaryEntity> stream(int numberIn = 1, AccountEntity accountIn, Store profitCenterIn) {
+   static Stream<GeneralLedgerSummaryEntity> stream(int numberIn = 1, AccountEntity accountIn, Store profitCenterIn, OverallPeriodType periodIn) {
       final number = numberIn > 0 ? numberIn : 1
       final faker = new Faker()
       final random = faker.random()
@@ -30,21 +31,21 @@ class GeneralLedgerSummaryDataLoader {
             null,
             accountIn,
             profitCenterIn,
-            OverallPeriodTypeDataLoader.random(),
-            random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
+            periodIn ?: OverallPeriodTypeDataLoader.random(),
+            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
          )
       }
    }
@@ -59,20 +60,20 @@ class GeneralLedgerSummaryDataLoader {
             'account': accountIn,
             'profitCenter': profitCenterIn,
             'overallPeriod': new OverallPeriodTypeDTO(OverallPeriodTypeDataLoader.random()),
-            'netActivityPeriod1': random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod2': random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod3': random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod4': random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod5': random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod6': random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod7': random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod8': random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod9': random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod10': random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod11': random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod12': random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'beginningBalance': random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'closingBalance': random.nextInt(1, Integer.MAX_VALUE).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
+            'netActivityPeriod1': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            'netActivityPeriod2': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            'netActivityPeriod3': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            'netActivityPeriod4': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            'netActivityPeriod5': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            'netActivityPeriod6': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            'netActivityPeriod7': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            'netActivityPeriod8': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            'netActivityPeriod9': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            'netActivityPeriod10': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            'netActivityPeriod11': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            'netActivityPeriod12': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            'beginningBalance': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            'closingBalance': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
          ])
       }
    }
@@ -88,15 +89,20 @@ class GeneralLedgerSummaryDataLoaderService {
       this.generalLedgerSummaryRepository = generalLedgerSummaryRepository
    }
 
-   Stream<GeneralLedgerSummaryEntity> stream(int numberIn = 1, CompanyEntity companyIn, AccountEntity accountIn, Store profitCenterIn) {
-      return GeneralLedgerSummaryDataLoader.stream(numberIn, accountIn, profitCenterIn).map {
+   Stream<GeneralLedgerSummaryEntity> stream(int numberIn = 1, CompanyEntity companyIn, AccountEntity accountIn, Store profitCenterIn, OverallPeriodType periodIn) {
+      return GeneralLedgerSummaryDataLoader.stream(numberIn, accountIn, profitCenterIn, periodIn).map {
          generalLedgerSummaryRepository.insert(it, companyIn)
       }
    }
 
-   GeneralLedgerSummaryEntity single(CompanyEntity companyIn, AccountEntity accountIn, Store profitCenterIn) {
-      return stream(1, companyIn, accountIn, profitCenterIn).findFirst().orElseThrow { new Exception("Unable to create GeneralLedgerSummaryEntity") }
+   GeneralLedgerSummaryEntity single(CompanyEntity companyIn, AccountEntity accountIn, Store profitCenterIn, OverallPeriodType periodIn) {
+      return stream(1, companyIn, accountIn, profitCenterIn, periodIn).findFirst().orElseThrow { new Exception("Unable to create GeneralLedgerSummaryEntity") }
    }
+
+   GeneralLedgerSummaryEntity single(CompanyEntity companyIn, AccountEntity accountIn, Store profitCenterIn) {
+      return stream(1, companyIn, accountIn, profitCenterIn, null).findFirst().orElseThrow { new Exception("Unable to create GeneralLedgerSummaryEntity") }
+   }
+
 
    GeneralLedgerSummaryDTO singleDTO(SimpleIdentifiableDTO accountIn, SimpleLegacyIdentifiableDTO profitCenterIn) {
       return GeneralLedgerSummaryDataLoader.streamDTO(1, accountIn, profitCenterIn).findFirst().orElseThrow { new Exception("Unable to create GeneralLedgerSummary") }

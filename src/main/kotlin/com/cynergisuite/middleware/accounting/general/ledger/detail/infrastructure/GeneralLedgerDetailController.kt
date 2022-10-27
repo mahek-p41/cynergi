@@ -3,14 +3,16 @@ package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastruct
 import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
 import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingResponseDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailFilterRequest
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailPageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
+import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerNetChangeDTO
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -85,7 +87,7 @@ class GeneralLedgerDetailController @Inject constructor(
    fun fetchAll(
       @Parameter(name = "pageRequest", `in` = QUERY, required = false)
       @Valid @QueryValue("pageRequest")
-      pageRequest: StandardPageRequest,
+      pageRequest: GeneralLedgerDetailPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<GeneralLedgerDetailDTO> {
@@ -227,5 +229,28 @@ class GeneralLedgerDetailController @Inject constructor(
       logger.debug("Posting GeneralLedgerDetail {} resulted in {}", dto, response)
 
       return response
+   }
+
+   @Get(uri = "/netchange{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Fetch a General Ledger Inquiry Net Change", description = "Fetch a General Ledger Inquiry Net Change", operationId = "generalLedgerInquiry-NetChange")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerDetailFilterRequest::class))]),
+         ApiResponse(responseCode = "204", description = "The requested General Ledger Inquiry Net Change was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchNetChange(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: GeneralLedgerDetailFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): GeneralLedgerNetChangeDTO {
+      logger.info("Fetching General Ledger Inquiry Net Change")
+
+      val user = userService.fetchUser(authentication)
+      return generalLedgerDetailService.fetchNetChange(user.myCompany(), filterRequest) ?: throw NotFoundException("GL Net Change")
    }
 }

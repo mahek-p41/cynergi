@@ -11,8 +11,8 @@ import com.cynergisuite.middleware.accounting.general.ledger.reversal.distributi
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.GeneralLedgerReversalEntryDTO
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.GeneralLedgerReversalEntryService
 import com.cynergisuite.middleware.authentication.user.User
-import jakarta.inject.Singleton
 import jakarta.inject.Inject
+import jakarta.inject.Singleton
 import java.math.BigDecimal
 import java.util.Locale
 import javax.transaction.Transactional
@@ -38,10 +38,10 @@ class GeneralLedgerJournalEntryService @Inject constructor(
       dto.journalEntryDetails.forEach { journalEntryDetail ->
          glDetailDTO = GeneralLedgerDetailDTO(
             null,
-            SimpleIdentifiableDTO(journalEntryDetail.account!!.id),
+            journalEntryDetail.account,
             dto.entryDate,
-            SimpleLegacyIdentifiableDTO(journalEntryDetail.profitCenter!!.id),
-            SimpleIdentifiableDTO(dto.source!!),
+            journalEntryDetail.profitCenter,
+            dto.source!!,
             journalEntryDetail.amount,
             dto.message,
             user.myEmployeeNumber(),

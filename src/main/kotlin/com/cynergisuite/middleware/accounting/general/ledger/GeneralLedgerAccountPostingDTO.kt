@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
-import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.micronaut.core.annotation.Introspected

@@ -4,9 +4,9 @@ import com.cynergisuite.domain.GeneralLedgerRecurringEntriesFilterRequest
 import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
 import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountService
 import com.cynergisuite.middleware.accounting.bank.BankService
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDTO
@@ -18,24 +18,27 @@ import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPer
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingResponseDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportTemplate
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeService
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
+import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerNetChangeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.GeneralLedgerRecurringEntriesDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.infrastructure.GeneralLedgerRecurringEntriesRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
-import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDTO
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryService
+import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.GLNotOpen
+import com.cynergisuite.middleware.store.StoreDTO
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.math.BigDecimal
-import java.util.UUID
 import java.util.Locale
+import java.util.UUID
 import javax.transaction.Transactional
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.full.memberProperties
@@ -58,7 +61,7 @@ class GeneralLedgerDetailService @Inject constructor(
       return generalLedgerDetailRepository.findOne(id, company)?.let { transformEntity(it) }
    }
 
-   fun fetchAll(company: CompanyEntity, pageRequest: PageRequest): Page<GeneralLedgerDetailDTO> {
+   fun fetchAll(company: CompanyEntity, pageRequest: GeneralLedgerDetailPageRequest): Page<GeneralLedgerDetailDTO> {
       val found = generalLedgerDetailRepository.findAll(company, pageRequest)
 
       return found.toPage { entity: GeneralLedgerDetailEntity ->
@@ -102,10 +105,10 @@ class GeneralLedgerDetailService @Inject constructor(
          it.generalLedgerRecurringDistributions.forEach { distribution ->
             glDetailDTO = GeneralLedgerDetailDTO(
                null,
-               SimpleIdentifiableDTO(distribution.generalLedgerDistributionAccount.id),
+               AccountDTO(distribution.generalLedgerDistributionAccount),
                filterRequest.entryDate,
-               SimpleLegacyIdentifiableDTO(distribution.generalLedgerDistributionProfitCenter.myId()),
-               SimpleIdentifiableDTO(it.generalLedgerRecurring.source),
+               StoreDTO(distribution.generalLedgerDistributionProfitCenter),
+               GeneralLedgerSourceCodeDTO(it.generalLedgerRecurring.source),
                distribution.generalLedgerDistributionAmount,
                it.generalLedgerRecurring.message,
                filterRequest.employeeNumber,
@@ -135,10 +138,10 @@ class GeneralLedgerDetailService @Inject constructor(
       glRecurringEntry!!.generalLedgerRecurringDistributions.forEach { distribution ->
          glDetailDTO = GeneralLedgerDetailDTO(
             null,
-            SimpleIdentifiableDTO(distribution.generalLedgerDistributionAccount.id),
+            AccountDTO(distribution.generalLedgerDistributionAccount),
             dto.entryDate,
-            SimpleLegacyIdentifiableDTO(distribution.generalLedgerDistributionProfitCenter.myId()),
-            SimpleIdentifiableDTO(glRecurringEntry.generalLedgerRecurring.source),
+            StoreDTO(distribution.generalLedgerDistributionProfitCenter),
+            GeneralLedgerSourceCodeDTO(glRecurringEntry.generalLedgerRecurring.source),
             distribution.generalLedgerDistributionAmount,
             dto.generalLedgerRecurring!!.message,
             user.myEmployeeNumber(),
@@ -166,7 +169,7 @@ class GeneralLedgerDetailService @Inject constructor(
       val summaryUpdated : UUID?
       val bankRecon : UUID?
       // If summary record not found, create them, then set the appropriate one
-      var summary = generalLedgerSummaryService.fetchOneByBusinessKey(company, generalLedgerDetail.account?.id!!, generalLedgerDetail.profitCenter?.myId()!!, overallPeriod)
+      var summary = generalLedgerSummaryService.fetchOneByBusinessKey(company, generalLedgerDetail.account?.id!!, generalLedgerDetail.profitCenter?.storeNumber!!, overallPeriod)
          ?:
          createSummaries(generalLedgerDetail, company, overallPeriod)
       if (cal.generalLedgerOpen == false) {
@@ -239,5 +242,9 @@ class GeneralLedgerDetailService @Inject constructor(
          generalLedgerSummaryService.create(summaryDTO, company)
       }
       return createdSummaryDTO
+   }
+
+   fun fetchNetChange(company: CompanyEntity, filterRequest: GeneralLedgerDetailFilterRequest): GeneralLedgerNetChangeDTO? {
+      return generalLedgerDetailRepository.findNetChange(company, filterRequest)
    }
 }
