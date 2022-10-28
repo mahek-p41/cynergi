@@ -197,7 +197,8 @@ class GeneralLedgerJournalController @Inject constructor(
       ]
    )
    fun purge(
-      @Body @Valid
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
       filterRequest: GeneralLedgerJournalFilterRequest,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
