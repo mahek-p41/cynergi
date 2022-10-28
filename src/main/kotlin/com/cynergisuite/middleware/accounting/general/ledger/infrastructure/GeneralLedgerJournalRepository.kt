@@ -142,6 +142,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
          """
             ${selectBaseQuery()}
             $whereClause
+            ORDER BY glJournal_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
          params,
