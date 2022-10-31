@@ -8,8 +8,8 @@ import com.cynergisuite.domain.PageRequestDefaults.DEFAULT_SORT_DIRECTION
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.ValidPageSortBy
 import io.swagger.v3.oas.annotations.media.Schema
-import org.jetbrains.annotations.NotNull
 import java.time.LocalDate
+import javax.validation.constraints.NotNull
 
 @Schema(
    name = "GeneralLedgerDetailPageRequest",
@@ -32,11 +32,16 @@ class GeneralLedgerDetailPageRequest(
    @field:Schema(name = "thru", description = "Top end of the range which will be used to filter GL Details.  If from is found thru is required.  If both from and thru are empty then the result will include all GL Details")
    var thru: LocalDate? = null
 
+   @field:NotNull
    @field:Schema(name = "account", description = "Account number")
    var account: Int? = null
 
    @field:Schema(name = "profitCenter", description = "Profit center")
    var profitCenter: Int? = null
+
+   @field:NotNull
+   @field:Schema(name = "fiscalYear", description = "Fiscal year")
+   var fiscalYear: Int? = null
 
    @ValidPageSortBy("id")
    override fun sortByMe(): String = sortBy()
@@ -52,6 +57,7 @@ class GeneralLedgerDetailPageRequest(
          it.thru = thru
          it.account = account
          it.profitCenter = profitCenter
+         it.fiscalYear = fiscalYear
       }
 
    override fun myToStringValues(): List<Pair<String, Any?>> =
@@ -60,5 +66,6 @@ class GeneralLedgerDetailPageRequest(
          "thru" to thru,
          "account" to account,
          "profitCenter" to profitCenter,
+         "fiscalYear" to fiscalYear,
       )
 }

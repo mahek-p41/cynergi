@@ -14,6 +14,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedge
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
 import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerNetChangeDTO
 import com.cynergisuite.middleware.authentication.user.UserService
+import com.cynergisuite.middleware.error.NoContentException
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
@@ -251,6 +252,6 @@ class GeneralLedgerDetailController @Inject constructor(
       logger.info("Fetching General Ledger Inquiry Net Change")
 
       val user = userService.fetchUser(authentication)
-      return generalLedgerDetailService.fetchNetChange(user.myCompany(), filterRequest) ?: throw NotFoundException("GL Net Change")
+      return generalLedgerDetailService.fetchNetChange(user.myCompany(), filterRequest) ?: throw NoContentException()
    }
 }

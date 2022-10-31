@@ -10,12 +10,14 @@ import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalend
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailPageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringTypeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringTypeDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.GeneralLedgerRecurringEntriesDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDataLoaderService
 import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -39,6 +41,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
    @Inject GeneralLedgerRecurringTypeDataLoaderService generalLedgerRecurringTypeDataLoaderService
    @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
    @Inject FinancialCalendarDataLoaderService financialCalendarDataLoaderService
+   @Inject GeneralLedgerSummaryDataLoaderService generalLedgerSummaryDataLoaderService
 
    void "fetch one" () {
       given:
@@ -777,7 +780,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate).collect()
       final dateRangeDTO = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(80))
-      final glDetailPage = new StandardPageRequest(1, 5, "id", "ASC")
+      final glDetailPage = new GeneralLedgerDetailPageRequest([account: acct.number, profitCenter: store.myNumber(), fiscalYear: entryDate.getYear(), from: glRecurringDTO.beginDate.minusDays(20), thru: glRecurringDTO.endDate.plusDays(20)])
 
       when: 'open GL in financial calendar'
       put("/accounting/financial-calendar/open-gl", dateRangeDTO)
@@ -832,7 +835,15 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       then:
       notThrown(Exception)
       with(fetchResult) {
-         requested.with { new StandardPageRequest(it) } == glDetailPage
+         fetchResult.with {
+            page = glDetailPage.page
+            size = glDetailPage.size
+            sortBy = glDetailPage.sortBy
+            sortDirection = glDetailPage.sortDirection
+            from = glDetailPage.from
+            thru = glDetailPage.thru
+            account = glDetailPage.account
+         }
          totalElements == 1
          totalPages == 1
          first == true
