@@ -451,11 +451,11 @@ class GeneralLedgerDetailRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
 
       if (filterRequest.startSource != null && filterRequest.endSource != null) {
-         whereClause.append(" AND glSrcCodes.value BETWEEN ${filterRequest.startSource} AND ${filterRequest.endSource}")
+         whereClause.append(" AND glSrcCodes.value BETWEEN '${filterRequest.startSource}' AND '${filterRequest.endSource}'")
       } else if (filterRequest.startSource != null) {
-         whereClause.append(" AND glSrcCodes.value = ${filterRequest.startSource}")
+         whereClause.append(" AND glSrcCodes.value = '${filterRequest.startSource}'")
       } else if (filterRequest.endSource != null) {
-         whereClause.append(" AND glSrcCodes.value = ${filterRequest.endSource}")
+         whereClause.append(" AND glSrcCodes.value = '${filterRequest.endSource}'")
       }
 
       jdbc.query(
@@ -475,7 +475,9 @@ class GeneralLedgerDetailRepository @Inject constructor(
       val sourceDetailDTOs = mutableListOf<GeneralLedgerSourceReportSourceDetailDTO>()
       sourceCodes.forEach {
          val glDetailList = fetchSourceReportDetails(company, filterRequest, it)
-         sourceDetailDTOs.add(GeneralLedgerSourceReportSourceDetailDTO(glDetailList))
+         if (glDetailList.isNotEmpty()) {
+            sourceDetailDTOs.add(GeneralLedgerSourceReportSourceDetailDTO(glDetailList))
+         }
       }
 
       // calculate description totals
