@@ -20,8 +20,14 @@ class GeneralLedgerProfitCenterTrialBalanceReportFilterRequest(
    @field:Schema(name = "selectLocsBy", description = "How locations will be selected")
    var selectLocsBy: Int? = null,
 
-   @field:Schema(name = "locsOrGroups", description = "List or range of locations or groups based on selectLocsBy")
-   var locsOrGroups: List<Int>? = null,
+   @field:Schema(name = "any10LocsOrGroups", description = "List of locations or groups when selecting by any 10")
+   var any10LocsOrGroups: List<Int>? = null,
+
+   @field:Schema(name = "startingLocOrGroup", description = "Starting loc or group when selecting by range")
+   var startingLocOrGroup: Int? = null,
+
+   @field:Schema(name = "endingLocOrGroup", description = "Ending loc or group when selecting by range")
+   var endingLocOrGroup: Int? = null,
 
    @field:Schema(name = "startingDate", description = "Starting date")
    var startingDate: LocalDate? = null,
@@ -38,7 +44,9 @@ class GeneralLedgerProfitCenterTrialBalanceReportFilterRequest(
          "startingAccount" to startingAccount,
          "endingAccount" to endingAccount,
          "selectLocsBy" to selectLocsBy,
-         "locsOrGroups" to locsOrGroups,
+         "any10LocsOrGroups" to any10LocsOrGroups,
+         "startingLocOrGroup" to startingLocOrGroup,
+         "endingLocOrGroup" to endingLocOrGroup,
          "startingDate" to startingDate,
          "endingDate" to endingDate
       )

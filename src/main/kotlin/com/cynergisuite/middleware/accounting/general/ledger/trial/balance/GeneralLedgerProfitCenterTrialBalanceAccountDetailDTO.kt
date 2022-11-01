@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.trial.balance
 
 import com.cynergisuite.middleware.accounting.account.AccountDTO
+import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerNetChangeDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -20,6 +21,6 @@ data class GeneralLedgerProfitCenterTrialBalanceAccountDetailDTO(
 
    @field:NotNull
    @field:Schema(description = "Account totals")
-   var accountTotals: TrialBalanceReportTotalsDTO? = null
+   var accountTotals: GeneralLedgerNetChangeDTO? = null
 
 )

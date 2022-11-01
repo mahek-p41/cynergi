@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure
 
+import com.cynergisuite.domain.GeneralLedgerProfitCenterTrialBalanceReportFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
@@ -9,6 +10,7 @@ import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
+import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.type.infrastructure.OverallPeriodTypeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryEntity
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -28,6 +30,7 @@ import javax.transaction.Transactional
 class GeneralLedgerSummaryRepository @Inject constructor(
    private val jdbc: Jdbi,
    private val accountRepository: AccountRepository,
+   private val financialCalendarRepository: FinancialCalendarRepository,
    private val storeRepository: StoreRepository,
    private val overallPeriodTypeRepository: OverallPeriodTypeRepository
 ) {
@@ -315,6 +318,66 @@ class GeneralLedgerSummaryRepository @Inject constructor(
             "closing_balance" to entity.closingBalance
          )
       ) { rs, _ -> mapRow(rs, entity) }
+   }
+
+   @ReadOnly
+   fun fetchProfitCenterTrialBalanceReportRecords(company: CompanyEntity, filterRequest: GeneralLedgerProfitCenterTrialBalanceReportFilterRequest): List<GeneralLedgerSummaryEntity> {
+      val pair = financialCalendarRepository.findOverallPeriodIdAndPeriod(company, filterRequest.startingDate!!)
+      val overallPeriodId = pair.first
+      val period = pair.second
+      val glSummaries = mutableListOf<GeneralLedgerSummaryEntity>()
+      val whereClause = StringBuilder(
+         "WHERE glSummary.company_id = :company_id " +
+         "AND glSummary.overall_period_id = :overall_period_id " +
+         "AND (glSummary.account_id BETWEEN :starting_account AND :ending_account) " +
+         "AND (" +
+            "glSummary_acct_status_id = 1 OR " +
+            "glSummary.beginning_balance <> 0.00 OR " +
+            "glSummary.net_activity_period_$period <> 0.00" +
+         ") " +
+         "AND glSummary.deleted = FALSE"
+      )
+
+      // select locations based on criteria (1 selects all locations)
+      when (filterRequest.selectLocsBy) {
+         2 ->
+            whereClause.append(" AND glSummary.profit_center_id_sfk IN :any_10_locs_or_groups")
+         3 ->
+            whereClause.append(" AND glSummary.profit_center_id_sfk BETWEEN :starting_loc_or_group AND :ending_loc_or_group")
+         // todo: 4 & 5 use location groups
+      }
+
+      // assign sort by
+      val sortBy = StringBuilder("ORDER BY ")
+      when (filterRequest.sortBy) {
+         "location" ->
+            sortBy.append("glSummary.profit_center_id_sfk ASC, glSummary.account_id ASC")
+         "account" ->
+            sortBy.append("glSummary.account_id ASC, glSummary.profit_center_id_sfk ASC")
+      }
+
+      jdbc.query(
+         """
+            ${selectBaseQuery()}
+            $whereClause
+            $sortBy
+         """.trimIndent(),
+         mapOf(
+            "company_id" to company.id,
+            "overall_period_id" to overallPeriodId,
+            "starting_account" to filterRequest.startingAccount,
+            "ending_account" to filterRequest.endingAccount,
+            "any_10_locs_or_groups" to filterRequest.any10LocsOrGroups,
+            "starting_loc_or_group" to filterRequest.startingLocOrGroup,
+            "ending_loc_or_group" to filterRequest.endingLocOrGroup
+         )
+      ) { rs, _ ->
+         do {
+            glSummaries.add(mapRow(rs, company, "glSummary_"))
+         } while (rs.next())
+      }
+
+      return glSummaries
    }
 
    private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): GeneralLedgerSummaryEntity {

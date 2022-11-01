@@ -9,22 +9,22 @@ data class TrialBalanceReportTotalsDTO(
 
    @field:NotNull
    @field:Schema(description = "Beginning balance")
-   var begBalance: BigDecimal? = BigDecimal.ZERO,
+   var begBalance: BigDecimal = BigDecimal.ZERO,
 
    @field:NotNull
    @field:Schema(description = "Debit amount")
-   var debit: BigDecimal? = BigDecimal.ZERO,
+   var debit: BigDecimal = BigDecimal.ZERO,
 
    @field:NotNull
    @field:Schema(description = "Credit amount")
-   var credit: BigDecimal? = BigDecimal.ZERO,
+   var credit: BigDecimal = BigDecimal.ZERO,
 
    @field:NotNull
    @field:Schema(description = "Net change")
-   var netChange: BigDecimal? = BigDecimal.ZERO,
+   var netChange: BigDecimal = BigDecimal.ZERO,
 
    @field:NotNull
    @field:Schema(description = "Closing balance")
-   var endBalance: BigDecimal? = BigDecimal.ZERO
+   var endBalance: BigDecimal = BigDecimal.ZERO
 
 )

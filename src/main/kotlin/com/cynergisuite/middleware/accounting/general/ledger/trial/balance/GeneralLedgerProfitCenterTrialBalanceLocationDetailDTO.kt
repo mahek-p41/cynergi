@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.trial.balance
 
+import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerNetChangeDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -19,6 +20,6 @@ data class GeneralLedgerProfitCenterTrialBalanceLocationDetailDTO(
 
    @field:NotNull
    @field:Schema(description = "Location totals")
-   var locationTotals: TrialBalanceReportTotalsDTO? = null
+   var locationTotals: GeneralLedgerNetChangeDTO? = null
 
 )
