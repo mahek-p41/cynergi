@@ -2,6 +2,7 @@ package com.cynergisuite.domain
 
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.LocalDate
 import java.time.OffsetDateTime
 
 @Schema(
@@ -13,6 +14,9 @@ import java.time.OffsetDateTime
 @Introspected
 class GeneralLedgerSourceReportFilterRequest(
 
+   sortBy: String? = null,
+   sortDirection: String? = null,
+
    @field:Schema(name = "startSource", description = "Starting source code")
    var startSource: String? = null,
 
@@ -23,15 +27,15 @@ class GeneralLedgerSourceReportFilterRequest(
    var profitCenter: Int? = null,
 
    @field:Schema(name = "startDate", description = "Starting date")
-   var startDate: OffsetDateTime? = null,
+   var startDate: LocalDate? = null,
 
    @field:Schema(name = "endDate", description = "Ending date")
-   var endDate: OffsetDateTime? = null,
+   var endDate: LocalDate? = null,
 
    @field:Schema(name = "jeNumber", description = "Journal entry number")
    var jeNumber: Int? = null,
 
-) : SortableRequestBase<GeneralLedgerSourceReportFilterRequest>(null, null) {
+   ) : SortableRequestBase<GeneralLedgerSourceReportFilterRequest>(sortBy, sortDirection) {
 
    override fun sortByMe(): String = sortBy()
 
