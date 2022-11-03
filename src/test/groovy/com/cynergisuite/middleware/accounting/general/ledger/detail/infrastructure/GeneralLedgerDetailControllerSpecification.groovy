@@ -583,15 +583,16 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final company = nineNineEightEmployee.company
       final glAccount1 = accountDataLoaderService.single(company)
       final glAccount2 = accountDataLoaderService.single(company)
-      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final profitCenter1 = storeFactoryService.store(1, nineNineEightEmployee.company)
+      final profitCenter2 = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource1 = sourceCodeDataLoaderService.single(company)
       final glSource2 = sourceCodeDataLoaderService.single(company)
-      final glDetailsDTO = generalLedgerDetailDataLoaderService.streamDTO(1, glAccount1, profitCenter, glSource1).toList()
-      glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount2, profitCenter, glSource1))
-      glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount1, profitCenter, glSource1))
-      glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount2, profitCenter, glSource1))
-      glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount1, profitCenter, glSource2))
-      glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount2, profitCenter, glSource2))
+      final glDetailsDTO = generalLedgerDetailDataLoaderService.streamDTO(1, glAccount1, profitCenter1, glSource1).toList()
+      glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount2, profitCenter1, glSource1))
+      glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount1, profitCenter1, glSource1))
+      glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount2, profitCenter2, glSource1))
+      glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount1, profitCenter2, glSource2))
+      glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount2, profitCenter2, glSource2))
 
       glDetailsDTO[0].amount = 100
       glDetailsDTO[0].message = "test"
@@ -638,6 +639,23 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
          case 'Sort by description':
             filterRequest['sortBy'] = "message"
             break
+         case 'Select one source code':
+            filterRequest['sortBy'] = "account_id"
+            filterRequest['startSource'] = glSource1.value
+            filterRequest['endSource'] = glSource1.value
+            break
+         case 'Select one profit center':
+            filterRequest['sortBy'] = "account_id"
+            filterRequest['profitCenter'] = 1
+            break
+         case 'Select by dates':
+            filterRequest['sortBy'] = "account_id"
+            filterRequest['startDate'] = OffsetDateTime.now().minusDays(15)
+            break
+         case 'Select one journal entry number':
+            filterRequest['sortBy'] = "account_id"
+            filterRequest['jeNumber'] = 2
+            break
       }
 
       when:
@@ -655,6 +673,10 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       'Sort by account'                   || 2               | 600        | 600
       'Sort by journal entry number'      || 2               | 600        | 600
       'Sort by description'               || 2               | 600        | 600
+      'Select one source code'            || 1               | 300        | 300
+      'Select one profit center'          || 1               | 300        | 100
+      'Select by dates'                   || 1               | 0          | 300
+      'Select one journal entry number'   || 1               | 200        | 200
    }
 
    void "filter for source report sort by description" () {
