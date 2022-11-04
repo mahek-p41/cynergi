@@ -103,6 +103,9 @@ class GeneralLedgerDetailRepository @Inject constructor(
             JOIN account acct ON glDetail.account_id = acct.account_id AND acct.account_deleted = FALSE
             JOIN general_ledger_source_codes source ON glDetail.source_id = source.id AND source.deleted = FALSE
             LEFT OUTER JOIN bank ON bank.general_ledger_account_id = acct.account_id AND bank.deleted = FALSE
+            JOIN general_ledger_summary glSummary ON glSummary.company_id = glDetail.company_id
+                 AND glSummary.account_id = glDetail.account_id
+                 AND glSummary.profit_center_id_sfk = glDetail.profit_center_id_sfk
       """
    }
 
@@ -195,10 +198,14 @@ class GeneralLedgerDetailRepository @Inject constructor(
          params["account"] = filterRequest.account
          whereClause.append(" AND acct.account_number = :account")
       }
+      if (filterRequest.fiscalYear != null) {
+         params["fiscalYear"] = filterRequest.fiscalYear
+         whereClause.append(" AND glSummary.overall_period_id = (SELECT DISTINCT overall_period_id FROM financial_calendar WHERE fiscal_year = :fiscalYear AND company_id = :comp_id) ")
+      }
       val query =
          "${selectNetChangeQuery()}\n$whereClause\n$groupBy"
 
-      logger.debug("Querying for General Ledger Inquiry Net Change using {} {}", query, params)
+      logger.info("Querying for General Ledger Inquiry Net Change using {} {}", query, params)
 
       val found = jdbc.findFirstOrNull(query, params) { rs, _  ->
          val generalLedgerInquiry = mapNetChange(rs)
@@ -206,7 +213,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
          generalLedgerInquiry
       }
 
-      logger.trace("Querying for General Ledger Inquiry Net Change resulted in {}", found)
+      logger.info("Querying for General Ledger Inquiry Net Change resulted in {}", found)
 
       return found
    }
@@ -229,13 +236,22 @@ class GeneralLedgerDetailRepository @Inject constructor(
          params["account"] = page.account
          whereClause.append(" AND acct.account_number = :account")
       }
-      return jdbc.queryPaged(
-         """
+      if (page.fiscalYear != null) {
+         params["fiscalYear"] = page.fiscalYear
+         whereClause.append(" AND glSummary.overall_period_id = (SELECT DISTINCT overall_period_id FROM financial_calendar WHERE fiscal_year = :fiscalYear AND company_id = :comp_id) ")
+      }
+
+      val query = """
             ${selectBaseQuery()}
             $whereClause
             ORDER BY glDetail_${page.snakeSortBy()} ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
-         """.trimIndent(),
+         """.trimIndent()
+
+      logger.info("Querying for General Ledger Inquiry Detail using {} {}", query, params)
+
+      return jdbc.queryPaged(
+         query,
          params,
          page
       ) { rs, elements ->

@@ -4,6 +4,7 @@ import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.extensions.isDigits
 import com.cynergisuite.middleware.authentication.AccessException
 import com.cynergisuite.middleware.error.ErrorDTO
+import com.cynergisuite.middleware.error.NoContentException
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.OperationNotPermittedException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -181,6 +182,13 @@ class ErrorHandlerController @Inject constructor(
    @Error(global = true, exception = PageOutOfBoundsException::class)
    fun pageOutOfBoundsExceptionHandler(exception: PageOutOfBoundsException): HttpResponse<ErrorDTO> {
       logger.warn("Page out of bounds was requested {}", exception.toString())
+
+      return noContent()
+   }
+
+   @Error(global = true, exception = NoContentException::class)
+   fun noContentExceptionHandler(exception: NoContentException): HttpResponse<ErrorDTO> {
+      logger.warn("No content to be found {}", exception.toString())
 
       return noContent()
    }

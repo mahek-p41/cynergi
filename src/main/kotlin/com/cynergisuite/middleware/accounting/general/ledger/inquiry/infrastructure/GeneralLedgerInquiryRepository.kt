@@ -126,12 +126,12 @@ class GeneralLedgerInquiryRepository @Inject constructor(
       }
       if (filterRequest.fiscalYear != null) {
          params["fiscalYear"] = filterRequest.fiscalYear
-         whereClause.append(" AND glSummary.overall_period_id = (SELECT DISTINCT overall_period_id FROM financial_calendar WHERE fiscal_year = :fiscalYear) ")
+         whereClause.append(" AND glSummary.overall_period_id = (SELECT DISTINCT overall_period_id FROM financial_calendar WHERE fiscal_year = :fiscalYear AND company_id = :comp_id) ")
       }
       val query =
          "${selectBaseQuery()}\n$whereClause\n$havingClause"
 
-      logger.debug("Searching for GeneralLedgerInquiry using {} {}", query, params)
+      logger.info("Searching for GeneralLedgerInquiry using {} {}", query, params)
 
       val found = jdbc.findFirstOrNull(query, params) { rs, _ ->
          val generalLedgerInquiry = mapRow(rs, "glSummary_", "glSummaryPrior_")
@@ -139,7 +139,7 @@ class GeneralLedgerInquiryRepository @Inject constructor(
          generalLedgerInquiry
       }
 
-      logger.trace("Searching for GeneralLedgerInquiry resulted in {}", found)
+      logger.info("Searching for GeneralLedgerInquiry resulted in {}", found)
 
       return found
    }

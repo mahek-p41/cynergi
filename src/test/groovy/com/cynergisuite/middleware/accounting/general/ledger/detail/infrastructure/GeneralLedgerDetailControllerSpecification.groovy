@@ -65,6 +65,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
+      generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final generalLedgerDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
 
       when:
@@ -93,6 +94,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
+      generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
 
       when:
@@ -113,10 +115,20 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount2 = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
+      final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
+      final beginDate = LocalDate.parse("2021-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
       final generalLedgerDetails = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource).toList()
-      final filterOne = new GeneralLedgerDetailPageRequest([account: glAccount.number, profitCenter: profitCenter.myNumber(), from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
-      final filterTwo = new GeneralLedgerDetailPageRequest([account: glAccount2.number, profitCenter: profitCenter.myNumber(), from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
-      final filterThree = new GeneralLedgerDetailPageRequest([account: glAccount.number, from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
+      final filterOne = new GeneralLedgerDetailPageRequest([account: glAccount.number, profitCenter: profitCenter.myNumber(), fiscalYear: 2021, from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
+      final filterTwo = new GeneralLedgerDetailPageRequest([account: glAccount2.number, profitCenter: profitCenter.myNumber(), fiscalYear: 202, from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
+      final filterThree = new GeneralLedgerDetailPageRequest([account: glAccount.number, fiscalYear: 2021, from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
+
+      when:
+      def result1 = post("/accounting/financial-calendar/complete", financialCalendarDTO)
+
+      then:
+      notThrown(Exception)
+      result1 != null
 
       when:
       def result = get("$path$filterOne")
@@ -338,6 +350,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
+      generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final existingGLDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
       def updatedGLDetail = GeneralLedgerDetailDataLoader.streamDTO(1, glAccount, profitCenter, glSource).findFirst().get()
       updatedGLDetail.id = existingGLDetail.id
@@ -367,6 +380,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
+      generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final existingGLDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
 
       when:
@@ -394,6 +408,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
+      generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final existingGLDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
       def updatedGLDetail = GeneralLedgerDetailDataLoader.streamDTO(1, glAccount, profitCenter, glSource).findFirst().get()
       updatedGLDetail.id = existingGLDetail.id
@@ -426,6 +441,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
+      generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final existingGLDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
       def updatedGLDetail = GeneralLedgerDetailDataLoader.streamDTO(1, glAccount, profitCenter, glSource).findFirst().get()
       updatedGLDetail.id = existingGLDetail.id
@@ -457,6 +473,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
+      generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final existingGLDetail = generalLedgerDetailDataLoaderService.single(company, glAccount, profitCenter, glSource)
       final updatedGLDetail = GeneralLedgerDetailDataLoader.streamDTO(1, glAccount, profitCenter, glSource).findFirst().get()
       updatedGLDetail.id = existingGLDetail.id
@@ -490,6 +507,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
+      generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final glDetailsDTO = generalLedgerDetailDataLoaderService.streamDTO(6, glAccount, profitCenter, glSource).toList()
 
       glDetailsDTO[0].amount = 1000
@@ -587,6 +605,10 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final profitCenter2 = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource1 = sourceCodeDataLoaderService.single(company)
       final glSource2 = sourceCodeDataLoaderService.single(company)
+      generalLedgerSummaryDataLoaderService.single(company, glAccount1, profitCenter1, OverallPeriodTypeDataLoader.predefined().get(1))
+      generalLedgerSummaryDataLoaderService.single(company, glAccount2, profitCenter1, OverallPeriodTypeDataLoader.predefined().get(1))
+      generalLedgerSummaryDataLoaderService.single(company, glAccount1, profitCenter2, OverallPeriodTypeDataLoader.predefined().get(1))
+      generalLedgerSummaryDataLoaderService.single(company, glAccount2, profitCenter2, OverallPeriodTypeDataLoader.predefined().get(1))
       final glDetailsDTO = generalLedgerDetailDataLoaderService.streamDTO(1, glAccount1, profitCenter1, glSource1).toList()
       glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount2, profitCenter1, glSource1))
       glDetailsDTO.add(generalLedgerDetailDataLoaderService.singleDTO(glAccount1, profitCenter1, glSource1))
@@ -685,6 +707,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
+      generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final glDetailsDTO = generalLedgerDetailDataLoaderService.streamDTO(10, glAccount, profitCenter, glSource).toList()
 
       glDetailsDTO[0].amount = 57
@@ -874,8 +897,8 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final beginDate = LocalDate.parse("2021-11-09")
       final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
       final glDetails = generalLedgerDetailDataLoaderService.single(company, acct, store, glSrcCode)
-      final filterRequest1 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().minusYears(3).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: acct.number, profitCenter: store.myNumber()])
-      final filterRequest2 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().minusYears(3).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: 9999, profitCenter: store.myNumber()])
+      final filterRequest1 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().minusYears(3).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: acct.number, profitCenter: store.myNumber(), fiscalYear: 2022])
+      final filterRequest2 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().minusYears(3).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: 9999, profitCenter: store.myNumber(), fiscalYear: 2022])
       final creditAmount = (glDetails.amount < 0) ? glDetails.amount : 0
       final debitAmount = (glDetails.amount > 0) ? glDetails.amount : 0
 
@@ -905,13 +928,6 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
 
       then:
       final exception = thrown(HttpClientResponseException)
-      exception.response.status() == NOT_FOUND
-
-      when:
-      get("$path/netchange")
-
-      then:
-      final exception2 = thrown(HttpClientResponseException)
-      exception2.response.status() == BAD_REQUEST
+      exception.response.status() == NO_CONTENT
    }
 }

@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull
 @Schema(
    name = "GeneralLedgerDetailFilterRequest",
    title = "Resulting net change for GL Details",
-   description = "This is the form of the URL parameters that can be used to query for net change of GL Details. Example: ?account=1&profitCenter=2",
+   description = "This is the form of the URL parameters that can be used to query for net change of GL Details. Example: ?account=1&profitCenter=2&fiscalYear=2019&from=2019-07-01&thru=2021-10-09",
    allOf = [SortableRequestBase::class]
 )
 @Introspected
@@ -24,11 +24,16 @@ class GeneralLedgerDetailFilterRequest(
    @field:Schema(name = "thru", description = "Top end of the range which will be used to filter GL Details.  If from is found thru is required.  If both from and thru are empty then the result will include all GL Details")
    var thru: LocalDate? = null,
 
+   @field:NotNull
    @field:Schema(name = "account", description = "Account number")
    var account: Int? = null,
 
    @field:Schema(name = "profitCenter", description = "Profit center")
    var profitCenter: Int? = null,
+
+   @field:NotNull
+   @field:Schema(name = "fiscalYear", description = "Fiscal year")
+   var fiscalYear: Int? = null,
 
    ) : SortableRequestBase<GeneralLedgerDetailFilterRequest>(null, null) {
 
@@ -40,5 +45,6 @@ class GeneralLedgerDetailFilterRequest(
          "thru" to thru,
          "account" to account,
          "profitCenter" to profitCenter,
+         "fiscalYear" to fiscalYear,
       )
 }

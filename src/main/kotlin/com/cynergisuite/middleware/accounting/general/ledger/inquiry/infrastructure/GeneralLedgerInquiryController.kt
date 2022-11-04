@@ -4,7 +4,7 @@ import com.cynergisuite.domain.GeneralLedgerInquiryFilterRequest
 import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerInquiryDTO
 import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerInquiryService
 import com.cynergisuite.middleware.authentication.user.UserService
-import com.cynergisuite.middleware.error.NotFoundException
+import com.cynergisuite.middleware.error.NoContentException
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
@@ -51,9 +51,9 @@ class GeneralLedgerInquiryController @Inject constructor(
       val userCompany = user.myCompany()
       logger.info("Fetching GeneralLedgerInquiry")
 
-      val response = generalLedgerInquiryService.fetchOne(userCompany, filterRequest) ?: throw NotFoundException("")
+      val response = generalLedgerInquiryService.fetchOne(userCompany, filterRequest) ?: throw NoContentException()
 
-      logger.debug("Fetching GeneralLedgerInquiry by {} resulted in", response)
+      logger.info("Fetching GeneralLedgerInquiry by {} resulted in", response)
 
       return response
    }
