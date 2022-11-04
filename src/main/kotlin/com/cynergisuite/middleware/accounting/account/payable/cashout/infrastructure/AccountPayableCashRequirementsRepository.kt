@@ -98,8 +98,12 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
       //This is finding oldest and newest dates from a filter request in the case a user doesn't provide all date filters
       CashRequirementFilterRequest::class.memberProperties.forEach {
          if (it.returnType.jvmErasure.java == LocalDate::class.java) {
-            val date = it.getter.call(filterRequest) as LocalDate
-            dates.add(date)
+            val date = if (it.getter.call(filterRequest) != null) {
+                  it.getter.call(filterRequest) as LocalDate
+               } else null
+            if (date != null) {
+               dates.add(date)
+            }
          }
       }
       val oldestDate = dates.stream().min(LocalDate::compareTo).get()
@@ -115,7 +119,7 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
       if (oldestDate != null || newestDate != null) {
          params["fromDate"] = oldestDate
          params["thruDate"] = newestDate
-         whereClause.append(" AND apPayment.payment_date")
+         whereClause.append(" AND apInvoice.due_date ")
             .append(buildFilterString(oldestDate != null, newestDate != null, "fromDate", "thruDate"))
       }
 
@@ -145,20 +149,30 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
                }
 
                if (invoiceFlag) {
-                  if (filterRequest.fromDateOne!!.compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateOne) >= 0) {
-                     it.balanceDisplay = CashRequirementBalanceEnum.ONE
+                  if( filterRequest.fromDateOne != null && filterRequest.thruDateOne != null) {
+                     if (filterRequest.fromDateOne!!.compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateOne) >= 0) {
+                        it.balanceDisplay = CashRequirementBalanceEnum.ONE
+                     }
                   }
-                  else if (filterRequest.fromDateTwo!!.compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateTwo) >= 0) {
-                     it.balanceDisplay = CashRequirementBalanceEnum.TWO
+                  if ( filterRequest.fromDateTwo != null && filterRequest.thruDateTwo != null) {
+                     if (filterRequest.fromDateTwo!!.compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateTwo) >= 0) {
+                        it.balanceDisplay = CashRequirementBalanceEnum.TWO
+                     }
                   }
-                  else if (filterRequest.fromDateThree!!.compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateThree) >= 0) {
-                     it.balanceDisplay = CashRequirementBalanceEnum.THREE
+                  if( filterRequest.fromDateThree != null && filterRequest.thruDateThree != null) {
+                     if (filterRequest.fromDateThree!!.compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateThree) >= 0) {
+                        it.balanceDisplay = CashRequirementBalanceEnum.THREE
+                     }
                   }
-                  else if (filterRequest.fromDateFour!!.compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateFour) >= 0) {
-                     it.balanceDisplay = CashRequirementBalanceEnum.FOUR
+                  if( filterRequest.fromDateFour != null && filterRequest.thruDateFour != null) {
+                     if (filterRequest.fromDateFour!!.compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateFour) >= 0) {
+                        it.balanceDisplay = CashRequirementBalanceEnum.FOUR
+                     }
                   }
-                  else if (filterRequest.fromDateFive!!.compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateFive) >= 0) {
-                     it.balanceDisplay = CashRequirementBalanceEnum.FIVE
+                  if( filterRequest.fromDateFive != null && filterRequest.thruDateFive != null ) {
+                     if (filterRequest.fromDateFive!!.compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateFive) >= 0) {
+                        it.balanceDisplay = CashRequirementBalanceEnum.FIVE
+                     }
                   }
 
                   when (it.balanceDisplay) {
