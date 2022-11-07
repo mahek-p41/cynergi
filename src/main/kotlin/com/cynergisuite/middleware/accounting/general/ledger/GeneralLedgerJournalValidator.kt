@@ -62,7 +62,10 @@ class GeneralLedgerJournalValidator @Inject constructor(
             errors.add(ValidationError("source.id", NotFound(dto.source!!.id!!)))
          }
 
-         if (!cal!!.generalLedgerOpen!! ) {
+         if (cal == null ) {
+            errors.add(ValidationError("FinancialCalendar", NotFound(dto.date!!)))
+         }
+         if (cal != null && !cal.generalLedgerOpen!! ) {
             errors.add(ValidationError("entryDate", GLNotOpen(dto.date!!)))
          }
       }

@@ -541,7 +541,6 @@ class GeneralLedgerDetailRepository @Inject constructor(
       val glDetails = mutableListOf<GeneralLedgerDetailEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "source_code_value" to sourceCodeEntity.value)
       val whereClause = StringBuilder("WHERE glDetail.company_id = :comp_id AND source.value = :source_code_value")
-      val sortBy = StringBuilder("")
 
       if (filterRequest.profitCenter != null) {
          params["profitCenter"] = filterRequest.profitCenter
@@ -560,13 +559,16 @@ class GeneralLedgerDetailRepository @Inject constructor(
          whereClause.append(" AND glDetail.journal_entry_number = :jeNumber")
       }
 
-      sortBy.append("glDetail.${filterRequest.sortBy} ASC, glDetail.account_id ASC, glDetail.profit_center_id_sfk ASC")
+      if (filterRequest.fiscalYear != null) {
+         params["fiscalYear"] = filterRequest.fiscalYear
+         whereClause.append(" AND glSummary.overall_period_id = (SELECT DISTINCT overall_period_id FROM financial_calendar WHERE fiscal_year = :fiscalYear AND company_id = :comp_id)")
+      }
 
       jdbc.query(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY $sortBy
+            ORDER BY glDetail_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
          """.trimIndent(),
          params
       ) { rs, _ ->
