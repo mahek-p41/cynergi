@@ -4,13 +4,11 @@ import com.cynergisuite.domain.PaymentReportFilterRequest
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.query
-import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceSelectedTypeRepository
-import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
-import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceTypeRepository
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableDistDetailReportDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInventoryReportDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceReportDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayablePaymentDetailReportDTO
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
-import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -23,12 +21,6 @@ import java.sql.ResultSet
 @Singleton
 class AccountPayableInvoiceReportRepository @Inject constructor(
    private val jdbc: Jdbi,
-   private val vendorRepository: VendorRepository,
-   private val employeeRepository: EmployeeRepository,
-   private val selectedRepository: AccountPayableInvoiceSelectedTypeRepository,
-   private val statusRepository: AccountPayableInvoiceStatusTypeRepository,
-   private val typeRepository: AccountPayableInvoiceTypeRepository,
-   private val apInvoiceRepository: AccountPayableInvoiceRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableInvoiceReportRepository::class.java)
 
@@ -51,27 +43,49 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
             apInvoice.due_date                                          AS apInvoice_due_date,
             apInvoice.expense_date                                      AS apInvoice_expense_date,
             apInvoice.paid_amount                                       AS apInvoice_paid_amount,
+
             bank.number                                                 AS bank_number,
             pmtType.value                                               AS apPayment_type_value,
             pmt.payment_number                                          AS apPayment_number,
+            pmtDetail.id                                                AS apPayment_detail_id,
+            pmtDetail.amount                                            AS apPayment_detail_amount,
+
             apInvoice.message                                           AS apInvoice_message,
             account.number                                              AS apPayment_account_number,
             account.name                                                AS apPayment_account_name,
             invDist.distribution_profit_center_id_sfk                   AS apPayment_dist_center,
             invDist.distribution_amount                                 AS apPayment_dist_amount,
+
+            inv.invoice_number                                          AS inv_invoice_number,
+            inv.model_number                                            AS inv_model_number,
+            inv.serial_number                                           AS inv_serial_number,
+            inv.description                                             AS inv_description,
+            inv.actual_cost                                             AS inv_actual_cost,
+            inv.received_date                                           AS inv_received_date,
+            apInvoice.receive_date                                      AS apInv_received_date,
+            inv.status                                                  AS inv_status,
+            inv.primary_location                                        AS inv_received_location,
+            inv.location                                                AS inv_current_location,
+
             count(*) OVER()                                             AS total_elements
          FROM account_payable_invoice apInvoice
             JOIN account_payable_invoice_type_domain invType            ON invType.id = apInvoice.type_id
             JOIN account_payable_invoice_status_type_domain invStatus   ON invStatus.id = apInvoice.status_id
             JOIN vendor                                                 ON apInvoice.vendor_id = vendor.id
             LEFT OUTER JOIN vendor_group vgrp                           ON vgrp.id = vendor.vendor_group_id AND vgrp.deleted = FALSE
-            JOIN purchase_order_header poHeader                         ON poHeader.id = apInvoice.purchase_order_id
+            LEFT OUTER JOIN purchase_order_header poHeader                         ON poHeader.id = apInvoice.purchase_order_id
             JOIN account_payable_payment_detail pmtDetail               ON apInvoice.id = pmtDetail.account_payable_invoice_id
             JOIN account_payable_payment pmt                            ON pmtDetail.payment_number_id = pmt.id
             JOIN account_payable_payment_type_type_domain pmtType       ON pmt.account_payable_payment_type_id = pmtType.id
             JOIN bank                                                   ON pmt.bank_id = bank.id
             JOIN account_payable_invoice_distribution invDist           ON apInvoice.id = invDist.invoice_id
             JOIN account                                                ON invDist.distribution_account_id = account.id
+            JOIN company comp                                           ON apInvoice.company_id = comp.id AND comp.deleted = FALSE
+            JOIN fastinfo_prod_import.inventory_vw inv ON
+                  comp.dataset_code = inv.dataset
+                  AND inv.invoice_number = apInvoice.invoice
+                  AND invType.value = 'P'
+                  AND inv.received_date = apInvoice.receive_date
       """
    }
 
@@ -84,20 +98,24 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          """
             ${selectBaseQuery()}
             WHERE apInvoice.company_id = :comp_id
-            LIMIT 4
+            ORDER BY apInvoice.id, pmt.id, pmtDetail.id
          """.trimIndent(),
          params)
       { rs, elements ->
          do {
             val tempInvoice = if (currentInvoice?.id != rs.getUuid(("apInvoice_id"))) {
-               val localInvoice  = mapInvoice(rs, company, "apInvoice_", "apPayment_")
+               val localInvoice  = mapInvoice(rs, "apInvoice_", "apPayment_")
                invoices.add(localInvoice)
+               currentInvoice = localInvoice
 
                localInvoice
             } else {
-               currentInvoice!!
+               currentInvoice
             }
 
+            tempInvoice?.invoiceDetails?.add(mapInvoiceDetail(rs))
+            tempInvoice?.distDetails?.add(mapDistDetail(rs))
+            tempInvoice?.inventories?.add(mapInventory(rs))
 
          } while (rs.next())
       }
@@ -107,7 +125,6 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
 
    private fun mapInvoice(
       rs: ResultSet,
-      company: CompanyEntity,
       columnPrefix: String = EMPTY,
       paymentPrefix: String = EMPTY
    ): AccountPayableInvoiceReportDTO {
@@ -138,40 +155,42 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
       )
    }
 
-//   private fun mapRow(
-//      rs: ResultSet,
-//      entity: AccountPayableInvoiceReportTemplate,
-//      columnPrefix: String = EMPTY
-//   ): AccountPayableInvoiceReportTemplate {
-//      return AccountPayableInvoiceReportTemplate(
-//         id = rs.getUuid("${columnPrefix}id"),
-//         vendor = entity.vendor,
-//         invoice = rs.getString("${columnPrefix}invoice"),
-//         purchaseOrder = entity.purchaseOrder,
-//         invoiceDate = rs.getLocalDate("${columnPrefix}invoice_date"),
-//         invoiceAmount = rs.getBigDecimal("${columnPrefix}invoice_amount"),
-//         discountAmount = rs.getBigDecimal("${columnPrefix}discount_amount"),
-//         discountPercent = rs.getBigDecimal("${columnPrefix}discount_percent"),
-//         autoDistributionApplied = rs.getBoolean("${columnPrefix}auto_distribution_applied"),
-//         discountTaken = rs.getBigDecimal("${columnPrefix}discount_taken"),
-//         entryDate = rs.getLocalDate("${columnPrefix}entry_date"),
-//         expenseDate = rs.getLocalDate("${columnPrefix}expense_date"),
-//         discountDate = rs.getLocalDateOrNull("${columnPrefix}discount_date"),
-//         employee = entity.employee,
-//         originalInvoiceAmount = rs.getBigDecimal("${columnPrefix}original_invoice_amount"),
-//         message = rs.getString("${columnPrefix}message"),
-//         selected = entity.selected,
-//         multiplePaymentIndicator = rs.getBoolean("${columnPrefix}multiple_payment_indicator"),
-//         paidAmount = rs.getBigDecimal("${columnPrefix}paid_amount"),
-//         selectedAmount = rs.getBigDecimal("${columnPrefix}selected_amount"),
-//         type = entity.type,
-//         status = entity.status,
-//         dueDate = rs.getLocalDate("${columnPrefix}due_date"),
-//         payTo = entity.payTo,
-//         separateCheckIndicator = rs.getBoolean("${columnPrefix}separate_check_indicator"),
-//         useTaxIndicator = rs.getBoolean("${columnPrefix}use_tax_indicator"),
-//         receiveDate = rs.getLocalDateOrNull("${columnPrefix}receive_date"),
-//         location = entity.location
-//      )
-//   }
+   private fun mapInvoiceDetail(
+      rs: ResultSet
+   ): AccountPayablePaymentDetailReportDTO {
+      return AccountPayablePaymentDetailReportDTO(
+         bankNumber = rs.getInt("bank_number"),
+         paymentType = rs.getString("apPayment_type_value"),
+         paymentNumber = rs.getString("apPayment_number"),
+         paymentDetailId = rs.getString("apPayment_detail_id"),
+         paymentDetailAmount = rs.getString("apPayment_detail_amount"),
+      )
+   }
+
+   private fun mapDistDetail(
+      rs: ResultSet
+   ): AccountPayableDistDetailReportDTO {
+      return AccountPayableDistDetailReportDTO(
+         accountNumber = rs.getInt("apPayment_account_number"),
+         accountName = rs.getString("apPayment_account_name"),
+         distProfitCenter = rs.getInt("apPayment_dist_center"),
+         distAmount = rs.getInt("apPayment_dist_amount"),
+      )
+   }
+
+   private fun mapInventory(
+      rs: ResultSet
+   ): AccountPayableInventoryReportDTO {
+      return AccountPayableInventoryReportDTO(
+         invoiceNumber = rs.getString("inv_invoice_number"),
+         modelNumber = rs.getString("inv_model_number"),
+         serialNumber = rs.getString("inv_serial_number"),
+         description = rs.getString("inv_description"),
+         cost = rs.getString("inv_actual_cost"),
+         received = rs.getString("inv_received_date"),
+         status = rs.getString("inv_status"),
+         receivedLocation = rs.getString("inv_received_location"),
+         currentLocation = rs.getString("inv_current_location"),
+      )
+   }
 }

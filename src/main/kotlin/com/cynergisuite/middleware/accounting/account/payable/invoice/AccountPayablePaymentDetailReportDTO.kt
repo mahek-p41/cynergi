@@ -11,5 +11,7 @@ data class AccountPayablePaymentDetailReportDTO(
    @field:Schema(description = "Bank number")
    var bankNumber: Int? = null,
    var paymentType: String? = null,
-   var paymentNumber: String? = null
+   var paymentNumber: String? = null,
+   var paymentDetailId: String? = null,
+   var paymentDetailAmount: String? = null,
    )
