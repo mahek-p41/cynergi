@@ -117,7 +117,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
    @ReadOnly
    fun findAll(company: CompanyEntity, filterRequest: GeneralLedgerJournalFilterRequest) : RepositoryPage<GeneralLedgerJournalEntity, GeneralLedgerJournalFilterRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
-      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id")
+      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = FALSE")
 
       if (filterRequest.profitCenter != null) {
          params["profitCenter"] = filterRequest.profitCenter
