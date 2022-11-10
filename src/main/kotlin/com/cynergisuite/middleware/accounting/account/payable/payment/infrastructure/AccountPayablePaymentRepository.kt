@@ -519,7 +519,7 @@ class AccountPayablePaymentRepository @Inject constructor(
    @ReadOnly
    fun findAll(company: CompanyEntity, filterRequest: PaymentReportFilterRequest): List<AccountPayablePaymentEntity> {
       val payments = mutableListOf<AccountPayablePaymentEntity>()
-      var currentPayments: AccountPayablePaymentEntity? = null
+      var currentPayment: AccountPayablePaymentEntity? = null
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder(" WHERE apPayment.company_id = :comp_id ")
 
@@ -634,14 +634,14 @@ class AccountPayablePaymentRepository @Inject constructor(
          params
       ) { rs, _ ->
          do {
-            val tempPayment = if (currentPayments?.id != rs.getUuid("apPayment_id")) {
+            val tempPayment = if (currentPayment?.id != rs.getUuid("apPayment_id")) {
                val localPayment = mapRow(rs, company, "apPayment_")
                payments.add(localPayment)
-               currentPayments = localPayment
+               currentPayment = localPayment
 
                localPayment
             } else {
-               currentPayments!!
+               currentPayment!!
             }
 
             apPaymentDetailRepository.mapRowOrNull(rs, company, "apPaymentDetail_")?.also { tempPayment.paymentDetails?.add(it) }
