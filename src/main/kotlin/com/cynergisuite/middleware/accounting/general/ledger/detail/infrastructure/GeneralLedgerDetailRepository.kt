@@ -61,30 +61,30 @@ class GeneralLedgerDetailRepository @Inject constructor(
             glDetail.message                                          AS glDetail_message,
             glDetail.employee_number_id_sfk                           AS glDetail_employee_number_id_sfk,
             glDetail.journal_entry_number                             AS glDetail_journal_entry_number,
-            acct.account_id                                           AS acct_id,
-            acct.account_number                                       AS acct_number,
-            acct.account_name                                         AS acct_name,
-            acct.account_form_1099_field                              AS acct_form_1099_field,
-            acct.account_corporate_account_indicator                  AS acct_corporate_account_indicator,
-            acct.account_comp_id                                      AS acct_comp_id,
-            acct.account_deleted                                      AS acct_deleted,
-            acct.account_type_id                                      AS acct_type_id,
-            acct.account_type_value                                   AS acct_type_value,
-            acct.account_type_description                             AS acct_type_description,
-            acct.account_type_localization_code                       AS acct_type_localization_code,
-            acct.account_balance_type_id                              AS acct_balance_type_id,
-            acct.account_balance_type_value                           AS acct_balance_type_value,
-            acct.account_balance_type_description                     AS acct_balance_type_description,
-            acct.account_balance_type_localization_code               AS acct_balance_type_localization_code,
-            acct.account_status_id                                    AS acct_status_id,
-            acct.account_status_value                                 AS acct_status_value,
-            acct.account_status_description                           AS acct_status_description,
-            acct.account_status_localization_code                     AS acct_status_localization_code,
-            acct.account_vendor_1099_type_id                          AS acct_vendor_1099_type_id,
-            acct.account_vendor_1099_type_value                       AS acct_vendor_1099_type_value,
-            acct.account_vendor_1099_type_description                 AS acct_vendor_1099_type_description,
-            acct.account_vendor_1099_type_localization_code           AS acct_vendor_1099_type_localization_code,
-            bank.id                                                   AS acct_bank_id,
+            acct.account_id                                           AS glDetail_account_id,
+            acct.account_number                                       AS glDetail_account_number,
+            acct.account_name                                         AS glDetail_account_name,
+            acct.account_form_1099_field                              AS glDetail_account_form_1099_field,
+            acct.account_corporate_account_indicator                  AS glDetail_account_corporate_account_indicator,
+            acct.account_comp_id                                      AS glDetail_account_comp_id,
+            acct.account_deleted                                      AS glDetail_account_deleted,
+            acct.account_type_id                                      AS glDetail_account_type_id,
+            acct.account_type_value                                   AS glDetail_account_type_value,
+            acct.account_type_description                             AS glDetail_account_type_description,
+            acct.account_type_localization_code                       AS glDetail_account_type_localization_code,
+            acct.account_balance_type_id                              AS glDetail_account_balance_type_id,
+            acct.account_balance_type_value                           AS glDetail_account_balance_type_value,
+            acct.account_balance_type_description                     AS glDetail_account_balance_type_description,
+            acct.account_balance_type_localization_code               AS glDetail_account_balance_type_localization_code,
+            acct.account_status_id                                    AS glDetail_account_status_id,
+            acct.account_status_value                                 AS glDetail_account_status_value,
+            acct.account_status_description                           AS glDetail_account_status_description,
+            acct.account_status_localization_code                     AS glDetail_account_status_localization_code,
+            acct.account_vendor_1099_type_id                          AS glDetail_account_vendor_1099_type_id,
+            acct.account_vendor_1099_type_value                       AS glDetail_account_vendor_1099_type_value,
+            acct.account_vendor_1099_type_description                 AS glDetail_account_vendor_1099_type_description,
+            acct.account_vendor_1099_type_localization_code           AS glDetail_account_vendor_1099_type_localization_code,
+            bank.id                                                   AS glDetail_account_bank_id,
             profitCenter.id                                           AS profitCenter_id,
             profitCenter.number                                       AS profitCenter_number,
             profitCenter.name                                         AS profitCenter_name,
@@ -117,7 +117,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
          SELECT
              glDetail.company_id                                                    AS glDetail_company_id,
              glDetail.profit_center_id_sfk                                          AS glDetail_profit_center_id_sfk,
-             acct.account_number                                                    AS acct_number,
+             acct.account_number                                                    AS glDetail_account_number,
              SUM (case when glDetail.amount >= 0 then glDetail.amount else 0 end)   AS debit,
              SUM (case when glDetail.amount < 0 then glDetail.amount else 0 end)    AS credit,
              SUM (glDetail.amount)                                                  AS net_change,
@@ -158,7 +158,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
          query,
          params
       ) { rs, _ ->
-         val account = accountRepository.mapRow(rs, company, "acct_")
+         val account = accountRepository.mapRow(rs, company, "glDetail_account_")
          val profitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
          val sourceCode = sourceCodeRepository.mapRow(rs, "source_")
 
@@ -252,7 +252,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
          params,
          page
       ) { rs, elements ->
-         val account = accountRepository.mapRow(rs, company, "acct_")
+         val account = accountRepository.mapRow(rs, company, "glDetail_account_")
          val profitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
          val sourceCode = sourceCodeRepository.mapRow(rs, "source_")
 
@@ -445,7 +445,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
          params
       ) { rs, _ ->
          do {
-            val account = accountRepository.mapRow(rs, company, "acct_")
+            val account = accountRepository.mapRow(rs, company, "glDetail_account_")
             val profitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
             val sourceCode = sourceCodeRepository.mapRow(rs, "source_")
             val currentEntity = mapRow(rs, account, profitCenter, sourceCode, "glDetail_")
@@ -538,7 +538,6 @@ class GeneralLedgerDetailRepository @Inject constructor(
       val glDetails = mutableListOf<GeneralLedgerDetailEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "source_code_value" to sourceCodeEntity.value)
       val whereClause = StringBuilder("WHERE glDetail.company_id = :comp_id AND source.value = :source_code_value")
-      val sortBy = StringBuilder("")
 
       if (filterRequest.profitCenter != null) {
          params["profitCenter"] = filterRequest.profitCenter
@@ -557,18 +556,21 @@ class GeneralLedgerDetailRepository @Inject constructor(
          whereClause.append(" AND glDetail.journal_entry_number = :jeNumber")
       }
 
-      sortBy.append("glDetail.${filterRequest.sortBy} ASC, glDetail.account_id ASC, glDetail.profit_center_id_sfk ASC")
+      if (filterRequest.fiscalYear != null) {
+         params["fiscalYear"] = filterRequest.fiscalYear
+         whereClause.append(" AND glSummary.overall_period_id = (SELECT DISTINCT overall_period_id FROM financial_calendar WHERE fiscal_year = :fiscalYear AND company_id = :comp_id) ")
+      }
 
       jdbc.query(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY $sortBy
+            ORDER BY glDetail_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
          """.trimIndent(),
          params
       ) { rs, _ ->
          do {
-            val account = accountRepository.mapRow(rs, company, "acct_")
+            val account = accountRepository.mapRow(rs, company, "glDetail_account_")
             val profitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
             val sourceCode = sourceCodeRepository.mapRow(rs, "source_")
             val currentEntity = mapRow(rs, account, profitCenter, sourceCode, "glDetail_")

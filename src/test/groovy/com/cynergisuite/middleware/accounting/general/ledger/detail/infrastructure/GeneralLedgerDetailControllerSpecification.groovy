@@ -605,6 +605,14 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final profitCenter2 = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource1 = sourceCodeDataLoaderService.single(company)
       final glSource2 = sourceCodeDataLoaderService.single(company)
+      final finCalDTO = financialCalendarDataLoaderService.singleDTO()
+      finCalDTO.fiscalYear = LocalDate.now().year
+      finCalDTO.period = 1
+      finCalDTO.generalLedgerOpen = true
+      finCalDTO.accountPayableOpen = true
+      finCalDTO.periodFrom = LocalDate.now().minusMonths(1)
+      finCalDTO.periodTo = LocalDate.now()
+      financialCalendarRepository.insert(new FinancialCalendarEntity(finCalDTO, OverallPeriodTypeDataLoader.predefined().get(1)), company)
       generalLedgerSummaryDataLoaderService.single(company, glAccount1, profitCenter1, OverallPeriodTypeDataLoader.predefined().get(1))
       generalLedgerSummaryDataLoaderService.single(company, glAccount2, profitCenter1, OverallPeriodTypeDataLoader.predefined().get(1))
       generalLedgerSummaryDataLoaderService.single(company, glAccount1, profitCenter2, OverallPeriodTypeDataLoader.predefined().get(1))
@@ -618,32 +626,32 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
 
       glDetailsDTO[0].amount = 100
       glDetailsDTO[0].message = "test"
-      glDetailsDTO[0].date = OffsetDateTime.now().minusDays(30).toLocalDate()
+      glDetailsDTO[0].date = LocalDate.now().minusDays(30)
       glDetailsDTO[0].journalEntryNumber = 1
 
       glDetailsDTO[1].amount = -100
       glDetailsDTO[1].message = "test"
-      glDetailsDTO[1].date = OffsetDateTime.now().minusDays(20).toLocalDate()
+      glDetailsDTO[1].date = LocalDate.now().minusDays(20)
       glDetailsDTO[1].journalEntryNumber = 1
 
       glDetailsDTO[2].amount = 200
       glDetailsDTO[2].message = "test description"
-      glDetailsDTO[2].date = OffsetDateTime.now().minusDays(15).toLocalDate()
+      glDetailsDTO[2].date = LocalDate.now().minusDays(15)
       glDetailsDTO[2].journalEntryNumber = 2
 
       glDetailsDTO[3].amount = -200
       glDetailsDTO[3].message = "test description"
-      glDetailsDTO[3].date = OffsetDateTime.now().minusDays(15).toLocalDate()
+      glDetailsDTO[3].date = LocalDate.now().minusDays(15)
       glDetailsDTO[3].journalEntryNumber = 2
 
       glDetailsDTO[4].amount = 300
       glDetailsDTO[4].message = "test"
-      glDetailsDTO[4].date = OffsetDateTime.now().minusDays(20).toLocalDate()
+      glDetailsDTO[4].date = LocalDate.now().minusDays(20)
       glDetailsDTO[4].journalEntryNumber = 3
 
       glDetailsDTO[5].amount = -300
       glDetailsDTO[5].message = "test"
-      glDetailsDTO[5].date = OffsetDateTime.now().minusDays(10).toLocalDate()
+      glDetailsDTO[5].date = LocalDate.now().minusDays(10)
       glDetailsDTO[5].journalEntryNumber = 3
 
       glDetailsDTO.eachWithIndex { glDetail, index ->
@@ -653,30 +661,43 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       def filterRequest = new GeneralLedgerSourceReportFilterRequest()
       switch (criteria) {
          case 'Sort by account':
-            filterRequest['sortBy'] = "account_id"
+            filterRequest['sortBy'] = "account_number"
+            filterRequest['fiscalYear'] = LocalDate.now().year
+
             break
          case 'Sort by journal entry number':
             filterRequest['sortBy'] = "journal_entry_number"
+            filterRequest['fiscalYear'] = LocalDate.now().year
+
             break
          case 'Sort by description':
             filterRequest['sortBy'] = "message"
+            filterRequest['fiscalYear'] = LocalDate.now().year
+
             break
          case 'Select one source code':
-            filterRequest['sortBy'] = "account_id"
+            filterRequest['sortBy'] = "account_number"
             filterRequest['startSource'] = glSource1.value
             filterRequest['endSource'] = glSource1.value
+            filterRequest['fiscalYear'] = LocalDate.now().year
+
             break
          case 'Select one profit center':
-            filterRequest['sortBy'] = "account_id"
+            filterRequest['sortBy'] = "account_number"
             filterRequest['profitCenter'] = 1
+            filterRequest['fiscalYear'] = LocalDate.now().year
+
             break
          case 'Select by dates':
-            filterRequest['sortBy'] = "account_id"
-            filterRequest['startDate'] = OffsetDateTime.now().minusDays(15)
+            filterRequest['sortBy'] = "account_number"
+            filterRequest['startDate'] = LocalDate.now().minusDays(15)
+            filterRequest['fiscalYear'] = LocalDate.now().year
+
             break
          case 'Select one journal entry number':
-            filterRequest['sortBy'] = "account_id"
+            filterRequest['sortBy'] = "account_number"
             filterRequest['jeNumber'] = 2
+            filterRequest['fiscalYear'] = LocalDate.now().year
             break
       }
 
@@ -707,7 +728,16 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
-      generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
+      final finCalDTO = financialCalendarDataLoaderService.singleDTO()
+      finCalDTO.fiscalYear = LocalDate.now().year
+      finCalDTO.period = 1
+      finCalDTO.generalLedgerOpen = true
+      finCalDTO.accountPayableOpen = true
+      finCalDTO.periodFrom = LocalDate.now().minusMonths(1)
+      finCalDTO.periodTo = LocalDate.now()
+      financialCalendarRepository.insert(new FinancialCalendarEntity(finCalDTO, OverallPeriodTypeDataLoader.predefined().get(1)), company)
+
+      final glSum = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final glDetailsDTO = generalLedgerDetailDataLoaderService.streamDTO(10, glAccount, profitCenter, glSource).toList()
 
       glDetailsDTO[0].amount = 57
@@ -764,7 +794,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
          post("$path", glDetail)
       }
 
-      def filterRequest = new GeneralLedgerSourceReportFilterRequest([sortBy: "message"])
+      def filterRequest = new GeneralLedgerSourceReportFilterRequest([sortBy: "message", fiscalYear: LocalDate.now().year])
 
       when:
       def response = get("$path/source-report/$filterRequest")
@@ -894,11 +924,11 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final store = storeFactoryService.store(3, company)
       final glSummary1 = generalLedgerSummaryDataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(1))
       final glSummary2 = generalLedgerSummaryDataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(2))
-      final beginDate = LocalDate.parse("2021-11-09")
-      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+      final beginDate = LocalDate.now().minusYears(1).plusMonths(1)
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: LocalDate.now().year, periodFrom: beginDate])
       final glDetails = generalLedgerDetailDataLoaderService.single(company, acct, store, glSrcCode)
-      final filterRequest1 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().minusYears(3).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: acct.number, profitCenter: store.myNumber(), fiscalYear: 2022])
-      final filterRequest2 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().minusYears(3).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: 9999, profitCenter: store.myNumber(), fiscalYear: 2022])
+      final filterRequest1 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().minusYears(3).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: acct.number, profitCenter: store.myNumber(), fiscalYear: LocalDate.now().year])
+      final filterRequest2 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().minusYears(3).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: 9999, profitCenter: store.myNumber(), fiscalYear: LocalDate.now().year])
       final creditAmount = (glDetails.amount < 0) ? glDetails.amount : 0
       final debitAmount = (glDetails.amount > 0) ? glDetails.amount : 0
 
