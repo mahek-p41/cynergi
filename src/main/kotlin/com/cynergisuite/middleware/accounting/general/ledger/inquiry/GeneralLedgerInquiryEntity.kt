@@ -14,7 +14,7 @@ data class GeneralLedgerInquiryEntity(
    val beginningBalance: BigDecimal,
    val closingBalance: BigDecimal,
    val priorNetActivityPeriod: List<BigDecimal?>,
-   val priorOverallPeriod: OverallPeriodType,
+   val priorOverallPeriod: OverallPeriodType?,
    val priorBeginningBalance: BigDecimal,
    val priorClosingBalance: BigDecimal,
 ) : Identifiable {
