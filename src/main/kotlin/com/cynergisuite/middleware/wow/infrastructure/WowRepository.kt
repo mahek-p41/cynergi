@@ -229,7 +229,8 @@ class WowRepository @Inject constructor(
                club_member       AS clubMember,
                club_number       AS clubNumber,
                club_fee          AS clubFee,
-               autopay           AS autopay
+               autopay           AS autopay,
+               payment_terms     AS paymentTerms
             FROM fastinfo_prod_import.csv_account_summary_vw
                WHERE dataset = :dataset
             """.trimIndent()
@@ -266,7 +267,582 @@ class WowRepository @Inject constructor(
                clubMember = rs.getString("clubMember"),
                clubNumber = rs.getString("clubNumber"),
                clubFee = rs.getString("clubFee"),
-               autopay = rs.getString("autopay")
+               autopay = rs.getString("autopay"),
+               paymentTerms = rs.getString("paymentTerms"),
+            )
+         }.asSequence()
+      }
+   }
+   @ReadOnly
+   fun findAllRtoAgreements(company: CompanyEntity): Sequence<WowAllRtoAgreementEntity> {
+      return jdbi.withHandle<Sequence<WowAllRtoAgreementEntity>, Exception> { handle ->
+         val query = handle.createQuery(
+            """
+            SELECT
+               store_number      AS storeNumber,
+               customer_number   AS customerNumber,
+               first_name        AS firstName,
+               last_name         AS lastName,
+               email             AS email,
+               agreement_number  AS agreementNumber,
+               date_rented       AS dateRented,
+               due_date          As dueDate,
+               percent_ownership As percentOwnership,
+               product           AS product,
+               terms             AS terms,
+               next_payment_amount AS nextPaymentAmount,
+               address_1         AS address1,
+               address_2         AS address2,
+               city              AS city,
+               state             AS state,
+               zip               AS zip,
+               payments_remaining AS paymentsRemaining,
+               projected_payout_date AS projectedPayoutDate,
+               weeks_remaining   AS weeksRemaining,
+               months_remaining  AS monthsRemaining,
+               past_due          AS pastDue,
+               overdue_amount    AS overdueAmount,
+               club_member       AS clubMember,
+               club_number       AS clubNumber,
+               club_fee          AS clubFee,
+               autopay           AS autopay,
+               active_agreement  AS activeAgreement,
+               payment_terms     AS paymentTerms,
+               date_closed       AS dateClosed,
+               closed_reason     AS closedReason
+            FROM fastinfo_prod_import.csv_all_rto_agreements_vw
+               WHERE dataset = :dataset
+            """.trimIndent()
+         )
+
+         query.bind("dataset", company.datasetCode)
+         //   query.bind("numericMonth", time.value)
+
+         query.map { rs, _ ->
+            WowAllRtoAgreementEntity(
+               company = company,
+               storeNumber = rs.getInt("storeNumber"),
+               customerNumber = rs.getString("customerNumber"),
+               firstName = rs.getString("firstName"),
+               lastName = rs.getString("lastName"),
+               email = rs.getString("email"),
+               agreementNumber = rs.getString("agreementNumber"),
+               dateRented = rs.getLocalDateOrNull("dateRented"),
+               dueDate = rs.getLocalDateOrNull("dueDate"),
+               percentOwnership = rs.getString("percentOwnership"),
+               product = rs.getString("product"),
+               terms = rs.getString("terms"),
+               nextPaymentAmount = rs.getString("nextPaymentAmount"),
+               address1 = rs.getString("address1"),
+               address2 = rs.getString("address2"),
+               city = rs.getString("city"),
+               state = rs.getString("state"),
+               zip = rs.getString("zip"),
+               paymentsRemaining = rs.getString("paymentsRemaining"),
+               projectedPayoutDate = rs.getLocalDateOrNull("projectedPayoutDate"),
+               weeksRemaining = rs.getInt("weeksRemaining"),
+               monthsRemaining = rs.getInt("monthsRemaining"),
+               pastDue = rs.getString("pastDue"),
+               overdueAmount = rs.getString("overdueAmount"),
+               clubMember = rs.getString("clubMember"),
+               clubNumber = rs.getString("clubNumber"),
+               clubFee = rs.getString("clubFee"),
+               autopay = rs.getString("autopay"),
+               actveAgreement = rs.getString("activeAgreement"),
+               paymentTerms = rs.getString("paymentTerms"),
+               dateClosed = rs.getLocalDateOrNull("dateClosed"),
+               closedReason = rs.getInt("closedReason")
+            )
+         }.asSequence()
+      }
+   }
+
+   @ReadOnly
+   fun findnewRentals(company: CompanyEntity): Sequence<WowNewRentalEntity> {
+      return jdbi.withHandle<Sequence<WowNewRentalEntity>, Exception> { handle ->
+         val query = handle.createQuery(
+            """
+            SELECT
+               store_number      AS storeNumber,
+               customer_number   AS customerNumber,
+               first_name        AS firstName,
+               last_name         AS lastName,
+               email             AS email,
+               agreement_number  AS agreementNumber,
+               date_rented       AS dateRented,
+               due_date          As dueDate,
+               percent_ownership As percentOwnership,
+               product           AS product,
+               terms             AS terms,
+               next_payment_amount AS nextPaymentAmount,
+               address_1         AS address1,
+               address_2         AS address2,
+               city              AS city,
+               state             AS state,
+               zip               AS zip,
+               payments_remaining AS paymentsRemaining,
+               projected_payout_date AS projectedPayoutDate,
+               weeks_remaining   AS weeksRemaining,
+               months_remaining  AS monthsRemaining,
+               past_due          AS pastDue,
+               overdue_amount    AS overdueAmount,
+               club_member       AS clubMember,
+               club_number       AS clubNumber,
+               club_fee          AS clubFee,
+               autopay           AS autopay,
+               active_agreement  AS activeAgreement,
+               payment_terms     AS paymentTerms
+            FROM fastinfo_prod_import.csv_new_rentals_vw
+               WHERE dataset = :dataset
+            """.trimIndent()
+         )
+
+         query.bind("dataset", company.datasetCode)
+         //   query.bind("numericMonth", time.value)
+
+         query.map { rs, _ ->
+            WowNewRentalEntity(
+               company = company,
+               storeNumber = rs.getInt("storeNumber"),
+               customerNumber = rs.getString("customerNumber"),
+               firstName = rs.getString("firstName"),
+               lastName = rs.getString("lastName"),
+               email = rs.getString("email"),
+               agreementNumber = rs.getString("agreementNumber"),
+               dateRented = rs.getLocalDateOrNull("dateRented"),
+               dueDate = rs.getLocalDateOrNull("dueDate"),
+               percentOwnership = rs.getString("percentOwnership"),
+               product = rs.getString("product"),
+               terms = rs.getString("terms"),
+               nextPaymentAmount = rs.getString("nextPaymentAmount"),
+               address1 = rs.getString("address1"),
+               address2 = rs.getString("address2"),
+               city = rs.getString("city"),
+               state = rs.getString("state"),
+               zip = rs.getString("zip"),
+               paymentsRemaining = rs.getString("paymentsRemaining"),
+               projectedPayoutDate = rs.getLocalDateOrNull("projectedPayoutDate"),
+               weeksRemaining = rs.getInt("weeksRemaining"),
+               monthsRemaining = rs.getInt("monthsRemaining"),
+               pastDue = rs.getString("pastDue"),
+               overdueAmount = rs.getString("overdueAmount"),
+               clubMember = rs.getString("clubMember"),
+               clubNumber = rs.getString("clubNumber"),
+               clubFee = rs.getString("clubFee"),
+               autopay = rs.getString("autopay"),
+               actveAgreement = rs.getString("activeAgreement"),
+               paymentTerms = rs.getString("paymentTerms")
+            )
+         }.asSequence()
+      }
+   }
+
+
+   @ReadOnly
+   fun findreturns(company: CompanyEntity): Sequence<WowReturnEntity> {
+      return jdbi.withHandle<Sequence<WowReturnEntity>, Exception> { handle ->
+         val query = handle.createQuery(
+            """
+            SELECT
+               store_number      AS storeNumber,
+               customer_number   AS customerNumber,
+               first_name        AS firstName,
+               last_name         AS lastName,
+               email             AS email,
+               agreement_number  AS agreementNumber,
+               date_rented       AS dateRented,
+               due_date          As dueDate,
+               percent_ownership As percentOwnership,
+               product           AS product,
+               terms             AS terms,
+               next_payment_amount AS nextPaymentAmount,
+               address_1         AS address1,
+               address_2         AS address2,
+               city              AS city,
+               state             AS state,
+               zip               AS zip,
+               payments_remaining AS paymentsRemaining,
+               projected_payout_date AS projectedPayoutDate,
+               weeks_remaining   AS weeksRemaining,
+               months_remaining  AS monthsRemaining,
+               past_due          AS pastDue,
+               overdue_amount    AS overdueAmount,
+               club_member       AS clubMember,
+               club_number       AS clubNumber,
+               club_fee          AS clubFee,
+               autopay           AS autopay,
+               active_agreement  AS activeAgreement,
+               payment_terms     AS paymentTerms,
+               date_closed       AS dateClosed,
+               closed_reason     AS closedReason
+            FROM fastinfo_prod_import.csv_returns_vw
+               WHERE dataset = :dataset
+            """.trimIndent()
+         )
+
+         query.bind("dataset", company.datasetCode)
+         //   query.bind("numericMonth", time.value)
+
+         query.map { rs, _ ->
+            WowReturnEntity(
+               company = company,
+               storeNumber = rs.getInt("storeNumber"),
+               customerNumber = rs.getString("customerNumber"),
+               firstName = rs.getString("firstName"),
+               lastName = rs.getString("lastName"),
+               email = rs.getString("email"),
+               agreementNumber = rs.getString("agreementNumber"),
+               dateRented = rs.getLocalDateOrNull("dateRented"),
+               dueDate = rs.getLocalDateOrNull("dueDate"),
+               percentOwnership = rs.getString("percentOwnership"),
+               product = rs.getString("product"),
+               terms = rs.getString("terms"),
+               nextPaymentAmount = rs.getString("nextPaymentAmount"),
+               address1 = rs.getString("address1"),
+               address2 = rs.getString("address2"),
+               city = rs.getString("city"),
+               state = rs.getString("state"),
+               zip = rs.getString("zip"),
+               paymentsRemaining = rs.getString("paymentsRemaining"),
+               projectedPayoutDate = rs.getLocalDateOrNull("projectedPayoutDate"),
+               weeksRemaining = rs.getInt("weeksRemaining"),
+               monthsRemaining = rs.getInt("monthsRemaining"),
+               pastDue = rs.getString("pastDue"),
+               overdueAmount = rs.getString("overdueAmount"),
+               clubMember = rs.getString("clubMember"),
+               clubNumber = rs.getString("clubNumber"),
+               clubFee = rs.getString("clubFee"),
+               autopay = rs.getString("autopay"),
+               actveAgreement = rs.getString("activeAgreement"),
+               paymentTerms = rs.getString("paymentTerms"),
+               dateClosed = rs.getLocalDateOrNull("dateClosed"),
+               closedReason = rs.getInt("closedReason")
+            )
+         }.asSequence()
+      }
+   }
+
+   @ReadOnly
+   fun findlostCustomer(company: CompanyEntity): Sequence<WowLostCustomerEntity> {
+      return jdbi.withHandle<Sequence<WowLostCustomerEntity>, Exception> { handle ->
+         val query = handle.createQuery(
+            """
+            SELECT
+               store_number      AS storeNumber,
+               customer_number   AS customerNumber,
+               first_name        AS firstName,
+               last_name         AS lastName,
+               email             AS email,
+               agreement_number  AS agreementNumber,
+               date_rented       AS dateRented,
+               due_date          As dueDate,
+               percent_ownership As percentOwnership,
+               product           AS product,
+               terms             AS terms,
+               next_payment_amount AS nextPaymentAmount,
+               address_1         AS address1,
+               address_2         AS address2,
+               city              AS city,
+               state             AS state,
+               zip               AS zip,
+               payments_remaining AS paymentsRemaining,
+               projected_payout_date AS projectedPayoutDate,
+               weeks_remaining   AS weeksRemaining,
+               months_remaining  AS monthsRemaining,
+               past_due          AS pastDue,
+               overdue_amount    AS overdueAmount,
+               club_member       AS clubMember,
+               club_number       AS clubNumber,
+               club_fee          AS clubFee,
+               autopay           AS autopay,
+               active_agreement  AS activeAgreement,
+               payment_terms     AS paymentTerms,
+               date_closed       AS dateClosed,
+               closed_reason     AS closedReason
+            FROM fastinfo_prod_import.csv_lost_customer_vw
+               WHERE dataset = :dataset
+            """.trimIndent()
+         )
+
+         query.bind("dataset", company.datasetCode)
+         //   query.bind("numericMonth", time.value)
+
+         query.map { rs, _ ->
+            WowLostCustomerEntity(
+               company = company,
+               storeNumber = rs.getInt("storeNumber"),
+               customerNumber = rs.getString("customerNumber"),
+               firstName = rs.getString("firstName"),
+               lastName = rs.getString("lastName"),
+               email = rs.getString("email"),
+               agreementNumber = rs.getString("agreementNumber"),
+               dateRented = rs.getLocalDateOrNull("dateRented"),
+               dueDate = rs.getLocalDateOrNull("dueDate"),
+               percentOwnership = rs.getString("percentOwnership"),
+               product = rs.getString("product"),
+               terms = rs.getString("terms"),
+               nextPaymentAmount = rs.getString("nextPaymentAmount"),
+               address1 = rs.getString("address1"),
+               address2 = rs.getString("address2"),
+               city = rs.getString("city"),
+               state = rs.getString("state"),
+               zip = rs.getString("zip"),
+               paymentsRemaining = rs.getString("paymentsRemaining"),
+               projectedPayoutDate = rs.getLocalDateOrNull("projectedPayoutDate"),
+               weeksRemaining = rs.getInt("weeksRemaining"),
+               monthsRemaining = rs.getInt("monthsRemaining"),
+               pastDue = rs.getString("pastDue"),
+               overdueAmount = rs.getString("overdueAmount"),
+               clubMember = rs.getString("clubMember"),
+               clubNumber = rs.getString("clubNumber"),
+               clubFee = rs.getString("clubFee"),
+               autopay = rs.getString("autopay"),
+               actveAgreement = rs.getString("activeAgreement"),
+               paymentTerms = rs.getString("paymentTerms"),
+               dateClosed = rs.getLocalDateOrNull("dateClosed"),
+               closedReason = rs.getInt("closedReason")
+            )
+         }.asSequence()
+      }
+   }
+
+   @ReadOnly
+   fun findPayouts(company: CompanyEntity): Sequence<WowPayoutEntity> {
+      return jdbi.withHandle<Sequence<WowPayoutEntity>, Exception> { handle ->
+         val query = handle.createQuery(
+            """
+            SELECT
+               store_number      AS storeNumber,
+               customer_number   AS customerNumber,
+               first_name        AS firstName,
+               last_name         AS lastName,
+               email             AS email,
+               agreement_number  AS agreementNumber,
+               date_rented       AS dateRented,
+               due_date          As dueDate,
+               percent_ownership As percentOwnership,
+               product           AS product,
+               terms             AS terms,
+               next_payment_amount AS nextPaymentAmount,
+               address_1         AS address1,
+               address_2         AS address2,
+               city              AS city,
+               state             AS state,
+               zip               AS zip,
+               payments_remaining AS paymentsRemaining,
+               projected_payout_date AS projectedPayoutDate,
+               weeks_remaining   AS weeksRemaining,
+               months_remaining  AS monthsRemaining,
+               past_due          AS pastDue,
+               overdue_amount    AS overdueAmount,
+               club_member       AS clubMember,
+               club_number       AS clubNumber,
+               club_fee          AS clubFee,
+               autopay           AS autopay,
+               active_agreement  AS activeAgreement,
+               payment_terms     AS paymentTerms,
+               date_closed       AS dateClosed,
+               closed_reason     AS closedReason
+            FROM fastinfo_prod_import.csv_payouts_vw
+               WHERE dataset = :dataset
+            """.trimIndent()
+         )
+
+         query.bind("dataset", company.datasetCode)
+         //   query.bind("numericMonth", time.value)
+
+         query.map { rs, _ ->
+            WowPayoutEntity(
+               company = company,
+               storeNumber = rs.getInt("storeNumber"),
+               customerNumber = rs.getString("customerNumber"),
+               firstName = rs.getString("firstName"),
+               lastName = rs.getString("lastName"),
+               email = rs.getString("email"),
+               agreementNumber = rs.getString("agreementNumber"),
+               dateRented = rs.getLocalDateOrNull("dateRented"),
+               dueDate = rs.getLocalDateOrNull("dueDate"),
+               percentOwnership = rs.getString("percentOwnership"),
+               product = rs.getString("product"),
+               terms = rs.getString("terms"),
+               nextPaymentAmount = rs.getString("nextPaymentAmount"),
+               address1 = rs.getString("address1"),
+               address2 = rs.getString("address2"),
+               city = rs.getString("city"),
+               state = rs.getString("state"),
+               zip = rs.getString("zip"),
+               paymentsRemaining = rs.getString("paymentsRemaining"),
+               projectedPayoutDate = rs.getLocalDateOrNull("projectedPayoutDate"),
+               weeksRemaining = rs.getInt("weeksRemaining"),
+               monthsRemaining = rs.getInt("monthsRemaining"),
+               pastDue = rs.getString("pastDue"),
+               overdueAmount = rs.getString("overdueAmount"),
+               clubMember = rs.getString("clubMember"),
+               clubNumber = rs.getString("clubNumber"),
+               clubFee = rs.getString("clubFee"),
+               autopay = rs.getString("autopay"),
+               actveAgreement = rs.getString("activeAgreement"),
+               paymentTerms = rs.getString("paymentTerms"),
+               dateClosed = rs.getLocalDateOrNull("dateClosed"),
+               closedReason = rs.getInt("closedReason")
+            )
+         }.asSequence()
+      }
+   }
+   @ReadOnly
+   fun findAtRisk(company: CompanyEntity): Sequence<WowAtRiskEntity> {
+      return jdbi.withHandle<Sequence<WowAtRiskEntity>, Exception> { handle ->
+         val query = handle.createQuery(
+            """
+            SELECT
+               store_number      AS storeNumber,
+               customer_number   AS customerNumber,
+               first_name        AS firstName,
+               last_name         AS lastName,
+               email             AS email,
+               agreement_number  AS agreementNumber,
+               date_rented       AS dateRented,
+               due_date          As dueDate,
+               percent_ownership As percentOwnership,
+               product           AS product,
+               terms             AS terms,
+               next_payment_amount AS nextPaymentAmount,
+               address_1         AS address1,
+               address_2         AS address2,
+               city              AS city,
+               state             AS state,
+               zip               AS zip,
+               payments_remaining AS paymentsRemaining,
+               projected_payout_date AS projectedPayoutDate,
+               weeks_remaining   AS weeksRemaining,
+               months_remaining  AS monthsRemaining,
+               past_due          AS pastDue,
+               overdue_amount    AS overdueAmount,
+               club_member       AS clubMember,
+               club_number       AS clubNumber,
+               club_fee          AS clubFee,
+               autopay           AS autopay,
+               active_agreement  AS activeAgreement,
+               payment_terms     AS paymentTerms
+            FROM fastinfo_prod_import.csv_at_risk_vw
+               WHERE dataset = :dataset
+            """.trimIndent()
+         )
+
+         query.bind("dataset", company.datasetCode)
+         //   query.bind("numericMonth", time.value)
+
+         query.map { rs, _ ->
+            WowAtRiskEntity(
+               company = company,
+               storeNumber = rs.getInt("storeNumber"),
+               customerNumber = rs.getString("customerNumber"),
+               firstName = rs.getString("firstName"),
+               lastName = rs.getString("lastName"),
+               email = rs.getString("email"),
+               agreementNumber = rs.getString("agreementNumber"),
+               dateRented = rs.getLocalDateOrNull("dateRented"),
+               dueDate = rs.getLocalDateOrNull("dueDate"),
+               percentOwnership = rs.getString("percentOwnership"),
+               product = rs.getString("product"),
+               terms = rs.getString("terms"),
+               nextPaymentAmount = rs.getString("nextPaymentAmount"),
+               address1 = rs.getString("address1"),
+               address2 = rs.getString("address2"),
+               city = rs.getString("city"),
+               state = rs.getString("state"),
+               zip = rs.getString("zip"),
+               paymentsRemaining = rs.getString("paymentsRemaining"),
+               projectedPayoutDate = rs.getLocalDateOrNull("projectedPayoutDate"),
+               weeksRemaining = rs.getInt("weeksRemaining"),
+               monthsRemaining = rs.getInt("monthsRemaining"),
+               pastDue = rs.getString("pastDue"),
+               overdueAmount = rs.getString("overdueAmount"),
+               clubMember = rs.getString("clubMember"),
+               clubNumber = rs.getString("clubNumber"),
+               clubFee = rs.getString("clubFee"),
+               autopay = rs.getString("autopay"),
+               actveAgreement = rs.getString("activeAgreement"),
+               paymentTerms = rs.getString("paymentTerms")
+            )
+         }.asSequence()
+      }
+   }
+   @ReadOnly
+   fun findWowFuturePayout(company: CompanyEntity): Sequence<WowFuturePayoutEntity> {
+      return jdbi.withHandle<Sequence<WowFuturePayoutEntity>, Exception> { handle ->
+         val query = handle.createQuery(
+            """
+            SELECT
+               store_number      AS storeNumber,
+               customer_number   AS customerNumber,
+               first_name        AS firstName,
+               last_name         AS lastName,
+               email             AS email,
+               agreement_number  AS agreementNumber,
+               date_rented       AS dateRented,
+               due_date          As dueDate,
+               percent_ownership As percentOwnership,
+               product           AS product,
+               terms             AS terms,
+               next_payment_amount AS nextPaymentAmount,
+               address_1         AS address1,
+               address_2         AS address2,
+               city              AS city,
+               state             AS state,
+               zip               AS zip,
+               payments_remaining AS paymentsRemaining,
+               projected_payout_date AS projectedPayoutDate,
+               weeks_remaining   AS weeksRemaining,
+               months_remaining  AS monthsRemaining,
+               past_due          AS pastDue,
+               overdue_amount    AS overdueAmount,
+               club_member       AS clubMember,
+               club_number       AS clubNumber,
+               club_fee          AS clubFee,
+               autopay           AS autopay,
+               active_agreement  AS activeAgreement,
+               payment_terms     AS paymentTerms
+            FROM fastinfo_prod_import.csv_payouts_next_30_vw
+               WHERE dataset = :dataset
+            """.trimIndent()
+         )
+
+         query.bind("dataset", company.datasetCode)
+         //   query.bind("numericMonth", time.value)
+
+         query.map { rs, _ ->
+            WowFuturePayoutEntity(
+               company = company,
+               storeNumber = rs.getInt("storeNumber"),
+               customerNumber = rs.getString("customerNumber"),
+               firstName = rs.getString("firstName"),
+               lastName = rs.getString("lastName"),
+               email = rs.getString("email"),
+               agreementNumber = rs.getString("agreementNumber"),
+               dateRented = rs.getLocalDateOrNull("dateRented"),
+               dueDate = rs.getLocalDateOrNull("dueDate"),
+               percentOwnership = rs.getString("percentOwnership"),
+               product = rs.getString("product"),
+               terms = rs.getString("terms"),
+               nextPaymentAmount = rs.getString("nextPaymentAmount"),
+               address1 = rs.getString("address1"),
+               address2 = rs.getString("address2"),
+               city = rs.getString("city"),
+               state = rs.getString("state"),
+               zip = rs.getString("zip"),
+               paymentsRemaining = rs.getString("paymentsRemaining"),
+               projectedPayoutDate = rs.getLocalDateOrNull("projectedPayoutDate"),
+               weeksRemaining = rs.getInt("weeksRemaining"),
+               monthsRemaining = rs.getInt("monthsRemaining"),
+               pastDue = rs.getString("pastDue"),
+               overdueAmount = rs.getString("overdueAmount"),
+               clubMember = rs.getString("clubMember"),
+               clubNumber = rs.getString("clubNumber"),
+               clubFee = rs.getString("clubFee"),
+               autopay = rs.getString("autopay"),
+               actveAgreement = rs.getString("activeAgreement"),
+               paymentTerms = rs.getString("paymentTerms")
             )
          }.asSequence()
       }

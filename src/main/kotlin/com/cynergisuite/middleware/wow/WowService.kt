@@ -53,6 +53,13 @@ class WowService @Inject constructor(
             saveSchedule("Wow Collections", "DAILY", WowCollection, Daily, company, credentials),
             saveSchedule("Wow Final Payments", "DAILY", WowFinalPayment, Daily, company, credentials),
             saveSchedule("Wow Single Agreements", "BEGINNING", WowSingleAgreement, BeginningOfMonth, company, credentials),
+            saveSchedule("Wow All Rto Agreements", "BEGINNING", WowAllRtoAgreements, BeginningOfMonth, company, credentials),
+            saveSchedule("Wow New Rentals Last 30 Days", "DAILY", WowNewRentals, Daily, company, credentials),
+            saveSchedule("Wow Returns Last 120 Days", "DAILY", WowReturns, Daily, company, credentials),
+            saveSchedule("Wow Lost Customer Last 9 Months", "DAILY", WowLostCustomer, Daily, company, credentials),
+            saveSchedule("Wow Payouts Last 120 Days", "DAILY", WowPayouts, Daily, company, credentials),
+            saveSchedule("Wow At Risk Anyone Overdue", "DAILY", WowAtRisk, Daily, company, credentials),
+            saveSchedule("Wow Future Payouts Next 30 Days", "DAILY", WowFuturePayouts, Daily, company, credentials),
          )
       } else {
          emptyList()
