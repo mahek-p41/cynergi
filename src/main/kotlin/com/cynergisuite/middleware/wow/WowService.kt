@@ -12,9 +12,16 @@ import com.cynergisuite.middleware.schedule.argument.infrastructure.ScheduleArgu
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
 import com.cynergisuite.middleware.schedule.command.WowAccountSummary
 import com.cynergisuite.middleware.schedule.command.WowActiveInventory
+import com.cynergisuite.middleware.schedule.command.WowAllRtoAgreements
+import com.cynergisuite.middleware.schedule.command.WowAtRisk
 import com.cynergisuite.middleware.schedule.command.WowBirthday
 import com.cynergisuite.middleware.schedule.command.WowCollection
 import com.cynergisuite.middleware.schedule.command.WowFinalPayment
+import com.cynergisuite.middleware.schedule.command.WowFuturePayouts
+import com.cynergisuite.middleware.schedule.command.WowLostCustomer
+import com.cynergisuite.middleware.schedule.command.WowNewRentals
+import com.cynergisuite.middleware.schedule.command.WowPayouts
+import com.cynergisuite.middleware.schedule.command.WowReturns
 import com.cynergisuite.middleware.schedule.command.WowSingleAgreement
 import com.cynergisuite.middleware.schedule.command.toEntity
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository

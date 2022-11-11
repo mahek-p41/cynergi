@@ -47,7 +47,7 @@ class WowLostCustomerJob @Inject constructor(
                lostCustomer.firstName ?: EMPTY,
                lostCustomer.lastName ?: EMPTY,
                lostCustomer.email ?: EMPTY,
-               lostCustomer.agreementNumber ?: EMPTY,
+               lostCustomer.agreementNumber,
                lostCustomer.dateRented ?: EMPTY,
                lostCustomer.dueDate ?: EMPTY,
                lostCustomer.percentOwnership ?: EMPTY,

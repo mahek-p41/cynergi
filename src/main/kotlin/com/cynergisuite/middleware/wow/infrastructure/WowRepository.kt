@@ -4,9 +4,16 @@ import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.wow.WowAccountSummaryEntity
 import com.cynergisuite.middleware.wow.WowActiveInventoryEntity
+import com.cynergisuite.middleware.wow.WowAllRtoAgreementEntity
+import com.cynergisuite.middleware.wow.WowAtRiskEntity
 import com.cynergisuite.middleware.wow.WowBirthdayEntity
 import com.cynergisuite.middleware.wow.WowCollectionEntity
 import com.cynergisuite.middleware.wow.WowFinalPaymentEntity
+import com.cynergisuite.middleware.wow.WowFuturePayoutEntity
+import com.cynergisuite.middleware.wow.WowLostCustomerEntity
+import com.cynergisuite.middleware.wow.WowNewRentalEntity
+import com.cynergisuite.middleware.wow.WowPayoutEntity
+import com.cynergisuite.middleware.wow.WowReturnEntity
 import com.cynergisuite.middleware.wow.WowSingleAgreementEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject

@@ -47,7 +47,7 @@ class WowAtRiskJob @Inject constructor(
                atRisk.firstName ?: EMPTY,
                atRisk.lastName ?: EMPTY,
                atRisk.email ?: EMPTY,
-               atRisk.agreementNumber ?: EMPTY,
+               atRisk.agreementNumber,
                atRisk.dateRented ?: EMPTY,
                atRisk.dueDate ?: EMPTY,
                atRisk.percentOwnership ?: EMPTY,
