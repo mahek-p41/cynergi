@@ -1,6 +1,8 @@
 package com.cynergisuite.middleware.accounting.general.ledger
 
+import com.cynergisuite.domain.GeneralLedgerJournalExportRequest
 import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
+import com.cynergisuite.domain.GeneralLedgerJournalReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
@@ -10,8 +12,13 @@ import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.Gene
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.StoreDTO
+import com.opencsv.CSVWriter
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.io.ByteArrayOutputStream
+import java.io.OutputStreamWriter
+import java.math.BigDecimal
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.UUID
 import javax.transaction.Transactional
@@ -54,6 +61,37 @@ class GeneralLedgerJournalService @Inject constructor(
       }
    }
 
+   fun fetchReport(company: CompanyEntity, filterRequest: GeneralLedgerJournalReportFilterRequest): GeneralLedgerPendingReportTemplate {
+      val found = generalLedgerJournalRepository.fetchReport(company, filterRequest)
+
+      return GeneralLedgerPendingReportTemplate(found)
+   }
+
+   fun export(filterRequest: GeneralLedgerJournalExportRequest, company: CompanyEntity): ByteArray {
+      val found = generalLedgerJournalRepository.export(filterRequest, company)
+      val stream = ByteArrayOutputStream()
+      val output = OutputStreamWriter(stream)
+      val csvWriter = CSVWriter(output, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.NO_ESCAPE_CHARACTER)
+
+      for(element in found) {
+         val data = arrayOf<String>(
+            company.id.toString().substring(0,3),
+            element.account.number.toString().padStart(8, '0'),
+            '"' + element.account.name.padEnd(30, ' ') + '"',
+            element.profitCenter.myNumber().toString().padStart(6, '0'),
+            '"' + element.date.format(DateTimeFormatter.ofPattern("MM/dd/yy")) + '"',
+            '"' + element.source.value + '"',
+            if(element.amount > BigDecimal.ZERO) element.amount.toString().padStart(12, '0') else BigDecimal("0.00").toString().padStart(12, '0'),
+            if(element.amount < BigDecimal.ZERO) element.amount.abs().toString().padStart(12, '0') else BigDecimal("0.00").toString().padStart(12, '0'),
+            '"' + element.message!!.padEnd(70, ' ') + '"'
+         )
+         csvWriter.writeNext(data)
+      }
+      csvWriter.close()
+      output.close()
+      return stream.toByteArray()
+   }
+
    @Transactional
    fun transfer(user: User, filterRequest: GeneralLedgerJournalFilterRequest, locale: Locale) {
       val company = user.myCompany()
@@ -84,10 +122,9 @@ class GeneralLedgerJournalService @Inject constructor(
 
    @Transactional
    fun transfer(user: User, dto: GeneralLedgerJournalDTO, locale: Locale) {
-      val company = user.myCompany()
 
       // create GL detail
-      var glDetailDTO: GeneralLedgerDetailDTO = GeneralLedgerDetailDTO(
+      val glDetailDTO = GeneralLedgerDetailDTO(
             null,
             dto.account,
             dto.date,

@@ -1,10 +1,13 @@
 package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 
+import com.cynergisuite.domain.GeneralLedgerJournalExportRequest
 import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
+import com.cynergisuite.domain.GeneralLedgerJournalReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalService
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -12,6 +15,7 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.HttpRequest
+import io.micronaut.http.MediaType
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -20,6 +24,7 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.server.types.files.StreamedFile
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
@@ -36,6 +41,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
 import javax.validation.Valid
+import java.io.ByteArrayInputStream
 
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/general-ledger/journal")
@@ -255,5 +261,59 @@ class GeneralLedgerJournalController @Inject constructor(
       val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
       generalLedgerJournalService.transfer(user, dto, locale)
+   }
+
+   @Throws(NotFoundException::class)
+   @Get(uri = "/export{?filterRequest*}")
+   @Operation(
+      tags = ["GeneralLedgerJournalEndpoints"],
+      summary = "Export a listing of GeneralLedgerJournals",
+      description = "Export a listing of GeneralLedgerJournals to a file",
+      operationId = "generalLedgerJournal-export"
+   )
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200"),
+         ApiResponse(responseCode = "204", description = "The requested GeneralLedgerJournal was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun export(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @QueryValue("filterRequest")
+      filterRequest: GeneralLedgerJournalExportRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): StreamedFile {
+      logger.info("Fetching all GeneralLedgerJournals {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+      val byteArray = generalLedgerJournalService.export(filterRequest, user.myCompany())
+      return StreamedFile(ByteArrayInputStream(byteArray), MediaType.ALL_TYPE).attach("GL Journal Export.csv")
+   }
+
+   @Throws(NotFoundException::class)
+   @Get(uri = "report{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a report of pending GeneralLedgerJournals", description = "Fetch a pending report of GeneralLedgerJournals", operationId = "generalLedgerJournal-fetchReport")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerPendingReportTemplate::class))]),
+         ApiResponse(responseCode = "204", description = "The requested GeneralLedgerJournal was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchReport(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: GeneralLedgerJournalReportFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): GeneralLedgerPendingReportTemplate {
+      logger.info("Fetching all GeneralLedgerJournals {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+      return generalLedgerJournalService.fetchReport(user.myCompany(), filterRequest)
    }
 }

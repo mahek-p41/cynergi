@@ -52,8 +52,6 @@ class GeneralLedgerSearchReportFilterRequest(
    @field:Schema(name = "thruPmtDt", description = "Ending payment date")
    var thruPmtDt: OffsetDateTime? = null,
 
-
-
    ) : PageRequestBase<GeneralLedgerSearchReportFilterRequest>(page, size, sortBy, sortDirection) {
 
       @ValidPageSortBy("id")
@@ -96,7 +94,7 @@ class GeneralLedgerSearchReportFilterRequest(
             .append(this.thruPmtDt)
             .toHashCode()
 
-      protected override fun myCopyPage(page: Int, size: Int, sortBy: String, sortDirection: String): GeneralLedgerSearchReportFilterRequest =
+      override fun myCopyPage(page: Int, size: Int, sortBy: String, sortDirection: String): GeneralLedgerSearchReportFilterRequest =
          GeneralLedgerSearchReportFilterRequest(
             page = page,
             size = size,
@@ -115,7 +113,7 @@ class GeneralLedgerSearchReportFilterRequest(
             thruPmtDt = this.thruPmtDt
          )
 
-      protected override fun myToStringValues(): List<Pair<String, Any?>> =
+      override fun myToStringValues(): List<Pair<String, Any?>> =
          listOf(
             "startingAccount" to startingAccount,
             "endingAccount" to endingAccount,

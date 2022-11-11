@@ -1,17 +1,22 @@
 package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 
+import com.cynergisuite.domain.GeneralLedgerJournalExportRequest
 import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
+import com.cynergisuite.domain.GeneralLedgerJournalReportFilterRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalEntity
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingReportDetailsTemplate
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerReportSortEnum
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
@@ -134,7 +139,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
       if (filterRequest.fromDate != null || filterRequest.thruDate != null) {
          params["fromDate"] = filterRequest.fromDate
          params["thruDate"] = filterRequest.thruDate
-         whereClause.append(" AND glJournal.date ")
+         whereClause.append(" AND glJournal.date")
             .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
       }
 
@@ -247,6 +252,133 @@ class GeneralLedgerJournalRepository @Inject constructor(
 
       if (rowsAffected == 0) throw NotFoundException(id)
    }
+
+   @ReadOnly
+   fun fetchReport(company: CompanyEntity, filterRequest: GeneralLedgerJournalReportFilterRequest) : List<GeneralLedgerPendingReportDetailsTemplate> {
+      val glJournals = mutableListOf<GeneralLedgerJournalEntity>()
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
+      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id")
+      val orderBy = StringBuilder("ORDER BY ")
+
+      if (filterRequest.profitCenter != null) {
+         params["profitCenter"] = filterRequest.profitCenter
+         whereClause.append(" AND profitCenter.number = :profitCenter")
+      }
+
+      if (filterRequest.beginSourceCode != null || filterRequest.endSourceCode != null) {
+         params["beginSource"] = filterRequest.beginSourceCode
+         params["endSource"] = filterRequest.endSourceCode
+         whereClause.append(" AND source.value ")
+            .append(buildFilterString(filterRequest.beginSourceCode != null, filterRequest.endSourceCode != null, "beginSource", "endSource"))
+      }
+
+      if (filterRequest.fromDate != null || filterRequest.thruDate != null) {
+         params["fromDate"] = filterRequest.fromDate
+         params["thruDate"] = filterRequest.thruDate
+
+         whereClause.append(" AND glJournal.date")
+            .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
+      }
+
+      if (filterRequest.sortOption == GeneralLedgerReportSortEnum.ACCOUNT) {
+         orderBy.append("glJournal.account_id")
+      }
+
+      if (filterRequest.sortOption == GeneralLedgerReportSortEnum.LOCATION) {
+         orderBy.append("glJournal.profit_center_id_sfk")
+      }
+
+      jdbc.query(
+         """
+            ${selectBaseQuery()}
+            $whereClause
+            $orderBy
+         """.trimIndent(),
+         params,
+      ) { rs, _ ->
+         do {
+            glJournals.add(mapRow(rs, company, "glJournal_"))
+         } while (rs.next())
+      }
+
+      val template = mutableListOf<GeneralLedgerPendingReportDetailsTemplate>()
+      val sortedEntities = mutableListOf<GeneralLedgerJournalEntity>()
+
+      if (filterRequest.sortOption == GeneralLedgerReportSortEnum.ACCOUNT) {
+      var currentAccountID = glJournals.get(0).account.id
+         glJournals.forEach {
+            if (currentAccountID == it.account.id ) {
+               sortedEntities.add(it)
+            } else {
+               currentAccountID = it.account.id
+               template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
+               sortedEntities.removeAll(sortedEntities)
+               sortedEntities.add(it)
+            }
+         }
+      }
+
+      if (filterRequest.sortOption == GeneralLedgerReportSortEnum.LOCATION) {
+         var currentLocation = glJournals.get(0).profitCenter.myNumber()
+         glJournals.forEach {
+            if (currentLocation == it.profitCenter.myNumber() ) {
+               sortedEntities.add(it)
+            } else {
+               currentLocation = it.profitCenter.myNumber()
+               template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
+               sortedEntities.removeAll(sortedEntities)
+               sortedEntities.add(it)
+            }
+         }
+         //add any remaining sorted entities after loop
+         if (sortedEntities.isNotEmpty()) {
+            template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
+         }
+      }
+
+      return template
+   }
+
+   @ReadOnly
+   fun export(filterRequest: GeneralLedgerJournalExportRequest, company: CompanyEntity): List<GeneralLedgerJournalEntity>  {
+      val reports = mutableListOf<GeneralLedgerJournalEntity>()
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id")
+
+      if (filterRequest.profitCenter != null) {
+         params["profitCenter"] = filterRequest.profitCenter
+         whereClause.append(" AND profitCenter.number = :profitCenter")
+      }
+
+      if (filterRequest.beginSourceCode != null || filterRequest.endSourceCode != null) {
+         params["beginSource"] = filterRequest.beginSourceCode
+         params["endSource"] = filterRequest.endSourceCode
+         whereClause.append(" AND source.value ")
+            .append(buildFilterString(filterRequest.beginSourceCode != null, filterRequest.endSourceCode != null, "beginSource", "endSource"))
+      }
+
+      if (filterRequest.fromDate != null || filterRequest.thruDate != null) {
+         params["fromDate"] = filterRequest.fromDate
+         params["thruDate"] = filterRequest.thruDate
+         whereClause.append(" AND glJournal.date ")
+            .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
+      }
+
+      jdbc.query(
+         """
+            ${selectBaseQuery()}
+            $whereClause
+            ORDER BY glJournal.account_id, glJournal.date
+         """.trimIndent(),
+         params
+      ) { rs, _ ->
+         do {
+            reports.add(mapRow(rs, company, "glJournal_"))
+         } while (rs.next())
+      }
+      return reports
+   }
+
 
    private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): GeneralLedgerJournalEntity {
       return GeneralLedgerJournalEntity(
