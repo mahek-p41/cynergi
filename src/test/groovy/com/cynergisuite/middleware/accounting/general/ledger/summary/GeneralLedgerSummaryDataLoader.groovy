@@ -22,9 +22,14 @@ import java.util.stream.Stream
 class GeneralLedgerSummaryDataLoader {
 
    static Stream<GeneralLedgerSummaryEntity> stream(int numberIn = 1, AccountEntity accountIn, Store profitCenterIn, OverallPeriodType periodIn) {
-      final number = numberIn > 0 ? numberIn : 1
-      final faker = new Faker()
-      final random = faker.random()
+      def number = numberIn > 0 ? numberIn : 1
+      def random = new Faker().random()
+      def netActivities = new BigDecimal[12]
+      for (int i = 0; i < 12; i++) {
+         netActivities[i] = random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
+      }
+      def beginBalance = random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
+      def endBalance = beginBalance.add(netActivities.sum() as BigDecimal)
 
       return IntStream.range(0, number).mapToObj {
          new GeneralLedgerSummaryEntity(
@@ -32,48 +37,53 @@ class GeneralLedgerSummaryDataLoader {
             accountIn,
             profitCenterIn,
             periodIn ?: OverallPeriodTypeDataLoader.random(),
-            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
+            netActivities[0],
+            netActivities[1],
+            netActivities[2],
+            netActivities[3],
+            netActivities[4],
+            netActivities[5],
+            netActivities[6],
+            netActivities[7],
+            netActivities[8],
+            netActivities[9],
+            netActivities[10],
+            netActivities[11],
+            beginBalance,
+            endBalance
          )
       }
    }
 
    static Stream<GeneralLedgerSummaryDTO> streamDTO(int numberIn = 1, SimpleIdentifiableDTO accountIn, SimpleLegacyIdentifiableDTO profitCenterIn) {
-      final number = numberIn > 0 ? numberIn : 1
-      final faker = new Faker()
-      final random = faker.random()
+      def number = numberIn > 0 ? numberIn : 1
+      def random = new Faker().random()
+      def netActivities = new BigDecimal[12]
+      for (int i = 0; i < 12; i++) {
+         netActivities[i] = random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
+      }
+      def beginBalance = random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
+      def endBalance = beginBalance.add(netActivities.sum() as BigDecimal)
 
       return IntStream.range(0, number).mapToObj {
          new GeneralLedgerSummaryDTO([
             'account': accountIn,
             'profitCenter': profitCenterIn,
             'overallPeriod': new OverallPeriodTypeDTO(OverallPeriodTypeDataLoader.random()),
-            'netActivityPeriod1': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod2': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod3': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod4': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod5': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod6': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod7': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod8': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod9': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod10': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod11': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'netActivityPeriod12': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'beginningBalance': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'closingBalance': random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
+            'netActivityPeriod1': netActivities[0],
+            'netActivityPeriod2': netActivities[1],
+            'netActivityPeriod3': netActivities[2],
+            'netActivityPeriod4': netActivities[3],
+            'netActivityPeriod5': netActivities[4],
+            'netActivityPeriod6': netActivities[5],
+            'netActivityPeriod7': netActivities[6],
+            'netActivityPeriod8': netActivities[7],
+            'netActivityPeriod9': netActivities[8],
+            'netActivityPeriod10': netActivities[9],
+            'netActivityPeriod11': netActivities[10],
+            'netActivityPeriod12': netActivities[11],
+            'beginningBalance': beginBalance,
+            'closingBalance': endBalance
          ])
       }
    }
