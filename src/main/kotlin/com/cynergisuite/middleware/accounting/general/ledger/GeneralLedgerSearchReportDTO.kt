@@ -25,8 +25,8 @@ data class GeneralLedgerSearchReportDTO(
    var accountName: String? = null,
 
    @field:NotNull
-   @field:Schema(description = "Profit Center ID")
-   var profitCenterId: Long? = null,
+   @field:Schema(description = "Profit Center Number")
+   var profitCenterNumber: Int? = null,
 
    @field:NotNull
    @field:Schema(description = "Profit Center Name")
@@ -66,7 +66,7 @@ data class GeneralLedgerSearchReportDTO(
          id = entity.id,
          accountNumber = entity.account.number,
          accountName = entity.account.name,
-         profitCenterId = entity.profitCenter.myId(),
+         profitCenterNumber = entity.profitCenter.myNumber(),
          profitCenterName = entity.profitCenter.myName(),
          sourceCode = entity.source.value,
          sourceCodeDesc = entity.source.description,
