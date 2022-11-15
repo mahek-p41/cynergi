@@ -72,4 +72,11 @@ class OverallPeriodTypeRepository @Inject constructor(
          description = rs.getString("${columnPrefix}description"),
          localizationCode = rs.getString("${columnPrefix}localization_code")
       )
+
+   fun mapRowOrNull(rs: ResultSet, columnPrefix: String = EMPTY): OverallPeriodType? =
+      if (rs.getString("${columnPrefix}id") != null) {
+         mapRow(rs, columnPrefix)
+      } else {
+         null
+      }
 }

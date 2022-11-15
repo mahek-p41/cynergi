@@ -41,7 +41,7 @@ data class GeneralLedgerInquiryDTO(
          _periodNetActivities = entity.netActivityPeriod,
          beginningBalance = entity.beginningBalance,
          closingBalance = entity.closingBalance,
-         priorOverallPeriod = OverallPeriodTypeDTO(entity.priorOverallPeriod),
+         priorOverallPeriod = entity.priorOverallPeriod?.let { OverallPeriodTypeDTO(it) },
          _priorPeriodNetActivities = entity.priorNetActivityPeriod,
          priorBeginningBalance = entity.priorBeginningBalance,
          priorClosingBalance = entity.priorClosingBalance,

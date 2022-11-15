@@ -79,11 +79,11 @@ class GeneralLedgerInquiryRepository @Inject constructor(
                        AND profitCenter.number = glSummary.profit_center_id_sfk
             JOIN account acct ON glSummary.account_id = acct.account_id AND acct.account_deleted = FALSE
             JOIN overall_period_type_domain overallPeriod ON glSummary.overall_period_id = overallPeriod.id
-            JOIN general_ledger_summary glSummaryPrior ON glSummary.company_id = glSummaryPrior.company_id
+            LEFT JOIN general_ledger_summary glSummaryPrior ON glSummary.company_id = glSummaryPrior.company_id
                   AND glSummary.profit_center_id_sfk = glSummaryPrior.profit_center_id_sfk
                   AND glSummary.account_id = glSummaryPrior.account_id
-            JOIN overall_period_type_domain priorOverallPeriod ON glSummaryPrior.overall_period_id = priorOverallPeriod.id
-
+                  AND glSummary.overall_period_id = glSummaryPrior.overall_period_id + 1
+            LEFT JOIN overall_period_type_domain priorOverallPeriod ON glSummaryPrior.overall_period_id = priorOverallPeriod.id
       """
    }
 
@@ -113,7 +113,7 @@ class GeneralLedgerInquiryRepository @Inject constructor(
    @ReadOnly
    fun findOne(company: CompanyEntity, filterRequest: GeneralLedgerInquiryFilterRequest): GeneralLedgerInquiryEntity? {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder("WHERE glSummary.company_id = :comp_id AND overallPeriod.value IN ('C') AND priorOverallPeriod.value IN ('P') ")
+      val whereClause = StringBuilder("WHERE glSummary.company_id = :comp_id ")
       val havingClause = " GROUP BY overallPeriod.id, priorOverallPeriod.id "
 
       if (filterRequest.profitCenter != null) {
@@ -179,7 +179,7 @@ class GeneralLedgerInquiryRepository @Inject constructor(
          beginningBalance = rs.getBigDecimalOrNull("${columnPrefix}beginning_balance") ?: BigDecimal.ZERO,
          closingBalance = rs.getBigDecimalOrNull("${columnPrefix}closing_balance") ?: BigDecimal.ZERO,
          priorNetActivityPeriod = priorNetActivityPeriods,
-         priorOverallPeriod = overallPeriodTypeRepository.mapRow(rs, "${priorColumnPrefix}overallPeriod_"),
+         priorOverallPeriod = overallPeriodTypeRepository.mapRowOrNull(rs, "${priorColumnPrefix}overallPeriod_"),
          priorBeginningBalance = rs.getBigDecimalOrNull("${priorColumnPrefix}beginning_balance") ?: BigDecimal.ZERO,
          priorClosingBalance = rs.getBigDecimalOrNull("${priorColumnPrefix}closing_balance") ?: BigDecimal.ZERO,
       )
