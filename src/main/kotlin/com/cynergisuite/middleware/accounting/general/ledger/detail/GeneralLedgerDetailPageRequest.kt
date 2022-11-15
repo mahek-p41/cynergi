@@ -33,14 +33,14 @@ class GeneralLedgerDetailPageRequest(
    var thru: LocalDate? = null
 
    @field:NotNull
-   @field:Schema(name = "account", description = "Account number")
+   @field:Schema(name = "account", description = "Account number", required = true)
    var account: Int? = null
 
    @field:Schema(name = "profitCenter", description = "Profit center")
    var profitCenter: Int? = null
 
    @field:NotNull
-   @field:Schema(name = "fiscalYear", description = "Fiscal year")
+   @field:Schema(name = "fiscalYear", description = "Fiscal year", required = true)
    var fiscalYear: Int? = null
 
    @ValidPageSortBy("id")
