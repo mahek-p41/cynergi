@@ -116,7 +116,6 @@ class GeneralLedgerDetailRepository @Inject constructor(
          )
          SELECT
              glDetail.company_id                                                    AS glDetail_company_id,
-             glDetail.profit_center_id_sfk                                          AS glDetail_profit_center_id_sfk,
              acct.account_number                                                    AS glDetail_account_number,
              SUM (case when glDetail.amount >= 0 then glDetail.amount else 0 end)   AS debit,
              SUM (case when glDetail.amount < 0 then glDetail.amount else 0 end)    AS credit,
@@ -180,7 +179,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
    fun findNetChange(company: CompanyEntity, filterRequest: GeneralLedgerDetailFilterRequest): GeneralLedgerNetChangeDTO? {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder(" WHERE glDetail.company_id = :comp_id ")
-      val groupBy = " GROUP BY glDetail.company_id, glDetail.profit_center_id_sfk,acct.account_number,glSummary.beginning_balance "
+      val groupBy = StringBuilder(" GROUP BY glDetail.company_id, acct.account_number, glSummary.beginning_balance")
       if (filterRequest.from != null || filterRequest.thru != null) {
          params["from"] = filterRequest.from
          params["thru"] = filterRequest.thru
@@ -190,6 +189,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
       if (filterRequest.profitCenter != null) {
          params["profitCenter"] = filterRequest.profitCenter
          whereClause.append(" AND profitCenter.number = :profitCenter")
+         groupBy.append(", glDetail.profit_center_id_sfk")
       }
       if (filterRequest.account != null) {
          params["account"] = filterRequest.account
