@@ -85,15 +85,15 @@ class GeneralLedgerDetailRepository @Inject constructor(
             acct.account_vendor_1099_type_description                 AS glDetail_account_vendor_1099_type_description,
             acct.account_vendor_1099_type_localization_code           AS glDetail_account_vendor_1099_type_localization_code,
             bank.id                                                   AS glDetail_account_bank_id,
-            profitCenter.id                                           AS profitCenter_id,
-            profitCenter.number                                       AS profitCenter_number,
-            profitCenter.name                                         AS profitCenter_name,
-            profitCenter.dataset                                      AS profitCenter_dataset,
-            source.id                                                 AS source_id,
-            source.company_id                                         AS source_company_id,
-            source.value                                              AS source_value,
-            source.description                                        AS source_description,
-            source.deleted                                            AS source_deleted,
+            profitCenter.id                                           AS glDetail_profitCenter_id,
+            profitCenter.number                                       AS glDetail_profitCenter_number,
+            profitCenter.name                                         AS glDetail_profitCenter_name,
+            profitCenter.dataset                                      AS glDetail_profitCenter_dataset,
+            source.id                                                 AS glDetail_source_id,
+            source.company_id                                         AS glDetail_source_company_id,
+            source.value                                              AS glDetail_source_value,
+            source.description                                        AS glDetail_source_description,
+            source.deleted                                            AS glDetail_source_deleted,
             count(*) OVER() AS total_elements
          FROM general_ledger_detail glDetail
             JOIN company comp ON glDetail.company_id = comp.id AND comp.deleted = FALSE
@@ -159,8 +159,8 @@ class GeneralLedgerDetailRepository @Inject constructor(
          params
       ) { rs, _ ->
          val account = accountRepository.mapRow(rs, company, "glDetail_account_")
-         val profitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
-         val sourceCode = sourceCodeRepository.mapRow(rs, "source_")
+         val profitCenter = storeRepository.mapRow(rs, company, "glDetail_profitCenter_")
+         val sourceCode = sourceCodeRepository.mapRow(rs, "glDetail_source_")
 
          mapRow(
             rs,
@@ -252,11 +252,10 @@ class GeneralLedgerDetailRepository @Inject constructor(
          params,
          page
       ) { rs, elements ->
-         val account = accountRepository.mapRow(rs, company, "glDetail_account_")
-         val profitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
-         val sourceCode = sourceCodeRepository.mapRow(rs, "source_")
-
          do {
+            val account = accountRepository.mapRow(rs, company, "glDetail_account_")
+            val profitCenter = storeRepository.mapRow(rs, company, "glDetail_profitCenter_")
+            val sourceCode = sourceCodeRepository.mapRow(rs, "glDetail_source_")
             elements.add(
                mapRow(
                   rs,
@@ -446,8 +445,8 @@ class GeneralLedgerDetailRepository @Inject constructor(
       ) { rs, _ ->
          do {
             val account = accountRepository.mapRow(rs, company, "glDetail_account_")
-            val profitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
-            val sourceCode = sourceCodeRepository.mapRow(rs, "source_")
+            val profitCenter = storeRepository.mapRow(rs, company, "glDetail_profitCenter_")
+            val sourceCode = sourceCodeRepository.mapRow(rs, "glDetail_source_")
             val currentEntity = mapRow(rs, account, profitCenter, sourceCode, "glDetail_")
             reports.add(currentEntity)
          } while (rs.next())
@@ -571,8 +570,8 @@ class GeneralLedgerDetailRepository @Inject constructor(
       ) { rs, _ ->
          do {
             val account = accountRepository.mapRow(rs, company, "glDetail_account_")
-            val profitCenter = storeRepository.mapRow(rs, company, "profitCenter_")
-            val sourceCode = sourceCodeRepository.mapRow(rs, "source_")
+            val profitCenter = storeRepository.mapRow(rs, company, "glDetail_profitCenter_")
+            val sourceCode = sourceCodeRepository.mapRow(rs, "glDetail_source_")
             val currentEntity = mapRow(rs, account, profitCenter, sourceCode, "glDetail_")
             glDetails.add(currentEntity)
          } while (rs.next())
