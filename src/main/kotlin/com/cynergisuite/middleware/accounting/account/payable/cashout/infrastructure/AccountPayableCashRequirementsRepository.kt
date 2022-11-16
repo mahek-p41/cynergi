@@ -127,6 +127,7 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
          """
             ${selectBaseQuery()}
             $whereClause
+            ORDER BY ${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
          """.trimIndent(),
          params,
       ) { rs, elements ->
