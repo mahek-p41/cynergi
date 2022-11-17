@@ -801,7 +801,7 @@ BEGIN
    EXECUTE sqlToExec;
 END $$;
 
--- views for WOW Brand Integration
+-- views for WOW Brand Integration including second phase added
 
 DO $$
 DECLARE
