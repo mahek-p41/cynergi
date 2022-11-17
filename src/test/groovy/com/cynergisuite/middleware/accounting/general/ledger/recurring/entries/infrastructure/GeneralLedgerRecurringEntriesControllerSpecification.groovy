@@ -17,7 +17,6 @@ import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLe
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.GeneralLedgerRecurringEntriesDataLoaderService
-import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDataLoaderService
 import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -41,7 +40,6 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
    @Inject GeneralLedgerRecurringTypeDataLoaderService generalLedgerRecurringTypeDataLoaderService
    @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
    @Inject FinancialCalendarDataLoaderService financialCalendarDataLoaderService
-   @Inject GeneralLedgerSummaryDataLoaderService generalLedgerSummaryDataLoaderService
 
    void "fetch one" () {
       given:
@@ -755,21 +753,31 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       notThrown(HttpClientResponseException)
    }
 
-   void "transfer GL recurring entry to GL details" () {
+   void "transfer GL recurring entry to GL details without reversal" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       glRecurringDTO.endDate = LocalDate.now()
+      glRecurringDTO.reverseIndicator = false
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.single(store)
       def glRecurringDistributionDTOs = GeneralLedgerRecurringDistributionDataLoader.streamDTO(
-         1,
+         2,
          glRecurringDTO,
          new AccountDTO(acct),
-         new StoreDTO(store)
+         new StoreDTO(store),
+         1000 as BigDecimal
       ).toList()
+      def glRecurringDistributionCreditDTOs = GeneralLedgerRecurringDistributionDataLoader.streamDTO(
+         2,
+         glRecurringDTO,
+         new AccountDTO(acct),
+         new StoreDTO(store),
+         -1000 as BigDecimal
+      ).toList()
+      glRecurringDistributionDTOs.addAll(glRecurringDistributionCreditDTOs)
       def glRecurringEntriesDTO = dataLoaderService.singleDTO(glRecurringDTO, glRecurringDistributionDTOs)
       def entryDate = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
       def filterRequest = new GeneralLedgerRecurringEntriesFilterRequest([sortBy: "id", sortDirection: "ASC"])
@@ -844,7 +852,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
             thru = glDetailPage.thru
             account = glDetailPage.account
          }
-         totalElements == 1
+         totalElements == 4
          totalPages == 1
          first == true
          last == true
@@ -855,7 +863,6 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
                date == glRecurringDTO.lastTransferDate.toString()
                profitCenter.id == glRecurringDistributionDTOs[index].generalLedgerDistributionProfitCenter.id
                source.id == glRecurringDTO.source.id
-               amount == glRecurringDistributionDTOs[index].generalLedgerDistributionAmount
                message == glRecurringDTO.message
                employeeNumberId == employee.number
             }
@@ -863,12 +870,207 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       }
    }
 
-   void "transfer a single GL recurring entry to GL details" () {
+   void "transfer GL recurring entry to GL details with reversal" () {
       given:
       final company = companyFactoryService.forDatasetCode('tstds1')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       glRecurringDTO.endDate = LocalDate.now()
+      glRecurringDTO.reverseIndicator = true
+      final acct = accountDataLoaderService.single(company)
+      final store = storeFactoryService.store(3, company)
+      final employee = employeeFactoryService.single(store)
+      def glRecurringDistributionDTOs = GeneralLedgerRecurringDistributionDataLoader.streamDTO(
+         2,
+         glRecurringDTO,
+         new AccountDTO(acct),
+         new StoreDTO(store),
+         1000 as BigDecimal
+      ).toList()
+      def glRecurringDistributionCreditDTOs = GeneralLedgerRecurringDistributionDataLoader.streamDTO(
+         2,
+         glRecurringDTO,
+         new AccountDTO(acct),
+         new StoreDTO(store),
+         -1000 as BigDecimal
+      ).toList()
+      glRecurringDistributionDTOs.addAll(glRecurringDistributionCreditDTOs)
+      def glRecurringEntriesDTO = dataLoaderService.singleDTO(glRecurringDTO, glRecurringDistributionDTOs)
+      def entryDate = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
+      def filterRequest = new GeneralLedgerRecurringEntriesFilterRequest([sortBy: "id", sortDirection: "ASC"])
+      filterRequest['entryType'] = glRecurringDTO.type.value
+      filterRequest['sourceCode'] = glRecurringDTO.source.value
+      filterRequest['entryDate'] = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
+      filterRequest['employeeNumber'] = employee.number
+
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate).collect()
+      final dateRangeDTO = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(80))
+      final glDetailPage = new GeneralLedgerDetailPageRequest([account: acct.number, profitCenter: store.myNumber(), fiscalYear: entryDate.getYear(), from: glRecurringDTO.beginDate.minusDays(20), thru: glRecurringDTO.endDate.plusDays(20)])
+
+      when: 'open GL in financial calendar'
+      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+
+      then:
+      notThrown(Exception)
+
+      when: // GL recurring and GL recurring distributions are posted
+      def postResult = post(path, glRecurringEntriesDTO)
+
+      then:
+      notThrown(Exception)
+      postResult != null
+      with(postResult) {
+         with(generalLedgerRecurring) {
+            id != null
+
+            with(type) {
+               value == glRecurringEntriesDTO.generalLedgerRecurring.type.value
+               description == glRecurringEntriesDTO.generalLedgerRecurring.type.description
+            }
+
+            with(source) {
+               value == glRecurringEntriesDTO.generalLedgerRecurring.source.value
+               description == glRecurringEntriesDTO.generalLedgerRecurring.source.description
+            }
+
+            reverseIndicator == glRecurringEntriesDTO.generalLedgerRecurring.reverseIndicator
+            message == glRecurringEntriesDTO.generalLedgerRecurring.message
+            beginDate == glRecurringEntriesDTO.generalLedgerRecurring.beginDate.toString()
+            endDate == glRecurringEntriesDTO.generalLedgerRecurring.endDate.toString()
+         }
+
+         generalLedgerRecurringDistributions.eachWithIndex{ distribution, index ->
+            distribution.id != null
+            distribution.generalLedgerRecurring.id == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerRecurring.id
+            distribution.generalLedgerDistributionAccount.id == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionAccount.id
+            distribution.generalLedgerDistributionProfitCenter.id == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionProfitCenter.myId()
+            distribution.generalLedgerDistributionAmount == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionAmount
+         }
+      }
+
+      when: // GL recurring and GL recurring distributions are fetched and GL details are created
+      post("$path/transfer$filterRequest", null)
+
+      then:
+      notThrown(Exception)
+
+      when: // new GL detail records are fetched
+      def fetchResult = get("/general-ledger/detail$glDetailPage")
+
+      then:
+      notThrown(Exception)
+      with(fetchResult) {
+         fetchResult.with {
+            page = glDetailPage.page
+            size = glDetailPage.size
+            sortBy = glDetailPage.sortBy
+            sortDirection = glDetailPage.sortDirection
+            from = glDetailPage.from
+            thru = glDetailPage.thru
+            account = glDetailPage.account
+         }
+         totalElements == 4
+         totalPages == 1
+         first == true
+         last == true
+         elements.eachWithIndex { pageOneResult, index ->
+            with(pageOneResult) {
+               id != null
+               account.id == glRecurringDistributionDTOs[index].generalLedgerDistributionAccount.id
+               date == glRecurringDTO.lastTransferDate.toString()
+               profitCenter.id == glRecurringDistributionDTOs[index].generalLedgerDistributionProfitCenter.id
+               source.id == glRecurringDTO.source.id
+               message == glRecurringDTO.message
+               employeeNumberId == employee.number
+            }
+         }
+      }
+   }
+
+   void "transfer a single GL recurring entry to GL details without reversal" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
+      glRecurringDTO.endDate = LocalDate.now()
+      glRecurringDTO.reverseIndicator = false
+      final acct = accountDataLoaderService.single(company)
+      final store = storeFactoryService.store(3, company)
+      final employee = employeeFactoryService.single(store)
+      def glRecurringDistributionDTOs = GeneralLedgerRecurringDistributionDataLoader.streamDTO(
+         1,
+         glRecurringDTO,
+         new AccountDTO(acct),
+         new StoreDTO(store)
+      ).toList()
+      def glRecurringEntriesDTO = dataLoaderService.singleDTO(glRecurringDTO, glRecurringDistributionDTOs)
+      def entryDate = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
+      def filterRequest = new GeneralLedgerRecurringEntriesFilterRequest([sortBy: "id", sortDirection: "ASC"])
+      filterRequest['entryType'] = glRecurringDTO.type.value
+      filterRequest['sourceCode'] = glRecurringDTO.source.value
+      filterRequest['entryDate'] = entryDate
+      filterRequest['employeeNumber'] = employee.number
+
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate).collect()
+      final dateRangeDTO = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(80))
+
+      when: 'open GL in financial calendar'
+      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+
+      then:
+      notThrown(Exception)
+
+      when: // GL recurring and GL recurring distributions are posted
+      def postResult = post(path, glRecurringEntriesDTO)
+
+      then:
+      notThrown(Exception)
+      postResult != null
+      with(postResult) {
+         with(generalLedgerRecurring) {
+            id != null
+
+            with(type) {
+               value == glRecurringEntriesDTO.generalLedgerRecurring.type.value
+               description == glRecurringEntriesDTO.generalLedgerRecurring.type.description
+            }
+
+            with(source) {
+               value == glRecurringEntriesDTO.generalLedgerRecurring.source.value
+               description == glRecurringEntriesDTO.generalLedgerRecurring.source.description
+            }
+
+            reverseIndicator == glRecurringEntriesDTO.generalLedgerRecurring.reverseIndicator
+            message == glRecurringEntriesDTO.generalLedgerRecurring.message
+            beginDate == glRecurringEntriesDTO.generalLedgerRecurring.beginDate.toString()
+            endDate == glRecurringEntriesDTO.generalLedgerRecurring.endDate.toString()
+         }
+
+         generalLedgerRecurringDistributions.eachWithIndex{ distribution, index ->
+            distribution.id != null
+            distribution.generalLedgerRecurring.id == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerRecurring.id
+            distribution.generalLedgerDistributionAccount.id == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionAccount.id
+            distribution.generalLedgerDistributionProfitCenter.id == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionProfitCenter.myId()
+            distribution.generalLedgerDistributionAmount == glRecurringEntriesDTO.generalLedgerRecurringDistributions[index].generalLedgerDistributionAmount
+         }
+      }
+
+      when:
+      postResult.entryDate = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
+      post("$path/transfer/single", postResult)
+
+      then:
+      notThrown(Exception)
+
+   }
+
+   void "transfer a single GL recurring entry to GL details with reversal" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
+      glRecurringDTO.endDate = LocalDate.now()
+      glRecurringDTO.reverseIndicator = true
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.single(store)

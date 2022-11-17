@@ -2,26 +2,15 @@ package com.cynergisuite.middleware.accounting.general.ledger.reversal.entry
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingDTO
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
-import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
-import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
-import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.infrastructure.GeneralLedgerReversalEntryRepository
-import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.store.StoreDTO
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.util.Locale
 import java.util.UUID
 
 @Singleton
 class GeneralLedgerReversalEntryService @Inject constructor(
-   private val generalLedgerDetailRepository: GeneralLedgerDetailRepository,
-   private val generalLedgerDetailService: GeneralLedgerDetailService,
    private val generalLedgerReversalEntryRepository: GeneralLedgerReversalEntryRepository,
    private val generalLedgerReversalEntryValidator: GeneralLedgerReversalEntryValidator,
    private val financialCalendarRepository: FinancialCalendarRepository
@@ -59,36 +48,6 @@ class GeneralLedgerReversalEntryService @Inject constructor(
       val reversalDate = dto.generalLedgerReversal!!.reversalDate
 
       return !(reversalDate!!.isBefore(glOpenDateRange.first) || reversalDate.isAfter(glOpenDateRange.second))
-   }
-
-   fun postReversalEntry(id: UUID, user: User, locale: Locale) {
-      val entity = generalLedgerReversalEntryRepository.findOne(id, user.myCompany())
-
-      // create GL details
-      val journalEntryNumber = generalLedgerDetailRepository.findNextJENumber(user.myCompany())
-      var glDetailDTO: GeneralLedgerDetailDTO
-      entity!!.generalLedgerReversalDistributions.forEach { distribution ->
-         glDetailDTO = GeneralLedgerDetailDTO(
-            null,
-            AccountDTO(distribution.generalLedgerReversalDistributionAccount.id),
-            distribution.generalLedgerReversal.reversalDate,
-            StoreDTO(distribution.generalLedgerReversalDistributionProfitCenter),
-            GeneralLedgerSourceCodeDTO(distribution.generalLedgerReversal.source),
-            distribution.generalLedgerReversalDistributionAmount,
-            distribution.generalLedgerReversal.comment,
-            user.myEmployeeNumber(),
-            journalEntryNumber
-         )
-
-         glDetailDTO = generalLedgerDetailService.create(glDetailDTO, user.myCompany())
-
-         // post glDetailDTO to GL summary
-         val glAccountPostingDTO = GeneralLedgerAccountPostingDTO(glDetailDTO)
-         generalLedgerDetailService.postEntry(glAccountPostingDTO, user.myCompany(), locale)
-      }
-
-      // delete GL reversal records
-      entity.generalLedgerReversal.id?.let { generalLedgerReversalEntryRepository.delete(it, user.myCompany()) }
    }
 
    private fun transformEntity(entity: GeneralLedgerReversalEntryEntity): GeneralLedgerReversalEntryDTO {
