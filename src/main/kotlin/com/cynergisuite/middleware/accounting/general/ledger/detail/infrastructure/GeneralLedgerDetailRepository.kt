@@ -120,8 +120,8 @@ class GeneralLedgerDetailRepository @Inject constructor(
              SUM (case when glDetail.amount >= 0 then glDetail.amount else 0 end)   AS debit,
              SUM (case when glDetail.amount < 0 then glDetail.amount else 0 end)    AS credit,
              SUM (glDetail.amount)                                                  AS net_change,
-             glSummary.beginning_balance                                            AS begin_balance,
-             COALESCE(glSummary.beginning_balance, 0) + SUM (glDetail.amount)          AS end_balance
+             SUM (COALESCE(glSummary.beginning_balance, 0))                         AS begin_balance,
+             SUM (COALESCE(glSummary.beginning_balance, 0) + glDetail.amount)       AS end_balance
          FROM general_ledger_detail glDetail
              JOIN company comp ON glDetail.company_id = comp.id AND comp.deleted = FALSE
              JOIN fastinfo_prod_import.store_vw profitCenter
@@ -238,7 +238,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
    fun findNetChange(company: CompanyEntity, filterRequest: GeneralLedgerDetailFilterRequest): GeneralLedgerNetChangeDTO? {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder(" WHERE glDetail.company_id = :comp_id ")
-      val groupBy = StringBuilder(" GROUP BY glDetail.company_id, acct.account_number, glSummary.beginning_balance")
+      val groupBy = StringBuilder(" GROUP BY glDetail.company_id, acct.account_number")
       if (filterRequest.from != null || filterRequest.thru != null) {
          params["from"] = filterRequest.from
          params["thru"] = filterRequest.thru
