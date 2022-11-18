@@ -121,7 +121,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
              SUM (case when glDetail.amount < 0 then glDetail.amount else 0 end)    AS credit,
              SUM (glDetail.amount)                                                  AS net_change,
              glSummary.beginning_balance                                            AS begin_balance,
-             glSummary.beginning_balance + SUM (glDetail.amount)                    AS end_balance
+             COALESCE(glSummary.beginning_balance, 0) + SUM (glDetail.amount)          AS end_balance
          FROM general_ledger_detail glDetail
              JOIN company comp ON glDetail.company_id = comp.id AND comp.deleted = FALSE
              JOIN fastinfo_prod_import.store_vw profitCenter
