@@ -801,7 +801,7 @@ BEGIN
    EXECUTE sqlToExec;
 END $$;
 
--- views for WOW Brand Integration
+-- views for WOW Brand Integration including second phase added
 
 DO $$
 DECLARE
@@ -2001,7 +2001,7 @@ BEGIN
             agreement_versions.agreement_contract_balance,
             customers.cust_address,customers.cust_address_2,customers.cust_city,customers.cust_state,customers.cust_zip_pc,product,agreement_versions.agreement_recur_pmt_switch,agreement_versions.agreement_payment_terms,
             agreement_versions.agreement_closed_date, agreement_versions.agreement_closed_reason
-
+         ';
 
       unionAll := ' UNION ALL ';
    END LOOP;
