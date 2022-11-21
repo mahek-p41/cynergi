@@ -295,7 +295,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       }
    }
 
-   void "create complete financial calendar" () {
+   void "create complete financial calendar and fetch fiscal years" () {
       given:
       final beginDate = LocalDate.parse("2021-11-09")
       final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
@@ -323,6 +323,34 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
                   description == dto.overallPeriod.description
                }
             }
+         }
+      }
+
+      when:
+      def fiscalYears = get("$path/fiscal-year")
+
+      then:
+      notThrown(Exception)
+      fiscalYears != null
+      fiscalYears.size() == 4
+      with(fiscalYears[0]) {
+         begin == '2019-11-09'
+         end == '2020-11-09'
+         fiscalYear == 2020
+         with(overallPeriod) {
+            value == 'R'
+            abbreviation == 'Prior to Prev'
+            description == 'Prior to Previous Financial Period'
+         }
+      }
+      with(fiscalYears[2]) {
+         begin == '2021-11-09'
+         end == '2022-11-09'
+         fiscalYear == 2022
+         with(overallPeriod) {
+            value == 'C'
+            abbreviation == 'Curr'
+            description == 'Current Financial Period'
          }
       }
    }

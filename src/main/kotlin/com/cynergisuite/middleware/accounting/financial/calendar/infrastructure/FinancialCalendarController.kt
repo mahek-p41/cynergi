@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalend
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarService
+import com.cynergisuite.middleware.accounting.financial.calendar.FiscalYearDTO
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -99,6 +100,25 @@ class FinancialCalendarController @Inject constructor(
       }
 
       return page
+   }
+
+   @Get(uri = "/fiscal-year", produces = [APPLICATION_JSON])
+   @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Fetch a listing of Fiscal Years", description = "Fetch a listing of Fiscal Years", operationId = "financialCalendar-fetchFiscalYears")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchFiscalYear(
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): List<FiscalYearDTO> {
+      logger.info("Fetching Fiscal Years")
+
+      val user = userService.fetchUser(authentication)
+      return financialCalendarService.fetchFiscalYears(user.myCompany())
    }
 
    @Post(processes = [APPLICATION_JSON])
