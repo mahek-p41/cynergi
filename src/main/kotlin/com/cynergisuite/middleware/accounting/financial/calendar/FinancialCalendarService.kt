@@ -29,6 +29,10 @@ class FinancialCalendarService @Inject constructor(
       }
    }
 
+   fun fetchFiscalYears(company: CompanyEntity): List<FiscalYearDTO> {
+      return financialCalendarRepository.findFiscalYears(company)
+   }
+
    fun create(dto: FinancialCalendarDTO, company: CompanyEntity): FinancialCalendarDTO {
       val toCreate = financialCalendarValidator.validateCreate(dto, company)
 

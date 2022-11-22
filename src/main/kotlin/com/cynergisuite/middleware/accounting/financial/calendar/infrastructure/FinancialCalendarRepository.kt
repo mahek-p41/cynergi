@@ -13,7 +13,9 @@ import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarEntity
+import com.cynergisuite.middleware.accounting.financial.calendar.FiscalYearDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodType
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.infrastructure.OverallPeriodTypeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.transaction.annotation.ReadOnly
@@ -371,5 +373,40 @@ class FinancialCalendarRepository @Inject constructor(
          generalLedgerOpen = rs.getBoolean("${columnPrefix}general_ledger_open"),
          accountPayableOpen = rs.getBoolean("${columnPrefix}account_payable_open")
       )
+   }
+
+   private fun mapFiscalYearDTO(
+      rs: ResultSet
+   ): FiscalYearDTO {
+      return FiscalYearDTO(
+         fiscalYear = rs.getInt("fiscal_year"),
+         overallPeriod = OverallPeriodTypeDTO(overallPeriodTypeRepository.mapRow(rs, "overallPeriod_")),
+         begin = rs.getLocalDate("begin_date"),
+         end = rs.getLocalDate("end_date"),
+      )
+   }
+
+   @ReadOnly
+   fun findFiscalYears(company: CompanyEntity): List<FiscalYearDTO> {
+      logger.info("Fetching Fiscal years")
+      return jdbc.query("""
+         SELECT
+            c1.fiscal_year,
+            overallPeriod.id                       AS overallPeriod_id,
+            overallPeriod.value                    AS overallPeriod_value,
+            overallPeriod.abbreviation             AS overallPeriod_abbreviation,
+            overallPeriod.description              AS overallPeriod_description,
+            overallPeriod.localization_code        AS overallPeriod_localization_code,
+            c1.period_from                         AS begin_date,
+            c2.period_to                           AS end_date
+         FROM financial_calendar c1
+               JOIN financial_calendar c2 ON c1.fiscal_year = c2.fiscal_year AND c1.period = 1 AND c2.period = 12
+               JOIN overall_period_type_domain overallPeriod ON overallPeriod.id = c1.overall_period_id
+         WHERE c1.company_id = :comp_id AND c1.company_id = c2.company_id
+         ORDER BY c1.fiscal_year
+      """, mapOf("comp_id" to company.id)
+      ) { rs, _ ->
+         mapFiscalYearDTO(rs)
+      }
    }
 }
