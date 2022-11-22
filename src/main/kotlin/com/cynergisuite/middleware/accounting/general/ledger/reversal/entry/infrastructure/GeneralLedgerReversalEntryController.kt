@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.infrastructure
 
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.GeneralLedgerReversalEntryDTO
-import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.GeneralLedgerReversalEntryService
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import io.micronaut.http.HttpRequest
@@ -27,7 +27,7 @@ import java.util.UUID
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/accounting/general-ledger/reversal/entry")
 class GeneralLedgerReversalEntryController @Inject constructor(
-   private val generalLedgerReversalEntryService: GeneralLedgerReversalEntryService,
+   private val generalLedgerDetailService: GeneralLedgerDetailService,
    private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReversalEntryController::class.java)
@@ -55,7 +55,7 @@ class GeneralLedgerReversalEntryController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
-      val response = generalLedgerReversalEntryService.postReversalEntry(id, user, locale)
+      val response = generalLedgerDetailService.postReversalEntry(id, user, locale)
 
       logger.debug("Requested Post General Ledger Reversal Entry for General Ledger Reversal {} resulted in {}", id, response)
    }

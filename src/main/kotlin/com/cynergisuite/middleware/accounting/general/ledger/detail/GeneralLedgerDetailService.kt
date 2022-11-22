@@ -26,6 +26,11 @@ import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedg
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.GeneralLedgerRecurringEntriesDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.infrastructure.GeneralLedgerRecurringEntriesRepository
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.infrastructure.GeneralLedgerRecurringRepository
+import com.cynergisuite.middleware.accounting.general.ledger.reversal.GeneralLedgerReversalDTO
+import com.cynergisuite.middleware.accounting.general.ledger.reversal.distribution.GeneralLedgerReversalDistributionDTO
+import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.GeneralLedgerReversalEntryDTO
+import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.GeneralLedgerReversalEntryService
+import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.infrastructure.GeneralLedgerReversalEntryRepository
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDTO
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryService
 import com.cynergisuite.middleware.authentication.user.User
@@ -48,6 +53,8 @@ class GeneralLedgerDetailService @Inject constructor(
    private val generalLedgerDetailRepository: GeneralLedgerDetailRepository,
    private val generalLedgerDetailValidator: GeneralLedgerDetailValidator,
    private val generalLedgerRecurringEntriesRepository: GeneralLedgerRecurringEntriesRepository,
+   private val generalLedgerReversalEntryRepository: GeneralLedgerReversalEntryRepository,
+   private val generalLedgerReversalEntryService: GeneralLedgerReversalEntryService,
    private val financialCalendarService: FinancialCalendarService,
    private val generalLedgerSourceCodeService: GeneralLedgerSourceCodeService,
    private val generalLedgerSummaryService: GeneralLedgerSummaryService,
@@ -98,6 +105,7 @@ class GeneralLedgerDetailService @Inject constructor(
       val company = user.myCompany()
       val glRecurringEntries = generalLedgerRecurringEntriesRepository.findAll(company, filterRequest)
       var glDetailDTO: GeneralLedgerDetailDTO
+      val glDetailList = mutableListOf<GeneralLedgerDetailDTO>()
       val journalEntryNumber = generalLedgerDetailRepository.findNextJENumber(company)
 
       glRecurringEntries.elements.forEach {
@@ -116,10 +124,18 @@ class GeneralLedgerDetailService @Inject constructor(
             )
 
             create(glDetailDTO, company)
+            glDetailList.add(glDetailDTO)
+
             // post accounting entries CYN-930
             val glAccountPostingDTO = GeneralLedgerAccountPostingDTO(glDetailDTO)
             postEntry(glAccountPostingDTO, user.myCompany(), locale)
          }
+
+         // create GL reversal records if Reverse is selected
+         if (it.generalLedgerRecurring.reverseIndicator) {
+            createGLReversalEntry(glDetailList, company)
+         }
+         glDetailList.clear()
 
          // update last transfer date in GL recurring
          it.generalLedgerRecurring.lastTransferDate = filterRequest.entryDate
@@ -133,6 +149,7 @@ class GeneralLedgerDetailService @Inject constructor(
       val company = user.myCompany()
       val glRecurringEntry = generalLedgerRecurringEntriesRepository.findOne(dto.generalLedgerRecurring?.id!!, company)
       var glDetailDTO: GeneralLedgerDetailDTO
+      val glDetailList = mutableListOf<GeneralLedgerDetailDTO>()
 
       // create GL detail for each distribution
       glRecurringEntry!!.generalLedgerRecurringDistributions.forEach { distribution ->
@@ -148,14 +165,81 @@ class GeneralLedgerDetailService @Inject constructor(
             null
          )
          create(glDetailDTO, company)
+         glDetailList.add(glDetailDTO)
+
          // post accounting entries CYN-930
          val glAccountPostingDTO = GeneralLedgerAccountPostingDTO(glDetailDTO)
          postEntry(glAccountPostingDTO, user.myCompany(), locale)
       }
 
+      // create GL reversal records if Reverse is selected
+      if (dto.generalLedgerRecurring!!.reverseIndicator!!) {
+         createGLReversalEntry(glDetailList, company)
+      }
+
       // update last transfer date in GL recurring
       glRecurringEntry.generalLedgerRecurring.lastTransferDate = dto.entryDate
       generalLedgerRecurringRepository.update(glRecurringEntry.generalLedgerRecurring, company)
+   }
+
+   private fun createGLReversalEntry(detailList: List<GeneralLedgerDetailDTO>, company: CompanyEntity) {
+      val glReversalDTO = GeneralLedgerReversalDTO(
+         null,
+         detailList[0].source,
+         detailList[0].date,
+         detailList[0].date!!.plusMonths(1).withDayOfMonth(1),
+         detailList[0].message,
+         detailList[0].date!!.monthValue,
+         detailList[0].date!!.dayOfMonth
+      )
+      var glReversalDistributionDTO: GeneralLedgerReversalDistributionDTO
+      val glReversalDistributionDTOs = mutableListOf<GeneralLedgerReversalDistributionDTO>()
+      var balance = BigDecimal.ZERO
+
+      detailList.forEach {
+         glReversalDistributionDTO = GeneralLedgerReversalDistributionDTO(
+            null,
+            SimpleIdentifiableDTO(glReversalDTO),
+            SimpleIdentifiableDTO(it.account!!.id),
+            SimpleLegacyIdentifiableDTO(it.profitCenter!!.id),
+            it.amount!!.times(BigDecimal(-1))
+         )
+         glReversalDistributionDTOs.add(glReversalDistributionDTO)
+
+         balance += glReversalDistributionDTO.generalLedgerReversalDistributionAmount!!
+      }
+
+      generalLedgerReversalEntryService.create(GeneralLedgerReversalEntryDTO(glReversalDTO, glReversalDistributionDTOs, balance), company)
+   }
+
+   fun postReversalEntry(id: UUID, user: User, locale: Locale) {
+      val entity = generalLedgerReversalEntryRepository.findOne(id, user.myCompany())
+
+      // create GL details
+      val journalEntryNumber = generalLedgerDetailRepository.findNextJENumber(user.myCompany())
+      var glDetailDTO: GeneralLedgerDetailDTO
+      entity!!.generalLedgerReversalDistributions.forEach { distribution ->
+         glDetailDTO = GeneralLedgerDetailDTO(
+            null,
+            AccountDTO(distribution.generalLedgerReversalDistributionAccount.id),
+            distribution.generalLedgerReversal.reversalDate,
+            StoreDTO(distribution.generalLedgerReversalDistributionProfitCenter),
+            GeneralLedgerSourceCodeDTO(distribution.generalLedgerReversal.source),
+            distribution.generalLedgerReversalDistributionAmount,
+            distribution.generalLedgerReversal.comment,
+            user.myEmployeeNumber(),
+            journalEntryNumber
+         )
+
+         glDetailDTO = create(glDetailDTO, user.myCompany())
+
+         // post glDetailDTO to GL summary
+         val glAccountPostingDTO = GeneralLedgerAccountPostingDTO(glDetailDTO)
+         postEntry(glAccountPostingDTO, user.myCompany(), locale)
+      }
+
+      // delete GL reversal records
+      entity.generalLedgerReversal.id?.let { generalLedgerReversalEntryRepository.delete(it, user.myCompany()) }
    }
 
    private fun transformEntity(generalLedgerDetail: GeneralLedgerDetailEntity): GeneralLedgerDetailDTO {
