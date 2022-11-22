@@ -169,7 +169,7 @@ class AccountRepository @Inject constructor(
             }
          }
          else if (splitSearchQuery.first().isNumber()) {
-            val nameBeginsWith = "${splitSearchQuery.last()}%"
+            val nameBeginsWith = "${splitSearchQuery.drop(1).joinToString(" - ")}%"
             where.append("account.number = ${splitSearchQuery.first()} AND account.name ILIKE \'$nameBeginsWith\' OR ")
          }
          where.append("account.name ILIKE \'$searchQueryBeginsWith\')")

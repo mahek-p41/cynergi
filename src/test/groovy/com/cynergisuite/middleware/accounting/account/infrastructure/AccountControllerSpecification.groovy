@@ -604,6 +604,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       final account1235 = accountDataLoaderService.single(company, "Bank Acct", 1235)
       final account1236 = accountDataLoaderService.single(company, "Bank of America", 1236)
       final account5678 = accountDataLoaderService.single(company, "1235 - Bank Account", 5678)
+      final account5679 = accountDataLoaderService.single(company, "Bank Account - Checking", 5679)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       if (account1235.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account1235)
@@ -614,6 +615,9 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       if (account5678.bankId != null) {
          bankFactoryService.single(nineNineEightEmployee.company, store, account5678)
       }
+      if (account5679.bankId != null) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account5679)
+      }
 
       def query = ""
       switch (criteria) {
@@ -622,6 +626,9 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
             break
          case '1236 - Bank of america':
             query = "1236%20-%20Bank%20of%20america"
+            break
+         case '5679 - Bank account - Checking':
+            query = "5679%20-%20Bank%20account%20-%20Checking"
             break
       }
 
@@ -633,9 +640,10 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       result != null
       result.elements.size() == searchResultsCount
       where:
-      criteria                      || searchResultsCount
-      '1235 - bank'                 || 2
-      '1236 - Bank of america'      || 1
+      criteria                               || searchResultsCount
+      '1235 - bank'                          || 2
+      '1236 - Bank of america'               || 1
+      '5679 - Bank account - Checking'       || 1
    }
 
    void "search accounts by both number and name no results found" () {

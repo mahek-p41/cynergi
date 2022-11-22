@@ -211,7 +211,7 @@ class StoreRepository @Inject constructor(
             }
          }
          else if (splitSearchQuery.first().isNumber()) {
-            val nameBeginsWith = "${splitSearchQuery.last()}%"
+            val nameBeginsWith = "${splitSearchQuery.drop(1).joinToString(" - ")}%"
             where.append("store.number = ${splitSearchQuery.first()} AND store.name ILIKE \'$nameBeginsWith\' OR ")
          }
          where.append("store.name ILIKE \'$searchQueryBeginsWith\')")
