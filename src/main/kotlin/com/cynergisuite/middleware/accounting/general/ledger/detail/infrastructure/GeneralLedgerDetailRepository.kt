@@ -35,7 +35,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.sql.ResultSet
-import java.util.UUID
+import java.util.*
 import javax.transaction.Transactional
 
 @Singleton
@@ -133,6 +133,65 @@ class GeneralLedgerDetailRepository @Inject constructor(
              JOIN general_ledger_summary glSummary ON glSummary.company_id = glDetail.company_id
                  AND glSummary.account_id = glDetail.account_id
                  AND glSummary.profit_center_id_sfk = glDetail.profit_center_id_sfk
+      """
+   }
+
+   fun selectReportQuery(): String {
+      return """
+         WITH account AS (
+            ${accountRepository.selectBaseQuery()}
+         )
+         SELECT
+            glDetail.id                                               AS glDetail_id,
+            glDetail.company_id                                       AS glDetail_company_id,
+            glDetail.profit_center_id_sfk                             AS glDetail_profit_center_id_sfk,
+            glDetail.date                                             AS glDetail_date,
+            glDetail.amount                                           AS glDetail_amount,
+            glDetail.message                                          AS glDetail_message,
+            glDetail.employee_number_id_sfk                           AS glDetail_employee_number_id_sfk,
+            glDetail.journal_entry_number                             AS glDetail_journal_entry_number,
+            acct.account_id                                           AS glDetail_account_id,
+            acct.account_number                                       AS glDetail_account_number,
+            acct.account_name                                         AS glDetail_account_name,
+            acct.account_form_1099_field                              AS glDetail_account_form_1099_field,
+            acct.account_corporate_account_indicator                  AS glDetail_account_corporate_account_indicator,
+            acct.account_comp_id                                      AS glDetail_account_comp_id,
+            acct.account_deleted                                      AS glDetail_account_deleted,
+            acct.account_type_id                                      AS glDetail_account_type_id,
+            acct.account_type_value                                   AS glDetail_account_type_value,
+            acct.account_type_description                             AS glDetail_account_type_description,
+            acct.account_type_localization_code                       AS glDetail_account_type_localization_code,
+            acct.account_balance_type_id                              AS glDetail_account_balance_type_id,
+            acct.account_balance_type_value                           AS glDetail_account_balance_type_value,
+            acct.account_balance_type_description                     AS glDetail_account_balance_type_description,
+            acct.account_balance_type_localization_code               AS glDetail_account_balance_type_localization_code,
+            acct.account_status_id                                    AS glDetail_account_status_id,
+            acct.account_status_value                                 AS glDetail_account_status_value,
+            acct.account_status_description                           AS glDetail_account_status_description,
+            acct.account_status_localization_code                     AS glDetail_account_status_localization_code,
+            acct.account_vendor_1099_type_id                          AS glDetail_account_vendor_1099_type_id,
+            acct.account_vendor_1099_type_value                       AS glDetail_account_vendor_1099_type_value,
+            acct.account_vendor_1099_type_description                 AS glDetail_account_vendor_1099_type_description,
+            acct.account_vendor_1099_type_localization_code           AS glDetail_account_vendor_1099_type_localization_code,
+            bank.id                                                   AS glDetail_account_bank_id,
+            profitCenter.id                                           AS glDetail_profitCenter_id,
+            profitCenter.number                                       AS glDetail_profitCenter_number,
+            profitCenter.name                                         AS glDetail_profitCenter_name,
+            profitCenter.dataset                                      AS glDetail_profitCenter_dataset,
+            source.id                                                 AS glDetail_source_id,
+            source.company_id                                         AS glDetail_source_company_id,
+            source.value                                              AS glDetail_source_value,
+            source.description                                        AS glDetail_source_description,
+            source.deleted                                            AS glDetail_source_deleted,
+            count(*) OVER() AS total_elements
+         FROM general_ledger_detail glDetail
+            JOIN company comp ON glDetail.company_id = comp.id AND comp.deleted = FALSE
+            JOIN fastinfo_prod_import.store_vw profitCenter
+                    ON profitCenter.dataset = comp.dataset_code
+                       AND profitCenter.number = glDetail.profit_center_id_sfk
+            JOIN account acct ON glDetail.account_id = acct.account_id AND acct.account_deleted = FALSE
+            JOIN general_ledger_source_codes source ON glDetail.source_id = source.id AND source.deleted = FALSE
+            LEFT OUTER JOIN bank ON bank.general_ledger_account_id = acct.account_id AND bank.deleted = FALSE
       """
    }
 
@@ -438,7 +497,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
 
       jdbc.query(
          """
-            ${selectBaseQuery()}
+            ${selectReportQuery()}
             $whereClause
          """.trimIndent(),
          params
