@@ -603,7 +603,7 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('tstds1')
       final account1235 = accountDataLoaderService.single(company, "Bank Acct", 1235)
       final account1236 = accountDataLoaderService.single(company, "Bank of America", 1236)
-      final account5678 = accountDataLoaderService.single(company, "1235 - Bank Account", 5678)
+      final account5678 = accountDataLoaderService.single(company, "1235-Bank Account", 5678)
       final account5679 = accountDataLoaderService.single(company, "Bank Account - Checking", 5679)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       if (account1235.bankId != null) {
@@ -641,9 +641,37 @@ class AccountControllerSpecification extends ControllerSpecificationBase {
       result.elements.size() == searchResultsCount
       where:
       criteria                               || searchResultsCount
-      '1235 - bank'                          || 2
+      '1235 - bank'                          || 1
       '1236 - Bank of america'               || 1
       '5679 - Bank account - Checking'       || 1
+   }
+
+   void "sort search result for accounts by both number and name" () {
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final account1130 = accountDataLoaderService.single(company, "Inventory - TV", 1130)
+      final account1105 = accountDataLoaderService.single(company, "Inventory - Audio", 1105)
+      final account1118 = accountDataLoaderService.single(company, "Inventory - Computer", 1118)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      if (account1130.bankId != null) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1130)
+      }
+      if (account1105.bankId != null) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1105)
+      }
+      if (account1118.bankId != null) {
+         bankFactoryService.single(nineNineEightEmployee.company, store, account1118)
+      }
+
+      when:
+      def result = get("$path/search?query=invent")
+
+      then:
+      notThrown(HttpClientException)
+      result != null
+      result.elements.size() == 3
+      result.elements[0].name == account1105.name
+      result.elements[1].name == account1118.name
+      result.elements[2].name == account1130.name
    }
 
    void "search accounts by both number and name no results found" () {

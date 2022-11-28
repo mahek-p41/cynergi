@@ -203,19 +203,23 @@ class StoreRepository @Inject constructor(
          where.append(" AND (")
          sortBy.append("ORDER BY ")
          if (searchQuery.isNumber()) {
-            if (!page.fuzzy!!) {
-               where.append("store.number = $searchQuery OR ")
-            } else {
+            if (page.fuzzy!!) {
                where.append("store.number::text LIKE \'$searchQueryBeginsWith\' OR ")
                sortBy.append("store.number::text <-> :search_query, store.number::text ASC, ")
+               sortBy.append("store.name <-> :search_query, store.name ASC")
+            } else {
+               where.append("store.number = $searchQuery OR ")
+               sortBy.append("store.name ASC")
             }
-         }
-         else if (splitSearchQuery.first().isNumber()) {
+            where.append("store.name ILIKE \'$searchQueryBeginsWith\')")
+         } else if (splitSearchQuery.first().isNumber()) {
             val nameBeginsWith = "${splitSearchQuery.drop(1).joinToString(" - ")}%"
-            where.append("store.number = ${splitSearchQuery.first()} AND store.name ILIKE \'$nameBeginsWith\' OR ")
+            where.append("store.number = ${splitSearchQuery.first()} AND store.name ILIKE \'$nameBeginsWith\')")
+            sortBy.append("store.name ASC")
+         } else {
+            where.append("store.name ILIKE \'$searchQueryBeginsWith\')")
+            sortBy.append("store.name ASC")
          }
-         where.append("store.name ILIKE \'$searchQueryBeginsWith\')")
-         sortBy.append("store.name <-> :search_query, store.name ASC")
       }
 
       return jdbc.queryPaged(

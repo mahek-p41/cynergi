@@ -161,19 +161,23 @@ class AccountRepository @Inject constructor(
          where.append(" AND (")
          sortBy.append("ORDER BY ")
          if (searchQuery.isNumber()) {
-            if (!page.fuzzy!!) {
-               where.append("account.number = $searchQuery OR ")
-            } else {
+            if (page.fuzzy!!) {
                where.append("account.number::text LIKE \'$searchQueryBeginsWith\' OR ")
                sortBy.append("account.number::text <-> :search_query, account.number::text ASC, ")
+               sortBy.append("account.name <-> :search_query, account.name ASC")
+            } else {
+               where.append("account.number = $searchQuery OR ")
+               sortBy.append("account.name ASC")
             }
-         }
-         else if (splitSearchQuery.first().isNumber()) {
+            where.append("account.name ILIKE \'$searchQueryBeginsWith\')")
+         } else if (splitSearchQuery.first().isNumber()) {
             val nameBeginsWith = "${splitSearchQuery.drop(1).joinToString(" - ")}%"
-            where.append("account.number = ${splitSearchQuery.first()} AND account.name ILIKE \'$nameBeginsWith\' OR ")
+            where.append("account.number = ${splitSearchQuery.first()} AND account.name ILIKE \'$nameBeginsWith\')")
+            sortBy.append("account.name ASC")
+         } else {
+            where.append("account.name ILIKE \'$searchQueryBeginsWith\')")
+            sortBy.append("account.name ASC")
          }
-         where.append("account.name ILIKE \'$searchQueryBeginsWith\')")
-         sortBy.append("account.name <-> :search_query, account.name ASC")
       }
 
       return jdbc.queryPaged(

@@ -1039,7 +1039,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final onboard = freightOnboardTypeRepository.findOne(1)
       final method = freightCalcMethodTypeRepository.findOne(1)
 
-      final vendorEntity1 = new VendorEntity(null, company, "123 - ABC", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, null, null, true)
+      final vendorEntity1 = new VendorEntity(null, company, "ABC", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, null, null, true)
       vendorRepository.insert(vendorEntity1).with { new VendorDTO(it) }
       final vendorEntity2 = new VendorEntity(null, company, "Vendor Test", addressEntity, '12345678910', null, onboard, vendorPaymentTerm, 0, false, shipVia, vendorGroup, 5, 2500.00, 5, 5000.00, false, "ABC123DEF456", "John Doe", null, false, null, method, null, null, false, false, false, false, false, "patricks@hightouchinc.com", null, false, false, null, "Note something", null, true)
       vendorRepository.insert(vendorEntity2).with { new VendorDTO(it) }
@@ -1063,8 +1063,8 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
          case '# - Vendor - Test':
             query = "${vendorPage.elements[2].number}%20-%20Vendor%20-%20Test"
             break
-         case '123 - abc':
-            query = "123%20-%20abc"
+         case '# - abc':
+            query = "${vendorPage.elements[0].number}%20-%20abc"
             break
       }
       def result = get("$path/search?query=$query&active=true")
@@ -1073,11 +1073,12 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientException)
       result != null
       result.elements.size() == searchResultsCount
+
       where:
       criteria             || searchResultsCount
       '# - Vendor'         || 1
       '# - Vendor - Test'  || 1
-      '123 - abc'          || 1
+      '# - abc'            || 1
    }
 
    void "search vendors by both number and name no results found" () {
