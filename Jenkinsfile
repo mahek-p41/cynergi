@@ -233,7 +233,7 @@ pipeline {
          script {
             sh "docker network rm ${networkId}"
          }
-         dir('./build/reports/tests/test') {
+/*          dir('./build/reports/tests/test') {
             sh "rm -rf /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/test-results"
             sh "mkdir -p /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/test-results"
             sh "cp -r * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/test-results"
@@ -243,13 +243,13 @@ pipeline {
             sh "mkdir -p /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/code-coverage"
             sh "cp -r * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/code-coverage"
          }
-         junit 'build/test-results/**/*.xml'
+         junit 'build/test-results *//** /* *//*.xml'
 
          dir('./build/reports/openapi') {
             sh "rm -rf /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/api-docs"
             sh "mkdir -p /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/api-docs"
             sh "cp -r * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/api-docs"
-         }
+         } */
       }
    }
 }
