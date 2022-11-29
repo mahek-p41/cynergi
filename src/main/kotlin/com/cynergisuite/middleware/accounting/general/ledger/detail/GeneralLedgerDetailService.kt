@@ -150,6 +150,7 @@ class GeneralLedgerDetailService @Inject constructor(
       val glRecurringEntry = generalLedgerRecurringEntriesRepository.findOne(dto.generalLedgerRecurring?.id!!, company)
       var glDetailDTO: GeneralLedgerDetailDTO
       val glDetailList = mutableListOf<GeneralLedgerDetailDTO>()
+      val journalEntryNumber = generalLedgerDetailRepository.findNextJENumber(company)
 
       // create GL detail for each distribution
       glRecurringEntry!!.generalLedgerRecurringDistributions.forEach { distribution ->
@@ -162,7 +163,7 @@ class GeneralLedgerDetailService @Inject constructor(
             distribution.generalLedgerDistributionAmount,
             dto.generalLedgerRecurring!!.message,
             user.myEmployeeNumber(),
-            null
+            journalEntryNumber
          )
          create(glDetailDTO, company)
          glDetailList.add(glDetailDTO)
