@@ -35,7 +35,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.sql.ResultSet
-import java.util.*
+import java.util.UUID
 import javax.transaction.Transactional
 
 @Singleton
