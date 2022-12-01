@@ -3,8 +3,6 @@ package com.cynergisuite.domain
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
-import java.time.OffsetDateTime
-import javax.validation.constraints.NotNull
 
 @Schema(
    name = "GeneralLedgerSourceReportFilterRequest",
@@ -33,9 +31,6 @@ class GeneralLedgerSourceReportFilterRequest(
    @field:Schema(name = "jeNumber", description = "Journal entry number")
    var jeNumber: Int? = null,
 
-   @field:Schema(name = "fiscalYear", description = "Fiscal year")
-   @field:NotNull
-   var fiscalYear: Int? = null,
 
    ) : SortableRequestBase<GeneralLedgerSourceReportFilterRequest>(null, null) {
 
@@ -49,6 +44,5 @@ class GeneralLedgerSourceReportFilterRequest(
          "startDate" to startDate,
          "endDate" to endDate,
          "jeNumber" to jeNumber,
-         "fiscalYear" to fiscalYear
       )
 }

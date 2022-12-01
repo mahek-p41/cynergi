@@ -614,14 +614,9 @@ class GeneralLedgerDetailRepository @Inject constructor(
          whereClause.append(" AND glDetail.journal_entry_number = :jeNumber")
       }
 
-      if (filterRequest.fiscalYear != null) {
-         params["fiscalYear"] = filterRequest.fiscalYear
-         whereClause.append(" AND glSummary.overall_period_id = (SELECT DISTINCT overall_period_id FROM financial_calendar WHERE fiscal_year = :fiscalYear AND company_id = :comp_id) ")
-      }
-
       jdbc.query(
          """
-            ${selectBaseQuery()}
+            ${selectReportQuery()}
             $whereClause
             ORDER BY glDetail_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
          """.trimIndent(),

@@ -7,6 +7,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalService
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingJournalCountDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
@@ -216,12 +217,35 @@ class GeneralLedgerJournalController @Inject constructor(
       return generalLedgerJournalService.purge(filterRequest, user.myCompany())
    }
 
-   @Post(uri = "/transfer{?filterRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["GeneralLedgerRecurringEntriesEndpoints"], summary = "Use GL Recurring to post journal entries", description = "Fetch a list of General Ledger Recurring Entries to create General Ledger Detail records", operationId = "generalLedgerRecurringEntries-transfer")
+   @Get(uri = "/transfer{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Use GL Journal to post journal entries", description = "Fetch a list of General Ledger Journal Entries to create General Ledger Detail records", operationId = "GeneralLedgerJournalEndpoints-transferFetch")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerDetailDTO::class))]),
-         ApiResponse(responseCode = "204", description = "The requested General Ledger Recurring Entry was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "204", description = "The requested General Ledger Journal Entry was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun transferFetch(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: GeneralLedgerJournalFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): GeneralLedgerPendingJournalCountDTO {
+      logger.info("Fetching all General Ledger Journal Entries that meet the criteria {} to create General Ledger Details", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+      return generalLedgerJournalService.fetchPendingTotals(user.myCompany(), filterRequest)
+   }
+
+   @Post(uri = "/transfer{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Use GL Journal to post journal entries", description = "Fetch a list of General Ledger Journal Entries to create General Ledger Detail records", operationId = "GeneralLedgerJournalEndpoints-transfer")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerDetailDTO::class))]),
+         ApiResponse(responseCode = "204", description = "The requested General Ledger Journal Entry was unable to be found, or the result is empty"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
@@ -233,7 +257,7 @@ class GeneralLedgerJournalController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
-      logger.info("Fetching all General Ledger Recurring Entries that meet the criteria {} to create General Ledger Details", filterRequest)
+      logger.info("Fetching all General Ledger Journal Entries that meet the criteria {} to create General Ledger Details", filterRequest)
 
       val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
@@ -241,11 +265,11 @@ class GeneralLedgerJournalController @Inject constructor(
    }
 
    @Post(uri = "/transfer/single", produces = [APPLICATION_JSON])
-   @Operation(tags = ["GeneralLedgerRecurringEntriesEndpoints"], summary = "Use GL Recurring to post a single journal entry", description = "Create General Ledger Detail records from a requested General Ledger Recurring Entry", operationId = "generalLedgerRecurringEntry-singletransfer")
+   @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Use GL Journal to post a single journal entry", description = "Create General Ledger Detail records from a requested General Ledger Journal Entry", operationId = "GeneralLedgerJournalEndpoints-singletransfer")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerDetailDTO::class))]),
-         ApiResponse(responseCode = "204", description = "The requested General Ledger Recurring Entry was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "204", description = "The requested General Ledger Journal Entry was unable to be found, or the result is empty"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
@@ -256,7 +280,7 @@ class GeneralLedgerJournalController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
-      logger.info("Transfer a single General Ledger Recurring Entry to create General Ledger Details", dto)
+      logger.info("Transfer a single General Ledger Journal Entry to create General Ledger Details", dto)
 
       val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
