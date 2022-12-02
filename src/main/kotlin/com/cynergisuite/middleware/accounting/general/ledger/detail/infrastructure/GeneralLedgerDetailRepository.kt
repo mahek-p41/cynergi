@@ -5,7 +5,6 @@ import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getBigDecimalOrNull
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
@@ -16,6 +15,7 @@ import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
+import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportSourceDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailEntity
@@ -43,7 +43,8 @@ class GeneralLedgerDetailRepository @Inject constructor(
    private val jdbc: Jdbi,
    private val accountRepository: AccountRepository,
    private val storeRepository: StoreRepository,
-   private val sourceCodeRepository: GeneralLedgerSourceCodeRepository
+   private val sourceCodeRepository: GeneralLedgerSourceCodeRepository,
+   private val financialCalendarRepository: FinancialCalendarRepository,
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerDetailRepository::class.java)
 
@@ -115,13 +116,26 @@ class GeneralLedgerDetailRepository @Inject constructor(
             ${accountRepository.selectBaseQuery()}
          )
          SELECT
-             glDetail.company_id                                                    AS glDetail_company_id,
-             acct.account_number                                                    AS glDetail_account_number,
-             SUM (case when glDetail.amount >= 0 then glDetail.amount else 0 end)   AS debit,
-             SUM (case when glDetail.amount < 0 then glDetail.amount else 0 end)    AS credit,
-             SUM (glDetail.amount)                                                  AS net_change,
-             SUM (COALESCE(glSummary.beginning_balance, 0))                         AS begin_balance,
-             SUM (COALESCE(glSummary.beginning_balance, 0) + glDetail.amount)       AS end_balance
+             glSummary.company_id                                                            AS company_id,
+             acct.account_number                                                             AS account_number,
+             profitCenter.number                                                             AS profit_center_number,
+             SUM(case when glDetail.amount >= 0 then glDetail.amount else 0 end)             AS debit,
+             SUM(case when glDetail.amount < 0 then glDetail.amount else 0 end)              AS credit,
+             SUM(COALESCE(glDetail.amount, 0))                                               AS net_change,
+             COALESCE(glSummary.net_activity_period_1, 0)                                    AS net_activity_period_1,
+             COALESCE(glSummary.net_activity_period_2, 0)                                    AS net_activity_period_2,
+             COALESCE(glSummary.net_activity_period_3, 0)                                    AS net_activity_period_3,
+             COALESCE(glSummary.net_activity_period_4, 0)                                    AS net_activity_period_4,
+             COALESCE(glSummary.net_activity_period_5, 0)                                    AS net_activity_period_5,
+             COALESCE(glSummary.net_activity_period_6, 0)                                    AS net_activity_period_6,
+             COALESCE(glSummary.net_activity_period_7, 0)                                    AS net_activity_period_7,
+             COALESCE(glSummary.net_activity_period_8, 0)                                    AS net_activity_period_8,
+             COALESCE(glSummary.net_activity_period_9, 0)                                    AS net_activity_period_9,
+             COALESCE(glSummary.net_activity_period_10, 0)                                   AS net_activity_period_10,
+             COALESCE(glSummary.net_activity_period_11, 0)                                   AS net_activity_period_11,
+             COALESCE(glSummary.net_activity_period_12, 0)                                   AS net_activity_period_12,
+             COALESCE(glSummary.beginning_balance, 0)                                        AS begin_balance,
+             COALESCE(glSummary.beginning_balance, 0) + SUM(COALESCE(glDetail.amount, 0))    AS end_balance
          FROM general_ledger_detail glDetail
              JOIN company comp ON glDetail.company_id = comp.id AND comp.deleted = FALSE
              JOIN fastinfo_prod_import.store_vw profitCenter
@@ -237,37 +251,65 @@ class GeneralLedgerDetailRepository @Inject constructor(
    @ReadOnly
    fun findNetChange(company: CompanyEntity, filterRequest: GeneralLedgerDetailFilterRequest): GeneralLedgerNetChangeDTO? {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder(" WHERE glDetail.company_id = :comp_id ")
-      val groupBy = StringBuilder(" GROUP BY glDetail.company_id, acct.account_number")
+      val innerWhere = StringBuilder(" WHERE glDetail.company_id = :comp_id ")
+      val outerWhere = StringBuilder()
       if (filterRequest.from != null || filterRequest.thru != null) {
          params["from"] = filterRequest.from
          params["thru"] = filterRequest.thru
-         whereClause.append(" AND glDetail.date ")
+         innerWhere.append(" AND glDetail.date ")
             .append(buildFilterString(filterRequest.from != null, filterRequest.thru != null, "from", "thru"))
       }
       if (filterRequest.profitCenter != null) {
          params["profitCenter"] = filterRequest.profitCenter
-         whereClause.append(" AND profitCenter.number = :profitCenter")
-         groupBy.append(", glDetail.profit_center_id_sfk")
+         outerWhere.append(" WHERE profit_center_number = :profitCenter ")
       }
       if (filterRequest.account != null) {
          params["account"] = filterRequest.account
-         whereClause.append(" AND acct.account_number = :account")
+         innerWhere.append(" AND acct.account_number = :account")
       }
       if (filterRequest.fiscalYear != null) {
          params["fiscalYear"] = filterRequest.fiscalYear
-         whereClause.append(" AND glSummary.overall_period_id = (SELECT DISTINCT overall_period_id FROM financial_calendar WHERE fiscal_year = :fiscalYear AND company_id = :comp_id) ")
+         innerWhere.append(" AND glSummary.overall_period_id = (SELECT DISTINCT overall_period_id FROM financial_calendar WHERE fiscal_year = :fiscalYear AND company_id = :comp_id) ")
       }
-      val query =
-         "${selectNetChangeQuery()}\n$whereClause\n$groupBy"
+      val innerQuery = """
+         ${selectNetChangeQuery()}
+         $innerWhere
+         GROUP BY glSummary.company_id, glSummary.account_id, acct.account_number, glSummary.id, profitCenter.number
+      """.trimIndent()
+      val mainQuery = """
+         SELECT
+            company_id                          AS company_id,
+            account_number                      AS account_number,
+            sum(debit)                          AS debit,
+            sum(credit)                         AS credit,
+            sum(net_change)                     AS net_change,
+            sum(net_activity_period_1)          AS net_activity_period_1,
+            sum(net_activity_period_2)          AS net_activity_period_2,
+            sum(net_activity_period_3)          AS net_activity_period_3,
+            sum(net_activity_period_4)          AS net_activity_period_4,
+            sum(net_activity_period_5)          AS net_activity_period_5,
+            sum(net_activity_period_6)          AS net_activity_period_6,
+            sum(net_activity_period_7)          AS net_activity_period_7,
+            sum(net_activity_period_8)          AS net_activity_period_8,
+            sum(net_activity_period_9)          AS net_activity_period_9,
+            sum(net_activity_period_10)         AS net_activity_period_10,
+            sum(net_activity_period_11)         AS net_activity_period_11,
+            sum(net_activity_period_12)         AS net_activity_period_12,
+            sum(begin_balance)                  AS begin_balance,
+            sum(end_balance)                    AS end_balance
+         FROM  ($innerQuery) tmp
+         $outerWhere
+         GROUP BY company_id, account_number
+      """.trimIndent()
 
-      logger.info("Querying for General Ledger Inquiry Net Change using {} {}", query, params)
+      logger.info("Querying for General Ledger Inquiry Net Change using {} {}", mainQuery, params)
 
-      val found = jdbc.findFirstOrNull(query, params) { rs, _  ->
-         val generalLedgerInquiry = mapNetChange(rs)
+      val found = jdbc.findFirstOrNull(mainQuery, params) { rs, _  -> mapNetChange(rs) }
 
-         generalLedgerInquiry
-      }
+      // recalculate the beginning balance
+      val financialCalendar = financialCalendarRepository.fetchByDate(company, filterRequest.from!!)
+      found?.beginBalance?.add(found.netActivityPeriod.subList(0, financialCalendar!!.period - 1).sumOf { it!! })
+         .also { found?.beginBalance = it!! }
 
       logger.info("Querying for General Ledger Inquiry Net Change resulted in {}", found)
 
@@ -658,12 +700,26 @@ class GeneralLedgerDetailRepository @Inject constructor(
       rs: ResultSet,
       columnPrefix: String = EMPTY
    ): GeneralLedgerNetChangeDTO {
+      val netActivityPeriods: MutableList<BigDecimal> = mutableListOf()
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_1"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_2"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_3"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_4"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_5"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_6"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_7"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_8"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_9"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_10"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_11"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_12"))
       return GeneralLedgerNetChangeDTO(
-         debit = rs.getBigDecimalOrNull("${columnPrefix}debit") ?: BigDecimal.ZERO,
-         credit = rs.getBigDecimalOrNull("${columnPrefix}credit") ?: BigDecimal.ZERO,
-         beginBalance = rs.getBigDecimalOrNull("${columnPrefix}begin_balance") ?: BigDecimal.ZERO,
-         endBalance = rs.getBigDecimalOrNull("${columnPrefix}end_balance") ?: BigDecimal.ZERO,
-         netChange = rs.getBigDecimalOrNull("${columnPrefix}net_change") ?: BigDecimal.ZERO,
+         debit = rs.getBigDecimal("${columnPrefix}debit"),
+         credit = rs.getBigDecimal("${columnPrefix}credit"),
+         netActivityPeriod = netActivityPeriods,
+         beginBalance = rs.getBigDecimal("${columnPrefix}begin_balance"),
+         endBalance = rs.getBigDecimal("${columnPrefix}end_balance"),
+         netChange = rs.getBigDecimal("${columnPrefix}net_change"),
       )
    }
 

@@ -46,7 +46,7 @@ class FinancialCalendarService @Inject constructor(
          for (j in 1..12) {
             val baseDate = date.plusYears(overallPeriod.id - 3L)
             val periodFrom = baseDate.plusMonths(j - 1L)
-            val periodTo = periodFrom.plusMonths(1)
+            val periodTo = periodFrom.plusMonths(1).minusDays(1)
             val fiscalYear = year.plus(overallPeriod.id - 3)
             val dto = FinancialCalendarDTO(
                null,
