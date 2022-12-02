@@ -17,5 +17,5 @@ data class GLInquiryNetActivityDTO(
 
    ) {
    val percent: BigDecimal?
-      get() = if (totalBalance != BigDecimal.ZERO) netActivity!!.divide(totalBalance, 4, RoundingMode.HALF_UP) else null
+      get() = if (totalBalance != BigDecimal.ZERO) netActivity!!.divide(totalBalance, 4, RoundingMode.HALF_UP) else BigDecimal.ZERO
 }
