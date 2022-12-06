@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.inquiry
 
+import com.cynergisuite.extensions.equalTo
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
@@ -17,5 +18,5 @@ data class GLInquiryNetActivityDTO(
 
    ) {
    val percent: BigDecimal?
-      get() = if (totalBalance != BigDecimal.ZERO) netActivity!!.divide(totalBalance, 4, RoundingMode.HALF_UP) else BigDecimal.ZERO
+      get() = if (!totalBalance!!.equalTo(BigDecimal.ZERO)) netActivity!!.divide(totalBalance, 4, RoundingMode.HALF_UP) else BigDecimal.ZERO
 }
