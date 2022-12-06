@@ -11,10 +11,12 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.softDelete
+import com.cynergisuite.extensions.sumByBigDecimal
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalEntity
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingJournalCountDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingReportDetailsTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerReportSortEnum
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
@@ -330,13 +332,52 @@ class GeneralLedgerJournalRepository @Inject constructor(
                sortedEntities.add(it)
             }
          }
-         //add any remaining sorted entities after loop
-         if (sortedEntities.isNotEmpty()) {
-            template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
-         }
+      }
+      //add any remaining sorted entities after loop
+      if (sortedEntities.isNotEmpty()) {
+         template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
       }
 
       return template
+   }
+
+   @ReadOnly
+   fun fetchPendingTotals(company: CompanyEntity, filterRequest: GeneralLedgerJournalFilterRequest): GeneralLedgerPendingJournalCountDTO {
+      val glJournals = mutableListOf<GeneralLedgerJournalEntity>()
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
+      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id")
+      val orderBy = StringBuilder("ORDER BY glJournal.account_id")
+
+      if (filterRequest.beginSourceCode != null || filterRequest.endSourceCode != null) {
+         params["beginSource"] = filterRequest.beginSourceCode
+         params["endSource"] = filterRequest.endSourceCode
+         whereClause.append(" AND source.value ")
+            .append(buildFilterString(filterRequest.beginSourceCode != null, filterRequest.endSourceCode != null, "beginSource", "endSource"))
+      }
+
+      if (filterRequest.fromDate != null || filterRequest.thruDate != null) {
+         params["fromDate"] = filterRequest.fromDate
+         params["thruDate"] = filterRequest.thruDate
+
+         whereClause.append(" AND glJournal.date")
+            .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
+      }
+
+      jdbc.query(
+         """
+            ${selectBaseQuery()}
+            $whereClause
+            $orderBy
+         """.trimIndent(),
+         params,
+      ) { rs, _ ->
+         do {
+            glJournals.add(mapRow(rs, company, "glJournal_"))
+         } while (rs.next())
+      }
+      val balance = glJournals.sumByBigDecimal { it.amount }
+
+      return GeneralLedgerPendingJournalCountDTO(glJournals, balance)
    }
 
    @ReadOnly

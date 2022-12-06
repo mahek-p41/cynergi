@@ -9,7 +9,6 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 
 @Introspected
 @Schema(name = "GeneralLedgerJournal", title = "Defines a general ledger journal", description = "Defines a general ledger journal")
@@ -35,7 +34,6 @@ data class GeneralLedgerJournalDTO(
    var source: GeneralLedgerSourceCodeDTO? = null,
 
    @field:NotNull
-   @field:Positive
    @field:Schema(name = "amount", description = "Amount")
    var amount: BigDecimal? = null,
 

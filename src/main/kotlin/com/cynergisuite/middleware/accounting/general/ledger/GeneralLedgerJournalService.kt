@@ -67,6 +67,11 @@ class GeneralLedgerJournalService @Inject constructor(
       return GeneralLedgerPendingReportTemplate(found)
    }
 
+   fun fetchPendingTotals(company: CompanyEntity, filterRequest: GeneralLedgerJournalFilterRequest): GeneralLedgerPendingJournalCountDTO {
+
+      return generalLedgerJournalRepository.fetchPendingTotals(company, filterRequest)
+   }
+
    fun export(filterRequest: GeneralLedgerJournalExportRequest, company: CompanyEntity): ByteArray {
       val found = generalLedgerJournalRepository.export(filterRequest, company)
       val stream = ByteArrayOutputStream()
