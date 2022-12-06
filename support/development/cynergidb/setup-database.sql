@@ -187,8 +187,8 @@ BEGIN
             inventory.inv_nbr_idle_days                                                                                              AS idle_days,
             inventory.inv_condition                                                                                                  AS condition,
             inventory.inv_invoice_nbr                                                                                                AS invoice_number,
-            inventory.inv_invoice_expensed_date                                                                                      AS invoice_expensed_date,
-            inventory.inv_po_nbr                                                                                                     AS purchase_order_number,
+            inventory.inv_invoice_expensed_date                                                                                      AS inv_invoice_expensed_date,
+            inventory.inv_po_nbr                                                                                                     AS inv_purchase_order_number,
             inventory.inventory_status_id                                                                                            AS status_id,
             inventory.model_id                                                                                                       AS model_id,
             CASE

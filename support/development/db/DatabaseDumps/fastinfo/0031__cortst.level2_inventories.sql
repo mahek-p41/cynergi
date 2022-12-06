@@ -204,7 +204,8 @@ CREATE TABLE cortst.level2_inventories (
     vendor_id bigint DEFAULT 0 NOT NULL,
     ht_etl_schema character varying(10) DEFAULT 'public'::character varying NOT NULL,
     inventory_color_id bigint,
-    inventory_fabric_id bigint
+    inventory_fabric_id bigint,
+    inv_po_nbr VARCHAR
 );
 ALTER TABLE cortst.level2_inventories OWNER TO fastinfo_dba;
 CREATE SEQUENCE cortst.level2_inventories_id_seq
