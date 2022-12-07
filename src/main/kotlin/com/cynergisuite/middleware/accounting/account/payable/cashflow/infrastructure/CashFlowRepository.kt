@@ -63,6 +63,13 @@ class CashFlowRepository @Inject constructor(
                vend.name                                                      AS apInvoiceDetail_vendor_name,
                vend.deleted                                                   AS apInvoiceDetail_vendor_deleted,
                vend.active                                                    AS apInvoiceDetail_vendor_active,
+               CASE
+               WHEN (apInvoice.due_date BETWEEN :fromDateOne AND :thruDateOne) THEN 'ONE'
+               WHEN (apInvoice.due_date BETWEEN :fromDateTwo AND :thruDateTwo) THEN 'TWO'
+               WHEN (apInvoice.due_date BETWEEN :fromDateThree AND :thruDateThree) THEN 'THREE'
+               WHEN (apInvoice.due_date BETWEEN :fromDateFour AND :thruDateFour) THEN 'FOUR'
+               WHEN (apInvoice.due_date BETWEEN :fromDateFive AND :thruDateFive) THEN 'FIVE'
+               END AS apInvoiceDetail_balance_display,
                count(*) OVER() AS total_elements
             FROM account_payable_invoice apInvoice
                JOIN vendor vend ON apInvoice.vendor_id = vend.id AND vend.deleted = FALSE
@@ -78,6 +85,18 @@ class CashFlowRepository @Inject constructor(
       val params = mutableMapOf < String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id AND apInvoice.status_id = 2")
       val dates = mutableListOf <LocalDate> ()
+      params["currentDate"] = LocalDate.now()
+      params["fromDateOne"] = filterRequest.fromDateOne
+      params["fromDateTwo"] = filterRequest.fromDateTwo
+      params["fromDateThree"] = filterRequest.fromDateThree
+      params["fromDateFour"] = filterRequest.fromDateFour
+      params["fromDateFive"] = filterRequest.fromDateFive
+      params["thruDateOne"] = filterRequest.thruDateOne
+      params["thruDateTwo"] = filterRequest.thruDateTwo
+      params["thruDateThree"] = filterRequest.thruDateThree
+      params["thruDateFour"] = filterRequest.thruDateFour
+      params["thruDateFive"] = filterRequest.thruDateFive
+
 
       //This is finding oldest and newest dates from a filter request in the case a user doesn't provide all date filters
       CashFlowFilterRequest:: class.memberProperties.forEach {
@@ -100,127 +119,98 @@ class CashFlowRepository @Inject constructor(
             .append(buildFilterString(oldestDate != null, newestDate != null, "fromDate", "thruDate"))
       }
 
-      jdbc.query(
-         """
-               ${selectBaseQuery()}
-               $whereClause
-               ORDER BY ${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
-            """.trimIndent(),
-         params,
-         ) {
-         rs, elements ->
-         do {
-            val tempVendor = if (currentVendor ?.vendorNumber != rs.getIntOrNull("apInvoiceDetail_vendor_number")){
-               val localVendor = mapRow(rs, "apInvoiceDetail_")
-               vendors.add(localVendor)
-               currentVendor = localVendor
+         jdbc.query(
+            """
+                  ${selectBaseQuery()}
+                  $whereClause
+                  ORDER BY ${filterRequest.snakeSortBy()}, number ${filterRequest.sortDirection()}
+               """.trimIndent(),
+            params,
+            ) {
+            rs, elements ->
+            do {
+               val tempVendor = if (currentVendor ?.vendorNumber != rs.getIntOrNull("apInvoiceDetail_vendor_number")){
+                  val localVendor = mapRow(rs, "apInvoiceDetail_")
+                  vendors.add(localVendor)
+                  currentVendor = localVendor
 
-               localVendor
-            } else{
-               currentVendor !!
-            }
-
-            var invoiceFlag = false
-            mapRowInvoiceDetail(rs, "apInvoiceDetail_").let {
-               if (it.invoiceStatus.id == 2) {
-                  tempVendor.invoices ?.add(it)
-                  invoiceFlag = true
+                  localVendor
+               } else{
+                  currentVendor !!
                }
 
-               if (invoiceFlag) {
-                  if (filterRequest.fromDateOne != null && filterRequest.thruDateOne != null) {
-                     if (filterRequest.fromDateOne !!.
-                     compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateOne) >= 0){
-                        it.balanceDisplay = CashRequirementBalanceEnum.ONE
-                     }
-                  }
-                  if (filterRequest.fromDateTwo != null && filterRequest.thruDateTwo != null) {
-                     if (filterRequest.fromDateTwo !!.
-                     compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateTwo) >= 0){
-                        it.balanceDisplay = CashRequirementBalanceEnum.TWO
-                     }
-                  }
-                  if (filterRequest.fromDateThree != null && filterRequest.thruDateThree != null) {
-                     if (filterRequest.fromDateThree !!.
-                     compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateThree) >= 0){
-                        it.balanceDisplay = CashRequirementBalanceEnum.THREE
-                     }
-                  }
-                  if (filterRequest.fromDateFour != null && filterRequest.thruDateFour != null) {
-                     if (filterRequest.fromDateFour !!.
-                     compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateFour) >= 0){
-                        it.balanceDisplay = CashRequirementBalanceEnum.FOUR
-                     }
-                  }
-                  if (filterRequest.fromDateFive != null && filterRequest.thruDateFive != null) {
-                     if (filterRequest.fromDateFive !!.
-                     compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateFive) >= 0){
-                        it.balanceDisplay = CashRequirementBalanceEnum.FIVE
-                     }
+               var invoiceFlag = false
+               mapRowInvoiceDetail(rs, "apInvoiceDetail_").let {
+                  if (it.invoiceStatus.id == 2) {
+                     tempVendor.invoices ?.add(it)
+                     invoiceFlag = true
                   }
 
-                  //sorts out discount taken / discount lost
-                  if (it.invoiceDiscountAmount!! > BigDecimal.ZERO) {
-                     if (it.invoiceDiscountDate!! > LocalDate.now()) {
-                        it.discountAmount = it.invoiceDiscountAmount!!.times(it.invoiceDiscountPercent!!)
-                        it.balance = it.invoiceAmount - it.invoicePaidAmount - it.discountAmount!!
-                        tempVendor.vendorTotals.discountTaken = tempVendor.vendorTotals.discountTaken.plus(it.discountAmount!!)
-                        cashflowTotals.discountTaken = cashflowTotals.discountTaken.plus(it.discountAmount!!)
-                     } else {
-                        it.lostAmount = it.invoiceDiscountAmount!!.times(it.invoiceDiscountPercent!!)
-                        it.balance = it.invoiceAmount - it.invoicePaidAmount
-                        tempVendor.vendorTotals.discountLost = tempVendor.vendorTotals.discountLost.plus(it.lostAmount!!)
-                        cashflowTotals.discountLost = cashflowTotals.discountLost.plus(it.lostAmount!!)
+                  if (invoiceFlag) {
+                     //sorts out discount taken / discount lost
+                     if (it.invoiceDiscountAmount!! > BigDecimal.ZERO) {
+                        if (it.invoiceDiscountDate!! > LocalDate.now()) {
+                           it.discountAmount = it.invoiceDiscountAmount!!.times(it.invoiceDiscountPercent!!)
+                           it.balance = it.invoiceAmount - it.invoicePaidAmount - it.discountAmount!!
+                           tempVendor.vendorTotals.discountTaken = tempVendor.vendorTotals.discountTaken.plus(it.discountAmount!!)
+                           cashflowTotals.discountTaken = cashflowTotals.discountTaken.plus(it.discountAmount!!)
+                        } else {
+                           it.lostAmount = it.invoiceDiscountAmount!!.times(it.invoiceDiscountPercent!!)
+                           it.balance = it.invoiceAmount - it.invoicePaidAmount
+                           tempVendor.vendorTotals.discountLost = tempVendor.vendorTotals.discountLost.plus(it.lostAmount!!)
+                           cashflowTotals.discountLost = cashflowTotals.discountLost.plus(it.lostAmount!!)
+                        }
+                        cashflowTotals.discountDate = it.invoiceDiscountDate
+                        tempVendor.vendorTotals.discountDate = it.invoiceDiscountDate
                      }
-                  }
 
+                     when (it.balanceDisplay) {
+                        CashRequirementBalanceEnum.ONE -> {
+                           tempVendor.vendorTotals.dateOneAmount =
+                              tempVendor.vendorTotals.dateOneAmount.plus(it.balance)
 
-                  when(it.balanceDisplay) {
-                     CashRequirementBalanceEnum.ONE ->{
-                        tempVendor.vendorTotals.dateOneAmount =
-                           tempVendor.vendorTotals.dateOneAmount.plus(it.balance)
-                        cashflowTotals.dateOneAmount =
-                           cashflowTotals.dateOneAmount.plus(it.balance)
-
-                     }
-                     CashRequirementBalanceEnum.TWO ->{
-                        tempVendor.vendorTotals.dateTwoAmount =
-                           tempVendor.vendorTotals.dateTwoAmount.plus(it.balance)
-                        cashflowTotals.dateTwoAmount =
-                           cashflowTotals.dateTwoAmount.plus(it.balance)
-                     }
-                     CashRequirementBalanceEnum.THREE ->{
-                        tempVendor.vendorTotals.dateThreeAmount =
-                           tempVendor.vendorTotals.dateThreeAmount.plus(it.balance)
-                        cashflowTotals.dateThreeAmount =
-                           cashflowTotals.dateThreeAmount.plus(it.balance)
-                     }
-                     CashRequirementBalanceEnum.FOUR ->{
-                        tempVendor.vendorTotals.dateFourAmount =
-                           tempVendor.vendorTotals.dateFourAmount.plus(it.balance)
-                        cashflowTotals.dateFourAmount =
-                           cashflowTotals.dateFourAmount.plus(it.balance)
-                     }
-                     CashRequirementBalanceEnum.FIVE ->{
-                        tempVendor.vendorTotals.dateFiveAmount =
-                           tempVendor.vendorTotals.dateFiveAmount.plus(it.balance)
-                        cashflowTotals.dateFiveAmount =
-                           cashflowTotals.dateFiveAmount.plus(it.balance)
-
+                           cashflowTotals.dateOneAmount =
+                              cashflowTotals.dateOneAmount.plus(it.balance)
+                        }
+                        CashRequirementBalanceEnum.TWO -> {
+                           tempVendor.vendorTotals.dateTwoAmount =
+                              tempVendor.vendorTotals.dateTwoAmount.plus(it.balance)
+                           cashflowTotals.dateTwoAmount =
+                              cashflowTotals.dateTwoAmount.plus(it.balance)
+                        }
+                        CashRequirementBalanceEnum.THREE -> {
+                           tempVendor.vendorTotals.dateThreeAmount =
+                              tempVendor.vendorTotals.dateThreeAmount.plus(it.balance)
+                           cashflowTotals.dateThreeAmount =
+                              cashflowTotals.dateThreeAmount.plus(it.balance)
+                        }
+                        CashRequirementBalanceEnum.FOUR -> {
+                           tempVendor.vendorTotals.dateFourAmount =
+                              tempVendor.vendorTotals.dateFourAmount.plus(it.balance)
+                           cashflowTotals.dateFourAmount =
+                              cashflowTotals.dateFourAmount.plus(it.balance)
+                        }
+                        CashRequirementBalanceEnum.FIVE -> {
+                           tempVendor.vendorTotals.dateFiveAmount =
+                              tempVendor.vendorTotals.dateFiveAmount.plus(it.balance)
+                           cashflowTotals.dateFiveAmount =
+                              cashflowTotals.dateFiveAmount.plus(it.balance)
+                        }
                      }
                   }
                }
-            }
-         } while (rs.next())
+            } while (rs.next())
 
-         vendors.removeIf {
-            it.invoices ?.size == 0
+            vendors.removeIf {
+               it.invoices ?.size == 0
+            }
          }
-      }
 
-      val entity = AccountPayableCashFlowEntity(vendors, cashflowTotals)
-
-      return AccountPayableCashFlowDTO(entity)
+         val entity = AccountPayableCashFlowEntity(vendors, cashflowTotals)
+         if (!filterRequest.details!!) {
+            entity.vendors!!.map { it.invoices = null }
+         }
+         return AccountPayableCashFlowDTO(entity)
    }
 
    private fun mapRow(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): CashFlowVendorEntity {
@@ -256,8 +246,13 @@ class CashFlowRepository @Inject constructor(
          discountAmount = null,
          lostAmount = null,
          balance = balance,
-         balanceDisplay = null
+         balanceDisplay = mapBalanceDisplay(rs, "${columnPrefix}")
       )
+   }
+
+   private fun mapBalanceDisplay(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): CashRequirementBalanceEnum {
+
+      return CashRequirementBalanceEnum.valueOf(rs.getString("${columnPrefix}balance_display"))
    }
 
    private fun buildFilterString(begin: Boolean, end: Boolean, beginningParam: String, endingParam: String): String {

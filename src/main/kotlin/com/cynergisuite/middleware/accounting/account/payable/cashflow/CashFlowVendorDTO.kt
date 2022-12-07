@@ -27,7 +27,6 @@ var vendorName: String? = null,
 @field:Schema(description = "Invoices")
 var invoices: MutableSet<CashFlowReportInvoiceDetailEntity>? = LinkedHashSet(),
 
-
 @field:Schema(description = "Total balance for the vendor in each balance display column")
 var vendorTotals: CashFlowBalanceDTO? = null
 
