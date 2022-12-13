@@ -44,7 +44,7 @@ class CashFlowController @Inject constructor(
       ]
    )
    fun fetchReport(
-      @Parameter(name = "filterRequest", `in` = ParameterIn.QUERY, required = false)
+      @Parameter(name = "filterRequest", `in` = ParameterIn.QUERY, required = true)
       @QueryValue("filterRequest")
       filterRequest: CashFlowFilterRequest,
       authentication: Authentication,

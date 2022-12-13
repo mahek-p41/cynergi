@@ -2,11 +2,11 @@ package com.cynergisuite.middleware.accounting.account.payable.cashflow
 
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import java.time.LocalDate
 import javax.validation.constraints.NotNull
 
 @Schema(name = "CashRequirementBalanceDTO", title = "Balance Display Totals", description = "Totals for each week entered in filter")
 data class CashFlowBalanceDTO(
-
 
    @field:NotNull
    @field:Schema(description = "Date one amount")
@@ -32,7 +32,10 @@ data class CashFlowBalanceDTO(
    var discountTaken: BigDecimal = BigDecimal.ZERO,
 
    @field:Schema(description = "Discount Lost")
-   var discountLost: BigDecimal = BigDecimal.ZERO
+   var discountLost: BigDecimal = BigDecimal.ZERO,
+
+   @field:Schema(description = "Discount Date")
+   var discountDate: LocalDate?
 ) {
    constructor(entity: CashFlowBalanceEntity) :
       this(
@@ -42,6 +45,7 @@ data class CashFlowBalanceDTO(
          dateFourAmount = entity.dateFourAmount,
          dateFiveAmount = entity.dateFiveAmount,
          discountTaken = entity.discountTaken,
-         discountLost = entity.discountLost
+         discountLost = entity.discountLost,
+         discountDate = entity.discountDate
       )
 }

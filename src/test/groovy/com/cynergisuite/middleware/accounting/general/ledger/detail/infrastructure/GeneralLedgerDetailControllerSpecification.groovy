@@ -662,42 +662,35 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       switch (criteria) {
          case 'Sort by account':
             filterRequest['sortBy'] = "account_number"
-            filterRequest['fiscalYear'] = LocalDate.now().year
 
             break
          case 'Sort by journal entry number':
             filterRequest['sortBy'] = "journal_entry_number"
-            filterRequest['fiscalYear'] = LocalDate.now().year
 
             break
          case 'Sort by description':
             filterRequest['sortBy'] = "message"
-            filterRequest['fiscalYear'] = LocalDate.now().year
 
             break
          case 'Select one source code':
             filterRequest['sortBy'] = "account_number"
             filterRequest['startSource'] = glSource1.value
             filterRequest['endSource'] = glSource1.value
-            filterRequest['fiscalYear'] = LocalDate.now().year
 
             break
          case 'Select one profit center':
             filterRequest['sortBy'] = "account_number"
             filterRequest['profitCenter'] = 1
-            filterRequest['fiscalYear'] = LocalDate.now().year
 
             break
          case 'Select by dates':
             filterRequest['sortBy'] = "account_number"
             filterRequest['startDate'] = LocalDate.now().minusDays(15)
-            filterRequest['fiscalYear'] = LocalDate.now().year
 
             break
          case 'Select one journal entry number':
             filterRequest['sortBy'] = "account_number"
             filterRequest['jeNumber'] = 2
-            filterRequest['fiscalYear'] = LocalDate.now().year
             break
       }
 

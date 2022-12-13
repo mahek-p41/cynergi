@@ -7,6 +7,6 @@ data class CashFlowVendorEntity (
    val vendorCompanyId: UUID,
    val vendorNumber: Int,
    val vendorName: String,
-   val invoices: MutableSet<CashFlowReportInvoiceDetailEntity>? = LinkedHashSet(),
+   var invoices: MutableSet<CashFlowReportInvoiceDetailEntity>? = LinkedHashSet(),
    var vendorTotals: CashFlowBalanceEntity = CashFlowBalanceEntity()
    )
