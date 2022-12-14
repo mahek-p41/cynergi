@@ -920,8 +920,8 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final beginDate = LocalDate.now().minusYears(1).plusMonths(1)
       final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: LocalDate.now().year, periodFrom: beginDate])
       final glDetails = generalLedgerDetailDataLoaderService.single(company, acct, store, glSrcCode)
-      final filterRequest1 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().minusYears(3).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: acct.number, profitCenter: store.myNumber(), fiscalYear: LocalDate.now().year])
-      final filterRequest2 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().minusYears(3).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: 9999, profitCenter: store.myNumber(), fiscalYear: LocalDate.now().year])
+      final filterRequest1 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: acct.number, profitCenter: store.myNumber(), fiscalYear: LocalDate.now().year])
+      final filterRequest2 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: 9999, profitCenter: store.myNumber(), fiscalYear: LocalDate.now().year])
       final creditAmount = (glDetails.amount < 0) ? glDetails.amount : 0
       final debitAmount = (glDetails.amount > 0) ? glDetails.amount : 0
 
@@ -939,7 +939,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       notThrown(Exception)
       result2 != null
       with(result2) {
-         beginBalance == glSummary2.beginningBalance
+         beginBalance > glSummary2.beginningBalance
          credit == creditAmount
          debit == debitAmount
          netChange == creditAmount + debitAmount

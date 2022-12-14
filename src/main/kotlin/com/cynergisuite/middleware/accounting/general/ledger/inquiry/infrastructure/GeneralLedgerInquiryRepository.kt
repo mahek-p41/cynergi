@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.accounting.general.ledger.inquiry.infrastruc
 
 import com.cynergisuite.domain.GeneralLedgerInquiryFilterRequest
 import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getBigDecimalOrNull
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.type.infrastructure.OverallPeriodTypeRepository
@@ -32,46 +31,44 @@ class GeneralLedgerInquiryRepository @Inject constructor(
             ${accountRepository.selectBaseQuery()}
          )
          SELECT
-            SUM(glSummary.profit_center_id_sfk)                            AS glSummary_profit_center_id_sfk,
-            SUM(glSummary.net_activity_period_1)                           AS glSummary_net_activity_period_1,
-            SUM(glSummary.net_activity_period_2)                           AS glSummary_net_activity_period_2,
-            SUM(glSummary.net_activity_period_3)                           AS glSummary_net_activity_period_3,
-            SUM(glSummary.net_activity_period_4)                           AS glSummary_net_activity_period_4,
-            SUM(glSummary.net_activity_period_5)                           AS glSummary_net_activity_period_5,
-            SUM(glSummary.net_activity_period_6)                           AS glSummary_net_activity_period_6,
-            SUM(glSummary.net_activity_period_7)                           AS glSummary_net_activity_period_7,
-            SUM(glSummary.net_activity_period_8)                           AS glSummary_net_activity_period_8,
-            SUM(glSummary.net_activity_period_9)                           AS glSummary_net_activity_period_9,
-            SUM(glSummary.net_activity_period_10)                          AS glSummary_net_activity_period_10,
-            SUM(glSummary.net_activity_period_11)                          AS glSummary_net_activity_period_11,
-            SUM(glSummary.net_activity_period_12)                          AS glSummary_net_activity_period_12,
-            SUM(glSummary.beginning_balance)                               AS glSummary_beginning_balance,
-            SUM(glSummary.closing_balance)                                 AS glSummary_closing_balance,
-            overallPeriod.id                                               AS glSummary_overallPeriod_id,
-            overallPeriod.value                                            AS glSummary_overallPeriod_value,
-            overallPeriod.abbreviation                                     AS glSummary_overallPeriod_abbreviation,
-            overallPeriod.description                                      AS glSummary_overallPeriod_description,
-            overallPeriod.localization_code                                AS glSummary_overallPeriod_localization_code,
-            SUM(glSummaryPrior.profit_center_id_sfk)                       AS glSummaryPrior_profit_center_id_sfk,
-            SUM(glSummaryPrior.net_activity_period_1)                      AS glSummaryPrior_net_activity_period_1,
-            SUM(glSummaryPrior.net_activity_period_2)                      AS glSummaryPrior_net_activity_period_2,
-            SUM(glSummaryPrior.net_activity_period_3)                      AS glSummaryPrior_net_activity_period_3,
-            SUM(glSummaryPrior.net_activity_period_4)                      AS glSummaryPrior_net_activity_period_4,
-            SUM(glSummaryPrior.net_activity_period_5)                      AS glSummaryPrior_net_activity_period_5,
-            SUM(glSummaryPrior.net_activity_period_6)                      AS glSummaryPrior_net_activity_period_6,
-            SUM(glSummaryPrior.net_activity_period_7)                      AS glSummaryPrior_net_activity_period_7,
-            SUM(glSummaryPrior.net_activity_period_8)                      AS glSummaryPrior_net_activity_period_8,
-            SUM(glSummaryPrior.net_activity_period_9)                      AS glSummaryPrior_net_activity_period_9,
-            SUM(glSummaryPrior.net_activity_period_10)                     AS glSummaryPrior_net_activity_period_10,
-            SUM(glSummaryPrior.net_activity_period_11)                     AS glSummaryPrior_net_activity_period_11,
-            SUM(glSummaryPrior.net_activity_period_12)                     AS glSummaryPrior_net_activity_period_12,
-            SUM(glSummaryPrior.beginning_balance)                          AS glSummaryPrior_beginning_balance,
-            SUM(glSummaryPrior.closing_balance)                            AS glSummaryPrior_closing_balance,
-            priorOverallPeriod.id                                          AS glSummaryPrior_overallPeriod_id,
-            priorOverallPeriod.value                                       AS glSummaryPrior_overallPeriod_value,
-            priorOverallPeriod.abbreviation                                AS glSummaryPrior_overallPeriod_abbreviation,
-            priorOverallPeriod.description                                 AS glSummaryPrior_overallPeriod_description,
-            priorOverallPeriod.localization_code                           AS glSummaryPrior_overallPeriod_localization_code
+            SUM (COALESCE(glSummary.net_activity_period_1, 0))                       AS glSummary_net_activity_period_1,
+            SUM (COALESCE(glSummary.net_activity_period_2, 0))                       AS glSummary_net_activity_period_2,
+            SUM (COALESCE(glSummary.net_activity_period_3, 0))                       AS glSummary_net_activity_period_3,
+            SUM (COALESCE(glSummary.net_activity_period_4, 0))                       AS glSummary_net_activity_period_4,
+            SUM (COALESCE(glSummary.net_activity_period_5, 0))                       AS glSummary_net_activity_period_5,
+            SUM (COALESCE(glSummary.net_activity_period_6, 0))                       AS glSummary_net_activity_period_6,
+            SUM (COALESCE(glSummary.net_activity_period_7, 0))                       AS glSummary_net_activity_period_7,
+            SUM (COALESCE(glSummary.net_activity_period_8, 0))                       AS glSummary_net_activity_period_8,
+            SUM (COALESCE(glSummary.net_activity_period_9, 0))                       AS glSummary_net_activity_period_9,
+            SUM (COALESCE(glSummary.net_activity_period_10, 0))                      AS glSummary_net_activity_period_10,
+            SUM (COALESCE(glSummary.net_activity_period_11, 0))                      AS glSummary_net_activity_period_11,
+            SUM (COALESCE(glSummary.net_activity_period_12, 0))                      AS glSummary_net_activity_period_12,
+            SUM (COALESCE(glSummary.beginning_balance, 0))                           AS glSummary_beginning_balance,
+            SUM (COALESCE(glSummary.closing_balance, 0))                             AS glSummary_closing_balance,
+            overallPeriod.id                                                         AS glSummary_overallPeriod_id,
+            overallPeriod.value                                                      AS glSummary_overallPeriod_value,
+            overallPeriod.abbreviation                                               AS glSummary_overallPeriod_abbreviation,
+            overallPeriod.description                                                AS glSummary_overallPeriod_description,
+            overallPeriod.localization_code                                          AS glSummary_overallPeriod_localization_code,
+            SUM (COALESCE(glSummaryPrior.net_activity_period_1, 0))                  AS glSummaryPrior_net_activity_period_1,
+            SUM (COALESCE(glSummaryPrior.net_activity_period_2, 0))                  AS glSummaryPrior_net_activity_period_2,
+            SUM (COALESCE(glSummaryPrior.net_activity_period_3, 0))                  AS glSummaryPrior_net_activity_period_3,
+            SUM (COALESCE(glSummaryPrior.net_activity_period_4, 0))                  AS glSummaryPrior_net_activity_period_4,
+            SUM (COALESCE(glSummaryPrior.net_activity_period_5, 0))                  AS glSummaryPrior_net_activity_period_5,
+            SUM (COALESCE(glSummaryPrior.net_activity_period_6, 0))                  AS glSummaryPrior_net_activity_period_6,
+            SUM (COALESCE(glSummaryPrior.net_activity_period_7, 0))                  AS glSummaryPrior_net_activity_period_7,
+            SUM (COALESCE(glSummaryPrior.net_activity_period_8, 0))                  AS glSummaryPrior_net_activity_period_8,
+            SUM (COALESCE(glSummaryPrior.net_activity_period_9, 0))                  AS glSummaryPrior_net_activity_period_9,
+            SUM (COALESCE(glSummaryPrior.net_activity_period_10, 0))                 AS glSummaryPrior_net_activity_period_10,
+            SUM (COALESCE(glSummaryPrior.net_activity_period_11, 0))                 AS glSummaryPrior_net_activity_period_11,
+            SUM (COALESCE(glSummaryPrior.net_activity_period_12, 0))                 AS glSummaryPrior_net_activity_period_12,
+            SUM (COALESCE(glSummaryPrior.beginning_balance, 0))                      AS glSummaryPrior_beginning_balance,
+            SUM (COALESCE(glSummaryPrior.closing_balance, 0))                        AS glSummaryPrior_closing_balance,
+            priorOverallPeriod.id                                                    AS glSummaryPrior_overallPeriod_id,
+            priorOverallPeriod.value                                                 AS glSummaryPrior_overallPeriod_value,
+            priorOverallPeriod.abbreviation                                          AS glSummaryPrior_overallPeriod_abbreviation,
+            priorOverallPeriod.description                                           AS glSummaryPrior_overallPeriod_description,
+            priorOverallPeriod.localization_code                                     AS glSummaryPrior_overallPeriod_localization_code
          FROM general_ledger_summary glSummary
             JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
             JOIN fastinfo_prod_import.store_vw profitCenter
@@ -114,7 +111,7 @@ class GeneralLedgerInquiryRepository @Inject constructor(
    fun findOne(company: CompanyEntity, filterRequest: GeneralLedgerInquiryFilterRequest): GeneralLedgerInquiryEntity? {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder("WHERE glSummary.company_id = :comp_id ")
-      val havingClause = " GROUP BY overallPeriod.id, priorOverallPeriod.id "
+      val groupBy = " GROUP BY overallPeriod.id, priorOverallPeriod.id "
 
       if (filterRequest.profitCenter != null) {
          params["profitCenter"] = filterRequest.profitCenter
@@ -128,8 +125,7 @@ class GeneralLedgerInquiryRepository @Inject constructor(
          params["fiscalYear"] = filterRequest.fiscalYear
          whereClause.append(" AND glSummary.overall_period_id = (SELECT DISTINCT overall_period_id FROM financial_calendar WHERE fiscal_year = :fiscalYear AND company_id = :comp_id) ")
       }
-      val query =
-         "${selectBaseQuery()}\n$whereClause\n$havingClause"
+      val query = "${selectBaseQuery()}\n$whereClause\n$groupBy"
 
       logger.info("Searching for GeneralLedgerInquiry using {} {}", query, params)
 
@@ -146,42 +142,42 @@ class GeneralLedgerInquiryRepository @Inject constructor(
 
    private fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY, priorColumnPrefix: String = EMPTY): GeneralLedgerInquiryEntity {
       val netActivityPeriods: MutableList<BigDecimal> = mutableListOf()
-      netActivityPeriods.add(rs.getBigDecimalOrNull("${columnPrefix}net_activity_period_1") ?: BigDecimal.ZERO)
-      netActivityPeriods.add(rs.getBigDecimalOrNull("${columnPrefix}net_activity_period_2") ?: BigDecimal.ZERO)
-      netActivityPeriods.add(rs.getBigDecimalOrNull("${columnPrefix}net_activity_period_3") ?: BigDecimal.ZERO)
-      netActivityPeriods.add(rs.getBigDecimalOrNull("${columnPrefix}net_activity_period_4") ?: BigDecimal.ZERO)
-      netActivityPeriods.add(rs.getBigDecimalOrNull("${columnPrefix}net_activity_period_5") ?: BigDecimal.ZERO)
-      netActivityPeriods.add(rs.getBigDecimalOrNull("${columnPrefix}net_activity_period_6") ?: BigDecimal.ZERO)
-      netActivityPeriods.add(rs.getBigDecimalOrNull("${columnPrefix}net_activity_period_7") ?: BigDecimal.ZERO)
-      netActivityPeriods.add(rs.getBigDecimalOrNull("${columnPrefix}net_activity_period_8") ?: BigDecimal.ZERO)
-      netActivityPeriods.add(rs.getBigDecimalOrNull("${columnPrefix}net_activity_period_9") ?: BigDecimal.ZERO)
-      netActivityPeriods.add(rs.getBigDecimalOrNull("${columnPrefix}net_activity_period_10") ?: BigDecimal.ZERO)
-      netActivityPeriods.add(rs.getBigDecimalOrNull("${columnPrefix}net_activity_period_11") ?: BigDecimal.ZERO)
-      netActivityPeriods.add(rs.getBigDecimalOrNull("${columnPrefix}net_activity_period_12") ?: BigDecimal.ZERO)
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_1"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_2"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_3"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_4"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_5"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_6"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_7"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_8"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_9"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_10"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_11"))
+      netActivityPeriods.add(rs.getBigDecimal("${columnPrefix}net_activity_period_12"))
 
       val priorNetActivityPeriods: MutableList<BigDecimal> = mutableListOf()
-      priorNetActivityPeriods.add(rs.getBigDecimalOrNull("${priorColumnPrefix}net_activity_period_1") ?: BigDecimal.ZERO)
-      priorNetActivityPeriods.add(rs.getBigDecimalOrNull("${priorColumnPrefix}net_activity_period_2") ?: BigDecimal.ZERO)
-      priorNetActivityPeriods.add(rs.getBigDecimalOrNull("${priorColumnPrefix}net_activity_period_3") ?: BigDecimal.ZERO)
-      priorNetActivityPeriods.add(rs.getBigDecimalOrNull("${priorColumnPrefix}net_activity_period_4") ?: BigDecimal.ZERO)
-      priorNetActivityPeriods.add(rs.getBigDecimalOrNull("${priorColumnPrefix}net_activity_period_5") ?: BigDecimal.ZERO)
-      priorNetActivityPeriods.add(rs.getBigDecimalOrNull("${priorColumnPrefix}net_activity_period_6") ?: BigDecimal.ZERO)
-      priorNetActivityPeriods.add(rs.getBigDecimalOrNull("${priorColumnPrefix}net_activity_period_7") ?: BigDecimal.ZERO)
-      priorNetActivityPeriods.add(rs.getBigDecimalOrNull("${priorColumnPrefix}net_activity_period_8") ?: BigDecimal.ZERO)
-      priorNetActivityPeriods.add(rs.getBigDecimalOrNull("${priorColumnPrefix}net_activity_period_9") ?: BigDecimal.ZERO)
-      priorNetActivityPeriods.add(rs.getBigDecimalOrNull("${priorColumnPrefix}net_activity_period_10") ?: BigDecimal.ZERO)
-      priorNetActivityPeriods.add(rs.getBigDecimalOrNull("${priorColumnPrefix}net_activity_period_11") ?: BigDecimal.ZERO)
-      priorNetActivityPeriods.add(rs.getBigDecimalOrNull("${priorColumnPrefix}net_activity_period_12") ?: BigDecimal.ZERO)
+      priorNetActivityPeriods.add(rs.getBigDecimal("${priorColumnPrefix}net_activity_period_1"))
+      priorNetActivityPeriods.add(rs.getBigDecimal("${priorColumnPrefix}net_activity_period_2"))
+      priorNetActivityPeriods.add(rs.getBigDecimal("${priorColumnPrefix}net_activity_period_3"))
+      priorNetActivityPeriods.add(rs.getBigDecimal("${priorColumnPrefix}net_activity_period_4"))
+      priorNetActivityPeriods.add(rs.getBigDecimal("${priorColumnPrefix}net_activity_period_5"))
+      priorNetActivityPeriods.add(rs.getBigDecimal("${priorColumnPrefix}net_activity_period_6"))
+      priorNetActivityPeriods.add(rs.getBigDecimal("${priorColumnPrefix}net_activity_period_7"))
+      priorNetActivityPeriods.add(rs.getBigDecimal("${priorColumnPrefix}net_activity_period_8"))
+      priorNetActivityPeriods.add(rs.getBigDecimal("${priorColumnPrefix}net_activity_period_9"))
+      priorNetActivityPeriods.add(rs.getBigDecimal("${priorColumnPrefix}net_activity_period_10"))
+      priorNetActivityPeriods.add(rs.getBigDecimal("${priorColumnPrefix}net_activity_period_11"))
+      priorNetActivityPeriods.add(rs.getBigDecimal("${priorColumnPrefix}net_activity_period_12"))
 
       return GeneralLedgerInquiryEntity(
          overallPeriod = overallPeriodTypeRepository.mapRow(rs, "${columnPrefix}overallPeriod_"),
          netActivityPeriod = netActivityPeriods,
-         beginningBalance = rs.getBigDecimalOrNull("${columnPrefix}beginning_balance") ?: BigDecimal.ZERO,
-         closingBalance = rs.getBigDecimalOrNull("${columnPrefix}closing_balance") ?: BigDecimal.ZERO,
+         beginningBalance = rs.getBigDecimal("${columnPrefix}beginning_balance"),
+         closingBalance = rs.getBigDecimal("${columnPrefix}closing_balance"),
          priorNetActivityPeriod = priorNetActivityPeriods,
          priorOverallPeriod = overallPeriodTypeRepository.mapRowOrNull(rs, "${priorColumnPrefix}overallPeriod_"),
-         priorBeginningBalance = rs.getBigDecimalOrNull("${priorColumnPrefix}beginning_balance") ?: BigDecimal.ZERO,
-         priorClosingBalance = rs.getBigDecimalOrNull("${priorColumnPrefix}closing_balance") ?: BigDecimal.ZERO,
+         priorBeginningBalance = rs.getBigDecimal("${priorColumnPrefix}beginning_balance"),
+         priorClosingBalance = rs.getBigDecimal("${priorColumnPrefix}closing_balance"),
       )
    }
 }

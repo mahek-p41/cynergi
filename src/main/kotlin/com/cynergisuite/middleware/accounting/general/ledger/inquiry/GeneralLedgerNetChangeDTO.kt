@@ -7,7 +7,8 @@ import java.math.BigDecimal
 data class GeneralLedgerNetChangeDTO(
    val debit: BigDecimal,
    val credit: BigDecimal,
-   val beginBalance: BigDecimal,
+   val netActivityPeriod: List<BigDecimal?>,
+   var beginBalance: BigDecimal,
    val endBalance: BigDecimal,
    val netChange: BigDecimal,
 )
