@@ -787,7 +787,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
          post("$path", glDetail)
       }
 
-      def filterRequest = new GeneralLedgerSourceReportFilterRequest([sortBy: "message", fiscalYear: LocalDate.now().year])
+      def filterRequest = new GeneralLedgerSourceReportFilterRequest([sortBy: "message"])
 
       when:
       def response = get("$path/source-report/$filterRequest")
