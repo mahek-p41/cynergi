@@ -335,7 +335,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       fiscalYears.size() == 4
       with(fiscalYears[0]) {
          begin == '2019-11-09'
-         end == '2020-11-09'
+         end == '2020-11-08'
          fiscalYear == 2020
          with(overallPeriod) {
             value == 'R'
@@ -345,7 +345,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       }
       with(fiscalYears[2]) {
          begin == '2021-11-09'
-         end == '2022-11-09'
+         end == '2022-11-08'
          fiscalYear == 2022
          with(overallPeriod) {
             value == 'C'
