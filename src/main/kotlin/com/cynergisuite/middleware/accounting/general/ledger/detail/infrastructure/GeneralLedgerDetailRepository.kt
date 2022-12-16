@@ -110,15 +110,13 @@ class GeneralLedgerDetailRepository @Inject constructor(
       """
    }
 
-   fun selectNetChangeQuery(): String {
+   fun selectNetChangeQuery(where: String): String {
       return """
-         WITH account AS (
-            ${accountRepository.selectBaseQuery()}
-         )
          SELECT
              glSummary.company_id                                                            AS company_id,
-             acct.account_number                                                             AS account_number,
-             profitCenter.number                                                             AS profit_center_number,
+             acct.number                                                                     AS account_number,
+             glSummary.profit_center_id_sfk                                                  AS profit_center_number,
+             glDetail.date                                                                   AS gl_detail_date,
              SUM(case when glDetail.amount >= 0 then glDetail.amount else 0 end)             AS debit,
              SUM(case when glDetail.amount < 0 then glDetail.amount else 0 end)              AS credit,
              SUM(COALESCE(glDetail.amount, 0))                                               AS net_change,
@@ -136,17 +134,18 @@ class GeneralLedgerDetailRepository @Inject constructor(
              COALESCE(glSummary.net_activity_period_12, 0)                                   AS net_activity_period_12,
              COALESCE(glSummary.beginning_balance, 0)                                        AS begin_balance,
              COALESCE(glSummary.beginning_balance, 0) + SUM(COALESCE(glDetail.amount, 0))    AS end_balance
-         FROM general_ledger_detail glDetail
-             JOIN company comp ON glDetail.company_id = comp.id AND comp.deleted = FALSE
-             JOIN fastinfo_prod_import.store_vw profitCenter
-                     ON profitCenter.dataset = comp.dataset_code
-                        AND profitCenter.number = glDetail.profit_center_id_sfk
-             JOIN account acct ON glDetail.account_id = acct.account_id AND acct.account_deleted = FALSE
-             JOIN general_ledger_source_codes source ON glDetail.source_id = source.id AND source.deleted = FALSE
-             LEFT OUTER JOIN bank ON bank.general_ledger_account_id = acct.account_id AND bank.deleted = FALSE
-             JOIN general_ledger_summary glSummary ON glSummary.company_id = glDetail.company_id
-                 AND glSummary.account_id = glDetail.account_id
-                 AND glSummary.profit_center_id_sfk = glDetail.profit_center_id_sfk
+         FROM general_ledger_summary glSummary
+                JOIN account acct ON glSummary.account_id = acct.id AND acct.deleted = FALSE
+                JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
+                LEFT JOIN bank ON bank.general_ledger_account_id = acct.id AND bank.deleted = FALSE
+                LEFT JOIN (
+                            SELECT *
+                            FROM general_ledger_detail glDetail
+                            $where
+                            ) glDetail
+                        ON glDetail.company_id = glSummary.company_id
+                            AND glDetail.account_id = glSummary.account_id
+                            AND glDetail.profit_center_id_sfk  = glSummary.profit_center_id_sfk
       """
    }
 
@@ -251,30 +250,40 @@ class GeneralLedgerDetailRepository @Inject constructor(
    @ReadOnly
    fun findNetChange(company: CompanyEntity, filterRequest: GeneralLedgerDetailFilterRequest): GeneralLedgerNetChangeDTO? {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val innerWhere = StringBuilder(" WHERE glDetail.company_id = :comp_id ")
+      val innerWhere = StringBuilder(" WHERE glSummary.company_id = :comp_id ")
+      val subQueryWhere = StringBuilder(" WHERE glDetail.company_id = :comp_id ")
       val outerWhere = StringBuilder()
       if (filterRequest.from != null || filterRequest.thru != null) {
          params["from"] = filterRequest.from
          params["thru"] = filterRequest.thru
-         innerWhere.append(" AND glDetail.date ")
+         subQueryWhere.append(" AND glDetail.date ")
             .append(buildFilterString(filterRequest.from != null, filterRequest.thru != null, "from", "thru"))
       }
       if (filterRequest.profitCenter != null) {
          params["profitCenter"] = filterRequest.profitCenter
+         subQueryWhere.append(" AND glDetail.profit_center_id_sfk = :profitCenter ")
          outerWhere.append(" WHERE profit_center_number = :profitCenter ")
       }
       if (filterRequest.account != null) {
          params["account"] = filterRequest.account
-         innerWhere.append(" AND acct.account_number = :account")
+         innerWhere.append(" AND acct.number = :account ")
+         subQueryWhere.append("""
+               AND glDetail.account_id = (
+                  SELECT DISTINCT id
+                  FROM account
+                  WHERE company_id = :comp_id AND number = :account AND deleted = false) """.trimMargin())
       }
       if (filterRequest.fiscalYear != null) {
          params["fiscalYear"] = filterRequest.fiscalYear
-         innerWhere.append(" AND glSummary.overall_period_id = (SELECT DISTINCT overall_period_id FROM financial_calendar WHERE fiscal_year = :fiscalYear AND company_id = :comp_id) ")
+         innerWhere.append(""" AND glSummary.overall_period_id =
+            (SELECT DISTINCT overall_period_id
+            FROM financial_calendar
+            WHERE fiscal_year = :fiscalYear AND company_id = :comp_id) """.trimIndent())
       }
       val innerQuery = """
-         ${selectNetChangeQuery()}
+         ${selectNetChangeQuery(subQueryWhere.toString())}
          $innerWhere
-         GROUP BY glSummary.company_id, glSummary.account_id, acct.account_number, glSummary.id, profitCenter.number
+         GROUP BY glSummary.company_id, glSummary.account_id, acct.number, glSummary.id, glSummary.profit_center_id_sfk, glDetail.date
       """.trimIndent()
       val mainQuery = """
          SELECT
