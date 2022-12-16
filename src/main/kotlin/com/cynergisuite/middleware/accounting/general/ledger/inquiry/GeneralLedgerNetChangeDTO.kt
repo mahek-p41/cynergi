@@ -9,6 +9,6 @@ data class GeneralLedgerNetChangeDTO(
    val credit: BigDecimal,
    val netActivityPeriod: List<BigDecimal?>,
    var beginBalance: BigDecimal,
-   val endBalance: BigDecimal,
+   var endBalance: BigDecimal,
    val netChange: BigDecimal,
 )
