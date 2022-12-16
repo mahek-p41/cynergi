@@ -313,16 +313,18 @@ class GeneralLedgerDetailRepository @Inject constructor(
 
       logger.info("Querying for General Ledger Inquiry Net Change using {} {}", mainQuery, params)
 
-      val found = jdbc.findFirstOrNull(mainQuery, params) { rs, _  -> mapNetChange(rs) }
+      val netChangeDTO = jdbc.findFirstOrNull(mainQuery, params) { rs, _  -> mapNetChange(rs) }
 
-      // recalculate the beginning balance
+      // recalculate the beginning balance & ending balance
       val financialCalendar = financialCalendarRepository.fetchByDate(company, filterRequest.from!!)
-      found?.beginBalance?.add(found.netActivityPeriod.subList(0, financialCalendar!!.period - 1).sumOf { it!! })
-         .also { found?.beginBalance = it!! }
+      netChangeDTO?.apply {
+         beginBalance = beginBalance.plus(netActivityPeriod.subList(0, financialCalendar!!.period - 1).sumOf { it!! })
+         endBalance = beginBalance.plus(netChange)
+      }
 
-      logger.info("Querying for General Ledger Inquiry Net Change resulted in {}", found)
+      logger.info("Querying for General Ledger Inquiry Net Change resulted in {}", netChangeDTO)
 
-      return found
+      return netChangeDTO
    }
 
    @ReadOnly

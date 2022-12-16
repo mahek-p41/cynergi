@@ -943,7 +943,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
          credit == creditAmount
          debit == debitAmount
          netChange == creditAmount + debitAmount
-         endBalance == glSummary2.beginningBalance + glDetails.amount
+         endBalance == beginBalance + glDetails.amount
       }
 
       when:
