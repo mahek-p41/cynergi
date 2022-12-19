@@ -26,6 +26,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.Gene
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryEntity
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.GeneralLedgerProfitCenterTrialBalanceReportDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerNetChangeDTO
+import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.TrialBalanceEndOfReportDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -808,6 +809,49 @@ class GeneralLedgerDetailRepository @Inject constructor(
       return reportDetails
    }
 
+   @ReadOnly
+   fun fetchTrialBalanceEndOfReportTotals(company: CompanyEntity, startingDate: LocalDate? = null, endingDate: LocalDate? = null, startingAccount: Int? = null, endingAccount: Int? = null, overallPeriodId: Int): TrialBalanceEndOfReportDTO {
+      var endOfReportDTO = TrialBalanceEndOfReportDTO()
+
+      // find YTD begin date (first date of fiscal year)
+      val ytdBegin = financialCalendarRepository.findFirstDateOfFiscalYear(company, overallPeriodId)
+
+      jdbc.query(
+         """
+            SELECT
+               SUM(CASE WHEN (acct.type_id = 3 OR acct.type_id = 5) AND glDetail.amount >= 0 AND (glDetail.date BETWEEN :mtdBegin AND :mtdEnd) THEN glDetail.amount ELSE 0 END) mtdDebitIE,
+               SUM(CASE WHEN (acct.type_id = 3 OR acct.type_id = 5) AND glDetail.amount < 0 AND (glDetail.date BETWEEN :mtdBegin AND :mtdEnd) THEN glDetail.amount ELSE 0 END) mtdCreditIE,
+               SUM(CASE WHEN (acct.type_id = 1 OR acct.type_id = 2 OR acct.type_id = 4) AND glDetail.amount >= 0 AND (glDetail.date BETWEEN :mtdBegin AND :mtdEnd) THEN glDetail.amount ELSE 0 END) mtdDebitAL,
+               SUM(CASE WHEN (acct.type_id = 1 OR acct.type_id = 2 OR acct.type_id = 4) AND glDetail.amount < 0 AND (glDetail.date BETWEEN :mtdBegin AND :mtdEnd) THEN glDetail.amount ELSE 0 END) mtdCreditAL,
+               SUM(CASE WHEN (acct.type_id = 3 OR acct.type_id = 5) AND glDetail.amount >= 0 AND (glDetail.date BETWEEN :ytdBegin AND :ytdEnd) THEN glDetail.amount ELSE 0 END) ytdDebitIE,
+               SUM(CASE WHEN (acct.type_id = 3 OR acct.type_id = 5) AND glDetail.amount < 0 AND (glDetail.date BETWEEN :ytdBegin AND :ytdEnd) THEN glDetail.amount ELSE 0 END) ytdCreditIE,
+               SUM(CASE WHEN (acct.type_id = 1 OR acct.type_id = 2 OR acct.type_id = 4) AND glDetail.amount >= 0 AND (glDetail.date BETWEEN :ytdBegin AND :ytdEnd) THEN glDetail.amount ELSE 0 END) ytdDebitAL,
+               SUM(CASE WHEN (acct.type_id = 1 OR acct.type_id = 2 OR acct.type_id = 4) AND glDetail.amount < 0 AND (glDetail.date BETWEEN :ytdBegin AND :ytdEnd) THEN glDetail.amount ELSE 0 END) ytdCreditAL
+            FROM general_ledger_detail glDetail
+               JOIN account acct ON acct.id = glDetail.account_id
+            WHERE glDetail.company_id = :company_id
+         """.trimIndent(),
+         mapOf(
+            "company_id" to company.id,
+            "mtdBegin" to startingDate,
+            "mtdEnd" to endingDate,
+            "ytdBegin" to ytdBegin,
+            "ytdEnd" to endingDate
+         )
+      ) { rs, _ ->
+         do {
+            endOfReportDTO = mapTrialBalanceEndOfReport(rs)
+         } while (rs.next())
+      }
+
+      endOfReportDTO.mtdDifferenceIE = endOfReportDTO.mtdDebitIE!! - endOfReportDTO.mtdCreditIE!!
+      endOfReportDTO.mtdDifferenceAL = endOfReportDTO.mtdDebitAL!! - endOfReportDTO.mtdCreditAL!!
+      endOfReportDTO.ytdDifferenceIE = endOfReportDTO.ytdDebitIE!! - endOfReportDTO.ytdCreditIE!!
+      endOfReportDTO.ytdDifferenceAL = endOfReportDTO.ytdDebitAL!! - endOfReportDTO.ytdCreditAL!!
+
+      return endOfReportDTO
+   }
+
    fun mapRow(
       rs: ResultSet,
       account: AccountEntity,
@@ -870,6 +914,19 @@ class GeneralLedgerDetailRepository @Inject constructor(
          beginBalance = rs.getBigDecimal("${columnPrefix}begin_balance"),
          endBalance = rs.getBigDecimal("${columnPrefix}end_balance"),
          netChange = rs.getBigDecimal("${columnPrefix}net_change"),
+      )
+   }
+
+   fun mapTrialBalanceEndOfReport(rs: ResultSet): TrialBalanceEndOfReportDTO {
+      return TrialBalanceEndOfReportDTO(
+         mtdDebitIE = rs.getBigDecimal("mtdDebitIE"),
+         mtdCreditIE = rs.getBigDecimal("mtdCreditIE"),
+         mtdDebitAL = rs.getBigDecimal("mtdDebitAL"),
+         mtdCreditAL = rs.getBigDecimal("mtdCreditAL"),
+         ytdDebitIE = rs.getBigDecimal("ytdDebitIE"),
+         ytdCreditIE = rs.getBigDecimal("ytdCreditIE"),
+         ytdDebitAL = rs.getBigDecimal("ytdDebitAL"),
+         ytdCreditAL = rs.getBigDecimal("ytdCreditAL")
       )
    }
 

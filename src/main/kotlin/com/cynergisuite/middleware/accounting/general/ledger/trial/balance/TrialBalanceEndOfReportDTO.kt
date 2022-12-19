@@ -8,27 +8,51 @@ import javax.validation.constraints.NotNull
 data class TrialBalanceEndOfReportDTO(
 
    @field:NotNull
-   @field:Schema(description = "MTD total debits")
-   var mtdDebit: BigDecimal? = BigDecimal.ZERO,
+   @field:Schema(description = "MTD total debits for income & expenses")
+   var mtdDebitIE: BigDecimal? = BigDecimal.ZERO,
 
    @field:NotNull
-   @field:Schema(description = "MTD total credits")
-   var mtdCredit: BigDecimal? = BigDecimal.ZERO,
+   @field:Schema(description = "MTD total credits for income & expenses")
+   var mtdCreditIE: BigDecimal? = BigDecimal.ZERO,
 
    @field:NotNull
-   @field:Schema(description = "MTD difference of debits and credits")
-   var mtdDifference: BigDecimal? = BigDecimal.ZERO,
+   @field:Schema(description = "MTD difference of debits and credits for income & expenses")
+   var mtdDifferenceIE: BigDecimal? = BigDecimal.ZERO,
 
    @field:NotNull
-   @field:Schema(description = "YTD total debits")
-   var ytdDebit: BigDecimal? = BigDecimal.ZERO,
+   @field:Schema(description = "YTD total debits for income & expenses")
+   var ytdDebitIE: BigDecimal? = BigDecimal.ZERO,
 
    @field:NotNull
-   @field:Schema(description = "YTD total credits")
-   var ytdCredit: BigDecimal? = BigDecimal.ZERO,
+   @field:Schema(description = "YTD total credits for income & expenses")
+   var ytdCreditIE: BigDecimal? = BigDecimal.ZERO,
 
    @field:NotNull
-   @field:Schema(description = "YTD difference of debits and credits")
-   var ytdDifference: BigDecimal? = BigDecimal.ZERO
+   @field:Schema(description = "YTD difference of debits and credits for income & expenses")
+   var ytdDifferenceIE: BigDecimal? = BigDecimal.ZERO,
+
+   @field:NotNull
+   @field:Schema(description = "MTD total debits for assets & liabilities")
+   var mtdDebitAL: BigDecimal? = BigDecimal.ZERO,
+
+   @field:NotNull
+   @field:Schema(description = "MTD total credits for assets & liabilities")
+   var mtdCreditAL: BigDecimal? = BigDecimal.ZERO,
+
+   @field:NotNull
+   @field:Schema(description = "MTD difference of debits and credits for assets & liabilities")
+   var mtdDifferenceAL: BigDecimal? = BigDecimal.ZERO,
+
+   @field:NotNull
+   @field:Schema(description = "YTD total debits for assets & liabilities")
+   var ytdDebitAL: BigDecimal? = BigDecimal.ZERO,
+
+   @field:NotNull
+   @field:Schema(description = "YTD total credits for assets & liabilities")
+   var ytdCreditAL: BigDecimal? = BigDecimal.ZERO,
+
+   @field:NotNull
+   @field:Schema(description = "YTD difference of debits and credits for assets & liabilities")
+   var ytdDifferenceAL: BigDecimal? = BigDecimal.ZERO
 
 )

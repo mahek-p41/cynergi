@@ -12,7 +12,6 @@ import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.Gener
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.GeneralLedgerProfitCenterTrialBalanceLocationDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.GeneralLedgerProfitCenterTrialBalanceReportDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.GeneralLedgerProfitCenterTrialBalanceReportTemplate
-import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.TrialBalanceReportTotalsDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -58,7 +57,7 @@ class GeneralLedgerSummaryService @Inject constructor(
       val glSummaries = generalLedgerSummaryRepository.fetchProfitCenterTrialBalanceReportRecords(company, filterRequest)
       val emptyList = listOf<BigDecimal>()
       val emptyNetChange = GeneralLedgerNetChangeDTO(BigDecimal.ZERO, BigDecimal.ZERO, emptyList, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
-      val reportTemplate = GeneralLedgerProfitCenterTrialBalanceReportTemplate(null, emptyNetChange)
+      val reportTemplate = GeneralLedgerProfitCenterTrialBalanceReportTemplate(null, emptyNetChange, null)
       val overallPeriodId = financialCalendarRepository.findOverallPeriodIdAndPeriod(company, filterRequest.startingDate!!).first
       if (glSummaries.isNotEmpty()) {
          // create first account detail from first GL summary
@@ -116,6 +115,9 @@ class GeneralLedgerSummaryService @Inject constructor(
          }
 
          reportTemplate.locationDetailList = locationDetails
+
+         // calculate end of report totals
+         reportTemplate.endOfReportTotals = generalLedgerDetailRepository.fetchTrialBalanceEndOfReportTotals(company, filterRequest.startingDate, filterRequest.endingDate, filterRequest.startingAccount, filterRequest.endingAccount, overallPeriodId)
       }
 
       return reportTemplate

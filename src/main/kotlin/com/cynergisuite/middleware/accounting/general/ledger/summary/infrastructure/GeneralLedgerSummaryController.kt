@@ -1,9 +1,11 @@
 package com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure
 
+import com.cynergisuite.domain.GeneralLedgerProfitCenterTrialBalanceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDTO
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryService
+import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.GeneralLedgerProfitCenterTrialBalanceReportTemplate
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -146,5 +148,28 @@ class GeneralLedgerSummaryController @Inject constructor(
       logger.debug("Requested Update GeneralLedgerSummary {} resulted in {}", dto, response)
 
       return response
+   }
+
+   @Get(uri = "/profit-center-trial-balance-report{?profitCenterTrialBalanceReportFilterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["GeneralLedgerSummaryEndpoints"], summary = "Fetch a General Ledger Profit Center Trial Balance Report", description = "Fetch a General Ledger Profit Center Trial Balance Report", operationId = "generalLedgerSummary-fetchProfitCenterTrialBalanceReport")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerProfitCenterTrialBalanceReportFilterRequest::class))]),
+         ApiResponse(responseCode = "204", description = "The requested General Ledger Source Report was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchProfitCenterTrialBalanceReport(
+      @Parameter(name = "profitCenterTrialBalanceReportFilterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("profitCenterTrialBalanceReportFilterRequest")
+      profitCenterTrialBalanceReportFilterRequest: GeneralLedgerProfitCenterTrialBalanceReportFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): GeneralLedgerProfitCenterTrialBalanceReportTemplate {
+      logger.info("Fetching General Ledger Summaries for General Ledger Profit Center Trial Balance Report {}")
+
+      val user = userService.fetchUser(authentication)
+      return generalLedgerSummaryService.fetchProfitCenterTrialBalanceReportRecords(user.myCompany(), profitCenterTrialBalanceReportFilterRequest)
    }
 }

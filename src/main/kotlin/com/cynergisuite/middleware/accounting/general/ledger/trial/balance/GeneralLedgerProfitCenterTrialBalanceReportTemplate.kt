@@ -16,6 +16,10 @@ data class GeneralLedgerProfitCenterTrialBalanceReportTemplate (
 
    @field:NotNull
    @field:Schema(description = "Report totals")
-   var reportTotals: GeneralLedgerNetChangeDTO? = null
+   var reportTotals: GeneralLedgerNetChangeDTO? = null,
+
+   @field:NotNull
+   @field:Schema(description = "End of report totals")
+   var endOfReportTotals: TrialBalanceEndOfReportDTO? = null
 
 )
