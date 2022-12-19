@@ -116,7 +116,6 @@ class GeneralLedgerDetailRepository @Inject constructor(
              glSummary.company_id                                                            AS company_id,
              acct.number                                                                     AS account_number,
              glSummary.profit_center_id_sfk                                                  AS profit_center_number,
-             glDetail.date                                                                   AS gl_detail_date,
              SUM(case when glDetail.amount >= 0 then glDetail.amount else 0 end)             AS debit,
              SUM(case when glDetail.amount < 0 then glDetail.amount else 0 end)              AS credit,
              SUM(COALESCE(glDetail.amount, 0))                                               AS net_change,
@@ -283,7 +282,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
       val innerQuery = """
          ${selectNetChangeQuery(subQueryWhere.toString())}
          $innerWhere
-         GROUP BY glSummary.company_id, glSummary.account_id, acct.number, glSummary.id, glSummary.profit_center_id_sfk, glDetail.date
+         GROUP BY glSummary.company_id, glSummary.account_id, acct.number, glSummary.id, glSummary.profit_center_id_sfk
       """.trimIndent()
       val mainQuery = """
          SELECT
