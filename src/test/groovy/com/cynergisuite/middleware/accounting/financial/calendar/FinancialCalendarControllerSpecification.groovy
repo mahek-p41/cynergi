@@ -362,7 +362,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
 
       final testDate = LocalDate.parse("2000-01-01")
-      def filterRequest = new FinancialCalendarValidateDatesFilterRequest([startingDate: testDate])
+      def filterRequest = new FinancialCalendarValidateDatesFilterRequest([fromDate: testDate])
 
       when: 'create financial calendar'
       def result = post("$path/complete", financialCalendarDTO)
@@ -388,7 +388,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
 
       final testDate = LocalDate.parse("2030-01-01")
-      def filterRequest = new FinancialCalendarValidateDatesFilterRequest([startingDate: testDate])
+      def filterRequest = new FinancialCalendarValidateDatesFilterRequest([fromDate: testDate])
 
       when: 'create financial calendar'
       def result = post("$path/complete", financialCalendarDTO)
@@ -415,7 +415,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
 
       final testStartingDate = LocalDate.parse("2021-12-01")
       final testEndingDate = LocalDate.parse("2023-01-01")
-      def filterRequest = new FinancialCalendarValidateDatesFilterRequest([startingDate: testStartingDate, endingDate: testEndingDate])
+      def filterRequest = new FinancialCalendarValidateDatesFilterRequest([fromDate: testStartingDate, thruDate: testEndingDate])
 
       when: 'create financial calendar'
       def result = post("$path/complete", financialCalendarDTO)

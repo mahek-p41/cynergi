@@ -381,6 +381,27 @@ class FinancialCalendarRepository @Inject constructor(
       return found.first()
    }
 
+   @ReadOnly
+   fun findFirstDateOfFiscalYear(company: CompanyEntity, overallPeriodId: Int): LocalDate {
+      val found = jdbc.query(
+         """
+         SELECT period_from
+            FROM financial_calendar
+            WHERE company_id = :comp_id AND overall_period_id = :overallPeriodId AND period = 1
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "overallPeriodId" to overallPeriodId
+         )
+      ) { rs, _ ->
+         mapDate(rs)
+      }
+
+      logger.trace("Find first date of fiscal year with overall period id {} resulted in {}", overallPeriodId, found.first())
+
+      return found.first()
+   }
+
    private fun mapRow(
       rs: ResultSet,
       columnPrefix: String = EMPTY
@@ -456,5 +477,11 @@ class FinancialCalendarRepository @Inject constructor(
          first = rs.getInt("overall_period_id"),
          second = rs.getInt("period")
       )
+   }
+
+   private fun mapDate(
+      rs: ResultSet
+   ): LocalDate {
+      return rs.getLocalDate("period_from")
    }
 }

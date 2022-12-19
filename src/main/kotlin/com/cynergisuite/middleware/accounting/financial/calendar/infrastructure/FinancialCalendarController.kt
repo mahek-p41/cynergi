@@ -338,13 +338,13 @@ class FinancialCalendarController @Inject constructor(
       val user = userService.fetchUser(authentication)
 
       // validate dates are found
-      val isStartingDateFound = financialCalendarService.dateFoundInFinancialCalendar(user.myCompany(), filterRequest.startingDate!!)
-      val isEndingDateFound = financialCalendarService.dateFoundInFinancialCalendar(user.myCompany(), filterRequest.endingDate!!)
+      val isFromDateFound = financialCalendarService.dateFoundInFinancialCalendar(user.myCompany(), filterRequest.fromDate!!)
+      val isThruDateFound = financialCalendarService.dateFoundInFinancialCalendar(user.myCompany(), filterRequest.thruDate!!)
 
-      // validate starting and ending dates are in same fiscal year
+      // validate from and thru dates are in same fiscal year
       val sameFiscalYear = financialCalendarService.sameFiscalYear(user.myCompany(), filterRequest)
 
-      val response = isStartingDateFound || isEndingDateFound || sameFiscalYear
+      val response = isFromDateFound || isThruDateFound || sameFiscalYear
 
       logger.debug("Validating Financial Calendar for given date resulted in", response)
 
