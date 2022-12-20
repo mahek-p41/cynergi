@@ -1,8 +1,10 @@
 package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure
 
+import com.cynergisuite.domain.BankReconFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.accounting.bank.BankReconReportDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationService
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -143,5 +145,28 @@ class BankReconciliationController @Inject constructor(
       logger.debug("Requested Update BankReconciliation {} resulted in {}", dto, response)
 
       return response
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Operation(tags = ["BankReconciliationEndpoints"], summary = "Fetch a bank reconciliation report", description = "Fetch a bank reconciliation report", operationId = "bankReconciliation-fetchReport")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = BankReconReportDTO::class))])
+      ]
+   )
+   @Get(uri = "/report{?pageRequest*}", produces = [APPLICATION_JSON])
+   fun fetchReport(
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("pageRequest")
+      filterRequest: BankReconFilterRequest,
+      authentication: Authentication
+   ): BankReconReportDTO {
+      val user = userService.fetchUser(authentication)
+      val bankRecons = bankReconciliationService.fetchReport(filterRequest, user.myCompany())
+
+
+      logger.debug("Listing of Bank Reconciliations resulted in {}", bankRecons)
+
+      return bankRecons
    }
 }
