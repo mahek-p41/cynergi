@@ -138,8 +138,10 @@ class GeneralLedgerDetailRepository @Inject constructor(
                 JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
                 LEFT JOIN bank ON bank.general_ledger_account_id = acct.id AND bank.deleted = FALSE
                 LEFT JOIN (
-                            SELECT *
+                            SELECT glDetail.*
                             FROM general_ledger_detail glDetail
+                                 JOIN general_ledger_source_codes glSource
+                                       ON glDetail.source_id = glSource.id AND glSource.value <> 'BAL'
                             $where
                             ) glDetail
                         ON glDetail.company_id = glSummary.company_id
