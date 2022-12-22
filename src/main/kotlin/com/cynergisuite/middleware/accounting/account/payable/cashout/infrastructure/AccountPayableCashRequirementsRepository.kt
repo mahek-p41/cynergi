@@ -116,18 +116,17 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
             .append(buildFilterString(filterRequest.beginVendor != null, filterRequest.endVendor != null, "beginVendor", "endVendor"))
       }
 
-      if (oldestDate != null || newestDate != null) {
-         params["fromDate"] = oldestDate
-         params["thruDate"] = newestDate
-         whereClause.append(" AND apInvoice.due_date ")
-            .append(buildFilterString(oldestDate != null, newestDate != null, "fromDate", "thruDate"))
-      }
+      params["fromDate"] = oldestDate
+      params["thruDate"] = newestDate
+      whereClause.append(" AND COALESCE(apPayment.payment_date, apInvoice.due_date) ")
+         .append(buildFilterString(oldestDate != null, newestDate != null, "fromDate", "thruDate"))
+
 
       jdbc.query(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY ${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
+            ORDER BY name, invoice ${filterRequest.sortDirection()}
          """.trimIndent(),
          params,
       ) { rs, elements ->
@@ -150,60 +149,76 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
                }
 
                if (invoiceFlag) {
-                  if( filterRequest.fromDateOne != null && filterRequest.thruDateOne != null) {
-                     if (filterRequest.fromDateOne!!.compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateOne) >= 0) {
-                        it.balanceDisplay = CashRequirementBalanceEnum.ONE
+                  val dateColumn: LocalDate = it.apPaymentPaymentDate ?: it.invoiceDueDate
+                     if (filterRequest.fromDateOne != null && filterRequest.thruDateOne != null) {
+                        if (filterRequest.fromDateOne!!.compareTo(dateColumn) * dateColumn.compareTo(
+                              filterRequest.thruDateOne
+                           ) >= 0
+                        ) {
+                           it.balanceDisplay = CashRequirementBalanceEnum.ONE
+                        }
                      }
-                  }
-                  if ( filterRequest.fromDateTwo != null && filterRequest.thruDateTwo != null) {
-                     if (filterRequest.fromDateTwo!!.compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateTwo) >= 0) {
-                        it.balanceDisplay = CashRequirementBalanceEnum.TWO
+                     if (filterRequest.fromDateTwo != null && filterRequest.thruDateTwo != null) {
+                        if (filterRequest.fromDateTwo!!.compareTo(dateColumn) * dateColumn.compareTo(
+                              filterRequest.thruDateTwo
+                           ) >= 0
+                        ) {
+                           it.balanceDisplay = CashRequirementBalanceEnum.TWO
+                        }
                      }
-                  }
-                  if( filterRequest.fromDateThree != null && filterRequest.thruDateThree != null) {
-                     if (filterRequest.fromDateThree!!.compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateThree) >= 0) {
-                        it.balanceDisplay = CashRequirementBalanceEnum.THREE
+                     if (filterRequest.fromDateThree != null && filterRequest.thruDateThree != null) {
+                        if (filterRequest.fromDateThree!!.compareTo(dateColumn) * dateColumn.compareTo(
+                              filterRequest.thruDateThree
+                           ) >= 0
+                        ) {
+                           it.balanceDisplay = CashRequirementBalanceEnum.THREE
+                        }
                      }
-                  }
-                  if( filterRequest.fromDateFour != null && filterRequest.thruDateFour != null) {
-                     if (filterRequest.fromDateFour!!.compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateFour) >= 0) {
-                        it.balanceDisplay = CashRequirementBalanceEnum.FOUR
+                     if (filterRequest.fromDateFour != null && filterRequest.thruDateFour != null) {
+                        if (filterRequest.fromDateFour!!.compareTo(dateColumn) * dateColumn.compareTo(
+                              filterRequest.thruDateFour
+                           ) >= 0
+                        ) {
+                           it.balanceDisplay = CashRequirementBalanceEnum.FOUR
+                        }
                      }
-                  }
-                  if( filterRequest.fromDateFive != null && filterRequest.thruDateFive != null ) {
-                     if (filterRequest.fromDateFive!!.compareTo(it.invoiceDueDate) * it.invoiceDueDate.compareTo(filterRequest.thruDateFive) >= 0) {
-                        it.balanceDisplay = CashRequirementBalanceEnum.FIVE
+                     if (filterRequest.fromDateFive != null && filterRequest.thruDateFive != null) {
+                        if (filterRequest.fromDateFive!!.compareTo(dateColumn) * dateColumn.compareTo(
+                              filterRequest.thruDateFive
+                           ) >= 0
+                        ) {
+                           it.balanceDisplay = CashRequirementBalanceEnum.FIVE
+                        }
                      }
-                  }
 
                   when (it.balanceDisplay) {
                      CashRequirementBalanceEnum.ONE -> {
                         tempVendor.vendorTotals.weekOneDue =
-                           tempVendor.vendorTotals.weekOneDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken!!)
+                           tempVendor.vendorTotals.weekOneDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken)
                         tempVendor.vendorTotals.weekOnePaid =
                            tempVendor.vendorTotals.weekOnePaid.plus(it.invoicePaidAmount)
                      }
                      CashRequirementBalanceEnum.TWO -> {
                         tempVendor.vendorTotals.weekTwoDue =
-                           tempVendor.vendorTotals.weekTwoDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken!!)
+                           tempVendor.vendorTotals.weekTwoDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken)
                         tempVendor.vendorTotals.weekTwoPaid =
                            tempVendor.vendorTotals.weekTwoPaid.plus(it.invoicePaidAmount)
                      }
                      CashRequirementBalanceEnum.THREE -> {
                         tempVendor.vendorTotals.weekThreeDue =
-                           tempVendor.vendorTotals.weekThreeDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken!!)
+                           tempVendor.vendorTotals.weekThreeDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken)
                         tempVendor.vendorTotals.weekThreePaid =
                            tempVendor.vendorTotals.weekThreePaid.plus(it.invoicePaidAmount)
                      }
                      CashRequirementBalanceEnum.FOUR -> {
                         tempVendor.vendorTotals.weekFourDue =
-                           tempVendor.vendorTotals.weekFourDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken!!)
+                           tempVendor.vendorTotals.weekFourDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken)
                         tempVendor.vendorTotals.weekFourPaid =
                            tempVendor.vendorTotals.weekFourPaid.plus(it.invoicePaidAmount)
                      }
                      CashRequirementBalanceEnum.FIVE -> {
                         tempVendor.vendorTotals.weekFiveDue =
-                           tempVendor.vendorTotals.weekFiveDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken!!)
+                           tempVendor.vendorTotals.weekFiveDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken)
                         tempVendor.vendorTotals.weekFivePaid =
                            tempVendor.vendorTotals.weekFivePaid.plus(it.invoicePaidAmount)
                      }
@@ -212,31 +227,31 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
                   when (it.balanceDisplay) {
                      CashRequirementBalanceEnum.ONE -> {
                         cashoutTotals.weekOneDue =
-                           cashoutTotals.weekOneDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken!!)
+                           cashoutTotals.weekOneDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken)
                         cashoutTotals.weekOnePaid =
                            cashoutTotals.weekOnePaid.plus(it.invoicePaidAmount)
                      }
                      CashRequirementBalanceEnum.TWO -> {
                         cashoutTotals.weekTwoDue =
-                           cashoutTotals.weekTwoDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken!!)
+                           cashoutTotals.weekTwoDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken)
                         cashoutTotals.weekTwoPaid =
                            cashoutTotals.weekTwoPaid.plus(it.invoicePaidAmount)
                      }
                      CashRequirementBalanceEnum.THREE -> {
                         cashoutTotals.weekThreeDue =
-                           cashoutTotals.weekThreeDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken!!)
+                           cashoutTotals.weekThreeDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken)
                         cashoutTotals.weekThreePaid =
                            cashoutTotals.weekThreePaid.plus(it.invoicePaidAmount)
                      }
                      CashRequirementBalanceEnum.FOUR -> {
                         cashoutTotals.weekFourDue =
-                           cashoutTotals.weekFourDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken!!)
+                           cashoutTotals.weekFourDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken)
                         cashoutTotals.weekFourPaid =
                            cashoutTotals.weekFourPaid.plus(it.invoicePaidAmount)
                      }
                      CashRequirementBalanceEnum.FIVE -> {
                         cashoutTotals.weekFiveDue =
-                           cashoutTotals.weekFiveDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken!!)
+                           cashoutTotals.weekFiveDue.plus(it.invoiceAmount - it.invoicePaidAmount - it.invoiceDiscountTaken)
                         cashoutTotals.weekFivePaid =
                            cashoutTotals.weekFivePaid.plus(it.invoicePaidAmount)
                      }
