@@ -116,9 +116,12 @@ class GeneralLedgerDetailRepository @Inject constructor(
              glSummary.company_id                                                            AS company_id,
              acct.number                                                                     AS account_number,
              glSummary.profit_center_id_sfk                                                  AS profit_center_number,
-             SUM(case when glDetail.amount >= 0 then glDetail.amount else 0 end)             AS debit,
-             SUM(case when glDetail.amount < 0 then glDetail.amount else 0 end)              AS credit,
-             SUM(COALESCE(glDetail.amount, 0))                                               AS net_change,
+             SUM(CASE WHEN glDetail.date BETWEEN :from AND :thru
+                  AND glDetail.amount >= 0 THEN glDetail.amount ELSE 0 END)                  AS debit,
+             SUM(CASE WHEN glDetail.date BETWEEN :from AND :thru
+                  AND glDetail.amount < 0 THEN glDetail.amount ELSE 0 END)                   AS credit,
+             SUM(CASE WHEN glDetail.date BETWEEN :from AND :thru
+                  THEN glDetail.amount ELSE 0 END)                                           AS net_change,
              COALESCE(glSummary.net_activity_period_1, 0)                                    AS net_activity_period_1,
              COALESCE(glSummary.net_activity_period_2, 0)                                    AS net_activity_period_2,
              COALESCE(glSummary.net_activity_period_3, 0)                                    AS net_activity_period_3,
@@ -131,7 +134,8 @@ class GeneralLedgerDetailRepository @Inject constructor(
              COALESCE(glSummary.net_activity_period_10, 0)                                   AS net_activity_period_10,
              COALESCE(glSummary.net_activity_period_11, 0)                                   AS net_activity_period_11,
              COALESCE(glSummary.net_activity_period_12, 0)                                   AS net_activity_period_12,
-             COALESCE(glSummary.beginning_balance, 0)                                        AS begin_balance,
+             COALESCE(glSummary.beginning_balance, 0)
+                  + SUM(CASE WHEN glDetail.date < :from THEN glDetail.amount ELSE 0 END)     AS begin_balance,
              COALESCE(glSummary.beginning_balance, 0) + SUM(COALESCE(glDetail.amount, 0))    AS end_balance
          FROM general_ledger_summary glSummary
                 JOIN account acct ON glSummary.account_id = acct.id AND acct.deleted = FALSE
@@ -254,11 +258,14 @@ class GeneralLedgerDetailRepository @Inject constructor(
       val innerWhere = StringBuilder(" WHERE glSummary.company_id = :comp_id ")
       val subQueryWhere = StringBuilder(" WHERE glDetail.company_id = :comp_id ")
       val outerWhere = StringBuilder()
-      if (filterRequest.from != null || filterRequest.thru != null) {
+      if (filterRequest.from != null && filterRequest.thru != null) {
          params["from"] = filterRequest.from
          params["thru"] = filterRequest.thru
-         subQueryWhere.append(" AND glDetail.date ")
-            .append(buildFilterString(filterRequest.from != null, filterRequest.thru != null, "from", "thru"))
+         subQueryWhere.append(""" AND glDetail.date BETWEEN
+               (SELECT DISTINCT period_from
+                  FROM financial_calendar
+                  WHERE fiscal_year = :fiscalYear AND company_id = :comp_id AND period = 1)
+               AND :thru """)
       }
       if (filterRequest.profitCenter != null) {
          params["profitCenter"] = filterRequest.profitCenter
@@ -315,13 +322,6 @@ class GeneralLedgerDetailRepository @Inject constructor(
       logger.info("Querying for General Ledger Inquiry Net Change using {} {}", mainQuery, params)
 
       val netChangeDTO = jdbc.findFirstOrNull(mainQuery, params) { rs, _  -> mapNetChange(rs) }
-
-      // recalculate the beginning balance & ending balance
-      val financialCalendar = financialCalendarRepository.fetchByDate(company, filterRequest.from!!)
-      netChangeDTO?.apply {
-         beginBalance = beginBalance.plus(netActivityPeriod.subList(0, financialCalendar!!.period - 1).sumOf { it!! })
-         endBalance = beginBalance.plus(netChange)
-      }
 
       logger.info("Querying for General Ledger Inquiry Net Change resulted in {}", netChangeDTO)
 
