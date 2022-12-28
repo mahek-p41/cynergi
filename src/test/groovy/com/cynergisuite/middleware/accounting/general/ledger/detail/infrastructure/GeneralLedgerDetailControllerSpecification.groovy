@@ -939,7 +939,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       notThrown(Exception)
       result2 != null
       with(result2) {
-         beginBalance > glSummary2.beginningBalance
+         beginBalance == glSummary2.beginningBalance
          credit == creditAmount
          debit == debitAmount
          netChange == creditAmount + debitAmount
