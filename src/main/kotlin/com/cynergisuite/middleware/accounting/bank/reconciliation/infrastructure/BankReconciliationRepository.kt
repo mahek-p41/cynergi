@@ -6,7 +6,6 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
-import com.cynergisuite.extensions.getLongOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
@@ -16,6 +15,7 @@ import com.cynergisuite.middleware.accounting.bank.BankReconReportEntity
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconSummaryEntity
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationEntity
+import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationTypeEnum
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastructure.BankReconciliationTypeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.transaction.annotation.ReadOnly
@@ -226,9 +226,57 @@ class BankReconciliationRepository @Inject constructor(
    fun findReport(filterRequest: BankReconFilterRequest, company: CompanyEntity): BankReconReportDTO {
       val bankRecons = mutableListOf<BankReconciliationEntity>()
       val reconSummary = BankReconSummaryEntity()
-      var currentBank:BankReconciliationEntity ? = null
+      var currentBank: BankReconciliationEntity?
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder(" WHERE bankRecon.company_id = :comp_id")
+
+      if (filterRequest.beginBank != null || filterRequest.endBank != null) {
+         params["beginBank"] = filterRequest.beginBank
+         params["endBank"] = filterRequest.endBank
+         whereClause.append(" AND bank.bank_number")
+            .append(buildFilterString(filterRequest.beginBank != null, filterRequest.endBank != null, "beginBank", "endBank"))
+      }
+
+      if (filterRequest.fromDate != null || filterRequest.thruDate != null) {
+         params["fromDate"] = filterRequest.fromDate
+         params["thruDate"] = filterRequest.thruDate
+         whereClause.append(" AND bankRecon.transaction_date")
+            .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
+      }
+
+      if (filterRequest.beginClearDate != null || filterRequest.endClearDate != null) {
+         params["fromClearDate"] = filterRequest.fromDate
+         params["thruClearDate"] = filterRequest.thruDate
+         whereClause.append(" AND bankRecon.bankRecon_cleared_date")
+            .append(buildFilterString(filterRequest.beginClearDate != null, filterRequest.endClearDate != null, "fromDate", "thruDate"))
+      }
+
+      if (filterRequest.beginDocument != null || filterRequest.endDocument != null) {
+         params["beginDocument"] = filterRequest.beginDocument
+         params["endDocument"] = filterRequest.endDocument
+         whereClause.append(" AND regexp_replace(bankRecon.document, '[^0-9]+', '', 'g')::BIGINT")
+            .append(buildFilterString(filterRequest.beginDocument != null, filterRequest.endDocument != null, "beginDocument", "endDocument"))
+      }
+
+      if (filterRequest.bankType != null) {
+         params["type"] = filterRequest.bankType
+         whereClause.append(" AND bankReconType_id = :type")
+      }
+
+      if (filterRequest.status != null) {
+         params["status"] = filterRequest.status
+         if (filterRequest.status == "C") {
+            whereClause.append(" AND bankRecon.cleared_date IS NOT NULL")
+         }
+         if (filterRequest.status == "O") {
+            whereClause.append(" AND bankRecon.cleared_date IS NULL")
+         }
+      }
+
+      if (filterRequest.description != null) {
+         params["description"] = filterRequest.description
+         whereClause.append(" AND bankRecon.description ILIKE \'${filterRequest.description}%\'")
+      }
 
       jdbc.query(
          """
@@ -240,49 +288,42 @@ class BankReconciliationRepository @Inject constructor(
       ) {
          rs, elements ->
          do {
-            if (currentBank?.bank?.number != rs.getLongOrNull("bank_number")) {
                val localBank = mapRow(rs, company, "bankRecon_")
                bankRecons.add(localBank)
                currentBank = localBank
 
-               localBank
-            } else {
-               currentBank !!
-            }
-            //TODO
-            when(currentBank!!.type.value) {
-               "A" -> {
-                  reconSummary.ach = reconSummary.ach.plus(currentBank!!.amount)
+               when(currentBank!!.type.value) {
+                  BankReconciliationTypeEnum.ACH.codeValue -> {
+                     reconSummary.ach = reconSummary.ach.plus(currentBank!!.amount)
+                  }
+                  BankReconciliationTypeEnum.CHECK.codeValue -> {
+                     reconSummary.check = reconSummary.check.plus(currentBank!!.amount)
+                  }
+                  BankReconciliationTypeEnum.DEPOSIT.codeValue -> {
+                     reconSummary.deposit = reconSummary.deposit.plus(currentBank!!.amount)
+                  }
+                  BankReconciliationTypeEnum.FEE.codeValue -> {
+                     reconSummary.fee = reconSummary.fee.plus(currentBank!!.amount)
+                  }
+                  BankReconciliationTypeEnum.INTEREST.codeValue -> {
+                     reconSummary.interest = reconSummary.interest.plus(currentBank!!.amount)
+                  }
+                  BankReconciliationTypeEnum.MISC.codeValue -> {
+                     reconSummary.misc = reconSummary.misc.plus(currentBank!!.amount)
+                  }
+                  BankReconciliationTypeEnum.SERVICE_CHARGE.codeValue -> {
+                     reconSummary.serviceCharge = reconSummary.serviceCharge.plus(currentBank!!.amount)
+                  }
+                  BankReconciliationTypeEnum.TRANSFER.codeValue -> {
+                     reconSummary.transfer = reconSummary.transfer.plus(currentBank!!.amount)
+                  }
+                  BankReconciliationTypeEnum.RETURN_CHECK.codeValue -> {
+                     reconSummary.returnCheck = reconSummary.returnCheck.plus(currentBank!!.amount)
+                  }
+                  BankReconciliationTypeEnum.VOID.codeValue -> {
+                     reconSummary.void = reconSummary.void.plus(currentBank!!.amount)
+                  }
                }
-               "C" -> {
-                  reconSummary.check = reconSummary.check.plus(currentBank!!.amount)
-               }
-               "D" -> {
-                  reconSummary.deposit = reconSummary.deposit.plus(currentBank!!.amount)
-               }
-               "F" -> {
-                  reconSummary.fee = reconSummary.fee.plus(currentBank!!.amount)
-               }
-               "I" -> {
-                  reconSummary.interest = reconSummary.interest.plus(currentBank!!.amount)
-               }
-               "M" -> {
-                  reconSummary.misc = reconSummary.misc.plus(currentBank!!.amount)
-               }
-               "S" -> {
-                  reconSummary.serviceCharge = reconSummary.serviceCharge.plus(currentBank!!.amount)
-               }
-               "T" -> {
-                  reconSummary.transfer = reconSummary.transfer.plus(currentBank!!.amount)
-               }
-               "R" -> {
-                  reconSummary.returnCheck = reconSummary.returnCheck.plus(currentBank!!.amount)
-               }
-               "V" -> {
-                  reconSummary.void = reconSummary.void.plus(currentBank!!.amount)
-               }
-            }
-
 
          } while (rs.next())
       }
@@ -318,5 +359,11 @@ class BankReconciliationRepository @Inject constructor(
          description = rs.getString("${columnPrefix}description"),
          document = rs.getString("${columnPrefix}document")
       )
+   }
+
+   private fun buildFilterString(begin: Boolean, end: Boolean, beginningParam: String, endingParam: String): String {
+      return if (begin && end) " BETWEEN :$beginningParam AND :$endingParam"
+      else if (begin) " >= :$beginningParam"
+      else " <= :$endingParam"
    }
 }
