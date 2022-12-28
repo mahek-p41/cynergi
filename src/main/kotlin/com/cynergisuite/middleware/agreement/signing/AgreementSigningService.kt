@@ -16,8 +16,8 @@ class AgreementSigningService(
    fun fetchById(id: UUID, company: CompanyEntity): AgreementSigningDTO? =
       agreementSigningRepository.findOne(id, company)?.let { AgreementSigningDTO(it) }
 
-   fun fetchByCustomerAndAgreement(company: CompanyEntity, customerNumber: Int, agreementNumber: Int): AgreementSigningDTO? =
-      agreementSigningRepository.findOneByCustomerAndAgreement(company, customerNumber, agreementNumber)?.let { AgreementSigningDTO(it) }
+   fun fetchByCustomerAndAgreement(company: CompanyEntity, customerNumber: Int, agreementNumber: Int, agreementType: String): AgreementSigningDTO? =
+      agreementSigningRepository.findOneByCustomerAndAgreement(company, customerNumber, agreementNumber, agreementType)?.let { AgreementSigningDTO(it) }
 
    fun findAgreementsByCustomer(company: CompanyEntity, customerNumber: Int): List<AgreementSigningEntity> =
       agreementSigningRepository.fetchAgreementsByCustomerNumber(company, customerNumber)

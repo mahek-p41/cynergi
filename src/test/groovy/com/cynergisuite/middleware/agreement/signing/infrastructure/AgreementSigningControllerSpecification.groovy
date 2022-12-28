@@ -54,7 +54,7 @@ class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
       final agreementSigning = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, UUID.randomUUID())
 
       when:
-      def result = signingClient.toBlocking().exchange(GET("/upsertPrep/${dataset}/123456/654321"),
+      def result = signingClient.toBlocking().exchange(GET("/upsertPrep/${dataset}/123456/654321/R"),
          Argument.of(String),
          Argument.of(String)
       ).bodyAsJson()
@@ -65,6 +65,7 @@ class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
       result.store.number == store.number
       result.primaryCustomerNumber == agreementSigning.primaryCustomerNumber
       result.agreementNumber == agreementSigning.agreementNumber
+      result.agreementType == agreementSigning.agreementType
    }
 
    void "Upsert Prep without existing agreement record" () {
@@ -74,7 +75,7 @@ class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
       final dataset = 'tstds1'
 
       when:
-      def result = signingClient.toBlocking().exchange(GET("/upsertPrep/${dataset}/123456/654321"),
+      def result = signingClient.toBlocking().exchange(GET("/upsertPrep/${dataset}/123456/654321/R"),
          Argument.of(String),
          Argument.of(String)
       ).bodyAsJson()

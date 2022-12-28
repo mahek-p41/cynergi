@@ -68,7 +68,7 @@ class AgreementSigningController(
    }
 
    @Throws(NotFoundException::class)
-   @Get(uri = "/upsertPrep/{dataset}/{customerNumber}/{agreementNumber}", produces = [APPLICATION_JSON])
+   @Get(uri = "/upsertPrep/{dataset}/{customerNumber}/{agreementNumber}/{agreementType}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AgreementSigningEndpoints"], summary = "Checking to see if Agreement Signing record already exists", description = "Fetch a single Agreement Signing record by dataset, customer number, and agreement number", operationId = "agreementSigning-alreadyExists")
    @ApiResponses(
       value = [
@@ -85,14 +85,16 @@ class AgreementSigningController(
       customerNumber: Int,
       @Parameter(name = "agreementNumber", description = "Agreement Number associated with the transaction", `in` = ParameterIn.PATH) @QueryValue("agreementNumber")
       agreementNumber: Int,
+      @Parameter(name = "agreementType", description = "Agreement Type associated with the transaction", `in` = ParameterIn.PATH) @QueryValue("agreementType")
+      agreementType: String,
       httpRequest: HttpRequest<*>
    ): AgreementSigningDTO {
       logger.info("Checking to see if Agreement Signing record already exists by {} {} {}", dataset, customerNumber, agreementNumber)
 
       val company = companyService.fetchByDatasetCodeForEntity(dataset)
-      val response = agreementSigningService.fetchByCustomerAndAgreement(company = company!!, customerNumber, agreementNumber) ?: throw NotFoundException(customerNumber)
+      val response = agreementSigningService.fetchByCustomerAndAgreement(company = company!!, customerNumber, agreementNumber, agreementType) ?: throw NotFoundException(customerNumber)
 
-      logger.debug("Checking to see if Agreement Signing record exists by {} {} {} resulted in {}", dataset, customerNumber, agreementNumber, response)
+      logger.debug("Checking to see if Agreement Signing record exists by {} {} {} {} resulted in {}", dataset, customerNumber, agreementNumber, agreementType, response)
 
       return response
    }

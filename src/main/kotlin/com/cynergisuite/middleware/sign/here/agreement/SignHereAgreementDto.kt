@@ -21,6 +21,9 @@ data class SignHereAgreementDto(
    @field:Schema(name = "customerNumber", minimum = "1", required = true, nullable = false, description = "Customer number associated with agreement")
    val customerNumber: String?,
 
+   @field:Schema(name = "agreementType", minimum = "1", required = true, nullable = false, description = "Agreement Type associated with agreement")
+   val agreementType: String?,
+
    @field:Schema(name = "timeCreated", required = true, nullable = false, description = "Timestamp of when the request was made to the Sign Here service")
    val timeCreated: OffsetDateTime
 
