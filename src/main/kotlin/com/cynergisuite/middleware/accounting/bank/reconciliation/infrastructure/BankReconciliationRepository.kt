@@ -260,7 +260,7 @@ class BankReconciliationRepository @Inject constructor(
 
       if (filterRequest.bankType != null) {
          params["type"] = filterRequest.bankType
-         whereClause.append(" AND bankReconType_id = :type")
+         whereClause.append(" AND bankReconType.value = :type")
       }
 
       if (filterRequest.status != null) {
