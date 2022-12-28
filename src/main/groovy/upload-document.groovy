@@ -30,8 +30,8 @@ import org.apache.hc.core5.http.io.entity.StringEntity
 SLF4JBridgeHandler.removeHandlersForRootLogger()
 SLF4JBridgeHandler.install()
 
-@Option(names = ["-H", "--host"], defaultValue = "https://app.htsigntest.click", description = "host and protocol to call")
-@Field String host = "https://app.htsigntest.click"
+@Option(names = ["-H", "--host"], description = "host and protocol to call")
+@Field String hostIn = null
 
 @Option(names = ["-h", "--help"], usageHelp = true, description = "Show this help message and exit")
 @Field boolean helpRequested = false
@@ -42,6 +42,14 @@ SLF4JBridgeHandler.install()
 @Parameters(index = "0", arity = "1", paramLabel = "argsFile", description = "Arguments to be passed to the signature service")
 @Field File argsFile
 
+static boolean isCst() {
+   try {
+      return (InetAddress.getLocalHost().getHostName().startsWithIgnoreCase("cst"))
+   } catch(Throwable e) {
+      return true
+   }
+}
+
 if (!helpRequested) {
    if (debug) {
       System.properties['org.slf4j.simpleLogger.log.org.apache.hc.client5.http.wire'] = 'trace'
@@ -50,6 +58,16 @@ if (!helpRequested) {
 
    if (argsFile.exists() && argsFile.isFile()) {
       try (final argsReader = new FileReader(argsFile)) {
+         String host
+
+         if (hostIn == null && !isCst()) {
+            host = "https://app.signhereplease.com"
+         } else if (hostIn != null) {
+            host = hostIn
+         } else {
+            host = "https://app.signhereplease.dev"
+         }
+
          final escaper = UrlEscapers.urlPathSegmentEscaper()
 
          try (final csvParser = new CSVParser(argsReader, CSVFormat.EXCEL.builder().setHeader().setDelimiter('|').build())) {
@@ -111,7 +129,7 @@ if (!helpRequested) {
                      final pdfBody = new FileBody(signaturePdf, ContentType.APPLICATION_PDF, signaturePdf.name)
                      final requestEntity = MultipartEntityBuilder.create().addPart("file", pdfBody).build()
 
-                     var agreementType = 'R'
+                     def agreementType = 'R'
                      switch(reason) {
                         case "RTO Agreement":
                            agreementType = 'R'
