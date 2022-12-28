@@ -245,10 +245,10 @@ class BankReconciliationRepository @Inject constructor(
       }
 
       if (filterRequest.beginClearDate != null || filterRequest.endClearDate != null) {
-         params["fromClearDate"] = filterRequest.fromDate
-         params["thruClearDate"] = filterRequest.thruDate
-         whereClause.append(" AND bankRecon.bankRecon_cleared_date")
-            .append(buildFilterString(filterRequest.beginClearDate != null, filterRequest.endClearDate != null, "fromDate", "thruDate"))
+         params["beginClearDate"] = filterRequest.beginClearDate
+         params["endClearDate"] = filterRequest.endClearDate
+         whereClause.append(" AND bankRecon.cleared_date")
+            .append(buildFilterString(filterRequest.beginClearDate != null, filterRequest.endClearDate != null, "beginClearDate", "endClearDate"))
       }
 
       if (filterRequest.beginDocument != null || filterRequest.endDocument != null) {
