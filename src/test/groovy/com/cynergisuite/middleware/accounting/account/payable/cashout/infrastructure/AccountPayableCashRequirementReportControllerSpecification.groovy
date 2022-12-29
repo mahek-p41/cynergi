@@ -568,7 +568,6 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
          apInvoicesEntity.add(accountPayableInvoiceRepository.insert(new AccountPayableInvoiceEntity(it, vendor1, new SimpleIdentifiableEntity(purchaseOrderIn1), employeeIn, selected, invoiceType, statusTypeO, new SimpleIdentifiableEntity(payToIn.myId()), new SimpleLegacyIdentifiableEntity(store.myId()) ), company))
       }
 
-
       def apInvoicesForVend2 = []
       for(int i = 0; i < 4; i++) {
          apInvoicesForVend2.add(apInvoiceDataLoaderService.singleDTO(company, new SimpleIdentifiableDTO(vendor2.myId()), new SimpleIdentifiableDTO(purchaseOrderIn2.myId()), new EmployeeValueObject(employeeIn),  new SimpleIdentifiableDTO(payToIn.myId()), new SimpleLegacyIdentifiableDTO(store.myId())))
@@ -584,15 +583,18 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
 
       def account = accountTestDataLoaderService.single(company)
       def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      def apPayment1 = apPaymentDataLoaderService.single(company, bank, vendor1)
-      def apPayment2 = apPaymentDataLoaderService.single(company, bank, vendor2)
-      def apPayment3 = apPaymentDataLoaderService.single(company, bank, vendor3)
+      def apPayment1 = apPaymentDataLoaderService.single(company, bank, vendor1, null, null, LocalDate.now())
+      def apPayment2 = apPaymentDataLoaderService.single(company, bank, vendor1, null, null, LocalDate.now().minusWeeks(1))
+      def apPayment3 = apPaymentDataLoaderService.single(company, bank, vendor1, null, null, LocalDate.now().minusWeeks(2))
+      def apPayment4 = apPaymentDataLoaderService.single(company, bank, vendor1, null, null, LocalDate.now().minusWeeks(3))
+      def paymentsArr = [apPayment1, apPayment2, apPayment3, apPayment4]
+
       apInvoicesEntity.eachWithIndex { it, index ->
-         apPaymentDetailDataLoaderService.single(company, vendor1, it, apPayment1)
+         apPaymentDetailDataLoaderService.single(company, vendor1, it, paymentsArr[index])
       }
 
       apInvoicesEntity2.eachWithIndex { it, index ->
-         apPaymentDetailDataLoaderService.single(company, vendor2, it, apPayment1)
+         apPaymentDetailDataLoaderService.single(company, vendor2, it, paymentsArr[index])
       }
 
       def currentDate = LocalDate.now()
