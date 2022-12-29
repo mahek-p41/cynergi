@@ -15,8 +15,9 @@
     </appender>
 
     <logger name="org.apache" level="DEBUG" />
+    <logger name="org.apache.hc.client5.http.wire" level="TRACE" />
 
-    <root level="INFO">
+    <root level="TRACE">
         <appender-ref ref="PROD_FILE"/>
     </root>
 </configuration>

@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.lang3.StringUtils
+import org.slf4j.LoggerFactory
 import picocli.CommandLine.Option
 import picocli.CommandLine.Parameters
 import groovy.transform.Field
@@ -27,17 +28,14 @@ import org.apache.hc.client5.http.classic.methods.HttpPost
 import org.apache.hc.client5.http.classic.methods.HttpPut
 import org.apache.hc.core5.http.io.entity.StringEntity
 
-SLF4JBridgeHandler.removeHandlersForRootLogger()
-SLF4JBridgeHandler.install()
-
 @Option(names = ["-H", "--host"], description = "host and protocol to call")
 @Field String hostIn = null
 
-@Option(names = ["-h", "--help"], usageHelp = true, description = "Show this help message and exit")
-@Field boolean helpRequested = false
+@Option(names = ["-h", "--help"], usageHelp = true, defaultValue = "false", description = "Show this help message and exit")
+@Field boolean helpRequested
 
-@Option(names = ["-d", "--debug"], description = "Enable debug logging")
-@Field boolean debug = false
+@Option(names = ["-d", "--debug"], defaultValue = "false", description = "Enable debug logging")
+@Field boolean debug
 
 @Parameters(index = "0", arity = "1", paramLabel = "argsFile", description = "Arguments to be passed to the signature service")
 @Field File argsFile
@@ -52,21 +50,30 @@ static boolean isCst() {
 
 if (!helpRequested) {
    if (debug) {
-      System.properties['org.slf4j.simpleLogger.log.org.apache.hc.client5.http.wire'] = 'trace'
-      System.properties['logback.configurationFile'] = 'logback-debug-stdout.xml'
+      println("Debugging enabled")
+      System.setProperty("logback.configurationFile", "logback-debug-stdout.xml")
+
+      SLF4JBridgeHandler.removeHandlersForRootLogger()
+      SLF4JBridgeHandler.install()
    }
 
+   final logger = LoggerFactory.getLogger("upload-document.groovy")
+
    if (argsFile.exists() && argsFile.isFile()) {
+      logger.info("Uploading ${argsFile}")
+
       try (final argsReader = new FileReader(argsFile)) {
          String host
 
          if (hostIn == null && !isCst()) {
-            host = "https://app.signhereplease.com"
+            host = 'https://app.signhereplease.com'
          } else if (hostIn != null) {
             host = hostIn
          } else {
-            host = "https://app.signhereplease.dev"
+            host = 'https://app.signhereplease.dev'
          }
+
+         logger.info("Uploading to ${host}")
 
          final escaper = UrlEscapers.urlPathSegmentEscaper()
 
@@ -94,7 +101,7 @@ if (!helpRequested) {
             final jsonSlurper = new JsonSlurper()
 
             try (final client = HttpClients.createDefault()) {
-               final storeTokenCall = new HttpGet("http://localhost:10900/sign/here/token/store/${storeNumber}/dataset/${dataset}")
+               final storeTokenCall = new HttpGet("http://localhost:8080/sign/here/token/store/${storeNumber}/dataset/${dataset}")
                final storeTokenResponse = client.execute(storeTokenCall)
                final storeTokenSlurp = jsonSlurper.parse(storeTokenResponse.entity.content)
                final company = storeTokenSlurp.company
@@ -105,7 +112,7 @@ if (!helpRequested) {
                storeTokenResponse.close()
 
                if (!signaturePdf.exists() || !signaturePdf.isFile()) {
-                  println "${signaturePdf} did not exist or is not a file"
+                  logger.info "${signaturePdf} did not exist or is not a file"
                } else {
                   final tokenRequest = new JsonBuilder([token: storeToken])
                   final tokenLoginRequest = new HttpPost(URI.create("${host}/api/login/token"))
@@ -116,7 +123,7 @@ if (!helpRequested) {
                      if (tokenLoginResponse.code == 200) {
                         return jsonSlurper.parse(tokenLoginResponse.entity.content).access_token
                      } else {
-                        println "Unable to login to sign here system with access token. ${tokenLoginResponse.reasonPhrase} ${EntityUtils.toString(tokenLoginResponse.entity)}"
+                        logger.info "Unable to login to sign here system with access token. ${tokenLoginResponse.reasonPhrase} ${EntityUtils.toString(tokenLoginResponse.entity)}"
                      }
                   }
 
@@ -166,12 +173,13 @@ if (!helpRequested) {
                      //requestedDocumentId UUID The id for the root of the whole transaction
                      //nextSignatureUri
 
-                     final awsResponse = UUID.fromString(jsonSlurper.parse(uploadResponse.entity.content).requestedDocumentId)
 
                      if (uploadResponseCode >= 200 && uploadResponseCode < 400) {
+                        final awsResponse = UUID.fromString(jsonSlurper.parse(uploadResponse.entity.content).requestedDocumentId)
+
                         if (rtoAgreementNumber != 0) { //This is where we check then insert/update the agreement_signing table for rto.
                            final storeDTO = new SimpleLegacyNumberDTO(storeNumber)
-                           final checkExisting = new HttpGet("http://localhost:10900/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${rtoAgreementNumber}")
+                           final checkExisting = new HttpGet("http://localhost:8080/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${rtoAgreementNumber}")
                            final existingRtoAgreement = client.execute(checkExisting)
                            final existingRtoAgreementResponseCode = existingRtoAgreement.getCode()
 
@@ -179,7 +187,7 @@ if (!helpRequested) {
                               //Insert the record
                               final agreementToUpsert = new AgreementSigningDTO(null, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, rtoAgreementNumber, agreementType, 1, awsResponse)
                               final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
-                              final createRtoAgreement = new HttpPost("http://localhost:10900/agreement/signing/dataset/${dataset}")
+                              final createRtoAgreement = new HttpPost("http://localhost:8080/agreement/signing/dataset/${dataset}")
                               createRtoAgreement.setHeader("Content-Type", "application/json")
                               createRtoAgreement.setEntity(new StringEntity(agreementToUpsertJson))
 
@@ -187,9 +195,9 @@ if (!helpRequested) {
                               final responseCode = createResponse.getCode()
 
                               if (responseCode >= 200 && responseCode < 400) {
-                                 println "Successfully created rto agreement"
+                                 logger.info "Successfully created rto agreement"
                               } else {
-                                 println "${uploadResponse.getCode()} -> ${EntityUtils.toString(createResponse.getEntity())}"
+                                 logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(createResponse.getEntity())}"
                                  System.exit(-2)
                               }
                            } else if (existingRtoAgreementResponseCode == 200) {
@@ -199,7 +207,7 @@ if (!helpRequested) {
                               final existingRtoAgreementUUID = UUID.fromString(existingRtoAgreementId)
                               final agreementToUpsert = new AgreementSigningDTO(existingRtoAgreementUUID, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, rtoAgreementNumber, agreementType, 1, awsResponse)
                               final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
-                              final updateRtoAgreement = new HttpPut("http://localhost:10900/agreement/signing/${existingRtoAgreementUUID}/dataset/${dataset}")
+                              final updateRtoAgreement = new HttpPut("http://localhost:8080/agreement/signing/${existingRtoAgreementUUID}/dataset/${dataset}")
                               updateRtoAgreement.setHeader("Content-Type", "application/json")
                               updateRtoAgreement.setEntity(new StringEntity(agreementToUpsertJson))
 
@@ -207,20 +215,20 @@ if (!helpRequested) {
                               final responseCode = updateResponse.getCode()
 
                               if (responseCode >= 200 && responseCode < 400) {
-                                 println "Successfully updated rto agreement"
+                                 logger.info "Successfully updated rto agreement"
                               } else {
-                                 println "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
+                                 logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
                                  System.exit(-3)
                               }
                            } else {
-                              println "Unhandled response from server $existingRtoAgreementResponseCode"
+                              logger.info "Unhandled response from server $existingRtoAgreementResponseCode"
                               System.exit(-4)
                            }
                         }
 
                         if (clubAgreementNumber != 0) { //This is where we check then insert/update the agreement_signing table for club.
                            final storeDTO = new SimpleLegacyNumberDTO(storeNumber)
-                           final checkExisting = new HttpGet("http://localhost:10900/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${clubAgreementNumber}")
+                           final checkExisting = new HttpGet("http://localhost:8080/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${clubAgreementNumber}")
                            final existingClubAgreement = client.execute(checkExisting)
                            final existingClubAgreementResponseCode = existingClubAgreement.getCode()
 
@@ -228,7 +236,7 @@ if (!helpRequested) {
                               //Insert the record
                               final agreementToUpsert = new AgreementSigningDTO(null, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, clubAgreementNumber, agreementType, 1, awsResponse)
                               final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
-                              final createClubAgreement = new HttpPost("http://localhost:10900/agreement/signing/dataset/${dataset}")
+                              final createClubAgreement = new HttpPost("http://localhost:8080/agreement/signing/dataset/${dataset}")
                               createClubAgreement.setHeader("Content-Type", "application/json")
                               createClubAgreement.setEntity(new StringEntity(agreementToUpsertJson))
 
@@ -236,9 +244,9 @@ if (!helpRequested) {
                               final responseCode = createResponse.getCode()
 
                               if (responseCode >= 200 && responseCode < 400) {
-                                 println "Successfully created club agreement"
+                                 logger.info "Successfully created club agreement"
                               } else {
-                                 println "${uploadResponse.getCode()} -> ${EntityUtils.toString(createResponse.getEntity())}"
+                                 logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(createResponse.getEntity())}"
                                  System.exit(-5)
                               }
                            } else if (existingClubAgreementResponseCode == 200) {
@@ -248,7 +256,7 @@ if (!helpRequested) {
                               final existingClubAgreementUUID = UUID.fromString(existingClubAgreementId)
                               final agreementToUpsert = new AgreementSigningDTO(existingClubAgreementUUID, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, clubAgreementNumber, agreementType, 1, awsResponse)
                               final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
-                              final updateClubAgreement = new HttpPut("http://localhost:10900/agreement/signing/${existingClubAgreementUUID}/dataset/${dataset}")
+                              final updateClubAgreement = new HttpPut("http://localhost:8080/agreement/signing/${existingClubAgreementUUID}/dataset/${dataset}")
                               updateClubAgreement.setHeader("Content-Type", "application/json")
                               updateClubAgreement.setEntity(new StringEntity(agreementToUpsertJson))
 
@@ -256,20 +264,20 @@ if (!helpRequested) {
                               final responseCode = updateResponse.getCode()
 
                               if (responseCode >= 200 && responseCode < 400) {
-                                 println "Successfully updated club agreement"
+                                 logger.info "Successfully updated club agreement"
                               } else {
-                                 println "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
+                                 logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
                                  System.exit(-6)
                               }
                            } else {
-                              println "Unhandled response from server $existingRtoAgreementResponseCode"
+                              logger.info "Unhandled response from server $existingRtoAgreementResponseCode"
                               System.exit(-7)
                            }
                         }
 
                         if (otherAgreementNumber != 0) { //This is where we check then insert/update the agreement_signing table for other.
                            final storeDTO = new SimpleLegacyNumberDTO(storeNumber)
-                           final checkExisting = new HttpGet("http://localhost:10900/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${otherAgreementNumber}")
+                           final checkExisting = new HttpGet("http://localhost:8080/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${otherAgreementNumber}")
                            final existingOtherAgreement = client.execute(checkExisting)
                            final existingOtherAgreementResponseCode = existingOtherAgreement.getCode()
 
@@ -277,7 +285,7 @@ if (!helpRequested) {
                               //Insert the record
                               final agreementToUpsert = new AgreementSigningDTO(null, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, otherAgreementNumber, agreementType, 1, awsResponse)
                               final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
-                              final createOtherAgreement = new HttpPost("http://localhost:10900/agreement/signing/dataset/${dataset}")
+                              final createOtherAgreement = new HttpPost("http://localhost:8080/agreement/signing/dataset/${dataset}")
                               createOtherAgreement.setHeader("Content-Type", "application/json")
                               createOtherAgreement.setEntity(new StringEntity(agreementToUpsertJson))
 
@@ -285,9 +293,9 @@ if (!helpRequested) {
                               final responseCode = createResponse.getCode()
 
                               if (responseCode >= 200 && responseCode < 400) {
-                                 println "Successfully created other agreement"
+                                 logger.info "Successfully created other agreement"
                               } else {
-                                 println "${uploadResponse.getCode()} -> ${EntityUtils.toString(createResponse.getEntity())}"
+                                 logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(createResponse.getEntity())}"
                                  System.exit(-8)
                               }
                            } else if (existingOtherAgreementResponseCode == 200) {
@@ -297,7 +305,7 @@ if (!helpRequested) {
                               final existingOtherAgreementUUID = UUID.fromString(existingOtherAgreementId)
                               final agreementToUpsert = new AgreementSigningDTO(existingOtherAgreementUUID, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, otherAgreementNumber, agreementType, 1, awsResponse)
                               final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
-                              final updateOtherAgreement = new HttpPut("http://localhost:10900/agreement/signing/${existingOtherAgreementUUID}/dataset/${dataset}")
+                              final updateOtherAgreement = new HttpPut("http://localhost:8080/agreement/signing/${existingOtherAgreementUUID}/dataset/${dataset}")
                               updateOtherAgreement.setHeader("Content-Type", "application/json")
                               updateOtherAgreement.setEntity(new StringEntity(agreementToUpsertJson))
 
@@ -305,25 +313,25 @@ if (!helpRequested) {
                               final responseCode = updateResponse.getCode()
 
                               if (responseCode >= 200 && responseCode < 400) {
-                                 println "Successfully updated other agreement"
+                                 logger.info "Successfully updated other agreement"
                               } else {
-                                 println "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
+                                 logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
                                  System.exit(-9)
                               }
                            } else {
-                              println "Unhandled response from server $existingRtoAgreementResponseCode"
+                              logger.info "Unhandled response from server $existingRtoAgreementResponseCode"
                               System.exit(-10)
                            }
                         }
 
                      } else {
-                        println "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
+                        logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
                         System.exit(-11)
                      }
 
                      uploadResponse.close()
                   } else {
-                     println "Invalid token provided for uploading"
+                     logger.info "Invalid token provided for uploading"
                      System.exit(-12)
                   }
                }
@@ -331,7 +339,7 @@ if (!helpRequested) {
          }
       }
    } else {
-      println "${argsFile} is not a csv file"
+      logger.info "${argsFile} is not a csv file"
       System.exit(-13)
    }
 }
