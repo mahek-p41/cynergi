@@ -95,8 +95,8 @@ if (!helpRequested) {
             final signatories = StringUtils.split(csvData["signatories"].trim(), ',').collect {it.trim()}
 
             final expirationDate = (csvData["retentionDate"].toString().trim())
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d/yy", Locale.ENGLISH);
-            LocalDate retentionDate = LocalDate.parse(expirationDate, formatter);
+            final formatter = DateTimeFormatter.ofPattern("M/d/yy", Locale.ENGLISH);
+            final retentionDate = LocalDate.parse(expirationDate, formatter);
 
             final jsonSlurper = new JsonSlurper()
 
@@ -124,6 +124,7 @@ if (!helpRequested) {
                         return jsonSlurper.parse(tokenLoginResponse.entity.content).access_token
                      } else {
                         logger.info "Unable to login to sign here system with access token. ${tokenLoginResponse.reasonPhrase} ${EntityUtils.toString(tokenLoginResponse.entity)}"
+                        return null
                      }
                   }
 
