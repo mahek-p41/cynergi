@@ -299,20 +299,16 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
 
    void "create invalid account payable distribution group with percent total over 100%" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final store = storeFactoryService.store(3, company)
-      final accounts = accountDataLoaderService.stream(5, company).toList()
-      final template = templateDataLoaderService.single(company)
-      def apDistributions = []
-      accounts.eachWithIndex { account, index ->
-         apDistributions.add(dataLoaderService.singleDTO(new StoreDTO(store), new AccountDTO(account), new AccountPayableDistributionTemplateDTO(template)))
+      final accounts = accountDataLoaderService.stream(5, tstds1).toList()
+      final template = templateDataLoaderService.single(tstds1)
+      def apDistributions = accounts.collect { account ->
+         dataLoaderService.singleDTO(new StoreDTO(store3Tstds1), new AccountDTO(account), new AccountPayableDistributionTemplateDTO(template))
       }
       apDistributions[4].percent = 1
 
       when:
-      def result
       apDistributions.each {
-         result = post("$path/", it)
+         post("$path", it)
       }
 
       then:
