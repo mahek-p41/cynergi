@@ -37,7 +37,7 @@ data class AccountPayableInvoiceEntity(
    val type: AccountPayableInvoiceType,
    val status: AccountPayableInvoiceStatusType,
    val dueDate: LocalDate,
-   val payTo: Identifiable,
+   val payTo: VendorEntity,
    val separateCheckIndicator: Boolean,
    val useTaxIndicator: Boolean,
    val receiveDate: LocalDate?,
@@ -52,7 +52,7 @@ data class AccountPayableInvoiceEntity(
       selected: AccountPayableInvoiceSelectedType,
       type: AccountPayableInvoiceType,
       status: AccountPayableInvoiceStatusType,
-      payTo: SimpleIdentifiableEntity,
+      payTo: VendorEntity,
       location: SimpleLegacyIdentifiableEntity?
    ) :
       this(
