@@ -20,14 +20,12 @@ class GeneralLedgerInquiryControllerSpecification extends ControllerSpecificatio
 
    void "fetch one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final acct = accountDataLoaderService.single(company)
-      final store = storeFactoryService.store(3, company)
-      final glSummary1 = dataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(1))
-      final glSummary2 = dataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(2))
+      final acct = accountDataLoaderService.single(tstds1)
+      dataLoaderService.single(tstds1, acct, store3Tstds1, OverallPeriodTypeDataLoader.predefined().get(1))
+      final glSummary2 = dataLoaderService.single(tstds1, acct, store3Tstds1, OverallPeriodTypeDataLoader.predefined().get(2))
       final beginDate = LocalDate.parse("2021-11-09")
       final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
-      final filterRequest = new GeneralLedgerInquiryFilterRequest([account: acct.number, profitCenter: store.myNumber(), fiscalYear: 2022])
+      final filterRequest = new GeneralLedgerInquiryFilterRequest([account: acct.number, profitCenter: store3Tstds1.myNumber(), fiscalYear: 2022])
 
       when:
       def result2 = post("/accounting/financial-calendar/complete", financialCalendarDTO)
