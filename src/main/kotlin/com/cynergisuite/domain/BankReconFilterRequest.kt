@@ -24,28 +24,28 @@ class BankReconFilterRequest(
    @field:Schema(name = "endBank", description = "End Bank Number")
    var endBank: Int? = null,
 
-   @field:Schema(name = "entryDate", description = "From date for bank reconciliation")
+   @field:Schema(name = "fromDate", description = "From date for bank reconciliation")
    var fromDate: LocalDate? = null,
 
    @field:Schema(name = "thruDate", description = "Thru date for bank reconciliation")
    var thruDate: LocalDate? = null,
 
    @field:Schema(name = "beginDocument", description = "Beginning Document Number")
-   var beginDocument: Int? = null,
+   var beginDocument: Long? = null,
 
    @field:Schema(name = "endDocument", description = "End Document Number")
-   var endDocument: Int? = null,
+   var endDocument: Long? = null,
 
    @field:Schema(name = "type", description = "Bank Reconciliation Type")
-   var type: BankReconciliationType? = null,
+   var bankType: BankReconciliationType? = null,
 
    @field:Schema(name = "description", description = "Filter full or partial description for bank reconciliation")
-   var description: Boolean = false,
+   var description: String? = null,
 
    @field:Schema(name = "status", description = "Bank Reconciliation Status")
    var status: String? = null,
 
-   @field:Schema(name = "begingClearDate", description = "From clear date for bank reconciliation")
+   @field:Schema(name = "beginClearDate", description = "From clear date for bank reconciliation")
    var beginClearDate: LocalDate? = null,
 
    @field:Schema(name = "endClearDate", description = "Thru clear date for bank reconciliation")
@@ -54,7 +54,7 @@ class BankReconFilterRequest(
    @field:Schema(name = "layout", description = "Vendor Name or Vendor Number")
    var layout: String? = null,
 
-) : PageRequestBase<BankReconFilterRequest>(page, size, sortBy, sortDirection) {
+   ) : PageRequestBase<BankReconFilterRequest>(page, size, sortBy, sortDirection) {
 
    @ValidPageSortBy("id")
    override fun sortByMe(): String = sortBy()
@@ -69,7 +69,7 @@ class BankReconFilterRequest(
             .append(this.thruDate, other.thruDate)
             .append(this.beginDocument, other.beginDocument)
             .append(this.endDocument, other.endDocument)
-            .append(this.type , other.type)
+            .append(this.bankType , other.bankType)
             .append(this.description, other.description)
             .append(this.status, other.status)
             .append(this.beginClearDate, other.beginClearDate)
@@ -89,7 +89,7 @@ class BankReconFilterRequest(
          .append(this.thruDate)
          .append(this.beginDocument)
          .append(this.endDocument)
-         .append(this.type)
+         .append(this.bankType)
          .append(this.description)
          .append(this.status)
          .append(this.beginClearDate)
@@ -109,7 +109,7 @@ class BankReconFilterRequest(
          thruDate = this.thruDate,
          beginDocument = this.beginDocument,
          endDocument = this.endDocument,
-         type = this.type,
+         bankType = this.bankType,
          description = this.description,
          status = this.status,
          beginClearDate = this.beginClearDate,
@@ -125,7 +125,7 @@ class BankReconFilterRequest(
          "thruDate" to thruDate,
          "beginDocument" to beginDocument,
          "endDocument" to endDocument,
-         "type" to type,
+         "bankType" to bankType,
          "description" to description,
          "status" to status,
          "beginClearDate" to beginClearDate,
