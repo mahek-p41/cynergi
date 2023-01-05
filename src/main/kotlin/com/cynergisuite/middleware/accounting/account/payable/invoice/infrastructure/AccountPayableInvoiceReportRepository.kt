@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
-import com.cynergisuite.domain.PaymentReportFilterRequest
+import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.query
@@ -17,6 +17,7 @@ import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
+import java.time.LocalDate
 
 @Singleton
 class AccountPayableInvoiceReportRepository @Inject constructor(
@@ -30,6 +31,10 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
             apInvoice.id                                                AS apInvoice_id,
             apInvoice.company_id                                        AS apInvoice_company_id,
             apInvoice.invoice                                           AS apInvoice_invoice,
+
+            apInvoice.employee_number_id_sfk                            AS apInvoice_operator,
+            apInvoice.use_tax_indicator                                 AS apInvoice_use_tax_indicator,
+
             vendor.name                                                 AS apInvoice_vendor_name,
             vendor.number                                               AS apInvoice_vendor_number,
             vgrp.value                                                  AS apInvoice_vendor_vgrp_value,
@@ -47,6 +52,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
             bank.number                                                 AS bank_number,
             pmtType.value                                               AS apPayment_type_value,
             pmt.payment_number                                          AS apPayment_number,
+            pmt.payment_date                                            AS apPayment_payment_date,
             pmtDetail.id                                                AS apPayment_detail_id,
             pmtDetail.amount                                            AS apPayment_detail_amount,
 
@@ -90,14 +96,89 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun fetchReport(company: CompanyEntity, filterRequest: PaymentReportFilterRequest): List<AccountPayableInvoiceReportDTO> { //todo maybe return entity
+   fun fetchReport(company: CompanyEntity, filterRequest: InvoiceReportFilterRequest): List<AccountPayableInvoiceReportDTO> {
       val invoices = mutableListOf<AccountPayableInvoiceReportDTO>()
       var currentInvoice: AccountPayableInvoiceReportDTO? = null
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id ")
+
+      if (filterRequest.beginVen != null && filterRequest.endVen != null) {
+         params["beginVen"] = filterRequest.beginVen
+         params["endVen"] = filterRequest.endVen
+         whereClause.append(" AND vendor.number ")
+            .append(buildNumberFilterString("beginVen", "endVen"))
+      }
+
+      if (filterRequest.beginOpr != null && filterRequest.endOpr != null) {
+         params["beginOpr"] = filterRequest.beginOpr
+         params["endOpr"] = filterRequest.endOpr
+         whereClause.append(" AND apInvoice.employee_number_id_sfk ")
+            .append(buildNumberFilterString("beginOpr", "endOpr"))
+      }
+
+      if (filterRequest.beginPO != null && filterRequest.endPO != null) {
+         params["beginPO"] = filterRequest.beginPO
+         params["endPO"] = filterRequest.endPO
+         whereClause.append(" AND poHeader.number ")
+            .append(buildNumberFilterString("beginPO", "endPO"))
+      }
+
+      if (filterRequest.beginInvDate != null || filterRequest.endInvDate != null) {
+         params["beginInvDate"] = filterRequest.beginInvDate
+         params["endInvDate"] = filterRequest.endInvDate
+         whereClause.append(" AND apInvoice.invoice_date ")
+            .append(buildDateFilterString(filterRequest.beginInvDate, filterRequest.endInvDate, "beginInvDate", "endInvDate"))
+      }
+
+      if (filterRequest.beginExpDate != null || filterRequest.endExpDate != null) {
+         params["beginExpDate"] = filterRequest.beginExpDate
+         params["endExpDate"] = filterRequest.endExpDate
+         whereClause.append(" AND apInvoice.expense_date ")
+            .append(buildDateFilterString(filterRequest.beginExpDate, filterRequest.endExpDate, "beginExpDate", "endExpDate"))
+      }
+
+      if (filterRequest.beginEnDate != null || filterRequest.endEnDate != null) {
+         params["beginEnDate"] = filterRequest.beginEnDate
+         params["endEnDate"] = filterRequest.endEnDate
+         whereClause.append(" AND apInvoice.entry_date ")
+            .append(buildDateFilterString(filterRequest.beginEnDate, filterRequest.endEnDate, "beginEnDate", "endEnDate"))
+      }
+
+      if (filterRequest.beginPaidDate != null || filterRequest.endPaidDate != null) {
+         params["beginPaidDate"] = filterRequest.beginPaidDate
+         params["endPaidDate"] = filterRequest.endPaidDate
+         whereClause.append(" AND pmt.payment_date ")
+            .append(buildDateFilterString(filterRequest.beginPaidDate, filterRequest.endPaidDate, "beginPaidDate", "endPaidDate"))
+      }
+
+      if (filterRequest.beginDueDate != null || filterRequest.endDueDate != null) {
+         params["beginDueDate"] = filterRequest.beginDueDate
+         params["endDueDate"] = filterRequest.endDueDate
+         whereClause.append(" AND apInvoice.due_date ")
+            .append(buildDateFilterString(filterRequest.beginDueDate, filterRequest.endDueDate, "beginDueDate", "endDueDate"))
+      }
+
+      if (filterRequest.beginVenGr != null && filterRequest.endVenGr != null) {
+         params["beginVenGr"] = filterRequest.beginVenGr
+         params["endVenGr"] = filterRequest.endVenGr
+         whereClause.append(" AND vgrp.value ")
+            .append(buildNumberFilterString("beginVenGr", "endVenGr"))
+      }
+
+      filterRequest.invStatus?.let {
+         params["status"] = filterRequest.invStatus
+         whereClause.append(" AND invStatus.value = :status ")
+      }
+
+      filterRequest.useTax?.let {
+         params["useTax"] = filterRequest.useTax
+         whereClause.append(" AND apInvoice.use_tax_indicator = :useTax ")
+      }
+
       jdbc.query(
          """
             ${selectBaseQuery()}
-            WHERE apInvoice.company_id = :comp_id
+            $whereClause
             ORDER BY apInvoice.id, pmt.id, pmtDetail.id
          """.trimIndent(),
          params)
@@ -134,6 +215,8 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          vendorName = rs.getString("${columnPrefix}vendor_name"),
          vendorGroup = rs.getString("${columnPrefix}vendor_vgrp_value"),
          invoice = rs.getString("${columnPrefix}invoice"),
+         operator = rs.getInt("${columnPrefix}operator"),
+         useTax = rs.getBoolean("${columnPrefix}use_tax_indicator"),
          type = rs.getString("${columnPrefix}type_value"),
          invoiceDate = rs.getLocalDate("${columnPrefix}invoice_date"),
          entryDate = rs.getLocalDate("${columnPrefix}entry_date"),
@@ -162,6 +245,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          bankNumber = rs.getInt("bank_number"),
          paymentType = rs.getString("apPayment_type_value"),
          paymentNumber = rs.getString("apPayment_number"),
+         paymentDate = rs.getLocalDate("apPayment_payment_date"),
          paymentDetailId = rs.getString("apPayment_detail_id"),
          paymentDetailAmount = rs.getString("apPayment_detail_amount"),
       )
@@ -192,5 +276,15 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          receivedLocation = rs.getString("inv_received_location"),
          currentLocation = rs.getString("inv_current_location"),
       )
+   }
+
+   private fun buildDateFilterString(from: LocalDate?, thru: LocalDate?, frmParam: String, thruParam: String): String {
+      return if (from != null && thru != null) " BETWEEN :$frmParam AND :$thruParam "
+      else if (from != null) " > :$frmParam "
+      else " < :$thruParam "
+   }
+
+   private fun buildNumberFilterString(beginningParam: String, endingParam: String): String {
+      return " BETWEEN :$beginningParam AND :$endingParam "
    }
 }
