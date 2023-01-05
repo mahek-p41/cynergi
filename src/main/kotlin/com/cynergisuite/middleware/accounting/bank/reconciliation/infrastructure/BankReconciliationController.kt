@@ -4,7 +4,7 @@ import com.cynergisuite.domain.BankReconFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.accounting.bank.BankReconReportDTO
+import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationService
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -151,7 +151,7 @@ class BankReconciliationController @Inject constructor(
    @Operation(tags = ["BankReconciliationEndpoints"], summary = "Fetch a bank reconciliation report", description = "Fetch a bank reconciliation report", operationId = "bankReconciliation-fetchReport")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = BankReconReportDTO::class))])
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = BankReconciliationReportDTO::class))])
       ]
    )
    @Get(uri = "/report{?pageRequest*}", produces = [APPLICATION_JSON])
@@ -160,7 +160,7 @@ class BankReconciliationController @Inject constructor(
       @Valid @QueryValue("pageRequest")
       filterRequest: BankReconFilterRequest,
       authentication: Authentication
-   ): BankReconReportDTO {
+   ): BankReconciliationReportDTO {
       val user = userService.fetchUser(authentication)
       val bankRecons = bankReconciliationService.fetchReport(filterRequest, user.myCompany())
 

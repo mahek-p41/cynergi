@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull
 @Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "Bank Reconciliation Report", title = "An entity containing a bank reconciliation report information", description = "An entity containing a bank reconciliation report information.")
-data class BankReconciliationReportDTO(
+data class BankReconciliationReportDetailDTO(
 
    var id: UUID? = null,
 
@@ -46,10 +46,13 @@ data class BankReconciliationReportDTO(
    var description: String? = null,
 
    @field:Schema(required = false, description = "The payment number is relation to AP payments (ACH or check), system date for SUMGLINT and GLJE.")
-   var document: String? = null
+   var document: String? = null,
+
+   @field:Schema(required = false, description = "The vendor name in relation to AP payments (ACH or check), system date for SUMGLINT and GLJE.")
+   var vendorName: String? = null,
 
 ) : Identifiable {
-  constructor(entity: BankReconciliationEntity) :
+  constructor(entity: BankReconciliationReportDetailEntity) :
      this(
         id = entity.id,
         bank = BankDTO(entity.bank),
@@ -58,7 +61,8 @@ data class BankReconciliationReportDTO(
         clearedDate = entity.clearedDate,
         amount = entity.amount,
         description = entity.description,
-        document = entity.document
+        document = entity.document,
+        vendorName = entity.vendorName,
      )
 
    override fun myId(): UUID? = id

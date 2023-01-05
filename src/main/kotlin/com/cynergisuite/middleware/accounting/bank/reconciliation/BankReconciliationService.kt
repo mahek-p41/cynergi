@@ -4,8 +4,7 @@ import com.cynergisuite.domain.BankReconFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.middleware.accounting.bank.BankDTO
-import com.cynergisuite.middleware.accounting.bank.BankReconReportDTO
+import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure.BankReconciliationRepository
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -40,7 +39,7 @@ class BankReconciliationService @Inject constructor(
       return transformEntity(bankReconciliationRepository.update(toUpdate, company))
    }
 
-   fun fetchReport(filterRequest: BankReconFilterRequest, company: CompanyEntity): BankReconReportDTO {
+   fun fetchReport(filterRequest: BankReconFilterRequest, company: CompanyEntity): BankReconciliationReportDTO {
       return bankReconciliationRepository.findReport(filterRequest, company)
 
    }

@@ -6,15 +6,17 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
+import com.cynergisuite.extensions.getLongOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.accounting.bank.BankReconReportDTO
-import com.cynergisuite.middleware.accounting.bank.BankReconReportEntity
+import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
+import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportEntity
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconSummaryEntity
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationEntity
+import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationReportDetailEntity
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationTypeEnum
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastructure.BankReconciliationTypeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -85,11 +87,13 @@ class BankReconciliationRepository @Inject constructor(
             bankReconType.id                                  AS bankReconType_id,
             bankReconType.value                               AS bankReconType_value,
             bankReconType.description                         AS bankReconType_description,
-            bankReconType.localization_code                   AS bankReconType_localization_code
+            bankReconType.localization_code                   AS bankReconType_localization_code,
+            bank_vendor.vendor_name                           AS bankRecon_vendor_name
          FROM bank_reconciliation bankRecon
                JOIN bank ON bankRecon.bank_id = bank.bank_id AND bank.bank_deleted = FALSE
                JOIN bank_reconciliation_type_domain bankReconType ON bankRecon.type_id = bankReconType.id
                JOIN account ON account.id = bank.bank_account_id AND account.deleted = FALSE
+               LEFT JOIN bank_recon_vendor_vw bank_vendor ON bank_vendor.bank_recon_id = bankRecon.id
       """
    }
 
@@ -223,10 +227,10 @@ class BankReconciliationRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findReport(filterRequest: BankReconFilterRequest, company: CompanyEntity): BankReconReportDTO {
-      val bankRecons = mutableListOf<BankReconciliationEntity>()
+   fun findReport(filterRequest: BankReconFilterRequest, company: CompanyEntity): BankReconciliationReportDTO {
+      val bankRecons = mutableListOf<BankReconciliationReportDetailEntity>()
       val reconSummary = BankReconSummaryEntity()
-      var currentBank: BankReconciliationEntity?
+      var currentBank: BankReconciliationReportDetailEntity?
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder(" WHERE bankRecon.company_id = :comp_id")
 
@@ -288,7 +292,12 @@ class BankReconciliationRepository @Inject constructor(
       ) {
          rs, elements ->
          do {
-               val localBank = mapRow(rs, company, "bankRecon_")
+               val localBank = mapReportRow(rs, company, "bankRecon_")
+               if(filterRequest.layout == "V"){
+                  if(localBank.vendorName != null) {
+                     localBank.description = localBank.vendorName!!
+                  }
+               }
                bankRecons.add(localBank)
                currentBank = localBank
 
@@ -327,8 +336,8 @@ class BankReconciliationRepository @Inject constructor(
 
          } while (rs.next())
       }
-      val entity = BankReconReportEntity(bankRecons, reconSummary)
-      return BankReconReportDTO(entity)
+      val entity = BankReconciliationReportEntity(bankRecons, reconSummary)
+      return BankReconciliationReportDTO(entity)
    }
 
    private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): BankReconciliationEntity {
@@ -358,6 +367,24 @@ class BankReconciliationRepository @Inject constructor(
          amount = rs.getBigDecimal("${columnPrefix}amount"),
          description = rs.getString("${columnPrefix}description"),
          document = rs.getString("${columnPrefix}document")
+      )
+   }
+
+   private fun mapReportRow(
+      rs: ResultSet,
+      company: CompanyEntity,
+      columnPrefix: String = EMPTY
+   ): BankReconciliationReportDetailEntity {
+      return BankReconciliationReportDetailEntity(
+         id = rs.getUuid("${columnPrefix}id"),
+         bank = bankRepository.mapRow(rs, company, "bank_"),
+         type = bankReconciliationTypeRepository.mapRow(rs, "bankReconType_"),
+         date = rs.getLocalDate("${columnPrefix}transaction_date"),
+         clearedDate = rs.getLocalDateOrNull("${columnPrefix}cleared_date"),
+         amount = rs.getBigDecimal("${columnPrefix}amount"),
+         description = rs.getString("${columnPrefix}description"),
+         document = rs.getString("${columnPrefix}document"),
+         vendorName = rs.getString("${columnPrefix}vendor_name")
       )
    }
 
