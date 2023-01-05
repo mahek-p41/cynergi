@@ -36,8 +36,8 @@ class BankReconFilterRequest(
    @field:Schema(name = "endDocument", description = "End Document Number")
    var endDocument: Long? = null,
 
-   @field:Schema(name = "type", description = "Bank Reconciliation Type")
-   var bankType: BankReconciliationType? = null,
+   @field:Schema(name = "bankType", description = "Bank Reconciliation Type Value")
+   var bankType: String? = null,
 
    @field:Schema(name = "description", description = "Filter full or partial description for bank reconciliation")
    var description: String? = null,
