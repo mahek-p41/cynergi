@@ -58,7 +58,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
          WITH account AS (
             ${accountRepository.selectBaseQuery()}
          )
-         SELECT
+         SELECT DISTINCT
             glDetail.id                                               AS glDetail_id,
             glDetail.company_id                                       AS glDetail_company_id,
             glDetail.profit_center_id_sfk                             AS glDetail_profit_center_id_sfk,
@@ -336,37 +336,48 @@ class GeneralLedgerDetailRepository @Inject constructor(
    @ReadOnly
    fun findNetChangeProfitCenterTrialBalanceReport(
       company: CompanyEntity,
-      startingDate: LocalDate? = null,
-      endingDate: LocalDate? = null,
+      fromDate: LocalDate? = null,
+      thruDate: LocalDate? = null,
       profitCenterNumber: Int? = null,
       accountNumber: Long? = null,
       overallPeriodId: Int? = null
    ): GeneralLedgerNetChangeDTO? {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val innerWhere = StringBuilder(" WHERE glDetail.company_id = :comp_id ")
+      val innerWhere = StringBuilder(" WHERE glSummary.company_id = :comp_id ")
+      val subQueryWhere = StringBuilder(" WHERE glDetail.company_id = :comp_id ")
       val outerWhere = StringBuilder()
-      if (startingDate != null || endingDate != null) {
-         params["startingDate"] = startingDate
-         params["endingDate"] = endingDate
-         innerWhere.append(" AND glDetail.date ")
-            .append(buildFilterString(startingDate != null, endingDate != null, "startingDate", "endingDate"))
+      if (fromDate != null || thruDate != null) {
+         params["from"] = fromDate
+         params["thru"] = thruDate
+         params["overallPeriodId"] = overallPeriodId
+         subQueryWhere.append(""" AND glDetail.date BETWEEN
+               (SELECT DISTINCT period_from
+                  FROM financial_calendar
+                  WHERE overall_period_id = :overallPeriodId AND company_id = :comp_id AND period = 1)
+               AND :thru """)
       }
       if (profitCenterNumber != null) {
          params["profitCenter"] = profitCenterNumber
+         subQueryWhere.append(" AND glDetail.profit_center_id_sfk = :profitCenter ")
          outerWhere.append(" WHERE profit_center_number = :profitCenter ")
       }
       if (accountNumber != null) {
          params["account"] = accountNumber
-         innerWhere.append(" AND acct.account_number = :account ")
+         innerWhere.append(" AND acct.number = :account ")
+         subQueryWhere.append("""
+               AND glDetail.account_id = (
+                  SELECT DISTINCT id
+                  FROM account
+                  WHERE company_id = :comp_id AND number = :account AND deleted = false) """.trimMargin())
       }
       if (overallPeriodId != null) {
          params["overallPeriodId"] = overallPeriodId
-         innerWhere.append(" AND glSummary.overall_period_id = :overallPeriodId ")
+         innerWhere.append(""" AND glSummary.overall_period_id = :overallPeriodId """.trimIndent())
       }
       val innerQuery = """
-         ${selectNetChangeQuery()}
+         ${selectNetChangeQuery(subQueryWhere.toString())}
          $innerWhere
-         GROUP BY glSummary.company_id, glSummary.account_id, acct.account_number, glSummary.id, profitCenter.number
+         GROUP BY glSummary.company_id, glSummary.account_id, acct.number, glSummary.id, glSummary.profit_center_id_sfk
       """.trimIndent()
       val mainQuery = """
          SELECT
@@ -396,16 +407,11 @@ class GeneralLedgerDetailRepository @Inject constructor(
 
       logger.info("Querying for General Ledger Profit Center Trial Balance Report Net Change using {} {}", mainQuery, params)
 
-      val found = jdbc.findFirstOrNull(mainQuery, params) { rs, _  -> mapNetChange(rs) }
+      val netChangeDTO = jdbc.findFirstOrNull(mainQuery, params) { rs, _  -> mapNetChange(rs) }
 
-      // recalculate the beginning balance
-      val financialCalendar = financialCalendarRepository.fetchByDate(company, startingDate!!)
-      found?.beginBalance?.add(found.netActivityPeriod.subList(0, financialCalendar!!.period - 1).sumOf { it!! })
-         .also { found?.beginBalance = it!! }
+      logger.info("Querying for General Ledger Profit Center Trial Balance Report Net Change resulted in {}", netChangeDTO)
 
-      logger.info("Querying for General Ledger Profit Center Trial Balance Report Net Change resulted in {}", found)
-
-      return found
+      return netChangeDTO
    }
 
    @ReadOnly
@@ -778,27 +784,29 @@ class GeneralLedgerDetailRepository @Inject constructor(
          "WHERE glDetail.company_id = :company_id " +
             "AND glDetail.date BETWEEN :starting_date AND :ending_date " +
             "AND glDetail.account_id = :account_id " +
-            "AND glDetail.profit_center_id_sfk = :profit_center_id" +
-            "AND source_value NOT LIKE 'BAL' " +
-            "AND glDetail.deleted = FALSE "
+            "AND glDetail.profit_center_id_sfk = :profit_center_id " +
+            "AND source.value NOT LIKE 'BAL' "
       )
 
       jdbc.query(
          """
          ${selectBaseQuery()}
          $whereClause
-         ORDER BY glDetail.date, glDetail.message
+         ORDER BY glDetail.date
       """.trimIndent(),
          mapOf(
             "company_id" to company.id,
-            "starting_date" to filterRequest.startingDate,
-            "ending_date" to filterRequest.endingDate,
+            "starting_date" to filterRequest.fromDate,
+            "ending_date" to filterRequest.thruDate,
             "account_id" to glSummary.account.id,
-            "profit_center_id" to glSummary.profitCenter.myId()
+            "profit_center_id" to glSummary.profitCenter.myNumber()
          )
       ) { rs, _ ->
          do {
-            glDetails.add(mapRow(rs, company, "glDetail_"))
+            val account = accountRepository.mapRow(rs, company, "glDetail_account_")
+            val profitCenter = storeRepository.mapRow(rs, company, "glDetail_profitCenter_")
+            val sourceCode = sourceCodeRepository.mapRow(rs, "glDetail_source_")
+            glDetails.add(mapRow(rs, account, profitCenter, sourceCode, "glDetail_"))
          } while (rs.next())
       }
 
@@ -810,7 +818,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun fetchTrialBalanceEndOfReportTotals(company: CompanyEntity, startingDate: LocalDate? = null, endingDate: LocalDate? = null, startingAccount: Int? = null, endingAccount: Int? = null, overallPeriodId: Int): TrialBalanceEndOfReportDTO {
+   fun fetchTrialBalanceEndOfReportTotals(company: CompanyEntity, fromDate: LocalDate? = null, thruDate: LocalDate? = null, startingAccount: Int? = null, endingAccount: Int? = null, overallPeriodId: Int): TrialBalanceEndOfReportDTO {
       var endOfReportDTO = TrialBalanceEndOfReportDTO()
 
       // find YTD begin date (first date of fiscal year)
@@ -823,20 +831,20 @@ class GeneralLedgerDetailRepository @Inject constructor(
                SUM(CASE WHEN (acct.type_id = 3 OR acct.type_id = 5) AND glDetail.amount < 0 AND (glDetail.date BETWEEN :mtdBegin AND :mtdEnd) THEN glDetail.amount ELSE 0 END) mtdCreditIE,
                SUM(CASE WHEN (acct.type_id = 1 OR acct.type_id = 2 OR acct.type_id = 4) AND glDetail.amount >= 0 AND (glDetail.date BETWEEN :mtdBegin AND :mtdEnd) THEN glDetail.amount ELSE 0 END) mtdDebitAL,
                SUM(CASE WHEN (acct.type_id = 1 OR acct.type_id = 2 OR acct.type_id = 4) AND glDetail.amount < 0 AND (glDetail.date BETWEEN :mtdBegin AND :mtdEnd) THEN glDetail.amount ELSE 0 END) mtdCreditAL,
-               SUM(CASE WHEN (acct.type_id = 3 OR acct.type_id = 5) AND glDetail.amount >= 0 AND (glDetail.date BETWEEN :ytdBegin AND :ytdEnd) THEN glDetail.amount ELSE 0 END) ytdDebitIE,
-               SUM(CASE WHEN (acct.type_id = 3 OR acct.type_id = 5) AND glDetail.amount < 0 AND (glDetail.date BETWEEN :ytdBegin AND :ytdEnd) THEN glDetail.amount ELSE 0 END) ytdCreditIE,
-               SUM(CASE WHEN (acct.type_id = 1 OR acct.type_id = 2 OR acct.type_id = 4) AND glDetail.amount >= 0 AND (glDetail.date BETWEEN :ytdBegin AND :ytdEnd) THEN glDetail.amount ELSE 0 END) ytdDebitAL,
-               SUM(CASE WHEN (acct.type_id = 1 OR acct.type_id = 2 OR acct.type_id = 4) AND glDetail.amount < 0 AND (glDetail.date BETWEEN :ytdBegin AND :ytdEnd) THEN glDetail.amount ELSE 0 END) ytdCreditAL
+               SUM(CASE WHEN (acct.type_id = 3 OR acct.type_id = 5) AND glDetail.amount >= 0 THEN glDetail.amount ELSE 0 END) ytdDebitIE,
+               SUM(CASE WHEN (acct.type_id = 3 OR acct.type_id = 5) AND glDetail.amount < 0 THEN glDetail.amount ELSE 0 END) ytdCreditIE,
+               SUM(CASE WHEN (acct.type_id = 1 OR acct.type_id = 2 OR acct.type_id = 4) AND glDetail.amount >= 0 THEN glDetail.amount ELSE 0 END) ytdDebitAL,
+               SUM(CASE WHEN (acct.type_id = 1 OR acct.type_id = 2 OR acct.type_id = 4) AND glDetail.amount < 0 THEN glDetail.amount ELSE 0 END) ytdCreditAL
             FROM general_ledger_detail glDetail
                JOIN account acct ON acct.id = glDetail.account_id
-            WHERE glDetail.company_id = :company_id
+            WHERE glDetail.company_id = :company_id AND glDetail.date BETWEEN :ytdBegin AND :ytdEnd
          """.trimIndent(),
          mapOf(
             "company_id" to company.id,
-            "mtdBegin" to startingDate,
-            "mtdEnd" to endingDate,
+            "mtdBegin" to fromDate,
+            "mtdEnd" to thruDate,
             "ytdBegin" to ytdBegin,
-            "ytdEnd" to endingDate
+            "ytdEnd" to thruDate
          )
       ) { rs, _ ->
          do {
@@ -844,10 +852,10 @@ class GeneralLedgerDetailRepository @Inject constructor(
          } while (rs.next())
       }
 
-      endOfReportDTO.mtdDifferenceIE = endOfReportDTO.mtdDebitIE!! - endOfReportDTO.mtdCreditIE!!
-      endOfReportDTO.mtdDifferenceAL = endOfReportDTO.mtdDebitAL!! - endOfReportDTO.mtdCreditAL!!
-      endOfReportDTO.ytdDifferenceIE = endOfReportDTO.ytdDebitIE!! - endOfReportDTO.ytdCreditIE!!
-      endOfReportDTO.ytdDifferenceAL = endOfReportDTO.ytdDebitAL!! - endOfReportDTO.ytdCreditAL!!
+      endOfReportDTO.mtdDifferenceIE = endOfReportDTO.mtdDebitIE!! + endOfReportDTO.mtdCreditIE!!
+      endOfReportDTO.mtdDifferenceAL = endOfReportDTO.mtdDebitAL!! + endOfReportDTO.mtdCreditAL!!
+      endOfReportDTO.ytdDifferenceIE = endOfReportDTO.ytdDebitIE!! + endOfReportDTO.ytdCreditIE!!
+      endOfReportDTO.ytdDifferenceAL = endOfReportDTO.ytdDebitAL!! + endOfReportDTO.ytdCreditAL!!
 
       return endOfReportDTO
    }

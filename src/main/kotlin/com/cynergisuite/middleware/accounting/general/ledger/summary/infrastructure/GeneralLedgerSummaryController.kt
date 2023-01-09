@@ -155,7 +155,7 @@ class GeneralLedgerSummaryController @Inject constructor(
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerProfitCenterTrialBalanceReportFilterRequest::class))]),
-         ApiResponse(responseCode = "204", description = "The requested General Ledger Source Report was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "204", description = "The requested General Ledger Profit Center Trial Balance Report was unable to be found, or the result is empty"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]

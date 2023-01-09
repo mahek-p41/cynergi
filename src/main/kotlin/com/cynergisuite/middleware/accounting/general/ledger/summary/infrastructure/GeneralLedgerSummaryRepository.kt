@@ -322,34 +322,47 @@ class GeneralLedgerSummaryRepository @Inject constructor(
 
    @ReadOnly
    fun fetchProfitCenterTrialBalanceReportRecords(company: CompanyEntity, filterRequest: GeneralLedgerProfitCenterTrialBalanceReportFilterRequest): List<GeneralLedgerSummaryEntity> {
-      val pair = financialCalendarRepository.findOverallPeriodIdAndPeriod(company, filterRequest.startingDate!!)
+      val pair = financialCalendarRepository.findOverallPeriodIdAndPeriod(company, filterRequest.fromDate!!)
       val overallPeriodId = pair.first
       val period = pair.second
       val glSummaries = mutableListOf<GeneralLedgerSummaryEntity>()
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "overall_period_id" to overallPeriodId)
       val whereClause = StringBuilder(
-         "WHERE glSummary.company_id = :company_id " +
-         "AND glSummary.overall_period_id = :overall_period_id " +
-         "AND (glSummary.account_id BETWEEN :starting_account AND :ending_account) " +
-         "AND (" +
-            "glSummary_acct_status_id = 1 OR " +
-            "glSummary.beginning_balance <> 0.00 OR " +
-            "glSummary.net_activity_period_$period <> 0.00" +
-         ") " +
-         "AND glSummary.deleted = FALSE"
+         "WHERE glSummary.company_id = :comp_id " +
+               "AND glSummary.overall_period_id = :overall_period_id " +
+               "AND (" +
+                  "acct.account_status_id = 1 OR " +
+                  "glSummary.beginning_balance <> 0.00 OR " +
+                  "glSummary.net_activity_period_$period <> 0.00" +
+               ") "
       )
+
+      if (filterRequest.startingAccount != null || filterRequest.endingAccount != null) {
+         params["startingAccount"] = filterRequest.startingAccount
+         params["endingAccount"] = filterRequest.endingAccount
+         whereClause.append(" AND acct.account_number ")
+            .append(buildFilterString( filterRequest.startingAccount != null, filterRequest.endingAccount != null, "startingAccount", "endingAccount"))
+      }
 
       // select locations based on criteria (1 selects all locations)
       when (filterRequest.selectLocsBy) {
          2 ->
-            whereClause.append(" AND glSummary.profit_center_id_sfk IN :any_10_locs_or_groups")
+         {
+            params["any10LocsOrGroups"] = filterRequest.any10LocsOrGroups
+            whereClause.append(" AND glSummary.profit_center_id_sfk IN :any10LocsOrGroups")
+         }
          3 ->
-            whereClause.append(" AND glSummary.profit_center_id_sfk BETWEEN :starting_loc_or_group AND :ending_loc_or_group")
+         {
+            params["startingLocOrGroup"] = filterRequest.startingLocOrGroup
+            params["endingLocOrGroup"] = filterRequest.endingLocOrGroup
+            whereClause.append(" AND glSummary.profit_center_id_sfk BETWEEN :startingLocOrGroup AND :endingLocOrGroup")
+         }
          // todo: 4 & 5 use location groups
       }
 
       // assign sort by
       val sortBy = StringBuilder("ORDER BY ")
-      when (filterRequest.sortBy) {
+      when (filterRequest.sortOrder) {
          "location" ->
             sortBy.append("glSummary.profit_center_id_sfk ASC, glSummary.account_id ASC")
          "account" ->
@@ -362,15 +375,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
             $whereClause
             $sortBy
          """.trimIndent(),
-         mapOf(
-            "company_id" to company.id,
-            "overall_period_id" to overallPeriodId,
-            "starting_account" to filterRequest.startingAccount,
-            "ending_account" to filterRequest.endingAccount,
-            "any_10_locs_or_groups" to filterRequest.any10LocsOrGroups,
-            "starting_loc_or_group" to filterRequest.startingLocOrGroup,
-            "ending_loc_or_group" to filterRequest.endingLocOrGroup
-         )
+         params
       ) { rs, _ ->
          do {
             glSummaries.add(mapRow(rs, company, "glSummary_"))
@@ -424,5 +429,11 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          beginningBalance = rs.getBigDecimal("${columnPrefix}beginning_balance"),
          closingBalance = rs.getBigDecimal("${columnPrefix}closing_balance")
       )
+   }
+
+   private fun buildFilterString(begin: Boolean, end: Boolean, beginningParam: String, endingParam: String): String {
+      return if (begin && end) " BETWEEN :$beginningParam AND :$endingParam "
+      else if (begin) " >= :$beginningParam "
+      else " <= :$endingParam "
    }
 }

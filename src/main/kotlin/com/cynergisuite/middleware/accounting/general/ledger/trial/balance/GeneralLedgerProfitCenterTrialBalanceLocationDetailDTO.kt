@@ -18,8 +18,7 @@ data class GeneralLedgerProfitCenterTrialBalanceLocationDetailDTO(
    @field:Schema(description = "List of account detail DTOs")
    var accountDetailList: List<GeneralLedgerProfitCenterTrialBalanceAccountDetailDTO>? = null,
 
-   @field:NotNull
-   @field:Schema(description = "Location totals")
+   @field:Schema(description = "Location totals", required = false)
    var locationTotals: GeneralLedgerNetChangeDTO? = null
 
 )

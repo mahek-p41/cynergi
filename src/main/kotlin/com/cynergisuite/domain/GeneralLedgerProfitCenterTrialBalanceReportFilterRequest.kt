@@ -1,7 +1,9 @@
 package com.cynergisuite.domain
 
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
+import javax.validation.constraints.NotNull
 
 @Schema(
    name = "GeneralLedgerProfitCenterTrialBalanceReportFilterRequest",
@@ -9,6 +11,7 @@ import java.time.LocalDate
    description = "Defines the parameters available for a sortable request.",
    allOf = [SortableRequestBase::class]
 )
+@Introspected
 class GeneralLedgerProfitCenterTrialBalanceReportFilterRequest(
 
    @field:Schema(name = "startingAccount", description = "Starting number of account range")
@@ -29,11 +32,16 @@ class GeneralLedgerProfitCenterTrialBalanceReportFilterRequest(
    @field:Schema(name = "endingLocOrGroup", description = "Ending loc or group when selecting by range")
    var endingLocOrGroup: Int? = null,
 
-   @field:Schema(name = "startingDate", description = "Starting date")
-   var startingDate: LocalDate? = null,
+   @field:NotNull
+   @field:Schema(name = "fromDate", description = "From date")
+   var fromDate: LocalDate? = null,
 
-   @field:Schema(name = "endingDate", description = "Ending date")
-   var endingDate: LocalDate? = null
+   @field:NotNull
+   @field:Schema(name = "thruDate", description = "Thru date")
+   var thruDate: LocalDate? = null,
+
+   @field:Schema(name = "sortOrder", description = "Sort by location or account")
+   var sortOrder: String? = null
 
 ) : SortableRequestBase<GeneralLedgerProfitCenterTrialBalanceReportFilterRequest>(null, null) {
 
@@ -47,7 +55,8 @@ class GeneralLedgerProfitCenterTrialBalanceReportFilterRequest(
          "any10LocsOrGroups" to any10LocsOrGroups,
          "startingLocOrGroup" to startingLocOrGroup,
          "endingLocOrGroup" to endingLocOrGroup,
-         "startingDate" to startingDate,
-         "endingDate" to endingDate
+         "fromDate" to fromDate,
+         "thruDate" to thruDate,
+         "sortOrder" to sortOrder
       )
 }
