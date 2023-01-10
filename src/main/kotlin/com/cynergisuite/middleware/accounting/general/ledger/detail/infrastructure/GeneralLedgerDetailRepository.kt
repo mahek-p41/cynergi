@@ -533,8 +533,9 @@ class GeneralLedgerDetailRepository @Inject constructor(
       }
 
       if (filterRequest.description != null ) {
-         params["description"] = filterRequest.description
-         whereClause.append(" AND glDetail.message = :description")
+         params["description"] = "%" + filterRequest.description + "%"
+         whereClause.append(" AND glDetail.message ILIKE :description")
+
       }
 
       if (filterRequest.jeNumber != null) {
@@ -553,6 +554,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
          """
             ${selectReportQuery()}
             $whereClause
+            ORDER BY acct.account_number, profitCenter.number, glDetail.date, glDetail.journal_entry_number
          """.trimIndent(),
          params
       ) { rs, _ ->
