@@ -18,22 +18,22 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
       def pageOne = new EmployeePageRequest([page: 1, size:  20, sortBy:  'id', sortDirection: 'ASC'])
       def pageTwo = new EmployeePageRequest([page: 2, size:  20, sortBy:  'id', sortDirection: 'ASC'])
       def pageLast = new EmployeePageRequest([page: 3, size:  20, sortBy:  'id', sortDirection: 'ASC'])
-      def pageFour = new EmployeePageRequest([page: 4, size:  20, sortBy:  'id', sortDirection: 'ASC'])
+      def pageNine = new EmployeePageRequest([page: 9, size:  20, sortBy:  'id', sortDirection: 'ASC'])
 
       when:
       def pageOneResult = get("$path${pageOne}")
 
       then:
       pageOneResult.requested.with { new EmployeePageRequest(it) } == pageOne
-      pageOneResult.totalElements == 48
-      pageOneResult.totalPages == 3
+      pageOneResult.totalElements == 144
+      pageOneResult.totalPages == 8
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements.size() == 20
       pageOneResult.elements.collect().equals(pageOneResult.elements.collect().sort { it.id })
 
       when:
-      get("$path/${pageFour}")
+      get("$path/${pageNine}")
 
       then:
       final notFoundException = thrown(HttpClientResponseException)
@@ -44,7 +44,7 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
       given:
       def filterOne = new EmployeePageRequest([page: 1, size:  10, sortBy:  'id', sortDirection: 'ASC', lastName: 'STORE%20MANAGER'])
       def filterTwo = new EmployeePageRequest([lastName: 'STORE%20MANAGER'])
-      def filterThree = new EmployeePageRequest([page: 1, size:  10, sortBy:  'id', sortDirection: 'ASC', firstNameMi: 'EMP'])
+      def filterThree = new EmployeePageRequest([page: 1, size:  10, sortBy:  'id', sortDirection: 'ASC', firstNameMi: 'JOHNATHON'])
 
       when:
       def filterOneResult = get("$path${filterOne}")
@@ -57,11 +57,13 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
       filterOneResult.last == true
       filterOneResult.elements.size() == 1
       with(filterOneResult.elements[0]) {
-         number == 90003
+         number == 90002
          lastName == 'STORE MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
          type == 'sysz'
+         alternativeStoreIndicator == 'N'
+         alternativeArea == 0
          passCode == null
          store == null
          active == null
@@ -78,7 +80,7 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
       filterTwoResult.last == true
       filterTwoResult.elements.size() == 1
       with(filterTwoResult.elements[0]) {
-         number == 90003
+         number == 90002
          lastName == 'STORE MANAGER'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
@@ -93,15 +95,15 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
 
       then:
       filterThreeResult.requested.with { new EmployeePageRequest(it) } == filterThree
-      filterThreeResult.totalElements == 1
+      filterThreeResult.totalElements == 3
       filterThreeResult.totalPages == 1
       filterThreeResult.first == true
       filterThreeResult.last == true
-      filterThreeResult.elements.size() == 1
+      filterThreeResult.elements.size() == 3
       with(filterThreeResult.elements[0]) {
-         number == 90008
-         lastName == 'TERMINATED'
-         firstNameMi == 'EMP'
+         number == 1077
+         lastName == 'SMITH'
+         firstNameMi == 'JOHNATHON'
          alternativeStoreIndicator == 'N'
          alternativeArea == 0
          type == 'sysz'
@@ -130,9 +132,9 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
 
       where:
       searchQuery                                                                                                       | searchKey       || firstElementUserNumber | firstElementUserName
-      new EmployeePageRequest([page: 1, size:  10, search: UrlEscapers.urlFragmentEscaper().escape('Store Manager')])   | 'Store Manager' || 90003                      | 'STORE MANAGER'
-      new EmployeePageRequest([search: UrlEscapers.urlFragmentEscaper().escape('stor manager')])                        | 'stor manager'  || 90003                      | 'STORE MANAGER'
-      new EmployeePageRequest([search: UrlEscapers.urlFragmentEscaper().escape('as manager')])                          | 'as manager'   || 90004                      | 'ASST MANAGER'
-      new EmployeePageRequest([search: UrlEscapers.urlFragmentEscaper().escape('St Manag')])                            | 'St Manag'      || 90003                      | 'STORE MANAGER'
+      new EmployeePageRequest([page: 1, size:  10, search: UrlEscapers.urlFragmentEscaper().escape('Store Manager')])   | 'Store Manager' || 90002                      | 'STORE MANAGER'
+      new EmployeePageRequest([search: UrlEscapers.urlFragmentEscaper().escape('stor manager')])                        | 'stor manager'  || 90002                      | 'STORE MANAGER'
+      new EmployeePageRequest([search: UrlEscapers.urlFragmentEscaper().escape('as manager')])                          | 'as manager'    || 90003                      | 'ASSIST MANAGER'
+      new EmployeePageRequest([search: UrlEscapers.urlFragmentEscaper().escape('St Manag')])                            | 'St Manag'      || 90002                      | 'STORE MANAGER'
    }
 }

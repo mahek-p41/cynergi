@@ -26,7 +26,7 @@ class AccountPayableDistributionTemplateControllerSpecification extends Controll
 
    void "fetch one account payable distribution template by id" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final apDistribution = dataLoaderService.single(company)
 
       when:
@@ -58,7 +58,7 @@ class AccountPayableDistributionTemplateControllerSpecification extends Controll
 
    void "fetch all" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final apDistributions = dataLoaderService.stream(12,company).toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       def pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
@@ -129,7 +129,7 @@ class AccountPayableDistributionTemplateControllerSpecification extends Controll
 
    void "create valid account payable distribution"() {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final apDistribution = dataLoaderService.singleDTO()
       final apDistributionDetail = apDistribution.name = "test"
 
@@ -178,7 +178,7 @@ class AccountPayableDistributionTemplateControllerSpecification extends Controll
 
    void "update valid account payable distribution template" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final existingAPDistribution = dataLoaderService.single(company)
@@ -200,7 +200,7 @@ class AccountPayableDistributionTemplateControllerSpecification extends Controll
 
    void "delete one account payable distribution" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final apDistribution = dataLoaderService.single(company)
@@ -225,8 +225,8 @@ class AccountPayableDistributionTemplateControllerSpecification extends Controll
 
    void "delete account payable distribution from other company is not allowed" () {
       given:
-      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
-      final store = storeFactoryService.store(3, tstds2)
+      final tstds2 = companyFactoryService.forDatasetCode('corrto')
+      final store = storeFactoryService.store(6, tstds2)
       final acct = accountDataLoaderService.single(tstds2)
       final apDistribution = dataLoaderService.single(tstds2)
       final detail = detailDataLoaderService.single(store, acct, tstds2, apDistribution)
@@ -244,7 +244,7 @@ class AccountPayableDistributionTemplateControllerSpecification extends Controll
 
    void "recreate deleted account payable distribution" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final apDistribution = dataLoaderService.singleDTO()

@@ -400,7 +400,7 @@ class GeneralLedgerReversalControllerSpecification extends ControllerSpecificati
 
    void "delete GL reversal from other company is not allowed" () {
       given:
-      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final tstds2 = companyFactoryService.forDatasetCode('corrto')
       final sourceCode = sourceCodeDataLoaderService.single(tstds2)
       final generalLedgerReversal = generalLedgerReversalDataLoaderService.single(tstds2, sourceCode)
 

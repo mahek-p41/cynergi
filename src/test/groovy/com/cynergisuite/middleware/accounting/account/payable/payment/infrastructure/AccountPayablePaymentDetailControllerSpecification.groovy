@@ -37,7 +37,7 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
 
    void "fetch one"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def store = storeFactoryService.store(3, company)
       def shipViaList = shipViaFactoryService.stream(4, company).toList()
@@ -102,7 +102,7 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
 
    void "create one"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def store = storeFactoryService.store(3, company)
       def shipViaList = shipViaFactoryService.stream(4, company).toList()
@@ -153,7 +153,7 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
 
    void "create valid account payable payment detail without nullable properties"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def store = storeFactoryService.store(3, company)
       def shipViaList = shipViaFactoryService.stream(4, company).toList()
@@ -206,7 +206,7 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
    @Unroll
    void "create invalid account payable payment detail without #nonNullableProp"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def store = storeFactoryService.store(3, company)
       def shipViaList = shipViaFactoryService.stream(4, company).toList()
@@ -259,7 +259,7 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
    @Unroll
    void "create invalid account payable payment detail with non-existent #testProp"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def store = storeFactoryService.store(3, company)
       def shipViaList = shipViaFactoryService.stream(4, company).toList()
@@ -309,7 +309,7 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
 
    void "update one"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def store = storeFactoryService.store(3, company)
       def shipViaList = shipViaFactoryService.stream(4, company).toList()
@@ -358,7 +358,7 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
 
    void "update valid account payable payment detail without nullable properties"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def store = storeFactoryService.store(3, company)
       def shipViaList = shipViaFactoryService.stream(4, company).toList()
@@ -413,7 +413,7 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
    @Unroll
    void "update invalid account payable payment detail without #nonNullableProp"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def store = storeFactoryService.store(3, company)
       def shipViaList = shipViaFactoryService.stream(4, company).toList()
@@ -468,7 +468,7 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
    @Unroll
    void "update invalid account payable payment detail with non-existing #testProp"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def store = storeFactoryService.store(3, company)
       def shipViaList = shipViaFactoryService.stream(4, company).toList()
@@ -518,7 +518,7 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
 
    void "delete one account payable payment detail"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def store = storeFactoryService.store(3, company)
       def shipViaList = shipViaFactoryService.stream(4, company).toList()
@@ -567,9 +567,9 @@ class AccountPayablePaymentDetailControllerSpecification extends ControllerSpeci
 
    void "delete account payable payment detail from other company is not allowed"() {
       given:
-      def tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      def tstds2 = companyFactoryService.forDatasetCode('corrto')
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, tstds2).toList()
-      def store = storeFactoryService.store(3, tstds2)
+      def store = storeFactoryService.store(6, tstds2)
       def shipViaList = shipViaFactoryService.stream(4, tstds2).toList()
 
       def account = accountFactoryService.single(tstds2)

@@ -272,7 +272,6 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_inactive_customer_vw (
    dataset VARCHAR,
    store_id INTEGER,
    people_id VARCHAR,
-   customer_id INTEGER,
    unique_id VARCHAR,
    first_name VARCHAR,
    last_name VARCHAR,
@@ -355,8 +354,8 @@ CREATE TABLE fastinfo_prod_import.operator_vw(
 /*
  select
    CASE
-      WHEN dataset = 'corrto' THEN 'tstds1'
-      WHEN dataset = 'corptp' THEN 'tstds2'
+      WHEN dataset = 'corrto' THEN 'coravt'
+      WHEN dataset = 'corptp' THEN 'corrto'
    END AS dataset,
    time_created,
    time_updated,

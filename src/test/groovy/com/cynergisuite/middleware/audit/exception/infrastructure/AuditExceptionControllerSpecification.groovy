@@ -47,7 +47,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "fetch one audit exception by id with no attached notes" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final audit = auditFactoryService.single(store)
       final department = departmentFactoryService.random(company)
@@ -81,7 +81,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "fetch one audit exception with a single attached note" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final audit = auditFactoryService.single(store)
       final department = departmentFactoryService.random(company)
@@ -106,7 +106,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "fetch one audit exception with a two attached notes" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final audit = auditFactoryService.single(store)
       final department = departmentFactoryService.random(company)
@@ -129,7 +129,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "fetch all exceptions for a single audit with default paging" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final audit = auditFactoryService.single(store)
       final department = departmentFactoryService.random(company)
@@ -157,7 +157,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
    void "fetch all exceptions for a single audit" () {
       given:
       final nonExistentId = UUID.randomUUID()
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final audit = auditFactoryService.single(store)
       final department = departmentFactoryService.random(company)
@@ -220,7 +220,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
    void "fetch all audit exceptions for a single audit where each exception has 2 notes attached" () {
       given:
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final audit = auditFactoryService.single(store)
       final department = departmentFactoryService.random(company)
@@ -305,7 +305,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "fetch all audit exceptions when more than one audit exists" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -346,7 +346,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
    void "create audit exception" () {
       given:
       final locale = Locale.US
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -382,7 +382,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "create audit exception using employee that doesn't have a first name" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -422,7 +422,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
    void "create valid audit exception without scan area" () {
       given:
       final locale = Locale.US
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -457,7 +457,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       given:
       final nonExistentAreaId = UUID.randomUUID()
       final locale = Locale.US
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -480,7 +480,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "create invalid audit exception" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -505,7 +505,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       given:
       final nonExistentAuditId = UUID.randomUUID()
       final locale = Locale.US
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
@@ -524,7 +524,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "create audit exception where inventory id is null" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -546,7 +546,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "create audit exception when audit is in state OPENED" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final audit = auditFactoryService.single(store)
       final locale = Locale.US
@@ -570,7 +570,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "create audit exception where matching Inventory item wasn't found" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -602,7 +602,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "create audit exception where no inventory.id and no barcode is passed" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -625,7 +625,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
    void "create duplicate exception" () {
       given:
       final locale = Locale.US
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -647,7 +647,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "update audit exception with a new note" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -682,7 +682,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "update approved audit exception with a new note" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -704,7 +704,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "update audit exception to approved" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -723,7 +723,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "update audit without note or approved" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -744,7 +744,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
 
    void "update audit exception that has been approved" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)

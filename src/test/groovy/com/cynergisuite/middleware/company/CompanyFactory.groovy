@@ -15,22 +15,22 @@ class CompanyFactory {
    private static List<CompanyEntity> companies = [
       new CompanyEntity(
          null,
-         "RENTAL CITY",
+         "ADVANCED RTO, LLC",
+         "testDba Stuff",
+         "cst",
+         1812,
+         "coravt",
          null,
-         "RCT",
-         1234,
-         "tstds1",
-         "A1000B200",
          null
       ),
       new CompanyEntity(
          null,
-         "Pelham Trading Post, Inc.",
-         "RentACenter",
-         "PTP",
-         4321,
-         "tstds2",
-         "BX101010",
+         "AMAZING RTO",
+         null,
+         "cst",
+         5124,
+         "corrto",
+         "48-1256789",
          null
       )
    ]
@@ -38,8 +38,8 @@ class CompanyFactory {
    private static List<CompanyEntity> companiesDevData = companies
       .collect {company ->
          switch (company.datasetCode) {
-            case "tstds1": return company.copyMeWithNewDatasetCode("corrto")
-            case "tstds2": return company.copyMeWithNewDatasetCode("corptp")
+            case "coravt": return company.copyMeWithNewDatasetCode("coravt")
+            case "corrto": return company.copyMeWithNewDatasetCode("corrto")
             default: return company
          }
       }
@@ -69,17 +69,11 @@ class CompanyFactory {
 
    static List<CompanyEntity> predefined() { companies }
 
-   static List<CompanyEntity> predefinedDevData() { companiesDevData }
-
    static CompanyEntity random() { companies.random() }
 
-   static CompanyEntity tstds1() { companies.find { it.datasetCode == "tstds1" } }
+   static CompanyEntity tstds1() { companies.find { it.datasetCode == "coravt" } }
 
-   static CompanyEntity tstds2() { companies.find { it.datasetCode == "tstds2" } }
-
-   static CompanyEntity corrto() { companiesDevData.find { it.datasetCode == "corrto" } }
-
-   static CompanyEntity corptp() { companiesDevData.find { it.datasetCode == "corptp" } }
+   static CompanyEntity tstds2() { companies.find { it.datasetCode == "corrto" } }
 }
 
 @Singleton

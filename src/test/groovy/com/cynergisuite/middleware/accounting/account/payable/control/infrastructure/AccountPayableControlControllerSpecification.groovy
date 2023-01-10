@@ -342,7 +342,7 @@ class AccountPayableControlControllerSpecification extends ControllerSpecificati
 
    void "update invalid account payable control with non-existing id" () {
       given:
-      final company2 = companyFactoryService.forDatasetCode('tstds2') // load the company that isn't logged in to create the control record
+      final company2 = companyFactoryService.forDatasetCode('corrto') // load the company that isn't logged in to create the control record
       final glInvCleAcct = accountDataLoaderService.single(company2)
       final glInvAcct = accountDataLoaderService.single(company2)
       accountPayableControlDataLoaderService.single(company2, glInvCleAcct, glInvAcct)

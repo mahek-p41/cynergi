@@ -34,7 +34,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorList = vendorTestDataLoaderService.stream(4, company, vendorPaymentTerm, shipVia).toList()
@@ -96,7 +96,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorList = vendorTestDataLoaderService.stream(4, company, vendorPaymentTerm, shipVia).toList()
@@ -200,7 +200,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch by vendors" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorList = vendorTestDataLoaderService.stream(4, company, vendorPaymentTerm, shipVia).toList()
@@ -317,7 +317,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "create one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       final rebateDTO = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
@@ -358,7 +358,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "create valid rebate with null general ledger debit account" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       final rebateDTO = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
@@ -400,7 +400,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "create invalid rebate with null general ledger debit account" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       final rebateDTO = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
@@ -422,7 +422,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
    @Unroll
    void "create invalid rebate without #nonNullableProp" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       final rebate = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
@@ -451,7 +451,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
    void "create invalid rebate with non-existing vendor" () {
       given:
       final invalidVendorId = UUID.randomUUID()
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorList = vendorTestDataLoaderService.stream(1, company, vendorPaymentTerm, shipVia).toList()
@@ -479,7 +479,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "create invalid rebate with percent greater than one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       final rebate = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
@@ -501,7 +501,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "create invalid rebate with percent and amountPerUnit both null" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       final rebate = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
@@ -522,7 +522,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "create invalid rebate with percent and amountPerUnit both not null" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       final rebate = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
@@ -545,7 +545,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       given:
       final generalLedgerDebitAccountNonExistentId = UUID.fromString('72bab362-2399-4884-8614-de144273e16e')
       final generalLedgerCreditAccountNonExistentId = UUID.fromString('42686b2e-5379-4f13-9889-5871261f724c')
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       final rebate = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))
@@ -571,7 +571,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "update one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
@@ -612,7 +612,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "update valid rebate with null general ledger debit account" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
@@ -656,7 +656,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "update invalid rebate with null general ledger debit account" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
@@ -680,7 +680,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
    @Unroll
    void "update invalid rebate without #nonNullableProp" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
@@ -711,7 +711,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
    void "update invalid rebate with non-existing vendor" () {
       given:
       final nonExistentVendorId = UUID.randomUUID()
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorList = vendorTestDataLoaderService.stream(1, company, vendorPaymentTerm, shipVia).toList()
@@ -741,7 +741,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "update invalid rebate with percent greater than one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
@@ -765,7 +765,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "update invalid rebate with percent and amountPerUnit both null" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
@@ -788,7 +788,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "update invalid rebate with percent and amountPerUnit both not null" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
@@ -813,7 +813,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       given:
       final generalLedgerDebitAccountNonExistentId = UUID.fromString('72bab362-2399-4884-8614-de144273e16e')
       final generalLedgerCreditAccountNonExistentId = UUID.fromString('42686b2e-5379-4f13-9889-5871261f724c')
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def existingRebate = rebateTestDataLoaderService.single(company, null, glDebitAcct, glCreditAcct)
@@ -841,7 +841,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "assign vendors to rebate" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorList = vendorTestDataLoaderService.stream(4, company, vendorPaymentTerm, shipVia).toList()
@@ -911,7 +911,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "disassociate vendor from rebate" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorList = vendorTestDataLoaderService.stream(4, company, vendorPaymentTerm, shipVia).toList()
@@ -979,7 +979,7 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
 
    void "create one with duplicate description" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
       def updatedRebateDTO = rebateTestDataLoaderService.singleDTO(null, new AccountDTO(glDebitAcct), new AccountDTO(glCreditAcct))

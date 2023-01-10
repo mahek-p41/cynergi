@@ -23,7 +23,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
 
    void "fetch one" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final financialCalendarEntity = financialCalendarDataLoaderService.single(tstds1)
 
       when:
@@ -51,8 +51,8 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
 
    void "fetch all" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      final tstds2 = companyFactoryService.forDatasetCode('corrto')
       final financialCalendar = financialCalendarDataLoaderService.stream(3, tstds1).toList()
       financialCalendarDataLoaderService.stream(5, tstds2).toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
@@ -169,7 +169,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
 
    void "update one" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final financialCalendarEntity = financialCalendarDataLoaderService.single(tstds1)
       final financialCalendarDTO = financialCalendarDataLoaderService.singleDTO()
       financialCalendarDTO.id = financialCalendarEntity.id
@@ -200,7 +200,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
    @Unroll
    void "update invalid financial calendar with non-existing overallPeriod" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final financialCalendarEntity = financialCalendarDataLoaderService.single(tstds1)
       final financialCalendarDTO = financialCalendarDataLoaderService.singleDTO()
       financialCalendarDTO.overallPeriod = new OverallPeriodTypeDTO ('invalid', 'Z', 'Invalid DTO')
@@ -218,7 +218,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
 
    void "open gl account" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
       final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
 
@@ -233,7 +233,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
 
    void "open ap account" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
       final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
 
@@ -246,7 +246,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
 
    void "fetch gl open date range" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
       final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(3))
 

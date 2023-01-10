@@ -40,7 +40,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one audit detail by id" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final audit = auditFactoryService.single(store)
       final department = departmentFactoryService.random(company)
@@ -67,7 +67,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all audit details related to an audit" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final audit = auditFactoryService.single(store)
       final department = departmentFactoryService.random(company)
@@ -117,7 +117,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all audit details related to an audit where there are 2 audits both have details" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -145,7 +145,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
    void "fetch all audit details related to an audit where there are 2 different scan areas" () {
       given:
       final pageOne = new StandardPageRequest(1, 10, "ID", "ASC")
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(1, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -189,7 +189,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
    void "create audit detail" () {
       given:
       final locale = Locale.US
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -219,7 +219,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
    void "create duplicate audit detail" () {
       given:
       final locale = Locale.US
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -243,7 +243,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
    void "create invalid audit detail" () {
       given:
       final invalidId = UUID.randomUUID()
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -276,7 +276,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
 
    void "create audit detail when audit is in state OPENED (CREATED?)" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -302,7 +302,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
    void "update audit detail" () {
       given:
       final locale = US
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -334,7 +334,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
    void "update invalid audit detail" () {
       given:
       final locale = Locale.US
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)

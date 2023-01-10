@@ -25,7 +25,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
 
    void "fetch one bank reconciliation by id" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final account = accountDataLoaderService.single(nineNineEightEmployee.company)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
@@ -71,11 +71,11 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
 
    void "fetch all" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final account = accountDataLoaderService.single(nineNineEightEmployee.company)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      dataLoaderService.stream(5, companyFactoryService.forDatasetCode('tstds2'), bankIn, LocalDate.now(), null)
+      dataLoaderService.stream(5, companyFactoryService.forDatasetCode('corrto'), bankIn, LocalDate.now(), null)
       final bankRecons = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now(), null).toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
@@ -292,7 +292,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
 
    void "update valid bank reconciliation"() {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final account = accountDataLoaderService.single(nineNineEightEmployee.company)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
@@ -324,7 +324,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
 
    void "update valid bank reconciliation with null clearedDate and document"() {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final account = accountDataLoaderService.single(nineNineEightEmployee.company)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)

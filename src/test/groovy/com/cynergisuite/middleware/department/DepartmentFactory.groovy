@@ -13,28 +13,30 @@ import jakarta.inject.Singleton
 class DepartmentFactory {
 
    private static final List<DepartmentEntity> departments = [
-      new DepartmentEntity(1, "AM", "ASST MGR", CompanyFactory.tstds1()),
-      new DepartmentEntity(2, "AR", "ACCOUNT REP", CompanyFactory.tstds1()),
-      new DepartmentEntity(3, "DE", "DELIVERY DVR", CompanyFactory.tstds1()),
-      new DepartmentEntity(4, "EX", "EXECUTIVE", CompanyFactory.tstds1()),
-      new DepartmentEntity(5, "MM", "MARKET MGR", CompanyFactory.tstds1()),
-      new DepartmentEntity(6, "RM", "REGIONAL MGR", CompanyFactory.tstds1()),
-      new DepartmentEntity(7, "SA", "SALES ASSOC", CompanyFactory.tstds1()),
-      new DepartmentEntity(8, "SM", "STORE MGR", CompanyFactory.tstds1()),
-      new DepartmentEntity(9, "TE", "TERMINATED", CompanyFactory.tstds1()),
-      new DepartmentEntity(10, "NO", null, CompanyFactory.tstds1()),
-      new DepartmentEntity(11, "CY", null, CompanyFactory.tstds1()),
+      new DepartmentEntity(1, "OP", "OPERATION MG", CompanyFactory.tstds1()),
+      new DepartmentEntity(2, "SM", "STORE MGR", CompanyFactory.tstds1()),
+      new DepartmentEntity(3, "AM", "ASSIST MGR", CompanyFactory.tstds1()),
+      new DepartmentEntity(4, "SL", "SALES MGR", CompanyFactory.tstds1()),
+      new DepartmentEntity(5, "AC", "ACCOUNT MGR", CompanyFactory.tstds1()),
+      new DepartmentEntity(6, "DE", "DELIVERY DRV", CompanyFactory.tstds1()),
+      new DepartmentEntity(7, "TT", "TIRE TECH", CompanyFactory.tstds1()),
+      new DepartmentEntity(8, "HO", "HOME OFFICE", CompanyFactory.tstds1()),
+      new DepartmentEntity(9, "NO", "NONE", CompanyFactory.tstds1()),
+      new DepartmentEntity(10, "CY", "CYNERGI EMP", CompanyFactory.tstds1()),
+      new DepartmentEntity(11, "TE", "TERMIN EMPL", CompanyFactory.tstds1()),
 
-      new DepartmentEntity(12, "AM", "ACCOUNT MGR", CompanyFactory.tstds2()),
-      new DepartmentEntity(13, "CO", "COLLECTIONS", CompanyFactory.tstds2()),
-      new DepartmentEntity(14, "DE", "DELIVERY", CompanyFactory.tstds2()),
-      new DepartmentEntity(15, "DM", "DISTRICT MGR", CompanyFactory.tstds2()),
-      new DepartmentEntity(16, "MG", "MANAGEMENT", CompanyFactory.tstds2()),
-      new DepartmentEntity(17, "OF", "OFFICE", CompanyFactory.tstds2()),
-      new DepartmentEntity(18, "SA", "SALES ASSOCI", CompanyFactory.tstds2()),
-      new DepartmentEntity(19, "SM", "STORE MANAGE", CompanyFactory.tstds2()),
-      new DepartmentEntity(20, "WH", "WAREHOUSE", CompanyFactory.tstds2()),
-      new DepartmentEntity(21, "HO", null, CompanyFactory.tstds2())
+      new DepartmentEntity(1, "RF", "RACFI Ops", CompanyFactory.tstds2()),
+      new DepartmentEntity(2, "MM", "MARKET MGR", CompanyFactory.tstds2()),
+      new DepartmentEntity(3, "SM", "STORE MGR", CompanyFactory.tstds2()),
+      new DepartmentEntity(4, "AM", "ASST MGR", CompanyFactory.tstds2()),
+      new DepartmentEntity(5, "AR", "ACCOUNT REP", CompanyFactory.tstds2()),
+      new DepartmentEntity(6, "SA", "SALES ASSOC", CompanyFactory.tstds2()),
+      new DepartmentEntity(7, "DE", "DELIVERY DVR", CompanyFactory.tstds2()),
+      new DepartmentEntity(8, "EX", "EXECUTIVE", CompanyFactory.tstds2()),
+      new DepartmentEntity(9, "TE", "TERMINATED E", CompanyFactory.tstds2()),
+      new DepartmentEntity(10, "RM", "REGIONAL MGR", CompanyFactory.tstds2()),
+      new DepartmentEntity(11, "AC", "ACOUNTING MW", CompanyFactory.tstds2()),
+      new DepartmentEntity(12, "NO", null, CompanyFactory.tstds2())
    ]
 
    static DepartmentEntity random() { departments.random() }

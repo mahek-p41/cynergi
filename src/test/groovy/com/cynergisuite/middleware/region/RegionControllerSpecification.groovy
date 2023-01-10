@@ -469,7 +469,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 //      final region = regionFactoryService.singleDTO(tstds1Division, nineNineEightEmployee)
 //      final jsonRegion = jsonOutput.toJson(region)
 //
-//      final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
+//      final companyTstds1 = companyFactoryService.forDatasetCode("coravt")
 //      final companyTstds1Store = storeFactoryService.random(companyTstds1)
 //      final companyTstds1Department = departmentFactoryService.random(companyTstds1)
 //      final authenticatedEmployee = employeeFactoryService.singleAuthenticated(companyTstds1, companyTstds1Store, companyTstds1Department)
@@ -488,7 +488,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       final region = this.regions[0]
       final jsonRegion = jsonOutput.toJson(region)
 
-      final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
+      final companyTstds1 = companyFactoryService.forDatasetCode("coravt")
       final companyTstds1Store = storeFactoryService.random(companyTstds1)
       final companyTstds1Department = departmentFactoryService.random(companyTstds1)
       final authenticatedEmployee = employeeFactoryService.singleAuthenticated(companyTstds1, companyTstds1Store, companyTstds1Department)
@@ -506,7 +506,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 //      given:
 //      final region = this.regions[0]
 //
-//      final companyTstds1 = companyFactoryService.forDatasetCode("tstds1")
+//      final companyTstds1 = companyFactoryService.forDatasetCode("coravt")
 //      final companyTstds1Store = storeFactoryService.random(companyTstds1)
 //      final companyTstds1Department = departmentFactoryService.random(companyTstds1)
 //      final authenticatedEmployee = employeeFactoryService.singleAuthenticated(companyTstds1, companyTstds1Store, companyTstds1Department)
@@ -579,8 +579,8 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "associate store with region for tstds2" () {
       given:
-      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
-      final store = storeFactoryService.store(2, tstds2)
+      final tstds2 = companyFactoryService.forDatasetCode('corrto')
+      final store = storeFactoryService.store(6, tstds2)
       final tstds2SuperUser = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
       final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).with { new AuthenticatedEmployee(it, 'pass') }
       final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
@@ -597,8 +597,8 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "associate store with region for tstds1 against tstds2" () {
       given: "division/region/store from tstds1"
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      final tstds2 = companyFactoryService.forDatasetCode('corrto')
       final tstds1Store3 = storeFactoryService.store(3, tstds1)
       final tstds2SuperUser = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
       final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).with { new AuthenticatedEmployee(it, 'pass') }
@@ -619,8 +619,8 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "disassociate store from region for tstds2" () {
       given:
-      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
-      final store = storeFactoryService.store(2, tstds2)
+      final tstds2 = companyFactoryService.forDatasetCode('corrto')
+      final store = storeFactoryService.store(6, tstds2)
       final tstds2SuperUser = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
       final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).with { new AuthenticatedEmployee(it, 'pass') }
       final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
@@ -638,8 +638,8 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "disassociate store from region for tstds1 using tstds2 user" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      final tstds2 = companyFactoryService.forDatasetCode('corrto')
       final store = storeFactoryService.store(3, tstds1)
       final tstds2SuperUser = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
       final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).with { new AuthenticatedEmployee(it, 'pass') }
@@ -661,7 +661,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "re-associate store with another region of the same company" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final division = divisionFactoryService.single(tstds1)
       final newRegion = regionFactoryService.single(division)
       final store1 = storeFactoryService.store(1, tstds1)
@@ -674,12 +674,12 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
       with(result) {
          elements != null
-         totalElements == 3
-         elements[0].id == 1
-         elements[0].storeNumber == store1.myNumber()
-         elements[0].name == store1.myName()
-         elements[0].region.id == this.regions[0].id
-         elements[0].region.name == this.regions[0].name
+         totalElements == 7
+         elements[1].id == 2
+         elements[1].storeNumber == store1.myNumber()
+         elements[1].name == store1.myName()
+         elements[1].region.id == this.regions[0].id
+         elements[1].region.name == this.regions[0].name
       }
 
       when: 're-associate store with a new region'
@@ -695,18 +695,18 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       with(result2) {
          elements != null
-         totalElements == 3
-         elements[0].id == 1
-         elements[0].storeNumber == store1.myNumber()
-         elements[0].name == store1.myName()
-         elements[0].region.id == newRegion.id
-         elements[0].region.name == newRegion.name
+         totalElements == 7
+         elements[1].id == 2
+         elements[1].storeNumber == store1.myNumber()
+         elements[1].name == store1.myName()
+         elements[1].region.id == newRegion.id
+         elements[1].region.name == newRegion.name
       }
    }
 
    void "re-associate store with another region of the other company" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final store1 = storeFactoryService.store(1, tstds1)
 
       when: 're-associate store with a region of other company'

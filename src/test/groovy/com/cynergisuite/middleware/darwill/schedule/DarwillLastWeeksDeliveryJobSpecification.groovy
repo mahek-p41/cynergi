@@ -18,7 +18,7 @@ class DarwillLastWeeksDeliveryJobSpecification extends ServiceSpecificationBase 
 
    void "upload last weeks deliveries" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final darwillSchedules = darwillTestDataLoaderService.enableDarwill(tstds1)
       final scheduleEntity = darwillSchedules.find { it.title == "Darwill Last Weeks Deliveries" }
       final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)
@@ -30,6 +30,6 @@ class DarwillLastWeeksDeliveryJobSpecification extends ServiceSpecificationBase 
       notThrown(Exception)
       result.failureReason() == null
       result.scheduleName() == "Darwill Last Weeks Deliveries"
-      result.rowCount() == 5
+      result.rowCount() == 1
    }
 }

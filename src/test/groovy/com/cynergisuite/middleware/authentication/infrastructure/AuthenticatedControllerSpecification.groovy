@@ -25,7 +25,7 @@ class AuthenticatedControllerSpecification extends ServiceSpecificationBase {
 
    void "Get user permissions with dataset 1" () {
       given: 'Setup employee with audit-permission-manager permission'
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def store = storeFactoryService.store(3, company)
       def department = departmentFactoryService.random(store.myCompany())
       def employee = employeeFactoryService.single(store, department)
@@ -84,8 +84,8 @@ class AuthenticatedControllerSpecification extends ServiceSpecificationBase {
 
    void "Get user permissions with dataset 2" () {
       given: 'Setup audit-permission-manager permission assigned to other department'
-      def tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      def tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      def tstds1 = companyFactoryService.forDatasetCode('coravt')
+      def tstds2 = companyFactoryService.forDatasetCode('corrto')
       def permissionType = AuditPermissionTypeTestDataLoader.findByValue("audit-permission-manager")
       def otherDepartment = departmentFactoryService.department("AM", tstds2)
       auditPermissionFactoryService.single(otherDepartment, permissionType, tstds2)
@@ -148,7 +148,7 @@ class AuthenticatedControllerSpecification extends ServiceSpecificationBase {
 
    void "Get user security levels with cynergi admin" () {
       given: 'Setup super user'
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def employee = userSetupEmployeeFactoryService.singleSuperUser(998, company, 'man', 'super', 'pass')
       def authResponse = httpClient.toBlocking()
          .exchange(
@@ -201,11 +201,11 @@ class AuthenticatedControllerSpecification extends ServiceSpecificationBase {
    }
 
    void "Get user security levels with user has config in operator_vw" () {
-      given: 'Login user number 100'
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      given: 'Login user number 200'
+      def company = companyFactoryService.forDatasetCode('coravt')
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials("100", "pass", 1, company.datasetCode)),
+            POST("/login", new LoginCredentials("200", "54321", 1, company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -231,7 +231,7 @@ class AuthenticatedControllerSpecification extends ServiceSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      response.employeeNumber == "100"
+      response.employeeNumber == "200"
       response.storeNumber == 1
       response.company.with {
          clientCode = company.clientCode
@@ -243,12 +243,12 @@ class AuthenticatedControllerSpecification extends ServiceSpecificationBase {
       }
       response.permissions as Set ==  ["audit-approver", "audit-permission-manager"].toSet()
       with(response.securityLevels) {
-         accountPayableLevel == 0
-         purchaseOrderLevel == 10
-         generalLedgerLevel == 0
+         accountPayableLevel == 99
+         purchaseOrderLevel == 99
+         generalLedgerLevel == 99
          systemAdministrationLevel == 99
          fileMaintenanceLevel == 99
-         bankReconciliationLevel == 0
+         bankReconciliationLevel == 99
       }
    }
 

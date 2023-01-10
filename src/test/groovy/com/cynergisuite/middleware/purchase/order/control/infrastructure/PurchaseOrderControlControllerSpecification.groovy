@@ -240,7 +240,7 @@ class PurchaseOrderControlControllerSpecification extends ControllerSpecificatio
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == 'company'
-      response[0].message == 'tstds1 already exists'
+      response[0].message == 'coravt already exists'
       response[0].code == 'cynergi.validation.config.exists'
 
    }

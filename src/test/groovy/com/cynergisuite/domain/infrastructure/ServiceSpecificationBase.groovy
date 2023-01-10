@@ -35,13 +35,13 @@ abstract class ServiceSpecificationBase extends Specification {
       this.companies = companyFactoryService.streamPredefined().toList() // create the default companies
 
       def tstds1 = companies.find {
-         it.datasetCode == "tstds1"
+         it.datasetCode == "coravt"
       }
-      def tstds1DivisionalManagerDepartment = departmentFactoryService.forThese(tstds1, "EX")
+      def tstds1DivisionalManagerDepartment = departmentFactoryService.forThese(tstds1, "SM")
       def tstds1Store1DivisionalManager = employeeFactoryService.single(tstds1DivisionalManagerDepartment)
       def division1 = divisionFactoryService.single(tstds1, tstds1Store1DivisionalManager)
 
-      def tstds2 = companies.find { it.datasetCode == "tstds2" }
+      def tstds2 = companies.find { it.datasetCode == "corrto" }
       def division2 = divisionFactoryService.single(tstds2)
 
       divisions = [division1, division2]

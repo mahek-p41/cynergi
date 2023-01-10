@@ -28,7 +28,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
 
    void "fetch one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
@@ -83,7 +83,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
 
    void "fetch all" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
@@ -205,7 +205,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
 
    void "create one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
@@ -262,7 +262,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
 
    void "create valid Account Payable Recurring Invoice without nullable properties" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
@@ -327,7 +327,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
    @Unroll
    void "create invalid Account Payable Recurring Invoice without #nonNullableProp" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
@@ -370,7 +370,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
    @Unroll
    void "create invalid Account Payable Recurring Invoice with non-existing #testProp" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
@@ -400,7 +400,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
 
    void "update one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
@@ -458,7 +458,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
 
    void "update valid Account Payable Recurring Invoice without nullable properties" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
@@ -526,7 +526,7 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       given:
       final nonExistentVendorId = UUID.randomUUID()
       final nonExistentPayToId = UUID.randomUUID()
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)

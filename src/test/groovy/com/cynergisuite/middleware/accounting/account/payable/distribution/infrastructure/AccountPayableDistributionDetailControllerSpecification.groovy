@@ -27,7 +27,7 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
 
    void "fetch one account payable distribution detail by id" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final template = templateDataLoaderService.single(company)
@@ -65,7 +65,7 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
 
    void "fetch all" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final template = templateDataLoaderService.single(company)
@@ -139,7 +139,7 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
 
    void "fetch all account payable distributions by template id" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final acct2 = accountDataLoaderService.single(company)
@@ -170,7 +170,7 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
 
    void "create valid account payable distribution"() {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final template = templateDataLoaderService.single(company)
@@ -194,7 +194,7 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
    @Unroll
    void "create invalid account payable distribution without #nonNullableProp"() {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final template = templateDataLoaderService.single(company)
@@ -222,7 +222,7 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
 
    void "create invalid account payable distribution with non-existing profit center" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final template = templateDataLoaderService.single(company)
@@ -246,7 +246,7 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
 
    void "create invalid account payable distribution with non-existing Account" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final template = templateDataLoaderService.single(company)
@@ -272,7 +272,7 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
    @Unroll
    void "create invalid account payable distribution with percent = #invalidPercent" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final template = templateDataLoaderService.single(company)
@@ -323,7 +323,7 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
 
    void "update valid account payable distribution" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final template = templateDataLoaderService.single(company)
@@ -348,7 +348,7 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
 
    void "update invalid account payable distribution without non-nullable properties" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final template = templateDataLoaderService.single(company)
@@ -377,7 +377,7 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
    void "update invalid account payable distribution with non-existing ids" () {
       given:
       final nonExistentAccountId = UUID.randomUUID()
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final template = templateDataLoaderService.single(company)
@@ -405,7 +405,7 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
    @Unroll
    void "update invalid account payable distribution with percent = #invalidPercent" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final template = templateDataLoaderService.single(company)
@@ -433,7 +433,7 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
 
    void "update invalid account payable distribution group with percent total over 100%" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final accounts = accountDataLoaderService.stream(5, company).toList()
       final template = templateDataLoaderService.single(company)
@@ -466,7 +466,7 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
 
    void "delete one account payable distribution" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final template = templateDataLoaderService.single(company)
@@ -491,8 +491,8 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
 
    void "delete account payable distribution from other company is not allowed" () {
       given:
-      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
-      final store = storeFactoryService.store(3, tstds2)
+      final tstds2 = companyFactoryService.forDatasetCode('corrto')
+      final store = storeFactoryService.store(6, tstds2)
       final acct = accountDataLoaderService.single(tstds2)
       final template = templateDataLoaderService.single(tstds2)
       final apDistribution = dataLoaderService.single(store, acct, tstds2, template)
@@ -510,7 +510,7 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
 
    void "recreate deleted account payable distribution" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final acct = accountDataLoaderService.single(company)
       final template = templateDataLoaderService.single(company)
@@ -558,7 +558,7 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
    }
 
    void "update valid list of account payable distribution" () {
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final accounts = accountDataLoaderService.stream(5, company).toList()
       final template = templateDataLoaderService.single(company)

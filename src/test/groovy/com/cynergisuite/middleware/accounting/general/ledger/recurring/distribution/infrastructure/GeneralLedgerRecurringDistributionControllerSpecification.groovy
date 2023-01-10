@@ -30,7 +30,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
 
    void "fetch one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurring = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -69,7 +69,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
 
    void "fetch all" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurring = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -110,7 +110,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
 
    void "fetch all by gl recurring id" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurring1 = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
       final glRecurring2 = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
@@ -176,7 +176,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
 
    void "create one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurring = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -206,7 +206,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
    @Unroll
    void "create invalid GL recurring distribution without #nonNullableProp" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurring = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -239,7 +239,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
 
    void "create invalid GL recurring distribution with non-existing generalLedgerDistributionAccount" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurring = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
       final invalidAccount = new AccountDTO(accountDataLoaderService.single(company))
@@ -265,7 +265,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
 
    void "update one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurring = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -296,7 +296,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
    @Unroll
    void "update invalid GL recurring distribution without #nonNullableProp" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurring = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -330,7 +330,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
 
    void "update invalid GL recurring distribution with non-existing generalLedgerDistributionAccount" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurring = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -358,7 +358,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
 
    void "delete all GL recurring distribution by GL Recurring ID" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurring = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -385,7 +385,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
 
    void "delete one GL recurring distribution" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurring = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -412,7 +412,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
 
    void "recreate deleted GL recurring distribution" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurring = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -466,7 +466,7 @@ class GeneralLedgerRecurringDistributionControllerSpecification extends Controll
 
    void "fetch totals" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurring1 = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
       final glRecurring2 = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
