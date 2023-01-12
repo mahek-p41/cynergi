@@ -161,6 +161,22 @@ BEGIN
    EXECUTE sqlToExec;
 END $$;
 
+-- setup view for bank reconciliation and vendor relationship
+DO $$
+DECLARE
+    sqlToExec VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW bank_recon_vendor_vw (bank_recon_id, vendor_id, vendor_name) AS with bankRecon';
+   sqlToExec := sqlToExec || '
+   AS (SELECT *, CAST( CASE WHEN SPLIT_PART(bankRecon.description, ''A/P VND# '', 2) = '''' THEN ''0'' ELSE SPLIT_PART(bankRecon.description, ''A/P VND# '', 2) END
+   AS BIGINT) from bank_reconciliation bankRecon)
+   SELECT bankRecon.id, vendor.id, vendor.name from bankRecon
+   Join vendor on vendor.number = split_part and vendor.company_id = bankRecon.company_id
+   where split_part > 0';
+
+   EXECUTE sqlToExec;
+END $$;
+
 CREATE MATERIALIZED VIEW system_employees_fimvw AS SELECT * FROM system_employees_vw;
 DROP INDEX IF EXISTS sys_emp_mat_vw_number_idx;
 DROP INDEX IF EXISTS sys_emp_mat_vw_comp_id;
