@@ -103,7 +103,7 @@ class AccountPayableInvoiceController @Inject constructor(
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/report{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(
-      tags = ["AccountPayableInvoiceReportEndpoints"],
+      tags = ["AccountPayableInvoiceEndpoints"],
       summary = "Fetch an Account Payable Invoices Report",
       description = "Fetch an Account Payable Invoices Report",
       operationId = "accountPayableInvoice-fetchReport"
