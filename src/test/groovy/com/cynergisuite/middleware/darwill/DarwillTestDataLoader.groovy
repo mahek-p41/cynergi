@@ -7,10 +7,11 @@ import com.cynergisuite.middleware.ssh.SftpClientCredentials
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
-import java.util.stream.IntStream
-import java.util.stream.Stream
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+
+import java.util.stream.IntStream
+import java.util.stream.Stream
 
 @CompileStatic
 class DarwillTestDataLoader {
