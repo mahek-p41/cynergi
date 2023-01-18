@@ -15,6 +15,8 @@ import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceRepository
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDetailDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentStatusTypeDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeTypeDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
@@ -34,6 +36,8 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
    @Inject AccountPayableInvoiceDataLoaderService apInvoiceDataLoaderService
    @Inject AccountPayablePaymentDataLoaderService apPaymentDataLoaderService
    @Inject AccountPayablePaymentDetailDataLoaderService apPaymentDetailDataLoaderService
+   @Inject AccountPayablePaymentStatusTypeDataLoaderService apPaymentStatusTypeLoader
+   @Inject AccountPayablePaymentTypeTypeDataLoaderService apPaymentTypeTypeLoader
    @Inject BankFactoryService bankFactoryService
    @Inject PurchaseOrderTestDataLoaderService poTestDataLoaderService
    @Inject ShipViaTestDataLoaderService shipViaTestDataLoaderService
@@ -86,9 +90,11 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
 
       def account = accountTestDataLoaderService.single(company)
       def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      def apPayment1 = apPaymentDataLoaderService.single(company, bank, vendor1)
-      def apPayment2 = apPaymentDataLoaderService.single(company, bank, vendor2)
-      def apPayment3 = apPaymentDataLoaderService.single(company, bank, vendor3)
+      def paymentStatus = apPaymentStatusTypeLoader.predefined().get(0)
+      def paymentTypeType = apPaymentTypeTypeLoader.random()
+      def apPayment1 = apPaymentDataLoaderService.single(company, bank, vendor1, paymentStatus, paymentTypeType)
+      def apPayment2 = apPaymentDataLoaderService.single(company, bank, vendor2, paymentStatus, paymentTypeType)
+      def apPayment3 = apPaymentDataLoaderService.single(company, bank, vendor3, paymentStatus, paymentTypeType)
       apInvoicesForVend1.eachWithIndex { it, index ->
          apPaymentDetailDataLoaderService.single(company, vendor1, it, apPayment1)
       }
@@ -172,7 +178,8 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
       def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
 
       def vendorList = vendorTestDataLoaderService.stream(20, company, vendorPmtTermIn, shipViaIn).toList()
-
+      def paymentStatus = apPaymentStatusTypeLoader.predefined().get(0)
+      def paymentTypeType = apPaymentTypeTypeLoader.random()
       def purchaseOrderList = []
       vendorList.each {
          purchaseOrderList.add(poTestDataLoaderService.single(
@@ -202,7 +209,7 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
                payToIn,
                store
             ),
-            apPaymentDataLoaderService.single(company, bank, vendorList[index])
+            apPaymentDataLoaderService.single(company, bank, vendorList[index], paymentStatus, paymentTypeType)
          )
       }
 
@@ -315,9 +322,12 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
 
       def account = accountTestDataLoaderService.single(company)
       def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      def apPayment1 = apPaymentDataLoaderService.single(company, bank, vendor1)
-      def apPayment2 = apPaymentDataLoaderService.single(company, bank, vendor2)
-      def apPayment3 = apPaymentDataLoaderService.single(company, bank, vendor3)
+      def paymentStatus = apPaymentStatusTypeLoader.predefined().get(0)
+      def paymentTypeType = apPaymentTypeTypeLoader.random()
+      def apPayment1 = apPaymentDataLoaderService.single(company, bank, vendor1, paymentStatus, paymentTypeType)
+      def apPayment2 = apPaymentDataLoaderService.single(company, bank, vendor2, paymentStatus, paymentTypeType)
+      def apPayment3 = apPaymentDataLoaderService.single(company, bank, vendor3, paymentStatus, paymentTypeType)
+
       apInvoicesForVend1.eachWithIndex { it, index ->
          apPaymentDetailDataLoaderService.single(company, vendor1, it, apPayment1)
       }
@@ -437,9 +447,12 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
 
       def account = accountTestDataLoaderService.single(company)
       def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      def apPayment1 = apPaymentDataLoaderService.single(company, bank, vendor1)
-      def apPayment2 = apPaymentDataLoaderService.single(company, bank, vendor2)
-      def apPayment3 = apPaymentDataLoaderService.single(company, bank, vendor3)
+      def paymentStatus = apPaymentStatusTypeLoader.predefined().get(0)
+      def paymentTypeType = apPaymentTypeTypeLoader.random()
+      def apPayment1 = apPaymentDataLoaderService.single(company, bank, vendor1, paymentStatus, paymentTypeType)
+      def apPayment2 = apPaymentDataLoaderService.single(company, bank, vendor2, paymentStatus, paymentTypeType)
+      def apPayment3 = apPaymentDataLoaderService.single(company, bank, vendor3, paymentStatus, paymentTypeType)
+
       apInvoicesForVend1.eachWithIndex { it, index ->
          apPaymentDetailDataLoaderService.single(company, vendor1, it, apPayment1)
       }
@@ -583,10 +596,13 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
 
       def account = accountTestDataLoaderService.single(company)
       def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
-      def apPayment1 = apPaymentDataLoaderService.single(company, bank, vendor1, null, null, LocalDate.now())
-      def apPayment2 = apPaymentDataLoaderService.single(company, bank, vendor1, null, null, LocalDate.now().minusWeeks(1))
-      def apPayment3 = apPaymentDataLoaderService.single(company, bank, vendor1, null, null, LocalDate.now().minusWeeks(2))
-      def apPayment4 = apPaymentDataLoaderService.single(company, bank, vendor1, null, null, LocalDate.now().minusWeeks(3))
+
+      def paymentStatus = apPaymentStatusTypeLoader.predefined().get(0)
+      def paymentTypeType = apPaymentTypeTypeLoader.random()
+      def apPayment1 = apPaymentDataLoaderService.single(company, bank, vendor1, paymentStatus, paymentTypeType, LocalDate.now())
+      def apPayment2 = apPaymentDataLoaderService.single(company, bank, vendor1, paymentStatus, paymentTypeType, LocalDate.now().minusWeeks(1))
+      def apPayment3 = apPaymentDataLoaderService.single(company, bank, vendor1, paymentStatus, paymentTypeType, LocalDate.now().minusWeeks(2))
+      def apPayment4 = apPaymentDataLoaderService.single(company, bank, vendor1, paymentStatus, paymentTypeType, LocalDate.now().minusWeeks(3))
       def paymentsArr = [apPayment1, apPayment2, apPayment3, apPayment4]
 
       apInvoicesEntity.eachWithIndex { it, index ->

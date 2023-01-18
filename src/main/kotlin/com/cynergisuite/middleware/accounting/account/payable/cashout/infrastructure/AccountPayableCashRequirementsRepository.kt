@@ -15,6 +15,7 @@ import com.cynergisuite.middleware.accounting.account.payable.cashout.CashRequir
 import com.cynergisuite.middleware.accounting.account.payable.cashout.CashRequirementVendorEntity
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentDetailRepository
+import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentStatusTypeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
@@ -25,20 +26,13 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.time.LocalDate
-import kotlin.reflect.KMutableProperty1
-import kotlin.reflect.full.createType
-import kotlin.reflect.full.isSubtypeOf
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.javaType
-import kotlin.reflect.jvm.javaGetter
-import kotlin.reflect.jvm.javaType
-import kotlin.reflect.jvm.jvmErasure
 
 @Singleton
 class AccountPayableCashRequirementsRepository @Inject constructor(
    private val jdbc: Jdbi,
    private val apPaymentDetailRepository: AccountPayablePaymentDetailRepository,
-   private val statusRepository: AccountPayableInvoiceStatusTypeRepository
+   private val statusRepository: AccountPayableInvoiceStatusTypeRepository,
+   private val paymentStatus: AccountPayablePaymentStatusTypeRepository
 ){
       private val logger: Logger = LoggerFactory.getLogger(AccountPayableCashRequirementsRepository::class.java)
 
@@ -77,12 +71,17 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
             apPaymentDetail.company_id                                     AS apInvoiceDetail_apPaymentDetail_company_id,
             apPaymentDetail.payment_number_id                              AS apInvoiceDetail_apPaymentDetail_payment_number_id,
             apPaymentDetail.amount                                         AS apInvoiceDetail_apPaymentDetail_amount,
+            apPaymentStatus.id                                             AS apInvoiceDetail_apPayment_status_id,
+            apPaymentStatus.value                                          AS apInvoiceDetail_apPayment_status_value,
+            apPaymentStatus.description                                    AS apInvoiceDetail_apPayment_status_description,
+            apPaymentStatus.localization_code                              AS apInvoiceDetail_apPayment_status_localization_code,
             count(*) OVER() AS total_elements
          FROM account_payable_invoice apInvoice
             JOIN vendor vend ON apInvoice.vendor_id = vend.id AND vend.deleted = FALSE
             JOIN account_payable_invoice_status_type_domain status ON apInvoice.status_id = status.id
             LEFT JOIN account_payable_payment_detail apPaymentDetail ON apInvoice.id = apPaymentDetail.account_payable_invoice_id
             LEFT JOIN account_payable_payment apPayment ON apPaymentDetail.payment_number_id = apPayment.id
+            JOIN account_payable_payment_status_type_domain apPaymentStatus on apPayment.account_payable_payment_status_id = apPaymentStatus.id
       """
       }
 
@@ -93,21 +92,6 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
       val cashoutTotals = CashRequirementBalanceEntity()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id")
-      val dates = mutableListOf<LocalDate>()
-
-      //This is finding oldest and newest dates from a filter request in the case a user doesn't provide all date filters
-      CashRequirementFilterRequest::class.memberProperties.forEach {
-         if (it.returnType.jvmErasure.java == LocalDate::class.java) {
-            val date = if (it.getter.call(filterRequest) != null) {
-                  it.getter.call(filterRequest) as LocalDate
-               } else null
-            if (date != null) {
-               dates.add(date)
-            }
-         }
-      }
-      val oldestDate = dates.stream().min(LocalDate::compareTo).get()
-      val newestDate = dates.stream().max(LocalDate::compareTo).get()
 
       if (filterRequest.beginVendor != null || filterRequest.endVendor!= null) {
          params["beginVendor"] = filterRequest.beginVendor
@@ -116,12 +100,41 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
             .append(buildFilterString(filterRequest.beginVendor != null, filterRequest.endVendor != null, "beginVendor", "endVendor"))
       }
 
-      params["fromDate"] = oldestDate
-      params["thruDate"] = newestDate
-      whereClause.append(" AND COALESCE(apPayment.payment_date, apInvoice.due_date) ")
-         .append(buildFilterString(oldestDate != null, newestDate != null, "fromDate", "thruDate"))
+      if (filterRequest.fromDateOne != null || filterRequest.thruDateOne != null) {
+         params["fromDateOne"] = filterRequest.fromDateOne
+         params["thruDateOne"] = filterRequest.thruDateOne
+         whereClause.append(" AND ( COALESCE(apPayment.payment_date, apInvoice.due_date) ")
+            .append(buildFilterString(filterRequest.fromDateOne != null, filterRequest.thruDateOne != null, "fromDateOne", "thruDateOne"))
+      }
 
+      if (filterRequest.fromDateTwo != null || filterRequest.thruDateTwo != null) {
+         params["fromDateTwo"] = filterRequest.fromDateTwo
+         params["thruDateTwo"] = filterRequest.thruDateTwo
+         whereClause.append(" OR COALESCE(apPayment.payment_date, apInvoice.due_date) ")
+            .append(buildFilterString(filterRequest.fromDateTwo != null, filterRequest.thruDateTwo != null, "fromDateTwo", "thruDateTwo"))
+      }
 
+      if (filterRequest.fromDateThree != null || filterRequest.thruDateThree != null) {
+         params["fromDateThree"] = filterRequest.fromDateThree
+         params["thruDateThree"] = filterRequest.thruDateThree
+         whereClause.append(" OR COALESCE(apPayment.payment_date, apInvoice.due_date) ")
+            .append(buildFilterString(filterRequest.fromDateThree != null, filterRequest.thruDateThree != null, "fromDateThree", "thruDateThree"))
+      }
+
+      if (filterRequest.fromDateFour != null || filterRequest.thruDateFour != null) {
+         params["fromDateFour"] = filterRequest.fromDateFour
+         params["thruDateFour"] = filterRequest.thruDateFour
+         whereClause.append(" OR COALESCE(apPayment.payment_date, apInvoice.due_date) ")
+            .append(buildFilterString(filterRequest.fromDateFour != null, filterRequest.thruDateFour != null, "fromDateFour", "thruDateFour"))
+      }
+
+      if (filterRequest.fromDateFive != null || filterRequest.thruDateFive != null) {
+         params["fromDateFive"] = filterRequest.fromDateFive
+         params["thruDateFive"] = filterRequest.thruDateFive
+         whereClause.append(" OR COALESCE(apPayment.payment_date, apInvoice.due_date) ")
+            .append(buildFilterString(filterRequest.fromDateFive != null, filterRequest.thruDateFive != null, "fromDateFive", "thruDateFive"))
+      }
+      whereClause.append(")")
       jdbc.query(
          """
             ${selectBaseQuery()}
@@ -143,7 +156,7 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
 
             var invoiceFlag = false
             mapRowInvoiceDetail(rs, "apInvoiceDetail_").let {
-               if(it.invoiceStatus.id != 4){
+               if(it.invoiceStatus.value != "V" && it.apPaymentStatus.value == "P"){
                   tempVendor.invoices?.add(it)
                   invoiceFlag = true
                }
@@ -295,6 +308,7 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
          invoiceStatus = statusRepository.mapRow(rs, "${columnPrefix}apInvoice_status_"),
          invoiceDueDate = rs.getLocalDate("${columnPrefix}apInvoice_due_date"),
          apPaymentPaymentDate = rs.getLocalDateOrNull("${columnPrefix}apPayment_payment_date"),
+         apPaymentStatus = paymentStatus.mapRow(rs, "${columnPrefix}apPayment_status_"),
          apPaymentDateVoided = rs.getLocalDateOrNull("${columnPrefix}apPayment_date_voided"),
          apPaymentIsVoided = rs.getBoolean("${columnPrefix}apPayment_void_interfaced_indicator"),
          apPaymentDetailAmount = rs.getBigDecimalOrNull("${columnPrefix}apPaymentDetail_amount"),

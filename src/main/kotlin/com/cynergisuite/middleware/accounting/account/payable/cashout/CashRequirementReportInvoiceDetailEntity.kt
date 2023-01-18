@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.cashout
 
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusType
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentStatusType
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
@@ -18,6 +19,7 @@ data class CashRequirementReportInvoiceDetailEntity(
    var invoiceStatus: AccountPayableInvoiceStatusType,
    val invoiceDueDate: LocalDate,
    val apPaymentPaymentDate: LocalDate?,
+   val apPaymentStatus: AccountPayablePaymentStatusType,
    val apPaymentDateVoided: LocalDate?,
    val apPaymentIsVoided: Boolean,
    val apPaymentDetailAmount: BigDecimal?,
