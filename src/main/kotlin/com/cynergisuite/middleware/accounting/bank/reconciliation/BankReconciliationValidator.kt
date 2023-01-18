@@ -36,6 +36,12 @@ class BankReconciliationValidator @Inject constructor(
       return doValidation(existingBankRecon, dto, company)
    }
 
+   fun validateBulkUpdate(dto: List<BankReconciliationDTO>, company: CompanyEntity): List<BankReconciliationEntity> {
+      logger.debug("Validating Bulk Update BankReconciliation {}", dto)
+
+      return doBulkValidation(dto, company)
+   }
+
    private fun doValidation(existingBankRecon: BankReconciliationEntity? = null, dto: BankReconciliationDTO, company: CompanyEntity): BankReconciliationEntity {
       val bank = bankRepository.findOne(dto.bank!!.id!!, company)
       val type = bankReconciliationTypeRepository.findOne(dto.type!!.value)
@@ -62,5 +68,32 @@ class BankReconciliationValidator @Inject constructor(
             type = type!!
          )
       }
+   }
+
+   private fun doBulkValidation(dtoList: List<BankReconciliationDTO>, company: CompanyEntity): List<BankReconciliationEntity> {
+      val updateEntities: MutableList<BankReconciliationEntity> = mutableListOf()
+      for (dto in dtoList) {
+         val bank = bankRepository.findOne(dto.bank!!.id!!, company)
+         val type = bankReconciliationTypeRepository.findOne(dto.type!!.value)
+
+
+         doValidation { errors ->
+            bank
+               ?: errors.add(ValidationError("bank.id", NotFound(dto.bank!!.id!!)))
+
+            type
+               ?: errors.add(ValidationError("type.value", NotFound(dto.type!!.value)))
+         }
+
+         updateEntities.add(
+            BankReconciliationEntity(
+               id = dto.id,
+               dto = dto,
+               bank = bank!!,
+               type = type!!
+            )
+         )
+      }
+      return updateEntities
    }
 }

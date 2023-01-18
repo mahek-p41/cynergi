@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure
 
+import com.cynergisuite.domain.BankReconClearingFilterRequest
 import com.cynergisuite.domain.BankReconFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
@@ -168,5 +169,54 @@ class BankReconciliationController @Inject constructor(
       logger.debug("Listing of Bank Reconciliations resulted in {}", bankRecons)
 
       return bankRecons
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Operation(tags = ["BankReconciliationEndpoints"], summary = "Fetch a bank reconciliation report", description = "Fetch a bank reconciliation report", operationId = "bankReconciliation-fetchReport")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = BankReconciliationDTO::class))])
+      ]
+   )
+   @Get(uri = "/clearing{?pageRequest*}", produces = [APPLICATION_JSON])
+   fun fetchClear(
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("pageRequest")
+      filterRequest: BankReconClearingFilterRequest,
+      authentication: Authentication
+   ): List<BankReconciliationDTO> {
+      val user = userService.fetchUser(authentication)
+      val bankRecons = bankReconciliationService.clearing(filterRequest, user.myCompany())
+
+
+      logger.debug("Listing of Bank Reconciliations resulted in {}", bankRecons)
+
+      return bankRecons
+   }
+
+   @Put(uri = "/clearing", processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["BankReconciliationEndpoints"], summary = "Update one or multiple bank reconciliation cleared status", description = "Update a bank reconciliation cleared status.", operationId = "bankReconciliation-updateCleared")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If successfully able to update BankReconciliation", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = BankReconciliationDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If one of the required properties in the payload is missing"),
+         ApiResponse(responseCode = "404", description = "The requested BankReconciliation was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun updateCleared(
+      @Body @Valid
+      dtos: List<BankReconciliationDTO>,
+      authentication: Authentication
+   ): List<BankReconciliationDTO> {
+      logger.info("Requested Update Cleared Status BankReconciliation {}", dtos)
+
+      val user = userService.fetchUser(authentication)
+      val response = bankReconciliationService.updateClear(dtos, user.myCompany())
+
+      logger.debug("Requested Update Cleared Status BankReconciliation {} resulted in {}", dtos, response)
+
+      return response
    }
 }
