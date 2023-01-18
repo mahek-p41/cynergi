@@ -29,7 +29,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final vendorGroup = vendorGroupTestDataLoaderService.stream(tstds1).toList()
 
       when:
@@ -47,8 +47,8 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      final tstds2 = companyFactoryService.forDatasetCode('corrto')
       final vendorGroups = vendorGroupTestDataLoaderService.stream(tstds1).toList()
       vendorGroupTestDataLoaderService.stream(tstds2).toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
@@ -122,7 +122,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
 
    void "create invalid vendor group with duplicate value from same company" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       vendorGroupTestDataLoaderService.stream(tstds1).toList()
       final vendorGroup = vendorGroupTestDataLoaderService.predefined().first()
       def jsonVendorGroup = jsonSlurper.parseText(jsonOutput.toJson(vendorGroup))
@@ -143,8 +143,8 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
 
    void "create valid vendor group with duplicate value from different company" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      final tstds2 = companyFactoryService.forDatasetCode('corrto')
       vendorGroupTestDataLoaderService.stream(tstds1).toList()
       vendorGroupTestDataLoaderService.stream(tstds2).toList()
       final vendorGroup1 = vendorGroupTestDataLoaderService.predefined().find { it.company.datasetCode == tstds1.datasetCode }
@@ -165,7 +165,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
 
    void "update one" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final vendorGroup = vendorGroupTestDataLoaderService.stream(tstds1).toList()[0]
       def jsonUpdatedVG = jsonSlurper.parseText(jsonOutput.toJson(vendorGroup))
       jsonUpdatedVG.value = "value1"
@@ -186,7 +186,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
    // Front-end should avoid this case if possible
    void "update vendor with no change" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final vendorGroup = new VendorGroupDTO(vendorGroupTestDataLoaderService.stream(tstds1).toList()[0])
 
       when:
@@ -202,7 +202,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
 
    void "update vendor with null value" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final vendorGroup = vendorGroupTestDataLoaderService.stream(tstds1).toList()[0]
       def jsonUpdatedVG = jsonSlurper.parseText(jsonOutput.toJson(vendorGroup))
       jsonUpdatedVG.remove("value")
@@ -222,7 +222,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
 
    void "update vendor with null description" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final vendorGroup = vendorGroupTestDataLoaderService.stream(tstds1).toList()[0]
       def jsonUpdatedVG = jsonSlurper.parseText(jsonOutput.toJson(vendorGroup))
       jsonUpdatedVG.remove("description")
@@ -242,7 +242,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
 
    void "update vendor with duplicate value from same company" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final vendorGroup = vendorGroupTestDataLoaderService.stream(tstds1).toList()[0]
       def jsonUpdatedVG = jsonSlurper.parseText(jsonOutput.toJson(vendorGroup))
       jsonUpdatedVG.value = "test2"
@@ -263,8 +263,8 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
 
    void "update vendor with duplicate value from different company" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      final tstds2 = companyFactoryService.forDatasetCode('corrto')
       final vendorGroup1 = vendorGroupTestDataLoaderService.stream(tstds1).toList()[0]
       final vendorGroup2 = vendorGroupTestDataLoaderService.stream(tstds2).toList()[0]
       def jsonUpdatedVG = jsonSlurper.parseText(jsonOutput.toJson(vendorGroup1))
@@ -284,7 +284,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
 
    void "delete vendor group" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       def vendorGroup = vendorGroupTestDataLoaderService.stream(tstds1).collect()
 
       when:
@@ -306,7 +306,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
 
    void "delete vendor group from other company is not allowed" () {
       given:
-      def tstds2 = companies.find { it.datasetCode == "tstds2" }
+      def tstds2 = companies.find { it.datasetCode == "corrto" }
       vendorGroupTestDataLoaderService.stream(nineNineEightEmployee.company).collect()
       def vendorGroup = vendorGroupTestDataLoaderService.stream(tstds2).collect()
       when:
@@ -322,7 +322,7 @@ class VendorGroupControllerSpecification extends ControllerSpecificationBase {
 
    void "delete vendor group still has reference" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final vendorGroup = vendorGroupTestDataLoaderService.stream(nineNineEightEmployee.company).collect().first()
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)

@@ -25,7 +25,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
 
    void "execute daily Tuesday audit job on Tuesday dataset 1" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final storeOne = storeFactoryService.store(1, company)
       auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created()] as Set)
       auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
@@ -52,7 +52,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
 
    void "execute daily Tuesday audit job on Tuesday dataset 2" () {
       given: 'One past due audit in status open'
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final storeOne = storeFactoryService.store(1, company)
       auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created()] as Set)
       auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
@@ -78,7 +78,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
 
    void "execute daily Tuesday audit job on Wednesday" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(storeOne)
       auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)

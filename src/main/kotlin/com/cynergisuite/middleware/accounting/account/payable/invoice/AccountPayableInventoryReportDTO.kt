@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull
 data class AccountPayableInventoryReportDTO(
    @field:NotNull
    @field:Schema(description = "AP receive date")
+   var invoiceNumber: String? = null,
    var modelNumber: String? = null,
    var serialNumber: String? = null,
    var description: String? = null,
@@ -17,4 +18,5 @@ data class AccountPayableInventoryReportDTO(
    var received: String? = null,
    var status: String? = null,
    var receivedLocation: String? = null,
+   var currentLocation: String? = null,
    )

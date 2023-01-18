@@ -29,7 +29,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
 
    void "one store test"() {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.single(store).with { new AuthenticatedEmployee(it.id, it, store) }
       final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)
@@ -54,7 +54,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
 
    void "two store test"() {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store1 = storeFactoryService.store(1, company)
       final store3 = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.single(store1).with { new AuthenticatedEmployee(it.id, it, store1) }
@@ -87,7 +87,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
 
    void "one store with already CREATED audit" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store1 = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(store1)
       final createdAudit = auditFactoryService.single(store1, employee, [AuditStatusFactory.created()] as Set)
@@ -111,7 +111,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
 
    void "one store with already CREATED audit that is past due and is then completed" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store1 = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(store1)
       final user = new AuthenticatedEmployee(employee.id, employee, store1)

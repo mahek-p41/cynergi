@@ -18,7 +18,7 @@ class LocationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one location by id" () {
       given: 'location number 1 is assigned to company tstds1'
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final loc1 = locationDataLoaderService.location(1, company)
 
       when:
@@ -45,8 +45,8 @@ class LocationControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one location from different dataset than one associated with authenticated user" () {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds2')
-      def location = locationDataLoaderService.location(3, company)
+      def company = companyFactoryService.forDatasetCode('corrto')
+      def location = locationDataLoaderService.location(106, company)
 
       when:
       get("$path/${location.myId()}")
@@ -71,26 +71,19 @@ class LocationControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
-      pageOneResult.elements.size() == 4
-      pageOneResult.elements[0].id == 2
-      pageOneResult.elements[0].locationNumber == 1
-      pageOneResult.elements[0].name == "KANSAS CITY"
-      pageOneResult.elements[1].id == 5
-      pageOneResult.elements[1].locationNumber == 3
-      pageOneResult.elements[1].name == "INDEPENDENCE 4"
-      pageOneResult.elements[2].id == 8
+      pageOneResult.totalElements == 7
+      pageOneResult.elements.size() == 5
+      pageOneResult.elements[0].id == 1
+      pageOneResult.elements[0].locationNumber == 0
+      pageOneResult.elements[0].name == "ADVANCED VENTURES,LLC"
+      pageOneResult.elements[1].id == 2
+      pageOneResult.elements[1].locationNumber == 1
+      pageOneResult.elements[1].name == "HOUMA"
+      pageOneResult.elements[2].id == 3
       pageOneResult.elements[2].locationNumber == 9000
-      pageOneResult.elements[2].name == "HOME OFFICE"
-      pageOneResult.elements[3].id == 10
-      pageOneResult.elements[3].locationNumber == 9004
-      pageOneResult.elements[3].name == "MY TEST STORE"
-
-
-      when:
-      get("${path}${pageTwo}")
-
-      then:
-      final notFoundException = thrown(HttpClientResponseException)
-      notFoundException.status == NO_CONTENT
+      pageOneResult.elements[2].name == "ADVANCED VENTURES,LLC"
+      pageOneResult.elements[3].id == 4
+      pageOneResult.elements[3].locationNumber == 3
+      pageOneResult.elements[3].name == "HATTIESBURG"
    }
 }

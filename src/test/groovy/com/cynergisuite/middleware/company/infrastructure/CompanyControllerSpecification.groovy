@@ -39,7 +39,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one company by id" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
 
       when:
       def result = get("$path/$company.id")
@@ -251,7 +251,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == 'clientId'
-      response[0].message == '1234 already exists'
+      response[0].message == '1812 already exists'
       response[0].code == 'cynergi.validation.duplicate'
    }
 
@@ -261,7 +261,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       jsonCompany.remove('id')
       jsonCompany.name = 'HTI'
       jsonCompany.clientId = '9999'
-      jsonCompany.datasetCode = 'tstds2'
+      jsonCompany.datasetCode = 'corrto'
 
       when:
       post("$path", jsonCompany)
@@ -272,7 +272,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == 'datasetCode'
-      response[0].message == 'tstds2 already exists'
+      response[0].message == 'corrto already exists'
       response[0].code == 'cynergi.validation.duplicate'
    }
 
@@ -311,16 +311,16 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 2
       response[0].path == 'clientId'
-      response[0].message == '1234 already exists'
+      response[0].message == '1812 already exists'
       response[0].code == 'cynergi.validation.duplicate'
       response[1].path == 'datasetCode'
-      response[1].message == 'tstds1 already exists'
+      response[1].message == 'coravt already exists'
       response[0].code == 'cynergi.validation.duplicate'
    }
 
    void "create a company without login" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(company))
       jsonCompany.remove('id')
       jsonCompany.name = 'HTI'
@@ -376,7 +376,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
 
    void "update an invalid company with duplicate clientId" () {
       given: 'Update existingCompany in DB with all new data in jsonCompany'
-      def tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      def tstds2 = companyFactoryService.forDatasetCode('corrto')
       def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
       jsonCompany.tap {
          name = 'HTI'
@@ -397,13 +397,13 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == 'clientId'
-      response[0].message == '4321 already exists'
+      response[0].message == '5124 already exists'
       response[0].code == 'cynergi.validation.duplicate'
    }
 
    void "update an invalid company with duplicate datasetCode" () {
       given: 'Update existingCompany in DB with all new data in jsonCompany'
-      def tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      def tstds2 = companyFactoryService.forDatasetCode('corrto')
       def jsonCompany = jsonSlurper.parseText(jsonOutput.toJson(tstds1))
       jsonCompany.tap {
          name = 'HTI'
@@ -423,7 +423,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == 'datasetCode'
-      response[0].message == 'tstds2 already exists'
+      response[0].message == 'corrto already exists'
       response[0].code == 'cynergi.validation.duplicate'
    }
 

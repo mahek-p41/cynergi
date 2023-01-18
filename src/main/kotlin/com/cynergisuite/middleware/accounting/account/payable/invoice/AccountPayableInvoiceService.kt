@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice
 
+import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.PaymentReportFilterRequest
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceReportRepository
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -34,7 +34,7 @@ class AccountPayableInvoiceService @Inject constructor(
       }
    }
 
-   fun fetchReport(company: CompanyEntity, filterRequest: PaymentReportFilterRequest): AccountPayableInvoiceReportTemplate {
+   fun fetchReport(company: CompanyEntity, filterRequest: InvoiceReportFilterRequest): AccountPayableInvoiceReportTemplate {
       val found = accountPayableInvoiceReportRepository.fetchReport(company, filterRequest)
 
       return AccountPayableInvoiceReportTemplate(found)

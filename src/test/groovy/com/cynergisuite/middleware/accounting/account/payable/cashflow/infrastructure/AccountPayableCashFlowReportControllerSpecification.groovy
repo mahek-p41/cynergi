@@ -39,7 +39,7 @@ class AccountPayableCashFlowReportControllerSpecification extends ControllerSpec
 
    void "fetch all with multiple vendors and invoices"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def store = storeFactoryService.store(3, company)
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def shipViaList = shipViaTestDataLoaderService.stream(4, company).toList()
@@ -144,7 +144,7 @@ class AccountPayableCashFlowReportControllerSpecification extends ControllerSpec
 
    void "fetch all with multiple vendors and invoices correct calculations"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def store = storeFactoryService.store(3, company)
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def shipViaList = shipViaTestDataLoaderService.stream(4, company).toList()

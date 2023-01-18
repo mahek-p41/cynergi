@@ -43,7 +43,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
    void "fetch one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurring = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -102,7 +102,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
    void "fetch all" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurrings = generalLedgerRecurringDataLoaderService.stream(3, company, glSourceCode).toList()
       final account = accountDataLoaderService.single(company)
@@ -158,7 +158,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
    void "filter for report #criteria" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
 
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       def glRecurringDTO1 = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
@@ -220,7 +220,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
    void "create one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -272,7 +272,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
    @Unroll
    void "create invalid GL recurring entry without #nonNullableProp" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -305,7 +305,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
    @Unroll
    void "create invalid GL recurring entry with non-existing GL recurring #testProp" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -338,7 +338,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
    void "create invalid GL recurring entry with non-existing GL recurring distribution account" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       final invalidAccount = new AccountDTO(accountDataLoaderService.single(company))
@@ -366,7 +366,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
    void "create invalid GL recurring entry with begin date after end date" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -395,7 +395,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
    void "update one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final account = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, company)
@@ -455,7 +455,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
    @Unroll
    void "update invalid GL recurring entry without #nonNullableProp" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final account = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, company)
@@ -497,7 +497,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
    @Unroll
    void "update invalid GL recurring entry with non-existing GL recurring #testProp" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final account = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, company)
@@ -539,7 +539,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
    void "update invalid GL recurring entry with non-existing GL recurring distribution account" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final account = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, company)
@@ -571,7 +571,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
    void "update invalid GL recurring entry with begin date after end date" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final account = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, company)
@@ -609,7 +609,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
    void "delete one GL recurring entry" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glRecurring = generalLedgerRecurringDataLoaderService.single(company, glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -636,11 +636,11 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
    void "delete GL recurring entry from other company is not allowed" () {
       given:
-      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final tstds2 = companyFactoryService.forDatasetCode('corrto')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(tstds2)
       final glRecurring = generalLedgerRecurringDataLoaderService.single(tstds2, glSourceCode)
       final account = accountDataLoaderService.single(tstds2)
-      final profitCenter = storeFactoryService.store(3, tstds2)
+      final profitCenter = storeFactoryService.store(6, tstds2)
       generalLedgerRecurringDistributionDataLoaderService.stream(1, glRecurring, account, profitCenter).toList()
 
       when:
@@ -657,7 +657,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
    void "recreate deleted GL recurring entry" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       final account = accountDataLoaderService.single(company)
@@ -755,7 +755,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
    void "transfer GL recurring entry to GL details without reversal" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       glRecurringDTO.endDate = LocalDate.now()
@@ -872,7 +872,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
    void "transfer GL recurring entry to GL details with reversal" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       glRecurringDTO.endDate = LocalDate.now()
@@ -989,7 +989,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
    void "transfer a single GL recurring entry to GL details without reversal" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       glRecurringDTO.endDate = LocalDate.now()
@@ -1066,7 +1066,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
 
    void "transfer a single GL recurring entry to GL details with reversal" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       def glRecurringDTO = generalLedgerRecurringDataLoaderService.singleDTO(glSourceCode)
       glRecurringDTO.endDate = LocalDate.now()

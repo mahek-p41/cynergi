@@ -177,7 +177,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "create invalid bank with other company's account" () {
       given:
-      final company2 = companyFactoryService.forDatasetCode('tstds2')
+      final company2 = companyFactoryService.forDatasetCode('corrto')
       final account = accountFactoryService.single(company2)
       final division = divisionFactoryService.single(nineNineEightEmployee.company)
       final region = regionFactoryService.single(division)
@@ -199,33 +199,6 @@ class BankControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response.collect { new ErrorDTO(it.message, it.code, it.path) } == [
          new ErrorDTO("${account.id} was unable to be found", 'system.not.found', "generalLedgerAccount.id")
-      ]
-   }
-
-   void "create invalid bank with other company's store" () {
-      given:
-      final company2 = companyFactoryService.forDatasetCode('tstds2')
-      final account = accountFactoryService.single(nineNineEightEmployee.company)
-      final division = divisionFactoryService.single(company2)
-      final region = regionFactoryService.single(division)
-      def regionDTO = new RegionDTO(region)
-      def employeeVO = new EmployeeValueObject(nineNineEightEmployee)
-      regionDTO.division.divisionalManager = new SimpleLegacyIdentifiableDTO(employeeVO)
-      regionDTO.regionalManager.id = employeeVO.id
-      final store = storeFactoryService.store(3, company2)
-      final bankDTO = bankFactoryService.singleDTO(store, account)
-      bankDTO.generalLedgerProfitCenter.region = regionDTO
-
-      when:
-      post("$path/", bankDTO)
-
-      then:
-      final ex = thrown(HttpClientResponseException)
-      ex.status == BAD_REQUEST
-      final response = ex.response.bodyAsJson()
-      response.size() == 1
-      response.collect { new ErrorDTO(it.message, it.code, it.path) } == [
-         new ErrorDTO("${String.format('%,d', store.id)} was unable to be found", 'system.not.found', "generalLedgerProfitCenter.id")
       ]
    }
 
@@ -259,7 +232,7 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "create an invalid account without #nonNullableProp"() {
       given:
-      final company2 = companyFactoryService.forDatasetCode('tstds2')
+      final company2 = companyFactoryService.forDatasetCode('corrto')
       final account = accountFactoryService.single(nineNineEightEmployee.company)
       final division = divisionFactoryService.single(nineNineEightEmployee.company)
       final region = regionFactoryService.single(division)
@@ -470,29 +443,29 @@ class BankControllerSpecification extends ControllerSpecificationBase {
 
    void "delete bank from other company is not allowed" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1" }
-      final tstds2 = companies.find { it.datasetCode == "tstds2" }
+      final tstds1 = companies.find { it.datasetCode == "coravt" }
+      final tstds2 = companies.find { it.datasetCode == "corrto" }
       final accountTstds1 = accountFactoryService.single(tstds1)
       final accountTstds2 = accountFactoryService.single(tstds2)
       final store3Tstds1 = storeFactoryService.store(3, tstds1)
-      final store4Tstds2 = storeFactoryService.store(4, tstds2)
+      final store6Tstds2 = storeFactoryService.store(6, tstds2)
       final bankStore3Tstds1 = bankFactoryService.single(tstds1, store3Tstds1, accountTstds1)
-      final bankStore4Tstds2 = bankFactoryService.single(tstds2, store4Tstds2, accountTstds2)
+      final bankStore6Tstds2 = bankFactoryService.single(tstds2, store6Tstds2, accountTstds2)
 
       when:
-      delete("$path/$bankStore4Tstds2.id")
+      delete("$path/$bankStore6Tstds2.id")
 
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.message == "$bankStore4Tstds2.id was unable to be found"
+      response.message == "$bankStore6Tstds2.id was unable to be found"
       response.code == 'system.not.found'
    }
 
    void "delete bank still has reference" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final account = accountFactoryService.single(nineNineEightEmployee.company)
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)

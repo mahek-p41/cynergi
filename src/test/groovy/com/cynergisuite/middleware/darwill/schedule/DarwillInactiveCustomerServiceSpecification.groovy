@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.darwill.schedule
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.darwill.DarwillTestDataLoaderService
-import com.cynergisuite.middleware.schedule.ScheduleTestDataLoaderService
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 
@@ -18,7 +17,7 @@ class DarwillInactiveCustomerServiceSpecification extends ServiceSpecificationBa
 
    void "upload inactive customers" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final darwillSchedules = darwillTestDataLoaderService.enableDarwill(tstds1)
       final scheduleEntity = darwillSchedules.find { it.title == "Darwill Inactive Customer" }
       final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)
@@ -30,6 +29,6 @@ class DarwillInactiveCustomerServiceSpecification extends ServiceSpecificationBa
       notThrown(Exception)
       result.failureReason() == null
       result.scheduleName() == "Darwill Inactive Customers"
-      result.rowCount() == 2399
+      result.rowCount() == 311
    }
 }

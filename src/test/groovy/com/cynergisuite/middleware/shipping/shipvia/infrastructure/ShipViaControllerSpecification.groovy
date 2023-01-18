@@ -148,7 +148,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "post valid shipVia" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = ShipViaTestDataLoader.single(company).with { new ShipViaDTO(it) }
 
       when:
@@ -247,7 +247,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "delete ship via still has references" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaFactoryService.single(nineNineEightEmployee.company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
@@ -265,7 +265,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "delete ship via from other company is not allowed" () {
       given:
-      def tstds2 = companies.find { it.datasetCode == "tstds2" }
+      def tstds2 = companies.find { it.datasetCode == "corrto" }
       shipViaFactoryService.single(nineNineEightEmployee.company)
       def shipVia = shipViaFactoryService.single(tstds2)
 
@@ -323,7 +323,7 @@ class ShipViaControllerSpecification extends ControllerSpecificationBase {
 
    void "recreate deleted ship via" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = ShipViaTestDataLoader.single(company).with { new ShipViaDTO(it) }
 
       when: // create a ship via

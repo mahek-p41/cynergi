@@ -90,7 +90,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
    void "fetch one general ledger detail by company not found" () {
       given: 'an GL detail of other company'
       final nonExistentId = UUID.randomUUID()
-      final company = companies.find {it.datasetCode == 'tstds2' }
+      final company = companies.find {it.datasetCode == 'corrto' }
       final glAccount = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
@@ -911,7 +911,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
 
    void "fetch net change" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final glSrcCode = sourceCodeDataLoaderService.single(company)
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)

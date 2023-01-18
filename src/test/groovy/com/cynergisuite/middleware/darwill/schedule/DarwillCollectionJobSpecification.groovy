@@ -18,7 +18,7 @@ class DarwillCollectionJobSpecification extends ServiceSpecificationBase {
 
    void "upload collection customers" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final darwillSchedules = darwillTestDataLoaderService.enableDarwill(tstds1)
       final scheduleEntity = darwillSchedules.find {  it.title == "Darwill Collections" }
       final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)
@@ -30,6 +30,6 @@ class DarwillCollectionJobSpecification extends ServiceSpecificationBase {
       notThrown(Exception)
       result.failureReason() == null
       result.scheduleName() == "Darwill Collections"
-      result.rowCount() == 3260
+      result.rowCount() == 1085
    }
 }

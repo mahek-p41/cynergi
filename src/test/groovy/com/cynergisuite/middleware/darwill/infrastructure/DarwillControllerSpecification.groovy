@@ -24,7 +24,7 @@ class DarwillControllerSpecification extends ServiceSpecificationBase {
 
    void "enable darwill for a company" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
 
       when:
       def result = client.toBlocking().exchange(POST("/darwill", new DarwillManagementDto(tstds1.id, "username", "password", "host", 12345)))
@@ -37,7 +37,7 @@ class DarwillControllerSpecification extends ServiceSpecificationBase {
 
    void "enable with a null company" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
 
       when:
       client.toBlocking().exchange(POST("/darwill", new DarwillManagementDto(null, "username", "password", "host", 12345)), Argument.of(String), Argument.of(String))
@@ -54,7 +54,7 @@ class DarwillControllerSpecification extends ServiceSpecificationBase {
 
    void "disable darwill for a company" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final schedules = darwillTestDataLoaderService.enableDarwill(tstds1)
 
       when:

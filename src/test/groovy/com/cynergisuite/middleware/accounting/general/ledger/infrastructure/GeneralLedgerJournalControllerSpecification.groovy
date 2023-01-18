@@ -38,7 +38,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
 
    void "fetch one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
@@ -84,8 +84,8 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
 
    void "fetch all" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final company2 = companyFactoryService.forDatasetCode('tstds2')
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final company2 = companyFactoryService.forDatasetCode('corrto')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
@@ -193,7 +193,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
 
    void "create one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
       final calendar = financialCalendarDataLoaderService.singleDTO()
@@ -233,7 +233,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
 
    void "create valid general ledger journal with null message" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
       final calendar = financialCalendarDataLoaderService.singleDTO()
@@ -275,7 +275,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
    @Unroll
    void "create invalid general ledger journal without #nonNullableProp" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
@@ -309,7 +309,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
 
    void "update one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
       final calendar = financialCalendarDataLoaderService.singleDTO()
@@ -351,7 +351,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
 
    void "update valid general ledger journal with null message" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
       final calendar = financialCalendarDataLoaderService.singleDTO()
@@ -395,7 +395,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
    @Unroll
    void "update invalid general ledger journal without #nonNullableProp" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
@@ -431,7 +431,7 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
 
    void "filter for criteria" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
       final calendar = financialCalendarDataLoaderService.singleDTO()

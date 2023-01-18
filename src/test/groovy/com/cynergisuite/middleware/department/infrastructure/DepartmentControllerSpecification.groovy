@@ -29,8 +29,8 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one by department not associated with authenticated user's dataset" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds2')
-      final department = departmentFactoryService.random(company)
+      final company = companyFactoryService.forDatasetCode('corrto')
+      final department = departmentFactoryService.department('NO', company)
 
       when:
       get("/department/${department.id}")
@@ -113,7 +113,7 @@ class DepartmentControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements[3].description == allTestDepartments[8].description
       pageTwoResult.elements[4].id == allTestDepartments[9].id
       pageTwoResult.elements[4].code == allTestDepartments[9].code
-      pageTwoResult.elements[4].description == null
+      pageTwoResult.elements[4].description == allTestDepartments[9].description
 
       when:
       def pageThreeResult = get("/department${pageThree}")

@@ -1,12 +1,11 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
+import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PaymentReportFilterRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceService
-import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentReportTemplate
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -104,7 +103,7 @@ class AccountPayableInvoiceController @Inject constructor(
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/report{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(
-      tags = ["AccountPayableInvoiceReportEndpoints"],
+      tags = ["AccountPayableInvoiceEndpoints"],
       summary = "Fetch an Account Payable Invoices Report",
       description = "Fetch an Account Payable Invoices Report",
       operationId = "accountPayableInvoice-fetchReport"
@@ -129,7 +128,7 @@ class AccountPayableInvoiceController @Inject constructor(
    fun fetchReport(
       @Parameter(name = "filterRequest", `in` = QUERY, required = false)
       @Valid @QueryValue("filterRequest")
-      filterRequest: PaymentReportFilterRequest,
+      filterRequest: InvoiceReportFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AccountPayableInvoiceReportTemplate {
@@ -138,28 +137,6 @@ class AccountPayableInvoiceController @Inject constructor(
       val user = userService.fetchUser(authentication)
       return accountPayableInvoiceService.fetchReport(user.myCompany(), filterRequest)
    }
-//   @Get(uri = "{?filterRequest*}", produces = [APPLICATION_JSON])
-//   @Operation(tags = ["AccountPayablePaymentEndpoints"], summary = "Fetch an Account Payable Payments Report", description = "Fetch an Account Payable Payments Report", operationId = "accountPayablePayment-fetchReport")
-//   @ApiResponses(
-//      value = [
-//         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayablePaymentReportTemplate::class))]),
-//         ApiResponse(responseCode = "204", description = "The requested Account Payable Payment was unable to be found, or the result is empty"),
-//         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-//         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-//      ]
-//   )
-//   fun fetchReport(
-//      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
-//      @Valid @QueryValue("filterRequest")
-//      filterRequest: PaymentReportFilterRequest,
-//      authentication: Authentication,
-//      httpRequest: HttpRequest<*>
-//   ): AccountPayablePaymentReportTemplate {
-//      logger.info("Fetching all Account Payable Payments {}")
-//
-//      val user = userService.fetchUser(authentication)
-//      return accountPayablePaymentService.fetchReport(user.myCompany(), filterRequest)
-//   }
 
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)

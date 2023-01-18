@@ -1,5 +1,1 @@
-dataset,store_id,people_id,unique_id,first_name,last_name,address_1,address_2,city,state,zip,cell_phone_number,home_phone_number,email,agreement_id,final_status,payout_date
-tstds1,4,3319,100036,GAVIN,TAUSSANT,1588 WOODLAWN DR,,SLIDELL,LA,70461,0,9855032403,GVTOUSSANT@GMAIL.COM,1,,12/13/2021
-tstds1,1,3325,100042,LYDEL,SMITH,3215 CAMELLIA ST,,HOUMA,LA,70363,9858555189,9858555189,LYDEL.SMITH.J@GMAIL.COM,2,,12/12/2021
-tstds1,4,3331,100048,GLENN,BROWN,507 DRURY LN,,SLIDELL,LA,70460,0,9852658800,,3,,12/11/2021
-tstds1,2,3345,100063,STACEY,WILLS,823 LAST ST,,ARNAUDVILLE,LA,70512,0,3372773438,STACEYWIILLS91@YAHOO.COM,4,,12/10/2021
+dataset,store_id,people_id,unique_id,first_name,last_name,address_1,address_2,city,state,zip,cell_phone_number,home_phone_number,email,agreement_id,purchase_date,current_customer_status,new_customer

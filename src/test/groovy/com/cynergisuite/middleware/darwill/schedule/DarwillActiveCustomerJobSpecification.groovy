@@ -18,7 +18,7 @@ class DarwillActiveCustomerJobSpecification extends ServiceSpecificationBase {
 
    void "upload active customers" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final schedules = darwillTestDataLoaderService.enableDarwill(tstds1)
       final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)
       final darwillActiveCustomerSchedule = schedules.find { it.title == "Darwill Active Customer" }
@@ -31,6 +31,6 @@ class DarwillActiveCustomerJobSpecification extends ServiceSpecificationBase {
       darwillActiveCustomerService.shouldProcess(darwillActiveCustomerSchedule, novemberMonday)
       result.failureReason() == null
       result.scheduleName() == "Darwill Active Customers"
-      result.rowCount() == 3260
+      result.rowCount() == 1085
    }
 }

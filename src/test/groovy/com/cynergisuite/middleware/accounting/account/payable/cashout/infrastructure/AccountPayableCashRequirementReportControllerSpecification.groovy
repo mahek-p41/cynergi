@@ -43,7 +43,7 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
 
    void "fetch all with multiple vendors and invoices"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def store = storeFactoryService.store(3, company)
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def shipViaList = shipViaTestDataLoaderService.stream(4, company).toList()
@@ -161,7 +161,7 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
 
    void "fetch all with many vendors"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def store = storeFactoryService.store(3, company)
       def vendorPmtTermIn = vendorPaymentTermTestDataLoaderService.single(company)
       def shipViaIn = shipViaTestDataLoaderService.single(company)
@@ -281,7 +281,7 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
 
    void "fetch all with multiple vendors and invoices sort by vendor name"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def store = storeFactoryService.store(3, company)
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def shipViaList = shipViaTestDataLoaderService.stream(4, company).toList()
@@ -403,7 +403,7 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
 
    void "fetch all resulting in empty report"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def store = storeFactoryService.store(3, company)
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def shipViaList = shipViaTestDataLoaderService.stream(4, company).toList()
@@ -525,7 +525,7 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
 
    void "fetch all with multiple vendors and invoices correct calculations"() {
       given:
-      def company = companyFactoryService.forDatasetCode('tstds1')
+      def company = companyFactoryService.forDatasetCode('coravt')
       def store = storeFactoryService.store(3, company)
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def shipViaList = shipViaTestDataLoaderService.stream(4, company).toList()

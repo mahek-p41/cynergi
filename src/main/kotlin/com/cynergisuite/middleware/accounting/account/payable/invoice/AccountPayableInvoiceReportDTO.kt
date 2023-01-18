@@ -32,6 +32,14 @@ data class AccountPayableInvoiceReportDTO(
    var invoice: String? = null,
 
    @field:NotNull
+   @field:Schema(description = "Operator")
+   var operator: Int? = null,
+
+   @field:NotNull
+   @field:Schema(description = "Use Tax indicator")
+   var useTax: Boolean? = null,
+
+   @field:NotNull
    @field:Schema(description = "Account payable invoice type value")
    var type: String? = null,
 

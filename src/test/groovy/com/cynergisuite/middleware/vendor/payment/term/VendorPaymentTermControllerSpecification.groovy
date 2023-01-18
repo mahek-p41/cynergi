@@ -39,7 +39,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
     void "Term with 1 payments and one schedule record direct insert" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
       final VPT = new VendorPaymentTermEntity(null, company, "test1", null, null, null, schedules)
       final vendorPaymentTerm = vendorPaymentTermRepository.insert(VPT)
@@ -107,7 +107,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "update vendor payment term schedule record" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 30, 0.75, 1), new VendorPaymentTermScheduleEntity(null, null, 60, 0.25, 2)]
       final paymentTerm = new VendorPaymentTermEntity(null, company, "test5", null, null, null, schedules)
       final existing = vendorPaymentTermRepository.insert(paymentTerm).with { new VendorPaymentTermDTO(it) }
@@ -127,7 +127,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "update schedule record percentages to sum to less than 100" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 30, 0.75, 1), new VendorPaymentTermScheduleEntity(null, null, 60, 0.25, 2)]
       final paymentTerm = new VendorPaymentTermEntity(null, company, "test6", null, null, null, schedules)
       final existing = vendorPaymentTermRepository.insert(paymentTerm).with { new VendorPaymentTermDTO(it) }
@@ -206,7 +206,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "delete the first of two schedule records" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 30, 0.75, 1), new VendorPaymentTermScheduleEntity(null, null, 60, 0.25, 2)]
       final paymentTerm = new VendorPaymentTermEntity(null, company, "test6", null, null, null, schedules)
       final existing = vendorPaymentTermRepository.insert(paymentTerm).with { new VendorPaymentTermDTO(it) }
@@ -228,7 +228,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "delete all schedule records tied to a vendor payment term" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 30, 0.75, 1), new VendorPaymentTermScheduleEntity(null, null, 60, 0.25, 2)]
       final paymentTerm = new VendorPaymentTermEntity(null, company, "test7", null, null, null, schedules)
       final existing = vendorPaymentTermRepository.insert(paymentTerm).with { new VendorPaymentTermDTO(it) }
@@ -249,7 +249,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "fetch all vendor payment term records when more than vendor payment term exists" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final schedules1 = [new VendorPaymentTermScheduleEntity(null, null, 30, 0.50, 1), new VendorPaymentTermScheduleEntity(null, null, 60, 0.50, 2)]
       final paymentTerm1 = new VendorPaymentTermEntity(null, company, "test8a", null, null, null, schedules1)
       final result1 = vendorPaymentTermRepository.insert(paymentTerm1)
@@ -352,7 +352,7 @@ class VendorPaymentTermControllerSpecification extends ControllerSpecificationBa
 
    void "delete vendorPaymentTerm still has references (payment schedules)" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
       final VPT = new VendorPaymentTermEntity(null, company, "test1", null, null, null, schedules)
       final vendorPaymentTerm = vendorPaymentTermRepository.insert(VPT)
