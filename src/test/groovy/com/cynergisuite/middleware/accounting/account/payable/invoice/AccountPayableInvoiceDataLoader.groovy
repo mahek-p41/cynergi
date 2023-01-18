@@ -62,7 +62,7 @@ class AccountPayableInvoiceDataLoader {
          new AccountPayableInvoiceEntity(
             null,
             vendorIn,
-            lorem.characters(3, 20),
+            (9100029365 + it).toString(),
             purchaseOrderIn?.with { po -> new SimpleIdentifiableEntity(po) },
             invoiceDate,
             invoiceAmount,
@@ -80,13 +80,13 @@ class AccountPayableInvoiceDataLoader {
             random.nextBoolean(),
             paidAmount,
             numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
-            AccountPayableInvoiceTypeDataLoader.random(),
+            AccountPayableInvoiceTypeDataLoader.predefined().find { it.value == 'P' },
             statusType,
             LocalDate.now(),
             new SimpleIdentifiableEntity(payToIn),
             random.nextBoolean(),
             random.nextBoolean(),
-            LocalDate.now(),
+            LocalDate.of(2019, 2, 25),
             locationIn?.myId()?.with { new SimpleLegacyIdentifiableDTO(it) }
          )
       }

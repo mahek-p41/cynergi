@@ -86,7 +86,7 @@ data class AccountPayableInvoiceReportDTO(
 
    @field:NotNull
    @field:Schema(description = "Payment number")
-   var pmtNumber: Int? = null,
+   var pmtNumber: String? = null,
 
    @field:NotNull
    @field:Schema(description = "Account payable invoice message")

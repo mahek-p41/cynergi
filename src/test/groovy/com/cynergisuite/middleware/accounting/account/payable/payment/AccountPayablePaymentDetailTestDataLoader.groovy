@@ -27,7 +27,6 @@ class AccountPayablePaymentDetailTestDataLoader {
       final number = numberIn < 0 ? 1 : numberIn
       final faker = new Faker()
       final random = faker.random()
-      final amount = amountIn ? amountIn : random.nextInt(1, 100000).toBigDecimal()
 
       return IntStream.range(0, number).mapToObj {
          new AccountPayablePaymentDetailEntity(
@@ -35,7 +34,7 @@ class AccountPayablePaymentDetailTestDataLoader {
             vendorIn,
             invoiceIn,
             apPaymentIn,
-            amount,
+            amountIn ? amountIn : random.nextInt(1, 100000).toBigDecimal(),
             random.nextInt(1, 100000).toBigDecimal()
          )
       }
