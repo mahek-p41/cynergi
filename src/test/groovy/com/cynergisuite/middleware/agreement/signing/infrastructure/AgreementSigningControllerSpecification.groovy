@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.agreement.signing.infrastructure
 
 import com.cynergisuite.domain.SimpleLegacyNumberDTO
+import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.agreement.signing.AgreementSigningDTO
 import com.cynergisuite.middleware.agreement.signing.AgreementSigningTestDataLoaderService
@@ -19,7 +20,7 @@ import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
-class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
+class AgreementSigningControllerSpecification extends ControllerSpecificationBase {
    @Client("/agreement/signing") @Inject HttpClient signingClient
 
    @Inject AgreementSigningTestDataLoaderService agreementSigningService
@@ -122,6 +123,33 @@ class AgreementSigningControllerSpecification extends ServiceSpecificationBase {
       result.totalPages == 1
       result.first == true
       result.last == true
+   }
+
+   void "fetch three agreement_signing records for customer# 123456 authenticated" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.random(company)
+      final agreementSigning1 = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, UUID.randomUUID())
+      final agreementSigning2 = agreementSigningService.single(company, store, 123456, 111111, 876543, "R", 1, UUID.randomUUID())
+      final agreementSigning3 = agreementSigningService.single(company, store, 123456, 111111, 987654, "R", 1, UUID.randomUUID())
+      final agreementSigning4 = agreementSigningService.single(company, store, 222222, 333333, 444444, "R", 1, UUID.randomUUID())
+      final agreementSigning5 = agreementSigningService.single(company, store, 222222, 333333, 555555, "R", 1, UUID.randomUUID())
+      final agreementSigningArray = [agreementSigning1, agreementSigning2, agreementSigning3, agreementSigning4, agreementSigning5]
+
+      when:
+      def result = get("/agreement/signing/customerAgreements/123456")
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.size() == 3
+      result.eachWithIndex { result2, index ->
+         with(result2) {
+            primaryCustomerNumber == agreementSigningArray[index].primaryCustomerNumber
+            agreementNumber == agreementSigningArray[index].agreementNumber
+            agreementType == agreementSigningArray[index].agreementType
+            externalSignatureId == agreementSigningArray[index].externalSignatureId.toString()
+         }
+      }
    }
 
    void "fetch agreement_signing records for made up/missing customer# 999999" () {

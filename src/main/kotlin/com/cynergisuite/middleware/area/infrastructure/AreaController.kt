@@ -18,8 +18,8 @@ import org.slf4j.LoggerFactory
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/area")
 class AreaController @Inject constructor(
-   private val userService: UserService,
    private val areaService: AreaService,
+   private val userService: UserService,
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AreaController::class.java)
 
