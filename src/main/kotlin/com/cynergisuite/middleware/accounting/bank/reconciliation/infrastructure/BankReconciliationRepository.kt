@@ -1,12 +1,12 @@
 package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure
 
+import com.cynergisuite.domain.BankReconClearingFilterRequest
 import com.cynergisuite.domain.BankReconFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
-import com.cynergisuite.extensions.getLongOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
@@ -340,6 +340,103 @@ class BankReconciliationRepository @Inject constructor(
       return BankReconciliationReportDTO(entity)
    }
 
+   @ReadOnly
+   fun fetchClear(filterRequest: BankReconClearingFilterRequest, company: CompanyEntity): List<BankReconciliationEntity> {
+      val bankRecons = mutableListOf<BankReconciliationEntity>()
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val whereClause = StringBuilder(" WHERE bankRecon.company_id = :comp_id")
+
+      if (filterRequest.bank != null) {
+         params["bank"] = filterRequest.bank
+         whereClause.append(" AND bank.bank_number = :bank")
+      }
+
+      if (filterRequest.fromTransactionDate != null || filterRequest.thruTransactionDate != null) {
+         params["fromTransactionDate"] = filterRequest.fromTransactionDate
+         params["thruTransactionDate"] = filterRequest.thruTransactionDate
+         whereClause.append(" AND bankRecon.transaction_date")
+            .append(
+               buildFilterString(
+                  filterRequest.fromTransactionDate != null,
+                  filterRequest.thruTransactionDate != null,
+                  "fromTransactionDate",
+                  "thruTransactionDate"
+               )
+            )
+      }
+
+      if (filterRequest.beginDocNum != null || filterRequest.endDocNum != null) {
+         params["beginDocNum"] = filterRequest.beginDocNum
+         params["endDocNum"] = filterRequest.endDocNum
+         whereClause.append(" AND bankRecon.document")
+            .append(
+               buildFilterString(
+                  filterRequest.beginDocNum != null,
+                  filterRequest.endDocNum != null,
+                  "beginDocNum",
+                  "endDocNum"
+               )
+            )
+      }
+
+      if (filterRequest.bankType != null) {
+         params["type"] = filterRequest.bankType
+         whereClause.append(" AND bankReconType.value = :type")
+      }
+
+      if (filterRequest.status != null) {
+         params["status"] = filterRequest.status
+         if (filterRequest.status == "C") {
+            whereClause.append(" AND bankRecon.cleared_date IS NOT NULL")
+         }
+         if (filterRequest.status == "O") {
+            whereClause.append(" AND bankRecon.cleared_date IS NULL")
+         }
+      }
+
+      if (filterRequest.description != null) {
+         params["description"] = filterRequest.description
+         whereClause.append(" AND bankRecon.description ILIKE \'${filterRequest.description}%\'")
+      }
+
+      if (filterRequest.amount != null) {
+         params["amount"] = filterRequest.amount
+         whereClause.append(" AND bankRecon.amount = :amount")
+      }
+
+      if (filterRequest.statementDate != null) {
+         params["statementDate"] = filterRequest.statementDate
+         whereClause.append(" AND bankRecon")
+      }
+
+
+      jdbc.query(
+         """
+            ${selectBaseQuery()}
+            $whereClause
+            ORDER BY bank_name, bankRecon_transaction_date, bankRecon_document, bankRecon_cleared_date
+         """.trimIndent(),
+         params,
+      ) { rs, elements ->
+         do {
+            val localBank = mapRow(rs, company, "bankRecon_")
+
+            bankRecons.add(localBank)
+         } while (rs.next())
+      }
+      return bankRecons
+   }
+
+   @Transactional
+   fun bulkUpdate(entities: List<BankReconciliationEntity>, company: CompanyEntity): List<BankReconciliationEntity> {
+      logger.debug("Updating bank reconciliation {}", entities)
+      val updated = mutableListOf<BankReconciliationEntity>()
+
+      entities.map { update(it, company)}
+         .forEach { updated.add(it) }
+
+      return updated
+   }
    private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): BankReconciliationEntity {
       return BankReconciliationEntity(
          id = rs.getUuid("${columnPrefix}id"),

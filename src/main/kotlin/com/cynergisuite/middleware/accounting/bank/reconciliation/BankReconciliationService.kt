@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.bank.reconciliation
 
+import com.cynergisuite.domain.BankReconClearingFilterRequest
 import com.cynergisuite.domain.BankReconFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
@@ -42,6 +43,18 @@ class BankReconciliationService @Inject constructor(
    fun fetchReport(filterRequest: BankReconFilterRequest, company: CompanyEntity): BankReconciliationReportDTO {
       return bankReconciliationRepository.findReport(filterRequest, company)
 
+   }
+
+   fun clearing(filterRequest: BankReconClearingFilterRequest, company: CompanyEntity): List<BankReconciliationDTO> {
+      val found = bankReconciliationRepository.fetchClear(filterRequest, company)
+      return found.map { transformEntity(it) }
+   }
+
+   fun updateClear(dtos: List<BankReconciliationDTO>, company: CompanyEntity): List<BankReconciliationDTO> {
+      val toUpdate = bankReconciliationValidator.validateBulkUpdate(dtos, company)
+      val updated = bankReconciliationRepository.bulkUpdate(toUpdate, company)
+
+      return updated.map{ transformEntity(it)}
    }
 }
 
