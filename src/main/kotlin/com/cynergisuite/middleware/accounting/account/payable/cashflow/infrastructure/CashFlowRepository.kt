@@ -84,8 +84,6 @@ class CashFlowRepository @Inject constructor(
       val cashflowTotals = CashFlowBalanceEntity()
       val params = mutableMapOf < String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id AND apInvoice.status_id = 2")
-      val dates = mutableListOf <LocalDate> ()
-      params["currentDate"] = LocalDate.now()
       params["fromDateOne"] = filterRequest.fromDateOne
       params["fromDateTwo"] = filterRequest.fromDateTwo
       params["fromDateThree"] = filterRequest.fromDateThree
@@ -97,28 +95,48 @@ class CashFlowRepository @Inject constructor(
       params["thruDateFour"] = filterRequest.thruDateFour
       params["thruDateFive"] = filterRequest.thruDateFive
 
-
-      //This is finding oldest and newest dates from a filter request in the case a user doesn't provide all date filters
-      CashFlowFilterRequest:: class.memberProperties.forEach {
-         if (it.returnType.jvmErasure.java == LocalDate:: class.java){
-            val date = if (it.getter.call(filterRequest) != null) {
-               it.getter.call(filterRequest) as LocalDate
-            } else null
-            if (date != null) {
-               dates.add(date)
-            }
-         }
-      }
-      val oldestDate = dates.stream().min(LocalDate::compareTo).get()
-      val newestDate = dates.stream().max(LocalDate::compareTo).get()
-
-      if (oldestDate != null || newestDate != null) {
-         params["fromDate"] = oldestDate
-         params["thruDate"] = newestDate
-         whereClause.append(" AND apInvoice.due_date ")
-            .append(buildFilterString(oldestDate != null, newestDate != null, "fromDate", "thruDate"))
+      if (filterRequest.fromDateOne != null || filterRequest.thruDateOne != null) {
+         params["fromDateOne"] = filterRequest.fromDateOne
+         params["thruDateOne"] = filterRequest.thruDateOne
+         whereClause.append(" AND (apInvoice.due_date ")
+            .append(buildFilterString(filterRequest.fromDateOne != null, filterRequest.thruDateOne != null, "fromDateOne", "thruDateOne"))
       }
 
+      if (filterRequest.fromDateTwo != null || filterRequest.thruDateTwo != null) {
+         params["fromDateTwo"] = filterRequest.fromDateTwo
+         params["thruDateTwo"] = filterRequest.thruDateTwo
+         whereClause.append(" OR apInvoice.due_date ")
+            .append(buildFilterString(filterRequest.fromDateTwo != null, filterRequest.thruDateTwo != null, "fromDateTwo", "thruDateTwo"))
+      }
+
+      if (filterRequest.fromDateThree != null || filterRequest.thruDateThree != null) {
+         params["fromDateThree"] = filterRequest.fromDateThree
+         params["thruDateThree"] = filterRequest.thruDateThree
+         whereClause.append(" OR apInvoice.due_date ")
+            .append(buildFilterString(filterRequest.fromDateThree != null, filterRequest.thruDateThree != null, "fromDateThree", "thruDateThree"))
+      }
+
+      if (filterRequest.fromDateFour != null || filterRequest.thruDateFour != null) {
+         params["fromDateFour"] = filterRequest.fromDateFour
+         params["thruDateFour"] = filterRequest.thruDateFour
+         whereClause.append(" OR apInvoice.due_date ")
+            .append(buildFilterString(filterRequest.fromDateFour != null, filterRequest.thruDateFour != null, "fromDateFour", "thruDateFour"))
+      }
+
+      if (filterRequest.fromDateFive != null || filterRequest.thruDateFive != null) {
+         params["fromDateFive"] = filterRequest.fromDateFive
+         params["thruDateFive"] = filterRequest.thruDateFive
+         whereClause.append(" OR apInvoice.due_date ")
+            .append(
+               buildFilterString(
+                  filterRequest.fromDateFive != null,
+                  filterRequest.thruDateFive != null,
+                  "fromDateFive",
+                  "thruDateFive"
+               )
+            )
+      }
+      whereClause.append(')')
          jdbc.query(
             """
                   ${selectBaseQuery()}
