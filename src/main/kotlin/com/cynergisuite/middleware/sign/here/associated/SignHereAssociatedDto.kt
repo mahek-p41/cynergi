@@ -25,14 +25,8 @@ data class SignHereAssociatedDto(
    val name: String? = null,
 
    @field:Schema(name = "timeCreated", required = true, nullable = false, description = "Timestamp of when the request was made to the Sign Here service")
-   val timeCreated: OffsetDateTime? = null
-) {
-   constructor(associatedDetailDto: AssociatedDetailDto) :
-      this(
-         id = associatedDetailDto.id!!,
-         type = associatedDetailDto.type!!,
-         signatories = associatedDetailDto.signatories,
-         name = associatedDetailDto.signingDetail?.name,
-         timeCreated = associatedDetailDto.timeCreated!!
-      )
-}
+   val timeCreated: OffsetDateTime? = null,
+
+   @field:Schema(name = "signatureUrl", required = false, nullable = true, description = "URL that a signature can be signed at if available")
+   val signatureUrl: String? = null,
+)

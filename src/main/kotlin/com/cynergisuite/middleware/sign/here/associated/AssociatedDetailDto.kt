@@ -12,6 +12,7 @@ data class AssociatedDetailDto(
    val timeCreated: OffsetDateTime? = null,
    val signingDetail: OrgSigRequestedSigningDetail? = null,
    val expirationDate: String? = null,
+   val signatureUrl: String? = null,
 )
 
 @Introspected

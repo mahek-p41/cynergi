@@ -76,7 +76,8 @@ class SignHereAgreementProxyController @Inject constructor(
                type = doc.type,
                signatories = doc.signatories,
                name = doc.signingDetail?.name,
-               timeCreated = doc.timeCreated
+               timeCreated = doc.timeCreated,
+               signatureUrl = doc.signatureUrl,
             )
          }
       } else {
