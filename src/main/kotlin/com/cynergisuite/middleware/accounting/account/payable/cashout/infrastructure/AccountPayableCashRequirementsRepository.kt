@@ -74,14 +74,13 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
             apPaymentStatus.id                                             AS apInvoiceDetail_apPayment_status_id,
             apPaymentStatus.value                                          AS apInvoiceDetail_apPayment_status_value,
             apPaymentStatus.description                                    AS apInvoiceDetail_apPayment_status_description,
-            apPaymentStatus.localization_code                              AS apInvoiceDetail_apPayment_status_localization_code,
             count(*) OVER() AS total_elements
          FROM account_payable_invoice apInvoice
             JOIN vendor vend ON apInvoice.vendor_id = vend.id AND vend.deleted = FALSE
             JOIN account_payable_invoice_status_type_domain status ON apInvoice.status_id = status.id
             LEFT JOIN account_payable_payment_detail apPaymentDetail ON apInvoice.id = apPaymentDetail.account_payable_invoice_id
             LEFT JOIN account_payable_payment apPayment ON apPaymentDetail.payment_number_id = apPayment.id
-            JOIN account_payable_payment_status_type_domain apPaymentStatus on apPayment.account_payable_payment_status_id = apPaymentStatus.id
+            LEFT JOIN account_payable_payment_status_type_domain apPaymentStatus on apPayment.account_payable_payment_status_id = apPaymentStatus.id
       """
       }
 
@@ -156,7 +155,7 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
 
             var invoiceFlag = false
             mapRowInvoiceDetail(rs, "apInvoiceDetail_").let {
-               if(it.invoiceStatus.value != "V" && it.apPaymentStatus.value == "P"){
+               if(it.invoiceStatus.value != "V" && (it.apPaymentStatusValue == "P" || it.apPaymentStatusValue == null)){
                   tempVendor.invoices?.add(it)
                   invoiceFlag = true
                }
@@ -308,7 +307,8 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
          invoiceStatus = statusRepository.mapRow(rs, "${columnPrefix}apInvoice_status_"),
          invoiceDueDate = rs.getLocalDate("${columnPrefix}apInvoice_due_date"),
          apPaymentPaymentDate = rs.getLocalDateOrNull("${columnPrefix}apPayment_payment_date"),
-         apPaymentStatus = paymentStatus.mapRow(rs, "${columnPrefix}apPayment_status_"),
+         apPaymentStatusId = rs.getIntOrNull( "${columnPrefix}apPayment_status_id"),
+         apPaymentStatusValue = rs.getString("${columnPrefix}apPayment_status_value"),
          apPaymentDateVoided = rs.getLocalDateOrNull("${columnPrefix}apPayment_date_voided"),
          apPaymentIsVoided = rs.getBoolean("${columnPrefix}apPayment_void_interfaced_indicator"),
          apPaymentDetailAmount = rs.getBigDecimalOrNull("${columnPrefix}apPaymentDetail_amount"),

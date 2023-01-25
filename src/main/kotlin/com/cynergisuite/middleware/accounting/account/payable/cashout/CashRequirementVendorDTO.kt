@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.accounting.account.payable.cashout
 
-import com.cynergisuite.middleware.accounting.account.payable.aging.BalanceDisplayTotalsDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -9,6 +8,7 @@ import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
+import kotlin.collections.LinkedHashSet
 
 @JsonInclude(NON_NULL)
 @Schema(name = "CashRequirementVendorDTO", title = "Cash Requirement Vendor Detail", description = "Vendor details for Cash Requirement Report")
@@ -30,8 +30,7 @@ data class CashRequirementVendorDTO(
 
    @field:NotNull
    @field:Schema(description = "Invoices")
-   var invoices: MutableSet<CashRequirementReportInvoiceDetailEntity>? = LinkedHashSet(),
-
+   var invoices: MutableSet<CashRequirementReportInvoiceDetailDTO>? = LinkedHashSet(),
 
    @field:Schema(description = "Total balance for the vendor in each balance display column")
    var vendorTotals: CashRequirementBalanceDTO? = null
@@ -42,7 +41,9 @@ data class CashRequirementVendorDTO(
          vendorCompanyId = entity.vendorCompanyId,
          vendorNumber = entity.vendorNumber,
          vendorName = entity.vendorName,
-         invoices = entity.invoices,
+         invoices = entity.invoices!!.asSequence().map {
+            CashRequirementReportInvoiceDetailDTO(it)
+         }.toMutableSet(),
          vendorTotals = CashRequirementBalanceDTO(entity.vendorTotals)
       )
 }
