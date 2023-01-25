@@ -1,10 +1,8 @@
 package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure
 
-import com.cynergisuite.domain.BankReconClearingFilterRequest
-import com.cynergisuite.domain.BankReconFilterRequest
-import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.domain.*
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.accounting.account.payable.cashflow.AccountPayableCashFlowDTO
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationService
@@ -13,6 +11,7 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.HttpRequest
+import io.micronaut.http.MediaType
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -25,6 +24,7 @@ import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -219,4 +219,29 @@ class BankReconciliationController @Inject constructor(
 
       return response
    }
+
+
+   @Throws(PageOutOfBoundsException::class)
+   @Operation(tags = ["BankReconciliationEndpoints"], summary = "Fetch reconciliation transactions for a specified bank", description = "Fetch Reconciliations for a Specified Bank", operationId = "bankReconciliation-fetchTransactions")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = BankReconciliationDTO::class))])
+      ]
+   )
+   @Get(uri = "/transactions{?pageRequest*}", produces = [APPLICATION_JSON])
+   fun fetchTransactions(
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("pageRequest")
+      filterRequest: BankReconciliationTransactionsFilterRequest,
+      authentication: Authentication
+   ): Page<BankReconciliationDTO> {
+      val user = userService.fetchUser(authentication)
+      val bankReconTransactions = bankReconciliationService.fetchTransactions(filterRequest, user.myCompany())
+
+
+      logger.debug("Listing of Bank Reconciliation Transactions resulted in {}", bankReconTransactions)
+
+      return bankReconTransactions
+   }
+
 }

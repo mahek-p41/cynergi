@@ -1,10 +1,6 @@
 package com.cynergisuite.middleware.accounting.bank.reconciliation
 
-import com.cynergisuite.domain.BankReconClearingFilterRequest
-import com.cynergisuite.domain.BankReconFilterRequest
-import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.*
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure.BankReconciliationRepository
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
@@ -56,6 +52,13 @@ class BankReconciliationService @Inject constructor(
 
       return updated.map{ transformEntity(it)}
    }
+
+   fun fetchTransactions(filterRequest: BankReconciliationTransactionsFilterRequest, company: CompanyEntity): Page<BankReconciliationDTO> {
+      val found = bankReconciliationRepository.findTransactions(filterRequest, company)
+
+      return found.toPage { entity: BankReconciliationEntity -> transformEntity(entity) }
+   }
+
 }
 
 private fun transformEntity(entity: BankReconciliationEntity): BankReconciliationDTO {

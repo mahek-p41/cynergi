@@ -1,24 +1,14 @@
 package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure
 
-import com.cynergisuite.domain.BankReconClearingFilterRequest
-import com.cynergisuite.domain.BankReconFilterRequest
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.*
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getLocalDate
-import com.cynergisuite.extensions.getLocalDateOrNull
-import com.cynergisuite.extensions.getUuid
-import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.query
-import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportEntity
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
-import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconSummaryEntity
-import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationEntity
-import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationReportDetailEntity
-import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationTypeEnum
+import com.cynergisuite.middleware.accounting.bank.reconciliation.*
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastructure.BankReconciliationTypeRepository
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalEntity
 import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
@@ -437,6 +427,100 @@ class BankReconciliationRepository @Inject constructor(
 
       return updated
    }
+
+   @ReadOnly
+   fun findTransactions(filterRequest: BankReconciliationTransactionsFilterRequest, company: CompanyEntity) : RepositoryPage<BankReconciliationEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
+      val whereClause = StringBuilder(" WHERE bankRecon.company_id = :comp_id")
+
+      if (filterRequest.bank != null) {
+         params["bank"] = filterRequest.bank
+         whereClause.append(" AND bank.bank_number = :bank")
+      }
+
+      if (filterRequest.fromTransactionDate != null || filterRequest.thruTransactionDate != null) {
+         params["fromTransactionDate"] = filterRequest.fromTransactionDate
+         params["thruTransactionDate"] = filterRequest.thruTransactionDate
+         whereClause.append(" AND bankRecon.transaction_date")
+            .append(
+               buildFilterString(
+                  filterRequest.fromTransactionDate != null,
+                  filterRequest.thruTransactionDate != null,
+                  "fromTransactionDate",
+                  "thruTransactionDate"
+               )
+            )
+      }
+
+      if (filterRequest.beginDocNum != null || filterRequest.endDocNum != null) {
+         params["beginDocNum"] = filterRequest.beginDocNum
+         params["endDocNum"] = filterRequest.endDocNum
+         whereClause.append(" AND bankRecon.document")
+            .append(
+               buildFilterString(
+                  filterRequest.beginDocNum != null,
+                  filterRequest.endDocNum != null,
+                  "beginDocNum",
+                  "endDocNum"
+               )
+            )
+      }
+
+      if (filterRequest.description != null) {
+         params["description"] = filterRequest.description
+         whereClause.append(" AND bankRecon.description ILIKE \'${filterRequest.description}%\'") //ILIKE is case-insensitive LIKE
+      }
+
+      if (filterRequest.bankType != null) {
+         params["type"] = filterRequest.bankType
+         whereClause.append(" AND bankReconType.value = :type")
+      }
+
+      if (filterRequest.status != null) {
+         params["status"] = filterRequest.status
+         if (filterRequest.status == "C") {
+            whereClause.append(" AND bankRecon.cleared_date IS NOT NULL")
+         }
+         if (filterRequest.status == "O") {
+            whereClause.append(" AND bankRecon.cleared_date IS NULL")
+         }
+      }
+
+      if (filterRequest.fromClearedDate != null || filterRequest.thruClearedDate != null) {
+         params["fromClearedDate"] = filterRequest.fromClearedDate
+         params["thruClearedDate"] = filterRequest.thruClearedDate
+         whereClause.append(" AND bankRecon.transaction_date")
+            .append(
+               buildFilterString(
+                  filterRequest.fromClearedDate != null,
+                  filterRequest.thruClearedDate != null,
+                  "fromClearedDate",
+                  "thruClearedDate"
+               )
+            )
+      }
+
+      if (filterRequest.amount != null) {
+         params["amount"] = filterRequest.amount
+         whereClause.append(" AND bankRecon.amount = :amount")
+      }
+
+      return jdbc.queryPaged(
+         """
+            ${selectBaseQuery()}
+            $whereClause
+            ORDER BY bankRecon_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
+            LIMIT :limit OFFSET :offset
+         """.trimIndent(),
+         params,
+         filterRequest
+      ) { rs, elements ->
+         do {
+            elements.add(mapRow(rs, company, "bankRecon_"))
+         } while (rs.next())
+      }
+   }
+
    private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): BankReconciliationEntity {
       return BankReconciliationEntity(
          id = rs.getUuid("${columnPrefix}id"),
