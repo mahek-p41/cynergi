@@ -279,14 +279,14 @@ class BankReconciliationRepository @Inject constructor(
 
       if (filterRequest.description != null) {
          params["description"] = filterRequest.description
-         whereClause.append(" AND bankRecon.description ILIKE \'${filterRequest.description}%\'")
+         whereClause.append(" AND bankRecon.description ILIKE \'%${filterRequest.description}%\'")
       }
 
       jdbc.query(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY bank_name, bankRecon_transaction_date, bankRecon_document, bankRecon_cleared_date
+            ORDER BY bank_number, bankRecon_transaction_date, bankRecon_document, bankRecon_cleared_date
          """.trimIndent(),
          params,
       ) {

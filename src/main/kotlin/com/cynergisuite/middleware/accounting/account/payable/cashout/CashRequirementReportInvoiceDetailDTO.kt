@@ -61,6 +61,12 @@ data class CashRequirementReportInvoiceDetailDTO(
    @field:Schema(description = "Account payable payment payment date", required = false)
    var apPaymentPaymentDate: LocalDate? = null,
 
+   @field:Schema(description = "Account payable payment status id", required = false)
+   var apPaymentStatusId: Int?,
+
+   @field:Schema(description = "Account payable payment status value", required = false)
+   var apPaymentStatusValue: String?,
+
    @field:Schema(description = "Account payable payment date voided", required = false)
    var apPaymentDateVoided: LocalDate? = null,
 
@@ -89,6 +95,8 @@ data class CashRequirementReportInvoiceDetailDTO(
          invoiceStatus = AccountPayableInvoiceStatusTypeDTO(entity.invoiceStatus),
          invoiceDueDate = entity.invoiceDueDate,
          apPaymentPaymentDate = entity.apPaymentPaymentDate,
+         apPaymentStatusId = entity.apPaymentStatusId,
+         apPaymentStatusValue = entity.apPaymentStatusValue,
          apPaymentDateVoided = entity.apPaymentDateVoided,
          apPaymentDetailAmount = entity.apPaymentDetailAmount,
          balance = entity.balance,
