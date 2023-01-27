@@ -172,7 +172,7 @@ class BankReconciliationController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @Operation(tags = ["BankReconciliationEndpoints"], summary = "Fetch a bank reconciliation report", description = "Fetch a bank reconciliation report", operationId = "bankReconciliation-fetchReport")
+   @Operation(tags = ["BankReconciliationEndpoints"], summary = "Fetch a list of bank reconciliations to update cleared status", description = "Fetch a list of bank reconciliations to update cleared status", operationId = "bankReconciliation-fetchClearing")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = BankReconciliationDTO::class))])

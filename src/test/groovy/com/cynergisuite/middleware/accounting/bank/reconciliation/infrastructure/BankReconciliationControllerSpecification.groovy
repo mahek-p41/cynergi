@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure
 
+import com.cynergisuite.domain.BankReconClearingFilterRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
@@ -406,5 +407,120 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       response[0].path == "bank.id"
       response[0].message == "$nonExistentBankId was unable to be found"
       response[0].code == 'system.not.found'
+   }
+
+   void "fetch list of bank reconciliation clearing status" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      dataLoaderService.stream(5, companyFactoryService.forDatasetCode('corrto'), bankIn, LocalDate.now(), null)
+      final bankRecons = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now(), null).toList()
+
+      def filterRequest = new BankReconClearingFilterRequest()
+
+      filterRequest['bank'] = bankIn.number
+      filterRequest['fromTransactionDate'] = LocalDate.now().minusDays(5)
+      filterRequest['thruTransactionDate'] = LocalDate.now().plusDays(5)
+
+
+      when:
+      def result = get("$path/clearing${filterRequest}")
+
+      then:
+      notThrown(Exception)
+      result.size() == 12
+   }
+
+   void "update list of bank reconciliation cleared status" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      dataLoaderService.stream(5, companyFactoryService.forDatasetCode('corrto'), bankIn, LocalDate.now(), null)
+      final bankRecons = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now(), null).toList()
+
+      def filterRequest = new BankReconClearingFilterRequest()
+
+      filterRequest['bank'] = bankIn.number
+      filterRequest['fromTransactionDate'] = LocalDate.now().minusDays(5)
+      filterRequest['thruTransactionDate'] = LocalDate.now().plusDays(5)
+
+      def toUpdate = get("$path/clearing${filterRequest}")
+
+      toUpdate.get(0).clearedDate = LocalDate.now()
+
+      when:
+
+      def result = put("$path/clearing", toUpdate)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result.get(0)) {
+         id != null
+         bank.id == toUpdate.get(0).bank.id
+
+         with(type) {
+            value == toUpdate.get(0).type.value
+            description == toUpdate.get(0).type.description
+         }
+
+         date == toUpdate.get(0).date.toString()
+         clearedDate == toUpdate.get(0).clearedDate.toString()
+         amount == toUpdate.get(0).amount
+         description == toUpdate.get(0).description
+         document == toUpdate.get(0).document
+      }
+      with(result.get(1)) {
+         clearedDate == null
+      }
+   }
+
+   void "update list of bank reconciliation cleared status to uncleared" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      dataLoaderService.stream(5, companyFactoryService.forDatasetCode('corrto'), bankIn, LocalDate.now(), null)
+      final bankRecons = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now(), LocalDate.now().plusMonths(1)).toList()
+
+      def filterRequest = new BankReconClearingFilterRequest()
+
+      filterRequest['bank'] = bankIn.number
+      filterRequest['fromTransactionDate'] = LocalDate.now().minusDays(5)
+      filterRequest['thruTransactionDate'] = LocalDate.now().plusDays(5)
+
+      def toUpdate = get("$path/clearing${filterRequest}")
+
+      toUpdate.get(0).clearedDate = null
+
+      when:
+      def result = put("$path/clearing", toUpdate)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      with(result.get(0)) {
+         id != null
+         bank.id == toUpdate.get(0).bank.id
+
+         with(type) {
+            value == toUpdate.get(0).type.value
+            description == toUpdate.get(0).type.description
+         }
+
+         date == toUpdate.get(0).date.toString()
+         clearedDate == null
+         amount == toUpdate.get(0).amount
+         description == toUpdate.get(0).description
+         document == toUpdate.get(0).document
+      }
+      with(result.get(1)) {
+         clearedDate == toUpdate.get(1).clearedDate
+      }
    }
 }
