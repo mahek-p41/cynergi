@@ -16,9 +16,9 @@ import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+
 import java.time.OffsetDateTime
 import java.util.stream.Collectors
 import java.util.stream.IntStream

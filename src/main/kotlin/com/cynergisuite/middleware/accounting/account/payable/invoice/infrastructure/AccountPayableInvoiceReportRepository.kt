@@ -229,7 +229,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          paidAmount = rs.getBigDecimal("${columnPrefix}paid_amount"),
          bankNumber = rs.getInt("bank_number"),
          pmtType = rs.getString("${paymentPrefix}type_value"),
-         pmtNumber = rs.getInt("${paymentPrefix}number"),
+         pmtNumber = rs.getString("${paymentPrefix}number"),
          notes = rs.getString("${columnPrefix}message"),
          acctNumber = rs.getInt("${paymentPrefix}account_number"),
          acctName = rs.getString("${paymentPrefix}account_name"),

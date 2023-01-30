@@ -5,7 +5,6 @@ import com.cynergisuite.middleware.shipping.location.ShipLocationTypeDTO
 import com.cynergisuite.middleware.shipping.location.ShipLocationTypeTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
 
 @MicronautTest(transactional = false)

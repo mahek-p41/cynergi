@@ -4,22 +4,19 @@ import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.ScheduleArgumentEntity
-import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandTypeTestDataLoader
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
-import com.cynergisuite.middleware.schedule.type.ScheduleType
-import com.cynergisuite.middleware.schedule.type.ScheduleTypeEntity
 import com.cynergisuite.middleware.schedule.type.ScheduleTypeTestDataLoader
-import com.cynergisuite.middleware.schedule.type.Weekly
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
+
 import java.time.DayOfWeek
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import jakarta.inject.Singleton
 
 @CompileStatic
 class AuditScheduleTestDataLoader {

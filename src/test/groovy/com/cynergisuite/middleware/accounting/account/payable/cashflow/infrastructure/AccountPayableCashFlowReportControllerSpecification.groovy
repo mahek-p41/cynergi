@@ -1,6 +1,11 @@
 package com.cynergisuite.middleware.accounting.account.payable.cashflow.infrastructure
 
-import com.cynergisuite.domain.*
+
+import com.cynergisuite.domain.CashFlowFilterRequest
+import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceSelectedTypeDataLoader

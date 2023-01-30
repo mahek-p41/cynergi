@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.cashout
 
-import java.util.*
-import kotlin.collections.LinkedHashSet
+import java.util.UUID
 
 data class CashRequirementVendorEntity (
    val vendorCompanyId: UUID,

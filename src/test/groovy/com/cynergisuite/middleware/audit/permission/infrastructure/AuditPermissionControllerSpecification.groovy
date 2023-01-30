@@ -10,10 +10,8 @@ import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeTestDataL
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
 import spock.lang.Ignore
-
 
 import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NOT_FOUND

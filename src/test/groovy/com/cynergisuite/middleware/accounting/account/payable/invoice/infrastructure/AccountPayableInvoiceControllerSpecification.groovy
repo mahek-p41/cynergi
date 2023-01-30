@@ -1,14 +1,24 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
+import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.domain.infrastructure.SimpleTransactionalSql
+import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceSelectedTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceTypeDTO
+import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDetailDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionTemplateDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDetailDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentStatusTypeDataLoader
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeTypeDataLoader
+import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
@@ -16,9 +26,8 @@ import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-import spock.lang.Unroll
-
 import jakarta.inject.Inject
+import spock.lang.Unroll
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -33,6 +42,13 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    @Inject ShipViaTestDataLoaderService shipViaFactoryService
    @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
    @Inject VendorTestDataLoaderService vendorTestDataLoaderService
+   @Inject BankFactoryService bankFactoryService
+   @Inject AccountTestDataLoaderService accountFactoryService
+   @Inject AccountPayablePaymentDataLoaderService accountPayablePaymentDataLoaderService
+   @Inject AccountPayablePaymentDetailDataLoaderService apPaymentDetailDataLoaderService
+   @Inject AccountPayableDistributionDetailDataLoaderService apDistDetailDataLoaderService
+   @Inject AccountPayableDistributionTemplateDataLoaderService apDistTemplateDataLoaderService
+   @Inject SimpleTransactionalSql sql
 
    void "fetch one" () {
       given:
@@ -356,6 +372,132 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       then:
       final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
+   }
+
+   void "fetch AP Invoice report" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final store = storeFactoryService.store(1, company)
+      final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
+      final shipViaList = shipViaFactoryService.stream(4, company).toList()
+      final employeeList = employeeFactoryService.stream(4, company).toList()
+
+      final vendorPmtTerm = vendorPaymentTermList[0]
+      final vendorShipVia = shipViaList[0]
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+
+      final poVendorPmtTerm = vendorPaymentTermList[1]
+      final poVendorShipVia = shipViaList[1]
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poApprovedBy = employeeList[0]
+      final poPurchaseAgent = employeeList[1]
+      final poShipVia = shipViaList[2]
+      final poPmtTerm = vendorPaymentTermList[2]
+      final poVendorSubEmp = employeeList[2]
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+
+      final employeeIn = employeeList[3]
+
+      final payToPmtTerm = vendorPaymentTermList[3]
+      final payToShipVia = shipViaList[3]
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+
+      def apInvoiceEntities = dataLoaderService.stream(20, company, vendorIn, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
+         .sorted { o1, o2 -> o1.id <=> o2.id }.toList()
+
+      def apInvoices = apInvoiceEntities.stream().map { new AccountPayableInvoiceDTO(it) }.toList()
+
+      def account = accountFactoryService.single(company)
+      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      def pmtStatuses = AccountPayablePaymentStatusTypeDataLoader.predefined()
+      def pmtTypes = AccountPayablePaymentTypeTypeDataLoader.predefined()
+
+      def apPayments = accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }).toList()
+      apPayments.addAll(accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'V' }, pmtTypes.find { it.value == 'C' }, null, null, null, true).toList())
+
+
+      def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendorIn, apInvoiceEntities[0], apPayments[0]).toList()
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendorIn, apInvoiceEntities[0], apPayments[1]).toList())
+      apPaymentDetailDataLoaderService.stream(5, company, vendorIn, apInvoiceEntities[1], apPayments[2]).toList()
+      apPaymentDetailDataLoaderService.stream(5, company, vendorIn, apInvoiceEntities[1], apPayments[3]).toList()
+
+      def template = apDistTemplateDataLoaderService.single(company)
+      def apDistribution = apDistDetailDataLoaderService.single(store, account, company, template)
+
+      sql.executeUpdate([invoice_id: apInvoices[0].id, account_id: account.id, profit_center_sfk: store.number, amount: 1000], """
+         INSERT INTO account_payable_invoice_distribution(invoice_id, distribution_account_id, distribution_profit_center_id_sfk, distribution_amount)
+	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
+         """)
+      sql.executeUpdate([invoice_id: apInvoices[1].id, account_id: account.id, profit_center_sfk: store.number, amount: 2000], """
+         INSERT INTO account_payable_invoice_distribution(invoice_id, distribution_account_id, distribution_profit_center_id_sfk, distribution_amount)
+	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
+         """)
+
+      def filterRequest = new InvoiceReportFilterRequest([sortBy: "id", sortDirection: "ASC"])
+
+      when:
+      def result = get("$path/report${filterRequest}")
+
+      then:
+      notThrown(Exception)
+      with(result) {
+         expenseTotal > 0
+         invoices.eachWithIndex { invoice, index ->
+            with(invoice) {
+               id == apInvoices[index].id
+               vendorNumber == vendorIn.number
+               vendorName == vendorIn.name
+               invoice.invoice == apInvoices[index].invoice
+               operator == apInvoices[index].employee.number
+               useTax == apInvoices[index].useTaxIndicator
+               type == apInvoices[index].type.value
+               poHeaderNumber == purchaseOrderIn.number
+               invoiceDate == apInvoices[index].invoiceDate.toString()
+               entryDate == apInvoices[index].entryDate.toString()
+               status == apInvoices[index].status.value
+               invoiceAmount == apInvoices[index].invoiceAmount
+               discountTaken == apInvoices[index].discountTaken
+               dueDate == apInvoices[index].dueDate.toString()
+               expenseDate == apInvoices[index].expenseDate.toString()
+               paidAmount == apInvoices[index].paidAmount
+               bankNumber == bank.number
+               pmtType == apPayments[0].type.value
+               pmtNumber == apPayments[0].paymentNumber
+               notes == apInvoices[index].message
+               with(invoiceDetails[0]) {
+                  paymentNumber == apPayments[0].paymentNumber
+                  paymentDetailId == apPaymentDetails[0].id.toString()
+                  paymentDetailAmount == apPaymentDetails[0].amount.toString()
+               }
+               with(invoiceDetails[9]) {
+                  paymentNumber == apPayments[1].paymentNumber
+                  paymentDetailId == apPaymentDetails[9].id.toString()
+                  paymentDetailAmount == apPaymentDetails[9].amount.toString()
+               }
+               with(distDetails[0]) {
+                  accountNumber == account.number
+                  accountName == account.name
+                  distProfitCenter == store.number
+                  distAmount == 1000
+               }
+               inventories.size() == 12
+               with(inventories[0]) {
+                  invoiceNumber == '9100029365'
+                  modelNumber == 'TR'
+                  serialNumber == '00321354'
+                  status == 'O'
+                  receivedLocation == '3'
+               }
+               with(inventories[11]) {
+                  invoiceNumber == '9100029365'
+                  modelNumber == 'TR'
+                  serialNumber == '00321357'
+                  status == 'P'
+                  receivedLocation == '3'
+               }
+            }
+         }
+      }
    }
 
    void "create one" () {

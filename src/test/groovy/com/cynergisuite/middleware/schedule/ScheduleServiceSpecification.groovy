@@ -7,13 +7,11 @@ import com.cynergisuite.middleware.audit.schedule.AuditScheduleTestDataLoaderSer
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.authentication.user.AuthenticatedUser
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
+
 import java.time.OffsetDateTime
 
-
 import static java.time.DayOfWeek.TUESDAY
-import static java.time.DayOfWeek.WEDNESDAY
 import static java.time.ZoneOffset.UTC
 
 @MicronautTest(transactional = false)

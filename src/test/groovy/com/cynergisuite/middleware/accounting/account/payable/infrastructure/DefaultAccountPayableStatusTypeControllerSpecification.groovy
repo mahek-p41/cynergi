@@ -5,7 +5,6 @@ import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPaya
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
 
 @MicronautTest(transactional = false)

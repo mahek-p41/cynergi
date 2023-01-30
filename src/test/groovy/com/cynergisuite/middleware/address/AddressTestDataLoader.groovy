@@ -3,11 +3,10 @@ package com.cynergisuite.middleware.address
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-import java.util.Locale
+import jakarta.inject.Singleton
+
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @CompileStatic
 class AddressTestDataLoader {

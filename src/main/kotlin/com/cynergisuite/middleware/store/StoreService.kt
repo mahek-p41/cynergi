@@ -8,7 +8,7 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.util.*
+import java.util.Locale
 
 @Singleton
 class StoreService @Inject constructor(

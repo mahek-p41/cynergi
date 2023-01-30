@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.employee
 
-
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.CompanyFactory
@@ -14,6 +13,7 @@ import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.IntStream
 import java.util.stream.Stream

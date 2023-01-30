@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.purchase.order.type
 
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-
 import jakarta.inject.Singleton
 
 class PurchaseOrderRequisitionIndicatorTypeTestDataLoader {

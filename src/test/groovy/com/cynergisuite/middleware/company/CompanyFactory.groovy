@@ -5,8 +5,8 @@ import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-
 import jakarta.inject.Singleton
+
 import java.util.stream.IntStream
 import java.util.stream.Stream
 

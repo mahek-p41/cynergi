@@ -1,8 +1,6 @@
 package com.cynergisuite.middleware.vendor
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorPageRequest
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository

@@ -6,13 +6,13 @@ import com.cynergisuite.middleware.verfication.infrastructure.VerificationAutoRe
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.concurrent.TimeUnit
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import jakarta.inject.Singleton
 
 @CompileStatic
 class VerificationAutoTestDataLoader {
