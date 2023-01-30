@@ -2,16 +2,17 @@ package com.cynergisuite.middleware.accounting.account
 
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.vendor.VendorTypeFactory
 import com.cynergisuite.middleware.vendor.VendorTypeDTO
+import com.cynergisuite.middleware.vendor.VendorTypeFactory
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
+
 import java.util.concurrent.atomic.AtomicLong
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @CompileStatic
 class AccountTestDataLoader {

@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.vendor.rebate
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountStatusTypeRepository
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.AccountIsRequired

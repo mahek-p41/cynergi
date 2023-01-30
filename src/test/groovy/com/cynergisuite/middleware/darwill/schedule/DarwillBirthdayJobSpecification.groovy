@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.darwill.schedule
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.darwill.DarwillTestDataLoaderService
-import com.cynergisuite.middleware.schedule.ScheduleTestDataLoaderService
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 

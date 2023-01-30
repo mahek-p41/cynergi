@@ -1,11 +1,10 @@
 package com.cynergisuite.middleware.purchase.order.type.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.purchase.order.type.ExceptionIndicatorTypeTestDataLoaderService
 import com.cynergisuite.middleware.purchase.order.type.ExceptionIndicatorTypeDTO
+import com.cynergisuite.middleware.purchase.order.type.ExceptionIndicatorTypeTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
 
 @MicronautTest(transactional = false)

@@ -20,13 +20,14 @@ import com.cynergisuite.middleware.vendor.VendorEntity
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
+
 import java.math.RoundingMode
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.concurrent.TimeUnit
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import jakarta.inject.Singleton
 
 @CompileStatic
 class AccountPayableInvoiceDataLoader {

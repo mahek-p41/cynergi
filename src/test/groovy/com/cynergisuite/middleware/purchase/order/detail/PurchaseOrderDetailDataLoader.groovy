@@ -18,9 +18,9 @@ import com.cynergisuite.middleware.vendor.VendorEntity
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+
 import java.time.LocalDate
 import java.util.concurrent.atomic.AtomicLong
 import java.util.stream.IntStream

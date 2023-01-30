@@ -7,17 +7,17 @@ import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
+import com.cynergisuite.middleware.address.AddressDTO
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressTestDataLoader
-import com.cynergisuite.middleware.address.AddressDTO
 import com.cynergisuite.middleware.address.AddressTestDataLoaderService
 import com.cynergisuite.middleware.error.ErrorDTO
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodTypeDTO
 import com.cynergisuite.middleware.shipping.freight.calc.method.infrastructure.FreightCalcMethodTypeRepository
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardTypeDTO
 import com.cynergisuite.middleware.shipping.freight.onboard.infrastructure.FreightOnboardTypeRepository
-import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaDTO
+import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
 import com.cynergisuite.middleware.vendor.group.VendorGroupTestDataLoaderService
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
@@ -34,9 +34,8 @@ import com.google.common.net.UrlEscapers
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-import spock.lang.Unroll
-
 import jakarta.inject.Inject
+import spock.lang.Unroll
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.CONFLICT

@@ -3,14 +3,13 @@ package com.cynergisuite.middleware.shipping.shipvia.infrastructure
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.error.ErrorDTO
+import com.cynergisuite.middleware.shipping.shipvia.ShipViaDTO
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoader
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
-import com.cynergisuite.middleware.shipping.shipvia.ShipViaDTO
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST

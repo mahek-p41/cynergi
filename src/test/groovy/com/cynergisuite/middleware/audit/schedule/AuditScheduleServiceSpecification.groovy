@@ -1,23 +1,20 @@
 package com.cynergisuite.middleware.audit.schedule
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
-import com.cynergisuite.middleware.audit.AuditTestDataLoaderService
 import com.cynergisuite.middleware.audit.AuditService
+import com.cynergisuite.middleware.audit.AuditTestDataLoaderService
 import com.cynergisuite.middleware.audit.AuditUpdateDTO
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
-import java.time.OffsetDateTime
 
+import java.time.OffsetDateTime
 
 import static java.time.DayOfWeek.FRIDAY
 import static java.time.DayOfWeek.MONDAY
-import static java.time.DayOfWeek.TUESDAY
-import static java.time.DayOfWeek.WEDNESDAY
 import static java.time.ZoneOffset.UTC
 
 @MicronautTest(transactional = false)

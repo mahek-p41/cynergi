@@ -5,7 +5,6 @@ import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPer
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
 
 @MicronautTest(transactional = false)

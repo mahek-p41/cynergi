@@ -14,7 +14,9 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 import spock.lang.Unroll
 
-import static io.micronaut.http.HttpStatus.*
+import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.NOT_FOUND
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class AccountPayableDistributionDetailControllerSpecification extends ControllerSpecificationBase {

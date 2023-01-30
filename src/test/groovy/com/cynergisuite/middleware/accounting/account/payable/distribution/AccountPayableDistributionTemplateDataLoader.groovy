@@ -5,9 +5,10 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
+
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import jakarta.inject.Singleton
 
 @CompileStatic
 class AccountPayableDistributionTemplateDataLoader {

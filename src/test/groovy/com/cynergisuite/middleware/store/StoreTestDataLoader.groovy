@@ -7,10 +7,10 @@ import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-import kotlin.Pair
-
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import kotlin.Pair
+
 import java.util.stream.Stream
 
 import static java.util.stream.Collectors.toList

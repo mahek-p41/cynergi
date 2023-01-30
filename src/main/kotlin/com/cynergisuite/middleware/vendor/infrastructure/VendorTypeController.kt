@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.vendor.infrastructure
 
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.vendor.VendorTypeDTO
 import com.cynergisuite.middleware.vendor.VendorTypeService
 import io.micronaut.http.HttpRequest

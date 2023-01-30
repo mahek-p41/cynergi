@@ -1,11 +1,10 @@
 package com.cynergisuite.middleware.vendor.rebate.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.vendor.rebate.RebateTypeDTO
 import com.cynergisuite.middleware.vendor.rebate.RebateTestTypeDataLoaderService
+import com.cynergisuite.middleware.vendor.rebate.RebateTypeDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
 
 @MicronautTest(transactional = false)

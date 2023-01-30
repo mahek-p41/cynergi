@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructur
 
 import com.cynergisuite.domain.*
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.accounting.account.payable.cashflow.AccountPayableCashFlowDTO
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationService
@@ -11,7 +10,6 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.HttpRequest
-import io.micronaut.http.MediaType
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -24,7 +22,6 @@ import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema

@@ -13,9 +13,9 @@ import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import jakarta.inject.Inject
 import spock.lang.Unroll
 
-import jakarta.inject.Inject
 import java.time.ZoneOffset
 import java.util.stream.Collectors
 

@@ -4,7 +4,7 @@ import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.vendor.infrastructure.VendorTypeRepository
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.util.*
+import java.util.Locale
 
 @Singleton
 class VendorTypeService @Inject constructor(

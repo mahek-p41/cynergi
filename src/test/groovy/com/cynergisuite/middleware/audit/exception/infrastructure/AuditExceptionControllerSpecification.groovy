@@ -8,11 +8,11 @@ import com.cynergisuite.middleware.audit.AuditTestDataLoaderService
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateDTO
+import com.cynergisuite.middleware.audit.exception.AuditExceptionDTO
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.AuditExceptionTestDataLoader
 import com.cynergisuite.middleware.audit.exception.AuditExceptionTestDataLoaderService
 import com.cynergisuite.middleware.audit.exception.AuditExceptionUpdateDTO
-import com.cynergisuite.middleware.audit.exception.AuditExceptionDTO
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteFactoryService
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNoteValueObject
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
@@ -25,9 +25,9 @@ import com.cynergisuite.middleware.inventory.location.InventoryLocationFactory
 import io.micronaut.http.client.exceptions.HttpClientException
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import jakarta.inject.Inject
 import org.apache.commons.lang3.RandomUtils
 
-import jakarta.inject.Inject
 import java.time.OffsetDateTime
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST

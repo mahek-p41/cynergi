@@ -5,7 +5,6 @@ import com.cynergisuite.middleware.shipping.freight.term.FreightTermTypeDTO
 import com.cynergisuite.middleware.shipping.freight.term.FreightTermTypeTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
 
 @MicronautTest(transactional = false)

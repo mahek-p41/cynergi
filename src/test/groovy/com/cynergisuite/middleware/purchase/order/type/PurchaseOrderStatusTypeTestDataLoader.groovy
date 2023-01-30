@@ -1,8 +1,6 @@
 package com.cynergisuite.middleware.purchase.order.type
 
-
 import io.micronaut.context.annotation.Requires
-
 import jakarta.inject.Singleton
 
 class PurchaseOrderStatusTypeTestDataLoader {

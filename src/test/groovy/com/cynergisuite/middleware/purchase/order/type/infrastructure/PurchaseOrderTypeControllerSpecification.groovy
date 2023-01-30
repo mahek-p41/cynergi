@@ -5,7 +5,6 @@ import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderTypeTestData
 import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderTypeValueObject
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
 
 @MicronautTest(transactional = false)
