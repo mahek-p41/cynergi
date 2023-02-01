@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.account.payable.invoice
 
 import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.v3.oas.annotations.media.Schema
+import java.math.BigDecimal
 import javax.validation.constraints.NotNull
 
 @JsonView
@@ -15,5 +16,5 @@ data class AccountPayableDistDetailReportDTO(
    @field:Schema(description = "Distribution store number")
    var distProfitCenter: Int? = null,
    @field:Schema(description = "Distribution amount")
-   var distAmount: Int? = null
+   var distAmount: BigDecimal? = null
    )

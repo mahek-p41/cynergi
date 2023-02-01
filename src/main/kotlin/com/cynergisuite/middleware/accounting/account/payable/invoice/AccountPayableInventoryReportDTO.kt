@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.account.payable.invoice
 
 import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.v3.oas.annotations.media.Schema
+import java.math.BigDecimal
 import javax.validation.constraints.NotNull
 
 @JsonView
@@ -13,7 +14,7 @@ data class AccountPayableInventoryReportDTO(
    var modelNumber: String? = null,
    var serialNumber: String? = null,
    var description: String? = null,
-   var cost: String? = null,
+   var cost: BigDecimal? = null,
    var received: String? = null,
    var status: String? = null,
    var receivedLocation: String? = null,

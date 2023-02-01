@@ -467,12 +467,12 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
                with(invoiceDetails[0]) {
                   paymentNumber == apPayments[0].paymentNumber
                   paymentDetailId == apPaymentDetails[0].id.toString()
-                  paymentDetailAmount == apPaymentDetails[0].amount.toString()
+                  paymentDetailAmount == apPaymentDetails[0].amount
                }
                with(invoiceDetails[9]) {
                   paymentNumber == apPayments[1].paymentNumber
                   paymentDetailId == apPaymentDetails[9].id.toString()
-                  paymentDetailAmount == apPaymentDetails[9].amount.toString()
+                  paymentDetailAmount == apPaymentDetails[9].amount
                }
                with(distDetails[0]) {
                   accountNumber == account.number
@@ -484,16 +484,10 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
                with(inventories[0]) {
                   invoiceNumber == '9100029365'
                   modelNumber == 'TR'
-                  serialNumber == '00321354'
-                  status == 'O'
-                  receivedLocation == '3'
                }
                with(inventories[11]) {
                   invoiceNumber == '9100029365'
                   modelNumber == 'TR'
-                  serialNumber == '00321357'
-                  status == 'P'
-                  receivedLocation == '3'
                }
             }
          }

@@ -6,8 +6,12 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceReportRepository
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceRepository
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.opencsv.CSVWriter
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.io.ByteArrayOutputStream
+import java.io.OutputStreamWriter
+import java.math.BigDecimal
 import java.util.UUID
 
 @Singleton
@@ -38,6 +42,47 @@ class AccountPayableInvoiceService @Inject constructor(
       val found = accountPayableInvoiceReportRepository.fetchReport(company, filterRequest)
 
       return AccountPayableInvoiceReportTemplate(found)
+   }
+
+   fun export(filterRequest: InvoiceReportFilterRequest, company: CompanyEntity): ByteArray {
+      val found = accountPayableInvoiceReportRepository.export(company, filterRequest)
+      val stream = ByteArrayOutputStream()
+      val output = OutputStreamWriter(stream)
+      val csvWriter = CSVWriter(output, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.NO_ESCAPE_CHARACTER)
+
+      val headers = arrayOf("Vend_Nbr","Vend_Name","Vend_Group","Invoice_Nbr","Invoice_Type","PO-Nbr","Invoice_Date",
+            "Entry_Date", "Invoice_Status", "Invoice_Amt", "Discount_Amt", "Due_Date", "Expense_Date", "Amt_Paid",
+            "Partial_Pay_Flag", "Bank_Nbr", "Check_Nbr", "GL_Acct_Nbr", "Account_Desc", "PFT_Ctr", "Dist_Amt")
+      csvWriter.writeNext(headers)
+
+      for(element in found) {
+         val data = arrayOf<String>(
+            element.vendorNumber.toString(),
+            element.vendorName.toString(),
+            element.vendorGroup.toString(),
+            element.invoice.toString(),
+            element.type.toString(),
+            element.status.toString(),
+            element.invoiceDate.toString(),
+            element.entryDate.toString(),
+            element.invoiceAmount.toString(),
+            element.discountTaken.toString(),
+            element.dueDate.toString(),
+            element.expenseDate.toString(),
+            element.paidAmount.toString(),
+            if (element.invoiceAmount!! > element.paidAmount!!) "Y" else "N",
+            element.bankNumber.toString(),
+            element.pmtNumber.toString(),
+            element.acctNumber.toString(),
+            element.acctName.toString(),
+            element.distCenter.toString(),
+            element.distAmount.toString(),
+         )
+         csvWriter.writeNext(data)
+      }
+      csvWriter.close()
+      output.close()
+      return stream.toByteArray()
    }
 
    fun update(id: UUID, dto: AccountPayableInvoiceDTO, company: CompanyEntity): AccountPayableInvoiceDTO {

@@ -11,6 +11,7 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.HttpRequest
+import io.micronaut.http.MediaType
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -18,6 +19,7 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.server.types.files.StreamedFile
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
@@ -32,6 +34,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.ByteArrayInputStream
 import java.util.UUID
 import javax.validation.Valid
 
@@ -136,6 +139,36 @@ class AccountPayableInvoiceController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
       return accountPayableInvoiceService.fetchReport(user.myCompany(), filterRequest)
+   }
+
+   @Throws(NotFoundException::class)
+   @Get(uri = "/export{?filterRequest*}")
+   @Operation(
+      tags = ["AccountPayableInvoiceEndpoints"],
+      summary = "Export a listing of AccountPayableInvoices",
+      description = "Export a listing of AccountPayableInvoices to a file",
+      operationId = "accountPayableInvoice-export"
+   )
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200"),
+         ApiResponse(responseCode = "204", description = "The requested accountPayableInvoice was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun export(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @QueryValue("filterRequest")
+      filterRequest: InvoiceReportFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): StreamedFile {
+      logger.info("Exporting all accountPayableInvoices {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+      val byteArray = accountPayableInvoiceService.export(filterRequest, user.myCompany())
+      return StreamedFile(ByteArrayInputStream(byteArray), MediaType.ALL_TYPE).attach("AP Invoice Report Export.csv")
    }
 
    @Post(processes = [APPLICATION_JSON])

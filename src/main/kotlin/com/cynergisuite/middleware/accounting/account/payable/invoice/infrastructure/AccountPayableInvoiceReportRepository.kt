@@ -7,6 +7,7 @@ import com.cynergisuite.extensions.query
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableDistDetailReportDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInventoryReportDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceReportDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceReportExportDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayablePaymentDetailReportDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.transaction.annotation.ReadOnly
@@ -204,6 +205,101 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
       return invoices
    }
 
+   @ReadOnly
+   fun export(company: CompanyEntity, filterRequest: InvoiceReportFilterRequest): List<AccountPayableInvoiceReportExportDTO> {
+      val invoices = mutableListOf<AccountPayableInvoiceReportExportDTO>()
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id ")
+
+      if (filterRequest.beginVen != null && filterRequest.endVen != null) {
+         params["beginVen"] = filterRequest.beginVen
+         params["endVen"] = filterRequest.endVen
+         whereClause.append(" AND vendor.number ")
+            .append(buildNumberFilterString("beginVen", "endVen"))
+      }
+
+      if (filterRequest.beginOpr != null && filterRequest.endOpr != null) {
+         params["beginOpr"] = filterRequest.beginOpr
+         params["endOpr"] = filterRequest.endOpr
+         whereClause.append(" AND apInvoice.employee_number_id_sfk ")
+            .append(buildNumberFilterString("beginOpr", "endOpr"))
+      }
+
+      if (filterRequest.beginPO != null && filterRequest.endPO != null) {
+         params["beginPO"] = filterRequest.beginPO
+         params["endPO"] = filterRequest.endPO
+         whereClause.append(" AND poHeader.number ")
+            .append(buildNumberFilterString("beginPO", "endPO"))
+      }
+
+      if (filterRequest.beginInvDate != null || filterRequest.endInvDate != null) {
+         params["beginInvDate"] = filterRequest.beginInvDate
+         params["endInvDate"] = filterRequest.endInvDate
+         whereClause.append(" AND apInvoice.invoice_date ")
+            .append(buildDateFilterString(filterRequest.beginInvDate, filterRequest.endInvDate, "beginInvDate", "endInvDate"))
+      }
+
+      if (filterRequest.beginExpDate != null || filterRequest.endExpDate != null) {
+         params["beginExpDate"] = filterRequest.beginExpDate
+         params["endExpDate"] = filterRequest.endExpDate
+         whereClause.append(" AND apInvoice.expense_date ")
+            .append(buildDateFilterString(filterRequest.beginExpDate, filterRequest.endExpDate, "beginExpDate", "endExpDate"))
+      }
+
+      if (filterRequest.beginEnDate != null || filterRequest.endEnDate != null) {
+         params["beginEnDate"] = filterRequest.beginEnDate
+         params["endEnDate"] = filterRequest.endEnDate
+         whereClause.append(" AND apInvoice.entry_date ")
+            .append(buildDateFilterString(filterRequest.beginEnDate, filterRequest.endEnDate, "beginEnDate", "endEnDate"))
+      }
+
+      if (filterRequest.beginPaidDate != null || filterRequest.endPaidDate != null) {
+         params["beginPaidDate"] = filterRequest.beginPaidDate
+         params["endPaidDate"] = filterRequest.endPaidDate
+         whereClause.append(" AND pmt.payment_date ")
+            .append(buildDateFilterString(filterRequest.beginPaidDate, filterRequest.endPaidDate, "beginPaidDate", "endPaidDate"))
+      }
+
+      if (filterRequest.beginDueDate != null || filterRequest.endDueDate != null) {
+         params["beginDueDate"] = filterRequest.beginDueDate
+         params["endDueDate"] = filterRequest.endDueDate
+         whereClause.append(" AND apInvoice.due_date ")
+            .append(buildDateFilterString(filterRequest.beginDueDate, filterRequest.endDueDate, "beginDueDate", "endDueDate"))
+      }
+
+      if (filterRequest.beginVenGr != null && filterRequest.endVenGr != null) {
+         params["beginVenGr"] = filterRequest.beginVenGr
+         params["endVenGr"] = filterRequest.endVenGr
+         whereClause.append(" AND vgrp.value ")
+            .append(buildNumberFilterString("beginVenGr", "endVenGr"))
+      }
+
+      filterRequest.invStatus?.let {
+         params["status"] = filterRequest.invStatus
+         whereClause.append(" AND invStatus.value = :status ")
+      }
+
+      filterRequest.useTax?.let {
+         params["useTax"] = filterRequest.useTax
+         whereClause.append(" AND apInvoice.use_tax_indicator = :useTax ")
+      }
+
+      jdbc.query(
+         """
+            ${selectBaseQuery()}
+            $whereClause
+            ORDER BY apInvoice.id, pmt.id, pmtDetail.id
+         """.trimIndent(),
+         params)
+      { rs, elements ->
+         do {
+            invoices.add(mapInvoiceExport(rs, "apInvoice_", "apPayment_"))
+         } while (rs.next())
+      }
+
+      return invoices
+   }
+
    private fun mapInvoice(
       rs: ResultSet,
       columnPrefix: String = EMPTY,
@@ -238,6 +334,36 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
       )
    }
 
+   private fun mapInvoiceExport(
+      rs: ResultSet,
+      columnPrefix: String = EMPTY,
+      paymentPrefix: String = EMPTY
+   ): AccountPayableInvoiceReportExportDTO {
+      return AccountPayableInvoiceReportExportDTO(
+         id = rs.getUuid("${columnPrefix}id"),
+         vendorNumber = rs.getInt("${columnPrefix}vendor_number"),
+         vendorName = rs.getString("${columnPrefix}vendor_name"),
+         vendorGroup = rs.getString("${columnPrefix}vendor_vgrp_value"),
+         invoice = rs.getString("${columnPrefix}invoice"),
+         type = rs.getString("${columnPrefix}type_value"),
+         invoiceDate = rs.getLocalDate("${columnPrefix}invoice_date"),
+         entryDate = rs.getLocalDate("${columnPrefix}entry_date"),
+         status = rs.getString("${columnPrefix}status_value"),
+         invoiceAmount = rs.getBigDecimal("${columnPrefix}invoice_amount"),
+         discountTaken = rs.getBigDecimal("${columnPrefix}discount_taken"),
+         poHeaderNumber = rs.getInt("poHeader_number"),
+         dueDate = rs.getLocalDate("${columnPrefix}due_date"),
+         expenseDate = rs.getLocalDate("${columnPrefix}expense_date"),
+         paidAmount = rs.getBigDecimal("${columnPrefix}paid_amount"),
+         bankNumber = rs.getInt("bank_number"),
+         pmtNumber = rs.getString("${paymentPrefix}number"),
+         acctNumber = rs.getInt("${paymentPrefix}account_number"),
+         acctName = rs.getString("${paymentPrefix}account_name"),
+         distCenter = rs.getString("${paymentPrefix}dist_center"),
+         distAmount = rs.getBigDecimal("${paymentPrefix}dist_amount"),
+      )
+   }
+
    private fun mapInvoiceDetail(
       rs: ResultSet
    ): AccountPayablePaymentDetailReportDTO {
@@ -247,7 +373,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          paymentNumber = rs.getString("apPayment_number"),
          paymentDate = rs.getLocalDate("apPayment_payment_date"),
          paymentDetailId = rs.getString("apPayment_detail_id"),
-         paymentDetailAmount = rs.getString("apPayment_detail_amount"),
+         paymentDetailAmount = rs.getBigDecimal("apPayment_detail_amount"),
       )
    }
 
@@ -258,7 +384,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          accountNumber = rs.getInt("apPayment_account_number"),
          accountName = rs.getString("apPayment_account_name"),
          distProfitCenter = rs.getInt("apPayment_dist_center"),
-         distAmount = rs.getInt("apPayment_dist_amount"),
+         distAmount = rs.getBigDecimal("apPayment_dist_amount"),
       )
    }
 
@@ -270,7 +396,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          modelNumber = rs.getString("inv_model_number"),
          serialNumber = rs.getString("inv_serial_number"),
          description = rs.getString("inv_description"),
-         cost = rs.getString("inv_actual_cost"),
+         cost = rs.getBigDecimal("inv_actual_cost"),
          received = rs.getString("inv_received_date"),
          status = rs.getString("inv_status"),
          receivedLocation = rs.getString("inv_received_location"),
