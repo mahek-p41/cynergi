@@ -9,8 +9,8 @@ import java.util.UUID
 import javax.validation.constraints.NotNull
 
 @JsonView
-@Schema(name = "AccountPayableInvoiceReport", title = "Account Payable Invoice Report", description = "Account Payable Invoice Report")
-data class AccountPayableInvoiceReportDTO(
+@Schema(name = "AccountPayableInvoiceReportExport", title = "Account Payable Invoice Report Export", description = "Account Payable Invoice Report Export")
+data class AccountPayableInvoiceReportExportDTO(
 
    @field:Schema(description = "Account Payable Invoice ID")
    var id: UUID? = null,
@@ -30,14 +30,6 @@ data class AccountPayableInvoiceReportDTO(
    @field:NotNull
    @field:Schema(description = "Invoice")
    var invoice: String? = null,
-
-   @field:NotNull
-   @field:Schema(description = "Operator")
-   var operator: Int? = null,
-
-   @field:NotNull
-   @field:Schema(description = "Use Tax indicator")
-   var useTax: Boolean? = null,
 
    @field:NotNull
    @field:Schema(description = "Account payable invoice type value")
@@ -81,53 +73,27 @@ data class AccountPayableInvoiceReportDTO(
    var bankNumber: Int? = null,
 
    @field:NotNull
-   @field:Schema(description = "Payment type value")
-   var pmtType: String? = null,
-
-   @field:NotNull
    @field:Schema(description = "Payment number")
    var pmtNumber: String? = null,
 
    @field:NotNull
-   @field:Schema(description = "Account payable invoice message")
-   var notes: String? = null,
+   @field:Schema(description = "Account number")
+   var acctNumber: Int? = null,
 
-   private var acctNumber: Int? = null,
-   private var acctName: String? = null,
-   private var distCenter: String? = null,
-   private var distAmount: BigDecimal? = null,
+   @field:NotNull
+   @field:Schema(description = "Account name")
+   var acctName: String? = null,
 
-   // 1 or multiple payment details
-   @field:Schema(description = "Listing of Payment Details associated with this Invoice", required = false, accessMode = Schema.AccessMode.READ_ONLY)
-   var invoiceDetails: MutableSet<AccountPayablePaymentDetailReportDTO> = mutableSetOf(),
+   @field:NotNull
+   @field:Schema(description = "Distribution number")
+   var distCenter: String? = null,
 
-   // 1 or multiple AccountPayableDistributionEntity
-   var distDetails: MutableSet<AccountPayableDistDetailReportDTO> = mutableSetOf(),
+   @field:NotNull
+   @field:Schema(description = "Distribution amount")
+   var distAmount: BigDecimal? = null,
 
-   // 1 or multiple inventory units
-   var inventories: MutableSet<AccountPayableInventoryReportDTO> = mutableSetOf(),
 
 ) : Identifiable {
-   constructor(entity: AccountPayableInvoiceEntity) :
-      this(
-         id = entity.id,
-         vendorNumber = entity.vendor.number,
-         vendorName = entity.vendor.name,
-         vendorGroup = entity.vendor.vendorGroup?.value,
-         invoice = entity.invoice,
-         type = entity.type.value,
-         status = entity.status.value,
-         invoiceDate = entity.invoiceDate,
-         entryDate = entity.entryDate,
-         invoiceAmount = entity.invoiceAmount,
-         discountTaken = entity.discountTaken,
-         dueDate = entity.dueDate,
-         expenseDate = entity.expenseDate,
-         paidAmount = entity.paidAmount,
-      )
 
    override fun myId(): UUID? = id
-
-   val totalApInventoryCost get() = inventories.mapNotNull { it.cost }.sumOf { it }
-   val totalApDistributions get() = distDetails.mapNotNull { it.distAmount }.sumOf { it }
 }

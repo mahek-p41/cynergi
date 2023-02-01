@@ -14,7 +14,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      response.size() == 4
+      response.size() == 5
       with(response[0]) {
          id == 1
          value == "AP"
