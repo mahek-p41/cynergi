@@ -11,6 +11,7 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.HttpRequest
+import io.micronaut.http.MediaType.ALL_TYPE
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -18,6 +19,7 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.server.types.files.StreamedFile
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
@@ -31,6 +33,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.ByteArrayInputStream
 import java.util.UUID
 import javax.validation.Valid
 
@@ -171,5 +174,35 @@ class GeneralLedgerSummaryController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
       return generalLedgerSummaryService.fetchProfitCenterTrialBalanceReportRecords(user.myCompany(), profitCenterTrialBalanceReportFilterRequest)
+   }
+
+   @Throws(NotFoundException::class)
+   @Get(uri = "/profit-center-trial-balance-report-export{?profitCenterTrialBalanceReportFilterRequest*}")
+   @Operation(
+      tags = ["GeneralLedgerSummaryEndpoints"],
+      summary = "Export the Profit Center Trial Balance report",
+      description = "Export the Profit Center Trial Balance report to a file",
+      operationId = "generalLedgerSummary-exportProfitCenterTrialBalanceReport"
+   )
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200"),
+         ApiResponse(responseCode = "204", description = "The requested report was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun exportProfitCenterTrialBalanceReport(
+      @Parameter(name = "profitCenterTrialBalanceReportFilterRequest", `in` = QUERY, required = false)
+      @QueryValue("profitCenterTrialBalanceReportFilterRequest")
+      profitCenterTrialBalanceReportFilterRequest: GeneralLedgerProfitCenterTrialBalanceReportFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): StreamedFile {
+      logger.info("Exporting Profit Center Trial Balance report {}", profitCenterTrialBalanceReportFilterRequest)
+
+      val user = userService.fetchUser(authentication)
+      val byteArray = generalLedgerSummaryService.exportProfitCenterTrialBalanceReport(user.myCompany(), profitCenterTrialBalanceReportFilterRequest)
+      return StreamedFile(ByteArrayInputStream(byteArray), ALL_TYPE).attach("GL Profit Center Trial Balance Report Export.csv")
    }
 }

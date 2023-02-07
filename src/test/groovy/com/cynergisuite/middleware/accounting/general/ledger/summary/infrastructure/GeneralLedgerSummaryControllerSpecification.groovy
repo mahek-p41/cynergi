@@ -11,11 +11,9 @@ import com.cynergisuite.middleware.accounting.account.AccountStatusType
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
-import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
-import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDataLoaderService
@@ -38,8 +36,6 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
    @Inject GeneralLedgerSummaryDataLoaderService dataLoaderService
    @Inject AccountTestDataLoaderService accountDataLoaderService
    @Inject FinancialCalendarDataLoaderService financialCalendarDataLoaderService
-   @Inject FinancialCalendarRepository financialCalendarRepository
-   @Inject GeneralLedgerDetailDataLoaderService generalLedgerDetailDataLoaderService
    @Inject GeneralLedgerJournalEntryDataLoaderService generalLedgerJournalEntryDataLoaderService
    @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
 
@@ -653,6 +649,4 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       'Sort by location'                  || 2             | 2400  | -2400
       'Sort by account'                   || 2             | 2400  | -2400
    }
-
-   // todo void "profit center trial balance report export" () {}
 }
