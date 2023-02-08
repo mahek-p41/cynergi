@@ -193,6 +193,7 @@ fun <ENTITY> Jdbi.queryFullList(sql: String, params: Map<String, *>, mapper: (rs
 }
 
 fun <ENTITY, REQUESTED : PageRequest> Jdbi.queryPaged(sql: String, params: Map<String, *>, pageRequest: REQUESTED, mapper: (rs: ResultSet, elements: MutableList<ENTITY>) -> Unit): RepositoryPage<ENTITY, REQUESTED> {
+   logger.trace("Executing query {}/{}", sql, params)
    return this.withHandle<RepositoryPage<ENTITY, REQUESTED>, Exception> { handle ->
       val query = handle.createQuery(sql)
 
