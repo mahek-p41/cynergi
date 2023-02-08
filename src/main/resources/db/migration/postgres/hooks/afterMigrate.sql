@@ -265,3 +265,5 @@ BEGIN
    END IF;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE COLLATION numeric_collation (provider = icu, locale = 'en-u-kn-true');
