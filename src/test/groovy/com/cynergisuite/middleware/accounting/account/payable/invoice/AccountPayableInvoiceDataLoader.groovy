@@ -16,6 +16,7 @@ import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderEntity
 import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
@@ -84,7 +85,7 @@ class AccountPayableInvoiceDataLoader {
             AccountPayableInvoiceTypeDataLoader.predefined().find { it.value == 'P' },
             statusType,
             LocalDate.now(),
-            new SimpleIdentifiableEntity(payToIn),
+            payToIn,
             random.nextBoolean(),
             random.nextBoolean(),
             LocalDate.of(2019, 2, 25),
@@ -95,10 +96,10 @@ class AccountPayableInvoiceDataLoader {
 
    static Stream<AccountPayableInvoiceDTO> streamDTO(
       int numberIn = 1,
-      SimpleIdentifiableDTO vendorIn,
+      VendorDTO vendorIn,
       SimpleIdentifiableDTO purchaseOrderIn  = null,
       EmployeeValueObject employeeIn,
-      SimpleIdentifiableDTO payToIn,
+      VendorDTO payToIn,
       SimpleLegacyIdentifiableDTO locationIn = null
    ) {
       final number = numberIn > 0 ? numberIn : 1
@@ -186,10 +187,10 @@ class AccountPayableInvoiceDataLoaderService {
 
    AccountPayableInvoiceDTO singleDTO(
       CompanyEntity company,
-      SimpleIdentifiableDTO vendorIn,
+      VendorDTO vendorIn,
       SimpleIdentifiableDTO purchaseOrderIn = null,
       EmployeeValueObject employeeIn,
-      SimpleIdentifiableDTO payToIn,
+      VendorDTO payToIn,
       SimpleLegacyIdentifiableDTO locationIn = null
    ) {
       return AccountPayableInvoiceDataLoader.streamDTO(1, vendorIn, purchaseOrderIn, employeeIn, payToIn, locationIn).findFirst().orElseThrow { new Exception("Unable to create Account Payable Invoice") }

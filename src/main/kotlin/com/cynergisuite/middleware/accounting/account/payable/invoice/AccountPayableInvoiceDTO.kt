@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvo
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceTypeDTO
 import com.cynergisuite.middleware.employee.EmployeeValueObject
+import com.cynergisuite.middleware.vendor.VendorDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.micronaut.core.annotation.Introspected
@@ -30,7 +31,7 @@ data class AccountPayableInvoiceDTO(
 
    @field:NotNull
    @field:Schema(description = "Vendor id")
-   var vendor: SimpleIdentifiableDTO? = null,
+   var vendor: VendorDTO? = null,
 
    @field:NotNull
    @field:Size(max = 20)
@@ -115,7 +116,7 @@ data class AccountPayableInvoiceDTO(
 
    @field:NotNull
    @field:Schema(description = "Pay to vendor id")
-   var payTo: SimpleIdentifiableDTO? = null,
+   var payTo: VendorDTO? = null,
 
    @field:Schema(description = "Separate check indicator")
    var separateCheckIndicator: Boolean? = null,
@@ -134,7 +135,7 @@ data class AccountPayableInvoiceDTO(
    constructor(entity: AccountPayableInvoiceEntity) :
       this(
          id = entity.id,
-         vendor = SimpleIdentifiableDTO(entity.vendor),
+         vendor = VendorDTO(entity.vendor),
          invoice = entity.invoice,
          purchaseOrder = SimpleIdentifiableDTO(entity.purchaseOrder?.myId()),
          invoiceDate = entity.invoiceDate,
@@ -156,7 +157,7 @@ data class AccountPayableInvoiceDTO(
          type = AccountPayableInvoiceTypeDTO(entity.type),
          status = AccountPayableInvoiceStatusTypeDTO(entity.status),
          dueDate = entity.dueDate,
-         payTo = SimpleIdentifiableDTO(entity.payTo),
+         payTo = VendorDTO(entity.payTo),
          separateCheckIndicator = entity.separateCheckIndicator,
          useTaxIndicator = entity.useTaxIndicator,
          receiveDate = entity.receiveDate,

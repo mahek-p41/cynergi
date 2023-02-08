@@ -68,7 +68,7 @@ class AccountPayableInvoiceController @Inject constructor(
       val user = userService.fetchUser(authentication)
       val response = accountPayableInvoiceService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
-      logger.debug("Fetching Account Payable Invoice by {} resulted in", id, response)
+      logger.debug("Fetching Account Payable Invoice by {} resulted in {}", id, response)
 
       return response
    }
