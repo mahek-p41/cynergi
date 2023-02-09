@@ -1,7 +1,9 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
 import com.cynergisuite.domain.InvoiceReportFilterRequest
+import com.cynergisuite.extensions.getBigDecimalOrNull
 import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.query
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableDistDetailReportDTO
@@ -11,6 +13,7 @@ import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceReportPoWrapper
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayablePaymentDetailReportDTO
 import com.cynergisuite.middleware.company.CompanyEntity
+import io.micronaut.core.util.StringUtils
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -80,12 +83,12 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
             JOIN account_payable_invoice_type_domain invType            ON invType.id = apInvoice.type_id
             JOIN account_payable_invoice_status_type_domain invStatus   ON invStatus.id = apInvoice.status_id
             JOIN vendor                                                 ON apInvoice.vendor_id = vendor.id AND vendor.deleted = FALSE
-            LEFT OUTER JOIN vendor_group vgrp                           ON vgrp.id = vendor.vendor_group_id AND vgrp.deleted = FALSE
+            LEFT JOIN vendor_group vgrp                                 ON vgrp.id = vendor.vendor_group_id AND vgrp.deleted = FALSE
             JOIN purchase_order_header poHeader                         ON poHeader.id = apInvoice.purchase_order_id AND poHeader.deleted = FALSE
-            JOIN account_payable_payment_detail pmtDetail               ON apInvoice.id = pmtDetail.account_payable_invoice_id
-            JOIN account_payable_payment pmt                            ON pmtDetail.payment_number_id = pmt.id
-            JOIN account_payable_payment_type_type_domain pmtType       ON pmt.account_payable_payment_type_id = pmtType.id
-            JOIN bank                                                   ON pmt.bank_id = bank.id AND bank.deleted = FALSE
+            LEFT JOIN account_payable_payment_detail pmtDetail          ON apInvoice.id = pmtDetail.account_payable_invoice_id
+            LEFT JOIN account_payable_payment pmt                       ON pmtDetail.payment_number_id = pmt.id
+            LEFT JOIN account_payable_payment_type_type_domain pmtType  ON pmt.account_payable_payment_type_id = pmtType.id
+            LEFT JOIN bank                                              ON pmt.bank_id = bank.id AND bank.deleted = FALSE
             JOIN account_payable_invoice_distribution invDist           ON apInvoice.id = invDist.invoice_id
             JOIN account                                                ON invDist.distribution_account_id = account.id AND account.deleted = FALSE
             JOIN company comp                                           ON apInvoice.company_id = comp.id AND comp.deleted = FALSE
@@ -104,7 +107,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
       var currentPO: AccountPayableInvoiceReportPoWrapper? = null
       var currentInvoice: AccountPayableInvoiceReportDTO? = null
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id ") //and poHeader.number = 36101
+      val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id ")
 
       if (filterRequest.beginVen != null && filterRequest.endVen != null) {
          params["beginVen"] = filterRequest.beginVen
@@ -201,7 +204,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
                currentInvoice
             }
 
-            tempInvoice?.invoiceDetails?.add(mapInvoiceDetail(rs))
+            mapInvoiceDetailOrNull(rs)?.let { tempInvoice?.invoiceDetails?.add(it) }
             tempInvoice?.distDetails?.add(mapDistDetail(rs))
             tempInvoice?.inventories?.add(mapInventory(rs))
 
@@ -392,6 +395,15 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
       )
    }
 
+   private fun mapInvoiceDetailOrNull(
+      rs: ResultSet
+   ): AccountPayablePaymentDetailReportDTO? =
+      if (StringUtils.isNotEmpty(rs.getString("apPayment_detail_id"))) {
+         mapInvoiceDetail(rs)
+      } else {
+         null
+      }
+
    private fun mapInvoiceDetail(
       rs: ResultSet
    ): AccountPayablePaymentDetailReportDTO {
@@ -399,9 +411,9 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          bankNumber = rs.getInt("bank_number"),
          paymentType = rs.getString("apPayment_type_value"),
          paymentNumber = rs.getString("apPayment_number"),
-         paymentDate = rs.getLocalDate("apPayment_payment_date"),
+         paymentDate = rs.getLocalDateOrNull("apPayment_payment_date"),
          paymentDetailId = rs.getString("apPayment_detail_id"),
-         paymentDetailAmount = rs.getBigDecimal("apPayment_detail_amount"),
+         paymentDetailAmount = rs.getBigDecimalOrNull("apPayment_detail_amount"),
       )
    }
 
