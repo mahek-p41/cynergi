@@ -596,6 +596,7 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       final account2 = accountDataLoaderService.single(company, null, null, status)
       final profitCenter = storeFactoryService.store(1, company)
       final profitCenter2 = storeFactoryService.store(3, company)
+      final profitCenterList = [profitCenter.myNumber(), profitCenter2.myNumber()].toList()
       def glJournalEntryDetailDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account), new StoreDTO(profitCenter), 1000 as BigDecimal).toList()
       def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account), new StoreDTO(profitCenter), -1000 as BigDecimal).toList()
       glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
@@ -606,16 +607,33 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       def glJournalEntryDTO2 = generalLedgerJournalEntryDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs2, false)
 
       def filterRequest = new GeneralLedgerProfitCenterTrialBalanceReportFilterRequest()
-      filterRequest['startingAccount'] = account.number
-      filterRequest['selectLocsBy'] = 1
       filterRequest['fromDate'] = periodFrom
       filterRequest['thruDate'] = periodFrom.plusDays(30)
       switch (criteria) {
          case 'Sort by location':
+            filterRequest['selectLocsBy'] = 1
             filterRequest['sortOrder'] = "location"
             break
          case 'Sort by account':
+            filterRequest['selectLocsBy'] = 1
             filterRequest['sortOrder'] = "account"
+            break
+         case 'Select one account':
+            filterRequest['startingAccount'] = account.number
+            filterRequest['endingAccount'] = account.number
+            filterRequest['selectLocsBy'] = 1
+            filterRequest['sortOrder'] = "location"
+            break
+         case 'Select profit centers by list':
+            filterRequest['selectLocsBy'] = 2
+            filterRequest['any10LocsOrGroups'] = profitCenterList
+            filterRequest['sortOrder'] = "location"
+            break
+         case 'Select profit centers by range':
+            filterRequest['selectLocsBy'] = 3
+            filterRequest['startingLocOrGroup'] = profitCenter.myNumber()
+            filterRequest['endingLocOrGroup'] = profitCenter2.myNumber()
+            filterRequest['sortOrder'] = "location"
             break
       }
 
@@ -648,5 +666,8 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       criteria                            || locationCount | debit | credit
       'Sort by location'                  || 2             | 2400  | -2400
       'Sort by account'                   || 2             | 2400  | -2400
+      'Select one account'                || 1             | 2000  | -2000
+      'Select profit centers by range'    || 2             | 2400  | -2400
+      'Select profit centers by list'     || 2             | 2400  | -2400
    }
 }

@@ -349,7 +349,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          2 ->
          {
             params["any10LocsOrGroups"] = filterRequest.any10LocsOrGroups
-            whereClause.append(" AND glSummary.profit_center_id_sfk IN :any10LocsOrGroups")
+            whereClause.append(" AND glSummary.profit_center_id_sfk IN (<any10LocsOrGroups>)")
          }
          3 ->
          {
@@ -368,6 +368,14 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          "account" ->
             sortBy.append("glSummary.account_id ASC, glSummary.profit_center_id_sfk ASC")
       }
+
+      val query ="""
+         ${selectBaseQuery()}
+         $whereClause
+         $sortBy
+      """.trimIndent()
+
+      logger.debug("GeneralLedgerSummary query {} with params {}", query, params)
 
       jdbc.query(
          """
