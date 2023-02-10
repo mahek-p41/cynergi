@@ -44,10 +44,6 @@ data class AccountPayableInvoiceReportDTO(
    var type: String? = null,
 
    @field:NotNull
-   @field:Schema(description = "PO header number")
-   var poHeaderNumber: Int? = null,
-
-   @field:NotNull
    @field:Schema(description = "Account payable invoice date")
    var invoiceDate: LocalDate? = null,
 
