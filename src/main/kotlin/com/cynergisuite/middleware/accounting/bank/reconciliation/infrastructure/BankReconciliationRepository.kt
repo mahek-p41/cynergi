@@ -281,7 +281,7 @@ class BankReconciliationRepository @Inject constructor(
 
       if (filterRequest.description != null) {
          params["description"] = filterRequest.description
-         whereClause.append(" AND bankRecon.description ILIKE \'%${filterRequest.description}%\'")
+         whereClause.append(" AND COALESCE(bank_vendor.vendor_name, bankRecon.description) ILIKE \'%${filterRequest.description}%\'")
       }
 
       jdbc.query(
@@ -480,7 +480,7 @@ class BankReconciliationRepository @Inject constructor(
 
       if (filterRequest.description != null) {
          params["description"] = filterRequest.description
-         whereClause.append(" AND bankRecon.description ILIKE \'${filterRequest.description}%\'") //ILIKE is case-insensitive LIKE
+         whereClause.append(" AND bankRecon.description ILIKE \'%${filterRequest.description}%\'") //ILIKE is case-insensitive LIKE
       }
 
       if (filterRequest.bankType != null) {

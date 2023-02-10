@@ -139,7 +139,7 @@ class CashFlowRepository @Inject constructor(
             """
                   ${selectBaseQuery()}
                   $whereClause
-                  ORDER BY ${filterRequest.snakeSortBy()}, number ${filterRequest.sortDirection()}
+                  ORDER BY vend.name, vend.id, apInvoice.invoice COLLATE "numeric_collation", apInvoice.invoice_date ${filterRequest.sortDirection()}
                """.trimIndent(),
             params,
             ) {

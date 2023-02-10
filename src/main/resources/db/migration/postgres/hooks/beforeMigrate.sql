@@ -12,3 +12,4 @@ END $$;
 DROP VIEW IF EXISTS authenticated_user_vw;
 DROP VIEW IF EXISTS system_employees_vw;
 DROP VIEW IF EXISTS bank_recon_vendor_vw;
+DROP COLLATION IF EXISTS numeric_collation;
