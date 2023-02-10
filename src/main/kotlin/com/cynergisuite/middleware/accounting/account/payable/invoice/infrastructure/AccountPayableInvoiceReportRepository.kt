@@ -66,6 +66,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
             account.name                                                AS apPayment_account_name,
             invDist.distribution_profit_center_id_sfk                   AS apPayment_dist_center,
             invDist.distribution_amount                                 AS apPayment_dist_amount,
+            CASE WHEN (apControl.id IS null) THEN false ELSE true END   AS apPayment_account_for_inventory,
 
             inv.invoice_number                                          AS inv_invoice_number,
             inv.model_number                                            AS inv_model_number,
@@ -91,6 +92,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
             LEFT JOIN bank                                              ON pmt.bank_id = bank.id AND bank.deleted = FALSE
             JOIN account_payable_invoice_distribution invDist           ON apInvoice.id = invDist.invoice_id
             JOIN account                                                ON invDist.distribution_account_id = account.id AND account.deleted = FALSE
+            LEFT JOIN account_payable_control apControl                 ON invDist.distribution_account_id = apControl.general_ledger_inventory_account_id
             JOIN company comp                                           ON apInvoice.company_id = comp.id AND comp.deleted = FALSE
             JOIN fastinfo_prod_import.inventory_vw inv ON
                   comp.dataset_code = inv.dataset
@@ -101,8 +103,8 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun fetchReport(company: CompanyEntity, filterRequest: InvoiceReportFilterRequest): List<AccountPayableInvoiceReportPoWrapper> {
-      val purchaseOrders = mutableListOf<AccountPayableInvoiceReportPoWrapper>()
+   fun fetchReport(company: CompanyEntity, filterRequest: InvoiceReportFilterRequest): MutableSet<AccountPayableInvoiceReportPoWrapper> {
+      val purchaseOrders = mutableSetOf<AccountPayableInvoiceReportPoWrapper>()
       var addInvoice = true
       var currentPO: AccountPayableInvoiceReportPoWrapper? = null
       var currentInvoice: AccountPayableInvoiceReportDTO? = null
@@ -414,6 +416,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          paymentDate = rs.getLocalDateOrNull("apPayment_payment_date"),
          paymentDetailId = rs.getString("apPayment_detail_id"),
          paymentDetailAmount = rs.getBigDecimalOrNull("apPayment_detail_amount"),
+
       )
    }
 
@@ -425,6 +428,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          accountName = rs.getString("apPayment_account_name"),
          distProfitCenter = rs.getInt("apPayment_dist_center"),
          distAmount = rs.getBigDecimal("apPayment_dist_amount"),
+         isAccountForInventory = rs.getBoolean("apPayment_account_for_inventory"),
       )
    }
 

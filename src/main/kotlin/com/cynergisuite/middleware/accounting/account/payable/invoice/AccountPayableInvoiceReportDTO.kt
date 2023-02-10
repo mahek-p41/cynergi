@@ -125,5 +125,5 @@ data class AccountPayableInvoiceReportDTO(
    override fun myId(): UUID? = id
 
    val totalApInventoryCost get() = inventories.mapNotNull { it.cost }.sumOf { it }
-   val totalApDistributions get() = distDetails.mapNotNull { it.distAmount }.sumOf { it }
+   val totalApDistributions get() = distDetails.filter { it.isAccountForInventory!! }.mapNotNull { it.distAmount }.sumOf { it }
 }
