@@ -12,7 +12,6 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportEntity
@@ -23,7 +22,6 @@ import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconcilia
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationTypeEnum
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastructure.BankReconciliationTypeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.error.NotFoundException
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -92,8 +90,7 @@ class BankReconciliationRepository @Inject constructor(
             bankReconType.value                               AS bankReconType_value,
             bankReconType.description                         AS bankReconType_description,
             bankReconType.localization_code                   AS bankReconType_localization_code,
-            bank_vendor.vendor_name                           AS bankRecon_vendor_name,
-            count(*) OVER()                                   AS total_elements
+            bank_vendor.vendor_name                           AS bankRecon_vendor_name
          FROM bank_reconciliation bankRecon
                JOIN bank ON bankRecon.bank_id = bank.bank_id AND bank.bank_deleted = FALSE
                JOIN bank_reconciliation_type_domain bankReconType ON bankRecon.type_id = bankReconType.id
@@ -229,24 +226,6 @@ class BankReconciliationRepository @Inject constructor(
       ) { rs, _ ->
          mapRow(rs, entity)
       }
-   }
-
-   @Transactional
-   fun delete(id: UUID, company: CompanyEntity) {
-      logger.debug("Deleting BankReconciliation with id={}", id)
-
-      val rowsAffected = jdbc.update(
-         """
-            UPDATE bank_reconciliation
-            SET deleted = TRUE
-            WHERE id = :id AND company_id = :company_id AND deleted = FALSE
-         """,
-         mapOf("id" to id, "company_id" to company.id)
-      )
-
-      logger.info("Row affected {}", rowsAffected)
-
-      if (rowsAffected == 0) throw NotFoundException(id)
    }
 
    @ReadOnly
@@ -462,7 +441,7 @@ class BankReconciliationRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findTransactions(filterRequest: BankReconciliationTransactionsFilterRequest, company: CompanyEntity) : RepositoryPage<BankReconciliationEntity, BankReconciliationTransactionsFilterRequest> {
+   fun findTransactions(filterRequest: BankReconciliationTransactionsFilterRequest, company: CompanyEntity) : RepositoryPage<BankReconciliationEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder(" WHERE bankRecon.company_id = :comp_id")
 
@@ -522,7 +501,7 @@ class BankReconciliationRepository @Inject constructor(
       if (filterRequest.fromClearedDate != null || filterRequest.thruClearedDate != null) {
          params["fromClearedDate"] = filterRequest.fromClearedDate
          params["thruClearedDate"] = filterRequest.thruClearedDate
-         whereClause.append(" AND bankRecon.cleared_date")
+         whereClause.append(" AND bankRecon.transaction_date")
             .append(
                buildFilterString(
                   filterRequest.fromClearedDate != null,
