@@ -235,6 +235,9 @@ class BankReconciliationController @Inject constructor(
       val user = userService.fetchUser(authentication)
       val bankReconTransactions = bankReconciliationService.fetchTransactions(filterRequest, user.myCompany())
 
+      if (bankReconTransactions.elements.isEmpty()) {
+         throw PageOutOfBoundsException(filterRequest)
+      }
 
       logger.debug("Listing of Bank Reconciliation Transactions resulted in {}", bankReconTransactions)
 

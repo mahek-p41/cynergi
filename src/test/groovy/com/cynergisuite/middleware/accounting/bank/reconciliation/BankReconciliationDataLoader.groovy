@@ -19,8 +19,9 @@ import java.util.stream.Stream
 @CompileStatic
 class BankReconciliationDataLoader {
 
-   static Stream<BankReconciliationEntity> stream(int numberIn = 1, BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null) {
+   static Stream<BankReconciliationEntity> stream(int numberIn = 1, BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null, String reconciliationTypeValueIn = null) {
       final number = numberIn > 0 ? numberIn : 1
+      final reconType = BankReconciliationTypeDataLoader.predifined().find{it.value == reconciliationTypeValueIn}
       final faker = new Faker()
       final numbers = faker.number()
       final lorem = faker.lorem()
@@ -68,14 +69,18 @@ class BankReconciliationDataLoaderService {
       this.repository = repository
    }
 
-   Stream<BankReconciliationEntity> stream(int numberIn = 1, CompanyEntity companyIn, BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null) {
-      return BankReconciliationDataLoader.stream(numberIn, bankIn, dateIn, clearedDateIn).map {
+   Stream<BankReconciliationEntity> stream(int numberIn = 1, CompanyEntity companyIn, BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null, String reconciliationTypeValueIn = null) {
+      return BankReconciliationDataLoader.stream(numberIn, bankIn, dateIn, clearedDateIn, reconciliationTypeValueIn).map {
          repository.insert(it, companyIn)
       }
    }
 
    BankReconciliationEntity single(CompanyEntity companyIn, BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null) {
       return stream(1, companyIn, bankIn, dateIn, clearedDateIn).findFirst().orElseThrow { new Exception("Unable to create BankReconciliation") }
+   }
+
+   BankReconciliationEntity singleWithType(CompanyEntity companyIn, BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null, String reconciliationTypeValueIn = null) {
+      return stream(1, companyIn, bankIn, dateIn, clearedDateIn, reconciliationTypeValueIn).findFirst().orElseThrow { new Exception("Unable to create BankReconciliation") }
    }
 
    BankReconciliationDTO singleDTO(BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null) {

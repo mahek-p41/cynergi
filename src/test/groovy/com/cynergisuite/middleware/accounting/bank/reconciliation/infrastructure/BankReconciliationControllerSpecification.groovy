@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure
 
 import com.cynergisuite.domain.BankReconClearingFilterRequest
+import com.cynergisuite.domain.BankReconciliationTransactionsFilterRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
@@ -522,5 +523,219 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       with(result.get(1)) {
          clearedDate == toUpdate.get(1).clearedDate
       }
+   }
+
+   void "fetch all reconciliation transactions for one bank" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      dataLoaderService.stream(5, companyFactoryService.forDatasetCode('corrto'), bankIn, LocalDate.now(), null)
+      final bankRecons = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now(), null).toList()
+      final pageOne = new BankReconciliationTransactionsFilterRequest(1, 5, "id", "ASC", bankIn.number, null, null, null, null, null, null, null, null, null, null)
+      final pageTwo = new BankReconciliationTransactionsFilterRequest(2, 5, "id", "ASC", bankIn.number, null, null, null, null, null, null, null, null, null, null)
+      final pageLast = new BankReconciliationTransactionsFilterRequest(3, 5, "id", "ASC", bankIn.number, null, null, null, null, null, null, null, null, null, null)
+      final pageFour = new BankReconciliationTransactionsFilterRequest(4, 5, "id", "ASC", bankIn.number, null, null, null, null, null, null, null, null, null, null)
+      final firstPageBankRecon = bankRecons[0..4]
+      final secondPageBankRecon = bankRecons[5..9]
+      final lastPageBankRecon = bankRecons[10,11]
+
+      when:
+      def pageOneResult = get("$path/transactions${pageOne}")
+
+      then:
+      pageOneResult.requested.with { new BankReconciliationTransactionsFilterRequest(it) } == pageOne
+      pageOneResult.totalElements == 12
+      pageOneResult.totalPages == 3
+      pageOneResult.first == true
+      pageOneResult.last == false
+      pageOneResult.elements.size() == 5
+      pageOneResult.elements.eachWithIndex { it, index ->
+         with (it) {
+            id == firstPageBankRecon[index].id
+            bank.id == firstPageBankRecon[index].bank.id
+
+            with(type) {
+               value == firstPageBankRecon[index].type.value
+               description == firstPageBankRecon[index].type.description
+            }
+
+            date == firstPageBankRecon[index].date.toString()
+            clearedDate == firstPageBankRecon[index].clearedDate
+            amount == firstPageBankRecon[index].amount
+            description == firstPageBankRecon[index].description
+            document == firstPageBankRecon[index].document
+         }
+      }
+
+      when:
+      def pageTwoResult = get("$path/transactions${pageTwo}")
+
+      then:
+      pageTwoResult.requested.with { new BankReconciliationTransactionsFilterRequest(it) } == pageTwo
+      pageTwoResult.totalElements == 12
+      pageTwoResult.totalPages == 3
+      pageTwoResult.first == false
+      pageTwoResult.last == false
+      pageTwoResult.elements.size() == 5
+      pageTwoResult.elements.eachWithIndex { it, index ->
+         with(it) {
+            id == secondPageBankRecon[index].id
+            bank.id == secondPageBankRecon[index].bank.id
+
+            with(type) {
+               value == secondPageBankRecon[index].type.value
+               description == secondPageBankRecon[index].type.description
+            }
+
+            date == secondPageBankRecon[index].date.toString()
+            clearedDate == secondPageBankRecon[index].clearedDate
+            amount == secondPageBankRecon[index].amount
+            description == secondPageBankRecon[index].description
+            document == secondPageBankRecon[index].document
+         }
+      }
+      when:
+      def pageLastResult = get("$path/transactions${pageLast}")
+
+      then:
+      pageLastResult.requested.with { new BankReconciliationTransactionsFilterRequest(it) } == pageLast
+      pageLastResult.totalElements == 12
+      pageLastResult.totalPages == 3
+      pageLastResult.first == false
+      pageLastResult.last == true
+      pageLastResult.elements.size() == 2
+      pageLastResult.elements.eachWithIndex { it, index ->
+         with(it) {
+            id == lastPageBankRecon[index].id
+            bank.id == lastPageBankRecon[index].bank.id
+
+            with(type) {
+               value == lastPageBankRecon[index].type.value
+               description == lastPageBankRecon[index].type.description
+            }
+
+            date == lastPageBankRecon[index].date.toString()
+            clearedDate == lastPageBankRecon[index].clearedDate
+            amount == lastPageBankRecon[index].amount
+            description == lastPageBankRecon[index].description
+            document == lastPageBankRecon[index].document
+         }
+      }
+
+      when:
+      get("$path/transactions${pageFour}")
+
+      then:
+      final notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NO_CONTENT
+   }
+
+   void "fetch all reconciliation transactions for one bank" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      dataLoaderService.stream(5, companyFactoryService.forDatasetCode('corrto'), bankIn, LocalDate.now(), null)
+      final bankRecons = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now(), null).toList()
+      final pageOne = new BankReconciliationTransactionsFilterRequest(1, 5, "id", "ASC", bankIn.number, null, null, null, null, null, null, null, null, null, null)
+      final pageTwo = new BankReconciliationTransactionsFilterRequest(2, 5, "id", "ASC", bankIn.number, null, null, null, null, null, null, null, null, null, null)
+      final pageLast = new BankReconciliationTransactionsFilterRequest(3, 5, "id", "ASC", bankIn.number, null, null, null, null, null, null, null, null, null, null)
+      final pageFour = new BankReconciliationTransactionsFilterRequest(4, 5, "id", "ASC", bankIn.number, null, null, null, null, null, null, null, null, null, null)
+      final firstPageBankRecon = bankRecons[0..4]
+      final secondPageBankRecon = bankRecons[5..9]
+      final lastPageBankRecon = bankRecons[10,11]
+
+      when:
+      def pageOneResult = get("$path/transactions${pageOne}")
+
+      then:
+      pageOneResult.requested.with { new BankReconciliationTransactionsFilterRequest(it) } == pageOne
+      pageOneResult.totalElements == 12
+      pageOneResult.totalPages == 3
+      pageOneResult.first == true
+      pageOneResult.last == false
+      pageOneResult.elements.size() == 5
+      pageOneResult.elements.eachWithIndex { it, index ->
+         with (it) {
+            id == firstPageBankRecon[index].id
+            bank.id == firstPageBankRecon[index].bank.id
+
+            with(type) {
+               value == firstPageBankRecon[index].type.value
+               description == firstPageBankRecon[index].type.description
+            }
+
+            date == firstPageBankRecon[index].date.toString()
+            clearedDate == firstPageBankRecon[index].clearedDate
+            amount == firstPageBankRecon[index].amount
+            description == firstPageBankRecon[index].description
+            document == firstPageBankRecon[index].document
+         }
+      }
+
+      when:
+      def pageTwoResult = get("$path/transactions${pageTwo}")
+
+      then:
+      pageTwoResult.requested.with { new BankReconciliationTransactionsFilterRequest(it) } == pageTwo
+      pageTwoResult.totalElements == 12
+      pageTwoResult.totalPages == 3
+      pageTwoResult.first == false
+      pageTwoResult.last == false
+      pageTwoResult.elements.size() == 5
+      pageTwoResult.elements.eachWithIndex { it, index ->
+         with(it) {
+            id == secondPageBankRecon[index].id
+            bank.id == secondPageBankRecon[index].bank.id
+
+            with(type) {
+               value == secondPageBankRecon[index].type.value
+               description == secondPageBankRecon[index].type.description
+            }
+
+            date == secondPageBankRecon[index].date.toString()
+            clearedDate == secondPageBankRecon[index].clearedDate
+            amount == secondPageBankRecon[index].amount
+            description == secondPageBankRecon[index].description
+            document == secondPageBankRecon[index].document
+         }
+      }
+      when:
+      def pageLastResult = get("$path/transactions${pageLast}")
+
+      then:
+      pageLastResult.requested.with { new BankReconciliationTransactionsFilterRequest(it) } == pageLast
+      pageLastResult.totalElements == 12
+      pageLastResult.totalPages == 3
+      pageLastResult.first == false
+      pageLastResult.last == true
+      pageLastResult.elements.size() == 2
+      pageLastResult.elements.eachWithIndex { it, index ->
+         with(it) {
+            id == lastPageBankRecon[index].id
+            bank.id == lastPageBankRecon[index].bank.id
+
+            with(type) {
+               value == lastPageBankRecon[index].type.value
+               description == lastPageBankRecon[index].type.description
+            }
+
+            date == lastPageBankRecon[index].date.toString()
+            clearedDate == lastPageBankRecon[index].clearedDate
+            amount == lastPageBankRecon[index].amount
+            description == lastPageBankRecon[index].description
+            document == lastPageBankRecon[index].document
+         }
+      }
+
+      when:
+      get("$path/transactions${pageFour}")
+
+      then:
+      final notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NO_CONTENT
    }
 }
