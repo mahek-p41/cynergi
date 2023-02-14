@@ -17,10 +17,10 @@ data class AccountPayableInvoiceReportTemplate(
    var paidTotal: BigDecimal? = null,
 
    @field:Schema(description = "Listing of Invoices")
-   var purchaseOrders: MutableSet<AccountPayableInvoiceReportPoWrapper>? = null
+   var purchaseOrders: List<AccountPayableInvoiceReportPoWrapper>? = null
 
 ) {
-   constructor(entities: MutableSet<AccountPayableInvoiceReportPoWrapper>) :
+   constructor(entities: List<AccountPayableInvoiceReportPoWrapper>) :
       this(
          purchaseOrders = entities,
          expenseTotal = entities.flatMap { it.invoices }.mapNotNull { it!!.invoiceAmount }.sumOf { it },

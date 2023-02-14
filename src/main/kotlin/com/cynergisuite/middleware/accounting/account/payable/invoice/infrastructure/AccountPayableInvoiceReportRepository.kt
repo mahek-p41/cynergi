@@ -103,8 +103,8 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun fetchReport(company: CompanyEntity, filterRequest: InvoiceReportFilterRequest): MutableSet<AccountPayableInvoiceReportPoWrapper> {
-      val purchaseOrders = mutableSetOf<AccountPayableInvoiceReportPoWrapper>()
+   fun fetchReport(company: CompanyEntity, filterRequest: InvoiceReportFilterRequest): List<AccountPayableInvoiceReportPoWrapper> {
+      var purchaseOrders = mutableListOf<AccountPayableInvoiceReportPoWrapper>()
       var addInvoice = true
       var currentPO: AccountPayableInvoiceReportPoWrapper? = null
       var currentInvoice: AccountPayableInvoiceReportDTO? = null
@@ -183,12 +183,13 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          params["useTax"] = filterRequest.useTax
          whereClause.append(" AND apInvoice.use_tax_indicator = :useTax ")
       }
+      var ordering = " ORDER BY poHeader.number ${filterRequest.sortDirection()}, apInvoice.id, pmt.id, pmtDetail.id "
 
       jdbc.query(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY poHeader.number, apInvoice.id, pmt.id, pmtDetail.id
+            $ordering
          """.trimIndent(),
          params)
       { rs, elements ->
@@ -227,6 +228,29 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
 
          } while (rs.next())
       }
+
+      if (filterRequest.sortBy() == "apInvoice.invoice") {
+         fun extractInvoiceNumber(invoice: String) = invoice.substringBefore("-").substringAfter(":")
+
+         val compareByInvoice = compareBy<AccountPayableInvoiceReportPoWrapper> {
+            extractInvoiceNumber(it.invoices.first()!!.invoice!!).length
+         }.thenBy {
+            extractInvoiceNumber(it.invoices.first()!!.invoice!!)
+         }
+         purchaseOrders.sortWith(compareByInvoice)
+      } else if (filterRequest.snakeSortBy() == "vendor.number") {
+         val compareByVendorNumber = compareBy<AccountPayableInvoiceReportPoWrapper> {
+            it.invoices.first()!!.vendorNumber
+         }
+         purchaseOrders.sortWith(compareByVendorNumber)
+      } else if (filterRequest.snakeSortBy() == "vendor.name") {
+         val compareByVendorName = compareBy<AccountPayableInvoiceReportPoWrapper> {
+            it.invoices.first()!!.vendorName
+         }
+         purchaseOrders.sortWith(compareByVendorName)
+      }
+
+      if (filterRequest.sortDirection() == "DESC") purchaseOrders.reverse()
 
       return purchaseOrders
    }
