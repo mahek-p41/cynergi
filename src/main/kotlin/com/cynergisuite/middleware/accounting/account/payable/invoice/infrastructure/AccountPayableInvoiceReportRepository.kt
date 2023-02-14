@@ -97,8 +97,10 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
             JOIN fastinfo_prod_import.inventory_vw inv ON
                   comp.dataset_code = inv.dataset
                   AND inv.invoice_number = apInvoice.invoice
-                  AND invType.value = 'P'
-                  AND inv.received_date = apInvoice.receive_date
+                  AND CASE
+                        WHEN LEFT(apInvoice.invoice, 2) = 'P:' THEN inv.received_date = apInvoice.receive_date
+                        ELSE true
+                      END
       """
    }
 
@@ -440,7 +442,6 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          paymentDate = rs.getLocalDateOrNull("apPayment_payment_date"),
          paymentDetailId = rs.getString("apPayment_detail_id"),
          paymentDetailAmount = rs.getBigDecimalOrNull("apPayment_detail_amount"),
-
       )
    }
 

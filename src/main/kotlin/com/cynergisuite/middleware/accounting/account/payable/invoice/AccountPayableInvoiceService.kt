@@ -11,7 +11,6 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
-import java.math.BigDecimal
 import java.util.UUID
 
 @Singleton
