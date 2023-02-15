@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.financial.calendar
 
+import com.cynergisuite.domain.FinancialCalendarValidateDatesFilterRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
@@ -353,5 +354,85 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
             description == 'Current Financial Period'
          }
       }
+   }
+
+   void "starting date not in financial calendar" () {
+      given:
+      final beginDate = LocalDate.parse("2021-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+
+      final testDate = LocalDate.parse("2000-01-01")
+      def filterRequest = new FinancialCalendarValidateDatesFilterRequest([fromDate: testDate])
+
+      when: 'create financial calendar'
+      def result = post("$path/complete", financialCalendarDTO)
+
+      then:
+      notThrown(Exception)
+      result != null
+
+      when: 'test a bad date'
+      get("$path/validate-dates$filterRequest")
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "$testDate was unable to be found"
+      response.code == 'system.not.found'
+   }
+
+   void "ending date not in financial calendar" () {
+      given:
+      final beginDate = LocalDate.parse("2021-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+
+      final testDate = LocalDate.parse("2030-01-01")
+      def filterRequest = new FinancialCalendarValidateDatesFilterRequest([fromDate: testDate])
+
+      when: 'create financial calendar'
+      def result = post("$path/complete", financialCalendarDTO)
+
+      then:
+      notThrown(Exception)
+      result != null
+
+      when: 'test a bad date'
+      get("$path/validate-dates$filterRequest")
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "$testDate was unable to be found"
+      response.code == 'system.not.found'
+   }
+
+   void "starting and ending dates not in same fiscal year" () {
+      given:
+      final beginDate = LocalDate.parse("2021-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+
+      final testStartingDate = LocalDate.parse("2021-12-01")
+      final testEndingDate = LocalDate.parse("2023-01-01")
+      def filterRequest = new FinancialCalendarValidateDatesFilterRequest([fromDate: testStartingDate, thruDate: testEndingDate])
+
+      when: 'create financial calendar'
+      def result = post("$path/complete", financialCalendarDTO)
+
+      then:
+      notThrown(Exception)
+      result != null
+
+      when: 'test bad dates'
+      get("$path/validate-dates$filterRequest")
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.path[0] == 'startingDate'
+      response.message[0] == "Dates $testStartingDate and $testEndingDate must be in same fiscal year"
+      response.code[0] == 'cynergi.validation.dates.must.be.in.same.fiscal.year'
    }
 }

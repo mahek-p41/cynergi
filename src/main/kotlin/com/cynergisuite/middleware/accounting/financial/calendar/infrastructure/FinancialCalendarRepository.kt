@@ -342,6 +342,66 @@ class FinancialCalendarRepository @Inject constructor(
       return Pair(periods.first().periodFrom, periods.last().periodTo)
    }
 
+   @ReadOnly
+   fun dateFoundInFinancialCalendar(company: CompanyEntity, date: LocalDate): Boolean {
+      val params = mutableMapOf("comp_id" to company.id, "date" to date)
+      val exists = jdbc.queryForObject(
+         """
+         SELECT EXISTS (SELECT id
+                        FROM financial_calendar
+                        WHERE company_id = :comp_id AND :date BETWEEN period_from AND period_to)
+         """.trimIndent(),
+         params,
+         Boolean::class.java
+      )
+
+      logger.trace("Validating financial_calendar exists for date {} resulted in {}", params, exists)
+
+      return exists
+   }
+
+   @ReadOnly
+   fun findOverallPeriodIdAndPeriod(company: CompanyEntity, date: LocalDate): Pair<Int, Int> {
+      val found = jdbc.query(
+         """
+         SELECT overall_period_id, period
+            FROM financial_calendar
+            WHERE company_id = :comp_id AND :date BETWEEN period_from AND period_to
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "date" to date
+         )
+      ) { rs, _ ->
+         mapRow(rs)
+      }
+
+      logger.trace("Find overall period id and period for date {} resulted in {}", date, found.first())
+
+      return found.first()
+   }
+
+   @ReadOnly
+   fun findFirstDateOfFiscalYear(company: CompanyEntity, overallPeriodId: Int): LocalDate {
+      val found = jdbc.query(
+         """
+         SELECT period_from
+            FROM financial_calendar
+            WHERE company_id = :comp_id AND overall_period_id = :overallPeriodId AND period = 1
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "overallPeriodId" to overallPeriodId
+         )
+      ) { rs, _ ->
+         mapDate(rs)
+      }
+
+      logger.trace("Find first date of fiscal year with overall period id {} resulted in {}", overallPeriodId, found.first())
+
+      return found.first()
+   }
+
    private fun mapRow(
       rs: ResultSet,
       columnPrefix: String = EMPTY
@@ -408,5 +468,20 @@ class FinancialCalendarRepository @Inject constructor(
       ) { rs, _ ->
          mapFiscalYearDTO(rs)
       }
+   }
+
+   private fun mapRow(
+      rs: ResultSet
+   ): Pair<Int, Int> {
+      return Pair(
+         first = rs.getInt("overall_period_id"),
+         second = rs.getInt("period")
+      )
+   }
+
+   private fun mapDate(
+      rs: ResultSet
+   ): LocalDate {
+      return rs.getLocalDate("period_from")
    }
 }

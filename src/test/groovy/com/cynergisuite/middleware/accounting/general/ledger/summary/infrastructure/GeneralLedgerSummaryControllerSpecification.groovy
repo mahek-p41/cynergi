@@ -1,16 +1,29 @@
 package com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure
 
+import com.cynergisuite.domain.GeneralLedgerProfitCenterTrialBalanceReportFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
+import com.cynergisuite.middleware.accounting.account.AccountStatusType
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDataLoaderService
+import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 import spock.lang.Unroll
+
+import java.time.LocalDate
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -22,6 +35,9 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
 
    @Inject GeneralLedgerSummaryDataLoaderService dataLoaderService
    @Inject AccountTestDataLoaderService accountDataLoaderService
+   @Inject FinancialCalendarDataLoaderService financialCalendarDataLoaderService
+   @Inject GeneralLedgerJournalEntryDataLoaderService generalLedgerJournalEntryDataLoaderService
+   @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
 
    void "fetch one" () {
       given:
@@ -564,5 +580,94 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       response[0].path == 'id'
       response[0].message == "${updatedGLSummary.id} already exists"
       response[0].code == 'cynergi.validation.duplicate'
+   }
+
+   void "filter for profit center trial balance report #criteria" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
+      final periodFrom = LocalDate.now()
+      final periodTo = LocalDate.now().plusDays(80)
+      final dateRangeDTO = new FinancialCalendarDateRangeDTO(periodFrom, periodTo)
+
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      final status = new AccountStatusType(1, 'A', 'Active', 'active')
+      final account = accountDataLoaderService.single(company, null, null, status)
+      final account2 = accountDataLoaderService.single(company, null, null, status)
+      final profitCenter = storeFactoryService.store(1, company)
+      final profitCenter2 = storeFactoryService.store(3, company)
+      final profitCenterList = [profitCenter.myNumber(), profitCenter2.myNumber()].toList()
+      def glJournalEntryDetailDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account), new StoreDTO(profitCenter), 1000 as BigDecimal).toList()
+      def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account), new StoreDTO(profitCenter), -1000 as BigDecimal).toList()
+      glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
+      def glJournalEntryDTO = generalLedgerJournalEntryDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs, false)
+      def glJournalEntryDetailDTOs2 = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account2), new StoreDTO(profitCenter2), 200 as BigDecimal).toList()
+      def glJournalEntryDetailCreditDTOs2 = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account2), new StoreDTO(profitCenter2), -200 as BigDecimal).toList()
+      glJournalEntryDetailDTOs2.addAll(glJournalEntryDetailCreditDTOs2)
+      def glJournalEntryDTO2 = generalLedgerJournalEntryDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs2, false)
+
+      def filterRequest = new GeneralLedgerProfitCenterTrialBalanceReportFilterRequest()
+      filterRequest['fromDate'] = periodFrom
+      filterRequest['thruDate'] = periodFrom.plusDays(30)
+      switch (criteria) {
+         case 'Sort by location':
+            filterRequest['selectLocsBy'] = 1
+            filterRequest['sortOrder'] = "location"
+            break
+         case 'Sort by account':
+            filterRequest['selectLocsBy'] = 1
+            filterRequest['sortOrder'] = "account"
+            break
+         case 'Select one account':
+            filterRequest['startingAccount'] = account.number
+            filterRequest['endingAccount'] = account.number
+            filterRequest['selectLocsBy'] = 1
+            filterRequest['sortOrder'] = "location"
+            break
+         case 'Select profit centers by list':
+            filterRequest['selectLocsBy'] = 2
+            filterRequest['any10LocsOrGroups'] = profitCenterList
+            filterRequest['sortOrder'] = "location"
+            break
+         case 'Select profit centers by range':
+            filterRequest['selectLocsBy'] = 3
+            filterRequest['startingLocOrGroup'] = profitCenter.myNumber()
+            filterRequest['endingLocOrGroup'] = profitCenter2.myNumber()
+            filterRequest['sortOrder'] = "location"
+            break
+      }
+
+      when: 'open GL in financial calendar'
+      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+
+      then:
+      notThrown(Exception)
+
+      when: 'create journal entries'
+      def result = post("/accounting/general-ledger/journal-entry", glJournalEntryDTO)
+      def result2 = post("/accounting/general-ledger/journal-entry", glJournalEntryDTO2)
+
+      then:
+      notThrown(Exception)
+      result != null
+      result2 != null
+
+      when: 'fetch report'
+      def response = get("$path/profit-center-trial-balance-report/$filterRequest")
+
+      then:
+      notThrown(Exception)
+      response != null
+      response.locationDetailList.size() == locationCount
+      response.reportTotals.debit == debit
+      response.reportTotals.credit == credit
+
+      where:
+      criteria                            || locationCount | debit | credit
+      'Sort by location'                  || 2             | 2400  | -2400
+      'Sort by account'                   || 2             | 2400  | -2400
+      'Select one account'                || 1             | 2000  | -2000
+      'Select profit centers by range'    || 2             | 2400  | -2400
+      'Select profit centers by list'     || 2             | 2400  | -2400
    }
 }
