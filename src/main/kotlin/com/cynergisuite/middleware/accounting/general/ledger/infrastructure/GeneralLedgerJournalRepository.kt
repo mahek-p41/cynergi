@@ -258,8 +258,6 @@ class GeneralLedgerJournalRepository @Inject constructor(
    @ReadOnly
    fun fetchReport(company: CompanyEntity, filterRequest: GeneralLedgerJournalReportFilterRequest) : List<GeneralLedgerPendingReportDetailsTemplate> {
       val glJournals = mutableListOf<GeneralLedgerJournalEntity>()
-      val template = mutableListOf<GeneralLedgerPendingReportDetailsTemplate>()
-      val sortedEntities = mutableListOf<GeneralLedgerJournalEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id")
       val orderBy = StringBuilder("ORDER BY ")
@@ -304,39 +302,43 @@ class GeneralLedgerJournalRepository @Inject constructor(
       ) { rs, _ ->
          do {
             glJournals.add(mapRow(rs, company, "glJournal_"))
-
-            if (filterRequest.sortOption == GeneralLedgerReportSortEnum.ACCOUNT) {
-               var currentAccountID = glJournals[0].account.id
-               glJournals.forEach {
-                  if (currentAccountID == it.account.id ) {
-                     sortedEntities.add(it)
-                  } else {
-                     currentAccountID = it.account.id
-                     template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
-                     sortedEntities.removeAll(sortedEntities)
-                     sortedEntities.add(it)
-                  }
-               }
-            }
-
-            if (filterRequest.sortOption == GeneralLedgerReportSortEnum.LOCATION) {
-               var currentLocation = glJournals[0].profitCenter.myNumber()
-               glJournals.forEach {
-                  if (currentLocation == it.profitCenter.myNumber() ) {
-                     sortedEntities.add(it)
-                  } else {
-                     currentLocation = it.profitCenter.myNumber()
-                     template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
-                     sortedEntities.removeAll(sortedEntities)
-                     sortedEntities.add(it)
-                  }
-               }
-            }
-            //add any remaining sorted entities after loop
-            if (sortedEntities.isNotEmpty()) {
-               template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
-            }
          } while (rs.next())
+      }
+
+      val template = mutableListOf<GeneralLedgerPendingReportDetailsTemplate>()
+      val sortedEntities = mutableListOf<GeneralLedgerJournalEntity>()
+      if (glJournals.isNotEmpty()) {
+         if (filterRequest.sortOption == GeneralLedgerReportSortEnum.ACCOUNT) {
+            var currentAccountID = glJournals[0].account.id
+            glJournals.forEach {
+               if (currentAccountID == it.account.id ) {
+                  sortedEntities.add(it)
+               } else {
+                  currentAccountID = it.account.id
+                  template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
+                  sortedEntities.removeAll(sortedEntities)
+                  sortedEntities.add(it)
+               }
+            }
+         }
+
+         if (filterRequest.sortOption == GeneralLedgerReportSortEnum.LOCATION) {
+            var currentLocation = glJournals[0].profitCenter.myNumber()
+            glJournals.forEach {
+               if (currentLocation == it.profitCenter.myNumber() ) {
+                  sortedEntities.add(it)
+               } else {
+                  currentLocation = it.profitCenter.myNumber()
+                  template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
+                  sortedEntities.removeAll(sortedEntities)
+                  sortedEntities.add(it)
+               }
+            }
+         }
+         //add any remaining sorted entities after loop
+         if (sortedEntities.isNotEmpty()) {
+            template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
+         }
       }
 
       return template
