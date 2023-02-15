@@ -46,13 +46,17 @@ class BankReconciliationService @Inject constructor(
 
    }
 
+   fun delete(dtoList: List<BankReconciliationDTO>, company: CompanyEntity) {
+      dtoList.forEach{bankReconciliationRepository.delete(it.id!!, company)}
+   }
+
    fun clearing(filterRequest: BankReconClearingFilterRequest, company: CompanyEntity): List<BankReconciliationDTO> {
       val found = bankReconciliationRepository.fetchClear(filterRequest, company)
       return found.map { transformEntity(it) }
    }
 
-   fun updateClear(dtos: List<BankReconciliationDTO>, company: CompanyEntity): List<BankReconciliationDTO> {
-      val toUpdate = bankReconciliationValidator.validateBulkUpdate(dtos, company)
+   fun bulkUpdate(dtoList: List<BankReconciliationDTO>, company: CompanyEntity): List<BankReconciliationDTO> {
+      val toUpdate = bankReconciliationValidator.validateBulkUpdate(dtoList, company)
       val updated = bankReconciliationRepository.bulkUpdate(toUpdate, company)
 
       return updated.map{ transformEntity(it)}

@@ -13,6 +13,7 @@ import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
@@ -120,7 +121,7 @@ class BankReconciliationController @Inject constructor(
 
    @Put(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["BankReconciliationEndpoints"], summary = "Create a single bank reconciliation", description = "Create a single bank reconciliation.", operationId = "bankReconciliation-update")
+   @Operation(tags = ["BankReconciliationEndpoints"], summary = "Update a single bank reconciliation", description = "Update a single bank reconciliation.", operationId = "bankReconciliation-update")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", description = "If successfully able to update BankReconciliation", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = BankReconciliationDTO::class))]),
@@ -191,9 +192,9 @@ class BankReconciliationController @Inject constructor(
       return bankRecons
    }
 
-   @Put(uri = "/clearing", processes = [APPLICATION_JSON])
+   @Put(uri = "/bulk-update", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["BankReconciliationEndpoints"], summary = "Update one or multiple bank reconciliation cleared status", description = "Update a bank reconciliation cleared status.", operationId = "bankReconciliation-updateCleared")
+   @Operation(tags = ["BankReconciliationEndpoints"], summary = "Update one or multiple bank reconciliations", description = "Update a bank reconciliations", operationId = "bankReconciliation-bulkUpdate")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", description = "If successfully able to update BankReconciliation", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = BankReconciliationDTO::class))]),
@@ -202,17 +203,17 @@ class BankReconciliationController @Inject constructor(
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
-   fun updateCleared(
+   fun bulkUpdate(
       @Body @Valid
-      dtos: List<BankReconciliationDTO>,
+      dtoList: List<BankReconciliationDTO>,
       authentication: Authentication
    ): List<BankReconciliationDTO> {
-      logger.info("Requested Update Cleared Status BankReconciliation {}", dtos)
+      logger.info("Requested Update Cleared Status BankReconciliation {}", dtoList)
 
       val user = userService.fetchUser(authentication)
-      val response = bankReconciliationService.updateClear(dtos, user.myCompany())
+      val response = bankReconciliationService.bulkUpdate(dtoList, user.myCompany())
 
-      logger.debug("Requested Update Cleared Status BankReconciliation {} resulted in {}", dtos, response)
+      logger.debug("Requested Update Cleared Status BankReconciliation {} resulted in {}", dtoList, response)
 
       return response
    }
@@ -239,6 +240,30 @@ class BankReconciliationController @Inject constructor(
       logger.debug("Listing of Bank Reconciliation Transactions resulted in {}", bankReconTransactions)
 
       return bankReconTransactions
+   }
+
+   @Delete(uri = "/bulk-delete")
+   @Throws(NotFoundException::class)
+   @Operation(tags = ["BankReconciliationEndpoints"], summary = "Delete one or more Bank Reconciliations", description = "Delete one or more Bank Reconciliations", operationId = "bankReconciliation-bulkDelete")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If Bank Reconciliation was successfully deleted"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Bank Reconciliation was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun bulkDelete(
+      @Body @Valid
+      dtoList: List<BankReconciliationDTO>,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ) {
+      logger.debug("User {} requested delete BankReconciliation", authentication)
+
+      val user = userService.fetchUser(authentication)
+
+      return bankReconciliationService.delete(dtoList, user.myCompany())
    }
 
 }
