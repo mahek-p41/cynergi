@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.middleware.store.Store
 import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
@@ -25,7 +26,7 @@ data class GeneralLedgerPendingReportDTO(
 
    @field:NotNull
    @field:Schema(description = "Profit Center ID")
-   var profitCenterId: Long? = null,
+   var profitCenterNumber: Int? = null,
 
    @field:NotNull
    @field:Schema(description = "Profit Center Name")
@@ -65,7 +66,7 @@ data class GeneralLedgerPendingReportDTO(
          id = entity.id,
          accountNumber = entity.account.number,
          accountName = entity.account.name,
-         profitCenterId = entity.profitCenter.myId(),
+         profitCenterNumber = entity.profitCenter.myNumber(),
          profitCenterName = entity.profitCenter.myName(),
          sourceCode = entity.source.value,
          sourceCodeDesc = entity.source.description,
