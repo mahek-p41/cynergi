@@ -535,6 +535,7 @@ class BankReconciliationRepository @Inject constructor(
 
    @ReadOnly
    fun findTransactions(filterRequest: BankReconciliationTransactionsFilterRequest, company: CompanyEntity) : RepositoryPage<BankReconciliationEntity, PageRequest> {
+      logger.trace("Searching for Reconciliation Transactions by Bank {} and Type {}", filterRequest.bank, filterRequest.bankReconciliationType)
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder(" WHERE bankRecon.company_id = :comp_id")
 
@@ -578,7 +579,7 @@ class BankReconciliationRepository @Inject constructor(
 
       if (filterRequest.bankReconciliationType != null) {
          params["type"] = filterRequest.bankReconciliationType
-         whereClause.append(" AND bankReconType.value = :type")
+         whereClause.append(" AND bankReconType.value = :type") //bankReconType_value
       }
 
       if (filterRequest.status != null) {
@@ -594,7 +595,7 @@ class BankReconciliationRepository @Inject constructor(
       if (filterRequest.fromClearedDate != null || filterRequest.thruClearedDate != null) {
          params["fromClearedDate"] = filterRequest.fromClearedDate
          params["thruClearedDate"] = filterRequest.thruClearedDate
-         whereClause.append(" AND bankRecon.transaction_date")
+         whereClause.append(" AND bankRecon.cleared_date")
             .append(
                buildFilterString(
                   filterRequest.fromClearedDate != null,
@@ -614,7 +615,7 @@ class BankReconciliationRepository @Inject constructor(
          """
       WITH paged AS (
          ${selectBaseQuery()}
-         WHERE bankRecon.company_id = :comp_id
+         $whereClause
       )
       SELECT
          p.*,

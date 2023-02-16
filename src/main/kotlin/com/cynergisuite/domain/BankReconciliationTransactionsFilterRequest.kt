@@ -21,7 +21,7 @@ class BankReconciliationTransactionsFilterRequest(
    @field:Schema(name = "Bank", description = "Bank Number")
    var bank: Long? = null,
 
-   @field:Schema(name = "bankType", description = "Bank Reconciliation Type Value")
+   @field:Schema(name = "bankReconciliationType", description = "Bank Reconciliation Type Value")
    var bankReconciliationType: String? = null,
 
    @field:Schema(name = "fromTransactionDate", description = "From transaction date for bank reconciliation transactions")
@@ -113,7 +113,7 @@ class BankReconciliationTransactionsFilterRequest(
    override fun myToStringValues(): List<Pair<String, Any?>> =
       listOf(
          "bank" to bank,
-         "bankType" to bankReconciliationType,
+         "bankReconciliationType" to bankReconciliationType,
          "fromTransactionDate" to fromTransactionDate,
          "thruTransactionDate" to thruTransactionDate,
          "beginDocNum" to beginDocNum,
