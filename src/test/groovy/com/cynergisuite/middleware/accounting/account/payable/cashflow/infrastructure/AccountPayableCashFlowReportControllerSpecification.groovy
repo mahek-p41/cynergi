@@ -158,11 +158,11 @@ class AccountPayableCashFlowReportControllerSpecification extends ControllerSpec
 
       def vendor1PmtTerm = vendorPaymentTermList[0]
       def vendor1ShipVia = shipViaList[0]
-      def vendor1 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor1ShipVia)
+      def vendor1 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor1ShipVia, "Alpha Co")
       def vendor2PmtTerm = vendorPaymentTermList[1]
       def vendor2ShipVia = shipViaList[1]
-      def vendor2 = vendorTestDataLoaderService.single(company, vendor2PmtTerm, vendor2ShipVia)
-      def vendor3 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor2ShipVia)
+      def vendor2 = vendorTestDataLoaderService.single(company, vendor2PmtTerm, vendor2ShipVia, "Bravo Inc")
+      def vendor3 = vendorTestDataLoaderService.single(company, vendor1PmtTerm, vendor2ShipVia, "Zeta Brands")
 
       def employeeList = employeeFactoryService.stream(4, company).toList()
       def poApprovedBy = employeeList[0]
