@@ -1,0 +1,169 @@
+package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
+
+import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
+import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.infrastructure.RepositoryPage
+import com.cynergisuite.extensions.getBigDecimalOrNull
+import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getLocalDateOrNull
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceTypeDTO
+import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
+import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceTypeRepository
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableDistDetailReportDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryPaymentDTO
+import com.cynergisuite.middleware.company.CompanyEntity
+import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
+import org.apache.commons.lang3.StringUtils.EMPTY
+import org.jdbi.v3.core.Jdbi
+import java.sql.ResultSet
+import java.util.UUID
+import kotlin.math.exp
+
+@Singleton
+class AccountPayableInvoiceInquiryRepository @Inject constructor(
+   private val jdbc: Jdbi,
+   private val statusRepository: AccountPayableInvoiceStatusTypeRepository,
+   private val typeRepository: AccountPayableInvoiceTypeRepository
+) {
+   fun selectBaseQuery(): String {
+      return """
+         SELECT
+            apInvoice.id                                       AS apInvoice_id,
+            apInvoice.invoice                                  AS apInvoice_invoice,
+            apInvoice.invoice_amount                           AS apInvoice_invoice_amount,
+            apInvoice.invoice_date                             AS apInvoice_invoice_date,
+            type.value                                         AS apInvoice_type_value,
+            apInvoice.separate_check_indicator                 AS apInvoice_separate_check_indicator,
+            poHeader.number                                    AS apInvoice_poHeader_number,
+            apInvoice.use_tax_indicator                        AS apInvoice_use_tax_indicator,
+            apInvoice.due_date                                 AS apInvoice_due_date,
+            apInvoice.expense_date                             AS apInvoice_expense_date,
+            apInvoice.discount_date                            AS apInvoice_discount_date,
+            apInvoice.discount_amount                          AS apInvoice_discount_amount,
+            apInvoice.discount_taken                           AS apInvoice_discount_taken,
+            apInvoice.discount_percent                         AS apInvoice_discount_percent,
+            status.value                                       AS apInvoice_status_value,
+            apInvoice.message                                  AS apInvoice_message,
+            vendor.number                                      AS apInvoice_vendor_number,
+            payTo.number                                       AS apInvoice_payTo_number
+         FROM account_payable_invoice apInvoice
+            JOIN purchase_order_header poHeader                      ON poHeader.id = apInvoice.purchase_order_id AND poHeader.deleted = FALSE
+            JOIN account_payable_invoice_type_domain type            ON type.id = apInvoice.type_id
+            JOIN account_payable_invoice_status_type_domain status   ON status.id = apInvoice.status_id
+            JOIN vendor                                              ON apInvoice.vendor_id = vendor.id AND vendor.deleted = FALSE
+            JOIN vendor payTo                                        ON apInvoice.pay_to_id = payTo.id AND payTo.deleted = FALSE
+      """
+   }
+
+   @ReadOnly
+   fun fetchInquiry(company: CompanyEntity, filterRequest: AccountPayableInvoiceInquiryFilterRequest): RepositoryPage<AccountPayableInvoiceInquiryDTO, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "vendor" to filterRequest.vendor, "payTo" to filterRequest.payTo)
+      val whereClause = StringBuilder(
+         "WHERE apInvoice.company_id = :comp_id " +
+         "AND vendor.number = :vendor " +
+         "AND payTo.number = :payTo "
+      )
+      val sortBy = StringBuilder("ORDER BY ")
+
+      if (filterRequest.invStatus != null) {
+         params["invStatus"] = filterRequest.invStatus
+         whereClause.append(" AND status.value = :invStatus ")
+      }
+
+      if (filterRequest.poNbr != null) {
+         params["poNbr"] = filterRequest.poNbr
+         whereClause.append(" AND poHeader.number >= :poNbr ")
+      }
+
+      if (filterRequest.invNbr != null) {
+         params["invNbr"] = filterRequest.invNbr
+         whereClause.append(" AND naturalsort(apInvoice.invoice) >= :invNbr ")
+      }
+
+      if (filterRequest.invDate != null) {
+         params["invDate"] = filterRequest.invDate
+         whereClause.append(" AND apInvoice.invoice_date >= :invDate ")
+      }
+
+      if (filterRequest.dueDate != null) {
+         params["dueDate"] = filterRequest.dueDate
+         whereClause.append(" AND apInvoice.due_date >= :dueDate ")
+      }
+
+      if (filterRequest.invAmount != null) {
+         params["invAmount"] = filterRequest.invAmount
+         whereClause.append(" AND apInvoice.invoice_amount >= :invAmount ")
+      }
+
+      if (filterRequest.sortBy == "apInvoice.invoice") {
+         sortBy.append("naturalsort(apInvoice.invoice)")
+      }
+      else {
+         sortBy.append(filterRequest.sortBy)
+      }
+
+      return jdbc.queryPaged(
+         """
+            ${selectBaseQuery()}
+            $whereClause
+            $sortBy
+         """.trimIndent(),
+         params,
+         filterRequest
+      ) { rs, elements ->
+         do {
+
+            val apInvoiceId = rs.getUuid("apInvoice_id")
+            val inquiryDTO = mapInvoice(rs, "apInvoice_")
+
+            inquiryDTO.payments = fetchInquiryPayments(apInvoiceId, company)
+            inquiryDTO.glDist = fetchInquiryDistributions(apInvoiceId, company)
+
+            elements.add(inquiryDTO)
+
+         } while (rs.next())
+      }
+   }
+
+   @ReadOnly
+   fun fetchInquiryPayments(apInvoiceId: UUID, company: CompanyEntity): List<AccountPayableInvoiceInquiryPaymentDTO> {
+
+   }
+
+   @ReadOnly
+   fun fetchInquiryDistributions(apInvoiceId: UUID, company: CompanyEntity): List<AccountPayableDistDetailReportDTO> {
+
+   }
+
+   private fun mapInvoice(rs: ResultSet, columnPrefix: String = EMPTY): AccountPayableInvoiceInquiryDTO {
+      val type = typeRepository.mapRow(rs, "${columnPrefix}type_")
+      val status = statusRepository.mapRow(rs, "${columnPrefix}status_")
+
+      return AccountPayableInvoiceInquiryDTO(
+         invoice = rs.getString("${columnPrefix}invoice"),
+         invAmount = rs.getBigDecimal("${columnPrefix}invoice_amount"),
+         invDate = rs.getLocalDate("${columnPrefix}invoice_date"),
+         type = AccountPayableInvoiceTypeDTO(type),
+         separateCheckIndicator = rs.getBoolean("${columnPrefix}separate_check_indicator"),
+         poNbr = rs.getInt("${columnPrefix}poHeader_number"),
+         useTaxIndicator = rs.getBoolean("${columnPrefix}use_tax_indicator"),
+         dueDate = rs.getLocalDate("${columnPrefix}due_date"),
+         expenseDate = rs.getLocalDate("${columnPrefix}expense_date"),
+         discountDate = rs.getLocalDateOrNull("${columnPrefix}discount_date"),
+         discountBasisAmount = rs.getBigDecimalOrNull("${columnPrefix}discount_amount"),
+         discountTaken = rs.getBigDecimalOrNull("${columnPrefix}discount_taken"),
+         discountPercent = rs.getBigDecimalOrNull("${columnPrefix}discount_percent"),
+         status = AccountPayableInvoiceStatusTypeDTO(status),
+         payments = null,
+         glDist = null,
+         message = rs.getString("${columnPrefix}message")
+      )
+   }
+}

@@ -1,8 +1,10 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice
 
+import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceInquiryRepository
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceReportRepository
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -15,6 +17,7 @@ import java.util.UUID
 
 @Singleton
 class AccountPayableInvoiceService @Inject constructor(
+   private val accountPayableInvoiceInquiryRepository: AccountPayableInvoiceInquiryRepository,
    private val accountPayableInvoiceRepository: AccountPayableInvoiceRepository,
    private val accountPayableInvoiceReportRepository: AccountPayableInvoiceReportRepository,
    private val accountPayableInvoiceValidator: AccountPayableInvoiceValidator
@@ -82,6 +85,12 @@ class AccountPayableInvoiceService @Inject constructor(
       csvWriter.close()
       output.close()
       return stream.toByteArray()
+   }
+
+   fun inquiry(company: CompanyEntity, filterRequest: AccountPayableInvoiceInquiryFilterRequest): Page<AccountPayableInvoiceInquiryDTO> {
+      val found = accountPayableInvoiceInquiryRepository.fetchInquiry(company, filterRequest)
+
+      return found.toPage { dto: AccountPayableInvoiceInquiryDTO -> dto }
    }
 
    fun update(id: UUID, dto: AccountPayableInvoiceDTO, company: CompanyEntity): AccountPayableInvoiceDTO {

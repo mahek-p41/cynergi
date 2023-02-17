@@ -5,15 +5,22 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
 import javax.validation.constraints.NotNull
+import javax.validation.constraints.Pattern
 
 @Schema(
    name = "AccountPayableInvoiceInquiryFilterRequest",
-   title = "Resulting list for filtering result",
-   description = "Defines the parameters available to for a sortable request. Example ?account=1&profitCenter=2&fiscalYear=2019",
-   allOf = [SortableRequestBase::class]
+   title = "Account Payable Invoice Inquiry Filter Request",
+   description = "Filter request for Account Payable Invoice inquiry",
+   allOf = [PageRequestBase::class]
 )
 @Introspected
 class AccountPayableInvoiceInquiryFilterRequest(
+   page: Int? = null,
+   size: Int? = null,
+   @field:Pattern(regexp = "poHeader.number|apInvoice.invoice|apInvoice.invoice_date|apInvoice.due_date|apInvoice.invoice_amount")
+   @field:Schema(description = "The column to sort the AP invoice inquiry by (poHeader.number|apInvoice.invoice|apInvoice.invoice_date|apInvoice.due_date|apInvoice.invoice_amount).", defaultValue = "poHeader.number")
+   override var sortBy: String? = null,
+   sortDirection: String? = null,
 
    @field:NotNull
    @field:Schema(name = "vendor", description = "Vendor number")
@@ -41,9 +48,25 @@ class AccountPayableInvoiceInquiryFilterRequest(
    @field:Schema(name = "invAmount", description = "Invoice amount")
    var invAmount: BigDecimal? = null
 
-) : SortableRequestBase<AccountPayableInvoiceInquiryFilterRequest>(null, null) {
+) : PageRequestBase<AccountPayableInvoiceInquiryFilterRequest>(page, size, sortBy, sortDirection) {
 
    override fun sortByMe(): String = sortBy()
+
+   override fun myCopyPage(page: Int, size: Int, sortBy: String, sortDirection: String): AccountPayableInvoiceInquiryFilterRequest =
+      AccountPayableInvoiceInquiryFilterRequest(
+         page = page,
+         size = size,
+         sortBy = sortBy,
+         sortDirection = sortDirection,
+         vendor = this.vendor,
+         payTo = this.payTo,
+         invStatus = this.invStatus,
+         poNbr = this.poNbr,
+         invNbr = this.invNbr,
+         invDate = this.invDate,
+         dueDate = this.dueDate,
+         invAmount = this.invAmount
+      )
 
    override fun myToStringValues(): List<Pair<String, Any?>> =
       listOf(

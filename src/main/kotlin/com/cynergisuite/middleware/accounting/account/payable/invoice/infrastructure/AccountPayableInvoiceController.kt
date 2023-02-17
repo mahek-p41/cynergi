@@ -1,9 +1,11 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
+import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceService
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -169,6 +171,45 @@ class AccountPayableInvoiceController @Inject constructor(
       val user = userService.fetchUser(authentication)
       val byteArray = accountPayableInvoiceService.export(filterRequest, user.myCompany())
       return StreamedFile(ByteArrayInputStream(byteArray), MediaType.ALL_TYPE).attach("AP Invoice Report Export.csv")
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/inquiry{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(
+      tags = ["AccountPayableInvoiceEndpoints"],
+      summary = "Fetch an Account Payable Invoice Inquiry",
+      description = "Fetch an Account Payable Invoice Inquiry",
+      operationId = "accountPayableInvoice-inquiry"
+   )
+   @ApiResponses(
+      value = [
+         ApiResponse(
+            responseCode = "200",
+            content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]
+         ),
+         ApiResponse(
+            responseCode = "204",
+            description = "The requested Account Payable Invoice Inquiry was unable to be found, or the result is empty"
+         ),
+         ApiResponse(
+            responseCode = "401",
+            description = "If the user calling this endpoint does not have permission to operate it"
+         ),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun inquiry(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: AccountPayableInvoiceInquiryFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Page<AccountPayableInvoiceInquiryDTO> {
+      logger.info("Fetching Account Payable Invoice Inquiry {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+
+      return accountPayableInvoiceService.inquiry(user.myCompany(), filterRequest)
    }
 
    @Post(processes = [APPLICATION_JSON])
