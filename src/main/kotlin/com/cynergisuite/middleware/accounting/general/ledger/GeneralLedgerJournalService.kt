@@ -88,7 +88,7 @@ class GeneralLedgerJournalService @Inject constructor(
             '"' + element.source.value + '"',
             if(element.amount > BigDecimal.ZERO) element.amount.toString().padStart(12, '0') else BigDecimal("0.00").toString().padStart(12, '0'),
             if(element.amount < BigDecimal.ZERO) element.amount.abs().toString().padStart(12, '0') else BigDecimal("0.00").toString().padStart(12, '0'),
-            '"' + element.message!!.padEnd(70, ' ') + '"'
+            '"' + (element.message?.padEnd(70, ' ') ?: ' '.toString().padEnd(70, ' ')) + '"'
          )
          csvWriter.writeNext(data)
       }
