@@ -283,11 +283,11 @@ class GeneralLedgerJournalRepository @Inject constructor(
       }
 
       if (filterRequest.sortOption == GeneralLedgerReportSortEnum.ACCOUNT) {
-         orderBy.append("glJournal.account_id")
+         orderBy.append("account.account_number, profitCenter.number")
       }
 
       if (filterRequest.sortOption == GeneralLedgerReportSortEnum.LOCATION) {
-         orderBy.append("glJournal.profit_center_id_sfk")
+         orderBy.append("profitCenter.number, account.account_number")
       }
 
       orderBy.append(", glJournal.date")
