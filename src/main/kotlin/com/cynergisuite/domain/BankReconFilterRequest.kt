@@ -31,10 +31,10 @@ class BankReconFilterRequest(
    var thruDate: LocalDate? = null,
 
    @field:Schema(name = "beginDocument", description = "Beginning Document Number")
-   var beginDocument: Long? = null,
+   var beginDocument: String? = null,
 
    @field:Schema(name = "endDocument", description = "End Document Number")
-   var endDocument: Long? = null,
+   var endDocument: String? = null,
 
    @field:Schema(name = "bankType", description = "Bank Reconciliation Type Value")
    var bankType: String? = null,

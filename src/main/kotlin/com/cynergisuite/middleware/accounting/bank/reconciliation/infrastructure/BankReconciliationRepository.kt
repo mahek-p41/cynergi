@@ -281,7 +281,7 @@ class BankReconciliationRepository @Inject constructor(
       if (filterRequest.beginDocument != null || filterRequest.endDocument != null) {
          params["beginDocument"] = filterRequest.beginDocument
          params["endDocument"] = filterRequest.endDocument
-         whereClause.append(" AND regexp_replace(bankRecon.document, '[^0-9]+', '', 'g')::BIGINT")
+         whereClause.append(" AND regexp_replace(bankRecon.document, '[^0-9]+', '', 'g')")
             .append(buildFilterString(filterRequest.beginDocument != null, filterRequest.endDocument != null, "beginDocument", "endDocument"))
       }
 
