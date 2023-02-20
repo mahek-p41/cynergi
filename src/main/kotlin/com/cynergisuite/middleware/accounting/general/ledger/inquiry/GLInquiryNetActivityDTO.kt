@@ -17,6 +17,7 @@ data class GLInquiryNetActivityDTO(
    private val totalBalance: BigDecimal? = null,
 
    ) {
+   @get:Schema(name = "Percent", description = "Percent", required = false)
    val percent: BigDecimal?
       get() = if (!totalBalance!!.equalTo(BigDecimal.ZERO)) netActivity!!.divide(totalBalance, 4, RoundingMode.HALF_UP) else BigDecimal.ZERO
 }

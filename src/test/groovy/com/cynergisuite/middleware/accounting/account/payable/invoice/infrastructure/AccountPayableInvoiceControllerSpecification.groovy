@@ -434,7 +434,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
          """)
 
-      def filterRequest = new InvoiceReportFilterRequest([sortBy: "id", sortDirection: "ASC"])
+      def filterRequest = new InvoiceReportFilterRequest([sortBy: "poHeader.number", sortDirection: "ASC"])
 
       when:
       def result = get("$path/report${filterRequest}")

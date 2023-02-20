@@ -16,5 +16,7 @@ data class AccountPayableDistDetailReportDTO(
    @field:Schema(description = "Distribution store number")
    var distProfitCenter: Int? = null,
    @field:Schema(description = "Distribution amount")
-   var distAmount: BigDecimal? = null
+   var distAmount: BigDecimal? = null,
+   @field:Schema(description = "GL Account for Inventory indicator")
+   var isAccountForInventory: Boolean? = null,
    )

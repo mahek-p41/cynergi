@@ -3,6 +3,7 @@ package com.cynergisuite.domain
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
+import javax.validation.constraints.Pattern
 
 @Schema(
    name = "InvoiceReportFilterRequest",
@@ -13,10 +14,10 @@ import java.time.LocalDate
 @Introspected
 class InvoiceReportFilterRequest(
 
-   @field:Schema(name = "beginVend", description = "Beginning Vendor number")
+   @field:Schema(name = "beginVen", description = "Beginning Vendor number")
    var beginVen: Int? = null,
 
-   @field:Schema(name = "endVend", description = "Ending Vendor number")
+   @field:Schema(name = "endVen", description = "Ending Vendor number")
    var endVen: Int? = null,
 
    @field:Schema(name = "beginOpr", description = "Beginning Operator number")
@@ -49,10 +50,10 @@ class InvoiceReportFilterRequest(
    @field:Schema(name = "endEnDate", description = "Ending entry date")
    var endEnDate: LocalDate? = null,
 
-   @field:Schema(name = "beginExpDate", description = "Beginning paid date")
+   @field:Schema(name = "beginPaidDate", description = "Beginning paid date")
    var beginPaidDate: LocalDate? = null,
 
-   @field:Schema(name = "endExpDate", description = "Ending paid date")
+   @field:Schema(name = "endPaidDate", description = "Ending paid date")
    var endPaidDate: LocalDate? = null,
 
    @field:Schema(name = "beginDueDate", description = "Beginning due date")
@@ -73,7 +74,11 @@ class InvoiceReportFilterRequest(
    @field:Schema(name = "useTax", description = "Only use tax indicator")
    var useTax: Boolean? = null,
 
-) : SortableRequestBase<InvoiceReportFilterRequest>(null, null) {
+   @field:Pattern(regexp = "poHeader.number|apInvoice.invoice|vendor.number|vendor.name")
+   @field:Schema(description = "The column to sort the purchase order invoice report by (poHeader.number|apInvoice.invoice|vendor.number|vendor.name).", defaultValue = "poHeader.number")
+   override var sortBy: String? = null,
+
+) : SortableRequestBase<InvoiceReportFilterRequest>("poHeader.number", "ASC") {
 
    override fun sortByMe(): String = sortBy()
 

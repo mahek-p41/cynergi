@@ -18,6 +18,9 @@ data class AccountPayableInvoiceReportPoWrapper(
 
    ) {
 
+   @get:Schema(description = "Total Purchase Order inventory cost")
    val totalPoInventoryCost get() = invoices.flatMap { it!!.inventories }.mapNotNull { it.cost }.sumOf { it }
-   val totalPoDistributions get() = invoices.flatMap { it!!.distDetails }.mapNotNull { it.distAmount }.sumOf { it }
+
+   @get:Schema(description = "Total Purchase Order distributions")
+   val totalPoDistributions get() = invoices.flatMap { it!!.distDetails }.filter { it.isAccountForInventory!! }.mapNotNull { it.distAmount }.sumOf { it }
 }

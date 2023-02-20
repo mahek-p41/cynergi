@@ -66,6 +66,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
             account.name                                                AS apPayment_account_name,
             invDist.distribution_profit_center_id_sfk                   AS apPayment_dist_center,
             invDist.distribution_amount                                 AS apPayment_dist_amount,
+            CASE WHEN (apControl.id IS null) THEN false ELSE true END   AS apPayment_account_for_inventory,
 
             inv.invoice_number                                          AS inv_invoice_number,
             inv.model_number                                            AS inv_model_number,
@@ -91,18 +92,21 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
             LEFT JOIN bank                                              ON pmt.bank_id = bank.id AND bank.deleted = FALSE
             JOIN account_payable_invoice_distribution invDist           ON apInvoice.id = invDist.invoice_id
             JOIN account                                                ON invDist.distribution_account_id = account.id AND account.deleted = FALSE
+            LEFT JOIN account_payable_control apControl                 ON invDist.distribution_account_id = apControl.general_ledger_inventory_account_id
             JOIN company comp                                           ON apInvoice.company_id = comp.id AND comp.deleted = FALSE
             JOIN fastinfo_prod_import.inventory_vw inv ON
                   comp.dataset_code = inv.dataset
                   AND inv.invoice_number = apInvoice.invoice
-                  AND invType.value = 'P'
-                  AND inv.received_date = apInvoice.receive_date
+                  AND CASE
+                        WHEN LEFT(apInvoice.invoice, 2) = 'P:' THEN inv.received_date = apInvoice.receive_date
+                        ELSE true
+                      END
       """
    }
 
    @ReadOnly
    fun fetchReport(company: CompanyEntity, filterRequest: InvoiceReportFilterRequest): List<AccountPayableInvoiceReportPoWrapper> {
-      val purchaseOrders = mutableListOf<AccountPayableInvoiceReportPoWrapper>()
+      var purchaseOrders = mutableListOf<AccountPayableInvoiceReportPoWrapper>()
       var addInvoice = true
       var currentPO: AccountPayableInvoiceReportPoWrapper? = null
       var currentInvoice: AccountPayableInvoiceReportDTO? = null
@@ -181,12 +185,13 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          params["useTax"] = filterRequest.useTax
          whereClause.append(" AND apInvoice.use_tax_indicator = :useTax ")
       }
+      var ordering = " ORDER BY poHeader.number ${filterRequest.sortDirection()}, apInvoice.id, pmt.id, pmtDetail.id "
 
       jdbc.query(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY poHeader.number, apInvoice.id, pmt.id, pmtDetail.id
+            $ordering
          """.trimIndent(),
          params)
       { rs, elements ->
@@ -225,6 +230,29 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
 
          } while (rs.next())
       }
+
+      if (filterRequest.sortBy() == "apInvoice.invoice") {
+         fun extractInvoiceNumber(invoice: String) = invoice.substringBefore("-").substringAfter(":")
+
+         val compareByInvoice = compareBy<AccountPayableInvoiceReportPoWrapper> {
+            extractInvoiceNumber(it.invoices.first()!!.invoice!!).length
+         }.thenBy {
+            extractInvoiceNumber(it.invoices.first()!!.invoice!!)
+         }
+         purchaseOrders.sortWith(compareByInvoice)
+      } else if (filterRequest.snakeSortBy() == "vendor.number") {
+         val compareByVendorNumber = compareBy<AccountPayableInvoiceReportPoWrapper> {
+            it.invoices.first()!!.vendorNumber
+         }
+         purchaseOrders.sortWith(compareByVendorNumber)
+      } else if (filterRequest.snakeSortBy() == "vendor.name") {
+         val compareByVendorName = compareBy<AccountPayableInvoiceReportPoWrapper> {
+            it.invoices.first()!!.vendorName
+         }
+         purchaseOrders.sortWith(compareByVendorName)
+      }
+
+      if (filterRequest.sortDirection() == "DESC") purchaseOrders.reverse()
 
       return purchaseOrders
    }
@@ -425,6 +453,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          accountName = rs.getString("apPayment_account_name"),
          distProfitCenter = rs.getInt("apPayment_dist_center"),
          distAmount = rs.getBigDecimal("apPayment_dist_amount"),
+         isAccountForInventory = rs.getBoolean("apPayment_account_for_inventory"),
       )
    }
 

@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice
 
+import com.cynergisuite.extensions.sumByBigDecimal
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -25,4 +26,11 @@ data class AccountPayableInvoiceReportTemplate(
          expenseTotal = entities.flatMap { it.invoices }.mapNotNull { it!!.invoiceAmount }.sumOf { it },
          paidTotal = entities.flatMap { it.invoices }.flatMap { it!!.invoiceDetails }.mapNotNull { it.paymentDetailAmount }.sumOf { it }
       )
+
+   @get:Schema(description = "Account Summary Total")
+   val accountSummary get() = purchaseOrders!!.flatMap { it.invoices }.flatMap { it!!.distDetails }
+      .groupBy { it.accountNumber }
+      .map { (_, items) -> items.first().copy(distAmount = items.sumByBigDecimal { it.distAmount ?: BigDecimal.ZERO }) }
+      .sortedBy { it.accountNumber }
+
 }

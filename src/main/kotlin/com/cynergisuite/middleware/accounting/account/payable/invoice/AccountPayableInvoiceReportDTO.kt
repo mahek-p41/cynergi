@@ -93,14 +93,13 @@ data class AccountPayableInvoiceReportDTO(
    private var distCenter: String? = null,
    private var distAmount: BigDecimal? = null,
 
-   // 1 or multiple payment details
    @field:Schema(description = "Listing of Payment Details associated with this Invoice", required = false, accessMode = Schema.AccessMode.READ_ONLY)
    var invoiceDetails: MutableSet<AccountPayablePaymentDetailReportDTO> = mutableSetOf(),
 
-   // 1 or multiple AccountPayableDistributionEntity
+   @field:Schema(description = "Listing of Distribution Details associated with this Invoice", required = false, accessMode = Schema.AccessMode.READ_ONLY)
    var distDetails: MutableSet<AccountPayableDistDetailReportDTO> = mutableSetOf(),
 
-   // 1 or multiple inventory units
+   @field:Schema(description = "Listing of Inventory items associated with this Invoice", required = false, accessMode = Schema.AccessMode.READ_ONLY)
    var inventories: MutableSet<AccountPayableInventoryReportDTO> = mutableSetOf(),
 
 ) : Identifiable {
@@ -124,6 +123,9 @@ data class AccountPayableInvoiceReportDTO(
 
    override fun myId(): UUID? = id
 
+   @get:Schema(description = "Total Account Payable inventory cost")
    val totalApInventoryCost get() = inventories.mapNotNull { it.cost }.sumOf { it }
-   val totalApDistributions get() = distDetails.mapNotNull { it.distAmount }.sumOf { it }
+
+   @get:Schema(description = "Total Account Payable distributions")
+   val totalApDistributions get() = distDetails.filter { it.isAccountForInventory!! }.mapNotNull { it.distAmount }.sumOf { it }
 }
