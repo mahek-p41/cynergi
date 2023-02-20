@@ -302,7 +302,7 @@ class BankReconciliationRepository @Inject constructor(
 
       if (filterRequest.description != null) {
          params["description"] = filterRequest.description
-         whereClause.append(" AND COALESCE(bank_vendor.vendor_name, bankRecon.description) ILIKE \'%${filterRequest.description}%\'")
+         whereClause.append(" AND (bank_vendor.vendor_name ILIKE \'%${filterRequest.description!!.trim()}%\' OR bankRecon.description ILIKE \'%${filterRequest.description!!.trim()}%\')")
       }
 
       jdbc.query(
