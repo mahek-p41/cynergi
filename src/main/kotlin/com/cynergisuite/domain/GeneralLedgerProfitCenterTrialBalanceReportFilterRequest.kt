@@ -4,6 +4,7 @@ import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import javax.validation.constraints.NotNull
+import javax.validation.constraints.Pattern
 
 @Schema(
    name = "GeneralLedgerProfitCenterTrialBalanceReportFilterRequest",
@@ -20,6 +21,7 @@ class GeneralLedgerProfitCenterTrialBalanceReportFilterRequest(
    @field:Schema(name = "endingAccount", description = "Ending number of account range")
    var endingAccount: Int? = null,
 
+   @field:NotNull
    @field:Schema(name = "selectLocsBy", description = "How locations will be selected")
    var selectLocsBy: Int? = null,
 
@@ -40,10 +42,11 @@ class GeneralLedgerProfitCenterTrialBalanceReportFilterRequest(
    @field:Schema(name = "thruDate", description = "Thru date")
    var thruDate: LocalDate? = null,
 
-   @field:Schema(name = "sortOrder", description = "Sort by location or account")
-   var sortOrder: String? = null
+   @field:Pattern(regexp = "location|account")
+   @field:Schema(description = "The column to sort the GL Profit Center Trial Balance report by (location|account).", defaultValue = "location")
+   override var sortBy: String? = null,
 
-) : SortableRequestBase<GeneralLedgerProfitCenterTrialBalanceReportFilterRequest>(null, null) {
+) : SortableRequestBase<GeneralLedgerProfitCenterTrialBalanceReportFilterRequest>("location", "ASC") {
 
    override fun sortByMe(): String = sortBy()
 
@@ -57,6 +60,5 @@ class GeneralLedgerProfitCenterTrialBalanceReportFilterRequest(
          "endingLocOrGroup" to endingLocOrGroup,
          "fromDate" to fromDate,
          "thruDate" to thruDate,
-         "sortOrder" to sortOrder
       )
 }
