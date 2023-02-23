@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructur
 
 import com.cynergisuite.domain.BankReconClearingFilterRequest
 import com.cynergisuite.domain.BankReconFilterRequest
+import com.cynergisuite.domain.ReconcileBankAccountFilterRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
@@ -533,7 +534,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       dataLoaderService.stream(5, companyFactoryService.forDatasetCode('corrto'), bankIn, LocalDate.now(), null)
       final bankRecons = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now(), null).toList()
-      final pageOne = new BankReconFilterRequest([page: 1, size: 5, sortBy: "number", sortDirection: "ASC"])
+      final pageOne = new ReconcileBankAccountFilterRequest(bankIn.number, LocalDate.now())
       final firstPageBankRecon = bankRecons[0..4]
       final secondPageBankRecon = bankRecons[5..9]
       final lastPageBankRecon = bankRecons[10,11]

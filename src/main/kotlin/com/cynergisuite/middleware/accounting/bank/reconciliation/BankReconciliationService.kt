@@ -5,6 +5,7 @@ import com.cynergisuite.domain.BankReconFilterRequest
 import com.cynergisuite.domain.BankReconciliationTransactionsFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.ReconcileBankAccountFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
 import com.cynergisuite.middleware.accounting.bank.ReconcileBankAccountReportTemplate
@@ -49,7 +50,7 @@ class BankReconciliationService @Inject constructor(
 
    }
 
-   fun reconcileBankAccount(filterRequest: BankReconFilterRequest, company: CompanyEntity): ReconcileBankAccountReportTemplate {
+   fun reconcileBankAccount(filterRequest: ReconcileBankAccountFilterRequest, company: CompanyEntity): ReconcileBankAccountReportTemplate {
       return reconcileBankAccountRepository.findReport(filterRequest, company)
    }
 

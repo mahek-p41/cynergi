@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructur
 
 import com.cynergisuite.domain.BankReconClearingFilterRequest
 import com.cynergisuite.domain.BankReconFilterRequest
+import com.cynergisuite.domain.ReconcileBankAccountFilterRequest
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
@@ -96,12 +97,15 @@ class ReconcileBankAccountRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findReport(filterRequest: BankReconFilterRequest, company: CompanyEntity): ReconcileBankAccountReportTemplate {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder(" WHERE bankRecon.company_id = :comp_id")
+   fun findReport(filterRequest: ReconcileBankAccountFilterRequest, company: CompanyEntity): ReconcileBankAccountReportTemplate {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "bank" to filterRequest.bank, "date" to filterRequest.date)
+      val whereClause = """
+         WHERE bankRecon.company_id = :comp_id
+            AND bank.bank_number = :bank
+            AND (bankRecon.transaction_date > :date OR bankRecon.cleared_date IS NULL) """.trimIndent()
 
       return ReconcileBankAccountReportTemplate(
-         jdbc.queryFullList<BankReconciliationReportDetailDTO>(
+         jdbc.queryFullList(
             """
                ${selectBaseQuery()}
                $whereClause
@@ -131,11 +135,5 @@ class ReconcileBankAccountRepository @Inject constructor(
          document = rs.getString("${columnPrefix}document"),
          vendorName = rs.getString("${columnPrefix}vendor_name")
       )
-   }
-
-   private fun buildFilterString(begin: Boolean, end: Boolean, beginningParam: String, endingParam: String): String {
-      return if (begin && end) " BETWEEN :$beginningParam AND :$endingParam"
-      else if (begin) " >= :$beginningParam"
-      else " <= :$endingParam"
    }
 }

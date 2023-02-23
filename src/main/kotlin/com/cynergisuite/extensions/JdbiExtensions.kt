@@ -180,6 +180,7 @@ fun <ENTITY> Jdbi.findFirst(query: String, params: Map<String, *> = mapOf<String
 }
 
 fun <ENTITY> Jdbi.queryFullList(sql: String, params: Map<String, *>, mapper: (rs: ResultSet, ctx: StatementContext, elements: MutableList<ENTITY>) -> Unit): List<ENTITY> {
+   logger.trace("Executing query {}/{}", sql, params)
    val toReturn = mutableListOf<ENTITY>()
 
    return this.withHandle<MutableList<ENTITY>, Exception> { handle ->
