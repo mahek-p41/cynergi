@@ -47,7 +47,7 @@ class WowPayoutJob @Inject constructor(
                payouts.firstName ?: EMPTY,
                payouts.lastName ?: EMPTY,
                payouts.email ?: EMPTY,
-               payouts.agreementNumber ?: EMPTY,
+               payouts.agreementNumber,
                payouts.dateRented ?: EMPTY,
                payouts.dueDate ?: EMPTY,
                payouts.percentOwnership ?: EMPTY,

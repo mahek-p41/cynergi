@@ -4,9 +4,12 @@ import com.cynergisuite.middleware.localization.LocalizationCode
 
 class ValidationException(
    val errors: Set<ValidationError>
-) : Exception()
+) : Exception() {
+   constructor(error: ValidationError) :
+      this(setOf(error))
+}
 
 data class ValidationError(
-   val path: String?,
+   val path: String? = null,
    val localizationCode: LocalizationCode
 )

@@ -2,10 +2,10 @@ package com.cynergisuite.middleware.wow.schedule
 
 import com.cynergisuite.middleware.area.AreaService
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.wow.infrastructure.WowRepository
-import com.cynergisuite.middleware.wow.schedule.spi.WowScheduledJob
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
 import com.cynergisuite.middleware.ssh.SftpClientService
+import com.cynergisuite.middleware.wow.infrastructure.WowRepository
+import com.cynergisuite.middleware.wow.schedule.spi.WowScheduledJob
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Named
@@ -24,9 +24,9 @@ import java.time.OffsetDateTime
 @Singleton
 @Named("WowSingleAgreement") // Must match a row in the schedule_command_type_domain
 class WowSingleAgreementJob @Inject constructor(
-        areaService: AreaService,
-        private val wowRepository: WowRepository,
-        private val sftpClientService: SftpClientService,
+   areaService: AreaService,
+   private val wowRepository: WowRepository,
+   private val sftpClientService: SftpClientService,
 ) : WowScheduledJob(areaService) {
    private val logger: Logger = LoggerFactory.getLogger(WowSingleAgreementJob::class.java)
 
@@ -38,7 +38,7 @@ class WowSingleAgreementJob @Inject constructor(
       Files.newBufferedWriter(singleAgreementTempPath).use { writer ->
          val singleAgreementCsv = CSVPrinter(writer, CSVFormat.EXCEL)
 
-         singleAgreementCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "Product","Description", "PaymentsRemaining")
+         singleAgreementCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "Product", "Description", "PaymentsRemaining")
 
          wowRepository.findSingleAgreement(company).forEach { singleAgreement ->
             singleAgreementCsv.printRecord(
@@ -49,7 +49,7 @@ class WowSingleAgreementJob @Inject constructor(
                singleAgreement.email ?: EMPTY,
                singleAgreement.agreementNumber,
                singleAgreement.product ?: EMPTY,
-               singleAgreement.description?: EMPTY,
+               singleAgreement.description ?: EMPTY,
                singleAgreement.paymentsRemaining
             )
          }

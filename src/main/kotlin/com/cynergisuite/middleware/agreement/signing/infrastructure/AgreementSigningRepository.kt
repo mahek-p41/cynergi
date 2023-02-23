@@ -2,7 +2,12 @@ package com.cynergisuite.middleware.agreement.signing.infrastructure
 
 import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.agreement.signing.AgreementSigningEntity
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -83,6 +88,48 @@ class AgreementSigningRepository(
    }
 
    @ReadOnly
+   fun fetchAgreementsByCustomerNumber(
+      company: CompanyEntity,
+      customerNumber: Int,
+   ): List<AgreementSigningEntity> {
+      val sql = """
+      $selectBase
+      WHERE comp.id = :companyId AND
+            asn.primary_customer_number = :customerNumber
+      """.trimIndent()
+
+      logger.debug("Querying for agreements by customer number {} {}", customerNumber, sql)
+
+      return jdbc.query(sql, mapOf(
+         "companyId" to company.id,
+         "customerNumber" to customerNumber
+         )
+      ) { rs, _ ->
+         mapRow(rs)
+      }
+   }
+
+   @ReadOnly
+   fun findOneByCustomerAndAgreement(company: CompanyEntity, customerNumber: Int, agreementNumber: Int, agreementType: String): AgreementSigningEntity? {
+      logger.debug("Finding Agreement Signing record by customer {} and agreement {} and type {}", customerNumber, agreementNumber, agreementType)
+
+      val agreementSigningRecord = jdbc.findFirstOrNull(
+         """
+         $selectBase
+         WHERE comp.id = :comp_id AND
+               asn.primary_customer_number = :primary_customer_number AND
+               asn.agreement_number = :agreement_number AND
+               asn.agreement_type = :agreement_type
+         """.trimIndent(),
+         mapOf("primary_customer_number" to customerNumber, "agreement_number" to agreementNumber, "comp_id" to company.id, "agreement_type" to agreementType)
+      ) { rs, _ -> mapRow(rs) }
+
+      logger.debug("Search for Agreement Signing record by customer {} and agreement {} and type {} produced {}", customerNumber, agreementNumber, agreementType, agreementSigningRecord)
+
+      return agreementSigningRecord
+   }
+
+   @ReadOnly
    override fun exists(id: Long, company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
          """
@@ -110,7 +157,7 @@ class AgreementSigningRepository(
    ): RepositoryPage<AgreementSigningEntity, AgreementSigningPageRequest> {
       var totalElements: Long? = null
       val elements = mutableListOf<AgreementSigningEntity>()
-      var companyId = company.id
+      val companyId = company.id
       val params = mutableMapOf<String, Any?>(
          "comp_id" to companyId,
          "limit" to pageRequest.size(),
@@ -162,6 +209,27 @@ class AgreementSigningRepository(
          elements = elements,
          totalElements = totalElements ?: 0
       )
+   }
+
+   @ReadOnly
+   fun findAgreementNumberFromSignatureId(externalSignatureId: UUID): String? { // FIXME handle RTO, Club and Other Agreement Types with separate data points?
+      return jdbc.findFirstOrNull("SELECT agreement_number FROM agreement_signing WHERE external_signature_id = :externalSignatureId LIMIT 1", mapOf("externalSignatureId" to externalSignatureId)) { rs, _ ->
+         rs.getString("agreement_number")
+      }
+   }
+
+   @ReadOnly
+   fun findCustomerNumberFromSignatureId(externalSignatureId: UUID): String? {
+      return jdbc.findFirstOrNull("SELECT primary_customer_number FROM agreement_signing WHERE external_signature_id = :externalSignatureId LIMIT 1", mapOf("externalSignatureId" to externalSignatureId)) { rs, _ ->
+         rs.getString("primary_customer_number")
+      }
+   }
+
+   @ReadOnly
+   fun findAgreementTypeFromSignatureId(externalSignatureId: UUID): String? {
+      return jdbc.findFirstOrNull("SELECT agreement_type FROM agreement_signing WHERE external_signature_id = :externalSignatureId LIMIT 1", mapOf("externalSignatureId" to externalSignatureId)) { rs, _ ->
+         rs.getString("agreement_type")
+      }
    }
 
    @Transactional
@@ -238,7 +306,7 @@ class AgreementSigningRepository(
          agreementNumber = rs.getInt("agreement_number"),
          agreementType = rs.getString("agreement_type"),
          statusId = rs.getInt("status_id"),
-         externalSignatureId = rs.getString("external_signature_id"),
+         externalSignatureId = rs.getUuid("external_signature_id"),
       )
    }
 
@@ -254,7 +322,7 @@ class AgreementSigningRepository(
          agreementNumber = rs.getInt("asn_agreement_number"),
          agreementType = rs.getString("asn_agreement_type"),
          statusId = rs.getInt("asn_status_id"),
-         externalSignatureId = rs.getString("asn_external_signature_id"),
+         externalSignatureId = rs.getUuid("asn_external_signature_id"),
       )
    }
 

@@ -17,7 +17,7 @@ data class AuthenticatedUser(
    val cynergiSystemAdmin: Boolean
 ) : User, ServerAuthentication(
    number.toString(),
-   mutableListOf(), // TODO add roles here
+   mutableListOf(), // TODO don't add roles here, since there will be a ton of them.  Instead override https://micronaut-projects.github.io/micronaut-security/latest/api/io/micronaut/security/token/DefaultRolesFinder.html
    mutableMapOf<String, Any>(
       "id" to id.toString(),
       "tp" to type,

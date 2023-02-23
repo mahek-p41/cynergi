@@ -9,6 +9,18 @@ import jakarta.inject.Singleton
 class AreaService @Inject constructor(
    private val areaRepository: AreaRepository,
 ) {
+   fun enableFor(company: CompanyEntity, areaType: AreaType): AreaEntity? {
+      return when (areaType) {
+         is Unknown -> null
+         else -> {
+            if (!areaRepository.existsByCompanyAndAreaType(company, areaType.toAreaTypeEntity())) {
+               areaRepository.save(areaType.toAreaEntity(company))
+            } else {
+               null
+            }
+         }
+      }
+   }
 
    fun isEnabledFor(company: CompanyEntity, areaType: AreaType): Boolean =
       areaRepository.existsByCompanyAndAreaType(company, areaType.toAreaTypeEntity())

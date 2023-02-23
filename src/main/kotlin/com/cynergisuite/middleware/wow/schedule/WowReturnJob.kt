@@ -47,7 +47,7 @@ class WowReturnJob @Inject constructor(
                returns.firstName ?: EMPTY,
                returns.lastName ?: EMPTY,
                returns.email ?: EMPTY,
-               returns.agreementNumber ?: EMPTY,
+               returns.agreementNumber,
                returns.dateRented ?: EMPTY,
                returns.dueDate ?: EMPTY,
                returns.percentOwnership ?: EMPTY,

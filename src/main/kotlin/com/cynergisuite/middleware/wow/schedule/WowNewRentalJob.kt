@@ -47,7 +47,7 @@ class WowNewRentalJob @Inject constructor(
                newRentals.firstName ?: EMPTY,
                newRentals.lastName ?: EMPTY,
                newRentals.email ?: EMPTY,
-               newRentals.agreementNumber ?: EMPTY,
+               newRentals.agreementNumber,
                newRentals.dateRented ?: EMPTY,
                newRentals.dueDate ?: EMPTY,
                newRentals.percentOwnership ?: EMPTY,

@@ -47,7 +47,7 @@ class WowFuturePayoutJob @Inject constructor(
                wowFuturePayout.firstName ?: EMPTY,
                wowFuturePayout.lastName ?: EMPTY,
                wowFuturePayout.email ?: EMPTY,
-               wowFuturePayout.agreementNumber ?: EMPTY,
+               wowFuturePayout.agreementNumber,
                wowFuturePayout.dateRented ?: EMPTY,
                wowFuturePayout.dueDate ?: EMPTY,
                wowFuturePayout.percentOwnership ?: EMPTY,

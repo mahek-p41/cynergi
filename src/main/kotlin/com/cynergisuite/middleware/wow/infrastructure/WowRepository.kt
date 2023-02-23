@@ -1,16 +1,24 @@
 package com.cynergisuite.middleware.wow.infrastructure
 
-import com.cynergisuite.extensions.getBigInteger
-import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.schedule.command.WowLostCustomer
-import com.cynergisuite.middleware.wow.*
+import com.cynergisuite.middleware.wow.WowAccountSummaryEntity
+import com.cynergisuite.middleware.wow.WowActiveInventoryEntity
+import com.cynergisuite.middleware.wow.WowAllRtoAgreementEntity
+import com.cynergisuite.middleware.wow.WowAtRiskEntity
+import com.cynergisuite.middleware.wow.WowBirthdayEntity
+import com.cynergisuite.middleware.wow.WowCollectionEntity
+import com.cynergisuite.middleware.wow.WowFinalPaymentEntity
+import com.cynergisuite.middleware.wow.WowFuturePayoutEntity
+import com.cynergisuite.middleware.wow.WowLostCustomerEntity
+import com.cynergisuite.middleware.wow.WowNewRentalEntity
+import com.cynergisuite.middleware.wow.WowPayoutEntity
+import com.cynergisuite.middleware.wow.WowReturnEntity
+import com.cynergisuite.middleware.wow.WowSingleAgreementEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.jdbi.v3.core.Jdbi
-import java.time.Month
 
 @Singleton
 class WowRepository @Inject constructor(
@@ -80,7 +88,7 @@ class WowRepository @Inject constructor(
                email = rs.getString("email"),
                agreementNumber = rs.getString("agreementNumber"),
                daysOverdue = rs.getInt("daysOverdue"),
-               overdueAmount= rs.getString("overdueAmount"),
+               overdueAmount = rs.getString("overdueAmount"),
                product = rs.getString("product"),
             )
          }.asSequence()
@@ -120,7 +128,7 @@ class WowRepository @Inject constructor(
                agreementNumber = rs.getString("agreementNumber"),
                product = rs.getString("product"),
                description = rs.getString("description"),
-               paymentsRemaining= rs.getString("paymentsRemaining")
+               paymentsRemaining = rs.getString("paymentsRemaining")
             )
          }.asSequence()
       }
@@ -158,7 +166,7 @@ class WowRepository @Inject constructor(
                agreementNumber = rs.getString("agreementNumber"),
                product = rs.getString("product"),
                payoutDate = rs.getLocalDateOrNull("payoutDate")
-          )
+            )
          }.asSequence()
       }
    }
@@ -236,7 +244,6 @@ class WowRepository @Inject constructor(
          )
 
          query.bind("dataset", company.datasetCode)
-      //   query.bind("numericMonth", time.value)
 
          query.map { rs, _ ->
             WowAccountSummaryEntity(
@@ -848,4 +855,3 @@ class WowRepository @Inject constructor(
       }
    }
 }
-

@@ -61,6 +61,14 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
       ).bodyAsJson()
    }
 
+   HttpResponse getForResponse(String path, String accessToken = nineNineEightAccessToken) throws HttpClientResponseException {
+      return client.exchange(
+         GET("/${path}").header("Authorization", "Bearer $accessToken"),
+         Argument.of(String),
+         Argument.of(String)
+      )
+   }
+
    Object post(String path, Object body, String accessToken = nineNineEightAccessToken) throws HttpClientResponseException {
       return postForResponse(path, body, accessToken).bodyAsJson()
    }

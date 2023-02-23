@@ -72,7 +72,7 @@ class WowAllRtoAgreementJob @Inject constructor(
                allRtoAgreements.actveAgreement ?: EMPTY,
                allRtoAgreements.paymentTerms ?: EMPTY,
                allRtoAgreements.dateClosed ?: EMPTY,
-               allRtoAgreements.closedReason?: EMPTY
+               allRtoAgreements.closedReason
             )
          }
 

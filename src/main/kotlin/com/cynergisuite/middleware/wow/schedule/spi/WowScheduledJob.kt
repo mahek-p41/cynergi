@@ -3,11 +3,11 @@ package com.cynergisuite.middleware.wow.schedule.spi
 import com.cynergisuite.middleware.area.AreaService
 import com.cynergisuite.middleware.area.WowUpload
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.wow.schedule.WowJobResult
 import com.cynergisuite.middleware.schedule.AreaEnabledJob
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.ScheduleProcessingException
 import com.cynergisuite.middleware.ssh.SftpClientCredentials
+import com.cynergisuite.middleware.wow.schedule.WowJobResult
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
