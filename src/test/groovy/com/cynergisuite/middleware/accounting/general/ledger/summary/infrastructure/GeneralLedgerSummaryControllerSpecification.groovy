@@ -606,34 +606,30 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       glJournalEntryDetailDTOs2.addAll(glJournalEntryDetailCreditDTOs2)
       def glJournalEntryDTO2 = generalLedgerJournalEntryDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs2, false)
 
-      def filterRequest = new GeneralLedgerProfitCenterTrialBalanceReportFilterRequest()
+      def filterRequest = new GeneralLedgerProfitCenterTrialBalanceReportFilterRequest([sortBy: "location", sortDirection: "ASC"])
       filterRequest['fromDate'] = periodFrom
       filterRequest['thruDate'] = periodFrom.plusDays(30)
       switch (criteria) {
          case 'Sort by location':
             filterRequest['selectLocsBy'] = 1
-            filterRequest['sortOrder'] = "location"
             break
          case 'Sort by account':
             filterRequest['selectLocsBy'] = 1
-            filterRequest['sortOrder'] = "account"
+            filterRequest['sortBy'] = "account"
             break
          case 'Select one account':
             filterRequest['startingAccount'] = account.number
             filterRequest['endingAccount'] = account.number
             filterRequest['selectLocsBy'] = 1
-            filterRequest['sortOrder'] = "location"
             break
          case 'Select profit centers by list':
             filterRequest['selectLocsBy'] = 2
             filterRequest['any10LocsOrGroups'] = profitCenterList
-            filterRequest['sortOrder'] = "location"
             break
          case 'Select profit centers by range':
             filterRequest['selectLocsBy'] = 3
             filterRequest['startingLocOrGroup'] = profitCenter.myNumber()
             filterRequest['endingLocOrGroup'] = profitCenter2.myNumber()
-            filterRequest['sortOrder'] = "location"
             break
       }
 

@@ -362,11 +362,13 @@ class GeneralLedgerSummaryRepository @Inject constructor(
 
       // assign sort by
       val sortBy = StringBuilder("ORDER BY ")
-      when (filterRequest.sortOrder) {
+      when (filterRequest.sortBy) {
          "location" ->
             sortBy.append("glSummary.profit_center_id_sfk ASC, glSummary.account_id ASC")
          "account" ->
             sortBy.append("glSummary.account_id ASC, glSummary.profit_center_id_sfk ASC")
+         null ->
+            sortBy.append("glSummary.profit_center_id_sfk ASC, glSummary.account_id ASC")
       }
 
       val query ="""
