@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import java.sql.ResultSet
 import java.util.UUID
-import kotlin.math.exp
 
 @Singleton
 class AccountPayableInvoiceInquiryRepository @Inject constructor(
@@ -139,7 +138,28 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
 
    @ReadOnly
    fun fetchInquiryDistributions(apInvoiceId: UUID, company: CompanyEntity): List<AccountPayableDistDetailReportDTO> {
+      val distDTOs = mutableListOf<AccountPayableDistDetailReportDTO>()
 
+      jdbc.query(
+         """
+            SELECT
+               invDist.distribution_profit_center_id_sfk    AS invDist_profit_center
+               invDist.distribution_amount                  AS invDist_amount
+               account.number                               AS invDist_account_number
+               account.name                                 AS invDist_account_name
+            FROM account_payable_invoice_distribution invDist
+               JOIN account ON invDist.distribution_account_id = account.id AND account.deleted = FALSE
+            WHERE invDist.invoice_id = :apInvoiceId
+            ORDER BY invDist.distribution_profit_center_id_sfk ASC
+         """.trimIndent(),
+         mapOf("apInvoiceId" to apInvoiceId)
+      ) { rs, _ ->
+         do {
+            distDTOs.add(mapDistDetail(rs, "invDist_"))
+         } while (rs.next())
+      }
+
+      return distDTOs
    }
 
    private fun mapInvoice(rs: ResultSet, columnPrefix: String = EMPTY): AccountPayableInvoiceInquiryDTO {
@@ -164,6 +184,15 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
          payments = null,
          glDist = null,
          message = rs.getString("${columnPrefix}message")
+      )
+   }
+
+   private fun mapDistDetail(rs: ResultSet, columnPrefix: String = EMPTY): AccountPayableDistDetailReportDTO {
+      return AccountPayableDistDetailReportDTO(
+         accountNumber = rs.getInt("account_number"),
+         accountName = rs.getString("account_name"),
+         distProfitCenter = rs.getInt("profit_center"),
+         distAmount = rs.getBigDecimal("amount")
       )
    }
 }
