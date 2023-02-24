@@ -20,6 +20,7 @@ import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconcilia
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationTypeEnum
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastructure.BankReconciliationTypeRepository
+import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
@@ -34,7 +35,8 @@ import java.sql.ResultSet
 class ReconcileBankAccountRepository @Inject constructor(
    private val jdbc: Jdbi,
    private val bankRepository: BankRepository,
-   private val bankReconciliationTypeRepository: BankReconciliationTypeRepository
+   private val bankReconciliationTypeRepository: BankReconciliationTypeRepository,
+   private val glSummaryRepository: GeneralLedgerSummaryRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ReconcileBankAccountRepository::class.java)
 
@@ -98,25 +100,29 @@ class ReconcileBankAccountRepository @Inject constructor(
 
    @ReadOnly
    fun findReport(filterRequest: ReconcileBankAccountFilterRequest, company: CompanyEntity): ReconcileBankAccountReportTemplate {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "bank" to filterRequest.bank, "date" to filterRequest.date)
+      val params = mutableMapOf<String, Any>("comp_id" to company.id!!, "bank" to filterRequest.bank, "date" to filterRequest.date)
       val whereClause = """
          WHERE bankRecon.company_id = :comp_id
             AND bank.bank_number = :bank
-            AND (bankRecon.transaction_date > :date OR bankRecon.cleared_date IS NULL) """.trimIndent()
+            AND (bankRecon.transaction_date <= :date AND (bankRecon.cleared_date IS NULL OR bankRecon.cleared_date > :date)) """.trimIndent()
+
+      val glBalance = glSummaryRepository.calculateGLBalance(params)
 
       return ReconcileBankAccountReportTemplate(
-         jdbc.queryFullList(
+         reconciliations = jdbc.queryFullList(
             """
-               ${selectBaseQuery()}
-               $whereClause
-               ORDER BY bank_number, bankRecon_transaction_date, bankRecon_document, bankRecon_cleared_date
-            """.trimIndent(),
+                  ${selectBaseQuery()}
+                  $whereClause
+                  ORDER BY bank_number, bankRecon_transaction_date, bankRecon_document, bankRecon_cleared_date
+               """.trimIndent(),
             params,
          ) { rs, _, elements ->
             do {
                elements.add(mapReportRow(rs, company, "bankRecon_"))
             } while (rs.next())
-         })
+         },
+         glBalance = glBalance
+      )
    }
 
    private fun mapReportRow(

@@ -32,6 +32,7 @@ fun <ENTITY> Jdbi.query(sql: String, params: Map<String, *> = emptyMap<String, A
 }
 
 fun Jdbi.update(sql: String, params: Map<String, *>): Int {
+   logger.trace("Executing query {}/{}", sql, params)
    return this.withHandle<Int, Exception> { handle ->
       val update = handle.createUpdate(sql)
 
@@ -51,6 +52,7 @@ fun Jdbi.update(sql: String, params: Map<String, *>): Int {
  * @exception UnableToExecuteStatementException
  */
 fun Jdbi.softDelete(sql: String, params: Map<String, *>, tableName: String, idColumn: String? = "id"): Int {
+   logger.trace("Executing query {}/{}", sql, params)
    return this.withHandle<Int, Exception> { handle ->
       val findReferenceQuery = """
       SELECT conrelid::regclass AS "FK_Table"
@@ -132,6 +134,7 @@ fun Jdbi.delete(sql: String, params: Map<String, *>): Int =
    this.update(sql, params)
 
 fun <ENTITY> Jdbi.queryForObject(sql: String, params: Map<String, *>, clazz: Class<ENTITY>): ENTITY {
+   logger.trace("Executing query {}/{}", sql, params)
    return this.withHandle<ENTITY, Exception> { handle ->
       val query = handle.createQuery(sql)
 
@@ -142,6 +145,7 @@ fun <ENTITY> Jdbi.queryForObject(sql: String, params: Map<String, *>, clazz: Cla
 }
 
 fun <ENTITY> Jdbi.queryForObject(sql: String, params: Map<String, *>, rowMapper: RowMapper<ENTITY>): ENTITY {
+   logger.trace("Executing query {}/{}", sql, params)
    return this.withHandle<ENTITY, Exception> { handle ->
       val query = handle.createQuery(sql)
 
@@ -152,6 +156,7 @@ fun <ENTITY> Jdbi.queryForObject(sql: String, params: Map<String, *>, rowMapper:
 }
 
 fun <ENTITY> Jdbi.queryForObjectOrNull(sql: String, params: Map<String, *>, rowMapper: RowMapper<ENTITY>): ENTITY {
+   logger.trace("Executing query {}/{}", sql, params)
    return this.withHandle<ENTITY, Exception> { handle ->
       val query = handle.createQuery(sql)
 
@@ -162,18 +167,21 @@ fun <ENTITY> Jdbi.queryForObjectOrNull(sql: String, params: Map<String, *>, rowM
 }
 
 fun <ENTITY> Jdbi.findFirstOrNull(query: String, params: Map<String, *> = emptyMap<String, Any>(), rowMapper: RowMapper<ENTITY>): ENTITY? {
+   logger.trace("Executing query {}/{}", query, params)
    val resultList: List<ENTITY> = this.query(query, params, rowMapper)
 
    return mineListForFirstElement(query, resultList, params)
 }
 
 fun <ENTITY> Jdbi.findFirstOrNull(query: String, params: Map<String, *> = emptyMap<String, Any>(), mapper: (rs: ResultSet, ctx: StatementContext) -> ENTITY): ENTITY? {
+   logger.trace("Executing query {}/{}", query, params)
    val resultList = this.query(query, params) { rs, ctx -> mapper(rs, ctx) }
 
    return mineListForFirstElement(query, resultList, params)
 }
 
 fun <ENTITY> Jdbi.findFirst(query: String, params: Map<String, *> = mapOf<String, Any>(), rowMapper: RowMapper<ENTITY>): ENTITY {
+   logger.trace("Executing query {}/{}", query, params)
    val resultList: List<ENTITY> = this.query(query, params, rowMapper)
 
    return mineListForFirstElement(query, resultList, params)!!

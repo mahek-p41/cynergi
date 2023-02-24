@@ -22,7 +22,9 @@ import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
 import java.sql.ResultSet
+import java.time.LocalDate
 import java.util.UUID
 import javax.transaction.Transactional
 
@@ -393,6 +395,36 @@ class GeneralLedgerSummaryRepository @Inject constructor(
       }
 
       return glSummaries
+   }
+
+   @ReadOnly
+   fun calculateGLBalance(params: MutableMap<String, Any>): BigDecimal {
+      return jdbc.queryForObject("""SELECT
+             COALESCE(SUM(
+                 beginning_balance +
+                 CASE WHEN period >= 1 THEN net_activity_period_1 ELSE 0 END +
+                 CASE WHEN period >= 2 THEN net_activity_period_2 ELSE 0 END +
+                 CASE WHEN period >= 3 THEN net_activity_period_3 ELSE 0 END +
+                 CASE WHEN period >= 4 THEN net_activity_period_4 ELSE 0 END +
+                 CASE WHEN period >= 5 THEN net_activity_period_5 ELSE 0 END +
+                 CASE WHEN period >= 6 THEN net_activity_period_6 ELSE 0 END +
+                 CASE WHEN period >= 7 THEN net_activity_period_7 ELSE 0 END +
+                 CASE WHEN period >= 8 THEN net_activity_period_8 ELSE 0 END +
+                 CASE WHEN period >= 9 THEN net_activity_period_9 ELSE 0 END +
+                 CASE WHEN period >= 10 THEN net_activity_period_10 ELSE 0 END +
+                 CASE WHEN period >= 11 THEN net_activity_period_11 ELSE 0 END +
+                 CASE WHEN period >= 12 THEN net_activity_period_12 ELSE 0 END
+             ), 0) AS net_activity_period_sum
+         FROM
+             general_ledger_summary summary
+               JOIN financial_calendar fc ON fc.company_id = summary.company_id
+                     AND fc.overall_period_id = summary.overall_period_id
+                     AND :date BETWEEN fc.period_from AND fc.period_to
+               JOIN bank ON summary.profit_center_id_sfk = bank.general_ledger_profit_center_sfk
+                     AND summary.account_id = bank.general_ledger_account_id
+                     AND bank.number = :bank
+         WHERE summary.company_id = :comp_id
+         """, params, BigDecimal::class.java)
    }
 
    private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): GeneralLedgerSummaryEntity {
