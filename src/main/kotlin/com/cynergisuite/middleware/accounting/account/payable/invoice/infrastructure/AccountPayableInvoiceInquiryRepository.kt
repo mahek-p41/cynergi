@@ -133,7 +133,32 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
 
    @ReadOnly
    fun fetchInquiryPayments(apInvoiceId: UUID, company: CompanyEntity): List<AccountPayableInvoiceInquiryPaymentDTO> {
+      val paymentDTOs = mutableListOf<AccountPayableInvoiceInquiryPaymentDTO>()
 
+      jdbc.query(
+         """
+            SELECT
+               bank.number                         AS bank_number,
+               pmt.payment_number                  AS payment_number,
+               pmtDetail.amount                    AS pmtDetail_amount,
+               pmt.payment_date                    AS payment_date,
+               pmt.amount                          AS payment_amount,
+               apInvoice.original_invoice_amount   AS apInvoice_original_amount
+            FROM account_payable_payment_detail pmtDetail
+               JOIN account_payable_payment pmt ON pmtDetail.payment_number_id = pmt.id
+               JOIN account_payable_invoice apInvoice ON pmtDetail.account_payable_invoice_id = apInvoice.id
+               JOIN bank ON pmt.bank_id = bank.id AND bank.deleted = FALSE
+            WHERE apInvoice.id = :apInvoiceId AND pmt.account_payable_payment_status_id = 1
+            ORDER BY bank.number ASC, pmt.payment_number ASC
+         """.trimIndent(),
+         mapOf("apInvoiceId" to apInvoiceId)
+      ) { rs, _ ->
+         do {
+            paymentDTOs.add(mapPayment(rs))
+         } while (rs.next())
+      }
+
+      return paymentDTOs
    }
 
    @ReadOnly
@@ -143,9 +168,9 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
       jdbc.query(
          """
             SELECT
-               invDist.distribution_profit_center_id_sfk    AS invDist_profit_center
-               invDist.distribution_amount                  AS invDist_amount
-               account.number                               AS invDist_account_number
+               invDist.distribution_profit_center_id_sfk    AS invDist_profit_center,
+               invDist.distribution_amount                  AS invDist_amount,
+               account.number                               AS invDist_account_number,
                account.name                                 AS invDist_account_name
             FROM account_payable_invoice_distribution invDist
                JOIN account ON invDist.distribution_account_id = account.id AND account.deleted = FALSE
@@ -184,6 +209,17 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
          payments = null,
          glDist = null,
          message = rs.getString("${columnPrefix}message")
+      )
+   }
+
+   private fun mapPayment(rs: ResultSet): AccountPayableInvoiceInquiryPaymentDTO {
+      return AccountPayableInvoiceInquiryPaymentDTO(
+         bankNbr = rs.getInt("bank_number"),
+         paymentNbr = rs.getString("payment_number"),
+         paid = rs.getBigDecimal("pmtDetail_amount"),
+         date = rs.getLocalDate("payment_date"),
+         paymentAmt = rs.getBigDecimal("payment_amount"),
+         originalAmt = rs.getBigDecimal("apInvoice_original_amount")
       )
    }
 
