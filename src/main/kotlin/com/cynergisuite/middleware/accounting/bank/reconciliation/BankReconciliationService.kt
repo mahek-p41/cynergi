@@ -7,7 +7,9 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
+import com.cynergisuite.middleware.accounting.bank.ReconcileBankAccountReportTemplate
 import com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure.BankReconciliationRepository
+import com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure.ReconcileBankAccountRepository
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
@@ -18,6 +20,7 @@ import java.util.UUID
 @Singleton
 class BankReconciliationService @Inject constructor(
    private val bankReconciliationRepository: BankReconciliationRepository,
+   private val reconcileBankAccountRepository: ReconcileBankAccountRepository,
    private val bankReconciliationValidator: BankReconciliationValidator
 ) {
    fun fetchById(id: UUID, company: CompanyEntity, locale: Locale): BankReconciliationDTO? =
@@ -44,6 +47,10 @@ class BankReconciliationService @Inject constructor(
    fun fetchReport(filterRequest: BankReconFilterRequest, company: CompanyEntity): BankReconciliationReportDTO {
       return bankReconciliationRepository.findReport(filterRequest, company)
 
+   }
+
+   fun reconcileBankAccount(filterRequest: BankReconFilterRequest, company: CompanyEntity): ReconcileBankAccountReportTemplate {
+      return reconcileBankAccountRepository.findReport(filterRequest, company)
    }
 
    fun delete(dtoList: List<BankReconciliationDTO>, company: CompanyEntity) {

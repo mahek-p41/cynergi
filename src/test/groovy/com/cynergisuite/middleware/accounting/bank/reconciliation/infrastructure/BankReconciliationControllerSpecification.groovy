@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure
 
 import com.cynergisuite.domain.BankReconClearingFilterRequest
+import com.cynergisuite.domain.BankReconFilterRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
@@ -522,5 +523,26 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       with(result.get(1)) {
          clearedDate == toUpdate.get(1).clearedDate
       }
+   }
+
+   void "reconcile bank account" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      dataLoaderService.stream(5, companyFactoryService.forDatasetCode('corrto'), bankIn, LocalDate.now(), null)
+      final bankRecons = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now(), null).toList()
+      final pageOne = new BankReconFilterRequest([page: 1, size: 5, sortBy: "number", sortDirection: "ASC"])
+      final firstPageBankRecon = bankRecons[0..4]
+      final secondPageBankRecon = bankRecons[5..9]
+      final lastPageBankRecon = bankRecons[10,11]
+
+      when:
+      def result = get("$path/reconcile${pageOne}")
+
+      then:
+      result != null
+
    }
 }

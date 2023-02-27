@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructur
 import com.cynergisuite.domain.*
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
+import com.cynergisuite.middleware.accounting.bank.ReconcileBankAccountReportTemplate
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationService
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -162,6 +163,29 @@ class BankReconciliationController @Inject constructor(
    ): BankReconciliationReportDTO {
       val user = userService.fetchUser(authentication)
       val bankRecons = bankReconciliationService.fetchReport(filterRequest, user.myCompany())
+
+
+      logger.debug("Listing of Bank Reconciliations resulted in {}", bankRecons)
+
+      return bankRecons
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Operation(tags = ["BankReconciliationEndpoints"], summary = "Reconcile bank account", description = "Reconcile bank account", operationId = "bankReconciliation-reconcile")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = ReconcileBankAccountReportTemplate::class))])
+      ]
+   )
+   @Get(uri = "/reconcile{?pageRequest*}", produces = [APPLICATION_JSON])
+   fun reconcileBankAccount(
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("pageRequest")
+      filterRequest: BankReconFilterRequest,
+      authentication: Authentication
+   ): ReconcileBankAccountReportTemplate {
+      val user = userService.fetchUser(authentication)
+      val bankRecons = bankReconciliationService.reconcileBankAccount(filterRequest, user.myCompany())
 
 
       logger.debug("Listing of Bank Reconciliations resulted in {}", bankRecons)
