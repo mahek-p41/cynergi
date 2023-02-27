@@ -105,7 +105,7 @@ class BankReconciliationRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): BankReconciliationEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE bankRecon.id = :id AND bankRecon.company_id = :comp_id"
+      val query = "${selectBaseQuery()} WHERE bankRecon.id = :id AND bankRecon.company_id = :comp_id and bankRecon.deleted = false"
       val found = jdbc.findFirstOrNull(
          query,
          params
@@ -125,7 +125,7 @@ class BankReconciliationRepository @Inject constructor(
          """
          WITH paged AS (
             ${selectBaseQuery()}
-            WHERE bankRecon.company_id = :comp_id
+            WHERE bankRecon.company_id = :comp_id and bankRecon.deleted = false
          )
          SELECT
             p.*,
@@ -255,7 +255,7 @@ class BankReconciliationRepository @Inject constructor(
       val reconSummary = BankReconSummaryEntity()
       var currentBank: BankReconciliationReportDetailEntity?
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder(" WHERE bankRecon.company_id = :comp_id")
+      val whereClause = StringBuilder(" WHERE bankRecon.company_id = :comp_id and bankRecon.deleted = FALSE")
 
       if (filterRequest.beginBank != null || filterRequest.endBank != null) {
          params["beginBank"] = filterRequest.beginBank
@@ -367,7 +367,7 @@ class BankReconciliationRepository @Inject constructor(
    fun fetchClear(filterRequest: BankReconClearingFilterRequest, company: CompanyEntity): List<BankReconciliationEntity> {
       val bankRecons = mutableListOf<BankReconciliationEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder(" WHERE bankRecon.company_id = :comp_id")
+      val whereClause = StringBuilder(" WHERE bankRecon.company_id = :comp_id and bankRecon.deleted = FALSE")
 
       if (filterRequest.bank != null) {
          params["bank"] = filterRequest.bank
@@ -465,7 +465,7 @@ class BankReconciliationRepository @Inject constructor(
    fun findTransactions(filterRequest: BankReconciliationTransactionsFilterRequest, company: CompanyEntity) : RepositoryPage<BankReconciliationEntity, PageRequest> {
       logger.trace("Searching for Reconciliation Transactions by Bank {} and Type {}", filterRequest.bank, filterRequest.bankReconciliationType)
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
-      val whereClause = StringBuilder(" WHERE bankRecon.company_id = :comp_id")
+      val whereClause = StringBuilder(" WHERE bankRecon.company_id = :comp_id and bankRecon.deleted = FALSE")
 
       if (filterRequest.bank != null) {
          params["bank"] = filterRequest.bank

@@ -948,4 +948,63 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
    }
+
+   void "delete a bank reconciliation"() {
+      given:
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final bankRecon = dataLoaderService.singleDTO(bankIn, LocalDate.now(), LocalDate.now())
+
+      def toDelete = post("$path/", bankRecon)
+
+      when:
+      def result = delete("$path/bulk-delete", toDelete)
+      then: "bank for user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("$path/${toDelete.id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "$toDelete.id was unable to be found"
+      response.code == 'system.not.found'
+   }
+
+   void "delete a list of bank reconciliation"() {
+      given:
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final bankRecons = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now(), null).toList()
+
+      def br1 = get("$path/${bankRecons[0].id}")
+
+
+      def filterRequest = new BankReconciliationTransactionsFilterRequest()
+
+      filterRequest['bank'] = bankIn.number
+      filterRequest['fromTransactionDate'] = LocalDate.now()
+      filterRequest['thruTransactionDate'] = LocalDate.now()
+
+      def toUpdate = get("$path/clearing${filterRequest}")
+
+      when:
+      delete("$path/bulk-delete/${filterRequest}")
+      then: "bank for user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("$path/${bankRecons[0].id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "$br1.id was unable to be found"
+      response.code == 'system.not.found'
+   }
 }

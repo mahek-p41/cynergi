@@ -54,8 +54,15 @@ class BankReconciliationService @Inject constructor(
       return reconcileBankAccountRepository.findReport(filterRequest, company)
    }
 
-   fun delete(dtoList: List<BankReconciliationDTO>, company: CompanyEntity) {
-      dtoList.forEach{bankReconciliationRepository.delete(it.id!!, company)}
+   fun delete(id: UUID, company: CompanyEntity) {
+      bankReconciliationRepository.delete(id, company)
+   }
+
+   fun bulkDelete(filterRequest: BankReconciliationTransactionsFilterRequest, company: CompanyEntity) {
+      val toDelete = bankReconciliationRepository.findTransactions(filterRequest, company)
+      toDelete.elements.map {
+         bankReconciliationRepository.delete(it.id!!, company)
+      }
    }
 
    fun clearing(filterRequest: BankReconClearingFilterRequest, company: CompanyEntity): List<BankReconciliationDTO> {
