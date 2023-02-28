@@ -38,7 +38,10 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
             apInvoice.invoice                                  AS apInvoice_invoice,
             apInvoice.invoice_amount                           AS apInvoice_invoice_amount,
             apInvoice.invoice_date                             AS apInvoice_invoice_date,
+            type.id                                            AS apInvoice_type_id,
             type.value                                         AS apInvoice_type_value,
+            type.description                                   AS apInvoice_type_description,
+            type.localization_code                             AS apInvoice_type_localization_code,
             apInvoice.separate_check_indicator                 AS apInvoice_separate_check_indicator,
             poHeader.number                                    AS apInvoice_poHeader_number,
             apInvoice.use_tax_indicator                        AS apInvoice_use_tax_indicator,
@@ -48,15 +51,19 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
             apInvoice.discount_amount                          AS apInvoice_discount_amount,
             apInvoice.discount_taken                           AS apInvoice_discount_taken,
             apInvoice.discount_percent                         AS apInvoice_discount_percent,
+            status.id                                          AS apInvoice_status_id,
             status.value                                       AS apInvoice_status_value,
+            status.description                                 AS apInvoice_status_description,
+            status.localization_code                           AS apInvoice_status_localization_code,
             apInvoice.message                                  AS apInvoice_message,
-            vendor.number                                      AS apInvoice_vendor_number,
-            payTo.number                                       AS apInvoice_payTo_number
+            vend.number                                        AS apInvoice_vendor_number,
+            payTo.number                                       AS apInvoice_payTo_number,
+            count(*) OVER() AS total_elements
          FROM account_payable_invoice apInvoice
             JOIN purchase_order_header poHeader                      ON poHeader.id = apInvoice.purchase_order_id AND poHeader.deleted = FALSE
             JOIN account_payable_invoice_type_domain type            ON type.id = apInvoice.type_id
             JOIN account_payable_invoice_status_type_domain status   ON status.id = apInvoice.status_id
-            JOIN vendor                                              ON apInvoice.vendor_id = vendor.id AND vendor.deleted = FALSE
+            JOIN vendor vend                                         ON apInvoice.vendor_id = vend.id AND vend.deleted = FALSE
             JOIN vendor payTo                                        ON apInvoice.pay_to_id = payTo.id AND payTo.deleted = FALSE
       """
    }
@@ -66,7 +73,7 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "vendor" to filterRequest.vendor, "payTo" to filterRequest.payTo)
       val whereClause = StringBuilder(
          "WHERE apInvoice.company_id = :comp_id " +
-         "AND vendor.number = :vendor " +
+         "AND vend.number = :vendor " +
          "AND payTo.number = :payTo "
       )
       val sortBy = StringBuilder("ORDER BY ")
@@ -83,7 +90,7 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
 
       if (filterRequest.invNbr != null) {
          params["invNbr"] = filterRequest.invNbr
-         whereClause.append(" AND naturalsort(apInvoice.invoice) >= :invNbr ")
+         whereClause.append(" AND apInvoice.invoice >= :invNbr ")
       }
 
       if (filterRequest.invDate != null) {
@@ -225,10 +232,10 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
 
    private fun mapDistDetail(rs: ResultSet, columnPrefix: String = EMPTY): AccountPayableDistDetailReportDTO {
       return AccountPayableDistDetailReportDTO(
-         accountNumber = rs.getInt("account_number"),
-         accountName = rs.getString("account_name"),
-         distProfitCenter = rs.getInt("profit_center"),
-         distAmount = rs.getBigDecimal("amount")
+         accountNumber = rs.getInt("${columnPrefix}account_number"),
+         accountName = rs.getString("${columnPrefix}account_name"),
+         distProfitCenter = rs.getInt("${columnPrefix}profit_center"),
+         distAmount = rs.getBigDecimal("${columnPrefix}amount")
       )
    }
 }
