@@ -6,11 +6,13 @@ import com.cynergisuite.middleware.accounting.financial.calendar.type.infrastruc
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
+import com.cynergisuite.middleware.localization.DatesMustBeInSameFiscalYear
 import com.cynergisuite.middleware.localization.Duplicate
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 import java.util.UUID
 
 @Singleton
@@ -32,6 +34,17 @@ class FinancialCalendarValidator @Inject constructor(
 
       return doSharedValidation(dto, company, existingFinancialCalendar)
    }
+
+   fun validateDateFoundInFinancialCalendar(isDateFound: Boolean, date: LocalDate) {
+      if (!isDateFound) {
+         throw NotFoundException(date)
+      }
+   }
+
+   fun validateSameFiscalYear(sameFiscalYear: Boolean, startingDate: LocalDate, endingDate: LocalDate) =
+      doValidation { errors ->
+         if (!sameFiscalYear) errors.add(ValidationError("startingDate", DatesMustBeInSameFiscalYear(startingDate, endingDate)))
+      }
 
    private fun doSharedValidation(dto: FinancialCalendarDTO, company: CompanyEntity, existingFinancialCalendar: FinancialCalendarEntity? = null): FinancialCalendarEntity {
       val overallPeriodEntity = overallPeriodTypeRepository.findOne(dto.overallPeriod!!.value) ?: throw NotFoundException(dto.overallPeriod!!.value)

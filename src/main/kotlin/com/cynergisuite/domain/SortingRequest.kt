@@ -29,7 +29,7 @@ interface SortableRequest {
 abstract class SortableRequestBase<out PAGE : SortableRequest>(
 
    @field:Schema(description = "The column to sort the data by.  Currently only id and name are supported", defaultValue = "id")
-   var sortBy: String?,
+   open var sortBy: String?,
 
    @field:Pattern(regexp = "ASC|DESC", flags = [CASE_INSENSITIVE])
    @field:Schema(description = "The direction the results should be sorted by.  Either Ascending or Descending", defaultValue = "ASC")
@@ -41,15 +41,15 @@ abstract class SortableRequestBase<out PAGE : SortableRequest>(
    protected abstract fun myToStringValues(): List<Pair<String, Any?>>
 
    final override fun sortBy(): String = sortBy ?: DEFAULT_SORT_BY
-   final override fun sortDirection(): String = sortDirection ?: DEFAULT_SORT_DIRECTION
+   final override fun sortDirection(): String = sortDirection?.uppercase() ?: DEFAULT_SORT_DIRECTION
 
    final override fun snakeSortBy(): String {
       val sortByMe = sortByMe()
 
       return if (sortByMe.isAllSameCase()) {
-         sortBy()
+         sortBy().lowercase()
       } else {
-         LOWER_CAMEL.to(LOWER_UNDERSCORE, sortByMe())
+         LOWER_CAMEL.to(LOWER_UNDERSCORE, sortByMe()).lowercase()
       }
    }
 

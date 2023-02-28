@@ -455,7 +455,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
 
       when:
 
-      def result = put("$path/clearing", toUpdate)
+      def result = put("$path/bulk-update", toUpdate)
 
       then:
       notThrown(HttpClientResponseException)
@@ -500,7 +500,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       toUpdate.get(0).clearedDate = null
 
       when:
-      def result = put("$path/clearing", toUpdate)
+      def result = put("$path/bulk-update", toUpdate)
 
       then:
       notThrown(HttpClientResponseException)

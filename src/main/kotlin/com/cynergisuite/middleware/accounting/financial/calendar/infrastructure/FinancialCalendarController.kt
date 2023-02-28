@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.financial.calendar.infrastructure
 
+import com.cynergisuite.domain.FinancialCalendarValidateDatesFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarCompleteDTO
@@ -310,6 +311,42 @@ class FinancialCalendarController @Inject constructor(
       val response = financialCalendarService.fetchDateRangeWhenGLIsOpen(user.myCompany())
 
       logger.debug("Fetching Financial Calendar date range when General Ledger is open resulted in", response)
+
+      return response
+   }
+
+   @Throws(NotFoundException::class)
+   @Get(value = "/validate-dates{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Validate start and end dates for GL Trial Balance reports", description = "Validate start and end dates for GL Trial Balance reports", operationId = "financialCalendar-validateDates")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Boolean::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Financial Calendar was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun validateDates(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @QueryValue("filterRequest")
+      filterRequest: FinancialCalendarValidateDatesFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Boolean {
+      logger.info("Validating Financial Calendar dates {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+
+      // validate dates are found
+      val isFromDateFound = financialCalendarService.dateFoundInFinancialCalendar(user.myCompany(), filterRequest.fromDate!!)
+      val isThruDateFound = financialCalendarService.dateFoundInFinancialCalendar(user.myCompany(), filterRequest.thruDate!!)
+
+      // validate from and thru dates are in same fiscal year
+      val sameFiscalYear = financialCalendarService.sameFiscalYear(user.myCompany(), filterRequest)
+
+      val response = isFromDateFound || isThruDateFound || sameFiscalYear
+
+      logger.debug("Validating Financial Calendar for given date resulted in", response)
 
       return response
    }

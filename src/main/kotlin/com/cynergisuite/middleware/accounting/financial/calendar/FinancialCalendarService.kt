@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.financial.calendar
 
+import com.cynergisuite.domain.FinancialCalendarValidateDatesFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
@@ -84,6 +85,28 @@ class FinancialCalendarService @Inject constructor(
 
    fun fetchByDate(company: CompanyEntity, date: LocalDate): FinancialCalendarDTO? =
       financialCalendarRepository.fetchByDate(company, date)?.let { FinancialCalendarDTO(it) }
+
+   fun dateFoundInFinancialCalendar(company: CompanyEntity, date: LocalDate): Boolean {
+      val isDateFound = financialCalendarRepository.dateFoundInFinancialCalendar(company, date)
+
+      financialCalendarValidator.validateDateFoundInFinancialCalendar(isDateFound, date)
+
+      return isDateFound
+   }
+
+   fun sameFiscalYear(company: CompanyEntity, filterRequest: FinancialCalendarValidateDatesFilterRequest): Boolean {
+      return if (filterRequest.fromDate != filterRequest.thruDate) {
+         val fromDateOverallPeriodId = financialCalendarRepository.findOverallPeriodIdAndPeriod(company, filterRequest.fromDate!!).first
+         val thruDateOverallPeriodId = financialCalendarRepository.findOverallPeriodIdAndPeriod(company, filterRequest.thruDate!!).first
+         val sameFiscalYear = fromDateOverallPeriodId == thruDateOverallPeriodId
+
+         financialCalendarValidator.validateSameFiscalYear(sameFiscalYear, filterRequest.fromDate!!, filterRequest.thruDate!!)
+
+         sameFiscalYear
+      } else {
+         true
+      }
+   }
 
    private fun transformEntity(financialCalendarEntity: FinancialCalendarEntity): FinancialCalendarDTO {
       return FinancialCalendarDTO(financialCalendarEntity)

@@ -434,7 +434,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
          """)
 
-      def filterRequest = new InvoiceReportFilterRequest([sortBy: "id", sortDirection: "ASC"])
+      def filterRequest = new InvoiceReportFilterRequest([sortBy: "poHeader.number", sortDirection: "ASC"])
 
       when:
       def result = get("$path/report${filterRequest}")
@@ -443,16 +443,19 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       notThrown(Exception)
       with(result) {
          expenseTotal > 0
-         invoices.eachWithIndex { invoice, index ->
-            with(invoice) {
+         paidTotal > 0
+         purchaseOrders.eachWithIndex { purchaseOrder, index ->
+            poHeaderNumber == purchaseOrderIn.number
+            totalPoInventoryCost > 0
+            totalPoDistributions > 0
+            with(purchaseOrder.invoices[0]) {
                id == apInvoices[index].id
                vendorNumber == vendorIn.number
                vendorName == vendorIn.name
-               invoice.invoice == apInvoices[index].invoice
+               invoice == apInvoices[index].invoice
                operator == apInvoices[index].employee.number
                useTax == apInvoices[index].useTaxIndicator
                type == apInvoices[index].type.value
-               poHeaderNumber == purchaseOrderIn.number
                invoiceDate == apInvoices[index].invoiceDate.toString()
                entryDate == apInvoices[index].entryDate.toString()
                status == apInvoices[index].status.value

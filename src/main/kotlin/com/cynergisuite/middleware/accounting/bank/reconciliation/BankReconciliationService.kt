@@ -5,9 +5,12 @@ import com.cynergisuite.domain.BankReconFilterRequest
 import com.cynergisuite.domain.BankReconciliationTransactionsFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.ReconcileBankAccountFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
+import com.cynergisuite.middleware.accounting.bank.ReconcileBankAccountReportTemplate
 import com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure.BankReconciliationRepository
+import com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure.ReconcileBankAccountRepository
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
@@ -18,6 +21,7 @@ import java.util.UUID
 @Singleton
 class BankReconciliationService @Inject constructor(
    private val bankReconciliationRepository: BankReconciliationRepository,
+   private val reconcileBankAccountRepository: ReconcileBankAccountRepository,
    private val bankReconciliationValidator: BankReconciliationValidator
 ) {
    fun fetchById(id: UUID, company: CompanyEntity, locale: Locale): BankReconciliationDTO? =
@@ -46,13 +50,21 @@ class BankReconciliationService @Inject constructor(
 
    }
 
+   fun reconcileBankAccount(filterRequest: ReconcileBankAccountFilterRequest, company: CompanyEntity): ReconcileBankAccountReportTemplate {
+      return reconcileBankAccountRepository.findReport(filterRequest, company)
+   }
+
+   fun delete(dtoList: List<BankReconciliationDTO>, company: CompanyEntity) {
+      dtoList.forEach{bankReconciliationRepository.delete(it.id!!, company)}
+   }
+
    fun clearing(filterRequest: BankReconClearingFilterRequest, company: CompanyEntity): List<BankReconciliationDTO> {
       val found = bankReconciliationRepository.fetchClear(filterRequest, company)
       return found.map { transformEntity(it) }
    }
 
-   fun updateClear(dtos: List<BankReconciliationDTO>, company: CompanyEntity): List<BankReconciliationDTO> {
-      val toUpdate = bankReconciliationValidator.validateBulkUpdate(dtos, company)
+   fun bulkUpdate(dtoList: List<BankReconciliationDTO>, company: CompanyEntity): List<BankReconciliationDTO> {
+      val toUpdate = bankReconciliationValidator.validateBulkUpdate(dtoList, company)
       val updated = bankReconciliationRepository.bulkUpdate(toUpdate, company)
 
       return updated.map{ transformEntity(it)}

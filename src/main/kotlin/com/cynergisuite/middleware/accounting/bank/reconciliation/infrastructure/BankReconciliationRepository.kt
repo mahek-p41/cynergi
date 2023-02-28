@@ -12,6 +12,7 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportEntity
@@ -22,6 +23,7 @@ import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconcilia
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationTypeEnum
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastructure.BankReconciliationTypeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.error.NotFoundException
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -90,7 +92,8 @@ class BankReconciliationRepository @Inject constructor(
             bankReconType.value                               AS bankReconType_value,
             bankReconType.description                         AS bankReconType_description,
             bankReconType.localization_code                   AS bankReconType_localization_code,
-            bank_vendor.vendor_name                           AS bankRecon_vendor_name
+            bank_vendor.vendor_name                           AS bankRecon_vendor_name,
+            count(*) OVER()                                   AS total_elements
          FROM bank_reconciliation bankRecon
                JOIN bank ON bankRecon.bank_id = bank.bank_id AND bank.bank_deleted = FALSE
                JOIN bank_reconciliation_type_domain bankReconType ON bankRecon.type_id = bankReconType.id
@@ -228,6 +231,24 @@ class BankReconciliationRepository @Inject constructor(
       }
    }
 
+   @Transactional
+   fun delete(id: UUID, company: CompanyEntity) {
+      logger.debug("Deleting BankReconciliation with id={}", id)
+
+      val rowsAffected = jdbc.update(
+         """
+            UPDATE bank_reconciliation
+            SET deleted = TRUE
+            WHERE id = :id AND company_id = :company_id AND deleted = FALSE
+         """,
+         mapOf("id" to id, "company_id" to company.id)
+      )
+
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(id)
+   }
+
    @ReadOnly
    fun findReport(filterRequest: BankReconFilterRequest, company: CompanyEntity): BankReconciliationReportDTO {
       val bankRecons = mutableListOf<BankReconciliationReportDetailEntity>()
@@ -260,7 +281,7 @@ class BankReconciliationRepository @Inject constructor(
       if (filterRequest.beginDocument != null || filterRequest.endDocument != null) {
          params["beginDocument"] = filterRequest.beginDocument
          params["endDocument"] = filterRequest.endDocument
-         whereClause.append(" AND regexp_replace(bankRecon.document, '[^0-9]+', '', 'g')::BIGINT")
+         whereClause.append(" AND regexp_replace(bankRecon.document, '[^0-9]+', '', 'g')")
             .append(buildFilterString(filterRequest.beginDocument != null, filterRequest.endDocument != null, "beginDocument", "endDocument"))
       }
 
@@ -281,7 +302,7 @@ class BankReconciliationRepository @Inject constructor(
 
       if (filterRequest.description != null) {
          params["description"] = filterRequest.description
-         whereClause.append(" AND bankRecon.description ILIKE \'%${filterRequest.description}%\'")
+         whereClause.append(" AND (bank_vendor.vendor_name ILIKE \'%${filterRequest.description!!.trim()}%\' OR bankRecon.description ILIKE \'%${filterRequest.description!!.trim()}%\')")
       }
 
       jdbc.query(
@@ -481,7 +502,7 @@ class BankReconciliationRepository @Inject constructor(
 
       if (filterRequest.description != null) {
          params["description"] = filterRequest.description
-         whereClause.append(" AND bankRecon.description ILIKE \'${filterRequest.description}%\'") //ILIKE is case-insensitive LIKE
+         whereClause.append(" AND bankRecon.description ILIKE \'%${filterRequest.description}%\'") //ILIKE is case-insensitive LIKE
       }
 
       if (filterRequest.bankReconciliationType != null) {

@@ -283,12 +283,14 @@ class GeneralLedgerJournalRepository @Inject constructor(
       }
 
       if (filterRequest.sortOption == GeneralLedgerReportSortEnum.ACCOUNT) {
-         orderBy.append("glJournal.account_id")
+         orderBy.append("account.account_number, profitCenter.number")
       }
 
       if (filterRequest.sortOption == GeneralLedgerReportSortEnum.LOCATION) {
-         orderBy.append("glJournal.profit_center_id_sfk")
+         orderBy.append("profitCenter.number, account.account_number")
       }
+
+      orderBy.append(", glJournal.date")
 
       jdbc.query(
          """
@@ -305,37 +307,38 @@ class GeneralLedgerJournalRepository @Inject constructor(
 
       val template = mutableListOf<GeneralLedgerPendingReportDetailsTemplate>()
       val sortedEntities = mutableListOf<GeneralLedgerJournalEntity>()
-
-      if (filterRequest.sortOption == GeneralLedgerReportSortEnum.ACCOUNT) {
-      var currentAccountID = glJournals.get(0).account.id
-         glJournals.forEach {
-            if (currentAccountID == it.account.id ) {
-               sortedEntities.add(it)
-            } else {
-               currentAccountID = it.account.id
-               template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
-               sortedEntities.removeAll(sortedEntities)
-               sortedEntities.add(it)
+      if (glJournals.isNotEmpty()) {
+         if (filterRequest.sortOption == GeneralLedgerReportSortEnum.ACCOUNT) {
+            var currentAccountID = glJournals[0].account.id
+            glJournals.forEach {
+               if (currentAccountID == it.account.id ) {
+                  sortedEntities.add(it)
+               } else {
+                  currentAccountID = it.account.id
+                  template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
+                  sortedEntities.removeAll(sortedEntities)
+                  sortedEntities.add(it)
+               }
             }
          }
-      }
 
-      if (filterRequest.sortOption == GeneralLedgerReportSortEnum.LOCATION) {
-         var currentLocation = glJournals.get(0).profitCenter.myNumber()
-         glJournals.forEach {
-            if (currentLocation == it.profitCenter.myNumber() ) {
-               sortedEntities.add(it)
-            } else {
-               currentLocation = it.profitCenter.myNumber()
-               template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
-               sortedEntities.removeAll(sortedEntities)
-               sortedEntities.add(it)
+         if (filterRequest.sortOption == GeneralLedgerReportSortEnum.LOCATION) {
+            var currentLocation = glJournals[0].profitCenter.myNumber()
+            glJournals.forEach {
+               if (currentLocation == it.profitCenter.myNumber() ) {
+                  sortedEntities.add(it)
+               } else {
+                  currentLocation = it.profitCenter.myNumber()
+                  template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
+                  sortedEntities.removeAll(sortedEntities)
+                  sortedEntities.add(it)
+               }
             }
          }
-      }
-      //add any remaining sorted entities after loop
-      if (sortedEntities.isNotEmpty()) {
-         template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
+         //add any remaining sorted entities after loop
+         if (sortedEntities.isNotEmpty()) {
+            template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
+         }
       }
 
       return template

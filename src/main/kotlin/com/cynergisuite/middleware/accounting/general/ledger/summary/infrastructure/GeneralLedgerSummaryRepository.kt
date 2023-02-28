@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure
 
+import com.cynergisuite.domain.GeneralLedgerProfitCenterTrialBalanceReportFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
@@ -9,6 +10,7 @@ import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
+import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.type.infrastructure.OverallPeriodTypeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryEntity
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -20,7 +22,9 @@ import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
 import java.sql.ResultSet
+import java.time.LocalDate
 import java.util.UUID
 import javax.transaction.Transactional
 
@@ -28,6 +32,7 @@ import javax.transaction.Transactional
 class GeneralLedgerSummaryRepository @Inject constructor(
    private val jdbc: Jdbi,
    private val accountRepository: AccountRepository,
+   private val financialCalendarRepository: FinancialCalendarRepository,
    private val storeRepository: StoreRepository,
    private val overallPeriodTypeRepository: OverallPeriodTypeRepository
 ) {
@@ -317,6 +322,111 @@ class GeneralLedgerSummaryRepository @Inject constructor(
       ) { rs, _ -> mapRow(rs, entity) }
    }
 
+   @ReadOnly
+   fun fetchProfitCenterTrialBalanceReportRecords(company: CompanyEntity, filterRequest: GeneralLedgerProfitCenterTrialBalanceReportFilterRequest): List<GeneralLedgerSummaryEntity> {
+      val pair = financialCalendarRepository.findOverallPeriodIdAndPeriod(company, filterRequest.fromDate!!)
+      val overallPeriodId = pair.first
+      val period = pair.second
+      val glSummaries = mutableListOf<GeneralLedgerSummaryEntity>()
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "overall_period_id" to overallPeriodId)
+      val whereClause = StringBuilder(
+         "WHERE glSummary.company_id = :comp_id " +
+               "AND glSummary.overall_period_id = :overall_period_id " +
+               "AND (" +
+                  "acct.account_status_id = 1 OR " +
+                  "glSummary.beginning_balance <> 0.00 OR " +
+                  "glSummary.net_activity_period_$period <> 0.00" +
+               ") "
+      )
+
+      if (filterRequest.startingAccount != null || filterRequest.endingAccount != null) {
+         params["startingAccount"] = filterRequest.startingAccount
+         params["endingAccount"] = filterRequest.endingAccount
+         whereClause.append(" AND acct.account_number ")
+            .append(buildFilterString( filterRequest.startingAccount != null, filterRequest.endingAccount != null, "startingAccount", "endingAccount"))
+      }
+
+      // select locations based on criteria (1 selects all locations)
+      when (filterRequest.selectLocsBy) {
+         2 ->
+         {
+            params["any10LocsOrGroups"] = filterRequest.any10LocsOrGroups
+            whereClause.append(" AND glSummary.profit_center_id_sfk IN (<any10LocsOrGroups>)")
+         }
+         3 ->
+         {
+            params["startingLocOrGroup"] = filterRequest.startingLocOrGroup
+            params["endingLocOrGroup"] = filterRequest.endingLocOrGroup
+            whereClause.append(" AND glSummary.profit_center_id_sfk BETWEEN :startingLocOrGroup AND :endingLocOrGroup")
+         }
+         // todo: 4 & 5 use location groups
+      }
+
+      // assign sort by
+      val sortBy = StringBuilder("ORDER BY ")
+      when (filterRequest.sortBy) {
+         "location" ->
+            sortBy.append("glSummary.profit_center_id_sfk ASC, glSummary.account_id ASC")
+         "account" ->
+            sortBy.append("glSummary.account_id ASC, glSummary.profit_center_id_sfk ASC")
+         null ->
+            sortBy.append("glSummary.profit_center_id_sfk ASC, glSummary.account_id ASC")
+      }
+
+      val query ="""
+         ${selectBaseQuery()}
+         $whereClause
+         $sortBy
+      """.trimIndent()
+
+      logger.debug("GeneralLedgerSummary query {} with params {}", query, params)
+
+      jdbc.query(
+         """
+            ${selectBaseQuery()}
+            $whereClause
+            $sortBy
+         """.trimIndent(),
+         params
+      ) { rs, _ ->
+         do {
+            glSummaries.add(mapRow(rs, company, "glSummary_"))
+         } while (rs.next())
+      }
+
+      return glSummaries
+   }
+
+   @ReadOnly
+   fun calculateGLBalance(params: MutableMap<String, Any>): BigDecimal {
+      return jdbc.queryForObject("""SELECT
+             COALESCE(SUM(
+                 beginning_balance +
+                 CASE WHEN period >= 1 THEN net_activity_period_1 ELSE 0 END +
+                 CASE WHEN period >= 2 THEN net_activity_period_2 ELSE 0 END +
+                 CASE WHEN period >= 3 THEN net_activity_period_3 ELSE 0 END +
+                 CASE WHEN period >= 4 THEN net_activity_period_4 ELSE 0 END +
+                 CASE WHEN period >= 5 THEN net_activity_period_5 ELSE 0 END +
+                 CASE WHEN period >= 6 THEN net_activity_period_6 ELSE 0 END +
+                 CASE WHEN period >= 7 THEN net_activity_period_7 ELSE 0 END +
+                 CASE WHEN period >= 8 THEN net_activity_period_8 ELSE 0 END +
+                 CASE WHEN period >= 9 THEN net_activity_period_9 ELSE 0 END +
+                 CASE WHEN period >= 10 THEN net_activity_period_10 ELSE 0 END +
+                 CASE WHEN period >= 11 THEN net_activity_period_11 ELSE 0 END +
+                 CASE WHEN period >= 12 THEN net_activity_period_12 ELSE 0 END
+             ), 0) AS net_activity_period_sum
+         FROM
+             general_ledger_summary summary
+               JOIN financial_calendar fc ON fc.company_id = summary.company_id
+                     AND fc.overall_period_id = summary.overall_period_id
+                     AND :date BETWEEN fc.period_from AND fc.period_to
+               JOIN bank ON summary.profit_center_id_sfk = bank.general_ledger_profit_center_sfk
+                     AND summary.account_id = bank.general_ledger_account_id
+                     AND bank.number = :bank
+         WHERE summary.company_id = :comp_id
+         """, params, BigDecimal::class.java)
+   }
+
    private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): GeneralLedgerSummaryEntity {
       return GeneralLedgerSummaryEntity(
          id = rs.getUuid("${columnPrefix}id"),
@@ -361,5 +471,11 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          beginningBalance = rs.getBigDecimal("${columnPrefix}beginning_balance"),
          closingBalance = rs.getBigDecimal("${columnPrefix}closing_balance")
       )
+   }
+
+   private fun buildFilterString(begin: Boolean, end: Boolean, beginningParam: String, endingParam: String): String {
+      return if (begin && end) " BETWEEN :$beginningParam AND :$endingParam "
+      else if (begin) " >= :$beginningParam "
+      else " <= :$endingParam "
    }
 }
