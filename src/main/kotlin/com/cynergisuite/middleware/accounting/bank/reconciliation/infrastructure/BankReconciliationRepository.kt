@@ -462,7 +462,8 @@ class BankReconciliationRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findTransactions(filterRequest: BankReconciliationTransactionsFilterRequest, company: CompanyEntity) : RepositoryPage<BankReconciliationEntity, BankReconciliationTransactionsFilterRequest> {
+   fun findTransactions(filterRequest: BankReconciliationTransactionsFilterRequest, company: CompanyEntity) : RepositoryPage<BankReconciliationEntity, PageRequest> {
+      logger.trace("Searching for Reconciliation Transactions by Bank {} and Type {}", filterRequest.bank, filterRequest.bankReconciliationType)
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder(" WHERE bankRecon.company_id = :comp_id")
 
@@ -504,9 +505,9 @@ class BankReconciliationRepository @Inject constructor(
          whereClause.append(" AND bankRecon.description ILIKE \'%${filterRequest.description}%\'") //ILIKE is case-insensitive LIKE
       }
 
-      if (filterRequest.bankType != null) {
-         params["type"] = filterRequest.bankType
-         whereClause.append(" AND bankReconType.value = :type")
+      if (filterRequest.bankReconciliationType != null) {
+         params["type"] = filterRequest.bankReconciliationType
+         whereClause.append(" AND bankReconType.value = :type") //bankReconType_value
       }
 
       if (filterRequest.status != null) {
@@ -538,20 +539,35 @@ class BankReconciliationRepository @Inject constructor(
          whereClause.append(" AND bankRecon.amount = :amount")
       }
 
-      return jdbc.queryPaged(
+      val query =
          """
-            ${selectBaseQuery()}
-            $whereClause
-            ORDER BY bankRecon_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
-            LIMIT :limit OFFSET :offset
-         """.trimIndent(),
-         params,
-         filterRequest
-      ) { rs, elements ->
-         do {
-            elements.add(mapRow(rs, company, "bankRecon_"))
-         } while (rs.next())
+      WITH paged AS (
+         ${selectBaseQuery()}
+         $whereClause
+      )
+      SELECT
+         p.*,
+         count(*) OVER() as total_elements
+      FROM paged AS p
+      ORDER by bankRecon_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
+      LIMIT ${filterRequest.size()} OFFSET ${filterRequest.offset()}
+   """
+      var totalElements: Long? = null
+      val resultList: MutableList<BankReconciliationEntity> = mutableListOf()
+
+      jdbc.query(query, params) { rs, _ ->
+         resultList.add(mapRow(rs, company, "bankRecon_"))
+         if (totalElements == null) {
+            totalElements = rs.getLong("total_elements")
+         }
       }
+
+      return RepositoryPage(
+         requested = filterRequest,
+         elements = resultList,
+         totalElements = totalElements ?: 0
+      )
+
    }
 
    private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): BankReconciliationEntity {

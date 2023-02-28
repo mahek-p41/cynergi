@@ -19,10 +19,10 @@ class BankReconciliationTransactionsFilterRequest(
    sortDirection: String? = null,
 
    @field:Schema(name = "Bank", description = "Bank Number")
-   var bank: Long? = null, //This was Int elsewhere, but that would not work in the test, but Long does...
+   var bank: Long? = null,
 
-   @field:Schema(name = "bankType", description = "Bank Reconciliation Type Value")
-   var bankType: String? = null,
+   @field:Schema(name = "bankReconciliationType", description = "Bank Reconciliation Type Value")
+   var bankReconciliationType: String? = null,
 
    @field:Schema(name = "fromTransactionDate", description = "From transaction date for bank reconciliation transactions")
    var fromTransactionDate: LocalDate? = null,
@@ -61,7 +61,7 @@ class BankReconciliationTransactionsFilterRequest(
             EqualsBuilder()
                .appendSuper(super.equals(other))
                .append(this.bank, other.bank)
-               .append(this.bankType, other.bankType)
+               .append(this.bankReconciliationType, other.bankReconciliationType)
                .append(this.fromTransactionDate, other.fromTransactionDate)
                .append(this.thruTransactionDate, other.thruTransactionDate)
                .append(this.beginDocNum, other.beginDocNum)
@@ -80,7 +80,7 @@ class BankReconciliationTransactionsFilterRequest(
       HashCodeBuilder()
          .appendSuper(super.hashCode())
          .append(this.bank)
-         .append(this.bankType)
+         .append(this.bankReconciliationType)
          .append(this.fromTransactionDate)
          .append(this.thruTransactionDate)
          .append(this.beginDocNum)
@@ -99,7 +99,7 @@ class BankReconciliationTransactionsFilterRequest(
          sortBy = sortBy,
          sortDirection = sortDirection,
          bank = this.bank,
-         bankType = this.bankType,
+         bankReconciliationType = this.bankReconciliationType,
          fromTransactionDate = this.fromTransactionDate,
          thruTransactionDate = this.thruTransactionDate,
          beginDocNum = this.beginDocNum,
@@ -113,7 +113,7 @@ class BankReconciliationTransactionsFilterRequest(
    override fun myToStringValues(): List<Pair<String, Any?>> =
       listOf(
          "bank" to bank,
-         "bankType" to bankType,
+         "bankReconciliationType" to bankReconciliationType,
          "fromTransactionDate" to fromTransactionDate,
          "thruTransactionDate" to thruTransactionDate,
          "beginDocNum" to beginDocNum,

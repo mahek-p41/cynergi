@@ -5,6 +5,7 @@ import com.cynergisuite.middleware.accounting.bank.BankEntity
 import com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure.BankReconciliationRepository
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDataLoader
+import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDataLoaderService
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
@@ -19,22 +20,26 @@ import java.util.stream.Stream
 @CompileStatic
 class BankReconciliationDataLoader {
 
-   static Stream<BankReconciliationEntity> stream(int numberIn = 1, BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null) {
+   static Stream<BankReconciliationEntity> stream(int numberIn = 1, BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null, String reconciliationTypeValueIn = null, BigDecimal amountIn = null, String descriptionIn = null, String documentIn = null) {
       final number = numberIn > 0 ? numberIn : 1
+      final reconType = BankReconciliationTypeDataLoader.predefined().find {it.value == reconciliationTypeValueIn} ?: BankReconciliationTypeDataLoader.random()
       final faker = new Faker()
       final numbers = faker.number()
       final lorem = faker.lorem()
+      final amount = amountIn ?: numbers.numberBetween(1, 10_000).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
+      final description = descriptionIn ?: lorem.characters(3, 15)
+      final document = documentIn ?: lorem.characters(3, 20)
 
       return IntStream.range(0, number).mapToObj {
          new BankReconciliationEntity(
             null,
             bankIn,
-            BankReconciliationTypeDataLoader.random(),
+            reconType,
             dateIn,
             clearedDateIn,
-            numbers.numberBetween(1, 10_000).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            lorem.characters(3, 15),
-            lorem.characters(3, 20)
+            amount,
+            description,
+            document
          )
       }
    }
@@ -68,14 +73,18 @@ class BankReconciliationDataLoaderService {
       this.repository = repository
    }
 
-   Stream<BankReconciliationEntity> stream(int numberIn = 1, CompanyEntity companyIn, BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null) {
-      return BankReconciliationDataLoader.stream(numberIn, bankIn, dateIn, clearedDateIn).map {
+   Stream<BankReconciliationEntity> stream(int numberIn = 1, CompanyEntity companyIn, BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null, String reconciliationTypeValueIn = null, BigDecimal amountIn = null, String descriptionIn = null, String documentIn = null) {
+      return BankReconciliationDataLoader.stream(numberIn, bankIn, dateIn, clearedDateIn, reconciliationTypeValueIn, amountIn, descriptionIn, documentIn).map {
          repository.insert(it, companyIn)
       }
    }
 
    BankReconciliationEntity single(CompanyEntity companyIn, BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null) {
       return stream(1, companyIn, bankIn, dateIn, clearedDateIn).findFirst().orElseThrow { new Exception("Unable to create BankReconciliation") }
+   }
+
+   BankReconciliationEntity singleWithOptions(CompanyEntity companyIn, BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null, String reconciliationTypeValueIn = null, BigDecimal amountIn = null, String descriptionIn = null, String documentIn = null) {
+      return stream(1, companyIn, bankIn, dateIn, clearedDateIn, reconciliationTypeValueIn, amountIn, descriptionIn, documentIn).findFirst().orElseThrow { new Exception("Unable to create BankReconciliation") }
    }
 
    BankReconciliationDTO singleDTO(BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null) {
