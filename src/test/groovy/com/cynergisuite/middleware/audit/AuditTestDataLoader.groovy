@@ -46,6 +46,7 @@ class AuditTestDataLoader {
             random.nextInt(1, 1000),
             random.nextInt(1, 1000),
             random.nextInt(1, 100),
+            null,
             random.nextBoolean(),
             null,
             random.nextInt(0, 1000),
