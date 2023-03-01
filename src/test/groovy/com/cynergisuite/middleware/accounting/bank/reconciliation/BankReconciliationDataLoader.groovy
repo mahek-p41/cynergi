@@ -44,7 +44,7 @@ class BankReconciliationDataLoader {
       }
    }
 
-   static Stream<BankReconciliationDTO> streamDTO(int numberIn = 1, BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null) {
+   static Stream<BankReconciliationDTO> streamDTO(int numberIn = 1, BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null, String description = null) {
       final number = numberIn > 0 ? numberIn : 1
       final faker = new Faker()
       final numbers = faker.number()
@@ -57,7 +57,7 @@ class BankReconciliationDataLoader {
             'date': dateIn,
             'clearedDate': clearedDateIn,
             'amount': numbers.numberBetween(1, 10_000).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
-            'description': lorem.characters(3, 15),
+            'description': description ?: lorem.characters(3, 15),
             'document': lorem.characters(3, 20)
          ])
       }
@@ -87,7 +87,7 @@ class BankReconciliationDataLoaderService {
       return stream(1, companyIn, bankIn, dateIn, clearedDateIn, reconciliationTypeValueIn, amountIn, descriptionIn, documentIn).findFirst().orElseThrow { new Exception("Unable to create BankReconciliation") }
    }
 
-   BankReconciliationDTO singleDTO(BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null) {
-      return BankReconciliationDataLoader.streamDTO(1, bankIn, dateIn, clearedDateIn).findFirst().orElseThrow { new Exception("Unable to create BankReconciliation") }
+   BankReconciliationDTO singleDTO(BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null, String description = null) {
+      return BankReconciliationDataLoader.streamDTO(1, bankIn, dateIn, clearedDateIn, description).findFirst().orElseThrow { new Exception("Unable to create BankReconciliation") }
    }
 }

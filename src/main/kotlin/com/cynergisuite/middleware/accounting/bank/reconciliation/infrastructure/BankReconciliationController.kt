@@ -277,7 +277,7 @@ class BankReconciliationController @Inject constructor(
       return bankReconTransactions
    }
 
-   @Delete(uri = "/bulk-delete{?filterRequest*}")
+   @Delete(uri = "/bulk-delete")
    @AccessControl
    @Throws(NotFoundException::class)
    @Operation(tags = ["BankReconciliationEndpoints"], summary = "Delete one or more Bank Reconciliations", description = "Delete one or more Bank Reconciliations", operationId = "bankReconciliation-bulkDelete")
@@ -286,13 +286,13 @@ class BankReconciliationController @Inject constructor(
          ApiResponse(responseCode = "200", description = "If Bank Reconciliation was successfully deleted"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "404", description = "The requested Bank Reconciliation was unable to be found"),
+         ApiResponse(responseCode = "409", description = "If the Bank Reconciliation is still referenced from other tables"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
    fun bulkDelete(
-      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
-      @Valid @QueryValue
-      filterRequest: BankReconciliationTransactionsFilterRequest,
+      @Body @Valid
+      dtoList: List<BankReconciliationDTO>,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ) {
@@ -300,31 +300,6 @@ class BankReconciliationController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
 
-      return bankReconciliationService.bulkDelete(filterRequest, user.myCompany())
+      return bankReconciliationService.bulkDelete(dtoList, user.myCompany())
    }
-
-   @Delete(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
-   @AccessControl
-   @Throws(NotFoundException::class)
-   @Operation(tags = ["BankReconciliationEndpoints"], summary = "Delete one  Bank Reconciliation", description = "Delete one Bank Reconciliation", operationId = "bankReconciliation-delete")
-   @ApiResponses(
-      value = [
-         ApiResponse(responseCode = "200", description = "If Bank Reconciliation was successfully deleted"),
-         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-         ApiResponse(responseCode = "404", description = "The requested Bank Reconciliation was unable to be found"),
-         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-      ]
-   )
-   fun delete(
-      @QueryValue("id") id: UUID,
-      httpRequest: HttpRequest<*>,
-      authentication: Authentication
-   ) {
-      logger.debug("User {} requested delete BankReconciliation", authentication)
-
-      val user = userService.fetchUser(authentication)
-
-      return bankReconciliationService.delete(id, user.myCompany())
-   }
-
 }
