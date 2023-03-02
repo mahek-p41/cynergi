@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
 import com.cynergisuite.middleware.accounting.bank.ReconcileBankAccountReportTemplate
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationService
+import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -277,6 +278,7 @@ class BankReconciliationController @Inject constructor(
    }
 
    @Delete(uri = "/bulk-delete")
+   @AccessControl
    @Throws(NotFoundException::class)
    @Operation(tags = ["BankReconciliationEndpoints"], summary = "Delete one or more Bank Reconciliations", description = "Delete one or more Bank Reconciliations", operationId = "bankReconciliation-bulkDelete")
    @ApiResponses(
@@ -284,6 +286,7 @@ class BankReconciliationController @Inject constructor(
          ApiResponse(responseCode = "200", description = "If Bank Reconciliation was successfully deleted"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "404", description = "The requested Bank Reconciliation was unable to be found"),
+         ApiResponse(responseCode = "409", description = "If the Bank Reconciliation is still referenced from other tables"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
@@ -297,7 +300,6 @@ class BankReconciliationController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
 
-      return bankReconciliationService.delete(dtoList, user.myCompany())
+      return bankReconciliationService.bulkDelete(dtoList, user.myCompany())
    }
-
 }

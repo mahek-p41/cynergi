@@ -2,11 +2,16 @@ package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructur
 
 import com.cynergisuite.domain.BankReconClearingFilterRequest
 import com.cynergisuite.domain.BankReconciliationTransactionsFilterRequest
+import com.cynergisuite.domain.BankReconFilterRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.domain.infrastructure.SimpleTransactionalSql
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDataLoaderService
+import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
+import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
+import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -24,6 +29,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
    @Inject AccountTestDataLoaderService accountDataLoaderService
    @Inject BankFactoryService bankFactoryService
    @Inject BankReconciliationDataLoaderService dataLoaderService
+
 
    void "fetch one bank reconciliation by id" () {
       given:
@@ -948,4 +954,67 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
    }
+
+   void "delete a bank reconciliation"() {
+      given:
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final bankRecon = dataLoaderService.singleDTO(bankIn, LocalDate.now(), LocalDate.now())
+
+      def toDelete = post("$path/", bankRecon)
+
+      when:
+      def result = delete("$path/bulk-delete", toDelete)
+      then: "bank for user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("$path/${toDelete.id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "$toDelete.id was unable to be found"
+      response.code == 'system.not.found'
+   }
+
+   void "delete a list of bank reconciliation"() {
+      given:
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      final bankRecons = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now(), null).toList()
+
+      def br1 = get("$path/${bankRecons[0].id}")
+      def br2 = get("$path/${bankRecons[1].id}")
+      def br3 = get("$path/${bankRecons[2].id}")
+
+      def toDelete = []
+      toDelete.add(br1)
+      toDelete.add(br2)
+
+      when:
+      delete("$path/bulk-delete/", toDelete)
+      then: "bank for user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("$path/${br1.id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "$br1.id was unable to be found"
+      response.code == 'system.not.found'
+
+      when:
+      get("$path/${br3.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+   }
+
 }

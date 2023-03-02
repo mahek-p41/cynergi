@@ -58,6 +58,8 @@ class BalanceMustBeZero(balance: BigDecimal) : Cynergi("cynergi.validation.balan
 class GLNotOpen(date: LocalDate) : Cynergi("cynergi.validation.gl.not.open", arrayOf(date))
 class ProfitCenterMustMatchBankProfitCenter(profitCenter: StoreEntity) : Cynergi("cynergi.validation.profit.center.must.match.bank.profit.center", arrayOf(profitCenter))
 class DatesMustBeInSameFiscalYear(startDate: LocalDate, endDate: LocalDate) : Cynergi("cynergi.validation.dates.must.be.in.same.fiscal.year", arrayOf(startDate, endDate))
+class ClearedDateMustNotBeFutureDate(date: LocalDate) : Cynergi("cynergi.validation.cleared.date.must.not.be.future.date", arrayOf(date))
+class ClearedDateNotPriorTransactionDate(date: LocalDate) : Cynergi("cynergi.validation.cleared.date.not.prior.transaction.date", arrayOf(date))
 
 class AuditStatusNotFound(auditStatus: String) : Cynergi("cynergi.audit.status.not.found", arrayOf(auditStatus))
 class AuditUnableToChangeStatusFromTo(auditId: UUID, toStatus: String, fromStatus: String) : Cynergi("cynergi.audit.unable.to.change.status.from.to", arrayOf(auditId, toStatus, fromStatus))

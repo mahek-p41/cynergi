@@ -7,11 +7,15 @@ import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastru
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
+import com.cynergisuite.middleware.localization.ClearedDateMustNotBeFutureDate
+import com.cynergisuite.middleware.localization.ClearedDateNotPriorTransactionDate
 import com.cynergisuite.middleware.localization.NotFound
+import com.cynergisuite.middleware.localization.NotNull
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 import java.util.UUID
 
 @Singleton
@@ -52,6 +56,19 @@ class BankReconciliationValidator @Inject constructor(
 
          type
             ?: errors.add(ValidationError("type.value", NotFound(dto.type!!.value)))
+
+         dto.clearedDate?.let {
+            if (dto.clearedDate!! > LocalDate.now()) {
+               errors.add(ValidationError("clearedDate", ClearedDateMustNotBeFutureDate(dto.clearedDate!!)))
+            }
+
+            if(dto.clearedDate!! < dto.date) {
+               errors.add(ValidationError("clearedDate", ClearedDateNotPriorTransactionDate(dto.clearedDate!!)))
+            }
+         }
+         if(dto.type!!.value == "V" && dto.clearedDate == null) {
+            errors.add(ValidationError("clearedDate", NotNull("clearedDate")))
+         }
       }
 
       return if (existingBankRecon != null) {
@@ -83,6 +100,7 @@ class BankReconciliationValidator @Inject constructor(
 
             type
                ?: errors.add(ValidationError("type.value", NotFound(dto.type!!.value)))
+
          }
 
          updateEntities.add(
