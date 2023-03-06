@@ -259,7 +259,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
    fun fetchReport(company: CompanyEntity, filterRequest: GeneralLedgerJournalReportFilterRequest) : List<GeneralLedgerPendingReportDetailsTemplate> {
       val glJournals = mutableListOf<GeneralLedgerJournalEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
-      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id")
+      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = FALSE")
       val orderBy = StringBuilder("ORDER BY ")
 
       if (filterRequest.profitCenter != null) {
@@ -387,25 +387,23 @@ class GeneralLedgerJournalRepository @Inject constructor(
    fun export(filterRequest: GeneralLedgerJournalExportRequest, company: CompanyEntity): List<GeneralLedgerJournalEntity>  {
       val reports = mutableListOf<GeneralLedgerJournalEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id")
+      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = FALSE")
 
       if (filterRequest.profitCenter != null) {
          params["profitCenter"] = filterRequest.profitCenter
          whereClause.append(" AND profitCenter.number = :profitCenter")
       }
 
-      if (filterRequest.beginSourceCode != null || filterRequest.endSourceCode != null) {
-         params["beginSource"] = filterRequest.beginSourceCode
-         params["endSource"] = filterRequest.endSourceCode
-         whereClause.append(" AND source.value ")
-            .append(buildFilterString(filterRequest.beginSourceCode != null, filterRequest.endSourceCode != null, "beginSource", "endSource"))
+      if (filterRequest.sourceCode != null) {
+         params["sourceCode"] = filterRequest.sourceCode
+         whereClause.append(" AND source.value = :sourceCode")
       }
 
-      if (filterRequest.fromDate != null || filterRequest.thruDate != null) {
-         params["fromDate"] = filterRequest.fromDate
-         params["thruDate"] = filterRequest.thruDate
+      if (filterRequest.startingDate != null || filterRequest.endingDate != null) {
+         params["startingDate"] = filterRequest.startingDate
+         params["endingDate"] = filterRequest.endingDate
          whereClause.append(" AND glJournal.date ")
-            .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
+            .append(buildFilterString(filterRequest.startingDate != null, filterRequest.endingDate != null, "startingDate", "endingDate"))
       }
 
       jdbc.query(

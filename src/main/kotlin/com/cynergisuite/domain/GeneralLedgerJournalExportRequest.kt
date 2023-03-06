@@ -19,16 +19,13 @@ class GeneralLedgerJournalExportRequest(
    var profitCenter: Int? = null,
 
    @field:Schema(name = "beginSourceCode", description = "Beginning General ledger source code")
-   var beginSourceCode: String? = null,
+   var sourceCode: String? = null,
 
-   @field:Schema(name = "endSourceCode", description = "Ending General ledger source code")
-   var endSourceCode: String? = null,
+   @field:Schema(name = "startingDate", description = "From date for general ledger journal")
+   var startingDate: LocalDate? = null,
 
-   @field:Schema(name = "entryDate", description = "From date for general ledger journal")
-   var fromDate: LocalDate? = null,
-
-   @field:Schema(name = "thruDate", description = "Thru date for general ledger journal")
-   var thruDate: LocalDate? = null,
+   @field:Schema(name = "endingDate", description = "Thru date for general ledger journal")
+   var endingDate: LocalDate? = null,
 
 //   cynergi clients only use csv format
 //   @field:Schema(name = "fileFormat", description = "General ledger source code export file format")
@@ -44,10 +41,9 @@ class GeneralLedgerJournalExportRequest(
          EqualsBuilder()
             .appendSuper(super.equals(other))
             .append(this.profitCenter, other.profitCenter)
-            .append(this.beginSourceCode, other.beginSourceCode)
-            .append(this.endSourceCode, other.endSourceCode)
-            .append(this.fromDate, other.fromDate)
-            .append(this.thruDate, other.thruDate)
+            .append(this.sourceCode, other.sourceCode)
+            .append(this.startingDate, other.startingDate)
+            .append(this.endingDate, other.endingDate)
 //            .append(this.fileFormat, other.fileFormat)
             .isEquals
       } else {
@@ -58,20 +54,18 @@ class GeneralLedgerJournalExportRequest(
       HashCodeBuilder()
          .appendSuper(super.hashCode())
          .append(this.profitCenter)
-         .append(this.beginSourceCode)
-         .append(this.endSourceCode)
-         .append(this.fromDate)
-         .append(this.thruDate)
+         .append(this.sourceCode)
+         .append(this.startingDate)
+         .append(this.endingDate)
 //         .append(this.fileFormat)
          .toHashCode()
 
    override fun myToStringValues(): List<Pair<String, Any?>> =
       listOf(
          "profitCenter" to profitCenter,
-         "beginSourceCode" to beginSourceCode,
-         "endSourceCode" to endSourceCode,
-         "fromDate" to fromDate,
-         "thruDate" to thruDate,
+         "sourceCode" to sourceCode,
+         "startingDate" to startingDate,
+         "endingDate" to endingDate,
 //         "fileFormat" to fileFormat,
       )
 }
