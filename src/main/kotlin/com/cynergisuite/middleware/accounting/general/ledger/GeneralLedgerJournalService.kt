@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.GeneralLedgerJournalExportRequest
 import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
+import com.cynergisuite.domain.GeneralLedgerJournalPostFilterRequest
 import com.cynergisuite.domain.GeneralLedgerJournalReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.middleware.accounting.account.AccountDTO
@@ -98,13 +99,13 @@ class GeneralLedgerJournalService @Inject constructor(
    }
 
    @Transactional
-   fun transfer(user: User, filterRequest: GeneralLedgerJournalFilterRequest, locale: Locale) {
+   fun transfer(user: User, filterRequest: GeneralLedgerJournalPostFilterRequest, locale: Locale) {
       val company = user.myCompany()
       val glJournals = generalLedgerJournalRepository.findAll(company, filterRequest)
       var glDetailDTO: GeneralLedgerDetailDTO
       val journalEntryNumber = generalLedgerDetailRepository.findNextJENumber(company)
 
-      glJournals.elements.forEach {
+      glJournals.forEach {
          // create GL detail for each distribution
             glDetailDTO = GeneralLedgerDetailDTO(
                null,
@@ -123,6 +124,7 @@ class GeneralLedgerJournalService @Inject constructor(
          val glAccountPostingDTO = GeneralLedgerAccountPostingDTO(glDetailDTO)
       generalLedgerDetailService.postEntry(glAccountPostingDTO, user.myCompany(), locale)
       }
+      bulkDelete(glJournals, company)
    }
 
    @Transactional
@@ -149,6 +151,11 @@ class GeneralLedgerJournalService @Inject constructor(
    @Transactional
    fun delete(id: UUID, company: CompanyEntity) {
       generalLedgerJournalRepository.delete(id, company)
+   }
+
+   @Transactional
+   fun bulkDelete(glJournals: List<GeneralLedgerJournalEntity>, company: CompanyEntity) {
+      generalLedgerJournalRepository.bulkDelete(glJournals, company)
    }
 
    private fun transformEntity(generalLedgerJournal: GeneralLedgerJournalEntity): GeneralLedgerJournalDTO {

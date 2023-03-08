@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "GeneralLedgerPendingDTO", title = "General Ledger Pending DTO", description = "General Ledger Pending DTO")
+@Schema(name = "GeneralLedgerPendingJournalCountDTO", title = "General Ledger Pending Journal Count DTO", description = "General Ledger Pending Journal Count DTO")
 data class GeneralLedgerPendingJournalCountDTO(
 
 
