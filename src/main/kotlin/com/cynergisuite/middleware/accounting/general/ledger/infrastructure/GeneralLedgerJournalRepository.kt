@@ -348,7 +348,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
    fun fetchPendingTotals(company: CompanyEntity, filterRequest: GeneralLedgerJournalFilterRequest): GeneralLedgerPendingJournalCountDTO {
       val glJournals = mutableListOf<GeneralLedgerJournalEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
-      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id")
+      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = FALSE")
       val orderBy = StringBuilder("ORDER BY glJournal.account_id")
 
       if (filterRequest.beginSourceCode != null || filterRequest.endSourceCode != null) {

@@ -18,7 +18,7 @@ class GeneralLedgerJournalExportRequest(
    @field:Schema(name = "profitCenter", description = "General ledger profit center")
    var profitCenter: Int? = null,
 
-   @field:Schema(name = "beginSourceCode", description = "Beginning General ledger source code")
+   @field:Schema(name = "sourceCode", description = "General ledger source code")
    var sourceCode: String? = null,
 
    @field:Schema(name = "startingDate", description = "From date for general ledger journal")
