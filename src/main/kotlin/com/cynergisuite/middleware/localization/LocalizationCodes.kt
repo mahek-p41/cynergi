@@ -47,6 +47,9 @@ class NotificationRecipientsRequiredAll(notificationType: String) : Cynergi("cyn
 class NotificationRecipientsRequired(notificationType: String?) : Cynergi("cynergi.validation.notification.recipients.required", arrayOf(notificationType))
 class ConversionError(valueOne: String, valueTwo: Any?) : Cynergi("cynergi.validation.conversion.error", arrayOf(valueOne, valueTwo))
 class ThruDateIsBeforeFrom(from: OffsetDateTime, thru: OffsetDateTime) : Cynergi("cynergi.validation.thru.before.from", arrayOf(from, thru))
+class CalendarThruDateIsBeforeFrom(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.calendar.thru.before.from", arrayOf(from, thru))
+class CalendarDatesSpanMoreThanTwoYears(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.dates.span.more.than.two.years", arrayOf(from, thru))
+class APDatesSelectedOutsideGLDatesSet(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.ap.outside.of.gl.window", arrayOf(from, thru))
 class InvalidCompany(company: CompanyEntity) : Cynergi("cynergi.validation.invalid.company", arrayOf(company.datasetCode))
 class ConfigAlreadyExist(value: Any?) : Cynergi("cynergi.validation.config.exists", arrayOf(value))
 class AddressNeedsUpdated : Cynergi("cynergi.validation.address.needs.updated", emptyArray())
@@ -60,7 +63,6 @@ class ProfitCenterMustMatchBankProfitCenter(profitCenter: StoreEntity) : Cynergi
 class DatesMustBeInSameFiscalYear(startDate: LocalDate, endDate: LocalDate) : Cynergi("cynergi.validation.dates.must.be.in.same.fiscal.year", arrayOf(startDate, endDate))
 class ClearedDateMustNotBeFutureDate(date: LocalDate) : Cynergi("cynergi.validation.cleared.date.must.not.be.future.date", arrayOf(date))
 class ClearedDateNotPriorTransactionDate(date: LocalDate) : Cynergi("cynergi.validation.cleared.date.not.prior.transaction.date", arrayOf(date))
-
 class AuditStatusNotFound(auditStatus: String) : Cynergi("cynergi.audit.status.not.found", arrayOf(auditStatus))
 class AuditUnableToChangeStatusFromTo(auditId: UUID, toStatus: String, fromStatus: String) : Cynergi("cynergi.audit.unable.to.change.status.from.to", arrayOf(auditId, toStatus, fromStatus))
 class AuditMustBeInProgressDetails(auditId: UUID) : Cynergi("cynergi.audit.must.be.in.progress.details", arrayOf(auditId))

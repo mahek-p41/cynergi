@@ -74,11 +74,16 @@ class FinancialCalendarService @Inject constructor(
       return transformEntity(financialCalendarRepository.update(toUpdate, company))
    }
 
-   fun openGLAccountsForPeriods(dateRangeDTO: FinancialCalendarDateRangeDTO, company: CompanyEntity) =
-      financialCalendarRepository.openGLAccountsForPeriods(dateRangeDTO, company)
+   fun openGLAccountsForPeriods(dateRangeDTO: FinancialCalendarDateRangeDTO, company: CompanyEntity) {
+      val toBeOpened = financialCalendarValidator.validateOpenGLDates(dateRangeDTO)
+      financialCalendarRepository.openGLAccountsForPeriods(toBeOpened, company)
+   }
 
-   fun openAPAccountsForPeriods(dateRangeDTO: FinancialCalendarDateRangeDTO, company: CompanyEntity) =
-      financialCalendarRepository.openAPAccountsForPeriods(dateRangeDTO, company)
+   fun openAPAccountsForPeriods(dateRangeDTO: FinancialCalendarDateRangeDTO, company: CompanyEntity) {
+      val openedGL = fetchDateRangeWhenGLIsOpen(company)
+      val toBeOpened = financialCalendarValidator.validateOpenAPDates(dateRangeDTO, openedGL)
+      financialCalendarRepository.openAPAccountsForPeriods(toBeOpened, company)
+   }
 
    fun fetchDateRangeWhenGLIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> =
       financialCalendarRepository.findDateRangeWhenGLIsOpen(company)
