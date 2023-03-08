@@ -58,6 +58,14 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
       def glJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs, false)
 
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+
+      when:
+      put("/accounting/financial-calendar/open-ap", dateRangeAP)
+
+      then:
+      notThrown(Exception)
+
       when: 'open GL in financial calendar'
       put("/accounting/financial-calendar/open-gl", dateRangeDTO)
 
@@ -116,6 +124,14 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       ).toList()
       glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
       def glJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), true, glJournalEntryDetailDTOs, false)
+
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+
+      when:
+      put("/accounting/financial-calendar/open-ap", dateRangeAP)
+
+      then:
+      notThrown(Exception)
 
       when: 'open GL in financial calendar'
       put("/accounting/financial-calendar/open-gl", dateRangeDTO)
@@ -182,6 +198,14 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
       def glJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), true, glJournalEntryDetailDTOs, true)
 
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+
+      when:
+      put("/accounting/financial-calendar/open-ap", dateRangeAP)
+
+      then:
+      notThrown(Exception)
+
       when: 'create journal entry'
       put("/accounting/financial-calendar/open-gl", dateRangeDTO)
       def result = post(path, glJournalEntryDTO)
@@ -237,6 +261,14 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       def glJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs, false)
       glJournalEntryDTO["$nonNullableProp"] = null
 
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+
+      when:
+      put("/accounting/financial-calendar/open-ap", dateRangeAP)
+
+      then:
+      notThrown(Exception)
+
       when: 'open GL in financial calendar'
       put("/accounting/financial-calendar/open-gl", dateRangeDTO)
 
@@ -286,6 +318,14 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       def glJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs, false)
       glJournalEntryDTO.source = new GeneralLedgerSourceCodeDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702'), 'Z', 'Invalid DTO')
 
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+
+      when:
+      put("/accounting/financial-calendar/open-ap", dateRangeAP)
+
+      then:
+      notThrown(Exception)
+
       when: 'open GL in financial calendar'
       put("/accounting/financial-calendar/open-gl", dateRangeDTO)
 
@@ -331,6 +371,14 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
          it.bankType = new BankReconciliationTypeDTO('Z', 'Invalid DTO')
       }
       bankFactoryService.single(company, profitCenter, account)
+
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+
+      when:
+      put("/accounting/financial-calendar/open-ap", dateRangeAP)
+
+      then:
+      notThrown(Exception)
 
       when: 'open GL in financial calendar'
       put("/accounting/financial-calendar/open-gl", dateRangeDTO)
@@ -381,6 +429,14 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       glJournalEntryDTO.journalEntryDetails.forEach {
          it.bankType = new BankReconciliationTypeDTO(bankReconciliationTypeDataLoaderService.random())
       }
+
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+
+      when:
+      put("/accounting/financial-calendar/open-ap", dateRangeAP)
+
+      then:
+      notThrown(Exception)
 
       when: 'open GL in financial calendar'
       put("/accounting/financial-calendar/open-gl", dateRangeDTO)
@@ -443,6 +499,14 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       ).toList()
       secondGLJournalEntryDetailDebitDTOs.addAll(secondGLJournalEntryDetailCreditDTOs)
       def secondGLJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, secondGLJournalEntryDetailDebitDTOs, false)
+
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+
+      when:
+      put("/accounting/financial-calendar/open-ap", dateRangeAP)
+
+      then:
+      notThrown(Exception)
 
       when: 'open GL in financial calendar'
       put("/accounting/financial-calendar/open-gl", dateRangeDTO)

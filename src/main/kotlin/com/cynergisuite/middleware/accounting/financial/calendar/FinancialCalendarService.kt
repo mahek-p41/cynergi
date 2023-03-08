@@ -75,7 +75,8 @@ class FinancialCalendarService @Inject constructor(
    }
 
    fun openGLAccountsForPeriods(dateRangeDTO: FinancialCalendarDateRangeDTO, company: CompanyEntity) {
-      val toBeOpened = financialCalendarValidator.validateOpenGLDates(dateRangeDTO)
+      val openedAP = fetchDateRangeWhenAPIsOpen(company)
+      val toBeOpened = financialCalendarValidator.validateOpenGLDates(dateRangeDTO, openedAP)
       financialCalendarRepository.openGLAccountsForPeriods(toBeOpened, company)
    }
 
@@ -87,6 +88,9 @@ class FinancialCalendarService @Inject constructor(
 
    fun fetchDateRangeWhenGLIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> =
       financialCalendarRepository.findDateRangeWhenGLIsOpen(company)
+
+   fun fetchDateRangeWhenAPIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> =
+      financialCalendarRepository.findDateRangeWhenAPIsOpen(company)
 
    fun fetchByDate(company: CompanyEntity, date: LocalDate): FinancialCalendarDTO? =
       financialCalendarRepository.fetchByDate(company, date)?.let { FinancialCalendarDTO(it) }

@@ -221,15 +221,20 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       given:
       final tstds1 = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
+      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(120))
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now().plusDays(7), LocalDate.now().plusDays(80))
 
       when:
-      put("$path/open-gl", dateRangeDTO)
+      put("$path/open-ap", dateRangeAP)
 
       then:
       notThrown(Exception)
 
+      when:
+      put("$path/open-gl", dateRangeGL)
 
+      then:
+      notThrown(Exception)
    }
 
    void "open ap account" () {
@@ -249,10 +254,17 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       given:
       final tstds1 = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(3))
+      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(9))
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(7))
+
+      when:
+      put("$path/open-ap", dateRangeAP)
+
+      then:
+      notThrown(Exception)
 
       when: 'open GL for a date range'
-      put("$path/open-gl", dateRangeDTO)
+      put("$path/open-gl", dateRangeGL)
 
       then:
       notThrown(Exception)
@@ -263,8 +275,8 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       then:
       notThrown(Exception)
       result != null
-      result.first == dateRangeDTO.periodFrom.toString()
-      result.second == dateRangeDTO.periodTo.plusMonths(1).minusDays(1).toString()
+      result.first == dateRangeGL.periodFrom.toString()
+      result.second == dateRangeGL.periodTo.plusMonths(1).minusDays(1).toString()
    }
 
    void "create fiscal calendar year" () {

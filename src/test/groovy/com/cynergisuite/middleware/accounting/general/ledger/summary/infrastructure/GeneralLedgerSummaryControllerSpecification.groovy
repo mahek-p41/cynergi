@@ -633,6 +633,14 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
             break
       }
 
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+
+      when:
+      put("/accounting/financial-calendar/open-ap", dateRangeAP)
+
+      then:
+      notThrown(Exception)
+
       when: 'open GL in financial calendar'
       put("/accounting/financial-calendar/open-gl", dateRangeDTO)
 

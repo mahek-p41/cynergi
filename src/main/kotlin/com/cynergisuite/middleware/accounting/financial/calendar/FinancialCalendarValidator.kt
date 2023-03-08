@@ -61,7 +61,7 @@ class FinancialCalendarValidator @Inject constructor(
       )
    }
 
-   fun validateOpenGLDates(dateRangeDTO: FinancialCalendarDateRangeDTO): FinancialCalendarDateRangeDTO {
+   fun validateOpenGLDates(dateRangeDTO: FinancialCalendarDateRangeDTO, openedAP: Pair<LocalDate, LocalDate>): FinancialCalendarDateRangeDTO {
 
       doValidation { errors ->
          val from = dateRangeDTO.periodFrom
@@ -74,6 +74,10 @@ class FinancialCalendarValidator @Inject constructor(
 
          if (daysBetween > 731) {
             errors.add(ValidationError("from", CalendarDatesSpanMoreThanTwoYears(from!!, thru!!)))
+         }
+
+         if (openedAP.first != null && openedAP.second != null && openedAP.first < from || openedAP.second > thru) {
+            errors.add(ValidationError("from", GLDatesSelectedOutsideAPDatesSet(from!!, thru!!, openedAP.first, openedAP.second)))
          }
       }
 
@@ -96,7 +100,7 @@ class FinancialCalendarValidator @Inject constructor(
          }
 
          if (openedGL.first > from || openedGL.second < thru) {
-            errors.add(ValidationError("from", APDatesSelectedOutsideGLDatesSet(from!!, thru!!)))
+            errors.add(ValidationError("from", APDatesSelectedOutsideGLDatesSet(from!!, thru!!, openedGL.first, openedGL.second)))
          }
       }
 

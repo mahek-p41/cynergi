@@ -342,6 +342,31 @@ class FinancialCalendarRepository @Inject constructor(
       return Pair(periods.first().periodFrom, periods.last().periodTo)
    }
 
+   @Transactional
+   fun findDateRangeWhenAPIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> {
+      logger.debug("Find periods where AP is open")
+
+      val periods = mutableListOf<FinancialCalendarEntity>()
+
+      jdbc.query(
+         """
+            ${selectBaseQuery()}
+            WHERE r.company_id = :comp_id AND account_payable_open = :account_payable_open
+            ORDER BY r_period_from
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "account_payable_open" to true
+         )
+      ) { rs, _ ->
+         do {
+            periods.add(mapRow(rs, "r_"))
+         } while (rs.next())
+      }
+
+      return Pair(periods.first().periodFrom, periods.last().periodTo)
+   }
+
    @ReadOnly
    fun dateFoundInFinancialCalendar(company: CompanyEntity, date: LocalDate): Boolean {
       val params = mutableMapOf("comp_id" to company.id, "date" to date)
