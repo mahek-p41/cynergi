@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.accounting.account.payable.distribution.infra
 import com.cynergisuite.middleware.accounting.account.payable.distribution.infrastructure.AccountPayableDistributionTemplateRepository
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.MustBeInRangeOf
 import com.cynergisuite.middleware.localization.NotFound
@@ -39,7 +40,9 @@ class AccountPayableDistributionDetailValidator @Inject constructor(
    fun validateUpdate(id: UUID, dto: AccountPayableDistributionDetailDTO, company: CompanyEntity): AccountPayableDistributionDetailEntity {
       logger.debug("Validating Update AccountPayableDistributionDetail {}", dto)
 
-      return doSharedValidation(dto, company)
+      val existingDistributionDetail = accountPayableDistributionDetailRepository.findOne(id, company) ?: throw NotFoundException(id)
+
+      return doSharedValidation(dto, company, existingDistributionDetail)
    }
 
    fun validateBulkUpdate(dto: List<AccountPayableDistributionDetailDTO>, company: CompanyEntity): List<AccountPayableDistributionDetailEntity> {
@@ -48,11 +51,20 @@ class AccountPayableDistributionDetailValidator @Inject constructor(
       return doBulkValidation(dto, company)
    }
 
-   private fun doSharedValidation(dto: AccountPayableDistributionDetailDTO, company: CompanyEntity): AccountPayableDistributionDetailEntity {
+   private fun doSharedValidation(
+      dto: AccountPayableDistributionDetailDTO,
+      company: CompanyEntity,
+      existingFinancialCalendar: AccountPayableDistributionDetailEntity? = null
+   ): AccountPayableDistributionDetailEntity {
       val profitCenter = dto.profitCenter?.id?.let { storeRepository.findOne(it, company) } // FIXME change to loading using the id provided via the URL on update
       val account = dto.account?.id?.let { accountRepository.findOne(it, company) }
-      val percent = dto.percent
-      val percentTotal = accountPayableDistributionDetailRepository.percentTotalForGroup(dto, company)
+      val percent = dto.percent!!
+      var percentTotal = accountPayableDistributionDetailRepository.percentTotalForGroup(dto, company)
+      if (existingFinancialCalendar == null) {
+         percentTotal += percent
+      } else {
+         percentTotal = percentTotal.minus(existingFinancialCalendar.percent).add(dto.percent)
+      }
       val distributionTemplate = accountPayableDistributionTemplateRepository.findOne(dto.distributionTemplate!!.id!!, company)
 
       doValidation { errors ->
