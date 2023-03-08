@@ -10,8 +10,8 @@ import java.math.BigDecimal
 data class ReconcileBankAccountReportTemplate(
    @Schema(description = "List of input bank reconciliations")
    private val reconciliations: List<BankReconciliationReportDetailDTO>,
-   @Schema(description = "GL Balance")
-   private val glBalance: BigDecimal
+   @field:Schema(description = "GL Balance")
+   val glBalance: BigDecimal
 ) {
    @field:Schema(description = "List of bank reconciliations grouped by type")
    val groupedReconciliations: List<ReconcileBankAccountReportDTO> = reconciliations.groupBy { it.type }
