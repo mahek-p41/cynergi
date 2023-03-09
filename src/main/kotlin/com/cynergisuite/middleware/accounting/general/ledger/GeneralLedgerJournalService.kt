@@ -99,7 +99,7 @@ class GeneralLedgerJournalService @Inject constructor(
    }
 
    @Transactional
-   fun transfer(user: User, filterRequest: GeneralLedgerJournalPostFilterRequest, locale: Locale) {
+   fun transfer(user: User, filterRequest: GeneralLedgerJournalPostFilterRequest, locale: Locale): GeneralLedgerPendingJournalCountDTO {
       val company = user.myCompany()
       val glJournals = generalLedgerJournalRepository.findAll(company, filterRequest)
       var glDetailDTO: GeneralLedgerDetailDTO
@@ -125,6 +125,9 @@ class GeneralLedgerJournalService @Inject constructor(
       generalLedgerDetailService.postEntry(glAccountPostingDTO, user.myCompany(), locale)
       }
       bulkDelete(glJournals, company)
+
+      val countRequest = filterRequest.toGeneralLedgerFilterRequest()
+      return fetchPendingTotals(user.myCompany(), countRequest)
    }
 
    @Transactional

@@ -218,7 +218,7 @@ class GeneralLedgerJournalController @Inject constructor(
       return generalLedgerJournalService.purge(filterRequest, user.myCompany())
    }
 
-   @Get(uri = "/transfer-count{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Get(uri = "/transfer{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Calculate Pending Journal Entry amounts", description = "Calculate Pending Journal Entry amounts", operationId = "GeneralLedgerJournalEndpoints-transferCount")
    @ApiResponses(
       value = [
@@ -245,7 +245,7 @@ class GeneralLedgerJournalController @Inject constructor(
    @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Use GL Journal to post journal entries", description = "Fetch a list of General Ledger Journal Entries to create General Ledger Detail records", operationId = "GeneralLedgerJournalEndpoints-transfer")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerDetailDTO::class))]),
+         ApiResponse(responseCode = "200", description = "If GeneralLedgerJournalEntries were successfully posted"),
          ApiResponse(responseCode = "204", description = "The requested General Ledger Journal Entry was unable to be found, or the result is empty"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
@@ -257,12 +257,13 @@ class GeneralLedgerJournalController @Inject constructor(
       filterRequest: GeneralLedgerJournalPostFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ) {
+   ): GeneralLedgerPendingJournalCountDTO {
       logger.info("Fetching all General Ledger Journal Entries that meet the criteria {} to create General Ledger Details", filterRequest)
 
       val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
-      generalLedgerJournalService.transfer(user, filterRequest, locale)
+      return generalLedgerJournalService.transfer(user, filterRequest, locale)
+
    }
 
    @Post(uri = "/transfer/single", produces = [APPLICATION_JSON])
