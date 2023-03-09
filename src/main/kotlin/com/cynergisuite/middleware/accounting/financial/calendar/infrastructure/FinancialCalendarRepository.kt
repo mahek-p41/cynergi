@@ -232,11 +232,13 @@ class FinancialCalendarRepository @Inject constructor(
             JOIN company ON finCal.company_id = company.id AND company.deleted = FALSE
             JOIN overall_period_type_domain overallPeriod ON overallPeriod.id = finCal.overall_period_id
          WHERE finCal.company_id = :company_id
-            AND overallPeriod.value = :financial_period
+            AND (overallPeriod.value = :financial_period1 OR
+                 overallPeriod.value = :financial_period2)
          """.trimIndent(),
          mapOf(
             "company_id" to company.id,
-            "financial_period" to "C",
+            "financial_period1" to "C",
+            "financial_period2" to "N",
             "general_ledger_open" to false
          )
       )
@@ -253,12 +255,14 @@ class FinancialCalendarRepository @Inject constructor(
          FROM overall_period_type_domain overallPeriod
          WHERE overallPeriod.id = finCal.overall_period_id
             AND finCal.company_id = :company_id
-            AND overallPeriod.value = :financial_period
+            AND (overallPeriod.value = :financial_period1 OR
+                 overallPeriod.value = :financial_period2)
             AND finCal.period_from BETWEEN :from_date AND :to_date
          """.trimIndent(),
          mapOf(
             "company_id" to company.id,
-            "financial_period" to "C",
+            "financial_period1" to "C",
+            "financial_period2" to "N",
             "general_ledger_open" to true,
             "from_date" to dateRangeDTO.periodFrom,
             "to_date" to dateRangeDTO.periodTo
@@ -281,11 +285,13 @@ class FinancialCalendarRepository @Inject constructor(
             JOIN company ON finCal.company_id = company.id AND company.deleted = FALSE
             JOIN overall_period_type_domain overallPeriod ON overallPeriod.id = finCal.overall_period_id
          WHERE finCal.company_id = :company_id
-            AND overallPeriod.value = :financial_period
+            AND (overallPeriod.value = :financial_period1 OR
+                 overallPeriod.value = :financial_period2)
          """.trimIndent(),
          mapOf(
             "company_id" to company.id,
-            "financial_period" to "C",
+            "financial_period1" to "C",
+            "financial_period2" to "N",
             "account_payable_open" to false
          )
       )
@@ -302,12 +308,14 @@ class FinancialCalendarRepository @Inject constructor(
          FROM overall_period_type_domain overallPeriod
          WHERE overallPeriod.id = finCal.overall_period_id
             AND finCal.company_id = :company_id
-            AND overallPeriod.value = :financial_period
+            AND (overallPeriod.value = :financial_period1 OR
+                 overallPeriod.value = :financial_period2)
             AND finCal.period_from BETWEEN :from_date AND :to_date
          """.trimIndent(),
          mapOf(
             "company_id" to company.id,
-            "financial_period" to "C",
+            "financial_period1" to "C",
+            "financial_period2" to "N",
             "account_payable_open" to true,
             "from_date" to dateRangeDTO.periodFrom,
             "to_date" to dateRangeDTO.periodTo
@@ -339,7 +347,7 @@ class FinancialCalendarRepository @Inject constructor(
          } while (rs.next())
       }
 
-      return Pair(periods.first().periodFrom, periods.last().periodTo)
+      return Pair(periods.first().periodFrom, periods.last().periodFrom) //Are we sure we shouldn't use periodFrom for both of these?
    }
 
    @Transactional
@@ -364,7 +372,7 @@ class FinancialCalendarRepository @Inject constructor(
          } while (rs.next())
       }
 
-      return Pair(periods.first().periodFrom, periods.last().periodTo)
+      return Pair(periods.first().periodFrom, periods.last().periodFrom)
    }
 
    @ReadOnly
@@ -510,3 +518,4 @@ class FinancialCalendarRepository @Inject constructor(
       return rs.getLocalDate("period_from")
    }
 }
+

@@ -585,7 +585,7 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
    void "filter for profit center trial balance report #criteria" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
       final periodFrom = LocalDate.now()
       final periodTo = LocalDate.now().plusDays(80)
       final dateRangeDTO = new FinancialCalendarDateRangeDTO(periodFrom, periodTo)

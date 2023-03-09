@@ -786,7 +786,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       filterRequest['entryDate'] = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
       filterRequest['employeeNumber'] = employee.number
 
-      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate, true, true).collect()
       final dateRangeDTO = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(80))
       final glDetailPage = new GeneralLedgerDetailPageRequest([account: acct.number, profitCenter: store.myNumber(), fiscalYear: entryDate.getYear(), from: glRecurringDTO.beginDate.minusDays(20), thru: glRecurringDTO.endDate.plusDays(20)])
 
@@ -911,7 +911,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       filterRequest['entryDate'] = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
       filterRequest['employeeNumber'] = employee.number
 
-      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate, true, true).collect()
       final dateRangeDTO = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(80))
       final glDetailPage = new GeneralLedgerDetailPageRequest([account: acct.number, profitCenter: store.myNumber(), fiscalYear: entryDate.getYear(), from: glRecurringDTO.beginDate.minusDays(20), thru: glRecurringDTO.endDate.plusDays(20)])
 
@@ -1027,7 +1027,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       filterRequest['entryDate'] = entryDate
       filterRequest['employeeNumber'] = employee.number
 
-      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate, true, true).collect()
       final dateRangeDTO = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(80))
 
       final dateRangeAP = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(30))
@@ -1112,7 +1112,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       filterRequest['entryDate'] = entryDate
       filterRequest['employeeNumber'] = employee.number
 
-      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate, true, true).collect()
       final dateRangeDTO = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(80))
 
       final dateRangeAP = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(30))

@@ -217,10 +217,10 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       response.code == 'system.not.found'
    }
 
-   void "open gl account" () {
+   void "modify the open ap and gl ranges" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('coravt')
-      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
       final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(120))
       final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now().plusDays(7), LocalDate.now().plusDays(80))
 
@@ -237,10 +237,10 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       notThrown(Exception)
    }
 
-   void "open ap account" () {
+   void "modify the open ap range" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('coravt')
-      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
       final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
 
       when:
@@ -253,7 +253,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
    void "fetch gl open date range" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('coravt')
-      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now()).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
       final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(9))
       final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(7))
 
@@ -276,7 +276,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       notThrown(Exception)
       result != null
       result.first == dateRangeGL.periodFrom.toString()
-      result.second == dateRangeGL.periodTo.plusMonths(1).minusDays(1).toString()
+      result.second == dateRangeGL.periodTo.toString()
    }
 
    void "create fiscal calendar year" () {

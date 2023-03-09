@@ -65,7 +65,7 @@ class FinancialCalendarDataLoader {
       }
    }
 
-   static Stream<FinancialCalendarEntity> streamFiscalYear(OverallPeriodType overallPeriodType, LocalDate startingDate = null) {
+   static Stream<FinancialCalendarEntity> streamFiscalYear(OverallPeriodType overallPeriodType, LocalDate startingDate = null, Boolean glOpen = null, Boolean apOpen = null) {
       final number = 12
       final periodCounter = new AtomicInteger(1)
       final faker = new Faker()
@@ -81,10 +81,8 @@ class FinancialCalendarDataLoader {
             beginDate.plusMonths(it.toLong()),
             beginDate.plusMonths(it.toLong() + 1).minusDays(1),
             beginDate.year,
-            true,
-            true
-            //random.nextBoolean(),
-            //random.nextBoolean()
+            glOpen,
+            apOpen
          )
       }
    }
@@ -135,8 +133,9 @@ class FinancialCalendarDataLoaderService {
       return FinancialCalendarDataLoader.streamDTO(1).findFirst().orElseThrow { new Exception("Unable to create Financial Calendar") }
    }
 
-   Stream<FinancialCalendarEntity> streamFiscalYear(CompanyEntity company, OverallPeriodType overallPeriodType, LocalDate startingDate = null) {
-      return FinancialCalendarDataLoader.streamFiscalYear(overallPeriodType, startingDate)
+   Stream<FinancialCalendarEntity> streamFiscalYear(CompanyEntity company, OverallPeriodType overallPeriodType, LocalDate startingDate = null, Boolean glOpen = null, Boolean apOpen = null) {
+      return FinancialCalendarDataLoader.streamFiscalYear(overallPeriodType, startingDate, glOpen, apOpen)
          .map { financialCalendarRepository.insert(it, company) }
    }
 }
+
