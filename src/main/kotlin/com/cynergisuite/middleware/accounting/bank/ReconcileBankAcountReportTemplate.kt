@@ -15,7 +15,7 @@ data class ReconcileBankAccountReportTemplate(
 ) {
    @field:Schema(description = "List of bank reconciliations grouped by type")
    val groupedReconciliations: List<ReconcileBankAccountReportDTO> = reconciliations.groupBy { it.type }
-      .map { (_, list) -> ReconcileBankAccountReportDTO(list) }
+      .map { (type, list) -> ReconcileBankAccountReportDTO(type, list) }
 
    @field:Schema(description = "Sum of all outstanding items amount")
    val totalOutstandingItems: BigDecimal = reconciliations.sumOf { it.amount ?: BigDecimal.ZERO }

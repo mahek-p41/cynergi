@@ -11,6 +11,8 @@ import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.json.view.Summary
+import com.fasterxml.jackson.annotation.JsonView
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
@@ -197,6 +199,37 @@ class BankReconciliationController @Inject constructor(
       authentication: Authentication
    ): ReconcileBankAccountReportTemplate {
       logger.info("Requested to reconcile a bank account {}", filterRequest)
+      val user = userService.fetchUser(authentication)
+      return bankReconciliationService.reconcileBankAccount(filterRequest, user.myCompany())
+   }
+
+   @JsonView(value = [Summary::class])
+   @Throws(PageOutOfBoundsException::class)
+   @Operation(
+      tags = ["BankReconciliationEndpoints"],
+      summary = "Reconcile bank account",
+      description = "Reconcile bank account",
+      operationId = "bankReconciliation-reconcile"
+   )
+   @ApiResponses(
+      value = [
+         ApiResponse(
+            responseCode = "200",
+            content = [Content(
+               mediaType = APPLICATION_JSON,
+               schema = Schema(implementation = ReconcileBankAccountReportTemplate::class)
+            )]
+         )
+      ]
+   )
+   @Get(uri = "/reconcile/summary{?pageRequest*}", produces = [APPLICATION_JSON])
+   fun reconcileBankAccountSummary(
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("pageRequest")
+      filterRequest: ReconcileBankAccountFilterRequest,
+      authentication: Authentication
+   ): ReconcileBankAccountReportTemplate {
+      logger.info("Requested to reconcile a bank account summary {}", filterRequest)
       val user = userService.fetchUser(authentication)
       return bankReconciliationService.reconcileBankAccount(filterRequest, user.myCompany())
    }
