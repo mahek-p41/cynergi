@@ -37,10 +37,12 @@ class AccountPayableInvoiceDataLoader {
       int numberIn = 1,
       VendorEntity vendorIn,
       PurchaseOrderEntity purchaseOrderIn = null,
+      LocalDate invoiceDateIn = null,
       BigDecimal invoiceAmountIn = null,
       EmployeeEntity employeeIn,
       BigDecimal paidAmountIn = null,
       AccountPayableInvoiceStatusType statusTypeIn = null,
+      LocalDate dueDateIn = null,
       VendorEntity payToIn,
       Store locationIn = null
    ) {
@@ -50,8 +52,8 @@ class AccountPayableInvoiceDataLoader {
       final lorem = faker.lorem()
       final numbers = faker.number()
       final date = faker.date()
-      final invoiceDate = date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
-      final invoiceAmount = invoiceAmountIn ? invoiceAmountIn : numbers.randomDouble(2, 1, 1000000).toBigDecimal()
+      final invoiceDate = invoiceDateIn ?: date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
+      final invoiceAmount = invoiceAmountIn ?: numbers.randomDouble(2, 1, 1000000).toBigDecimal()
       def paidAmount
       if (paidAmountIn >= BigDecimal.ZERO) {
          paidAmount = paidAmountIn
@@ -84,7 +86,7 @@ class AccountPayableInvoiceDataLoader {
             numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
             AccountPayableInvoiceTypeDataLoader.predefined().find { it.value == 'P' },
             statusType,
-            LocalDate.now(),
+            dueDateIn ?: LocalDate.now(),
             payToIn,
             random.nextBoolean(),
             random.nextBoolean(),
@@ -167,7 +169,25 @@ class AccountPayableInvoiceDataLoaderService {
       VendorEntity payToIn,
       Store locationIn = null
    ) {
-      return AccountPayableInvoiceDataLoader.stream(numberIn, vendorIn, purchaseOrderIn, invoiceAmountIn, employeeIn, paidAmountIn, statusTypeIn, payToIn, locationIn)
+      return AccountPayableInvoiceDataLoader.stream(numberIn, vendorIn, purchaseOrderIn, null, invoiceAmountIn, employeeIn, paidAmountIn, statusTypeIn, null, payToIn, locationIn)
+         .map { accountPayableInvoiceRepository.insert(it, company) }
+   }
+
+   Stream<AccountPayableInvoiceEntity> stream(
+      int numberIn = 1,
+      CompanyEntity company,
+      VendorEntity vendorIn,
+      VendorEntity payToIn,
+      PurchaseOrderEntity purchaseOrderIn = null,
+      LocalDate invoiceDateIn = null,
+      BigDecimal invoiceAmountIn = null,
+      EmployeeEntity employeeIn,
+      BigDecimal paidAmountIn = null,
+      AccountPayableInvoiceStatusType statusTypeIn = null,
+      LocalDate dueDateIn = null,
+      Store locationIn = null
+   ) {
+      return AccountPayableInvoiceDataLoader.stream(numberIn, vendorIn, purchaseOrderIn, invoiceDateIn, invoiceAmountIn, employeeIn, paidAmountIn, statusTypeIn, dueDateIn, payToIn, locationIn)
          .map { accountPayableInvoiceRepository.insert(it, company) }
    }
 

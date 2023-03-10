@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
+import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
@@ -8,6 +9,7 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.domain.infrastructure.SimpleTransactionalSql
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceSelectedTypeDTO
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusType
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDetailDataLoaderService
@@ -29,6 +31,8 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 import spock.lang.Unroll
+
+import java.time.LocalDate
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -496,6 +500,101 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
             }
          }
       }
+   }
+
+   void "fetch AP invoice inquiry" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final store = storeFactoryService.store(1, company)
+      final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
+      final shipViaList = shipViaFactoryService.stream(4, company).toList()
+      final employeeList = employeeFactoryService.stream(4, company).toList()
+
+      final vendorPmtTerm = vendorPaymentTermList[0]
+      final vendorShipVia = shipViaList[0]
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+
+      final poVendorPmtTerm = vendorPaymentTermList[1]
+      final poVendorShipVia = shipViaList[1]
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poApprovedBy = employeeList[0]
+      final poPurchaseAgent = employeeList[1]
+      final poShipVia = shipViaList[2]
+      final poPmtTerm = vendorPaymentTermList[2]
+      final poVendorSubEmp = employeeList[2]
+      final purchaseOrderIn1 = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      final purchaseOrderIn2 = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      final purchaseOrderIn3 = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      final purchaseOrderIn4 = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      final purchaseOrderIn5 = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+
+      final employeeIn = employeeList[3]
+
+      final statusO = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
+      final statusP = new AccountPayableInvoiceStatusType(3, "P", "Paid", "paid")
+
+      final payToPmtTerm = vendorPaymentTermList[3]
+      final payToShipVia = shipViaList[3]
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+
+      def apInvoiceEntities = dataLoaderService.stream(4, company, vendorIn, payToIn, purchaseOrderIn1, LocalDate.of(2020, 1, 1), 1000 as BigDecimal, employeeIn, null, statusO, LocalDate.of(2020, 1, 2), store)
+         .sorted { o1, o2 -> o1.id <=> o2.id }.toList()
+      apInvoiceEntities.addAll(dataLoaderService.stream(4, company, vendorIn, payToIn, purchaseOrderIn2, LocalDate.of(2020, 2, 1), 2000 as BigDecimal, employeeIn, null, statusP, LocalDate.of(2020, 2, 2), store)
+         .sorted { o1, o2 -> o1.id <=> o2.id }.toList())
+      apInvoiceEntities.addAll(dataLoaderService.stream(4, company, vendorIn, payToIn, purchaseOrderIn3, LocalDate.of(2020, 3, 1), 3000 as BigDecimal, employeeIn, null, statusO, LocalDate.of(2020, 3, 2), store)
+         .sorted { o1, o2 -> o1.id <=> o2.id }.toList())
+      apInvoiceEntities.addAll(dataLoaderService.stream(4, company, vendorIn, payToIn, purchaseOrderIn4, LocalDate.of(2020, 4, 1), 4000 as BigDecimal, employeeIn, null, statusP, LocalDate.of(2020, 4, 2), store)
+         .sorted { o1, o2 -> o1.id <=> o2.id }.toList())
+      apInvoiceEntities.addAll(dataLoaderService.stream(4, company, vendorIn, payToIn, purchaseOrderIn5, LocalDate.of(2020, 5, 1), 5000 as BigDecimal, employeeIn, null, statusO, LocalDate.of(2020, 5, 2), store)
+         .sorted { o1, o2 -> o1.id <=> o2.id }.toList())
+
+      def filterRequest = new AccountPayableInvoiceInquiryFilterRequest()
+      filterRequest['vendor'] = vendorIn.number
+      filterRequest['payTo'] = payToIn.number
+      switch (criteria) {
+         case 'Search by status':
+            filterRequest['invStatus'] = 'P'
+            filterRequest['poNbr'] = purchaseOrderIn1.number
+            filterRequest['sortBy'] = 'poHeader.number'
+            break
+         case 'Search by purchase order number':
+            filterRequest['poNbr'] = purchaseOrderIn5.number
+            filterRequest['sortBy'] = 'poHeader.number'
+            break
+         case 'Search by invoice number':
+            filterRequest['invNbr'] = apInvoiceEntities[2].invoice
+            filterRequest['sortBy'] = 'apInvoice.invoice'
+            break
+         case 'Search by invoice date':
+            filterRequest['invDate'] = LocalDate.of(2020, 3, 1)
+            filterRequest['sortBy'] = 'apInvoice.invoice_date'
+            break
+         case 'Search by due date':
+            filterRequest['dueDate'] = LocalDate.of(2020, 2, 1)
+            filterRequest['sortBy'] = 'apInvoice.due_date'
+            break
+         case 'Search by invoice amount':
+            filterRequest['invAmount'] = 2000
+            filterRequest['sortBy'] = 'apInvoice.invoice_amount'
+            break
+      }
+
+      when:
+      def result = get("$path/inquiry${filterRequest}")
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.totalElements == elements
+
+      where:
+      criteria                            || elements
+      'Search by status'                  || 8
+      'Search by purchase order number'   || 4
+      'Search by invoice number'          || 10
+      'Search by invoice date'            || 12
+      'Search by due date'                || 16
+      'Search by invoice amount'          || 16
    }
 
    void "create one" () {
