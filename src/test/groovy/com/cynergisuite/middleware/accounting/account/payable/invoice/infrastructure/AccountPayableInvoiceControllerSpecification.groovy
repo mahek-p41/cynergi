@@ -537,15 +537,15 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final payToShipVia = shipViaList[3]
       final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
 
-      def apInvoiceEntities = dataLoaderService.streamWithDates(4, company, vendorIn, purchaseOrderIn1, LocalDate.of(2020, 1, 1), 1000 as BigDecimal, employeeIn, null, statusO, LocalDate.of(2020, 1, 2), payToIn, store)
+      def apInvoiceEntities = dataLoaderService.stream(4, company, vendorIn, payToIn, purchaseOrderIn1, LocalDate.of(2020, 1, 1), 1000 as BigDecimal, employeeIn, null, statusO, LocalDate.of(2020, 1, 2), store)
          .sorted { o1, o2 -> o1.id <=> o2.id }.toList()
-      apInvoiceEntities.addAll(dataLoaderService.streamWithDates(4, company, vendorIn, purchaseOrderIn2, LocalDate.of(2020, 2, 1), 2000 as BigDecimal, employeeIn, null, statusP, LocalDate.of(2020, 2, 2), payToIn, store)
+      apInvoiceEntities.addAll(dataLoaderService.stream(4, company, vendorIn, payToIn, purchaseOrderIn2, LocalDate.of(2020, 2, 1), 2000 as BigDecimal, employeeIn, null, statusP, LocalDate.of(2020, 2, 2), store)
          .sorted { o1, o2 -> o1.id <=> o2.id }.toList())
-      apInvoiceEntities.addAll(dataLoaderService.streamWithDates(4, company, vendorIn, purchaseOrderIn3, LocalDate.of(2020, 3, 1), 3000 as BigDecimal, employeeIn, null, statusO, LocalDate.of(2020, 3, 2), payToIn, store)
+      apInvoiceEntities.addAll(dataLoaderService.stream(4, company, vendorIn, payToIn, purchaseOrderIn3, LocalDate.of(2020, 3, 1), 3000 as BigDecimal, employeeIn, null, statusO, LocalDate.of(2020, 3, 2), store)
          .sorted { o1, o2 -> o1.id <=> o2.id }.toList())
-      apInvoiceEntities.addAll(dataLoaderService.streamWithDates(4, company, vendorIn, purchaseOrderIn4, LocalDate.of(2020, 4, 1), 4000 as BigDecimal, employeeIn, null, statusP, LocalDate.of(2020, 4, 2), payToIn, store)
+      apInvoiceEntities.addAll(dataLoaderService.stream(4, company, vendorIn, payToIn, purchaseOrderIn4, LocalDate.of(2020, 4, 1), 4000 as BigDecimal, employeeIn, null, statusP, LocalDate.of(2020, 4, 2), store)
          .sorted { o1, o2 -> o1.id <=> o2.id }.toList())
-      apInvoiceEntities.addAll(dataLoaderService.streamWithDates(4, company, vendorIn, purchaseOrderIn5, LocalDate.of(2020, 5, 1), 5000 as BigDecimal, employeeIn, null, statusO, LocalDate.of(2020, 5, 2), payToIn, store)
+      apInvoiceEntities.addAll(dataLoaderService.stream(4, company, vendorIn, payToIn, purchaseOrderIn5, LocalDate.of(2020, 5, 1), 5000 as BigDecimal, employeeIn, null, statusO, LocalDate.of(2020, 5, 2), store)
          .sorted { o1, o2 -> o1.id <=> o2.id }.toList())
 
       def filterRequest = new AccountPayableInvoiceInquiryFilterRequest()
