@@ -118,6 +118,7 @@ class SignHereAgreementProxyControllerSpecification extends ControllerSpecificat
                   "test contact"
                ),
                null,
+               null,
             ),
          ], new StandardPageRequest(), 1, 1, true, true)
       )

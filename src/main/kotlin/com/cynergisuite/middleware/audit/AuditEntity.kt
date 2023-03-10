@@ -15,6 +15,7 @@ data class AuditEntity(
    val number: Int,
    val totalDetails: Int,
    val totalExceptions: Int,
+   val totalUnscanned: Int? = null,
    val hasExceptionNotes: Boolean,
    val lastUpdated: OffsetDateTime? = null,
    val inventoryCount: Int,
@@ -29,6 +30,7 @@ data class AuditEntity(
          actions = audit.actions,
          totalDetails = audit.totalDetails,
          totalExceptions = audit.totalExceptions,
+         totalUnscanned = audit.totalUnscanned,
          hasExceptionNotes = audit.hasExceptionNotes,
          inventoryCount = audit.inventoryCount,
          lastUpdated = audit.lastUpdated

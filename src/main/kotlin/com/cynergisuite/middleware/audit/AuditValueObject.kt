@@ -47,6 +47,10 @@ data class AuditValueObject(
    val lastUpdated: OffsetDateTime? = null,
 
    @field:Positive
+   @field:Schema(name = "totalUnscanned", description = "Total number of unscanned items of an audit", minimum = "0", readOnly = true, required = false)
+   var totalUnscanned: Int? = null,
+
+   @field:Positive
    @field:Schema(name = "inventoryCount", description = "Total idle inventory count associated with an audit's store", minimum = "0", readOnly = true, required = false)
    var inventoryCount: Int = 0,
 
@@ -65,6 +69,7 @@ data class AuditValueObject(
          totalExceptions = entity.totalExceptions,
          hasExceptionNotes = entity.hasExceptionNotes,
          lastUpdated = entity.lastUpdated,
+         totalUnscanned = entity.totalUnscanned,
          inventoryCount = entity.inventoryCount,
          actions = entity.actions.asSequence().map { action ->
             AuditActionValueObject(action, AuditStatusValueObject(action.status, action.status.localizeMyDescription(locale, localizationService)))
