@@ -81,8 +81,8 @@ class FinancialCalendarDataLoader {
             beginDate.plusMonths(it.toLong()),
             beginDate.plusMonths(it.toLong() + 1).minusDays(1),
             beginDate.year,
-            glOpen,
-            apOpen
+            glOpen ?: random.nextBoolean(),
+            apOpen ?: random.nextBoolean()
          )
       }
    }

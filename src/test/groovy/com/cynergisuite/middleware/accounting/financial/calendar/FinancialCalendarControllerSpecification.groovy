@@ -276,7 +276,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       notThrown(Exception)
       result != null
       result.first == dateRangeGL.periodFrom.toString()
-      result.second == dateRangeGL.periodTo.toString()
+      result.second == dateRangeGL.periodTo.plusMonths(1).minusDays(1).toString()
    }
 
    void "create fiscal calendar year" () {

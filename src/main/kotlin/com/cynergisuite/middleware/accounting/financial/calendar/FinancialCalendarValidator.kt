@@ -65,7 +65,7 @@ class FinancialCalendarValidator @Inject constructor(
 
       doValidation { errors ->
          val from = dateRangeDTO.periodFrom
-         val thru = dateRangeDTO.periodTo
+         val thru = dateRangeDTO.periodTo!!.plusMonths(1).minusDays(1)
          val daysBetween = ChronoUnit.DAYS.between(from, thru)
 
          if (thru != null && from != null && thru.isBefore(from)) {
@@ -76,7 +76,8 @@ class FinancialCalendarValidator @Inject constructor(
             errors.add(ValidationError("from", CalendarDatesSpanMoreThanTwoYears(from!!, thru!!)))
          }
 
-         if (openedAP.first != null && openedAP.second != null && openedAP.first < from || openedAP.second > thru) {
+         //beginDate.plusMonths(it.toLong()).minusDays(1)
+         if (thru != null && from != null && openedAP.first < from || openedAP.second > thru!!) {
             errors.add(ValidationError("from", GLDatesSelectedOutsideAPDatesSet(from!!, thru!!, openedAP.first, openedAP.second)))
          }
       }
@@ -88,7 +89,7 @@ class FinancialCalendarValidator @Inject constructor(
 
       doValidation { errors ->
          val from = dateRangeDTO.periodFrom
-         val thru = dateRangeDTO.periodTo
+         val thru = dateRangeDTO.periodTo!!.plusMonths(1).minusDays(1)
          val daysBetween = ChronoUnit.DAYS.between(from, thru)
 
          if (thru != null && from != null && thru.isBefore(from)) {
@@ -99,7 +100,7 @@ class FinancialCalendarValidator @Inject constructor(
             errors.add(ValidationError("from", CalendarDatesSpanMoreThanTwoYears(from!!, thru!!)))
          }
 
-         if (openedGL.first > from || openedGL.second < thru) {
+         if (thru != null && from != null && openedGL.first > from || openedGL.second.plusMonths(1).minusDays(1) < thru) {
             errors.add(ValidationError("from", APDatesSelectedOutsideGLDatesSet(from!!, thru!!, openedGL.first, openedGL.second)))
          }
       }

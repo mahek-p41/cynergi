@@ -347,7 +347,7 @@ class FinancialCalendarRepository @Inject constructor(
          } while (rs.next())
       }
 
-      return Pair(periods.first().periodFrom, periods.last().periodFrom) //Are we sure we shouldn't use periodFrom for both of these?
+      return Pair(periods.first().periodFrom, periods.last().periodTo)
    }
 
    @Transactional
@@ -372,7 +372,7 @@ class FinancialCalendarRepository @Inject constructor(
          } while (rs.next())
       }
 
-      return Pair(periods.first().periodFrom, periods.last().periodFrom)
+      return Pair(periods.first().periodFrom, periods.last().periodTo)
    }
 
    @ReadOnly
