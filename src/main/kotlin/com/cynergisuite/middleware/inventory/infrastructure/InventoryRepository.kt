@@ -1,19 +1,23 @@
 package com.cynergisuite.middleware.inventory.infrastructure
 
+import com.cynergisuite.domain.InventoryInquiryFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getBigDecimalOrNull
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.audit.status.InProgress
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.inventory.InventoryEntity
+import com.cynergisuite.middleware.inventory.InventoryInquiryDTO
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
 import com.cynergisuite.middleware.location.infrastructure.LocationRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -354,6 +358,98 @@ class InventoryRepository(
       )
    }
 
+   @ReadOnly
+   fun fetchInquiry(company: CompanyEntity, filterRequest: InventoryInquiryFilterRequest): RepositoryPage<InventoryInquiryDTO, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val whereClause = StringBuilder("WHERE comp.id = :comp_id ")
+      val sortBy = StringBuilder("ORDER BY ")
+
+      if (filterRequest.recvLoc != null) {
+         params["recvLoc"] = filterRequest.recvLoc
+         whereClause.append(" AND inv.primary_location >= :recvLoc ")
+      }
+
+      if (filterRequest.serialNbr != null) {
+         params["serialNbr"] = filterRequest.serialNbr
+         whereClause.append(" AND inv.serial_number >= :serialNbr ")
+      }
+
+      if (filterRequest.modelNbr != null) {
+         params["modelNbr"] = filterRequest.modelNbr
+         whereClause.append(" AND inv.model_number >= :modelNbr ")
+      }
+
+      if (filterRequest.poNbr != null) {
+         params["poNbr"] = filterRequest.poNbr
+         whereClause.append(" AND inv.inv_purchase_order_number >= :poNbr ")
+      }
+
+      if (filterRequest.invoiceNbr != null) {
+         params["invoiceNbr"] = filterRequest.invoiceNbr
+         whereClause.append(" AND inv.invoice_number >= :invoiceNbr ")
+      }
+
+      if (filterRequest.receivedDate != null) {
+         params["receivedDate"] = filterRequest.receivedDate
+         whereClause.append(" AND inv.received_date >= :receivedDate ")
+      }
+
+      if (filterRequest.beginAltId != null && filterRequest.endAltId != null) {
+         params["beginAltId"] = filterRequest.beginAltId
+         params["endAltId"] = filterRequest.endAltId
+         whereClause.append(" AND inv.alt_id BETWEEN :beginAltId AND :endAltId ")
+      }
+
+      when (filterRequest.sortBy) {
+          "inv.serial_number" -> {
+             sortBy.append("naturalsort(inv.serial_number)")
+          }
+          "inv.model_number" -> {
+             sortBy.append("naturalsort(inv.model_number)")
+          }
+          "inv.inv.purchase_order_number" -> {
+             sortBy.append("naturalsort(inv.purchase_order_number)")
+          }
+          "inv.invoice_number" -> {
+             sortBy.append("naturalsort(inv.invoice_number)")
+          }
+          "inv.alt_id" -> {
+             sortBy.append("naturalsort(inv.alt_id)")
+          }
+          else -> {
+             sortBy.append(filterRequest.sortBy)
+          }
+      }
+      sortBy.append(", naturalsort(inv.inv_purchase_order_number), naturalsort(inv.model_number), naturalsort(inv.serial_number)")
+
+      return jdbc.queryPaged(
+         """
+            SELECT
+               inv.model_number                 AS model_number,
+               inv.serial_number                AS serial_number,
+               inv.actual_cost                  AS landed_cost,
+               inv.status                       AS status,
+               inv.received_date                AS received_date,
+               inv.inv_purchase_order_number    AS purchase_order_number,
+               inv.invoice_number               AS invoice_number,
+               inv.description                  AS description,
+               inv.location                     AS current_location,
+               inv.inv_invoice_expensed_date    AS invoice_expensed_date,
+               inv.alt_id                       AS alt_id
+            FROM fastinfo_prod_import.inventory_vw inv
+               JOIN company comp ON inv.dataset = comp.dataset_code AND comp.deleted = FALSE
+            $whereClause
+            $sortBy
+         """.trimIndent(),
+         params,
+         filterRequest
+      ) { rs, elements ->
+         do {
+            elements.add(mapInquiry(rs))
+         } while (rs.next())
+      }
+   }
+
    fun mapRow(rs: ResultSet): InventoryEntity {
       val company = companyRepository.mapRow(rs, columnPrefix = "comp_", addressPrefix = "comp_address_")
 
@@ -389,6 +485,22 @@ class InventoryRepository(
             description = rs.getString("location_type_description"),
             localizationCode = rs.getString("location_type_localization_code")
          )
+      )
+   }
+
+   fun mapInquiry(rs: ResultSet): InventoryInquiryDTO {
+      return InventoryInquiryDTO(
+         modelNumber = rs.getString("model_number"),
+         serialNumber = rs.getString("serial_number"),
+         landedCost = rs.getBigDecimalOrNull("landed_cost"),
+         status = rs.getString("status"),
+         receivedDate = rs.getLocalDateOrNull("received_date"),
+         poNbr = rs.getString("purchase_order_number"),
+         invoiceNbr = rs.getString("invoice_number"),
+         description = rs.getString("description"),
+         currentLoc = rs.getInt("current_location"),
+         invoiceExpensedDate = rs.getLocalDateOrNull("invoice_expensed_date"),
+         altId = rs.getString("alt_id")
       )
    }
 }

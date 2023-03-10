@@ -16,7 +16,9 @@ class InventoryInquiryFilterRequest(
 
    page: Int? = null,
    size: Int? = null,
-   sortBy: String? = null,
+   @field:Pattern(regexp = "inv.primary_location|inv.serial_number|inv.model_number|inv.inv_purchase_order_number|inv.invoice_number|inv.received_date|inv.alt_id")
+   @field:Schema(description = "The column to sort the AP inventory inquiry by (inv.primary_location|inv.serial_number|inv.model_number|inv.inv_purchase_order_number|inv.invoice_number|inv.received_date|inv.alt_id).", defaultValue = "inv.inv_purchase_order_number")
+   override var sortBy: String? = null,
    sortDirection: String? = null,
 
    @field:Schema(name = "recvLoc", description = "Receiving location")
