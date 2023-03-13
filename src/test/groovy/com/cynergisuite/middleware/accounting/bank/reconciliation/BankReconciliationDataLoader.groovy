@@ -5,7 +5,6 @@ import com.cynergisuite.middleware.accounting.bank.BankEntity
 import com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure.BankReconciliationRepository
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDataLoader
-import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDataLoaderService
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic

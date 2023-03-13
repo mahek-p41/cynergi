@@ -1,23 +1,14 @@
 package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure
 
-import com.cynergisuite.domain.BankReconClearingFilterRequest
-import com.cynergisuite.domain.BankReconFilterRequest
 import com.cynergisuite.domain.ReconcileBankAccountFilterRequest
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
-import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.middleware.accounting.bank.BankDTO
-import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
-import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportEntity
 import com.cynergisuite.middleware.accounting.bank.ReconcileBankAccountReportTemplate
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
-import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconSummaryEntity
-import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationEntity
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationReportDetailDTO
-import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationReportDetailEntity
-import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationTypeEnum
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastructure.BankReconciliationTypeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository

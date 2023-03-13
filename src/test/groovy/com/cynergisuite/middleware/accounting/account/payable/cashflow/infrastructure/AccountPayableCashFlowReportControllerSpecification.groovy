@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.accounting.account.payable.cashflow.infrastructure
 
-
 import com.cynergisuite.domain.CashFlowFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleIdentifiableEntity
@@ -21,7 +20,6 @@ import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.vendor.VendorDTO
-import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
