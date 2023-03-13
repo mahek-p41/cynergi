@@ -241,7 +241,7 @@ class GeneralLedgerJournalController @Inject constructor(
       return generalLedgerJournalService.fetchPendingTotals(user.myCompany(), filterRequest)
    }
 
-   @Post(uri = "/transfer{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Post(uri = "/transfer", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Use GL Journal to post journal entries", description = "Fetch a list of General Ledger Journal Entries to create General Ledger Detail records", operationId = "GeneralLedgerJournalEndpoints-transfer")
    @ApiResponses(
       value = [
@@ -252,17 +252,16 @@ class GeneralLedgerJournalController @Inject constructor(
       ]
    )
    fun transferMultipleEntries(
-      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
-      @QueryValue("filterRequest")
+      @Body @Valid
       filterRequest: GeneralLedgerJournalPostFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): GeneralLedgerPendingJournalCountDTO {
+   ) {
       logger.info("Fetching all General Ledger Journal Entries that meet the criteria {} to create General Ledger Details", filterRequest)
 
       val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
-      return generalLedgerJournalService.transfer(user, filterRequest, locale)
+      generalLedgerJournalService.transfer(user, filterRequest, locale)
 
    }
 

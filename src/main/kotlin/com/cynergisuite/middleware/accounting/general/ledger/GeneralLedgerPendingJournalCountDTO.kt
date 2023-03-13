@@ -9,7 +9,6 @@ import java.math.BigDecimal
 @Schema(name = "GeneralLedgerPendingJournalCountDTO", title = "General Ledger Pending Journal Count DTO", description = "General Ledger Pending Journal Count DTO")
 data class GeneralLedgerPendingJournalCountDTO(
 
-
    @field:Schema(description = "Balance of debit and credit for all General Ledger Pending Journal Entries")
    var balance: BigDecimal? = null,
 
