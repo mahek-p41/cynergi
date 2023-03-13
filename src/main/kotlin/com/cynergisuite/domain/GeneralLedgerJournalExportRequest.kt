@@ -15,17 +15,23 @@ import java.time.LocalDate
 @Introspected
 class GeneralLedgerJournalExportRequest(
 
-   @field:Schema(name = "profitCenter", description = "General ledger profit center")
-   var profitCenter: Int? = null,
+   @field:Schema(name = "beginProfitCenter", description = "Beginning General ledger profit center")
+   var beginProfitCenter: Int? = null,
 
-   @field:Schema(name = "sourceCode", description = "General ledger source code")
-   var sourceCode: String? = null,
+   @field:Schema(name = "endProfitCenter", description = "Ending General ledger profit center")
+   var endProfitCenter: Int? = null,
 
-   @field:Schema(name = "startingDate", description = "From date for general ledger journal")
-   var startingDate: LocalDate? = null,
+   @field:Schema(name = "beginSourceCode", description = "Beginning General ledger source code")
+   var beginSourceCode: String? = null,
 
-   @field:Schema(name = "endingDate", description = "Thru date for general ledger journal")
-   var endingDate: LocalDate? = null,
+   @field:Schema(name = "endSourceCode", description = "Ending General ledger source code")
+   var endSourceCode: String? = null,
+
+   @field:Schema(name = "fromDate", description = "From date for general ledger journal")
+   var fromDate: LocalDate? = null,
+
+   @field:Schema(name = "thruDate", description = "Thru date for general ledger journal")
+   var thruDate: LocalDate? = null,
 
 //   cynergi clients only use csv format
 //   @field:Schema(name = "fileFormat", description = "General ledger source code export file format")
@@ -40,10 +46,12 @@ class GeneralLedgerJournalExportRequest(
       if (other is GeneralLedgerJournalExportRequest) {
          EqualsBuilder()
             .appendSuper(super.equals(other))
-            .append(this.profitCenter, other.profitCenter)
-            .append(this.sourceCode, other.sourceCode)
-            .append(this.startingDate, other.startingDate)
-            .append(this.endingDate, other.endingDate)
+            .append(this.beginProfitCenter, other.beginProfitCenter)
+            .append(this.endProfitCenter, other.endProfitCenter)
+            .append(this.beginSourceCode, other.beginSourceCode)
+            .append(this.endSourceCode, other.endSourceCode)
+            .append(this.fromDate, other.fromDate)
+            .append(this.thruDate, other.thruDate)
 //            .append(this.fileFormat, other.fileFormat)
             .isEquals
       } else {
@@ -53,19 +61,23 @@ class GeneralLedgerJournalExportRequest(
    override fun hashCode(): Int =
       HashCodeBuilder()
          .appendSuper(super.hashCode())
-         .append(this.profitCenter)
-         .append(this.sourceCode)
-         .append(this.startingDate)
-         .append(this.endingDate)
+         .append(this.beginProfitCenter)
+         .append(this.endProfitCenter)
+         .append(this.beginSourceCode)
+         .append(this.endSourceCode)
+         .append(this.fromDate)
+         .append(this.thruDate)
 //         .append(this.fileFormat)
          .toHashCode()
 
    override fun myToStringValues(): List<Pair<String, Any?>> =
       listOf(
-         "profitCenter" to profitCenter,
-         "sourceCode" to sourceCode,
-         "startingDate" to startingDate,
-         "endingDate" to endingDate,
+         "beginProfitCenter" to beginProfitCenter,
+         "endProfitCenter" to endProfitCenter,
+         "beginSourceCode" to beginSourceCode,
+         "endSourceCode" to endSourceCode,
+         "fromDate" to fromDate,
+         "thruDate" to thruDate,
 //         "fileFormat" to fileFormat,
       )
 }

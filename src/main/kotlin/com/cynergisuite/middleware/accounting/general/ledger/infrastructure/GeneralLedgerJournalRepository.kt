@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 
 import com.cynergisuite.domain.GeneralLedgerJournalExportRequest
 import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
+import com.cynergisuite.domain.GeneralLedgerJournalPostFilterRequest
 import com.cynergisuite.domain.GeneralLedgerJournalReportFilterRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
@@ -12,6 +13,7 @@ import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.sumByBigDecimal
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
@@ -126,9 +128,11 @@ class GeneralLedgerJournalRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = FALSE")
 
-      if (filterRequest.profitCenter != null) {
-         params["profitCenter"] = filterRequest.profitCenter
-         whereClause.append(" AND profitCenter.number = :profitCenter")
+      if (filterRequest.beginProfitCenter != null || filterRequest.endProfitCenter != null) {
+         params["beginProfitCenter"] = filterRequest.beginProfitCenter
+         params["endProfitCenter"] = filterRequest.endProfitCenter
+         whereClause.append(" AND profitCenter.number ")
+            .append(buildFilterString(filterRequest.beginProfitCenter != null, filterRequest.endProfitCenter != null, "beginProfitCenter", "endProfitCenter"))
       }
 
       if (filterRequest.beginSourceCode != null || filterRequest.endSourceCode != null) {
@@ -159,6 +163,54 @@ class GeneralLedgerJournalRepository @Inject constructor(
             elements.add(mapRow(rs, company, "glJournal_"))
          } while (rs.next())
       }
+   }
+   @ReadOnly
+   fun findAll(company: CompanyEntity, filterRequest: GeneralLedgerJournalPostFilterRequest) : List<GeneralLedgerJournalEntity> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = FALSE")
+
+      if (filterRequest.beginProfitCenter != null || filterRequest.endProfitCenter != null) {
+         params["beginProfitCenter"] = filterRequest.beginProfitCenter
+         params["endProfitCenter"] = filterRequest.endProfitCenter
+         whereClause.append(" AND profitCenter.number ")
+            .append(buildFilterString(filterRequest.beginProfitCenter != null, filterRequest.endProfitCenter != null, "beginProfitCenter", "endProfitCenter"))
+      }
+
+      if (filterRequest.beginSourceCode != null || filterRequest.endSourceCode != null) {
+         params["beginSource"] = filterRequest.beginSourceCode
+         params["endSource"] = filterRequest.endSourceCode
+         whereClause.append(" AND source.value ")
+            .append(
+               buildFilterString(
+                  filterRequest.beginSourceCode != null,
+                  filterRequest.endSourceCode != null,
+                  "beginSource",
+                  "endSource"
+               )
+            )
+      }
+
+      if (filterRequest.fromDate != null || filterRequest.thruDate != null) {
+         params["fromDate"] = filterRequest.fromDate
+         params["thruDate"] = filterRequest.thruDate
+         whereClause.append(" AND glJournal.date")
+            .append(
+               buildFilterString(
+                  filterRequest.fromDate != null,
+                  filterRequest.thruDate != null,
+                  "fromDate",
+                  "thruDate"
+               )
+            )
+      }
+
+      return jdbc.query(
+         """
+         ${selectBaseQuery()}
+         $whereClause
+      """.trimIndent(),
+         params
+      ) {  rs, _ -> mapRow(rs, company,"glJournal_")}
    }
 
    @Transactional
@@ -255,16 +307,37 @@ class GeneralLedgerJournalRepository @Inject constructor(
       if (rowsAffected == 0) throw NotFoundException(id)
    }
 
+   @Transactional
+   fun bulkDelete(dtoList: List<GeneralLedgerJournalEntity>, company: CompanyEntity) {
+      logger.debug("Deleting GeneralLedgerJournal with id={}")
+      val idList = dtoList.map { it.id }
+
+      val rowsAffected = jdbc.update(
+         """
+         UPDATE general_ledger_journal
+         SET deleted = TRUE
+         WHERE general_ledger_journal.id = any(array[<idList>]::uuid[]) AND company_id = :company_id AND deleted = FALSE
+         """,
+         mapOf("idList" to idList, "company_id" to company.id),
+      )
+
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(idList)
+   }
+
    @ReadOnly
    fun fetchReport(company: CompanyEntity, filterRequest: GeneralLedgerJournalReportFilterRequest) : List<GeneralLedgerPendingReportDetailsTemplate> {
       val glJournals = mutableListOf<GeneralLedgerJournalEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
-      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = FALSE")
+      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = false")
       val orderBy = StringBuilder("ORDER BY ")
 
-      if (filterRequest.profitCenter != null) {
-         params["profitCenter"] = filterRequest.profitCenter
-         whereClause.append(" AND profitCenter.number = :profitCenter")
+      if (filterRequest.beginProfitCenter != null || filterRequest.endProfitCenter != null) {
+         params["beginProfitCenter"] = filterRequest.beginProfitCenter
+         params["endProfitCenter"] = filterRequest.endProfitCenter
+         whereClause.append(" AND profitCenter.number ")
+            .append(buildFilterString(filterRequest.beginProfitCenter != null, filterRequest.endProfitCenter != null, "beginProfitCenter", "endProfitCenter"))
       }
 
       if (filterRequest.beginSourceCode != null || filterRequest.endSourceCode != null) {
@@ -348,7 +421,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
    fun fetchPendingTotals(company: CompanyEntity, filterRequest: GeneralLedgerJournalFilterRequest): GeneralLedgerPendingJournalCountDTO {
       val glJournals = mutableListOf<GeneralLedgerJournalEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
-      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = FALSE")
+      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = false")
       val orderBy = StringBuilder("ORDER BY glJournal.account_id")
 
       if (filterRequest.beginSourceCode != null || filterRequest.endSourceCode != null) {
@@ -387,23 +460,27 @@ class GeneralLedgerJournalRepository @Inject constructor(
    fun export(filterRequest: GeneralLedgerJournalExportRequest, company: CompanyEntity): List<GeneralLedgerJournalEntity>  {
       val reports = mutableListOf<GeneralLedgerJournalEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = FALSE")
+      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = false")
 
-      if (filterRequest.profitCenter != null) {
-         params["profitCenter"] = filterRequest.profitCenter
-         whereClause.append(" AND profitCenter.number = :profitCenter")
+      if (filterRequest.beginProfitCenter != null || filterRequest.endProfitCenter != null) {
+         params["beginProfitCenter"] = filterRequest.beginProfitCenter
+         params["endProfitCenter"] = filterRequest.endProfitCenter
+         whereClause.append(" AND profitCenter.number ")
+            .append(buildFilterString(filterRequest.beginProfitCenter != null, filterRequest.endProfitCenter != null, "beginProfitCenter", "endProfitCenter"))
       }
 
-      if (filterRequest.sourceCode != null) {
-         params["sourceCode"] = filterRequest.sourceCode
-         whereClause.append(" AND source.value = :sourceCode")
+      if (filterRequest.beginSourceCode != null || filterRequest.endSourceCode != null) {
+         params["beginSource"] = filterRequest.beginSourceCode
+         params["endSource"] = filterRequest.endSourceCode
+         whereClause.append(" AND source.value ")
+            .append(buildFilterString(filterRequest.beginSourceCode != null, filterRequest.endSourceCode != null, "beginSource", "endSource"))
       }
 
-      if (filterRequest.startingDate != null || filterRequest.endingDate != null) {
-         params["startingDate"] = filterRequest.startingDate
-         params["endingDate"] = filterRequest.endingDate
+      if (filterRequest.fromDate != null || filterRequest.thruDate != null) {
+         params["fromDate"] = filterRequest.fromDate
+         params["thruDate"] = filterRequest.thruDate
          whereClause.append(" AND glJournal.date ")
-            .append(buildFilterString(filterRequest.startingDate != null, filterRequest.endingDate != null, "startingDate", "endingDate"))
+            .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
       }
 
       jdbc.query(

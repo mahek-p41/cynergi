@@ -18,8 +18,11 @@ class GeneralLedgerJournalReportFilterRequest(
    sortBy: String? = null,
    sortDirection: String? = null,
 
-   @field:Schema(name = "profitCenter", description = "General ledger profit center")
-   var profitCenter: Int? = null,
+   @field:Schema(name = "beginProfitCenter", description = "Beginning General ledger profit center")
+   var beginProfitCenter: Int? = null,
+
+   @field:Schema(name = "endProfitCenter", description = "Ending General ledger profit center")
+   var endProfitCenter: Int? = null,
 
    @field:Schema(name = "beginSourceCode", description = "Beginning General ledger source code")
    var beginSourceCode: String? = null,
@@ -52,7 +55,8 @@ class GeneralLedgerJournalReportFilterRequest(
       if (other is GeneralLedgerJournalReportFilterRequest) {
          EqualsBuilder()
             .appendSuper(super.equals(other))
-            .append(this.profitCenter, other.profitCenter)
+            .append(this.beginProfitCenter, other.beginProfitCenter)
+            .append(this.endProfitCenter, other.endProfitCenter)
             .append(this.beginSourceCode, other.beginSourceCode)
             .append(this.endSourceCode, other.endSourceCode)
             .append(this.fromDate, other.fromDate)
@@ -68,7 +72,8 @@ class GeneralLedgerJournalReportFilterRequest(
    override fun hashCode(): Int =
       HashCodeBuilder()
          .appendSuper(super.hashCode())
-         .append(this.profitCenter)
+         .append(this.beginProfitCenter)
+         .append(this.endProfitCenter)
          .append(this.beginSourceCode)
          .append(this.endSourceCode)
          .append(this.fromDate)
@@ -84,7 +89,8 @@ class GeneralLedgerJournalReportFilterRequest(
          size = size,
          sortBy = sortBy,
          sortDirection = sortDirection,
-         profitCenter = this.profitCenter,
+         beginProfitCenter = this.beginProfitCenter,
+         endProfitCenter = this.endProfitCenter,
          beginSourceCode = this.beginSourceCode,
          endSourceCode = this.endSourceCode,
          fromDate = this.fromDate,
@@ -96,7 +102,8 @@ class GeneralLedgerJournalReportFilterRequest(
 
    override fun myToStringValues(): List<Pair<String, Any?>> =
       listOf(
-         "profitCenter" to profitCenter,
+         "beginProfitCenter" to beginProfitCenter,
+         "endProfitCenter" to endProfitCenter,
          "beginSourceCode" to beginSourceCode,
          "endSourceCode" to endSourceCode,
          "fromDate" to fromDate,
