@@ -20,8 +20,13 @@ pipeline {
       stage('Setup Docker') {
          steps {
             script {
-               sh 'docker network create ${networkId}'
-               sh 'mkdir -p gradleCache gradleWrapper'
+                if (env.BRANCH_NAME.length() > 50) {
+                    currentBuild.result = 'ABORTED'
+                    error("Branch name is too long: ${env.BRANCH_NAME} (${env.BRANCH_NAME.length()} characters). Maximum length is 50 characters.")
+                } else {
+                    sh 'docker network create ${networkId}'
+                    sh 'mkdir -p gradleCache gradleWrapper'
+                }
             }
          }
       }
@@ -30,7 +35,7 @@ pipeline {
          steps {
             script {
                def cynergibasedb = docker.build("cynergibasedb:${env.BRANCH_NAME}", "-f ./support/development/cynergibasedb/cynergibasedb.dockerfile ./support/development/cynergibasedb")
-               def cynergitestdb = docker.build("cynergitestdb:${env.BRANCH_NAME}", "-f ./support/development/cynergitestdb/cynergitestdb.dockerfile --build-arg DB_IMAGE=cynergibasedb:${env.BRANCH_NAME} ./support/development/cynergitestdb")
+               def cynergitestdb = docker.build("cynergitestdb:${env.BRANCH_NAME}", "-f ./support/development/cynergitestdb/cynergitestdb.dockerfile --build-arg LOG_STATEMENT=all --build-arg DB_IMAGE=cynergibasedb:${env.BRANCH_NAME} ./support/development/cynergitestdb")
                def sftpTestServer = docker.build("cynergitestsftp:${env.BRANCH_NAME}", "-f ./support/development/sftp/sftp.dockerfile --build-arg USER_ID=$jenkinsUid --build-arg GROUP_ID=$jenkinsGid ./support/development/sftp")
                def cynmid = docker.build("middleware:${env.BRANCH_NAME}", "-f ./support/deployment/cynmid/cynmid.dockerfile --build-arg USER_ID=$jenkinsUid --build-arg GROUP_ID=$jenkinsGid ./support/deployment/cynmid")
 

@@ -301,16 +301,17 @@ class AccountPayableDistributionDetailControllerSpecification extends Controller
 
    void "create invalid account payable distribution group with percent total over 100%" () {
       given:
-      final accounts = accountDataLoaderService.stream(5, tstds1).toList()
+      final accounts = accountDataLoaderService.stream(3, tstds1).toList()
       final template = templateDataLoaderService.single(tstds1)
       def apDistributions = accounts.collect { account ->
          dataLoaderService.singleDTO(new StoreDTO(store3Tstds1), new AccountDTO(account), new AccountPayableDistributionTemplateDTO(template))
       }
-      apDistributions[4].percent = 1
+      apDistributions[2].percent = 1
 
       when:
       apDistributions.each {
          post("$path", it)
+         sleep(1000)
       }
 
       then:

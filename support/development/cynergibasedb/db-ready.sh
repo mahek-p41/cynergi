@@ -8,7 +8,7 @@ SLEEP_SECONDS=5
 # 2 failure (there was no response from the server)
 # 3 failure (no attempt was made) I don't know really what this means docs says "for example due to invalid parameters"
 printf "%s" "Wait for $1 to become ready"
-for count in {1..72}; do
+for count in {1..6}; do
   pg_isready --host=$1 --port=5432 > /dev/null 2> /dev/null
   if [ $? -eq 0 ]; then
     printf "\n%s\n" "$1 is accepting connections"
