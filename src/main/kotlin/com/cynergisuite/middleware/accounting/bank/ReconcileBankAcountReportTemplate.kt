@@ -10,12 +10,12 @@ import java.math.BigDecimal
 data class ReconcileBankAccountReportTemplate(
    @Schema(description = "List of input bank reconciliations")
    private val reconciliations: List<BankReconciliationReportDetailDTO>,
-   @Schema(description = "GL Balance")
-   private val glBalance: BigDecimal
+   @field:Schema(description = "GL Balance")
+   val glBalance: BigDecimal
 ) {
    @field:Schema(description = "List of bank reconciliations grouped by type")
    val groupedReconciliations: List<ReconcileBankAccountReportDTO> = reconciliations.groupBy { it.type }
-      .map { (_, list) -> ReconcileBankAccountReportDTO(list) }
+      .map { (type, list) -> ReconcileBankAccountReportDTO(type, list) }
 
    @field:Schema(description = "Sum of all outstanding items amount")
    val totalOutstandingItems: BigDecimal = reconciliations.sumOf { it.amount ?: BigDecimal.ZERO }
