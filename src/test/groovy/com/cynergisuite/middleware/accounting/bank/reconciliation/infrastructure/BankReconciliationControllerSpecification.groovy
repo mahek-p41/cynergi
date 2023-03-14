@@ -7,6 +7,9 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDataLoaderService
+import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationType
+import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
+import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDataLoader
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -215,6 +218,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       final bankRecon = dataLoaderService.singleDTO(bankIn, LocalDate.now(), LocalDate.now())
+      bankRecon.type = new BankReconciliationTypeDTO(BankReconciliationTypeDataLoader.predefined().findAll {it.value != "V" }.random() as BankReconciliationType)
       bankRecon.clearedDate = null
       bankRecon.document = null
 
@@ -278,6 +282,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       final bankRecon = dataLoaderService.singleDTO(bankIn, LocalDate.now(), null)
+      bankRecon.type = new BankReconciliationTypeDTO(BankReconciliationTypeDataLoader.predefined().findAll {it.value != "V" }.random() as BankReconciliationType)
       bankRecon.bank.id = nonExistentBankId
 
       when:
@@ -748,7 +753,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       dataLoaderService.stream(5, companyFactoryService.forDatasetCode('corrto'), bankIn, LocalDate.now(), null)
       final bankRecons = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now().minusDays(1), null, 'A', 111.11, 'testdesc', '20230216').toList()
-      final bankRecons2 = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now().minusDays(1), null, 'B', 111.11, 'testdesc', '20230216').toList()
+      final bankRecons2 = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now().minusDays(1), null, 'C', 111.11, 'testdesc', '20230216').toList()
       final pageOne = new BankReconciliationTransactionsFilterRequest(1, 5, "id", "ASC", bankIn.number, 'A', LocalDate.now().minusDays(1), LocalDate.now(), '20230201', '20230228', 'testdesc', 'O', null, null, 111.11)
       final pageTwo = new BankReconciliationTransactionsFilterRequest(2, 5, "id", "ASC", bankIn.number, 'A', LocalDate.now().minusDays(1), LocalDate.now(), '20230201', '20230228', 'testdesc', 'O', null, null, 111.11)
       final pageLast = new BankReconciliationTransactionsFilterRequest(3, 5, "id", "ASC", bankIn.number, 'A', LocalDate.now().minusDays(1), LocalDate.now(), '20230201', '20230228', 'testdesc', 'O', null, null, 111.11)
@@ -853,7 +858,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       dataLoaderService.stream(5, companyFactoryService.forDatasetCode('corrto'), bankIn, LocalDate.now(), null)
       final bankRecons = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now().minusDays(1), LocalDate.now().minusDays(1), 'A', 111.11, 'testdesc', '20230216').toList()
-      final bankRecons2 = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now().minusDays(1), LocalDate.now().minusDays(3), 'A', 111.11, 'testdesc', '20230216').toList()
+      final bankRecons2 = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now().minusDays(1), LocalDate.now().minusDays(3), 'D', 111.11, 'testdesc', '20230216').toList()
       final pageOne = new BankReconciliationTransactionsFilterRequest(1, 5, "id", "ASC", bankIn.number, 'A', LocalDate.now().minusDays(2), LocalDate.now(), '20230201', '20230228', 'testdesc', 'C', LocalDate.now().minusDays(2), LocalDate.now(), 111.11)
       final pageTwo = new BankReconciliationTransactionsFilterRequest(2, 5, "id", "ASC", bankIn.number, 'A', LocalDate.now().minusDays(2), LocalDate.now(), '20230201', '20230228', 'testdesc', 'C', LocalDate.now().minusDays(2), LocalDate.now(), 111.11)
       final pageLast = new BankReconciliationTransactionsFilterRequest(3, 5, "id", "ASC", bankIn.number, 'A', LocalDate.now().minusDays(2), LocalDate.now(), '20230201', '20230228', 'testdesc', 'C', LocalDate.now().minusDays(2), LocalDate.now(), 111.11)
