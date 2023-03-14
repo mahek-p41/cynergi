@@ -292,7 +292,7 @@ class AccountPayableDistributionDetailRepository @Inject constructor(
       return jdbc.queryForObject(
          """SELECT COALESCE(SUM(percent), 0)
             FROM account_payable_distribution_template_detail
-            WHERE template_id = :template_id
+            WHERE template_id = :template_id AND deleted = FALSE
          """.trimIndent(),
          mapOf(
             "template_id" to dto.distributionTemplate!!.myId()
