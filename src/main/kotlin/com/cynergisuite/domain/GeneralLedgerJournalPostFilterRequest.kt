@@ -1,5 +1,6 @@
 package com.cynergisuite.domain
 
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
@@ -9,6 +10,7 @@ import java.time.LocalDate
    description = "Defines the parameters available to for a sortable request. Example ?banks=1,3&status=P",
    allOf = [PageRequestBase::class]
 )
+@Introspected
 class GeneralLedgerJournalPostFilterRequest(
 
    @field:Schema(name = "beginProfitCenter", description = "Beginning General ledger profit center")

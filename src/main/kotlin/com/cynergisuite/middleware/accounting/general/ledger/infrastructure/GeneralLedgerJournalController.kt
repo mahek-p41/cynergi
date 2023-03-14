@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 
 import com.cynergisuite.domain.GeneralLedgerJournalExportRequest
 import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
+import com.cynergisuite.domain.GeneralLedgerJournalPostFilterRequest
 import com.cynergisuite.domain.GeneralLedgerJournalReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
@@ -218,42 +219,41 @@ class GeneralLedgerJournalController @Inject constructor(
    }
 
    @Get(uri = "/transfer{?filterRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Use GL Journal to post journal entries", description = "Fetch a list of General Ledger Journal Entries to create General Ledger Detail records", operationId = "GeneralLedgerJournalEndpoints-transferFetch")
+   @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Calculate Pending Journal Entry amounts", description = "Calculate Pending Journal Entry amounts", operationId = "GeneralLedgerJournalEndpoints-transferCount")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerDetailDTO::class))]),
-         ApiResponse(responseCode = "204", description = "The requested General Ledger Journal Entry was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerPendingJournalCountDTO::class))]),
+         ApiResponse(responseCode = "204", description = "The requested General Ledger Journal Entry Count was unable to be found, or the result is empty"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
-   fun transferFetch(
+   fun transferCount(
       @Parameter(name = "filterRequest", `in` = QUERY, required = false)
       @Valid @QueryValue("filterRequest")
       filterRequest: GeneralLedgerJournalFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): GeneralLedgerPendingJournalCountDTO {
-      logger.info("Fetching all General Ledger Journal Entries that meet the criteria {} to create General Ledger Details", filterRequest)
+      logger.info("Fetching all General Ledger Journal Entries that meet the criteria {} to calculate credit, debit, and JE count", filterRequest)
 
       val user = userService.fetchUser(authentication)
       return generalLedgerJournalService.fetchPendingTotals(user.myCompany(), filterRequest)
    }
 
-   @Post(uri = "/transfer{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Post(uri = "/transfer", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Use GL Journal to post journal entries", description = "Fetch a list of General Ledger Journal Entries to create General Ledger Detail records", operationId = "GeneralLedgerJournalEndpoints-transfer")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerDetailDTO::class))]),
+         ApiResponse(responseCode = "200", description = "If GeneralLedgerJournalEntries were successfully posted"),
          ApiResponse(responseCode = "204", description = "The requested General Ledger Journal Entry was unable to be found, or the result is empty"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
    fun transferMultipleEntries(
-      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
-      @Valid @QueryValue("filterRequest")
-      filterRequest: GeneralLedgerJournalFilterRequest,
+      @Body @Valid
+      filterRequest: GeneralLedgerJournalPostFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
@@ -262,6 +262,7 @@ class GeneralLedgerJournalController @Inject constructor(
       val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
       generalLedgerJournalService.transfer(user, filterRequest, locale)
+
    }
 
    @Post(uri = "/transfer/single", produces = [APPLICATION_JSON])
