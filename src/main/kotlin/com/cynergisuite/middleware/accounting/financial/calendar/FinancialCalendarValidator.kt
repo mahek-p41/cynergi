@@ -6,14 +6,15 @@ import com.cynergisuite.middleware.accounting.financial.calendar.type.infrastruc
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
-import com.cynergisuite.middleware.localization.DatesMustBeInSameFiscalYear
-import com.cynergisuite.middleware.localization.Duplicate
+import com.cynergisuite.middleware.localization.*
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.UUID
+import javax.xml.datatype.DatatypeConstants.DAYS
 
 @Singleton
 class FinancialCalendarValidator @Inject constructor(
@@ -58,5 +59,52 @@ class FinancialCalendarValidator @Inject constructor(
          dto,
          overallPeriodEntity
       )
+   }
+
+   fun validateOpenGLDates(dateRangeDTO: FinancialCalendarDateRangeDTO, openedAP: Pair<LocalDate, LocalDate>): FinancialCalendarDateRangeDTO {
+
+      doValidation { errors ->
+         val from = dateRangeDTO.periodFrom
+         val thru = dateRangeDTO.periodTo!!.plusMonths(1).minusDays(1)
+         val daysBetween = ChronoUnit.DAYS.between(from, thru)
+
+         if (thru != null && from != null && thru.isBefore(from)) {
+            errors.add(ValidationError("from", CalendarThruDateIsBeforeFrom(from, thru)))
+         }
+
+         if (daysBetween > 731) {
+            errors.add(ValidationError("from", CalendarDatesSpanMoreThanTwoYears(from!!, thru!!)))
+         }
+
+         //beginDate.plusMonths(it.toLong()).minusDays(1)
+         if (thru != null && from != null && openedAP.first < from || openedAP.second > thru!!) {
+            errors.add(ValidationError("from", GLDatesSelectedOutsideAPDatesSet(from!!, thru!!, openedAP.first, openedAP.second)))
+         }
+      }
+
+      return dateRangeDTO
+   }
+
+   fun validateOpenAPDates(dateRangeDTO: FinancialCalendarDateRangeDTO, openedGL: Pair<LocalDate, LocalDate>): FinancialCalendarDateRangeDTO {
+
+      doValidation { errors ->
+         val from = dateRangeDTO.periodFrom
+         val thru = dateRangeDTO.periodTo!!.plusMonths(1).minusDays(1)
+         val daysBetween = ChronoUnit.DAYS.between(from, thru)
+
+         if (thru != null && from != null && thru.isBefore(from)) {
+            errors.add(ValidationError("from", CalendarThruDateIsBeforeFrom(from, thru)))
+         }
+
+         if (daysBetween > 731) {
+            errors.add(ValidationError("from", CalendarDatesSpanMoreThanTwoYears(from!!, thru!!)))
+         }
+
+         if (thru != null && from != null && openedGL.first > from || openedGL.second.plusMonths(1).minusDays(1) < thru) {
+            errors.add(ValidationError("from", APDatesSelectedOutsideGLDatesSet(from!!, thru!!, openedGL.first, openedGL.second)))
+         }
+      }
+
+      return dateRangeDTO
    }
 }

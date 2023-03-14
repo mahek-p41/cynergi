@@ -232,11 +232,13 @@ class FinancialCalendarRepository @Inject constructor(
             JOIN company ON finCal.company_id = company.id AND company.deleted = FALSE
             JOIN overall_period_type_domain overallPeriod ON overallPeriod.id = finCal.overall_period_id
          WHERE finCal.company_id = :company_id
-            AND overallPeriod.value = :financial_period
+            AND (overallPeriod.value = :financial_period1 OR
+                 overallPeriod.value = :financial_period2)
          """.trimIndent(),
          mapOf(
             "company_id" to company.id,
-            "financial_period" to "C",
+            "financial_period1" to "C",
+            "financial_period2" to "N",
             "general_ledger_open" to false
          )
       )
@@ -253,12 +255,14 @@ class FinancialCalendarRepository @Inject constructor(
          FROM overall_period_type_domain overallPeriod
          WHERE overallPeriod.id = finCal.overall_period_id
             AND finCal.company_id = :company_id
-            AND overallPeriod.value = :financial_period
+            AND (overallPeriod.value = :financial_period1 OR
+                 overallPeriod.value = :financial_period2)
             AND finCal.period_from BETWEEN :from_date AND :to_date
          """.trimIndent(),
          mapOf(
             "company_id" to company.id,
-            "financial_period" to "C",
+            "financial_period1" to "C",
+            "financial_period2" to "N",
             "general_ledger_open" to true,
             "from_date" to dateRangeDTO.periodFrom,
             "to_date" to dateRangeDTO.periodTo
@@ -281,11 +285,13 @@ class FinancialCalendarRepository @Inject constructor(
             JOIN company ON finCal.company_id = company.id AND company.deleted = FALSE
             JOIN overall_period_type_domain overallPeriod ON overallPeriod.id = finCal.overall_period_id
          WHERE finCal.company_id = :company_id
-            AND overallPeriod.value = :financial_period
+            AND (overallPeriod.value = :financial_period1 OR
+                 overallPeriod.value = :financial_period2)
          """.trimIndent(),
          mapOf(
             "company_id" to company.id,
-            "financial_period" to "C",
+            "financial_period1" to "C",
+            "financial_period2" to "N",
             "account_payable_open" to false
          )
       )
@@ -302,12 +308,14 @@ class FinancialCalendarRepository @Inject constructor(
          FROM overall_period_type_domain overallPeriod
          WHERE overallPeriod.id = finCal.overall_period_id
             AND finCal.company_id = :company_id
-            AND overallPeriod.value = :financial_period
+            AND (overallPeriod.value = :financial_period1 OR
+                 overallPeriod.value = :financial_period2)
             AND finCal.period_from BETWEEN :from_date AND :to_date
          """.trimIndent(),
          mapOf(
             "company_id" to company.id,
-            "financial_period" to "C",
+            "financial_period1" to "C",
+            "financial_period2" to "N",
             "account_payable_open" to true,
             "from_date" to dateRangeDTO.periodFrom,
             "to_date" to dateRangeDTO.periodTo
@@ -332,6 +340,31 @@ class FinancialCalendarRepository @Inject constructor(
          mapOf(
             "comp_id" to company.id,
             "general_ledger_open" to true
+         )
+      ) { rs, _ ->
+         do {
+            periods.add(mapRow(rs, "r_"))
+         } while (rs.next())
+      }
+
+      return Pair(periods.first().periodFrom, periods.last().periodTo)
+   }
+
+   @Transactional
+   fun findDateRangeWhenAPIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> {
+      logger.debug("Find periods where AP is open")
+
+      val periods = mutableListOf<FinancialCalendarEntity>()
+
+      jdbc.query(
+         """
+            ${selectBaseQuery()}
+            WHERE r.company_id = :comp_id AND account_payable_open = :account_payable_open
+            ORDER BY r_period_from
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "account_payable_open" to true
          )
       ) { rs, _ ->
          do {
@@ -485,3 +518,4 @@ class FinancialCalendarRepository @Inject constructor(
       return rs.getLocalDate("period_from")
    }
 }
+
