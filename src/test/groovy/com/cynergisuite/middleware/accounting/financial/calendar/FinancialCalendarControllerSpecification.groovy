@@ -279,6 +279,128 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       result.second == dateRangeGL.periodTo.plusMonths(1).minusDays(1).toString()
    }
 
+   void "fetch ap open date range" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
+      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(9))
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(7))
+
+      when:
+      put("$path/open-ap", dateRangeAP)
+
+      then:
+      notThrown(Exception)
+
+      when: 'open GL for a date range'
+      put("$path/open-gl", dateRangeGL)
+
+      then:
+      notThrown(Exception)
+
+      when: 'fetch date range'
+      def result = get("$path/ap-dates-open")
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.first == dateRangeAP.periodFrom.toString()
+      result.second == dateRangeAP.periodTo.plusMonths(1).minusDays(1).toString()
+   }
+
+   void "try to open gl account starting after the open ap range" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
+      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(7))
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(7))
+
+      when:
+      put("$path/open-ap", dateRangeAP)
+
+      then:
+      notThrown(Exception)
+
+      when:
+      put("$path/open-gl", dateRangeGL)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.code[0] == 'cynergi.validation.gl.not.encompassing.ap.window'
+   }
+
+   void "try to open gl account ending before the open ap range" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
+      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(6))
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(7))
+
+      when:
+      put("$path/open-ap", dateRangeAP)
+
+      then:
+      notThrown(Exception)
+
+      when:
+      put("$path/open-gl", dateRangeGL)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.code[0] == 'cynergi.validation.gl.not.encompassing.ap.window'
+   }
+
+   void "try to open ap starting before the open gl range" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
+      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(7))
+      final dateRangeAP1 = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(7))
+      final dateRangeAP2 = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(6))
+
+      when:
+      put("$path/open-ap", dateRangeAP1)
+
+      then:
+      notThrown(Exception)
+
+      when:
+      put("$path/open-gl", dateRangeGL)
+
+      then:
+      notThrown(Exception)
+
+      when:
+      put("$path/open-ap", dateRangeAP2)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.code[0] == 'cynergi.validation.ap.outside.of.gl.window'
+   }
+
+   void "try to set the open ap window when no gl window is open" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().plusMonths(1), false, false).collect()
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(2), LocalDate.now().plusMonths(7))
+      //final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(7))
+
+      when:
+      put("$path/open-ap", dateRangeAP)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.code[0] == 'cynergi.validation.ap.outside.of.gl.window'
+   }
+
    void "create fiscal calendar year" () {
       given:
       final fiscalYr = FinancialCalendarDataLoader.streamFiscalYearDTO(1).collect()

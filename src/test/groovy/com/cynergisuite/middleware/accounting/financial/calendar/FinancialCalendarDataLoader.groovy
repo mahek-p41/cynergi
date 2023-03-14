@@ -72,6 +72,8 @@ class FinancialCalendarDataLoader {
       final random = faker.random()
       final date = faker.date()
       final beginDate = startingDate ?: date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
+      final setGL = glOpen //?: random.nextBoolean()
+      final setAP = apOpen
 
       return IntStream.range(0, number).mapToObj {
          new FinancialCalendarEntity(
@@ -81,8 +83,8 @@ class FinancialCalendarDataLoader {
             beginDate.plusMonths(it.toLong()),
             beginDate.plusMonths(it.toLong() + 1).minusDays(1),
             beginDate.year,
-            glOpen ?: random.nextBoolean(),
-            apOpen ?: random.nextBoolean()
+            setGL,
+            setAP
          )
       }
    }

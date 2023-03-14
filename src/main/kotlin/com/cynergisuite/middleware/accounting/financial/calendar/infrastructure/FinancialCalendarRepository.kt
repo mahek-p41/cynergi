@@ -141,7 +141,7 @@ class FinancialCalendarRepository @Inject constructor(
 
    @Transactional
    fun insert(entity: FinancialCalendarEntity, company: CompanyEntity): FinancialCalendarEntity {
-      logger.debug("Inserting financial_calendar {}", company)
+      logger.debug("Inserting financial_calendar {}", entity)
 
       return jdbc.insertReturning(
          """

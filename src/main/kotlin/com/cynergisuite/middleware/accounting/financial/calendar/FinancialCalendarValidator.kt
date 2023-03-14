@@ -100,7 +100,7 @@ class FinancialCalendarValidator @Inject constructor(
             errors.add(ValidationError("from", CalendarDatesSpanMoreThanTwoYears(from!!, thru!!)))
          }
 
-         if (thru != null && from != null && openedGL.first > from || openedGL.second.plusMonths(1).minusDays(1) < thru) {
+         if (thru != null && from != null && (openedGL.first > from || openedGL.second.plusMonths(1).minusDays(1) < thru)) {
             errors.add(ValidationError("from", APDatesSelectedOutsideGLDatesSet(from!!, thru!!, openedGL.first, openedGL.second)))
          }
       }
