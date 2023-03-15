@@ -109,7 +109,8 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements.size() == 5
-      pageOneResult.elements.eachWithIndex { result, index ->
+      pageOneResult.elements.sort {
+         o1, o2 -> o1.id <=> o2.id }.eachWithIndex { result, index ->
          with(result) {
             id == firstPageAccount[index].id
             account.id == firstPageAccount[index].account.id

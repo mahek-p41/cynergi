@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 
 import com.cynergisuite.domain.GeneralLedgerJournalExportRequest
 import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
-import com.cynergisuite.domain.GeneralLedgerJournalPostFilterRequest
+import com.cynergisuite.domain.GeneralLedgerJournalPostPurgeDTO
 import com.cynergisuite.domain.GeneralLedgerJournalReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
@@ -205,16 +205,14 @@ class GeneralLedgerJournalController @Inject constructor(
       ]
    )
    fun purge(
-      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
       @Valid @QueryValue("filterRequest")
-      filterRequest: GeneralLedgerJournalFilterRequest,
+      filterRequest: GeneralLedgerJournalPostPurgeDTO,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ) {
       logger.debug("User {} requested purge a list of GeneralLedgerJournal", authentication)
 
       val user = userService.fetchUser(authentication)
-
       return generalLedgerJournalService.purge(filterRequest, user.myCompany())
    }
 
@@ -253,15 +251,15 @@ class GeneralLedgerJournalController @Inject constructor(
    )
    fun transferMultipleEntries(
       @Body @Valid
-      filterRequest: GeneralLedgerJournalPostFilterRequest,
+      postDTO: GeneralLedgerJournalPostPurgeDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
-      logger.info("Fetching all General Ledger Journal Entries that meet the criteria {} to create General Ledger Details", filterRequest)
+      logger.info("Posting all General Ledger Journal Entries that meet the criteria {}", postDTO)
 
       val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
-      generalLedgerJournalService.transfer(user, filterRequest, locale)
+      generalLedgerJournalService.transfer(user, postDTO, locale)
 
    }
 

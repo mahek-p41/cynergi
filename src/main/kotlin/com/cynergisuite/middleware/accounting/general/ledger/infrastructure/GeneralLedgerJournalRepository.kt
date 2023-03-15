@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.infrastructure
 
 import com.cynergisuite.domain.GeneralLedgerJournalExportRequest
 import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
-import com.cynergisuite.domain.GeneralLedgerJournalPostFilterRequest
+import com.cynergisuite.domain.GeneralLedgerJournalPostPurgeDTO
 import com.cynergisuite.domain.GeneralLedgerJournalReportFilterRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
@@ -127,6 +127,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
    fun findAll(company: CompanyEntity, filterRequest: GeneralLedgerJournalFilterRequest) : RepositoryPage<GeneralLedgerJournalEntity, GeneralLedgerJournalFilterRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = FALSE")
+      val orderBy = StringBuilder("ORDER BY ")
 
       if (filterRequest.beginProfitCenter != null || filterRequest.endProfitCenter != null) {
          params["beginProfitCenter"] = filterRequest.beginProfitCenter
@@ -149,11 +150,12 @@ class GeneralLedgerJournalRepository @Inject constructor(
             .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
       }
 
+      orderBy.append("glJournal.date, source.value, account.account_number, profitCenter.number ASC")
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY glJournal_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
+            $orderBy
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
          params,
@@ -165,7 +167,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
       }
    }
    @ReadOnly
-   fun findAll(company: CompanyEntity, filterRequest: GeneralLedgerJournalPostFilterRequest) : List<GeneralLedgerJournalEntity> {
+   fun findAllPurgePost(company: CompanyEntity, filterRequest: GeneralLedgerJournalPostPurgeDTO) : List<GeneralLedgerJournalEntity> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = FALSE")
 

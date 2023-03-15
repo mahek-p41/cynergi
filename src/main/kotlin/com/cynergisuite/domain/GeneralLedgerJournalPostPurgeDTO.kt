@@ -11,7 +11,7 @@ import java.time.LocalDate
    allOf = [PageRequestBase::class]
 )
 @Introspected
-class GeneralLedgerJournalPostFilterRequest(
+class GeneralLedgerJournalPostPurgeDTO(
 
    @field:Schema(name = "beginProfitCenter", description = "Beginning General ledger profit center")
    var beginProfitCenter: Int? = null,
@@ -31,7 +31,7 @@ class GeneralLedgerJournalPostFilterRequest(
    @field:Schema(name = "thruDate", description = "Thru date for general ledger journal")
    var thruDate: LocalDate? = null,
 
-   ) : SortableRequestBase<GeneralLedgerJournalPostFilterRequest>(null, null) {
+   ) : SortableRequestBase<GeneralLedgerJournalPostPurgeDTO>(null, null) {
 
    override fun sortByMe(): String = sortBy()
 
@@ -44,13 +44,4 @@ class GeneralLedgerJournalPostFilterRequest(
          "fromDate" to fromDate,
          "thruDate" to thruDate,
       )
-
-   fun toGeneralLedgerFilterRequest() = GeneralLedgerJournalFilterRequest(
-      beginProfitCenter = beginProfitCenter,
-      endProfitCenter = endProfitCenter,
-      beginSourceCode = beginSourceCode,
-      endSourceCode = endSourceCode,
-      fromDate = fromDate,
-      thruDate = thruDate
-   )
 }

@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger
 
 import com.cynergisuite.domain.GeneralLedgerJournalExportRequest
 import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
-import com.cynergisuite.domain.GeneralLedgerJournalPostFilterRequest
+import com.cynergisuite.domain.GeneralLedgerJournalPostPurgeDTO
 import com.cynergisuite.domain.GeneralLedgerJournalReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.middleware.accounting.account.AccountDTO
@@ -55,11 +55,9 @@ class GeneralLedgerJournalService @Inject constructor(
       return transformEntity(generalLedgerJournalRepository.update(toUpdate, company))
    }
 
-   fun purge(filterRequest: GeneralLedgerJournalFilterRequest, company: CompanyEntity) {
-      val toPurge = generalLedgerJournalRepository.findAll(company, filterRequest)
-      toPurge.elements.map {
-         generalLedgerJournalRepository.delete(it.id!!, company)
-      }
+   fun purge(purgeDTO: GeneralLedgerJournalPostPurgeDTO, company: CompanyEntity) {
+      val toPurge = generalLedgerJournalRepository.findAllPurgePost(company, purgeDTO)
+      generalLedgerJournalRepository.bulkDelete(toPurge, company)
    }
 
    fun fetchReport(company: CompanyEntity, filterRequest: GeneralLedgerJournalReportFilterRequest): GeneralLedgerPendingReportTemplate {
@@ -99,9 +97,22 @@ class GeneralLedgerJournalService @Inject constructor(
    }
 
    @Transactional
-   fun transfer(user: User, filterRequest: GeneralLedgerJournalPostFilterRequest, locale: Locale) {
+   fun transfer(user: User, filterRequest: GeneralLedgerJournalPostPurgeDTO, locale: Locale) {
       val company = user.myCompany()
-      val glJournals = generalLedgerJournalRepository.findAll(company, filterRequest)
+
+      //construct new filter request from PostPurgeDTO to calculate totals and check balance
+      val countFilter = GeneralLedgerJournalFilterRequest(null, null, null, null,
+         filterRequest.beginProfitCenter,
+         filterRequest.endProfitCenter,
+         filterRequest.beginSourceCode,
+         filterRequest.endSourceCode,
+         filterRequest.fromDate,
+         filterRequest.thruDate
+      )
+      val totals = fetchPendingTotals(company, countFilter)
+      generalLedgerJournalValidator.validateTransfer(totals)
+
+      val glJournals = generalLedgerJournalRepository.findAllPurgePost(company, filterRequest)
       var glDetailDTO: GeneralLedgerDetailDTO
       val journalEntryNumber = generalLedgerDetailRepository.findNextJENumber(company)
 
