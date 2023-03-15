@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructur
 
 import com.cynergisuite.domain.BankReconClearingFilterRequest
 import com.cynergisuite.domain.BankReconciliationTransactionsFilterRequest
+import com.cynergisuite.domain.ReconcileBankAccountFilterRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
@@ -1017,4 +1018,73 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       notThrown(HttpClientResponseException)
    }
 
+   void "fetch reconcile bank account report" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      dataLoaderService.stream(5, companyFactoryService.forDatasetCode('corrto'), bankIn, LocalDate.now(), null)
+      final feeBankRecons = dataLoaderService.stream(5, tstds1, bankIn, LocalDate.now(), null, 'F').toList()
+      final voidedBankRecons = dataLoaderService.stream(3, tstds1, bankIn, LocalDate.now(), null, 'V').toList()
+      final filterRequest = new ReconcileBankAccountFilterRequest(bankIn.number, LocalDate.now())
+      final givenSumFee = feeBankRecons.amount.sum()
+      final givenSumVoided = voidedBankRecons.amount.sum()
+
+      when:
+      def result = get("$path/reconcile${filterRequest}")
+
+      then:
+      with(result) { it ->
+         with(groupedReconciliations) { groupedRecon ->
+            with(groupedRecon[0]) {
+               type.value == 'F'
+               sumAmount == givenSumFee
+               details.size() == 5
+            }
+            with(groupedRecon[1]) {
+               type.value == 'V'
+               sumAmount == givenSumVoided
+               details.size() == 3
+            }
+         }
+         totalOutstandingItems == givenSumFee + givenSumVoided
+         computedBankStmtBalance == glBalance - givenSumFee
+      }
+   }
+
+   void "fetch reconcile bank account summary without details" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      final account = accountDataLoaderService.single(nineNineEightEmployee.company)
+      final store = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      dataLoaderService.stream(5, companyFactoryService.forDatasetCode('corrto'), bankIn, LocalDate.now(), null)
+      final feeBankRecons = dataLoaderService.stream(5, tstds1, bankIn, LocalDate.now(), null, 'F').toList()
+      final voidedBankRecons = dataLoaderService.stream(3, tstds1, bankIn, LocalDate.now(), null, 'V').toList()
+      final filterRequest = new ReconcileBankAccountFilterRequest(bankIn.number, LocalDate.now())
+      final givenSumFee = feeBankRecons.amount.sum()
+      final givenSumVoided = voidedBankRecons.amount.sum()
+
+      when:
+      def result = get("$path/reconcile/summary${filterRequest}")
+
+      then:
+      with(result) { it ->
+         with(groupedReconciliations) { groupedRecon ->
+            with(groupedRecon[0]) {
+               type.value == 'F'
+               sumAmount == givenSumFee
+               details == null
+            }
+            with(groupedRecon[1]) {
+               type.value == 'V'
+               sumAmount == givenSumVoided
+               details == null
+            }
+         }
+         totalOutstandingItems == givenSumFee + givenSumVoided
+         computedBankStmtBalance == glBalance - givenSumFee
+      }
+   }
 }

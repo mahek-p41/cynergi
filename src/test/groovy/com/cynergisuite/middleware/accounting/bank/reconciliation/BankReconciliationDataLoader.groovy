@@ -21,7 +21,7 @@ class BankReconciliationDataLoader {
 
    static Stream<BankReconciliationEntity> stream(int numberIn = 1, BankEntity bankIn, LocalDate dateIn, LocalDate clearedDateIn = null, String reconciliationTypeValueIn = null, BigDecimal amountIn = null, String descriptionIn = null, String documentIn = null) {
       final number = numberIn > 0 ? numberIn : 1
-      final reconType = BankReconciliationTypeDataLoader.predefined().find {it.value == reconciliationTypeValueIn} ?: BankReconciliationTypeDataLoader.random()
+      final reconType = BankReconciliationTypeDataLoader.predefined().find {it.value == reconciliationTypeValueIn } ?: BankReconciliationTypeDataLoader.random()
       final faker = new Faker()
       final numbers = faker.number()
       final lorem = faker.lorem()
