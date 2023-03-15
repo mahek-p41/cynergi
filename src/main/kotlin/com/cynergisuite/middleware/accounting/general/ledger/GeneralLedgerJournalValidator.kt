@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.Gene
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
+import com.cynergisuite.middleware.localization.BalanceMustBeZero
 import com.cynergisuite.middleware.localization.GLNotOpen
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -77,5 +78,14 @@ class GeneralLedgerJournalValidator @Inject constructor(
          profitCenter!!,
          source!!
       )
+   }
+
+   fun validateTransfer(totals: GeneralLedgerPendingJournalCountDTO): Boolean {
+      doValidation { errors ->
+         if (totals.balance!!.toDouble() != 0.00) {
+            errors.add(ValidationError("totals.balance", BalanceMustBeZero(totals.balance!!)))
+         }
+      }
+      return true
    }
 }
