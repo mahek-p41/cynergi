@@ -384,21 +384,33 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       response.code[0] == 'cynergi.validation.ap.outside.of.gl.window'
    }
 
+   void "try to set the open gl window when no ap window is open" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().plusMonths(1), false, false).collect()
+      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(7))
+
+      when:
+      put("$path/open-gl", dateRangeGL)
+
+      then:
+      notThrown(Exception)
+   }
+
    void "try to set the open ap window when no gl window is open" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().plusMonths(1), false, false).collect()
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(2), LocalDate.now().plusMonths(7))
-      //final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(7))
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(7))
 
       when:
       put("$path/open-ap", dateRangeAP)
 
       then:
       def exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
+      exception.response.status() == NOT_FOUND
       def response = exception.response.bodyAsJson()
-      response.code[0] == 'cynergi.validation.ap.outside.of.gl.window'
+      response.message == 'AP open range cannot be set with no GL open range set was unable to be found'
    }
 
    void "create fiscal calendar year" () {

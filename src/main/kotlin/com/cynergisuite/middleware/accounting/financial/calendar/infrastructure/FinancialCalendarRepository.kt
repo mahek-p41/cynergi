@@ -325,6 +325,40 @@ class FinancialCalendarRepository @Inject constructor(
       logger.info("Affected row count when opening APAccounts {}", newAffectedRowCount)
    }
 
+   @ReadOnly
+   fun openGLDateRangeFound(company: CompanyEntity): Boolean {
+      val params = mutableMapOf("comp_id" to company.id)
+      val exists = jdbc.queryForObject(
+         """
+         SELECT EXISTS ( ${selectBaseQuery()}
+                        WHERE company_id = :comp_id AND general_ledger_open = true)
+         """.trimIndent(),
+         params,
+         Boolean::class.java
+      )
+
+      logger.trace("Validating open GL range exists resulted in {}", params, exists)
+
+      return exists
+   }
+
+   @ReadOnly
+   fun openAPDateRangeFound(company: CompanyEntity): Boolean {
+      val params = mutableMapOf("comp_id" to company.id)
+      val exists = jdbc.queryForObject(
+         """
+         SELECT EXISTS ( ${selectBaseQuery()}
+                        WHERE company_id = :comp_id AND account_payable_open = true)
+         """.trimIndent(),
+         params,
+         Boolean::class.java
+      )
+
+      logger.trace("Validating open AP range exists resulted in {}", params, exists)
+
+      return exists
+   }
+
    @Transactional
    fun findDateRangeWhenGLIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> {
       logger.debug("Find periods where GL is open")
@@ -347,7 +381,11 @@ class FinancialCalendarRepository @Inject constructor(
          } while (rs.next())
       }
 
-      return Pair(periods.first().periodFrom, periods.last().periodTo)
+      //if (periods.isNotEmpty()) {
+         return Pair(periods.first().periodFrom, periods.last().periodTo)
+      //} else {
+      //   return Pairempty pair?
+      //}
    }
 
    @Transactional

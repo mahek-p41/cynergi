@@ -72,8 +72,9 @@ class FinancialCalendarDataLoader {
       final random = faker.random()
       final date = faker.date()
       final beginDate = startingDate ?: date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
-      final setGL = glOpen //?: random.nextBoolean()
-      final setAP = apOpen
+      final setGL = glOpen != null ? glOpen : random.nextBoolean() //If glOpen is not null, then glOpen, otherwise random (NOTE: elvis does not work with boolean!)
+      final setAP = apOpen != null ? apOpen : random.nextBoolean() //If apOpen is not null, then apOpen, otherwise random (NOTE: elvis does not work with boolean!)
+
 
       return IntStream.range(0, number).mapToObj {
          new FinancialCalendarEntity(

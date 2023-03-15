@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeService
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.error.NotFoundException
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.time.LocalDate
@@ -75,15 +76,27 @@ class FinancialCalendarService @Inject constructor(
    }
 
    fun openGLAccountsForPeriods(dateRangeDTO: FinancialCalendarDateRangeDTO, company: CompanyEntity) {
-      val openedAP = fetchDateRangeWhenAPIsOpen(company)
-      val toBeOpened = financialCalendarValidator.validateOpenGLDates(dateRangeDTO, openedAP)
-      financialCalendarRepository.openGLAccountsForPeriods(toBeOpened, company)
+      val openAPRangeExists = financialCalendarRepository.openAPDateRangeFound(company)
+      if (openAPRangeExists) {
+         val openedAP = fetchDateRangeWhenAPIsOpen(company)
+         val toBeOpened = financialCalendarValidator.validateOpenGLDates(dateRangeDTO, openedAP, true)
+         financialCalendarRepository.openGLAccountsForPeriods(toBeOpened, company)
+      } else {
+         val openedAP = Pair(LocalDate.now(), LocalDate.now()) //Just to give it something to send, though it won't be used.
+         val toBeOpened = financialCalendarValidator.validateOpenGLDates(dateRangeDTO, openedAP, false)
+         financialCalendarRepository.openGLAccountsForPeriods(toBeOpened, company)
+      }
    }
 
    fun openAPAccountsForPeriods(dateRangeDTO: FinancialCalendarDateRangeDTO, company: CompanyEntity) {
-      val openedGL = fetchDateRangeWhenGLIsOpen(company)
-      val toBeOpened = financialCalendarValidator.validateOpenAPDates(dateRangeDTO, openedGL)
-      financialCalendarRepository.openAPAccountsForPeriods(toBeOpened, company)
+      val openGLRangeExists = financialCalendarRepository.openGLDateRangeFound(company)
+      if (openGLRangeExists) {
+         val openedGL = fetchDateRangeWhenGLIsOpen(company)
+         val toBeOpened = financialCalendarValidator.validateOpenAPDates(dateRangeDTO, openedGL)
+         financialCalendarRepository.openAPAccountsForPeriods(toBeOpened, company)
+      } else {
+         throw NotFoundException("AP open range cannot be set with no GL open range set")
+      }
    }
 
    fun fetchDateRangeWhenGLIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> =
