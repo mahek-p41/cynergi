@@ -253,6 +253,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       final store = storeFactoryService.store(3, nineNineEightEmployee.company)
       final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       final bankRecon = dataLoaderService.singleDTO(bankIn, LocalDate.now(), null)
+      bankRecon.type = new BankReconciliationTypeDTO(BankReconciliationTypeDataLoader.predefined().findAll {it.value != "V" }.random() as BankReconciliationType)
       bankRecon["$nonNullableProp"] = null
 
       when:
@@ -339,6 +340,7 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       final existingBankRecon = dataLoaderService.single(tstds1, bankIn, LocalDate.now(), LocalDate.now())
       final updatedBankReconDTO = dataLoaderService.singleDTO(bankIn, LocalDate.now(), LocalDate.now())
+      updatedBankReconDTO.type = new BankReconciliationTypeDTO(BankReconciliationTypeDataLoader.predefined().findAll {it.value != "V" }.random() as BankReconciliationType)
       updatedBankReconDTO.clearedDate = null
       updatedBankReconDTO.document = null
 
