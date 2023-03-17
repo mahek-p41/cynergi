@@ -760,7 +760,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
          """
             ${selectReportQuery()}
             $whereClause
-            ORDER BY glDetail_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
+            ORDER BY glDetail_${filterRequest.snakeSortBy()}, profitCenter.number ${filterRequest.sortDirection()}
          """.trimIndent(),
          params
       ) { rs, _ ->
