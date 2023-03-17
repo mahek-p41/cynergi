@@ -150,7 +150,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
             .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
       }
 
-      orderBy.append("glJournal.date, source.value, account.account_number, profitCenter.number ASC")
+      orderBy.append("glJournal.date, source.value, account.account_number, profitCenter.number, gljournal.id")
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
