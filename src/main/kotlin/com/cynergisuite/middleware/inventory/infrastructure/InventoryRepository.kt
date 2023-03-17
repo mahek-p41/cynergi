@@ -366,7 +366,7 @@ class InventoryRepository(
 
       if (filterRequest.recvLoc != null) {
          params["recvLoc"] = filterRequest.recvLoc
-         whereClause.append(" AND inv.primary_location >= :recvLoc ")
+         whereClause.append(" AND inv.primary_location = :recvLoc ")
       }
 
       if (filterRequest.serialNbr != null) {
@@ -400,27 +400,23 @@ class InventoryRepository(
          whereClause.append(" AND inv.alt_id BETWEEN :beginAltId AND :endAltId ")
       }
 
-      when (filterRequest.sortBy) {
-          "inv.serial_number" -> {
-             sortBy.append("naturalsort(inv.serial_number)")
-          }
-          "inv.model_number" -> {
-             sortBy.append("naturalsort(inv.model_number)")
-          }
-          "inv.inv.purchase_order_number" -> {
-             sortBy.append("naturalsort(inv.purchase_order_number)")
-          }
-          "inv.invoice_number" -> {
-             sortBy.append("naturalsort(inv.invoice_number)")
-          }
-          "inv.alt_id" -> {
-             sortBy.append("naturalsort(inv.alt_id)")
-          }
-          else -> {
-             sortBy.append(filterRequest.sortBy)
-          }
+      if (filterRequest.receivedDate != null) {
+         sortBy.append("inv.received_date, inv.inv_purchase_order_number, inv.serial_number")
+      } else if (filterRequest.poNbr != null) {
+         sortBy.append("inv.inv_purchase_order_number, inv.received_date, inv.invoice_number, inv.model_number, inv.serial_number")
+      } else if (filterRequest.invoiceNbr != null) {
+         sortBy.append("inv.invoice_number, inv.model_number, inv.serial_number")
+      } else if (filterRequest.modelNbr != null) {
+         sortBy.append("inv.model_number, inv.serial_number")
+      } else if (filterRequest.recvLoc != null) {
+         sortBy.append("inv.primary_location, inv.serial_number")
+      } else if (filterRequest.serialNbr != null) {
+         sortBy.append("inv.serial_number")
+      } else if (filterRequest.beginAltId != null && filterRequest.endAltId != null) {
+         sortBy.append("inv.alt_id")
+      } else {
+         sortBy.append("inv.inv_purchase_order_number, inv.invoice_number, inv.model_number, inv.serial_number")
       }
-      sortBy.append(", naturalsort(inv.inv_purchase_order_number), naturalsort(inv.model_number), naturalsort(inv.serial_number)")
 
       return jdbc.queryPaged(
          """
@@ -435,7 +431,8 @@ class InventoryRepository(
                inv.description                  AS description,
                inv.location                     AS current_location,
                inv.inv_invoice_expensed_date    AS invoice_expensed_date,
-               inv.alt_id                       AS alt_id
+               inv.alt_id                       AS alt_id,
+               count(*) OVER() AS total_elements
             FROM fastinfo_prod_import.inventory_vw inv
                JOIN company comp ON inv.dataset = comp.dataset_code AND comp.deleted = FALSE
             $whereClause

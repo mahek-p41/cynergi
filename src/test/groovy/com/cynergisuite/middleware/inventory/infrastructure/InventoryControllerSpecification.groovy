@@ -1,8 +1,11 @@
 package com.cynergisuite.middleware.inventory.infrastructure
 
+import com.cynergisuite.domain.InventoryInquiryFilterRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 @MicronautTest(transactional = false)
 class InventoryControllerSpecification extends ControllerSpecificationBase {
@@ -291,5 +294,53 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 //            description == "Store"
 //         }
       }
+   }
+
+   void "fetch AP inventory inquiry" () {
+      given:
+      def filterRequest = new InventoryInquiryFilterRequest()
+      switch (criteria) {
+         case 'Search by serial number':
+            filterRequest['serialNbr'] = '10005676'
+            filterRequest['sortBy'] = 'inv.serial_number'
+            break
+         case 'Search by po number':
+            filterRequest['poNbr'] = 'S100000703'
+            filterRequest['sortBy'] = 'inv.inv_purchase_order_number'
+            break
+         case 'Search by alt id':
+            filterRequest['beginAltId'] = '10004640'
+            filterRequest['endAltId'] = '10005019'
+            filterRequest['sortBy'] = 'inv.alt_id'
+            break
+      }
+
+      when:
+      def result = get("/inventory/inquiry${filterRequest}")
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.totalElements == elements
+
+      where:
+      criteria                         || elements
+      'Search by serial number'        || 201
+      'Search by po number'            || 41
+      'Search by alt id'               || 271
+   }
+
+   void "fetch AP inventory inquiry no content" () {
+      given:
+      def filterRequest = new InventoryInquiryFilterRequest()
+      filterRequest['sortBy'] = 'inv.inv_purchase_order_number'
+      filterRequest['recvLoc'] = 10001
+
+      when:
+      get("/inventory/inquiry${filterRequest}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status() == NO_CONTENT
    }
 }
