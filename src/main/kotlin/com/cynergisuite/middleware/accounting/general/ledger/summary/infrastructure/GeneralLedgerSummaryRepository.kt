@@ -8,6 +8,7 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
@@ -415,6 +416,28 @@ class GeneralLedgerSummaryRepository @Inject constructor(
                      AND bank.number = :bank
          WHERE summary.company_id = :comp_id
          """, params, BigDecimal::class.java)
+   }
+
+   @ReadOnly
+   fun updateClosingBalanceForCurrentFiscalYear(company: CompanyEntity): Int {
+      return jdbc.update("""
+         UPDATE general_ledger_summary
+         SET closing_balance =
+                 COALESCE(beginning_balance, 0) +
+                 COALESCE(net_activity_period_1, 0) +
+                 COALESCE(net_activity_period_2, 0) +
+                 COALESCE(net_activity_period_3, 0) +
+                 COALESCE(net_activity_period_4, 0) +
+                 COALESCE(net_activity_period_5, 0) +
+                 COALESCE(net_activity_period_6, 0) +
+                 COALESCE(net_activity_period_7, 0) +
+                 COALESCE(net_activity_period_8, 0) +
+                 COALESCE(net_activity_period_9, 0) +
+                 COALESCE(net_activity_period_10, 0) +
+                 COALESCE(net_activity_period_11, 0) +
+                 COALESCE(net_activity_period_12, 0)
+         WHERE company_id = :comp_id AND overall_period_id = 3
+         """, mapOf("comp_id" to company.id))
    }
 
    private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): GeneralLedgerSummaryEntity {
