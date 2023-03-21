@@ -76,33 +76,21 @@ class FinancialCalendarService @Inject constructor(
    }
 
    fun openGLAccountsForPeriods(dateRangeDTO: FinancialCalendarDateRangeDTO, company: CompanyEntity) {
-      val openAPRangeExists = financialCalendarRepository.openAPDateRangeFound(company)
-      if (openAPRangeExists) {
-         val openedAP = fetchDateRangeWhenAPIsOpen(company)
-         val toBeOpened = financialCalendarValidator.validateOpenGLDates(dateRangeDTO, openedAP, true)
-         financialCalendarRepository.openGLAccountsForPeriods(toBeOpened, company)
-      } else {
-         val openedAP = Pair(LocalDate.now(), LocalDate.now()) //Just to give it something to send, though it won't be used.
-         val toBeOpened = financialCalendarValidator.validateOpenGLDates(dateRangeDTO, openedAP, false)
-         financialCalendarRepository.openGLAccountsForPeriods(toBeOpened, company)
-      }
+      val openedAP = fetchDateRangeWhenAPIsOpen(company)
+      val toBeOpened = financialCalendarValidator.validateOpenGLDates(dateRangeDTO, openedAP)
+      financialCalendarRepository.openGLAccountsForPeriods(toBeOpened, company)
    }
 
    fun openAPAccountsForPeriods(dateRangeDTO: FinancialCalendarDateRangeDTO, company: CompanyEntity) {
-      val openGLRangeExists = financialCalendarRepository.openGLDateRangeFound(company)
-      if (openGLRangeExists) {
-         val openedGL = fetchDateRangeWhenGLIsOpen(company)
-         val toBeOpened = financialCalendarValidator.validateOpenAPDates(dateRangeDTO, openedGL)
-         financialCalendarRepository.openAPAccountsForPeriods(toBeOpened, company)
-      } else {
-         throw NotFoundException("AP open range cannot be set with no GL open range set")
-      }
+      val openedGL = fetchDateRangeWhenGLIsOpen(company)
+      val toBeOpened = financialCalendarValidator.validateOpenAPDates(dateRangeDTO, openedGL)
+      financialCalendarRepository.openAPAccountsForPeriods(toBeOpened, company)
    }
 
-   fun fetchDateRangeWhenGLIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> =
+   fun fetchDateRangeWhenGLIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate>? =
       financialCalendarRepository.findDateRangeWhenGLIsOpen(company)
 
-   fun fetchDateRangeWhenAPIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> =
+   fun fetchDateRangeWhenAPIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate>? =
       financialCalendarRepository.findDateRangeWhenAPIsOpen(company)
 
    fun fetchByDate(company: CompanyEntity, date: LocalDate): FinancialCalendarDTO? =

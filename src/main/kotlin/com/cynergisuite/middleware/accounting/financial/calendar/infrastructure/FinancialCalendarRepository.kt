@@ -360,7 +360,7 @@ class FinancialCalendarRepository @Inject constructor(
    }
 
    @Transactional
-   fun findDateRangeWhenGLIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> {
+   fun findDateRangeWhenGLIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate>? {
       logger.debug("Find periods where GL is open")
 
       val periods = mutableListOf<FinancialCalendarEntity>()
@@ -381,15 +381,11 @@ class FinancialCalendarRepository @Inject constructor(
          } while (rs.next())
       }
 
-      //if (periods.isNotEmpty()) {
-         return Pair(periods.first().periodFrom, periods.last().periodTo)
-      //} else {
-      //   return Pairempty pair?
-      //}
+         return if (periods.isNotEmpty()) {Pair(periods.first().periodFrom, periods.last().periodTo)} else {null}
    }
 
    @Transactional
-   fun findDateRangeWhenAPIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> {
+   fun findDateRangeWhenAPIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate>? {
       logger.debug("Find periods where AP is open")
 
       val periods = mutableListOf<FinancialCalendarEntity>()
@@ -410,7 +406,7 @@ class FinancialCalendarRepository @Inject constructor(
          } while (rs.next())
       }
 
-      return Pair(periods.first().periodFrom, periods.last().periodTo)
+      return if (periods.isNotEmpty()) {Pair(periods.first().periodFrom, periods.last().periodTo)} else {null}
    }
 
    @ReadOnly

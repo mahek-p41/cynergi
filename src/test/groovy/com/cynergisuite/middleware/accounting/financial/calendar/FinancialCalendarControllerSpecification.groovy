@@ -408,9 +408,9 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
 
       then:
       def exception = thrown(HttpClientResponseException)
-      exception.response.status() == NOT_FOUND
+      exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.message == 'AP open range cannot be set with no GL open range set was unable to be found'
+      response.code[0] == 'cynergi.validation.gl.must.be.open.to.open.ap.range'
    }
 
    void "create fiscal calendar year" () {

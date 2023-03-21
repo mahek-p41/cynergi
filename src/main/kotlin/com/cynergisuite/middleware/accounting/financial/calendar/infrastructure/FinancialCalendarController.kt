@@ -304,7 +304,7 @@ class FinancialCalendarController @Inject constructor(
    fun fetchDateRangeWhenGLIsOpen(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): Pair<LocalDate, LocalDate> {
+   ): Pair<LocalDate, LocalDate>? {
       logger.info("Fetching Financial Calendar date range when General Ledger is open")
 
       val user = userService.fetchUser(authentication)
@@ -329,7 +329,7 @@ class FinancialCalendarController @Inject constructor(
    fun fetchDateRangeWhenAPIsOpen(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): Pair<LocalDate, LocalDate> {
+   ): Pair<LocalDate, LocalDate>? {
       logger.info("Fetching Financial Calendar date range when Accounts Payable is open")
 
       val user = userService.fetchUser(authentication)

@@ -61,7 +61,7 @@ class FinancialCalendarValidator @Inject constructor(
       )
    }
 
-   fun validateOpenGLDates(dateRangeDTO: FinancialCalendarDateRangeDTO, openedAP: Pair<LocalDate, LocalDate>, openAPRangeExists: Boolean): FinancialCalendarDateRangeDTO {
+   fun validateOpenGLDates(dateRangeDTO: FinancialCalendarDateRangeDTO, openedAP: Pair<LocalDate, LocalDate>?): FinancialCalendarDateRangeDTO {
 
       doValidation { errors ->
          val from = dateRangeDTO.periodFrom
@@ -80,7 +80,7 @@ class FinancialCalendarValidator @Inject constructor(
 
          //If there is no existing AP range, we do not need to compare anything here. Otherwise, the new GL range must
          //encompass the existing AP range.
-         if (openAPRangeExists && thru != null && from != null && (openedAP.first < from || openedAP.second > thru!!)) {
+         if (thru != null && from != null && openedAP?.first != null && openedAP.second != null && (openedAP.first < from || openedAP.second > thru!!)) {
             errors.add(ValidationError("from", GLDatesSelectedOutsideAPDatesSet(from!!, thru!!, openedAP.first, openedAP.second)))
          }
       }
@@ -88,7 +88,7 @@ class FinancialCalendarValidator @Inject constructor(
       return dateRangeDTO
    }
 
-   fun validateOpenAPDates(dateRangeDTO: FinancialCalendarDateRangeDTO, openedGL: Pair<LocalDate, LocalDate>): FinancialCalendarDateRangeDTO {
+   fun validateOpenAPDates(dateRangeDTO: FinancialCalendarDateRangeDTO, openedGL: Pair<LocalDate, LocalDate>?): FinancialCalendarDateRangeDTO {
 
       doValidation { errors ->
          val from = dateRangeDTO.periodFrom
@@ -106,8 +106,12 @@ class FinancialCalendarValidator @Inject constructor(
          }
 
          //If all dates exist, the AP range requested must fit within the existing GL range
-         if (thru != null && from != null && (openedGL.first > from || openedGL.second.plusMonths(1).minusDays(1) < thru)) {
+         if (thru != null && from != null && openedGL?.first != null && (openedGL.first > from || openedGL.second.plusMonths(1).minusDays(1) < thru)) {
             errors.add(ValidationError("from", APDatesSelectedOutsideGLDatesSet(from!!, thru!!, openedGL.first, openedGL.second)))
+         }
+
+         if (openedGL == null) {
+            errors.add(ValidationError("from", NoGLDatesSet()))
          }
       }
 
