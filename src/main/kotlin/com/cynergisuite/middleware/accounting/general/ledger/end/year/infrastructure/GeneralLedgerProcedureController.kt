@@ -55,10 +55,9 @@ class GeneralLedgerProcedureController @Inject constructor(
       authentication: Authentication
    ) {
       val user = userService.fetchUser(authentication)
-      val userCompany = user.myCompany()
       logger.info("Requested close current GL year {}", dto)
 
-      val response = generalLedgerProcedureService.endCurrentYear(dto, userCompany)
+      val response = generalLedgerProcedureService.endCurrentYear(dto, user)
 
       logger.debug("Requested close current GL year {} resulted in {}", dto, response)
 

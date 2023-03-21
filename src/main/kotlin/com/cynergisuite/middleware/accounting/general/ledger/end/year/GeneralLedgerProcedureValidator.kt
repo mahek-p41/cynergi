@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastruct
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.MustBe
+import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.PendingJEsFoundForCurrentFiscalYear
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -32,6 +33,7 @@ class GeneralLedgerProcedureValidator @Inject constructor(
          if (pendingJEs > 0) errors.add(ValidationError(null, PendingJEsFoundForCurrentFiscalYear(currentYear.begin!!, currentYear.end!!)))
 
          val account = accountRepository.findOne(dto.account.id!!, company)
+         account ?: errors.add(ValidationError("account.id", NotFound(dto.account.id!!)))
          if (account!!.type.value != "C") errors.add(ValidationError("account", MustBe("capital account")))
       }
 

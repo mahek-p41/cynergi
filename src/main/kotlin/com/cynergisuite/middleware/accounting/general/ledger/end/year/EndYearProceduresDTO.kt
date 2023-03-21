@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull
 data class EndYearProceduresDTO(
 
    @field:NotNull
-   @field:Schema(name = "account", description = "Retained Earning Account ID")
+   @field:Schema(name = "account", description = "Retained Earning Account ID", required = true)
    var account: SimpleIdentifiableDTO,
 
    @field:Schema(name = "profitCenter", description = "Profit center number")

@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.summary.infrastruc
 
 import com.cynergisuite.domain.GeneralLedgerProfitCenterTrialBalanceReportFilterRequest
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
@@ -438,6 +439,19 @@ class GeneralLedgerSummaryRepository @Inject constructor(
                  COALESCE(net_activity_period_12, 0)
          WHERE company_id = :comp_id AND overall_period_id = 3
          """, mapOf("comp_id" to company.id))
+   }
+
+   fun calculateNetIncomeForCurrentFiscalYear(company: CompanyEntity, retainedEarningsAccount: SimpleIdentifiableDTO): BigDecimal {
+      return jdbc.queryForObject("""SELECT
+          COALESCE(SUM(closing_balance), 0)
+      FROM general_ledger_summary summary
+         JOIN account ON summary.account_id = account.id AND account.deleted = FALSE
+         JOIN account_type_domain type ON account.type_id = type.id
+      WHERE summary.company_id = :comp_id
+         AND type.value IN ('R', 'E')
+         AND summary.overall_period_id = 3
+         AND summary.account_id = :retained_earnings_account
+      """, mapOf("comp_id" to company.id, "retained_earnings_account" to retainedEarningsAccount.id), BigDecimal::class.java)
    }
 
    private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): GeneralLedgerSummaryEntity {
