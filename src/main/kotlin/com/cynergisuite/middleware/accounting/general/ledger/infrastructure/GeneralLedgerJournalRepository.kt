@@ -489,7 +489,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY glJournal.account_id, glJournal.date
+            ORDER BY glJournal.account_id, profitCenter.number, glJournal.date
          """.trimIndent(),
          params
       ) { rs, _ ->

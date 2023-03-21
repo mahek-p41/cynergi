@@ -73,6 +73,18 @@ class GeneralLedgerJournalService @Inject constructor(
 
    fun export(filterRequest: GeneralLedgerJournalExportRequest, company: CompanyEntity): ByteArray {
       val found = generalLedgerJournalRepository.export(filterRequest, company)
+      //construct new filter request from PostPurgeDTO to calculate totals and check balance
+      val countFilter = GeneralLedgerJournalFilterRequest(null, null, null, null,
+         filterRequest.beginProfitCenter,
+         filterRequest.endProfitCenter,
+         filterRequest.beginSourceCode,
+         filterRequest.endSourceCode,
+         filterRequest.fromDate,
+         filterRequest.thruDate
+      )
+      val totals = fetchPendingTotals(company, countFilter)
+      generalLedgerJournalValidator.validateTransfer(totals)
+
       val stream = ByteArrayOutputStream()
       val output = OutputStreamWriter(stream)
       val csvWriter = CSVWriter(output, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.NO_ESCAPE_CHARACTER)
