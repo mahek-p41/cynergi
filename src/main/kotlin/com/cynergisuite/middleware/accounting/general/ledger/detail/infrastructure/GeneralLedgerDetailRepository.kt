@@ -6,7 +6,6 @@ import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalEntity
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportSourceDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailEntity
@@ -887,8 +886,9 @@ class GeneralLedgerDetailRepository @Inject constructor(
 
    @Transactional
    fun bulkDelete(dtoList: List<GeneralLedgerDetailEntity>, company: CompanyEntity): Int {
-      logger.debug("Deleting GeneralLedgerDetail with id={}")
       val idList = dtoList.map { it.id }
+
+      logger.debug("Deleting GeneralLedgerDetail with id={}", idList)
 
       val rowsAffected = jdbc.update(
          """
