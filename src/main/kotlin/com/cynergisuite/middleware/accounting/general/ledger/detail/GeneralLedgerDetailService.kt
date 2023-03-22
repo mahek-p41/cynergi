@@ -1,11 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.detail
 
-import com.cynergisuite.domain.GeneralLedgerRecurringEntriesFilterRequest
-import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
-import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
-import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.domain.*
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountService
 import com.cynergisuite.middleware.accounting.bank.BankService
@@ -331,5 +326,10 @@ class GeneralLedgerDetailService @Inject constructor(
 
    fun fetchNetChange(company: CompanyEntity, filterRequest: GeneralLedgerDetailFilterRequest): GeneralLedgerNetChangeDTO? {
       return generalLedgerDetailRepository.findNetChange(company, filterRequest)
+   }
+
+   fun purge(purgeDTO: GeneralLedgerDetailPostPurgeDTO, company: CompanyEntity): Int {
+      val toPurge = generalLedgerDetailRepository.findAllPurgePost(company, purgeDTO)
+      return generalLedgerDetailRepository.bulkDelete(toPurge, company)
    }
 }

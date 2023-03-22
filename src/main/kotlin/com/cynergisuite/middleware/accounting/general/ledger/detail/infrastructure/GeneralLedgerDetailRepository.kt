@@ -1,33 +1,25 @@
 package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure
 
-import com.cynergisuite.domain.GeneralLedgerProfitCenterTrialBalanceReportFilterRequest
-import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
-import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.*
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getIntOrNull
-import com.cynergisuite.extensions.getLocalDate
-import com.cynergisuite.extensions.getUuid
-import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.query
-import com.cynergisuite.extensions.queryForObject
-import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalEntity
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportSourceDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailEntity
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailFilterRequest
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailPageRequest
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailPostPurgeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerNetChangeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryEntity
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.GeneralLedgerProfitCenterTrialBalanceReportDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.TrialBalanceEndOfReportDTO
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.transaction.annotation.ReadOnly
@@ -858,6 +850,58 @@ class GeneralLedgerDetailRepository @Inject constructor(
       endOfReportDTO.ytdDifferenceAL = endOfReportDTO.ytdDebitAL!! + endOfReportDTO.ytdCreditAL!!
 
       return endOfReportDTO
+   }
+
+   @ReadOnly
+   fun findAllPurgePost(company: CompanyEntity, filterRequest: GeneralLedgerDetailPostPurgeDTO) : List<GeneralLedgerDetailEntity> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val whereClause = StringBuilder("WHERE glDetail.company_id = :comp_id AND glDetail.deleted = FALSE")
+
+      if (filterRequest.sourceCode != null) {
+         params["source"] = filterRequest.sourceCode
+         whereClause.append(" AND source.value = :source")
+      }
+
+      if (filterRequest.fromDate != null || filterRequest.thruDate != null) {
+         params["fromDate"] = filterRequest.fromDate
+         params["thruDate"] = filterRequest.thruDate
+         whereClause.append(" AND glJournal.date")
+            .append(
+               buildFilterString(
+                  filterRequest.fromDate != null,
+                  filterRequest.thruDate != null,
+                  "fromDate",
+                  "thruDate"
+               )
+            )
+      }
+
+      return jdbc.query(
+         """
+         ${selectBaseQuery()}
+         $whereClause
+      """.trimIndent(),
+         params
+      ) {  rs, _ -> mapRow(rs, company,"glDetail_")}
+   }
+
+   @Transactional
+   fun bulkDelete(dtoList: List<GeneralLedgerDetailEntity>, company: CompanyEntity): Int {
+      logger.debug("Deleting GeneralLedgerDetail with id={}")
+      val idList = dtoList.map { it.id }
+
+      val rowsAffected = jdbc.update(
+         """
+         UPDATE general_ledger_detail
+         SET deleted = TRUE
+         WHERE general_ledger_detail.id = any(array[<idList>]::uuid[]) AND company_id = :company_id AND deleted = FALSE
+         """,
+         mapOf("idList" to idList, "company_id" to company.id),
+      )
+
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(idList) else return rowsAffected
    }
 
    fun mapRow(

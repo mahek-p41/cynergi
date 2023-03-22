@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure
 
+import com.cynergisuite.domain.GeneralLedgerJournalPostPurgeDTO
 import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
 import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
 import com.cynergisuite.domain.Page
@@ -8,11 +9,9 @@ import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccoun
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingResponseDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportTemplate
-import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
-import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailFilterRequest
-import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailPageRequest
-import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
+import com.cynergisuite.middleware.accounting.general.ledger.detail.*
 import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerNetChangeDTO
+import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NoContentException
 import com.cynergisuite.middleware.error.NotFoundException
@@ -20,12 +19,7 @@ import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
-import io.micronaut.http.annotation.Body
-import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Get
-import io.micronaut.http.annotation.Post
-import io.micronaut.http.annotation.Put
-import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.annotation.*
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
@@ -253,5 +247,29 @@ class GeneralLedgerDetailController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
       return generalLedgerDetailService.fetchNetChange(user.myCompany(), filterRequest) ?: throw NoContentException()
+   }
+
+   @Delete(value = "/purge{?filterRequest*}")
+   @AccessControl
+   @Throws(NotFoundException::class)
+   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Purge a list of GeneralLedgerDetail", description = "Purge a list of GeneralLedgerDetail", operationId = "GeneralLedgerDetail-purge")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If GeneralLedgerDetail was successfully deleted"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested GeneralLedgerDetail was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun purge(
+      @Valid @QueryValue("filterRequest")
+      filterRequest: GeneralLedgerDetailPostPurgeDTO,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ): Int {
+      logger.debug("User {} requested purge a list of GeneralLedgerDetail", authentication)
+
+      val user = userService.fetchUser(authentication)
+      return generalLedgerDetailService.purge(filterRequest, user.myCompany())
    }
 }
