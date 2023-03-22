@@ -80,8 +80,8 @@ class FinancialCalendarValidator @Inject constructor(
 
          //If there is no existing AP range, we do not need to compare anything here. Otherwise, the new GL range must
          //encompass the existing AP range.
-         if (thru != null && from != null && openedAP?.first != null && openedAP.second != null && (openedAP.first < from || openedAP.second > thru!!)) {
-            errors.add(ValidationError("from", GLDatesSelectedOutsideAPDatesSet(from!!, thru!!, openedAP.first, openedAP.second)))
+         if (thru != null && from != null && openedAP != null && (openedAP.first < from || openedAP.second > thru)) {
+            errors.add(ValidationError("from", GLDatesSelectedOutsideAPDatesSet(from, thru, openedAP.first, openedAP.second)))
          }
       }
 
@@ -107,7 +107,7 @@ class FinancialCalendarValidator @Inject constructor(
 
          //If all dates exist, the AP range requested must fit within the existing GL range
          if (thru != null && from != null && openedGL?.first != null && (openedGL.first > from || openedGL.second.plusMonths(1).minusDays(1) < thru)) {
-            errors.add(ValidationError("from", APDatesSelectedOutsideGLDatesSet(from!!, thru!!, openedGL.first, openedGL.second)))
+            errors.add(ValidationError("from", APDatesSelectedOutsideGLDatesSet(from, thru, openedGL.first, openedGL.second)))
          }
 
          if (openedGL == null) {

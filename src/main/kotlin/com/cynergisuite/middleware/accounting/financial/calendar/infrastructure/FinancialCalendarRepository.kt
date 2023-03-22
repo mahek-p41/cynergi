@@ -381,7 +381,11 @@ class FinancialCalendarRepository @Inject constructor(
          } while (rs.next())
       }
 
-         return if (periods.isNotEmpty()) {Pair(periods.first().periodFrom, periods.last().periodTo)} else {null}
+      return if (periods.isNotEmpty()) {
+         Pair(periods.first().periodFrom, periods.last().periodTo)
+      } else {
+         null
+      }
    }
 
    @Transactional
@@ -406,7 +410,11 @@ class FinancialCalendarRepository @Inject constructor(
          } while (rs.next())
       }
 
-      return if (periods.isNotEmpty()) {Pair(periods.first().periodFrom, periods.last().periodTo)} else {null}
+      return if (periods.isNotEmpty()) {
+         Pair(periods.first().periodFrom, periods.last().periodTo)
+      } else {
+         null
+      }
    }
 
    @ReadOnly

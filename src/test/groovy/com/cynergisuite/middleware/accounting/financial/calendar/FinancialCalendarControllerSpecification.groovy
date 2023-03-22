@@ -329,6 +329,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.code[0] == 'cynergi.validation.gl.not.encompassing.ap.window'
+      response.message[0] == 'The GL open range chosen must encompass the whole open AP range'
    }
 
    void "try to open gl account ending before the open ap range" () {
@@ -352,6 +353,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.code[0] == 'cynergi.validation.gl.not.encompassing.ap.window'
+      response.message[0] == 'The GL open range chosen must encompass the whole open AP range'
    }
 
    void "try to open ap starting before the open gl range" () {
@@ -382,6 +384,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.code[0] == 'cynergi.validation.ap.outside.of.gl.window'
+      response.message[0] == 'The AP open range chosen must be within the open GL range'
    }
 
    void "try to set the open gl window when no ap window is open" () {
@@ -411,6 +414,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.code[0] == 'cynergi.validation.gl.must.be.open.to.open.ap.range'
+      response.message[0] == 'Must set an open GL range before setting an open AP range'
    }
 
    void "create fiscal calendar year" () {
