@@ -50,6 +50,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
    @Inject AccountTestDataLoaderService accountDataLoaderService
    @Inject GeneralLedgerSourceCodeDataLoaderService sourceCodeDataLoaderService
    @Inject GeneralLedgerDetailDataLoaderService generalLedgerDetailDataLoaderService
+   @Inject GeneralLedgerDetailPostPurgeDTO generalLedgerDetailPostPurgeDTO
    @Inject BankReconciliationTypeDataLoaderService bankReconciliationTypeDataLoaderService
    @Inject FinancialCalendarDataLoaderService financialCalendarDataLoaderService
    @Inject GeneralLedgerSummaryDataLoaderService generalLedgerSummaryDataLoaderService
@@ -952,5 +953,83 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status() == NO_CONTENT
+   }
+
+   void "delete a list of general ledger detail"() {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final glAccount2 = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource1 = sourceCodeDataLoaderService.single(company)
+      final glSource2 = sourceCodeDataLoaderService.single(company)
+      final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
+      final beginDate = LocalDate.parse("2021-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+      final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
+      final generalLedgerDetails2 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource2).toList()
+
+      def gld1 = get("$path/${generalLedgerDetails1[0].id}")
+      def gld2 = get("$path/${generalLedgerDetails1[1].id}")
+      def gld3 = get("$path/${generalLedgerDetails1[2].id}")
+
+      def gld4 = get("$path/${generalLedgerDetails2[0].id}")
+      def gld5 = get("$path/${generalLedgerDetails2[1].id}")
+      def gld6 = get("$path/${generalLedgerDetails2[2].id}")
+
+      final toBeDeleted = new generalLedgerDetailPostPurgeDTO(LocalDate.parse("2021-11-09"), LocalDate.parse("2021-12-09"), glSource1)
+
+      when:
+      delete("$path/purge/", toBeDeleted)
+      then:
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("$path/${gld1.id}")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "$gld1.id was unable to be found"
+      response.code == 'system.not.found'
+
+      when:
+      get("$path/${gld2.id}")
+
+      then:
+      final exception2 = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response2 = exception.response.bodyAsJson()
+      response.message == "$gld2.id was unable to be found"
+      response.code == 'system.not.found'
+
+      when:
+      get("$path/${gld3.id}")
+
+      then:
+      final exception3 = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response3 = exception.response.bodyAsJson()
+      response.message == "$gld3.id was unable to be found"
+      response.code == 'system.not.found'
+
+      when:
+      get("$path/${gld4.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("$path/${gld5.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("$path/${gld6.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
    }
 }
