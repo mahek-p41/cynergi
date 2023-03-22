@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeService
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.error.NotFoundException
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.time.LocalDate
@@ -86,10 +87,10 @@ class FinancialCalendarService @Inject constructor(
       financialCalendarRepository.openAPAccountsForPeriods(toBeOpened, company)
    }
 
-   fun fetchDateRangeWhenGLIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> =
+   fun fetchDateRangeWhenGLIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate>? =
       financialCalendarRepository.findDateRangeWhenGLIsOpen(company)
 
-   fun fetchDateRangeWhenAPIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> =
+   fun fetchDateRangeWhenAPIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate>? =
       financialCalendarRepository.findDateRangeWhenAPIsOpen(company)
 
    fun fetchByDate(company: CompanyEntity, date: LocalDate): FinancialCalendarDTO? =

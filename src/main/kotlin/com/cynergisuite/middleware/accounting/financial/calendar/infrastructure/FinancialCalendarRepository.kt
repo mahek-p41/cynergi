@@ -141,7 +141,7 @@ class FinancialCalendarRepository @Inject constructor(
 
    @Transactional
    fun insert(entity: FinancialCalendarEntity, company: CompanyEntity): FinancialCalendarEntity {
-      logger.debug("Inserting financial_calendar {}", company)
+      logger.debug("Inserting financial_calendar {}", entity)
 
       return jdbc.insertReturning(
          """
@@ -325,8 +325,42 @@ class FinancialCalendarRepository @Inject constructor(
       logger.info("Affected row count when opening APAccounts {}", newAffectedRowCount)
    }
 
+   @ReadOnly
+   fun openGLDateRangeFound(company: CompanyEntity): Boolean {
+      val params = mutableMapOf("comp_id" to company.id)
+      val exists = jdbc.queryForObject(
+         """
+         SELECT EXISTS ( ${selectBaseQuery()}
+                        WHERE company_id = :comp_id AND general_ledger_open = true)
+         """.trimIndent(),
+         params,
+         Boolean::class.java
+      )
+
+      logger.trace("Validating open GL range exists resulted in {}", params, exists)
+
+      return exists
+   }
+
+   @ReadOnly
+   fun openAPDateRangeFound(company: CompanyEntity): Boolean {
+      val params = mutableMapOf("comp_id" to company.id)
+      val exists = jdbc.queryForObject(
+         """
+         SELECT EXISTS ( ${selectBaseQuery()}
+                        WHERE company_id = :comp_id AND account_payable_open = true)
+         """.trimIndent(),
+         params,
+         Boolean::class.java
+      )
+
+      logger.trace("Validating open AP range exists resulted in {}", params, exists)
+
+      return exists
+   }
+
    @Transactional
-   fun findDateRangeWhenGLIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> {
+   fun findDateRangeWhenGLIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate>? {
       logger.debug("Find periods where GL is open")
 
       val periods = mutableListOf<FinancialCalendarEntity>()
@@ -347,11 +381,15 @@ class FinancialCalendarRepository @Inject constructor(
          } while (rs.next())
       }
 
-      return Pair(periods.first().periodFrom, periods.last().periodTo)
+      return if (periods.isNotEmpty()) {
+         Pair(periods.first().periodFrom, periods.last().periodTo)
+      } else {
+         null
+      }
    }
 
    @Transactional
-   fun findDateRangeWhenAPIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate> {
+   fun findDateRangeWhenAPIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate>? {
       logger.debug("Find periods where AP is open")
 
       val periods = mutableListOf<FinancialCalendarEntity>()
@@ -372,7 +410,11 @@ class FinancialCalendarRepository @Inject constructor(
          } while (rs.next())
       }
 
-      return Pair(periods.first().periodFrom, periods.last().periodTo)
+      return if (periods.isNotEmpty()) {
+         Pair(periods.first().periodFrom, periods.last().periodTo)
+      } else {
+         null
+      }
    }
 
    @ReadOnly

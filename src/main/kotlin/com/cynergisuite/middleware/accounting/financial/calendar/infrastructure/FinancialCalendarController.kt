@@ -304,13 +304,38 @@ class FinancialCalendarController @Inject constructor(
    fun fetchDateRangeWhenGLIsOpen(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): Pair<LocalDate, LocalDate> {
+   ): Pair<LocalDate, LocalDate>? {
       logger.info("Fetching Financial Calendar date range when General Ledger is open")
 
       val user = userService.fetchUser(authentication)
       val response = financialCalendarService.fetchDateRangeWhenGLIsOpen(user.myCompany())
 
       logger.debug("Fetching Financial Calendar date range when General Ledger is open resulted in", response)
+
+      return response
+   }
+
+   @Throws(NotFoundException::class)
+   @Get(value = "/ap-dates-open", produces = [APPLICATION_JSON])
+   @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Fetch the date range when AP is open", description = "Fetch the Financial Calendar date range when the Accounts Payable is open", operationId = "financialCalendar-fetchDateRangeWhenAPIsOpen")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Pair::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Financial Calendar was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchDateRangeWhenAPIsOpen(
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Pair<LocalDate, LocalDate>? {
+      logger.info("Fetching Financial Calendar date range when Accounts Payable is open")
+
+      val user = userService.fetchUser(authentication)
+      val response = financialCalendarService.fetchDateRangeWhenAPIsOpen(user.myCompany())
+
+      logger.debug("Fetching Financial Calendar date range when Accounts Payable is open resulted in", response)
 
       return response
    }

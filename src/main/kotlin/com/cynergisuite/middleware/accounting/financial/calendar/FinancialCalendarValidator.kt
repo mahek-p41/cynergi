@@ -61,47 +61,57 @@ class FinancialCalendarValidator @Inject constructor(
       )
    }
 
-   fun validateOpenGLDates(dateRangeDTO: FinancialCalendarDateRangeDTO, openedAP: Pair<LocalDate, LocalDate>): FinancialCalendarDateRangeDTO {
+   fun validateOpenGLDates(dateRangeDTO: FinancialCalendarDateRangeDTO, openedAP: Pair<LocalDate, LocalDate>?): FinancialCalendarDateRangeDTO {
 
       doValidation { errors ->
          val from = dateRangeDTO.periodFrom
          val thru = dateRangeDTO.periodTo!!.plusMonths(1).minusDays(1)
          val daysBetween = ChronoUnit.DAYS.between(from, thru)
 
+         //Thru date cannot be before From date
          if (thru != null && from != null && thru.isBefore(from)) {
             errors.add(ValidationError("from", CalendarThruDateIsBeforeFrom(from, thru)))
          }
 
+         //Total range requested cannot span more than 2 years
          if (daysBetween > 731) {
             errors.add(ValidationError("from", CalendarDatesSpanMoreThanTwoYears(from!!, thru!!)))
          }
 
-         //beginDate.plusMonths(it.toLong()).minusDays(1)
-         if (thru != null && from != null && openedAP.first < from || openedAP.second > thru!!) {
-            errors.add(ValidationError("from", GLDatesSelectedOutsideAPDatesSet(from!!, thru!!, openedAP.first, openedAP.second)))
+         //If there is no existing AP range, we do not need to compare anything here. Otherwise, the new GL range must
+         //encompass the existing AP range.
+         if (thru != null && from != null && openedAP != null && (openedAP.first < from || openedAP.second > thru)) {
+            errors.add(ValidationError("from", GLDatesSelectedOutsideAPDatesSet(from, thru, openedAP.first, openedAP.second)))
          }
       }
 
       return dateRangeDTO
    }
 
-   fun validateOpenAPDates(dateRangeDTO: FinancialCalendarDateRangeDTO, openedGL: Pair<LocalDate, LocalDate>): FinancialCalendarDateRangeDTO {
+   fun validateOpenAPDates(dateRangeDTO: FinancialCalendarDateRangeDTO, openedGL: Pair<LocalDate, LocalDate>?): FinancialCalendarDateRangeDTO {
 
       doValidation { errors ->
          val from = dateRangeDTO.periodFrom
          val thru = dateRangeDTO.periodTo!!.plusMonths(1).minusDays(1)
          val daysBetween = ChronoUnit.DAYS.between(from, thru)
 
+         //Thru date cannot be before From date
          if (thru != null && from != null && thru.isBefore(from)) {
             errors.add(ValidationError("from", CalendarThruDateIsBeforeFrom(from, thru)))
          }
 
+         //Total range requested cannot span more than 2 years
          if (daysBetween > 731) {
             errors.add(ValidationError("from", CalendarDatesSpanMoreThanTwoYears(from!!, thru!!)))
          }
 
-         if (thru != null && from != null && openedGL.first > from || openedGL.second.plusMonths(1).minusDays(1) < thru) {
-            errors.add(ValidationError("from", APDatesSelectedOutsideGLDatesSet(from!!, thru!!, openedGL.first, openedGL.second)))
+         //If all dates exist, the AP range requested must fit within the existing GL range
+         if (thru != null && from != null && openedGL?.first != null && (openedGL.first > from || openedGL.second.plusMonths(1).minusDays(1) < thru)) {
+            errors.add(ValidationError("from", APDatesSelectedOutsideGLDatesSet(from, thru, openedGL.first, openedGL.second)))
+         }
+
+         if (openedGL == null) {
+            errors.add(ValidationError("from", NoGLDatesSet()))
          }
       }
 

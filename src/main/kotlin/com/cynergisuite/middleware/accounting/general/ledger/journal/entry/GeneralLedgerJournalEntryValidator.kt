@@ -30,8 +30,14 @@ class GeneralLedgerJournalEntryValidator @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerJournalEntryValidator::class.java)
 
    fun isDateInRangeOfOpenGL(date: LocalDate, company: CompanyEntity): Boolean {
-      val (glOpenBegin, glOpenEnd) = financialCalendarRepository.findDateRangeWhenGLIsOpen(company)
-      return !(date.isBefore(glOpenBegin) || date.isAfter(glOpenEnd))
+      val dateInRange = financialCalendarRepository.findDateRangeWhenGLIsOpen(company)
+      return if (dateInRange != null) {
+         val glOpenBegin = dateInRange.first
+         val glOpenEnd = dateInRange.second
+         !(date.isBefore(glOpenBegin) || date.isAfter(glOpenEnd))
+      } else {
+         false
+      }
    }
 
    fun validateCreate(dto: GeneralLedgerJournalEntryDTO, company: CompanyEntity): GeneralLedgerJournalEntryDTO {

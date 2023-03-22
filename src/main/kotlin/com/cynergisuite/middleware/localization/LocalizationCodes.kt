@@ -51,6 +51,7 @@ class CalendarThruDateIsBeforeFrom(from: LocalDate, thru: LocalDate) : Cynergi("
 class CalendarDatesSpanMoreThanTwoYears(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.dates.span.more.than.two.years", arrayOf(from, thru))
 class GLDatesSelectedOutsideAPDatesSet(fromGL: LocalDate, thruGL: LocalDate, fromAP: LocalDate, thruAP: LocalDate) : Cynergi("cynergi.validation.gl.not.encompassing.ap.window", arrayOf(fromGL, thruGL, fromAP, thruAP))
 class APDatesSelectedOutsideGLDatesSet(fromAP: LocalDate, thruAP: LocalDate, fromGL: LocalDate, thruGL: LocalDate) : Cynergi("cynergi.validation.ap.outside.of.gl.window", arrayOf(fromAP, thruAP, fromGL, thruGL))
+class NoGLDatesSet : Cynergi("cynergi.validation.gl.must.be.open.to.open.ap.range", emptyArray())
 class InvalidCompany(company: CompanyEntity) : Cynergi("cynergi.validation.invalid.company", arrayOf(company.datasetCode))
 class ConfigAlreadyExist(value: Any?) : Cynergi("cynergi.validation.config.exists", arrayOf(value))
 class AddressNeedsUpdated : Cynergi("cynergi.validation.address.needs.updated", emptyArray())

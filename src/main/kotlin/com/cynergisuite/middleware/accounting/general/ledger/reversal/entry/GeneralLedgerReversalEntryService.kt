@@ -47,7 +47,13 @@ class GeneralLedgerReversalEntryService @Inject constructor(
       val glOpenDateRange = financialCalendarRepository.findDateRangeWhenGLIsOpen(company)
       val reversalDate = dto.generalLedgerReversal!!.reversalDate
 
-      return !(reversalDate!!.isBefore(glOpenDateRange.first) || reversalDate.isAfter(glOpenDateRange.second))
+      return if (glOpenDateRange != null) {
+         val glOpenBegin = glOpenDateRange.first
+         val glOpenEnd = glOpenDateRange.second
+         !(reversalDate!!.isBefore(glOpenDateRange.first) || reversalDate.isAfter(glOpenDateRange.second))
+      } else {
+         false
+      }
    }
 
    private fun transformEntity(entity: GeneralLedgerReversalEntryEntity): GeneralLedgerReversalEntryDTO {
