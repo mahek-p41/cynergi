@@ -332,4 +332,9 @@ class GeneralLedgerDetailService @Inject constructor(
    fun fetchNetChange(company: CompanyEntity, filterRequest: GeneralLedgerDetailFilterRequest): GeneralLedgerNetChangeDTO? {
       return generalLedgerDetailRepository.findNetChange(company, filterRequest)
    }
+
+   fun purge(purgeDTO: GeneralLedgerDetailPostPurgeDTO, company: CompanyEntity): Int {
+      val toPurge = generalLedgerDetailRepository.findAllPurgePost(company, purgeDTO)
+      return generalLedgerDetailRepository.bulkDelete(toPurge, company)
+   }
 }

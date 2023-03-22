@@ -11,8 +11,10 @@ import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSource
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailFilterRequest
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailPageRequest
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailPostPurgeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
 import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerNetChangeDTO
+import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NoContentException
 import com.cynergisuite.middleware.error.NotFoundException
@@ -22,6 +24,7 @@ import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
@@ -253,5 +256,29 @@ class GeneralLedgerDetailController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
       return generalLedgerDetailService.fetchNetChange(user.myCompany(), filterRequest) ?: throw NoContentException()
+   }
+
+   @Delete(value = "/purge{?filterRequest*}")
+   @AccessControl
+   @Throws(NotFoundException::class)
+   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Purge a list of GeneralLedgerDetail", description = "Purge a list of GeneralLedgerDetail", operationId = "GeneralLedgerDetail-purge")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If GeneralLedgerDetail was successfully deleted"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested GeneralLedgerDetail was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun purge(
+      @Valid @QueryValue("filterRequest")
+      filterRequest: GeneralLedgerDetailPostPurgeDTO,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ): Int {
+      logger.debug("User {} requested purge a list of GeneralLedgerDetail", authentication)
+
+      val user = userService.fetchUser(authentication)
+      return generalLedgerDetailService.purge(filterRequest, user.myCompany())
    }
 }
