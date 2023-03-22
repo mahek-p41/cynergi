@@ -9,7 +9,7 @@ import java.time.LocalDate
 @Schema(
    name = "GeneralLedgerDetailFilterRequest",
    title = "Resulting list for filtering result",
-   description = "Defines the parameters available to for a sortable request. Example ?banks=1,3&status=P",
+   description = "Defines the parameters available for purging multiple general ledger detail records.",
    allOf = [PageRequestBase::class]
 )
 @Introspected
