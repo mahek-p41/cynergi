@@ -12,6 +12,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructu
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerJournalRepository
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.store.StoreDTO
 import com.opencsv.CSVWriter
 import jakarta.inject.Inject
@@ -57,7 +58,11 @@ class GeneralLedgerJournalService @Inject constructor(
 
    fun purge(purgeDTO: GeneralLedgerJournalPostPurgeDTO, company: CompanyEntity) {
       val toPurge = generalLedgerJournalRepository.findAllPurgePost(company, purgeDTO)
-      generalLedgerJournalRepository.bulkDelete(toPurge, company)
+      if (toPurge.isEmpty()) {
+         throw NotFoundException("No Pending Journal Entries Found")
+      } else {
+         generalLedgerJournalRepository.bulkDelete(toPurge, company)
+      }
    }
 
    fun fetchReport(company: CompanyEntity, filterRequest: GeneralLedgerJournalReportFilterRequest): GeneralLedgerPendingReportTemplate {
