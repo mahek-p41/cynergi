@@ -426,6 +426,13 @@ class GeneralLedgerJournalRepository @Inject constructor(
       val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = false")
       val orderBy = StringBuilder("ORDER BY glJournal.account_id")
 
+      if (filterRequest.beginProfitCenter != null || filterRequest.endProfitCenter != null) {
+         params["beginProfitCenter"] = filterRequest.beginProfitCenter
+         params["endProfitCenter"] = filterRequest.endProfitCenter
+         whereClause.append(" AND profitCenter.number ")
+            .append(buildFilterString(filterRequest.beginProfitCenter != null, filterRequest.endProfitCenter != null, "beginProfitCenter", "endProfitCenter"))
+      }
+
       if (filterRequest.beginSourceCode != null || filterRequest.endSourceCode != null) {
          params["beginSource"] = filterRequest.beginSourceCode
          params["endSource"] = filterRequest.endSourceCode
