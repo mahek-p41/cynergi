@@ -21,8 +21,10 @@ class OverallPeriodTypeRepository @Inject constructor(
 
    @ReadOnly
    fun exists(value: String): Boolean {
+      logger.trace("Check to see if value {} exists", value)
+
       val exists = jdbc.queryForObject(
-         "SELECT EXISTS (SELECT id FROM overall_period_type_domain WHERE UPPER(value) = :value",
+         "SELECT EXISTS (SELECT id FROM overall_period_type_domain WHERE UPPER(value) = :value)",
          mapOf(
             "value" to value.uppercase()
          ),

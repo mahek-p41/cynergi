@@ -16,13 +16,13 @@ import java.time.LocalDate
 class GeneralLedgerDetailPostPurgeDTO(
 
    @field:Schema(name = "fromDate", description = "From date for general ledger detail")
-   var fromDate: LocalDate? = null,
+   var fromDate: LocalDate,
 
    @field:Schema(name = "thruDate", description = "Thru date for general ledger detail")
-   var thruDate: LocalDate? = null,
+   var thruDate: LocalDate,
 
    @field:Schema(name = "sourceCode", description = "General ledger source code")
-   var sourceCode: String? = null,
+   var sourceCode: String,
 
    ) : SortableRequestBase<GeneralLedgerDetailPostPurgeDTO>(null, null) {
 
