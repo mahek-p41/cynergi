@@ -106,8 +106,8 @@ class FinancialCalendarService @Inject constructor(
 
    fun sameFiscalYear(company: CompanyEntity, filterRequest: FinancialCalendarValidateDatesFilterRequest): Boolean {
       return if (filterRequest.fromDate != filterRequest.thruDate) {
-         val fromDateOverallPeriodId = financialCalendarRepository.findOverallPeriodIdAndPeriod(company, filterRequest.fromDate!!).first
-         val thruDateOverallPeriodId = financialCalendarRepository.findOverallPeriodIdAndPeriod(company, filterRequest.thruDate!!).first
+         val fromDateOverallPeriodId = financialCalendarRepository.findOverallPeriodIdAndPeriod(company, filterRequest.fromDate!!)?.first
+         val thruDateOverallPeriodId = financialCalendarRepository.findOverallPeriodIdAndPeriod(company, filterRequest.thruDate!!)?.first
          val sameFiscalYear = fromDateOverallPeriodId == thruDateOverallPeriodId
 
          financialCalendarValidator.validateSameFiscalYear(sameFiscalYear, filterRequest.fromDate!!, filterRequest.thruDate!!)

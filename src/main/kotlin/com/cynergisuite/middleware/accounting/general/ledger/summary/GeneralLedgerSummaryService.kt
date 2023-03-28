@@ -57,71 +57,74 @@ class GeneralLedgerSummaryService @Inject constructor(
    }
 
    fun fetchProfitCenterTrialBalanceReportRecords(company: CompanyEntity, filterRequest: GeneralLedgerProfitCenterTrialBalanceReportFilterRequest): GeneralLedgerProfitCenterTrialBalanceReportTemplate {
-      val glSummaries = generalLedgerSummaryRepository.fetchProfitCenterTrialBalanceReportRecords(company, filterRequest)
       val emptyList = listOf<BigDecimal>()
       val reportNetChange = GeneralLedgerNetChangeDTO(BigDecimal.ZERO, BigDecimal.ZERO, emptyList, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
       val reportTemplate = GeneralLedgerProfitCenterTrialBalanceReportTemplate(null, reportNetChange, null)
-      val overallPeriodId = financialCalendarRepository.findOverallPeriodIdAndPeriod(company, filterRequest.fromDate!!).first
-      var accountId: UUID? = null
-      var profitCenterNumber: Int? = null
-      val emptyAccountDetails = mutableListOf<GeneralLedgerProfitCenterTrialBalanceAccountDetailDTO>()
-      var accountDetails = mutableListOf<GeneralLedgerProfitCenterTrialBalanceAccountDetailDTO>()
-      val locationDetails = mutableListOf<GeneralLedgerProfitCenterTrialBalanceLocationDetailDTO>()
-      if (glSummaries.isNotEmpty()) {
-         glSummaries.forEach { glSummary ->
-            // first glSummary
-            if (accountId == null && profitCenterNumber == null) {
-               accountId = glSummary.account.id
-               profitCenterNumber = glSummary.profitCenter.myNumber()
-               val reportDetails = generalLedgerDetailRepository.fetchProfitCenterTrialBalanceReportDetails(company, filterRequest, glSummary)
-               val accountNetChange = GeneralLedgerNetChangeDTO(BigDecimal.ZERO, BigDecimal.ZERO, emptyList, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
-               accountDetails.add(GeneralLedgerProfitCenterTrialBalanceAccountDetailDTO(AccountDTO(glSummary.account), reportDetails, accountNetChange))
-            }
-            // different location and same/different account
-            else if (glSummary.profitCenter.myNumber() != profitCenterNumber) {
-               val locationNetChange = GeneralLedgerNetChangeDTO(BigDecimal.ZERO, BigDecimal.ZERO, emptyList, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
-               locationDetails.add(GeneralLedgerProfitCenterTrialBalanceLocationDetailDTO(profitCenterNumber, accountDetails, locationNetChange))
-               accountDetails = emptyAccountDetails.map { it.copy() }.toMutableList()
+      val pair = financialCalendarRepository.findOverallPeriodIdAndPeriod(company, filterRequest.fromDate!!)
 
-               accountId = glSummary.account.id
-               profitCenterNumber = glSummary.profitCenter.myNumber()
-               val reportDetails = generalLedgerDetailRepository.fetchProfitCenterTrialBalanceReportDetails(company, filterRequest, glSummary)
-               val accountNetChange = GeneralLedgerNetChangeDTO(BigDecimal.ZERO, BigDecimal.ZERO, emptyList, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
-               accountDetails.add(GeneralLedgerProfitCenterTrialBalanceAccountDetailDTO(AccountDTO(glSummary.account), reportDetails, accountNetChange))
+      if (pair != null) {
+         val glSummaries = generalLedgerSummaryRepository.fetchProfitCenterTrialBalanceReportRecords(company, filterRequest, pair)
+         var accountId: UUID? = null
+         var profitCenterNumber: Int? = null
+         val emptyAccountDetails = mutableListOf<GeneralLedgerProfitCenterTrialBalanceAccountDetailDTO>()
+         var accountDetails = mutableListOf<GeneralLedgerProfitCenterTrialBalanceAccountDetailDTO>()
+         val locationDetails = mutableListOf<GeneralLedgerProfitCenterTrialBalanceLocationDetailDTO>()
+         if (glSummaries.isNotEmpty()) {
+            glSummaries.forEach { glSummary ->
+               // first glSummary
+               if (accountId == null && profitCenterNumber == null) {
+                  accountId = glSummary.account.id
+                  profitCenterNumber = glSummary.profitCenter.myNumber()
+                  val reportDetails = generalLedgerDetailRepository.fetchProfitCenterTrialBalanceReportDetails(company, filterRequest, glSummary)
+                  val accountNetChange = GeneralLedgerNetChangeDTO(BigDecimal.ZERO, BigDecimal.ZERO, emptyList, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
+                  accountDetails.add(GeneralLedgerProfitCenterTrialBalanceAccountDetailDTO(AccountDTO(glSummary.account), reportDetails, accountNetChange))
+               }
+               // different location and same/different account
+               else if (glSummary.profitCenter.myNumber() != profitCenterNumber) {
+                  val locationNetChange = GeneralLedgerNetChangeDTO(BigDecimal.ZERO, BigDecimal.ZERO, emptyList, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
+                  locationDetails.add(GeneralLedgerProfitCenterTrialBalanceLocationDetailDTO(profitCenterNumber, accountDetails, locationNetChange))
+                  accountDetails = emptyAccountDetails.map { it.copy() }.toMutableList()
+
+                  accountId = glSummary.account.id
+                  profitCenterNumber = glSummary.profitCenter.myNumber()
+                  val reportDetails = generalLedgerDetailRepository.fetchProfitCenterTrialBalanceReportDetails(company, filterRequest, glSummary)
+                  val accountNetChange = GeneralLedgerNetChangeDTO(BigDecimal.ZERO, BigDecimal.ZERO, emptyList, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
+                  accountDetails.add(GeneralLedgerProfitCenterTrialBalanceAccountDetailDTO(AccountDTO(glSummary.account), reportDetails, accountNetChange))
+               }
+               // same location and different account
+               else if (glSummary.account.id != accountId) {
+                  accountId = glSummary.account.id
+                  val reportDetails = generalLedgerDetailRepository.fetchProfitCenterTrialBalanceReportDetails(company, filterRequest, glSummary)
+                  val accountNetChange = GeneralLedgerNetChangeDTO(BigDecimal.ZERO, BigDecimal.ZERO, emptyList, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
+                  accountDetails.add(GeneralLedgerProfitCenterTrialBalanceAccountDetailDTO(AccountDTO(glSummary.account), reportDetails, accountNetChange))
+               }
+               // same location and same account - continue to next GL summary
             }
-            // same location and different account
-            else if (glSummary.account.id != accountId) {
-               accountId = glSummary.account.id
-               val reportDetails = generalLedgerDetailRepository.fetchProfitCenterTrialBalanceReportDetails(company, filterRequest, glSummary)
-               val accountNetChange = GeneralLedgerNetChangeDTO(BigDecimal.ZERO, BigDecimal.ZERO, emptyList, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
-               accountDetails.add(GeneralLedgerProfitCenterTrialBalanceAccountDetailDTO(AccountDTO(glSummary.account), reportDetails, accountNetChange))
+            val locationNetChange = GeneralLedgerNetChangeDTO(BigDecimal.ZERO, BigDecimal.ZERO, emptyList, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
+            locationDetails.add(GeneralLedgerProfitCenterTrialBalanceLocationDetailDTO(profitCenterNumber, accountDetails, locationNetChange))
+
+            // calculate account, location, and report totals
+            locationDetails.forEach { loc ->
+               loc.accountDetailList?.forEach { acct ->
+                  acct.accountTotals = generalLedgerDetailRepository.findNetChangeProfitCenterTrialBalanceReport(company, filterRequest.fromDate, filterRequest.thruDate, loc.profitCenter, acct.account!!.number, pair.first)
+
+                  loc.locationTotals!!.debit += acct.accountTotals!!.debit
+                  loc.locationTotals!!.credit += acct.accountTotals!!.credit
+                  loc.locationTotals!!.netChange += acct.accountTotals!!.netChange
+
+                  reportTemplate.reportTotals!!.beginBalance += acct.accountTotals!!.beginBalance
+                  reportTemplate.reportTotals!!.debit += acct.accountTotals!!.debit
+                  reportTemplate.reportTotals!!.credit += acct.accountTotals!!.credit
+                  reportTemplate.reportTotals!!.netChange += acct.accountTotals!!.netChange
+                  reportTemplate.reportTotals!!.endBalance += acct.accountTotals!!.endBalance
+               }
             }
-            // same location and same account - continue to next GL summary
+
+            reportTemplate.locationDetailList = locationDetails
+
+            // calculate end of report totals
+            reportTemplate.endOfReportTotals = generalLedgerDetailRepository.fetchTrialBalanceEndOfReportTotals(company, filterRequest.fromDate, filterRequest.thruDate, filterRequest.startingAccount, filterRequest.endingAccount, pair.first)
          }
-         val locationNetChange = GeneralLedgerNetChangeDTO(BigDecimal.ZERO, BigDecimal.ZERO, emptyList, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
-         locationDetails.add(GeneralLedgerProfitCenterTrialBalanceLocationDetailDTO(profitCenterNumber, accountDetails, locationNetChange))
-
-         // calculate account, location, and report totals
-         locationDetails.forEach { loc ->
-            loc.accountDetailList?.forEach { acct ->
-               acct.accountTotals = generalLedgerDetailRepository.findNetChangeProfitCenterTrialBalanceReport(company, filterRequest.fromDate, filterRequest.thruDate, loc.profitCenter, acct.account!!.number, overallPeriodId)
-
-               loc.locationTotals!!.debit += acct.accountTotals!!.debit
-               loc.locationTotals!!.credit += acct.accountTotals!!.credit
-               loc.locationTotals!!.netChange += acct.accountTotals!!.netChange
-
-               reportTemplate.reportTotals!!.beginBalance += acct.accountTotals!!.beginBalance
-               reportTemplate.reportTotals!!.debit += acct.accountTotals!!.debit
-               reportTemplate.reportTotals!!.credit += acct.accountTotals!!.credit
-               reportTemplate.reportTotals!!.netChange += acct.accountTotals!!.netChange
-               reportTemplate.reportTotals!!.endBalance += acct.accountTotals!!.endBalance
-            }
-         }
-
-         reportTemplate.locationDetailList = locationDetails
-
-         // calculate end of report totals
-         reportTemplate.endOfReportTotals = generalLedgerDetailRepository.fetchTrialBalanceEndOfReportTotals(company, filterRequest.fromDate, filterRequest.thruDate, filterRequest.startingAccount, filterRequest.endingAccount, overallPeriodId)
       }
 
       return reportTemplate

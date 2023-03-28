@@ -322,19 +322,16 @@ class GeneralLedgerSummaryRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun fetchProfitCenterTrialBalanceReportRecords(company: CompanyEntity, filterRequest: GeneralLedgerProfitCenterTrialBalanceReportFilterRequest): List<GeneralLedgerSummaryEntity> {
-      val pair = financialCalendarRepository.findOverallPeriodIdAndPeriod(company, filterRequest.fromDate!!)
-      val overallPeriodId = pair.first
-      val period = pair.second
+   fun fetchProfitCenterTrialBalanceReportRecords(company: CompanyEntity, filterRequest: GeneralLedgerProfitCenterTrialBalanceReportFilterRequest, pair: Pair<Int, Int>): List<GeneralLedgerSummaryEntity> {
       val glSummaries = mutableListOf<GeneralLedgerSummaryEntity>()
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "overall_period_id" to overallPeriodId)
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "overall_period_id" to pair.first)
       val whereClause = StringBuilder(
          "WHERE glSummary.company_id = :comp_id " +
                "AND glSummary.overall_period_id = :overall_period_id " +
                "AND (" +
                   "acct.account_status_id = 1 OR " +
                   "glSummary.beginning_balance <> 0.00 OR " +
-                  "glSummary.net_activity_period_$period <> 0.00" +
+                  "glSummary.net_activity_period_${pair.second} <> 0.00" +
                ") "
       )
 
