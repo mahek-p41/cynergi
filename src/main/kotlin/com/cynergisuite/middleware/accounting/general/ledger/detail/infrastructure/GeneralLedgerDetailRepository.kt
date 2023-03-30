@@ -507,8 +507,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
             amount,
             message,
             employee_number_id_sfk,
-            journal_entry_number,
-            deleted
+            journal_entry_number
          )
          VALUES (
             :company_id,
@@ -519,8 +518,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
             :amount,
             :message,
             :employee_number_id_sfk,
-            :journal_entry_number,
-            FALSE
+            :journal_entry_number
          )
          RETURNING
             *
