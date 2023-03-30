@@ -823,6 +823,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
    @ReadOnly
    fun fetchTrialBalanceEndOfReportTotals(company: CompanyEntity, fromDate: LocalDate? = null, thruDate: LocalDate? = null, startingAccount: Int? = null, endingAccount: Int? = null, overallPeriodId: Int): TrialBalanceEndOfReportDTO {
       var endOfReportDTO = TrialBalanceEndOfReportDTO()
+      val emptyDTO = TrialBalanceEndOfReportDTO()
 
       // find YTD begin date (first date of fiscal year)
       val ytdBegin = financialCalendarRepository.findFirstDateOfFiscalYear(company, overallPeriodId)
@@ -855,10 +856,12 @@ class GeneralLedgerDetailRepository @Inject constructor(
          } while (rs.next())
       }
 
-      endOfReportDTO.mtdDifferenceIE = endOfReportDTO.mtdDebitIE!! + endOfReportDTO.mtdCreditIE!!
-      endOfReportDTO.mtdDifferenceAL = endOfReportDTO.mtdDebitAL!! + endOfReportDTO.mtdCreditAL!!
-      endOfReportDTO.ytdDifferenceIE = endOfReportDTO.ytdDebitIE!! + endOfReportDTO.ytdCreditIE!!
-      endOfReportDTO.ytdDifferenceAL = endOfReportDTO.ytdDebitAL!! + endOfReportDTO.ytdCreditAL!!
+      if (endOfReportDTO != emptyDTO) {
+         endOfReportDTO.mtdDifferenceIE = endOfReportDTO.mtdDebitIE!! + endOfReportDTO.mtdCreditIE!!
+         endOfReportDTO.mtdDifferenceAL = endOfReportDTO.mtdDebitAL!! + endOfReportDTO.mtdCreditAL!!
+         endOfReportDTO.ytdDifferenceIE = endOfReportDTO.ytdDebitIE!! + endOfReportDTO.ytdCreditIE!!
+         endOfReportDTO.ytdDifferenceAL = endOfReportDTO.ytdDebitAL!! + endOfReportDTO.ytdCreditAL!!
+      }
 
       return endOfReportDTO
    }
@@ -983,14 +986,14 @@ class GeneralLedgerDetailRepository @Inject constructor(
 
    fun mapTrialBalanceEndOfReport(rs: ResultSet): TrialBalanceEndOfReportDTO {
       return TrialBalanceEndOfReportDTO(
-         mtdDebitIE = rs.getBigDecimal("mtdDebitIE"),
-         mtdCreditIE = rs.getBigDecimal("mtdCreditIE"),
-         mtdDebitAL = rs.getBigDecimal("mtdDebitAL"),
-         mtdCreditAL = rs.getBigDecimal("mtdCreditAL"),
-         ytdDebitIE = rs.getBigDecimal("ytdDebitIE"),
-         ytdCreditIE = rs.getBigDecimal("ytdCreditIE"),
-         ytdDebitAL = rs.getBigDecimal("ytdDebitAL"),
-         ytdCreditAL = rs.getBigDecimal("ytdCreditAL")
+         mtdDebitIE = rs.getBigDecimal("mtdDebitIE") ?: BigDecimal.ZERO,
+         mtdCreditIE = rs.getBigDecimal("mtdCreditIE") ?: BigDecimal.ZERO,
+         mtdDebitAL = rs.getBigDecimal("mtdDebitAL") ?: BigDecimal.ZERO,
+         mtdCreditAL = rs.getBigDecimal("mtdCreditAL") ?: BigDecimal.ZERO,
+         ytdDebitIE = rs.getBigDecimal("ytdDebitIE") ?: BigDecimal.ZERO,
+         ytdCreditIE = rs.getBigDecimal("ytdCreditIE") ?: BigDecimal.ZERO,
+         ytdDebitAL = rs.getBigDecimal("ytdDebitAL") ?: BigDecimal.ZERO,
+         ytdCreditAL = rs.getBigDecimal("ytdCreditAL") ?: BigDecimal.ZERO
       )
    }
 

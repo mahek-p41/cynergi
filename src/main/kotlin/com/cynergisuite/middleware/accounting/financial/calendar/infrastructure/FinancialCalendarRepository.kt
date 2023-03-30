@@ -436,7 +436,7 @@ class FinancialCalendarRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findOverallPeriodIdAndPeriod(company: CompanyEntity, date: LocalDate): Pair<Int, Int> {
+   fun findOverallPeriodIdAndPeriod(company: CompanyEntity, date: LocalDate): Pair<Int, Int>? {
       val found = jdbc.query(
          """
          SELECT overall_period_id, period
@@ -451,9 +451,13 @@ class FinancialCalendarRepository @Inject constructor(
          mapRow(rs)
       }
 
-      logger.trace("Find overall period id and period for date {} resulted in {}", date, found.first())
+      logger.trace("Find overall period id and period for date {} resulted in {}", date, found)
 
-      return found.first()
+      return if (found.isEmpty()) {
+         null
+      } else {
+         found.first()
+      }
    }
 
    @ReadOnly
