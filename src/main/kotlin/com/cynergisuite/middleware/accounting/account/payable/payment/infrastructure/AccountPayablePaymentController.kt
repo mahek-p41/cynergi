@@ -1,13 +1,20 @@
 package com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure
 
+import com.cynergisuite.domain.AccountPayableListPaymentsFilterRequest
+import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PaymentReportFilterRequest
+import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentService
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
+import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import io.micronaut.http.HttpRequest
+import io.micronaut.http.MediaType
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -21,6 +28,7 @@ import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.enums.ParameterIn.PATH
 import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 import io.swagger.v3.oas.annotations.media.Content
@@ -89,6 +97,33 @@ class AccountPayablePaymentController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
       return accountPayablePaymentService.fetchReport(user.myCompany(), filterRequest)
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Operation(tags = ["AccountPayablePaymentEndpoints"], summary = "Fetch a Listing of Account Payable Payments", description = "Fetch a listing of account payable payments", operationId = "accountPayablePayment-fetchPaymentsListing")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Page::class))])
+      ]
+   )
+   @Get(uri = "/pmtlist{?pageRequest*}", produces = [MediaType.APPLICATION_JSON])
+   fun fetchPaymentsListing(
+      @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false)
+      @Valid @QueryValue("pageRequest")
+      pageRequest: AccountPayableListPaymentsFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Page<AccountPayablePaymentDTO> {
+      val user = userService.fetchUser(authentication)
+      val paymentListing = accountPayablePaymentService.fetchPaymentsListing(user.myCompany(), pageRequest, httpRequest.findLocaleWithDefault())
+
+      if (paymentListing.elements.isEmpty()) {
+         throw PageOutOfBoundsException(pageRequest)
+      }
+
+      logger.debug("Listing of Account Payable Payments resulted in {}", paymentListing)
+
+      return paymentListing
    }
 
    @Post(processes = [APPLICATION_JSON])

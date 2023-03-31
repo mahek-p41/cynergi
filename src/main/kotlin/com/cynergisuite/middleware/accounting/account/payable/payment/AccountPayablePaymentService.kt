@@ -1,11 +1,16 @@
 package com.cynergisuite.middleware.accounting.account.payable.payment
 
+import com.cynergisuite.domain.AccountPayableListPaymentsFilterRequest
+import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PaymentReportFilterRequest
+import com.cynergisuite.domain.SearchPageRequest
+import com.cynergisuite.middleware.accounting.account.AccountDTO
+import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.util.UUID
+import java.util.*
 
 @Singleton
 class AccountPayablePaymentService @Inject constructor(
@@ -26,6 +31,14 @@ class AccountPayablePaymentService @Inject constructor(
       val found = accountPayablePaymentRepository.findAll(company, filterRequest)
 
       return AccountPayablePaymentReportTemplate(found)
+   }
+
+   fun fetchPaymentsListing(company: CompanyEntity, filterRequest: AccountPayableListPaymentsFilterRequest, locale: Locale): Page<AccountPayablePaymentDTO> {
+      val paymentsListing = accountPayablePaymentRepository.listPayments(company, filterRequest)
+
+      return paymentsListing.toPage { paymentEntity: AccountPayablePaymentEntity ->
+         transformEntity(paymentEntity)
+      }
    }
 
    fun update(id: UUID, dto: AccountPayablePaymentDTO, company: CompanyEntity): AccountPayablePaymentDTO {

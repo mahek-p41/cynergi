@@ -1,14 +1,21 @@
 package com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure
 
+import com.cynergisuite.domain.AccountPayableListPaymentsFilterRequest
+import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.PaymentReportFilterRequest
+import com.cynergisuite.domain.SearchPageRequest
+import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.isNumber
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObjectOrNull
+import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentEntity
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -750,6 +757,60 @@ class AccountPayablePaymentRepository @Inject constructor(
       }
 
       return payments
+   }
+
+   @ReadOnly
+   fun listPayments(company: CompanyEntity, filterRequest: AccountPayableListPaymentsFilterRequest): RepositoryPage<AccountPayablePaymentEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val whereClause = StringBuilder(" WHERE apPayment.company_id = :comp_id ")
+      val sortBy = StringBuilder("ORDER BY bnk.bank_number ASC")
+
+      if (filterRequest.beginBank != null) {
+         params["beginningBank"] = filterRequest.beginBank
+         whereClause.append(""" AND bnk.bank_number >= :beginningBank """)
+      }
+
+      if (filterRequest.type != "ALL") {
+         params["type"] = filterRequest.type
+         whereClause.append(" AND type.value = :type ")
+      }
+
+      if (filterRequest.frmPmtDt != null) {
+         params["fromDate"] = filterRequest.frmPmtDt
+         whereClause.append(""" AND apPayment.payment_date >= :fromDate """)
+         sortBy.append(", apPayment.payment_date ASC")
+      }
+
+      if (filterRequest.beginPmt != null) {
+         params["beginningPayment"] = filterRequest.beginPmt
+         whereClause.append(""" AND apPayment.payment_number >= :beginningPayment """)
+         sortBy.append(", apPayment.payment_number ASC")
+      }
+
+      return jdbc.queryPaged(
+         """
+         WITH paged AS (
+            ${selectBaseQuery()}
+            $whereClause
+            $sortBy
+         )
+         SELECT
+            p.*,
+            count(*) OVER() as total_elements
+         FROM paged AS p
+         LIMIT :limit OFFSET :offset
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "limit" to filterRequest.size(),
+            "offset" to filterRequest.offset()
+         ),
+         filterRequest
+      ) { rs, elements ->
+         do {
+            elements.add(mapRow(rs, company, "apPayment_"))
+         } while (rs.next())
+      }
    }
 
    @Transactional
