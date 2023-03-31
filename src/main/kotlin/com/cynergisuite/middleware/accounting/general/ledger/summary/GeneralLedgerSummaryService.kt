@@ -325,6 +325,12 @@ class GeneralLedgerSummaryService @Inject constructor(
       return stream.toByteArray()
    }
 
+   fun recalculateGLBalance(company: CompanyEntity) {
+      generalLedgerSummaryRepository.resetGLBalance(company)
+      generalLedgerSummaryRepository.recalculateGLBalance(company)
+      generalLedgerSummaryRepository.setNetActivityPeriods(company)
+   }
+
    private fun transformEntity(generalLedgerSummary: GeneralLedgerSummaryEntity): GeneralLedgerSummaryDTO {
       return GeneralLedgerSummaryDTO(entity = generalLedgerSummary)
    }
