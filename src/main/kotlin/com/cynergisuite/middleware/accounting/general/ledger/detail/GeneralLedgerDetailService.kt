@@ -6,6 +6,7 @@ import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.domain.ValidatorBase.Companion.logger
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountService
 import com.cynergisuite.middleware.accounting.bank.BankService
@@ -35,6 +36,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedg
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryService
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.GLNotOpen
@@ -334,7 +336,16 @@ class GeneralLedgerDetailService @Inject constructor(
    }
 
    fun purge(purgeDTO: GeneralLedgerDetailPostPurgeDTO, company: CompanyEntity): Int {
-      val toPurge = generalLedgerDetailRepository.findAllPurgePost(company, purgeDTO)
-      return generalLedgerDetailRepository.bulkDelete(toPurge, company)
+      logger.trace("Service - findAllPurgePost using: from {} thru {} source {}", purgeDTO.fromDate, purgeDTO.thruDate, purgeDTO.sourceCode)
+
+      val validPurgeDetails = generalLedgerDetailValidator.validatePurgeDetails(purgeDTO, company)
+
+      val toPurge = generalLedgerDetailRepository.findAllPurgePost(company, validPurgeDetails)
+
+      if (toPurge.isEmpty()) {
+         throw NotFoundException("A List of Matching General Ledger Entries")
+      } else {
+         return generalLedgerDetailRepository.bulkDelete(toPurge, company)
+      }
    }
 }

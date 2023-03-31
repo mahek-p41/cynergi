@@ -5,6 +5,7 @@ import com.cynergisuite.domain.SortableRequestBase
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
+import javax.validation.constraints.NotNull
 
 @Schema(
    name = "GeneralLedgerDetailFilterRequest",
@@ -15,14 +16,17 @@ import java.time.LocalDate
 @Introspected
 class GeneralLedgerDetailPostPurgeDTO(
 
-   @field:Schema(name = "fromDate", description = "From date for general ledger detail")
-   var fromDate: LocalDate? = null,
+   @field:NotNull
+   @field:Schema(name = "fromDate", description = "From date for general ledger detail", required = true)
+   var fromDate: LocalDate,
 
-   @field:Schema(name = "thruDate", description = "Thru date for general ledger detail")
-   var thruDate: LocalDate? = null,
+   @field:NotNull
+   @field:Schema(name = "thruDate", description = "Thru date for general ledger detail", required = true)
+   var thruDate: LocalDate,
 
-   @field:Schema(name = "sourceCode", description = "General ledger source code")
-   var sourceCode: String? = null,
+   @field:NotNull
+   @field:Schema(name = "sourceCode", description = "General ledger source code", required = true)
+   var sourceCode: String,
 
    ) : SortableRequestBase<GeneralLedgerDetailPostPurgeDTO>(null, null) {
 

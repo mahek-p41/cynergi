@@ -25,6 +25,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedge
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailFilterRequest
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailPageRequest
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailPostPurgeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDataLoaderService
@@ -952,5 +953,192 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       then:
       final exception = thrown(HttpClientResponseException)
       exception.response.status() == NO_CONTENT
+   }
+
+   void "delete a list of general ledger detail"() {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource1 = sourceCodeDataLoaderService.single(company)
+      final glSource2 = sourceCodeDataLoaderService.single(company)
+      final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
+      final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
+      final generalLedgerDetails2 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource2).toList()
+
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.parse("2023-01-01"), true, false).collect()
+
+      def gld1 = get("$path/${generalLedgerDetails1[0].id}")
+      def gld2 = get("$path/${generalLedgerDetails1[1].id}")
+      def gld3 = get("$path/${generalLedgerDetails1[2].id}")
+
+      def gld4 = get("$path/${generalLedgerDetails2[0].id}")
+      def gld5 = get("$path/${generalLedgerDetails2[1].id}")
+      def gld6 = get("$path/${generalLedgerDetails2[2].id}")
+
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-03-28"), LocalDate.parse("2023-04-02"), glSource1.value)
+
+      when:
+      def deletedCount = delete("$path/purge$toBeDeleted")
+      then:
+      notThrown(HttpClientResponseException)
+      deletedCount == 3
+
+      when:
+      def result = get("$path/${gld1.id}")
+
+      then:
+      final ex1 = thrown(HttpClientResponseException)
+      ex1.status == NOT_FOUND
+
+      when:
+      def result2 = get("$path/${gld2.id}")
+
+      then:
+      final ex2 = thrown(HttpClientResponseException)
+      ex2.status == NOT_FOUND
+
+      when:
+      def result3 = get("$path/${gld3.id}")
+
+      then:
+      final ex3 = thrown(HttpClientResponseException)
+      ex3.status == NOT_FOUND
+
+      when:
+      def result4 = get("$path/${gld4.id}")
+
+      then:
+      result4.source.id == glSource2.id
+
+      when:
+      def result5 = get("$path/${gld5.id}")
+
+      then:
+      result5.source.id == glSource2.id
+
+      when:
+      def result6 = get("$path/${gld6.id}")
+
+      then:
+      result6.source.id == glSource2.id
+   }
+
+   void "Try to delete non-existing general ledger detail"() {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource1 = sourceCodeDataLoaderService.single(company)
+      final glSource2 = sourceCodeDataLoaderService.single(company)
+      final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
+      final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
+
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.parse("2023-01-01"), true, false).collect()
+
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-03-28"), LocalDate.parse("2023-04-02"), glSource2.value)
+
+      when:
+      delete("$path/purge$toBeDeleted")
+      then:
+      final ex = thrown(HttpClientResponseException)
+      def response = ex.response.bodyAsJson()
+      ex.status == NOT_FOUND
+      response.message == 'A List of Matching General Ledger Entries was unable to be found'
+   }
+
+   void "Try to delete general ledger detail with dates outside the range of the financial calendar"() {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource1 = sourceCodeDataLoaderService.single(company)
+      final glSource2 = sourceCodeDataLoaderService.single(company)
+      final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
+      final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
+
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.parse("2021-01-01"), true, false).collect()
+
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-03-28"), LocalDate.parse("2023-04-02"), glSource2.value)
+
+      when:
+      delete("$path/purge$toBeDeleted")
+      then:
+      final ex = thrown(HttpClientResponseException)
+      def response = ex.response.bodyAsJson()
+      ex.status == NOT_FOUND
+      response.message == '2023-03-28 was unable to be found'
+   }
+
+   void "Try to delete general ledger detail with dates not in the same fiscal year"() {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource1 = sourceCodeDataLoaderService.single(company)
+      final glSource2 = sourceCodeDataLoaderService.single(company)
+      final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
+      final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
+
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.parse("2023-01-01"), true, false).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "N" }, LocalDate.parse("2024-01-01"), true, false).collect()
+
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-03-28"), LocalDate.parse("2024-04-02"), glSource2.value)
+
+      when:
+      delete("$path/purge$toBeDeleted")
+      then:
+      final ex = thrown(HttpClientResponseException)
+      def response = ex.response.bodyAsJson()
+      ex.status == BAD_REQUEST
+      response.code[0] == 'cynergi.validation.dates.must.be.in.same.fiscal.year'
+      response.message[0] == 'Dates 2023-03-28 and 2024-04-02 must be in same fiscal year'
+   }
+
+   void "Try to delete general ledger detail with dates not in the Current or Next fiscal years"() {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource1 = sourceCodeDataLoaderService.single(company)
+      final glSource2 = sourceCodeDataLoaderService.single(company)
+      final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
+      final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
+
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "P" }, LocalDate.parse("2023-01-01"), true, false).collect()
+
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-03-28"), LocalDate.parse("2023-04-02"), glSource2.value)
+
+      when:
+      delete("$path/purge$toBeDeleted")
+      then:
+      final ex = thrown(HttpClientResponseException)
+      def response = ex.response.bodyAsJson()
+      ex.status == BAD_REQUEST
+      response.code[0] == 'cynergi.validation.dates.not.in.current.or.next.fiscal.year'
+      response.message[0] == 'The selected dates must both be within the Current or Next fiscal year'
+   }
+
+   void "Try to delete general ledger detail with a non-existing source code value"() {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource1 = sourceCodeDataLoaderService.single(company)
+      final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
+      final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
+
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.parse("2023-01-01"), true, false).collect()
+
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-03-28"), LocalDate.parse("2023-04-02"), 'XYZ')
+
+      when:
+      delete("$path/purge$toBeDeleted")
+      then:
+      final ex = thrown(HttpClientResponseException)
+      def response = ex.response.bodyAsJson()
+      ex.status == BAD_REQUEST
+      response.code[0] == 'cynergi.validation.source.code.does.not.exist'
+      response.message[0] == 'The general ledger source value entered does not exist'
    }
 }

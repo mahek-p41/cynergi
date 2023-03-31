@@ -224,7 +224,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
    @ReadOnly
    fun exists(company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
-         "SELECT EXISTS (SELECT company_id FROM general_ledger_detail WHERE company_id = :company_id)",
+         "SELECT EXISTS (SELECT company_id FROM general_ledger_detail WHERE company_id = :company_id AND deleted = FALSE)",
          mapOf("company_id" to company.id),
          Boolean::class.java
       )
@@ -237,7 +237,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): GeneralLedgerDetailEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE glDetail.id = :id AND glDetail.company_id = :comp_id"
+      val query = "${selectBaseQuery()} WHERE glDetail.id = :id AND glDetail.company_id = :comp_id AND glDetail.deleted = FALSE"
       val found = jdbc.findFirstOrNull(
          query,
          params
@@ -264,7 +264,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
    fun findNetChange(company: CompanyEntity, filterRequest: GeneralLedgerDetailFilterRequest): GeneralLedgerNetChangeDTO? {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val innerWhere = StringBuilder(" WHERE glSummary.company_id = :comp_id ")
-      val subQueryWhere = StringBuilder(" WHERE glDetail.company_id = :comp_id ")
+      val subQueryWhere = StringBuilder(" WHERE glDetail.company_id = :comp_id AND glDetail.deleted = FALSE ")
       val outerWhere = StringBuilder()
       if (filterRequest.from != null && filterRequest.thru != null) {
          params["from"] = filterRequest.from
@@ -347,7 +347,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
    ): GeneralLedgerNetChangeDTO? {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val innerWhere = StringBuilder(" WHERE glSummary.company_id = :comp_id ")
-      val subQueryWhere = StringBuilder(" WHERE glDetail.company_id = :comp_id ")
+      val subQueryWhere = StringBuilder(" WHERE glDetail.company_id = :comp_id AND glDetail.deleted = FALSE ")
       val outerWhere = StringBuilder()
       if (fromDate != null || thruDate != null) {
          params["from"] = fromDate
@@ -420,7 +420,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
    @ReadOnly
    fun findAll(company: CompanyEntity, page: GeneralLedgerDetailPageRequest): RepositoryPage<GeneralLedgerDetailEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to page.size(), "offset" to page.offset())
-      val whereClause = StringBuilder(" WHERE glDetail.company_id = :comp_id ")
+      val whereClause = StringBuilder(" WHERE glDetail.company_id = :comp_id AND glDetail.deleted = FALSE ")
       if (page.from != null || page.thru != null) {
          params["from"] = page.from
          params["thru"] = page.thru
@@ -477,7 +477,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
          """
             SELECT MAX(journal_entry_number)
             FROM general_ledger_detail
-            WHERE company_id = :comp_id
+            WHERE company_id = :comp_id AND deleted = FALSE
          """.trimIndent(),
          mapOf(
             "comp_id" to company.id
@@ -591,7 +591,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
    fun fetchReports(company: CompanyEntity, filterRequest: GeneralLedgerSearchReportFilterRequest): List<GeneralLedgerDetailEntity> {
       val reports = mutableListOf<GeneralLedgerDetailEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder("WHERE glDetail.company_id = :comp_id ")
+      val whereClause = StringBuilder("WHERE glDetail.company_id = :comp_id AND glDetail.deleted = FALSE ")
 
       if (filterRequest.startingAccount != null && filterRequest.endingAccount != null) {
          params["startingAccount"] = filterRequest.startingAccount
@@ -740,7 +740,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
    fun fetchSourceReportDetails(company: CompanyEntity, filterRequest: GeneralLedgerSourceReportFilterRequest, sourceCodeEntity: GeneralLedgerSourceCodeEntity): List<GeneralLedgerDetailEntity> {
       val glDetails = mutableListOf<GeneralLedgerDetailEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "source_code_value" to sourceCodeEntity.value)
-      val whereClause = StringBuilder("WHERE glDetail.company_id = :comp_id AND source.value = :source_code_value")
+      val whereClause = StringBuilder("WHERE glDetail.company_id = :comp_id AND source.value = :source_code_value AND glDetail.deleted = FALSE")
 
       if (filterRequest.profitCenter != null) {
          params["profitCenter"] = filterRequest.profitCenter
@@ -788,7 +788,8 @@ class GeneralLedgerDetailRepository @Inject constructor(
             "AND glDetail.date BETWEEN :starting_date AND :ending_date " +
             "AND glDetail.account_id = :account_id " +
             "AND glDetail.profit_center_id_sfk = :profit_center_id " +
-            "AND source.value NOT LIKE 'BAL' "
+            "AND source.value NOT LIKE 'BAL' " +
+            "AND glDetail.deleted = FALSE "
       )
 
       jdbc.query(
@@ -841,7 +842,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
                SUM(CASE WHEN (acct.type_id = 1 OR acct.type_id = 2 OR acct.type_id = 4) AND glDetail.amount < 0 THEN glDetail.amount ELSE 0 END) ytdCreditAL
             FROM general_ledger_detail glDetail
                JOIN account acct ON acct.id = glDetail.account_id
-            WHERE glDetail.company_id = :company_id AND glDetail.date BETWEEN :ytdBegin AND :ytdEnd
+            WHERE glDetail.company_id = :company_id AND glDetail.date BETWEEN :ytdBegin AND :ytdEnd AND glDetail.deleted = FALSE
          """.trimIndent(),
          mapOf(
             "company_id" to company.id,
@@ -868,42 +869,51 @@ class GeneralLedgerDetailRepository @Inject constructor(
 
    @ReadOnly
    fun findAllPurgePost(company: CompanyEntity, filterRequest: GeneralLedgerDetailPostPurgeDTO) : List<GeneralLedgerDetailEntity> {
+      val glDetails = mutableListOf<GeneralLedgerDetailEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder("WHERE glDetail.company_id = :comp_id AND glDetail.deleted = FALSE")
 
-      if (filterRequest.sourceCode != null) {
-         params["source"] = filterRequest.sourceCode
-         whereClause.append(" AND source.value = :source")
-      }
+      logger.trace("Repository - findAllPurgePost using: from {} thru {} source {}", filterRequest.fromDate, filterRequest.thruDate, filterRequest.sourceCode)
 
-      if (filterRequest.fromDate != null || filterRequest.thruDate != null) {
-         params["fromDate"] = filterRequest.fromDate
-         params["thruDate"] = filterRequest.thruDate
-         whereClause.append(" AND glJournal.date")
-            .append(
-               buildFilterString(
-                  filterRequest.fromDate != null,
-                  filterRequest.thruDate != null,
-                  "fromDate",
-                  "thruDate"
-               )
+      params["source"] = filterRequest.sourceCode
+      whereClause.append(" AND source.value = :source")
+
+      params["fromDate"] = filterRequest.fromDate
+      params["thruDate"] = filterRequest.thruDate
+      whereClause.append(" AND glDetail.date")
+         .append(
+            buildFilterString(
+               filterRequest.fromDate != null,
+               filterRequest.thruDate != null,
+               "fromDate",
+               "thruDate"
             )
-      }
+         )
 
-      return jdbc.query(
+      jdbc.query(
          """
          ${selectBaseQuery()}
          $whereClause
       """.trimIndent(),
          params
-      ) {  rs, _ -> mapRow(rs, company,"glDetail_")}
+      ) { rs, _ ->
+         do {
+            val account = accountRepository.mapRow(rs, company, "glDetail_account_")
+            val profitCenter = storeRepository.mapRow(rs, company, "glDetail_profitCenter_")
+            val sourceCode = sourceCodeRepository.mapRow(rs, "glDetail_source_")
+            glDetails.add(mapRow(rs, account, profitCenter, sourceCode, "glDetail_"))
+         } while (rs.next())
+      }
+
+      return glDetails
+
    }
 
    @Transactional
    fun bulkDelete(dtoList: List<GeneralLedgerDetailEntity>, company: CompanyEntity): Int {
       val idList = dtoList.map { it.id }
 
-      logger.debug("Deleting GeneralLedgerDetail with id={}", idList)
+      logger.trace("Deleting GeneralLedgerDetail with id={}", idList)
 
       val rowsAffected = jdbc.update(
          """
@@ -914,7 +924,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
          mapOf("idList" to idList, "company_id" to company.id),
       )
 
-      logger.info("Row affected {}", rowsAffected)
+      logger.info("Rows affected {}", rowsAffected)
 
       if (rowsAffected == 0) throw NotFoundException(idList) else return rowsAffected
    }

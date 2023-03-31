@@ -271,13 +271,14 @@ class GeneralLedgerDetailController @Inject constructor(
       ]
    )
    fun purge(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
       @Valid @QueryValue("filterRequest")
       filterRequest: GeneralLedgerDetailPostPurgeDTO,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ): Int {
       logger.debug("User {} requested purge a list of GeneralLedgerDetail", authentication)
-
+      logger.trace("Controller - findAllPurgePost using: from {} thru {} source {}", filterRequest.fromDate, filterRequest.thruDate, filterRequest.sourceCode)
       val user = userService.fetchUser(authentication)
       return generalLedgerDetailService.purge(filterRequest, user.myCompany())
    }
