@@ -822,12 +822,45 @@ class GeneralLedgerDetailRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun fetchTrialBalanceEndOfReportTotals(company: CompanyEntity, fromDate: LocalDate? = null, thruDate: LocalDate? = null, startingAccount: Int? = null, endingAccount: Int? = null, overallPeriodId: Int): TrialBalanceEndOfReportDTO {
+   fun fetchTrialBalanceEndOfReportTotals(company: CompanyEntity, filterRequest: GeneralLedgerProfitCenterTrialBalanceReportFilterRequest, overallPeriodId: Int): TrialBalanceEndOfReportDTO {
       var endOfReportDTO = TrialBalanceEndOfReportDTO()
       val emptyDTO = TrialBalanceEndOfReportDTO()
+      val ytdBegin = financialCalendarRepository.findFirstDateOfFiscalYear(company, overallPeriodId)  // find YTD begin date (first date of fiscal year)
+      val params = mutableMapOf<String, Any?>(
+         "company_id" to company.id,
+         "mtdBegin" to filterRequest.fromDate,
+         "mtdEnd" to filterRequest.thruDate,
+         "ytdBegin" to ytdBegin,
+         "ytdEnd" to filterRequest.thruDate
+      )
+      val whereClause = StringBuilder(
+         "WHERE glDetail.company_id = :company_id " +
+            "AND glDetail.date BETWEEN :ytdBegin AND :ytdEnd " +
+            "AND glDetail.deleted = FALSE "
+      )
 
-      // find YTD begin date (first date of fiscal year)
-      val ytdBegin = financialCalendarRepository.findFirstDateOfFiscalYear(company, overallPeriodId)
+      if (filterRequest.startingAccount != null || filterRequest.endingAccount != null) {
+         params["startingAccount"] = filterRequest.startingAccount
+         params["endingAccount"] = filterRequest.endingAccount
+         whereClause.append(" AND acct.number ")
+            .append(buildFilterString( filterRequest.startingAccount != null, filterRequest.endingAccount != null, "startingAccount", "endingAccount"))
+      }
+
+      // select locations based on criteria (1 selects all locations)
+      when (filterRequest.selectLocsBy) {
+         2 ->
+         {
+            params["any10LocsOrGroups"] = filterRequest.any10LocsOrGroups
+            whereClause.append(" AND glDetail.profit_center_id_sfk IN (<any10LocsOrGroups>)")
+         }
+         3 ->
+         {
+            params["startingLocOrGroup"] = filterRequest.startingLocOrGroup
+            params["endingLocOrGroup"] = filterRequest.endingLocOrGroup
+            whereClause.append(" AND glDetail.profit_center_id_sfk BETWEEN :startingLocOrGroup AND :endingLocOrGroup")
+         }
+         // todo: 4 & 5 use location groups
+      }
 
       jdbc.query(
          """
@@ -842,15 +875,9 @@ class GeneralLedgerDetailRepository @Inject constructor(
                SUM(CASE WHEN (acct.type_id = 1 OR acct.type_id = 2 OR acct.type_id = 4) AND glDetail.amount < 0 THEN glDetail.amount ELSE 0 END) ytdCreditAL
             FROM general_ledger_detail glDetail
                JOIN account acct ON acct.id = glDetail.account_id
-            WHERE glDetail.company_id = :company_id AND glDetail.date BETWEEN :ytdBegin AND :ytdEnd AND glDetail.deleted = FALSE
+            $whereClause
          """.trimIndent(),
-         mapOf(
-            "company_id" to company.id,
-            "mtdBegin" to fromDate,
-            "mtdEnd" to thruDate,
-            "ytdBegin" to ytdBegin,
-            "ytdEnd" to thruDate
-         )
+         params
       ) { rs, _ ->
          do {
             endOfReportDTO = mapTrialBalanceEndOfReport(rs)
