@@ -761,6 +761,7 @@ class AccountPayablePaymentRepository @Inject constructor(
 
    @ReadOnly
    fun listPayments(company: CompanyEntity, filterRequest: AccountPayableListPaymentsFilterRequest): RepositoryPage<AccountPayablePaymentEntity, PageRequest> {
+      logger.trace("Listing Account Payable Payments by bank {} pmt {} type {} and date {}", filterRequest.beginBank, filterRequest.beginPmt, filterRequest.type, filterRequest.frmPmtDt)
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder(" WHERE apPayment.company_id = :comp_id ")
       val sortBy = StringBuilder("ORDER BY bnk.bank_number ASC")
@@ -770,7 +771,7 @@ class AccountPayablePaymentRepository @Inject constructor(
          whereClause.append(""" AND bnk.bank_number >= :beginningBank """)
       }
 
-      if (filterRequest.type != "ALL") {
+      if (filterRequest.type != null) {
          params["type"] = filterRequest.type
          whereClause.append(" AND type.value = :type ")
       }
@@ -803,7 +804,8 @@ class AccountPayablePaymentRepository @Inject constructor(
          mapOf(
             "comp_id" to company.id,
             "limit" to filterRequest.size(),
-            "offset" to filterRequest.offset()
+            "offset" to filterRequest.offset(),
+            "beginningBank" to filterRequest.beginBank
          ),
          filterRequest
       ) { rs, elements ->

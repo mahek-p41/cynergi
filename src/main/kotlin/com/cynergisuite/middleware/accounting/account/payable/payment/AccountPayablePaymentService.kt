@@ -3,14 +3,12 @@ package com.cynergisuite.middleware.accounting.account.payable.payment
 import com.cynergisuite.domain.AccountPayableListPaymentsFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PaymentReportFilterRequest
-import com.cynergisuite.domain.SearchPageRequest
-import com.cynergisuite.middleware.accounting.account.AccountDTO
-import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.util.*
+import java.util.Locale
+import java.util.UUID
 
 @Singleton
 class AccountPayablePaymentService @Inject constructor(

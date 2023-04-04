@@ -18,12 +18,12 @@ class AccountPayableListPaymentsFilterRequest(
    sortDirection: String? = null,
 
    @field:Schema(name = "beginBank", description = "Beginning Bank number")
-   var beginBank: Int? = null,
+   var beginBank: Long? = null,
 
    @field:Schema(name = "beginPmt", description = "Beginning Payment number")
    var beginPmt: String? = null,
 
-   @field:Schema(name = "type", description = "The Payment Type to filter results with: All, ACH, or Check")
+   @field:Schema(name = "type", description = "The Payment Type to filter results with: All(null), ACH, or Check")
    var type: String? = null,
 
    @field:Schema(name = "frmPmtDt", description = "Beginning payment date")
