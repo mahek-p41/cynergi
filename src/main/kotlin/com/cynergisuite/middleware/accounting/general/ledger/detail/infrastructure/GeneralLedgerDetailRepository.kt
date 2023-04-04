@@ -783,19 +783,16 @@ class GeneralLedgerDetailRepository @Inject constructor(
    fun fetchProfitCenterTrialBalanceReportDetails(company: CompanyEntity, filterRequest: GeneralLedgerProfitCenterTrialBalanceReportFilterRequest, glSummary: GeneralLedgerSummaryEntity): List<GeneralLedgerProfitCenterTrialBalanceReportDetailDTO> {
       val glDetails = mutableListOf<GeneralLedgerDetailEntity>()
       val reportDetails = mutableListOf<GeneralLedgerProfitCenterTrialBalanceReportDetailDTO>()
-      val whereClause = StringBuilder(
-         "WHERE glDetail.company_id = :company_id " +
-            "AND glDetail.date BETWEEN :starting_date AND :ending_date " +
-            "AND glDetail.account_id = :account_id " +
-            "AND glDetail.profit_center_id_sfk = :profit_center_id " +
-            "AND source.value NOT LIKE 'BAL' " +
-            "AND glDetail.deleted = FALSE "
-      )
 
       jdbc.query(
          """
          ${selectBaseQuery()}
-         $whereClause
+         WHERE glDetail.company_id = :company_id
+            AND glDetail.date BETWEEN :starting_date AND :ending_date
+            AND glDetail.account_id = :account_id
+            AND glDetail.profit_center_id_sfk = :profit_center_id
+            AND source.value NOT LIKE 'BAL'
+            AND glDetail.deleted = FALSE
          ORDER BY glDetail.date
       """.trimIndent(),
          mapOf(
@@ -834,9 +831,11 @@ class GeneralLedgerDetailRepository @Inject constructor(
          "ytdEnd" to filterRequest.thruDate
       )
       val whereClause = StringBuilder(
-         "WHERE glDetail.company_id = :company_id " +
-            "AND glDetail.date BETWEEN :ytdBegin AND :ytdEnd " +
-            "AND glDetail.deleted = FALSE "
+         """
+            WHERE glDetail.company_id = :company_id
+               AND glDetail.date BETWEEN :ytdBegin AND :ytdEnd
+               AND glDetail.deleted = FALSE
+         """.trimIndent()
       )
 
       if (filterRequest.startingAccount != null || filterRequest.endingAccount != null) {
