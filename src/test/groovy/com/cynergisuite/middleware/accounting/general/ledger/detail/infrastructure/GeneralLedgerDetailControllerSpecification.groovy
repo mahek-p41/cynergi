@@ -976,7 +976,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       def gld5 = get("$path/${generalLedgerDetails2[1].id}")
       def gld6 = get("$path/${generalLedgerDetails2[2].id}")
 
-      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-03-28"), LocalDate.parse("2023-04-02"), glSource1.value)
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.now().plusDays(1), LocalDate.now().plusDays(5), glSource1.value)
 
       when:
       def deletedCount = delete("$path/purge$toBeDeleted")
