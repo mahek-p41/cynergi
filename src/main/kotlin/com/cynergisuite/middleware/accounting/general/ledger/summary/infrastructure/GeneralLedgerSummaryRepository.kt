@@ -33,7 +33,6 @@ import javax.transaction.Transactional
 class GeneralLedgerSummaryRepository @Inject constructor(
    private val jdbc: Jdbi,
    private val accountRepository: AccountRepository,
-   private val financialCalendarRepository: FinancialCalendarRepository,
    private val storeRepository: StoreRepository,
    private val overallPeriodTypeRepository: OverallPeriodTypeRepository
 ) {
@@ -454,6 +453,41 @@ class GeneralLedgerSummaryRepository @Inject constructor(
       """, mapOf("comp_id" to company.id, "retained_earnings_account" to retainedEarningsAccount.id), BigDecimal::class.java)
    }
 
+   fun rollOneFinancialYear(company: CompanyEntity) {
+      logger.debug("Roll one financial year for general_ledger_summary {}", company)
+      jdbc.update("""
+         DELETE FROM general_ledger_summary
+         WHERE company_id = :comp_id
+               AND overall_period_id = 1;
+
+         UPDATE public.general_ledger_summary
+         SET overall_period_id = overall_period_id - 1
+         WHERE company_id = :comp_id
+               AND overall_period_id in (2);
+
+         UPDATE public.general_ledger_summary
+         SET overall_period_id = overall_period_id - 1
+         WHERE company_id = :comp_id
+               AND overall_period_id in (3);
+
+         UPDATE public.general_ledger_summary
+         SET overall_period_id = overall_period_id - 1
+         WHERE company_id = :comp_id
+               AND overall_period_id in (4);
+
+         INSERT INTO public.general_ledger_summary(company_id, account_id, profit_center_id_sfk, overall_period_id)
+         SELECT company_id,
+                account_id,
+                profit_center_id_sfk,
+                overall_period_id + 1
+         FROM public.general_ledger_summary
+         WHERE company_id = :comp_id
+               AND overall_period_id = 3;
+         """.trimIndent(),
+         mapOf("comp_id" to company.id)
+      )
+   }
+
    private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): GeneralLedgerSummaryEntity {
       return GeneralLedgerSummaryEntity(
          id = rs.getUuid("${columnPrefix}id"),
@@ -499,10 +533,10 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          closingBalance = rs.getBigDecimal("${columnPrefix}closing_balance")
       )
    }
-
    private fun buildFilterString(begin: Boolean, end: Boolean, beginningParam: String, endingParam: String): String {
       return if (begin && end) " BETWEEN :$beginningParam AND :$endingParam "
       else if (begin) " >= :$beginningParam "
       else " <= :$endingParam "
    }
+
 }
