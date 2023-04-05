@@ -123,7 +123,7 @@ class GeneralLedgerSummaryService @Inject constructor(
             reportTemplate.locationDetailList = locationDetails
 
             // calculate end of report totals
-            reportTemplate.endOfReportTotals = generalLedgerDetailRepository.fetchTrialBalanceEndOfReportTotals(company, filterRequest.fromDate, filterRequest.thruDate, filterRequest.startingAccount, filterRequest.endingAccount, pair.first)
+            reportTemplate.endOfReportTotals = generalLedgerDetailRepository.fetchTrialBalanceEndOfReportTotals(company, filterRequest, pair.first)
          }
       }
 
