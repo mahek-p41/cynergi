@@ -29,6 +29,7 @@ class GeneralLedgerProcedureService @Inject constructor(
       createBalanceForwardGLDetailsForRetainedEarningsAccount(user, dto)
 
       generalLedgerSummaryRepository.rollOneFinancialYear(company)
+      financialCalendarRepository.rollOneFinancialYear(company)
    }
 
    private fun createBalanceForwardGLDetailsForRetainedEarningsAccount(user: User, dto: EndYearProceduresDTO) {

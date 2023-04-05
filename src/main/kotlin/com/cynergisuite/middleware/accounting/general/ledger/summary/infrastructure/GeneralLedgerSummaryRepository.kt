@@ -461,17 +461,17 @@ class GeneralLedgerSummaryRepository @Inject constructor(
                AND overall_period_id = 1;
 
          UPDATE public.general_ledger_summary
-         SET overall_period_id = overall_period_id - 1
+         SET overall_period_id = 1
          WHERE company_id = :comp_id
                AND overall_period_id in (2);
 
          UPDATE public.general_ledger_summary
-         SET overall_period_id = overall_period_id - 1
+         SET overall_period_id = 2
          WHERE company_id = :comp_id
                AND overall_period_id in (3);
 
          UPDATE public.general_ledger_summary
-         SET overall_period_id = overall_period_id - 1
+         SET overall_period_id = 3
          WHERE company_id = :comp_id
                AND overall_period_id in (4);
 
@@ -479,7 +479,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          SELECT company_id,
                 account_id,
                 profit_center_id_sfk,
-                overall_period_id + 1
+                4
          FROM public.general_ledger_summary
          WHERE company_id = :comp_id
                AND overall_period_id = 3;

@@ -42,7 +42,7 @@ class GeneralLedgerSummaryService @Inject constructor(
    }
 
    fun create(dto: GeneralLedgerSummaryDTO, company: CompanyEntity): GeneralLedgerSummaryDTO {
-      val toCreate =  generalLedgerSummaryValidator.validateCreate(dto, company)
+      val toCreate = generalLedgerSummaryValidator.validateCreate(dto, company)
 
       return transformEntity(generalLedgerSummaryRepository.insert(toCreate, company))
    }
