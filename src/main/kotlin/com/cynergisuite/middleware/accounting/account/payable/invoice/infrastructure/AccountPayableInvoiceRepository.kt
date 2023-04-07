@@ -414,7 +414,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
          whereClause.append(" AND vend.number >= :vendor ")
       }
 
-      if (filterRequest.invoice != null) {
+      if (filterRequest.vendor != null && filterRequest.invoice != null) {
          params["invoice"] = filterRequest.invoice
          whereClause.append(" AND apInvoice.invoice >= :invoice ")
       }
@@ -423,7 +423,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
          """
             $query
             $whereClause
-            ORDER BY vend.number, naturalsort(apInvoice.invoice)
+            ORDER BY vend.number, apInvoice.invoice
          """.trimIndent(),
          params,
          filterRequest
@@ -711,7 +711,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
          invoice = rs.getString("invoice"),
          invoiceDate = rs.getLocalDate("invoice_date"),
          invoiceAmount = rs.getBigDecimal("invoice_amount"),
-         poNbr = rs.getInt("poHeader_number"),
+         poNbr = rs.getInt("purchase_order_number"),
          status = AccountPayableInvoiceStatusTypeDTO(status)
       )
    }
