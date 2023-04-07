@@ -19,7 +19,7 @@ class AccountTestDataLoader {
 
    private static final AtomicLong accountNumber = new AtomicLong(1)
 
-   static Stream<AccountEntity> stream(int numberIn = 1, CompanyEntity company, String name = null, Long acctNumber = null, AccountStatusType status = null) {
+   static Stream<AccountEntity> stream(int numberIn = 1, CompanyEntity company, String name = null, Long acctNumber = null, AccountStatusType status = null, AccountType type = null) {
       final number = numberIn > 0 ? numberIn : 1
       final faker = new Faker()
       final lorem = faker.lorem()
@@ -30,7 +30,7 @@ class AccountTestDataLoader {
             null,
             acctNumber ? acctNumber : accountNumber.getAndIncrement(),
             name ?: lorem.sentence(5, 3),
-            AccountTypeFactory.random(),
+            type ?: AccountTypeFactory.random(),
             NormalAccountBalanceFactory.random(),
             status ? status : AccountStatusFactory.random(),
             VendorTypeFactory.random(),
@@ -80,7 +80,13 @@ class AccountTestDataLoaderService {
    }
 
    AccountEntity single(CompanyEntity company, String name = null, Long acctNumber = null, AccountStatusType status = null) {
-      return AccountTestDataLoader.stream(1, company, name, acctNumber, status)
+      return AccountTestDataLoader.stream(1, company, name, acctNumber, status )
+         .map { accountRepository.insert(it, company) }
+         .findFirst().orElseThrow { new Exception("Unable to create Account") }
+   }
+
+   AccountEntity single(CompanyEntity company, AccountStatusType status, AccountType type) {
+      return AccountTestDataLoader.stream(1, company, null, null, status, type)
          .map { accountRepository.insert(it, company) }
          .findFirst().orElseThrow { new Exception("Unable to create Account") }
    }

@@ -13,13 +13,13 @@ import java.util.stream.Stream
 @CompileStatic
 class GeneralLedgerSourceCodeDataLoader {
 
-   static Stream<GeneralLedgerSourceCodeEntity> stream(int numberIn = 1) {
+   static Stream<GeneralLedgerSourceCodeEntity> stream(int numberIn = 1, String valueIn = null) {
       final number = numberIn > 0 ? numberIn : 1
       final faker = new Faker()
 
       return IntStream.range(0, number).mapToObj {
          final description = faker.lorem().word()
-         final value = faker.lorem().characters(3).toUpperCase()
+         final value = valueIn ?: faker.lorem().characters(3).toUpperCase()
 
          new GeneralLedgerSourceCodeEntity(
             null,
@@ -58,8 +58,8 @@ class GeneralLedgerSourceCodeDataLoaderService {
       this.repository = repository
    }
 
-   Stream<GeneralLedgerSourceCodeEntity> stream(int numberIn = 1, CompanyEntity company) {
-      return GeneralLedgerSourceCodeDataLoader.stream(numberIn)
+   Stream<GeneralLedgerSourceCodeEntity> stream(int numberIn = 1, CompanyEntity company, String value = null) {
+      return GeneralLedgerSourceCodeDataLoader.stream(numberIn, value)
          .map { repository.insert(it, company) }
    }
 
@@ -67,7 +67,11 @@ class GeneralLedgerSourceCodeDataLoaderService {
       stream(1, company).findFirst().orElseThrow { new Exception("Unable to find GeneralLedgerSourceCode") }
    }
 
-   GeneralLedgerSourceCodeDTO singleDTO( ) {
+   GeneralLedgerSourceCodeEntity single(CompanyEntity company, String value) {
+      stream(1, company, value).findFirst().orElseThrow { new Exception("Unable to find GeneralLedgerSourceCode") }
+   }
+
+   GeneralLedgerSourceCodeDTO singleDTO() {
       return GeneralLedgerSourceCodeDataLoader.singleDTO()
    }
 }

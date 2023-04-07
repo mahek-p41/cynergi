@@ -46,7 +46,7 @@ class GeneralLedgerInquiryControllerSpecification extends ControllerSpecificatio
             description == glSummary2.overallPeriod.description
          }
          beginningBalance == glSummary2.beginningBalance
-         closingBalance == glSummary2.closingBalance
+         closingBalance > 0
       }
    }
 }

@@ -21,22 +21,32 @@ import java.util.stream.Stream
 @CompileStatic
 class GeneralLedgerSummaryDataLoader {
 
-   static Stream<GeneralLedgerSummaryEntity> stream(int numberIn = 1, AccountEntity accountIn, Store profitCenterIn, OverallPeriodType periodIn) {
+   static Stream<GeneralLedgerSummaryEntity> stream(int numberIn = 1, AccountEntity accountIn, Store profitCenterIn, OverallPeriodType periodTypeIn) {
       def number = numberIn > 0 ? numberIn : 1
       def random = new Faker().random()
-      def netActivities = new BigDecimal[12]
-      for (int i = 0; i < 12; i++) {
-         netActivities[i] = random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
+      def netActivities = new ArrayList<BigDecimal>()
+      BigDecimal beginBalance, endBalance
+      def periodType = periodTypeIn ?: OverallPeriodTypeDataLoader.random()
+      if (periodType.value == "R" || periodType.value == "P") {
+         for (int i = 0; i < 12; i++) {
+            netActivities[i] = random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
+         }
+         beginBalance = random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
+         endBalance = beginBalance.add(netActivities.findAll {it != null }.sum() as BigDecimal ?: BigDecimal.ZERO)
+      } else if (periodType.value == "C") {
+         for (int i = 0; i < random.nextInt(0, 11); i++) {
+            netActivities[i] = random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
+         }
+         beginBalance = random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
       }
-      def beginBalance = random.nextInt(1, 100).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN)
-      def endBalance = beginBalance.add(netActivities.sum() as BigDecimal)
+
 
       return IntStream.range(0, number).mapToObj {
          new GeneralLedgerSummaryEntity(
             null,
             accountIn,
             profitCenterIn,
-            periodIn ?: OverallPeriodTypeDataLoader.random(),
+            periodType,
             netActivities[0],
             netActivities[1],
             netActivities[2],
