@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
+import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
@@ -13,10 +14,12 @@ import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceSelectedTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceEntity
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceListByVendorDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
@@ -382,6 +385,55 @@ class AccountPayableInvoiceRepository @Inject constructor(
       }
    }
 
+   @ReadOnly
+   fun findAllByVendor(company: CompanyEntity, filterRequest: AccountPayableInvoiceListByVendorFilterRequest): RepositoryPage<AccountPayableInvoiceListByVendorDTO, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val whereClause = StringBuilder("WHERE apInvoice.company_id = :comp_id ")
+
+      val query = """
+         SELECT
+            vend.number                         AS vendor_number,
+            vend.name                           AS vendor_name,
+            apInvoice.invoice                   AS invoice,
+            apInvoice.invoice_date              AS invoice_date,
+            apInvoice.invoice_amount            AS invoice_amount,
+            poHeader.number                     AS purchase_order_number,
+            status.id                           AS apInvoice_status_id,
+            status.value                        AS apInvoice_status_value,
+            status.description                  AS apInvoice_status_description,
+            status.localization_code            AS apInvoice_status_localization_code,
+            count(*) OVER() AS total_elements
+         FROM account_payable_invoice apInvoice
+            JOIN vendor vend                                         ON apInvoice.vendor_id = vend.id AND vend.deleted = FALSE
+            JOIN purchase_order_header poHeader                      ON poHeader.id = apInvoice.purchase_order_id AND poHeader.deleted = FALSE
+            JOIN account_payable_invoice_status_type_domain status   ON status.id = apInvoice.status_id
+      """.trimIndent()
+
+      if (filterRequest.vendor != null) {
+         params["vendor"] = filterRequest.vendor
+         whereClause.append(" AND vend.number >= :vendor ")
+      }
+
+      if (filterRequest.invoice != null) {
+         params["invoice"] = filterRequest.invoice
+         whereClause.append(" AND apInvoice.invoice >= :invoice ")
+      }
+
+      return jdbc.queryPaged(
+         """
+            $query
+            $whereClause
+            ORDER BY vend.number, naturalsort(apInvoice.invoice)
+         """.trimIndent(),
+         params,
+         filterRequest
+      ) { rs, elements ->
+         do {
+            elements.add(mapRowVendor(rs))
+         } while (rs.next())
+      }
+   }
+
    @Transactional
    fun insert(entity: AccountPayableInvoiceEntity, company: CompanyEntity): AccountPayableInvoiceEntity {
       logger.debug("Inserting account_payable_invoice {}", company)
@@ -647,6 +699,20 @@ class AccountPayableInvoiceRepository @Inject constructor(
          useTaxIndicator = rs.getBoolean("${columnPrefix}use_tax_indicator"),
          receiveDate = rs.getLocalDateOrNull("${columnPrefix}receive_date"),
          location = entity.location
+      )
+   }
+
+   private fun mapRowVendor(rs: ResultSet): AccountPayableInvoiceListByVendorDTO {
+      val status = statusRepository.mapRow(rs, "apInvoice_status_")
+
+      return AccountPayableInvoiceListByVendorDTO(
+         vendorNumber = rs.getInt("vendor_number"),
+         vendorName = rs.getString("vendor_name"),
+         invoice = rs.getString("invoice"),
+         invoiceDate = rs.getLocalDate("invoice_date"),
+         invoiceAmount = rs.getBigDecimal("invoice_amount"),
+         poNbr = rs.getInt("poHeader_number"),
+         status = AccountPayableInvoiceStatusTypeDTO(status)
       )
    }
 }

@@ -1,11 +1,13 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
 import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
+import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceListByVendorDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceService
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -103,6 +105,36 @@ class AccountPayableInvoiceController @Inject constructor(
       }
 
       return page
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/list-by-vendor{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(
+      tags = ["AccountPayableInvoiceEndpoints"],
+      summary = "Fetch all Account Payable Invoices by vendor",
+      description = "Fetch all Account Payable Invoices by vendor",
+      operationId = "accountPayableInvoice-listByVendor"
+   )
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested Account Payable Invoice was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchAllByVendor(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: AccountPayableInvoiceListByVendorFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Page<AccountPayableInvoiceListByVendorDTO> {
+      logger.info("Fetching Account Payable Invoices {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+
+      return accountPayableInvoiceService.fetchAllByVendor(user.myCompany(), filterRequest)
    }
 
    @Throws(PageOutOfBoundsException::class)
