@@ -33,7 +33,7 @@ class SignHereTokenValidator @Inject constructor(
 
       return SignHereTokenEntity(
          id = dto.id,
-         company = dto.company!!,
+         company = company,
          store = storeRepository.findOne(number = dto.store!!.number!!, company = company)!!,
          token = dto.token!!,
       )
@@ -55,7 +55,7 @@ class SignHereTokenValidator @Inject constructor(
 
       return SignHereTokenEntity(
          id = dto.id,
-         company = dto.company!!,
+         company = company,
          store = storeRepository.findOne(number = dto.store!!.number!!, company = company)!!,
          token = dto.token!!,
       )
