@@ -773,7 +773,7 @@ class AccountPayablePaymentRepository @Inject constructor(
 
       if (filterRequest.type != null) {
          params["type"] = filterRequest.type
-         whereClause.append(" AND type.value = :type ")
+         whereClause.append(""" AND type.value = :type """)
       }
 
       if (filterRequest.frmPmtDt != null) {
@@ -805,7 +805,10 @@ class AccountPayablePaymentRepository @Inject constructor(
             "comp_id" to company.id,
             "limit" to filterRequest.size(),
             "offset" to filterRequest.offset(),
-            "beginningBank" to filterRequest.beginBank
+            "beginningBank" to filterRequest.beginBank,
+            "type" to filterRequest.type,
+            "fromDate" to filterRequest.frmPmtDt,
+            "beginningPayment" to filterRequest.beginPmt
          ),
          filterRequest
       ) { rs, elements ->
