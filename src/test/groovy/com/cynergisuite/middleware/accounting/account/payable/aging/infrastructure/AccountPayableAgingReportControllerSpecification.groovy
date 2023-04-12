@@ -157,10 +157,10 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
       vendorList.eachWithIndex { it, index ->
          apPaymentDetailDataLoaderService.single(
             company,
-            vendorList[index],
+            it,
             apInvoiceDataLoaderService.single(
                company,
-               vendorList[index],
+               it,
                purchaseOrderList[index],
                null,
                employeeIn,
@@ -169,7 +169,7 @@ class AccountPayableAgingReportControllerSpecification extends ControllerSpecifi
                payToIn,
                store
             ),
-            apPaymentDataLoaderService.single(company, bank, vendorList[index])
+            apPaymentDataLoaderService.single(company, bank, it)
          )
       }
 
