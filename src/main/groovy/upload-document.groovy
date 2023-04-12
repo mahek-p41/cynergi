@@ -107,7 +107,7 @@ if (!helpRequested) {
                final storeTokenCall = new HttpGet("http://localhost:${cynmidPort}/sign/here/token/store/${storeNumber}/dataset/${dataset}")
                final storeTokenResponse = client.execute(storeTokenCall)
 
-               if (storeTokenResponse.getCode() != 200) {
+               if (storeTokenResponse.getCode() == 200) {
                   final storeTokenSlurp = jsonSlurper.parse(storeTokenResponse.entity.content)
                   final company = storeTokenSlurp.company
                   final companyUUID = UUID.fromString(company.id)
