@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.sign.here.token
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleLegacyNumberDTO
 import com.cynergisuite.middleware.company.CompanyDTO
-import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.UUID
