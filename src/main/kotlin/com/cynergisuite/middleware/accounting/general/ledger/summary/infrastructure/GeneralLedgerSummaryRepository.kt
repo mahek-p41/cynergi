@@ -2,12 +2,14 @@ package com.cynergisuite.middleware.accounting.general.ledger.summary.infrastruc
 
 import com.cynergisuite.domain.GeneralLedgerProfitCenterTrialBalanceReportFilterRequest
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
@@ -31,7 +33,6 @@ import javax.transaction.Transactional
 class GeneralLedgerSummaryRepository @Inject constructor(
    private val jdbc: Jdbi,
    private val accountRepository: AccountRepository,
-   private val financialCalendarRepository: FinancialCalendarRepository,
    private val storeRepository: StoreRepository,
    private val overallPeriodTypeRepository: OverallPeriodTypeRepository
 ) {
@@ -417,6 +418,76 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          """, params, BigDecimal::class.java)
    }
 
+   @ReadOnly
+   fun updateClosingBalanceForCurrentFiscalYear(company: CompanyEntity): Int {
+      return jdbc.update("""
+         UPDATE general_ledger_summary
+         SET closing_balance =
+                 COALESCE(beginning_balance, 0) +
+                 COALESCE(net_activity_period_1, 0) +
+                 COALESCE(net_activity_period_2, 0) +
+                 COALESCE(net_activity_period_3, 0) +
+                 COALESCE(net_activity_period_4, 0) +
+                 COALESCE(net_activity_period_5, 0) +
+                 COALESCE(net_activity_period_6, 0) +
+                 COALESCE(net_activity_period_7, 0) +
+                 COALESCE(net_activity_period_8, 0) +
+                 COALESCE(net_activity_period_9, 0) +
+                 COALESCE(net_activity_period_10, 0) +
+                 COALESCE(net_activity_period_11, 0) +
+                 COALESCE(net_activity_period_12, 0)
+         WHERE company_id = :comp_id AND overall_period_id = 3
+         """, mapOf("comp_id" to company.id))
+   }
+
+   fun calculateNetIncomeForCurrentFiscalYear(company: CompanyEntity, retainedEarningsAccount: SimpleIdentifiableDTO): BigDecimal {
+      return jdbc.queryForObject("""SELECT
+          COALESCE(SUM(closing_balance), 0)
+      FROM general_ledger_summary summary
+         JOIN account ON summary.account_id = account.id AND account.deleted = FALSE
+         JOIN account_type_domain type ON account.type_id = type.id
+      WHERE summary.company_id = :comp_id
+         AND type.value IN ('R', 'E')
+         AND summary.overall_period_id = 3
+         AND summary.account_id = :retained_earnings_account
+      """, mapOf("comp_id" to company.id, "retained_earnings_account" to retainedEarningsAccount.id), BigDecimal::class.java)
+   }
+
+   fun rollOneFinancialYear(company: CompanyEntity) {
+      logger.debug("Roll one financial year for general_ledger_summary {}", company)
+      jdbc.update("""
+         DELETE FROM general_ledger_summary
+         WHERE company_id = :comp_id
+               AND overall_period_id = 1;
+
+         UPDATE public.general_ledger_summary
+         SET overall_period_id = 1
+         WHERE company_id = :comp_id
+               AND overall_period_id in (2);
+
+         UPDATE public.general_ledger_summary
+         SET overall_period_id = 2
+         WHERE company_id = :comp_id
+               AND overall_period_id in (3);
+
+         UPDATE public.general_ledger_summary
+         SET overall_period_id = 3
+         WHERE company_id = :comp_id
+               AND overall_period_id in (4);
+
+         INSERT INTO public.general_ledger_summary(company_id, account_id, profit_center_id_sfk, overall_period_id)
+         SELECT company_id,
+                account_id,
+                profit_center_id_sfk,
+                4
+         FROM public.general_ledger_summary
+         WHERE company_id = :comp_id
+               AND overall_period_id = 3;
+         """.trimIndent(),
+         mapOf("comp_id" to company.id)
+      )
+   }
+
    private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): GeneralLedgerSummaryEntity {
       return GeneralLedgerSummaryEntity(
          id = rs.getUuid("${columnPrefix}id"),
@@ -462,10 +533,10 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          closingBalance = rs.getBigDecimal("${columnPrefix}closing_balance")
       )
    }
-
    private fun buildFilterString(begin: Boolean, end: Boolean, beginningParam: String, endingParam: String): String {
       return if (begin && end) " BETWEEN :$beginningParam AND :$endingParam "
       else if (begin) " >= :$beginningParam "
       else " <= :$endingParam "
    }
+
 }

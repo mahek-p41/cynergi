@@ -10,6 +10,7 @@ import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.sumByBigDecimal
@@ -34,6 +35,7 @@ import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
+import java.time.LocalDate
 import java.util.UUID
 import javax.transaction.Transactional
 
@@ -542,5 +544,20 @@ class GeneralLedgerJournalRepository @Inject constructor(
       return if (begin && end) " BETWEEN :$beginningParam AND :$endingParam "
       else if (begin) " > :$beginningParam "
       else " < :$endingParam "
+   }
+
+   fun findPendingJournalEntriesForCurrentFiscalYear(company: CompanyEntity, from: LocalDate, thru: LocalDate): Int {
+      return jdbc.queryForObject(
+      """
+            SELECT COUNT(*)
+            FROM general_ledger_journal je
+               JOIN company comp ON je.company_id = comp.id AND comp.deleted = FALSE
+            WHERE je.company_id = :comp_id
+                  AND je.date BETWEEN :from AND :thru
+                  AND je.deleted = FALSE
+         """,
+         mapOf("comp_id" to company.id, "from" to from, "thru" to thru),
+         Int::class.java
+      )
    }
 }

@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.purchase.order
 
 import com.cynergisuite.domain.ValidatorBase
-import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.NotFoundException
@@ -26,7 +25,6 @@ import java.util.UUID
 
 @Singleton
 class PurchaseOrderValidator @Inject constructor(
-   private val accountRepository: AccountRepository,
    private val employeeRepository: EmployeeRepository,
    private val exceptionIndicatorTypeRepository: ExceptionIndicatorTypeRepository,
    private val freightOnboardTypeRepository: FreightOnboardTypeRepository,

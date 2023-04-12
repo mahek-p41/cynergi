@@ -42,10 +42,10 @@ data class GeneralLedgerInquiryDTO(
    private val _cumulativeNetActivities: List<BigDecimal?> = _periodNetActivities.runningFold(beginningBalance) { sum, period -> sum!!.add(period) }.drop(1)
    private val _priorCumulativeNetActivities: List<BigDecimal?> = _priorPeriodNetActivities.runningFold(priorBeginningBalance) { sum, period -> sum!!.add(period) }.drop(1)
 
-   @field:Schema(name = "totalBalance", description = "Total Balance")
+   @field:Schema(name = "closingBalance", description = "Closing balance (CYN-1428)")
    val closingBalance = _cumulativeNetActivities.last()
 
-   @field:Schema(name = "closingBalance", description = "Closing balance (CYN-1428)")
+   @field:Schema(name = "totalBalance", description = "Total Balance")
    val totalBalance: BigDecimal? = closingBalance?.minus(beginningBalance!!)
 
    @field:Schema(name = "periodNetActivities", description = "Period Net Activities")
