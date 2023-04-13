@@ -25,11 +25,11 @@ class GeneralLedgerDetailPageRequest(
 ) : StandardPageRequest(page, size, sortBy, sortDirection) {
 
    @field:NotNull
-   @field:Schema(name = "from", description = "Bottom end of the range which will be used to filter GL Details.  If from is found thru is required.  If both from and thru are empty then the result will include all GL Details")
+   @field:Schema(name = "from", description = "Bottom end of the range which will be used to filter GL Details.  If from is found thru is required.  If both from and thru are empty then the result will include all GL Details", required = true)
    var from: LocalDate? = null
 
    @field:NotNull
-   @field:Schema(name = "thru", description = "Top end of the range which will be used to filter GL Details.  If from is found thru is required.  If both from and thru are empty then the result will include all GL Details")
+   @field:Schema(name = "thru", description = "Top end of the range which will be used to filter GL Details.  If from is found thru is required.  If both from and thru are empty then the result will include all GL Details", required = true)
    var thru: LocalDate? = null
 
    @field:NotNull
