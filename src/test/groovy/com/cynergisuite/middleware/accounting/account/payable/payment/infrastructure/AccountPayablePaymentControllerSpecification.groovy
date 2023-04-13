@@ -23,8 +23,6 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 import spock.lang.Unroll
 
-import java.time.LocalDate
-
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 import java.time.OffsetDateTime
