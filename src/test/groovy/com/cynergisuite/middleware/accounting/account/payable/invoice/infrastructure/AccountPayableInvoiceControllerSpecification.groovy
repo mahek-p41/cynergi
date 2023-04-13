@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
 import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
+import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
@@ -377,6 +378,70 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       then:
       final notFoundException = thrown(HttpClientResponseException)
       notFoundException.status == NO_CONTENT
+   }
+
+   void "fetch all by vendor" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final store = storeFactoryService.store(3, company)
+      final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
+      final shipViaList = shipViaFactoryService.stream(4, company).toList()
+      final employeeList = employeeFactoryService.stream(4, company).toList()
+
+      final vendorPmtTerm = vendorPaymentTermList[0]
+      final vendorShipVia = shipViaList[0]
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+
+      final poVendorPmtTerm = vendorPaymentTermList[1]
+      final poVendorShipVia = shipViaList[1]
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poApprovedBy = employeeList[0]
+      final poPurchaseAgent = employeeList[1]
+      final poShipVia = shipViaList[2]
+      final poPmtTerm = vendorPaymentTermList[2]
+      final poVendorSubEmp = employeeList[2]
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+
+      final employeeIn = employeeList[3]
+
+      final payToPmtTerm = vendorPaymentTermList[3]
+      final payToShipVia = shipViaList[3]
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+
+      def apInvoices = dataLoaderService.stream(20, company, vendorIn, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
+         .map { new AccountPayableInvoiceDTO(it)}
+         .sorted { o1, o2 -> o1.id <=> o2.id }.toList()
+
+      def filterRequest = new AccountPayableInvoiceListByVendorFilterRequest()
+      switch (criteria) {
+         case 'Search by vendor':
+            filterRequest['vendor'] = vendorIn.number
+            break
+         case 'Search by invoice':
+            filterRequest['invoice'] = apInvoices[2].invoice
+            break
+         case 'Search by both':
+            filterRequest['vendor'] = vendorIn.number
+            filterRequest['invoice'] = apInvoices[10].invoice
+            break
+         case 'Search by neither':
+            break
+      }
+
+      when:
+      def result = get("$path/list-by-vendor${filterRequest}")
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.totalElements == elements
+
+      where:
+      criteria              || elements
+      'Search by vendor'    || 20
+      'Search by invoice'   || 20
+      'Search by both'      || 10
+      'Search by neither'   || 20
    }
 
    void "fetch AP Invoice report" () {

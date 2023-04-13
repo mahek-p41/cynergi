@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice
 
 import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
+import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
@@ -38,6 +39,12 @@ class AccountPayableInvoiceService @Inject constructor(
       return found.toPage { accountPayableInvoiceEntity: AccountPayableInvoiceEntity ->
          AccountPayableInvoiceDTO(accountPayableInvoiceEntity)
       }
+   }
+
+   fun fetchAllByVendor(company: CompanyEntity, filterRequest: AccountPayableInvoiceListByVendorFilterRequest): Page<AccountPayableInvoiceListByVendorDTO> {
+      val found = accountPayableInvoiceRepository.findAllByVendor(company, filterRequest)
+
+      return found.toPage { dto: AccountPayableInvoiceListByVendorDTO -> dto }
    }
 
    fun fetchReport(company: CompanyEntity, filterRequest: InvoiceReportFilterRequest): AccountPayableInvoiceReportTemplate {
