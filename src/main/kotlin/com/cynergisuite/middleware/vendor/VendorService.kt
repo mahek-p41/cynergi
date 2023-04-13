@@ -53,4 +53,10 @@ class VendorService @Inject constructor(
    fun delete(id: UUID, company: CompanyEntity) {
       vendorRepository.delete(id, company)
    }
+
+   fun fetchStatistics(vendorDTO: VendorDTO, company: CompanyEntity): VendorStatisticsDTO {
+      val dto = VendorStatisticsDTO(vendorDTO)
+
+      return dto
+   }
 }
