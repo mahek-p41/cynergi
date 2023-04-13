@@ -1271,7 +1271,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
       notFoundException.status == NO_CONTENT
    }
 
-   void "fetch paged listing of account payable payments with a not starting payment number" () {
+   void "fetch paged listing of account payable payments with a non-existing starting payment number" () {
       given:
       def company = companyFactoryService.forDatasetCode('coravt')
       def store = storeFactoryService.store(3, company)
@@ -1312,7 +1312,7 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
       apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[3]).toList())
       apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[4]).toList())
 
-      def pageOne = new AccountPayableListPaymentsFilterRequest(1, 5, "id", "ASC", bank2.number, null, null, null)
+      def pageOne = new AccountPayableListPaymentsFilterRequest(1, 5, "id", "ASC", null, "zz9999zz", null, null)
 
       when:
       get("$path/pmtlist${pageOne}")
