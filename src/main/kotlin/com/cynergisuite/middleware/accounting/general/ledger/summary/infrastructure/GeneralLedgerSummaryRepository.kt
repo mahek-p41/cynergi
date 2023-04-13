@@ -518,56 +518,19 @@ class GeneralLedgerSummaryRepository @Inject constructor(
    @Transactional
    fun recalculateGLBalance(company: CompanyEntity) {
       val query = """
-         WITH account AS (
-            ${accountRepository.selectBaseQuery()}
-         ),
-         glSum as (
+         WITH glSum as (
          SELECT
             glSummary.id                                              AS glSummary_id,
             glSummary.company_id                                      AS glSummary_company_id,
             glSummary.profit_center_id_sfk                            AS glSummary_profit_center_id_sfk,
-            glSummary.net_activity_period_1                           AS glSummary_net_activity_period_1,
-            glSummary.net_activity_period_2                           AS glSummary_net_activity_period_2,
-            glSummary.net_activity_period_3                           AS glSummary_net_activity_period_3,
-            glSummary.net_activity_period_4                           AS glSummary_net_activity_period_4,
-            glSummary.net_activity_period_5                           AS glSummary_net_activity_period_5,
-            glSummary.net_activity_period_6                           AS glSummary_net_activity_period_6,
-            glSummary.net_activity_period_7                           AS glSummary_net_activity_period_7,
-            glSummary.net_activity_period_8                           AS glSummary_net_activity_period_8,
-            glSummary.net_activity_period_9                           AS glSummary_net_activity_period_9,
-            glSummary.net_activity_period_10                          AS glSummary_net_activity_period_10,
-            glSummary.net_activity_period_11                          AS glSummary_net_activity_period_11,
-            glSummary.net_activity_period_12                          AS glSummary_net_activity_period_12,
-            glSummary.beginning_balance                               AS glSummary_beginning_balance,
             glSummary.closing_balance                                 AS glSummary_closing_balance,
-            acct.account_id                                           AS glSummary_acct_id,
-            acct.account_number                                       AS glSummary_acct_number,
-            acct.account_name                                         AS glSummary_acct_name,
-            acct.account_form_1099_field                              AS glSummary_acct_form_1099_field,
-            acct.account_corporate_account_indicator                  AS glSummary_acct_corporate_account_indicator,
-            acct.account_comp_id                                      AS glSummary_acct_comp_id,
-            acct.account_deleted                                      AS glSummary_acct_deleted,
-            acct.account_type_id                                      AS glSummary_acct_type_id,
-            acct.account_type_value                                   AS glSummary_acct_type_value,
-            acct.account_type_description                             AS glSummary_acct_type_description,
-            acct.account_type_localization_code                       AS glSummary_acct_type_localization_code,
-            acct.account_balance_type_id                              AS glSummary_acct_balance_type_id,
-            acct.account_balance_type_value                           AS glSummary_acct_balance_type_value,
-            acct.account_balance_type_description                     AS glSummary_acct_balance_type_description,
-            acct.account_balance_type_localization_code               AS glSummary_acct_balance_type_localization_code,
-            acct.account_status_id                                    AS glSummary_acct_status_id,
-            acct.account_status_value                                 AS glSummary_acct_status_value,
-            acct.account_status_description                           AS glSummary_acct_status_description,
-            acct.account_status_localization_code                     AS glSummary_acct_status_localization_code,
-            acct.account_vendor_1099_type_id                          AS glSummary_acct_vendor_1099_type_id,
-            acct.account_vendor_1099_type_value                       AS glSummary_acct_vendor_1099_type_value,
-            acct.account_vendor_1099_type_description                 AS glSummary_acct_vendor_1099_type_description,
-            acct.account_vendor_1099_type_localization_code           AS glSummary_acct_vendor_1099_type_localization_code,
+            acct.id                                                   AS glSummary_acct_id,
+            acct.number                                               AS glSummary_acct_number,
+            acct.company_id                                           AS glSummary_acct_comp_id,
+            acct.deleted                                              AS glSummary_acct_deleted,
+            acct_type.id                                              AS glSummary_acct_type_id,
+            acct_type.value                                           AS glSummary_acct_type_value,
             bank.id                                                   AS glSummary_acct_bank_id,
-            profitCenter.id                                           AS glSummary_profitCenter_id,
-            profitCenter.number                                       AS glSummary_profitCenter_number,
-            profitCenter.name                                         AS glSummary_profitCenter_name,
-            profitCenter.dataset                                      AS glSummary_profitCenter_dataset,
             overallPeriod.id                                          AS glSummary_overallPeriod_id,
             overallPeriod.value                                       AS glSummary_overallPeriod_value,
             overallPeriod.abbreviation                                AS glSummary_overallPeriod_abbreviation,
@@ -575,10 +538,8 @@ class GeneralLedgerSummaryRepository @Inject constructor(
             overallPeriod.localization_code                           AS glSummary_overallPeriod_localization_code
          FROM general_ledger_summary glSummary
             JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
-            JOIN fastinfo_prod_import.store_vw profitCenter
-                    ON profitCenter.dataset = comp.dataset_code
-                       AND profitCenter.number = glSummary.profit_center_id_sfk
-            JOIN account acct ON glSummary.account_id = acct.account_id AND acct.account_deleted = FALSE
+            JOIN account acct ON glSummary.account_id = acct.id AND acct.deleted = FALSE
+            JOIN account_type_domain acct_type on acct.type_id = acct_type.id
             JOIN overall_period_type_domain overallPeriod ON glSummary.overall_period_id = overallPeriod.id
             LEFT OUTER JOIN bank ON bank.general_ledger_account_id = acct.account_id AND bank.deleted = FALSE
             WHERE glSummary.company_id = :comp_id AND acct.account_type_value IN ('A', 'L', 'C') AND overallPeriod.id = 2
