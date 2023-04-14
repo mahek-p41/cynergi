@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure
 
+import com.cynergisuite.domain.AccountPayableListPaymentsFilterRequest
 import com.cynergisuite.domain.PaymentReportFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
@@ -21,6 +22,8 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 import spock.lang.Unroll
+
+import static io.micronaut.http.HttpStatus.NO_CONTENT
 
 import java.time.OffsetDateTime
 
@@ -965,4 +968,356 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
       response.message == "Requested operation violates data integrity"
       response.code == "cynergi.data.constraint.violated"
    }
+
+   void "fetch paged listing of account payable payments" () {
+      given:
+      def company = companyFactoryService.forDatasetCode('coravt')
+      def store = storeFactoryService.store(3, company)
+      def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
+      def shipViaList = shipViaFactoryService.stream(4, company).toList()
+
+      def account = accountFactoryService.single(company)
+      def account2 = accountFactoryService.single(company)
+      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      def bank2 = bankFactoryService.single(nineNineEightEmployee.company, store, account2)
+
+      def vendorPmtTerm = vendorPaymentTermList[0]
+      def vendorShipVia = shipViaList[0]
+      def vendorGroups = vendorGroupTestDataLoaderService.stream(company).toList()
+      def vendors = vendorTestDataLoaderService.stream(2, company, vendorPmtTerm, vendorShipVia, vendorGroups[0]).toList()
+
+      def employeeList = employeeFactoryService.stream(4, company).toList()
+      def poApprovedBy = employeeList[0]
+      def poPurchaseAgent = employeeList[1]
+      def poShipVia = shipViaList[2]
+      def poPmtTerm = vendorPaymentTermList[2]
+      def poVendorSubEmp = employeeList[2]
+      def poCustAcct = accountFactoryService.single(company)
+      def purchaseOrderIn = poDataLoaderService.single(company, vendors[0], poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      def employeeIn = employeeList[3]
+
+      def payToPmtTerm = vendorPaymentTermList[3]
+      def payToShipVia = shipViaList[3]
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def apInvoice = payableInvoiceDataLoaderService.single(company, vendors[0], purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
+      def pmtStatuses = AccountPayablePaymentStatusTypeDataLoader.predefined()
+      def pmtTypes = AccountPayablePaymentTypeTypeDataLoader.predefined()
+      def apPayments = dataLoaderService.stream(5, company, bank, vendors[0], pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }, null, null, null, true).toList()
+      apPayments.addAll(dataLoaderService.stream(5, company, bank2, vendors[1], pmtStatuses.find { it.value == 'V' }, pmtTypes.find { it.value == 'A' }, null, null, null, true).toList())
+      apPayments.addAll(dataLoaderService.stream(5, company, bank2, vendors[1], pmtStatuses.find { it.value == 'V' }, pmtTypes.find { it.value == 'C' }, null, null, null, true).toList())
+
+
+      def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[0]).toList()
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[1]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[2]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[3]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[4]).toList())
+
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[1], apInvoice, apPayments[5]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[1], apInvoice, apPayments[6]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[1], apInvoice, apPayments[7]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[1], apInvoice, apPayments[8]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[1], apInvoice, apPayments[9]).toList())
+
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[1], apInvoice, apPayments[10]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[1], apInvoice, apPayments[11]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[1], apInvoice, apPayments[12]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[1], apInvoice, apPayments[13]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[1], apInvoice, apPayments[14]).toList())
+
+      def pageOne = new AccountPayableListPaymentsFilterRequest(1, 5, "id", "ASC", bank.number, null, null, null)
+      def pageTwo = new AccountPayableListPaymentsFilterRequest(1, 5, "id", "ASC", bank2.number, null, null, null)
+      def pageLast = new AccountPayableListPaymentsFilterRequest(1, 5, "id", "ASC", bank2.number, null, 'C', null)
+      def pageFour = new AccountPayableListPaymentsFilterRequest(1, 5, "id", "ASC", bank.number, null, 'X', null)
+      def firstPageAccount = apPayments[0..4]
+      def secondPageAccount = apPayments[5..9]
+      def lastPageAccount = apPayments[10..14]
+
+      when:
+      def pageOneResult = get("$path/pmtlist${pageOne}")
+
+      then:
+      pageOneResult.requested.with { new AccountPayableListPaymentsFilterRequest(it) } == pageOne
+      pageOneResult.totalElements == 75
+      pageOneResult.totalPages == 15
+      pageOneResult.first == true
+      pageOneResult.last == false
+      pageOneResult.elements.size() == 5
+      pageOneResult.elements.eachWithIndex { result, index ->
+         with(result) {
+            with(bank) {
+               number == firstPageAccount[index].bank.number
+            }
+            with(vendor) {
+               name == firstPageAccount[index].vendor.name
+            }
+            with(type) {
+               description == firstPageAccount[index].type.description
+               value == firstPageAccount[index].type.value
+            }
+         }
+      }
+
+      when:
+      def pageTwoResult = get("$path/pmtlist${pageTwo}")
+
+      then:
+      pageTwoResult.requested.with { new AccountPayableListPaymentsFilterRequest(it) } == pageTwo
+      pageTwoResult.totalElements == 50
+      pageTwoResult.totalPages == 10
+      pageTwoResult.first == true
+      pageTwoResult.last == false
+      pageTwoResult.elements.size() == 5
+      pageTwoResult.elements.eachWithIndex { result, index ->
+         with(result) {
+            with(bank) {
+               number == firstPageAccount[index].bank.number
+            }
+            with(vendor) {
+               name == secondPageAccount[index].vendor.name
+            }
+            with(type) {
+               description == secondPageAccount[index].type.description
+               value == secondPageAccount[index].type.value
+            }
+         }
+      }
+
+      when:
+      def pageLastResult = get("$path/pmtlist${pageLast}")
+
+      then:
+      pageLastResult.requested.with { new AccountPayableListPaymentsFilterRequest(it) } == pageLast
+      pageLastResult.totalElements == 25
+      pageLastResult.totalPages == 5
+      pageLastResult.first == true
+      pageLastResult.last == false
+      pageLastResult.elements.size() == 5
+      pageLastResult.elements.eachWithIndex { result, index ->
+         with(result) {
+            with(bank) {
+               number == firstPageAccount[index].bank.number
+            }
+            with(vendor) {
+               name == lastPageAccount[index].vendor.name
+            }
+            with(type) {
+               description == lastPageAccount[index].type.description
+               value == lastPageAccount[index].type.value
+            }
+         }
+      }
+
+      when:
+      get("$path/pmtlist${pageFour}")
+
+      then:
+      final notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NO_CONTENT
+   }
+
+   void "fetch paged listing of account payable payments with wrong type" () {
+      given:
+      def company = companyFactoryService.forDatasetCode('coravt')
+      def store = storeFactoryService.store(3, company)
+      def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
+      def shipViaList = shipViaFactoryService.stream(4, company).toList()
+
+      def account = accountFactoryService.single(company)
+      def account2 = accountFactoryService.single(company)
+      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      def bank2 = bankFactoryService.single(nineNineEightEmployee.company, store, account2)
+
+      def vendorPmtTerm = vendorPaymentTermList[0]
+      def vendorShipVia = shipViaList[0]
+      def vendorGroups = vendorGroupTestDataLoaderService.stream(company).toList()
+      def vendors = vendorTestDataLoaderService.stream(2, company, vendorPmtTerm, vendorShipVia, vendorGroups[0]).toList()
+
+      def employeeList = employeeFactoryService.stream(4, company).toList()
+      def poApprovedBy = employeeList[0]
+      def poPurchaseAgent = employeeList[1]
+      def poShipVia = shipViaList[2]
+      def poPmtTerm = vendorPaymentTermList[2]
+      def poVendorSubEmp = employeeList[2]
+      def poCustAcct = accountFactoryService.single(company)
+      def purchaseOrderIn = poDataLoaderService.single(company, vendors[0], poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      def employeeIn = employeeList[3]
+
+      def payToPmtTerm = vendorPaymentTermList[3]
+      def payToShipVia = shipViaList[3]
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def apInvoice = payableInvoiceDataLoaderService.single(company, vendors[0], purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
+      def pmtStatuses = AccountPayablePaymentStatusTypeDataLoader.predefined()
+      def pmtTypes = AccountPayablePaymentTypeTypeDataLoader.predefined()
+      def apPayments = dataLoaderService.stream(5, company, bank, vendors[0], pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }, null, null, null, true).toList()
+
+      def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[0]).toList()
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[1]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[2]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[3]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[4]).toList())
+
+      def pageOne = new AccountPayableListPaymentsFilterRequest(1, 5, "id", "ASC", null, null, 'C', null)
+
+      when:
+      get("$path/pmtlist${pageOne}")
+
+      then:
+      final notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NO_CONTENT
+   }
+
+   void "fetch paged listing of account payable payments with a not found bank" () {
+      given:
+      def company = companyFactoryService.forDatasetCode('coravt')
+      def store = storeFactoryService.store(3, company)
+      def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
+      def shipViaList = shipViaFactoryService.stream(4, company).toList()
+
+      def account = accountFactoryService.single(company)
+      def account2 = accountFactoryService.single(company)
+      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      def bank2 = bankFactoryService.single(nineNineEightEmployee.company, store, account2)
+
+      def vendorPmtTerm = vendorPaymentTermList[0]
+      def vendorShipVia = shipViaList[0]
+      def vendorGroups = vendorGroupTestDataLoaderService.stream(company).toList()
+      def vendors = vendorTestDataLoaderService.stream(2, company, vendorPmtTerm, vendorShipVia, vendorGroups[0]).toList()
+
+      def employeeList = employeeFactoryService.stream(4, company).toList()
+      def poApprovedBy = employeeList[0]
+      def poPurchaseAgent = employeeList[1]
+      def poShipVia = shipViaList[2]
+      def poPmtTerm = vendorPaymentTermList[2]
+      def poVendorSubEmp = employeeList[2]
+      def poCustAcct = accountFactoryService.single(company)
+      def purchaseOrderIn = poDataLoaderService.single(company, vendors[0], poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      def employeeIn = employeeList[3]
+
+      def payToPmtTerm = vendorPaymentTermList[3]
+      def payToShipVia = shipViaList[3]
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def apInvoice = payableInvoiceDataLoaderService.single(company, vendors[0], purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
+      def pmtStatuses = AccountPayablePaymentStatusTypeDataLoader.predefined()
+      def pmtTypes = AccountPayablePaymentTypeTypeDataLoader.predefined()
+      def apPayments = dataLoaderService.stream(5, company, bank, vendors[0], pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }, null, null, null, true).toList()
+
+      def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[0]).toList()
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[1]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[2]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[3]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[4]).toList())
+
+      def pageOne = new AccountPayableListPaymentsFilterRequest(1, 5, "id", "ASC", bank2.number, null, null, null)
+
+      when:
+      get("$path/pmtlist${pageOne}")
+
+      then:
+      final notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NO_CONTENT
+   }
+
+   void "fetch paged listing of account payable payments with a not found starting payment date" () {
+      given:
+      def company = companyFactoryService.forDatasetCode('coravt')
+      def store = storeFactoryService.store(3, company)
+      def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
+      def shipViaList = shipViaFactoryService.stream(4, company).toList()
+
+      def account = accountFactoryService.single(company)
+      def account2 = accountFactoryService.single(company)
+      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      def bank2 = bankFactoryService.single(nineNineEightEmployee.company, store, account2)
+
+      def vendorPmtTerm = vendorPaymentTermList[0]
+      def vendorShipVia = shipViaList[0]
+      def vendorGroups = vendorGroupTestDataLoaderService.stream(company).toList()
+      def vendors = vendorTestDataLoaderService.stream(2, company, vendorPmtTerm, vendorShipVia, vendorGroups[0]).toList()
+
+      def employeeList = employeeFactoryService.stream(4, company).toList()
+      def poApprovedBy = employeeList[0]
+      def poPurchaseAgent = employeeList[1]
+      def poShipVia = shipViaList[2]
+      def poPmtTerm = vendorPaymentTermList[2]
+      def poVendorSubEmp = employeeList[2]
+      def poCustAcct = accountFactoryService.single(company)
+      def purchaseOrderIn = poDataLoaderService.single(company, vendors[0], poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      def employeeIn = employeeList[3]
+
+      def payToPmtTerm = vendorPaymentTermList[3]
+      def payToShipVia = shipViaList[3]
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def apInvoice = payableInvoiceDataLoaderService.single(company, vendors[0], purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
+      def pmtStatuses = AccountPayablePaymentStatusTypeDataLoader.predefined()
+      def pmtTypes = AccountPayablePaymentTypeTypeDataLoader.predefined()
+      def apPayments = dataLoaderService.stream(5, company, bank, vendors[0], pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }, null, null, null, true).toList()
+
+      def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[0]).toList()
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[1]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[2]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[3]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[4]).toList())
+
+      def pageOne = new AccountPayableListPaymentsFilterRequest(1, 5, "id", "ASC", null, null, null, OffsetDateTime.now().plusDays(15))
+
+      when:
+      get("$path/pmtlist${pageOne}")
+
+      then:
+      final notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NO_CONTENT
+   }
+
+   void "fetch paged listing of account payable payments with a non-existing starting payment number" () {
+      given:
+      def company = companyFactoryService.forDatasetCode('coravt')
+      def store = storeFactoryService.store(3, company)
+      def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
+      def shipViaList = shipViaFactoryService.stream(4, company).toList()
+
+      def account = accountFactoryService.single(company)
+      def account2 = accountFactoryService.single(company)
+      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      def bank2 = bankFactoryService.single(nineNineEightEmployee.company, store, account2)
+
+      def vendorPmtTerm = vendorPaymentTermList[0]
+      def vendorShipVia = shipViaList[0]
+      def vendorGroups = vendorGroupTestDataLoaderService.stream(company).toList()
+      def vendors = vendorTestDataLoaderService.stream(2, company, vendorPmtTerm, vendorShipVia, vendorGroups[0]).toList()
+
+      def employeeList = employeeFactoryService.stream(4, company).toList()
+      def poApprovedBy = employeeList[0]
+      def poPurchaseAgent = employeeList[1]
+      def poShipVia = shipViaList[2]
+      def poPmtTerm = vendorPaymentTermList[2]
+      def poVendorSubEmp = employeeList[2]
+      def poCustAcct = accountFactoryService.single(company)
+      def purchaseOrderIn = poDataLoaderService.single(company, vendors[0], poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      def employeeIn = employeeList[3]
+
+      def payToPmtTerm = vendorPaymentTermList[3]
+      def payToShipVia = shipViaList[3]
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      def apInvoice = payableInvoiceDataLoaderService.single(company, vendors[0], purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
+      def pmtStatuses = AccountPayablePaymentStatusTypeDataLoader.predefined()
+      def pmtTypes = AccountPayablePaymentTypeTypeDataLoader.predefined()
+      def apPayments = dataLoaderService.stream(5, company, bank, vendors[0], pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }, null, null, null, true).toList()
+
+      def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[0]).toList()
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[1]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[2]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[3]).toList())
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendors[0], apInvoice, apPayments[4]).toList())
+
+      def pageOne = new AccountPayableListPaymentsFilterRequest(1, 5, "id", "ASC", null, "zz9999zz", null, null)
+
+      when:
+      get("$path/pmtlist${pageOne}")
+
+      then:
+      final notFoundException = thrown(HttpClientResponseException)
+      notFoundException.status == NO_CONTENT
+   }
+
 }
