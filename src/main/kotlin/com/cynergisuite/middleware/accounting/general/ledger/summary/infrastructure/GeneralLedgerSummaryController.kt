@@ -205,4 +205,30 @@ class GeneralLedgerSummaryController @Inject constructor(
       val byteArray = generalLedgerSummaryService.exportProfitCenterTrialBalanceReport(user.myCompany(), profitCenterTrialBalanceReportFilterRequest)
       return StreamedFile(ByteArrayInputStream(byteArray), ALL_TYPE).attach("GL Profit Center Trial Balance Report Export.csv")
    }
+
+   @Throws(NotFoundException::class)
+   @Post(uri = "/recalculate-gl-balance")
+   @Operation(
+      tags = ["GeneralLedgerSummaryEndpoints"],
+      summary = "Recalculate GL Account Balances",
+      description = "Recalculate GL Account Balances",
+      operationId = "generalLedgerSummary-recalculate-account-balance"
+   )
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200"),
+         ApiResponse(responseCode = "204", description = "The requested report was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun recalculateGlBalance(
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ) {
+      logger.info("Recalculating GL account balances for current company {}")
+
+      val user = userService.fetchUser(authentication)
+      generalLedgerSummaryService.recalculateGLBalance(user.myCompany())
+   }
 }
