@@ -88,7 +88,7 @@ class SignHereTokenController(
       logger.info("Fetching token by store number {}", storeNumber)
 
       val company = companyService.fetchByDatasetCodeForEntity(dataset)
-      val response = signHereTokenService.fetchByStoreNumber(storeNumber, company = company!!) ?: throw NotFoundException(storeNumber)
+      val response = signHereTokenService.fetchByStoreNumber(storeNumber, company = company!!) ?: throw NotFoundException("$dataset -> $storeNumber")
 
       logger.debug("Fetch token by store {} resulted {}", storeNumber, response)
 

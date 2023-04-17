@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.sign.here.token
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleLegacyNumberDTO
-import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.company.CompanyDTO
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.UUID
@@ -20,7 +20,7 @@ data class SignHereTokenDTO(
    @field:NotNull
    @field:NotBlank
    @field:Schema(name = "company", description = "The associated company for this store token")
-   var company: CompanyEntity? = null,
+   var company: CompanyDTO? = null,
 
    @field:Schema(name = "store", required = false, description = "Store the token is associated with")
    var store: SimpleLegacyNumberDTO? = null,
@@ -33,7 +33,7 @@ data class SignHereTokenDTO(
    constructor(entity: SignHereTokenEntity) :
       this (
          id = entity.id,
-         company = entity.company,
+         company = CompanyDTO(entity.company),
          store = SimpleLegacyNumberDTO(entity.store.number),
          token = entity.token,
       )
