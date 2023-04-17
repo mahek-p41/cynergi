@@ -25,13 +25,11 @@ data class GeneralLedgerTrialBalanceReportDetailDTO(
    @field:Schema(description = "General ledger source code", required = true)
    var source: GeneralLedgerSourceCodeDTO,
 
-   @field:NotNull
    @field:Schema(description = "Journal entry number")
-   var journalEntryNumber: Int,
+   var journalEntryNumber: Int?,
 
-   @field:NotNull
    @field:Schema(description = "General ledger detail message")
-   var message: String,
+   var message: String?,
 
    @field:NotNull
    @field:Schema(description = "General ledger detail amount", required = true)
