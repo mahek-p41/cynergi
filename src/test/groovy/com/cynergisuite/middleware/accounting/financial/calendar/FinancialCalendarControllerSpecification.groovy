@@ -585,4 +585,26 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       response.message[0] == "Dates $testStartingDate and $testEndingDate must be in same fiscal year"
       response.code[0] == 'cynergi.validation.dates.must.be.in.same.fiscal.year'
    }
+
+   void "modify the open ap and gl ranges at only 1 company when 2 exist" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      final tstds2 = companyFactoryService.forDatasetCode('corrto')
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(tstds2, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
+      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(120))
+      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now().plusDays(7), LocalDate.now().plusDays(80))
+
+      when:
+      put("$path/open-ap", dateRangeAP)
+
+      then:
+      notThrown(Exception)
+
+      when:
+      put("$path/open-gl", dateRangeGL)
+
+      then:
+      notThrown(Exception)
+   }
 }
