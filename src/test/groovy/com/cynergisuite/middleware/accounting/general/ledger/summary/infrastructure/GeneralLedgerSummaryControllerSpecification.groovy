@@ -7,14 +7,23 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
+import com.cynergisuite.middleware.accounting.account.AccountStatusFactory
 import com.cynergisuite.middleware.accounting.account.AccountStatusType
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
+import com.cynergisuite.middleware.accounting.account.AccountType
+import com.cynergisuite.middleware.accounting.account.AccountTypeFactory
+import com.cynergisuite.middleware.accounting.account.AccountTypeFactoryService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDataLoader
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDataLoaderService
 import com.cynergisuite.middleware.store.StoreDTO
@@ -38,6 +47,8 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
    @Inject FinancialCalendarDataLoaderService financialCalendarDataLoaderService
    @Inject GeneralLedgerJournalEntryDataLoaderService generalLedgerJournalEntryDataLoaderService
    @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
+   @Inject AccountTypeFactoryService accountTypeFactoryService
+   @Inject GeneralLedgerDetailDataLoaderService generalLedgerDetailDataLoaderService
 
    void "fetch one" () {
       given:
@@ -673,5 +684,136 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       'Select one account'                || 1             | 2000  | -2000
       'Select profit centers by range'    || 2             | 2400  | -2400
       'Select profit centers by list'     || 2             | 2400  | -2400
+   }
+
+   void "Recalculate account balances" () {
+      //testing two sets of gl summaries with different profit centers
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().minusYears(1), true, true).collect()
+      final acct = accountDataLoaderService.single(company, AccountStatusFactory.predefined().find {it.value == "A" }, AccountTypeFactory.predefined().find {it.value == "C" })
+      final store1 = storeFactoryService.store(1, company)
+      final store2 = storeFactoryService.store(4, company)
+      final sourceCode = generalLedgerSourceCodeDataLoaderService.single(company, "AJE")
+      def glSumPeriod2 = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(acct), new SimpleLegacyIdentifiableDTO(store1.myId()))
+      def glSumPeriod3 = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(acct), new SimpleLegacyIdentifiableDTO(store1.myId()))
+
+      def glSumPeriod4 = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(acct), new SimpleLegacyIdentifiableDTO(store2.myId()))
+      def glSumPeriod5 = dataLoaderService.singleDTO(new SimpleIdentifiableDTO(acct), new SimpleLegacyIdentifiableDTO(store2.myId()))
+
+      glSumPeriod4.overallPeriod = new OverallPeriodTypeDTO(OverallPeriodTypeDataLoader.predefined().find { it.value == "P"})
+      glSumPeriod4.closingBalance = 999
+      glSumPeriod4.profitCenter = new SimpleLegacyIdentifiableDTO(6)
+      glSumPeriod5.overallPeriod = new OverallPeriodTypeDTO(OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
+      glSumPeriod5.profitCenter = new SimpleLegacyIdentifiableDTO(6)
+
+      glSumPeriod2.overallPeriod = new OverallPeriodTypeDTO(OverallPeriodTypeDataLoader.predefined().find { it.value == "P" })
+      glSumPeriod2.profitCenter = new SimpleLegacyIdentifiableDTO(2)
+      glSumPeriod2.closingBalance = 120
+      glSumPeriod2.netActivityPeriod1 = 10
+      glSumPeriod2.netActivityPeriod2 = 10
+      glSumPeriod2.netActivityPeriod3 = 10
+      glSumPeriod2.netActivityPeriod4 = 10
+      glSumPeriod2.netActivityPeriod5 = 10
+      glSumPeriod2.netActivityPeriod6 = 10
+      glSumPeriod2.netActivityPeriod7 = 10
+      glSumPeriod2.netActivityPeriod8 = 10
+      glSumPeriod2.netActivityPeriod9 = 10
+      glSumPeriod2.netActivityPeriod10 = 10
+      glSumPeriod2.netActivityPeriod11 = 10
+      glSumPeriod2.netActivityPeriod12 = 10
+
+      glSumPeriod3.overallPeriod = new OverallPeriodTypeDTO(OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
+      glSumPeriod3.profitCenter = new SimpleLegacyIdentifiableDTO(2)
+
+      def glJournalDetailDTOs = generalLedgerDetailDataLoaderService.streamDTO(12, acct, store1, sourceCode).toList() as List<GeneralLedgerDetailDTO>
+      glJournalDetailDTOs[0].date = LocalDate.now().minusMonths(12)
+      glJournalDetailDTOs[0].amount = 100
+      glJournalDetailDTOs[1].date = LocalDate.now().minusMonths(11)
+      glJournalDetailDTOs[1].amount = 200
+      glJournalDetailDTOs[2].date = LocalDate.now().minusMonths(10)
+      glJournalDetailDTOs[2].amount = 300
+      glJournalDetailDTOs[3].date = LocalDate.now().minusMonths(9)
+      glJournalDetailDTOs[3].amount = 400
+      glJournalDetailDTOs[4].date = LocalDate.now().minusMonths(8)
+      glJournalDetailDTOs[4].amount = 500
+      glJournalDetailDTOs[5].date = LocalDate.now().minusMonths(7)
+      glJournalDetailDTOs[5].amount = 600
+      glJournalDetailDTOs[6].date = LocalDate.now().minusMonths(6)
+      glJournalDetailDTOs[6].amount = 700
+      glJournalDetailDTOs[7].date = LocalDate.now().minusMonths(5)
+      glJournalDetailDTOs[7].amount = 800
+      glJournalDetailDTOs[8].date = LocalDate.now().minusMonths(4)
+      glJournalDetailDTOs[8].amount = 900
+      glJournalDetailDTOs[9].date = LocalDate.now().minusMonths(3)
+      glJournalDetailDTOs[9].amount = 1000
+      glJournalDetailDTOs[10].date = LocalDate.now().minusMonths(2)
+      glJournalDetailDTOs[10].amount = 1100
+      glJournalDetailDTOs[11].date = LocalDate.now().minusMonths(1)
+      glJournalDetailDTOs[11].amount = 1200
+
+      def glJournalDetailDTOs2 = generalLedgerDetailDataLoaderService.streamDTO(12, acct, store2, sourceCode).toList() as List<GeneralLedgerDetailDTO>
+      glJournalDetailDTOs2[0].date = LocalDate.now().minusMonths(12)
+      glJournalDetailDTOs2[0].amount = 60
+      glJournalDetailDTOs2[1].date = LocalDate.now().minusMonths(11)
+      glJournalDetailDTOs2[1].amount = 400
+      glJournalDetailDTOs2[2].date = LocalDate.now().minusMonths(10)
+      glJournalDetailDTOs2[2].amount = 33
+      glJournalDetailDTOs2[3].date = LocalDate.now().minusMonths(9)
+      glJournalDetailDTOs2[3].amount = 23
+      glJournalDetailDTOs2[4].date = LocalDate.now().minusMonths(8)
+      glJournalDetailDTOs2[4].amount = 54
+      glJournalDetailDTOs2[5].date = LocalDate.now().minusMonths(7)
+      glJournalDetailDTOs2[5].amount = 756
+      glJournalDetailDTOs2[6].date = LocalDate.now().minusMonths(6)
+      glJournalDetailDTOs2[6].amount = 12
+      glJournalDetailDTOs2[7].date = LocalDate.now().minusMonths(5)
+      glJournalDetailDTOs2[7].amount = 42
+      glJournalDetailDTOs2[8].date = LocalDate.now().minusMonths(4)
+      glJournalDetailDTOs2[8].amount = 64
+      glJournalDetailDTOs2[9].date = LocalDate.now().minusMonths(3)
+      glJournalDetailDTOs2[9].amount = 321
+      glJournalDetailDTOs2[10].date = LocalDate.now().minusMonths(2)
+      glJournalDetailDTOs2[10].amount = 6214
+      glJournalDetailDTOs2[11].date = LocalDate.now().minusMonths(1)
+      glJournalDetailDTOs2[11].amount = 423
+
+      glJournalDetailDTOs.each {it ->
+         post("/general-ledger/detail", it)
+      }
+      glJournalDetailDTOs2.each {it ->
+         post("/general-ledger/detail", it)
+      }
+
+      post("$path/", glSumPeriod2)
+      post("$path/", glSumPeriod4)
+      post("$path/", glSumPeriod5)
+
+      def updated = post("$path/", glSumPeriod3)
+
+      when:
+      post("$path/recalculate-gl-balance", null)
+      def result = get("$path/${updated.id}")
+      then:
+      notThrown(Exception)
+      result != null
+      with(result) {
+         id == updated.id
+
+         netActivityPeriod1 == glJournalDetailDTOs[0].amount
+         netActivityPeriod2 == glJournalDetailDTOs[1].amount
+         netActivityPeriod3 == glJournalDetailDTOs[2].amount
+         netActivityPeriod4 == glJournalDetailDTOs[3].amount
+         netActivityPeriod5 == glJournalDetailDTOs[4].amount
+         netActivityPeriod6 == glJournalDetailDTOs[5].amount
+         netActivityPeriod7 == glJournalDetailDTOs[6].amount
+         netActivityPeriod8 == glJournalDetailDTOs[7].amount
+         netActivityPeriod9 == glJournalDetailDTOs[8].amount
+         netActivityPeriod10 == glJournalDetailDTOs[9].amount
+         netActivityPeriod11 == glJournalDetailDTOs[10].amount
+         netActivityPeriod12 == glJournalDetailDTOs[11].amount
+         beginningBalance == glSumPeriod2.closingBalance
+         closingBalance == 0.00
+      }
    }
 }
