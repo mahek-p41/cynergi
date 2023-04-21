@@ -340,6 +340,7 @@ class BankReconciliationController @Inject constructor(
       }
 
       if (filterRequest != null) {
+         filterRequest.size = null
          return bankReconciliationService.bulkDelete(filterRequest, user.myCompany())
       }
 
