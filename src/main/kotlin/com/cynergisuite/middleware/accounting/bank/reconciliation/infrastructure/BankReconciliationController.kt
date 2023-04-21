@@ -13,6 +13,7 @@ import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.json.view.Summary
 import com.fasterxml.jackson.annotation.JsonView
+import io.micronaut.core.annotation.Nullable
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
@@ -310,7 +311,7 @@ class BankReconciliationController @Inject constructor(
       return bankReconTransactions
    }
 
-   @Delete(uri = "/bulk-delete")
+   @Delete(uri = "/bulk-delete{?pageRequest*}")
    @AccessControl
    @Throws(NotFoundException::class)
    @Operation(tags = ["BankReconciliationEndpoints"], summary = "Delete one or more Bank Reconciliations", description = "Delete one or more Bank Reconciliations", operationId = "bankReconciliation-bulkDelete")
@@ -324,15 +325,23 @@ class BankReconciliationController @Inject constructor(
       ]
    )
    fun bulkDelete(
-      @Body @Valid
-      dtoList: List<BankReconciliationDTO>,
+      @Nullable @Body @Valid
+      dtoList: List<BankReconciliationDTO>?,
+      @Nullable @QueryValue("pageRequest")
+      filterRequest: BankReconciliationTransactionsFilterRequest?,
       httpRequest: HttpRequest<*>,
       authentication: Authentication
    ) {
       logger.debug("User {} requested delete BankReconciliation", authentication)
 
       val user = userService.fetchUser(authentication)
+      if(dtoList != null) {
+         return bankReconciliationService.bulkDelete(dtoList, user.myCompany())
+      }
 
-      return bankReconciliationService.bulkDelete(dtoList, user.myCompany())
+      if (filterRequest != null) {
+         return bankReconciliationService.bulkDelete(filterRequest, user.myCompany())
+      }
+
    }
 }
