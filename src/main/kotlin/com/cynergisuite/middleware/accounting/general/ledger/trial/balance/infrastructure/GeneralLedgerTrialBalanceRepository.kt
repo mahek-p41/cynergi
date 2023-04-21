@@ -32,6 +32,7 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
              acct.id                                                                         AS account_id,
              acct.number                                                                     AS account_number,
              acct.name                                                                       AS account_name,
+             acctType.value                                                                  AS account_type,
              glSummary.profit_center_id_sfk                                                  AS profit_center,
              SUM(CASE WHEN glDetail.date BETWEEN :from AND :thru
                   AND glDetail.amount >= 0 THEN glDetail.amount ELSE 0 END)                  AS debit,
@@ -52,6 +53,7 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
              glDetail.source_description                                                     AS detail_source_description
          FROM general_ledger_summary glSummary
                 JOIN account acct ON glSummary.account_id = acct.id AND acct.deleted = FALSE
+                JOIN account_type_domain acctType ON acct.type_id = acctType.id
                 JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
                 LEFT JOIN bank ON bank.general_ledger_account_id = acct.id AND bank.deleted = FALSE
                 LEFT JOIN (
@@ -112,7 +114,7 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
       val mainQuery = """
          ${selectTrialBalanceQuery(subQueryWhere.toString())}
          $innerWhere
-         GROUP BY glSummary.company_id, glSummary.account_id, acct.id, glSummary.id, glSummary.profit_center_id_sfk,
+         GROUP BY glSummary.company_id, acct.id, acctType.value, glSummary.id, glSummary.profit_center_id_sfk,
             glDetail.id, glDetail.date, glDetail.journal_entry_number, glDetail.amount, glDetail.message,
             glDetail.source_id, glDetail.source_value, glDetail.source_description
       """.trimIndent()
@@ -152,6 +154,7 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
          accountID = rs.getUuid("account_id"),
          accountNumber = rs.getInt("account_number"),
          accountName = rs.getString("account_name"),
+         accountType = rs.getString("account_type"),
       )
    }
 

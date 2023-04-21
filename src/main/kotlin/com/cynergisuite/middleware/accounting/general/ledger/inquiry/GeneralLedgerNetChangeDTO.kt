@@ -20,4 +20,15 @@ data class GeneralLedgerNetChangeDTO(
       endBalance = endBalance.plus(otherAccountTotals.endBalance)
       netChange = netChange.plus(otherAccountTotals.netChange)
    }
+
+   operator fun plus(other: GeneralLedgerNetChangeDTO): GeneralLedgerNetChangeDTO {
+      return GeneralLedgerNetChangeDTO(
+         debit  = debit.plus(other.debit),
+         credit  = credit.plus(other.credit),
+         beginBalance  = beginBalance.plus(other.beginBalance),
+         endBalance  = endBalance.plus(other.endBalance),
+         netChange  = netChange.plus(other.netChange),
+         netActivityPeriod = netActivityPeriod.plus(other.netActivityPeriod)
+      )
+   }
 }

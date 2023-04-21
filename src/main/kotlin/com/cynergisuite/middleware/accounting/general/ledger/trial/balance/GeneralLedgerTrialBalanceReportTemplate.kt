@@ -14,10 +14,15 @@ data class GeneralLedgerTrialBalanceReportTemplate (
    @field:Schema(description = "List of account detail DTOs", required = true)
    var accounts: List<GeneralLedgerTrialBalanceReportAccountDTO>? = null,
 
-   @field:NotNull
-   @field:Schema(description = "Report totals")
-   var reportTotals: GeneralLedgerNetChangeDTO? = null,
+) {
+   @field:Schema(description = "Report GL totals")
+   val reportGLTotals: GeneralLedgerNetChangeDTO =
+      accounts?.mapNotNull { it.glTotals }.orEmpty().reduce { accumulator, eachGLTotals ->
+         accumulator + eachGLTotals
+      }
 
-   // Todo endOfReportTotals will be replace by some getter functions to save computations in repository
-
-)
+   @field:Schema(description = "End of report totals")
+   val endOfReport = GeneralLedgerTrialBalanceEndOfReportDTO(
+      accounts = accounts
+   )
+}
