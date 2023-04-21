@@ -599,6 +599,27 @@ class FinancialCalendarRepository @Inject constructor(
       return found.first()
    }
 
+   @ReadOnly
+   fun findEndDateOfFiscalYear(company: CompanyEntity, overallPeriodId: Int): LocalDate {
+      val found = jdbc.query(
+         """
+         SELECT period_to
+            FROM financial_calendar
+            WHERE company_id = :comp_id AND overall_period_id = :overallPeriodId AND period = 12
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "overallPeriodId" to overallPeriodId
+         )
+      ) { rs, _ ->
+         mapDate(rs)
+      }
+
+      logger.trace("Find end date of fiscal year with overall period id {} resulted in {}", overallPeriodId, found.first())
+
+      return found.first()
+   }
+
    fun rollOneFinancialYear(company: CompanyEntity) {
       logger.debug("Roll one financial year for financial_calendar {}", company)
       jdbc.update("""

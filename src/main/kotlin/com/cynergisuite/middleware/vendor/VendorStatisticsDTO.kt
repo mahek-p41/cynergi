@@ -25,11 +25,8 @@ data class VendorStatisticsDTO(
    @field:Schema(name = "ptdPaid", description = "Total AP payment detail amount PTD")
    var ptdPaid: BigDecimal? = null,
 
-   @field:Schema(name = "balance", description = "Total unpaid amount")
-   var balance: BigDecimal? = null,
-
-   @field:Schema(name = "dueColumns", description = "Unpaid amount by AP Invoice due date")
-   var dueColumns: VendorStatisticsDueEntity? = null,
+   @field:Schema(name = "unpaidAmounts", description = "Total unpaid amount and unpaid amount by AP Invoice due date")
+   var unpaidAmounts: VendorStatisticsUnpaidAmountsEntity? = null,
 
    @field:Schema(name = "rebates", description = "List of rebates")
    var rebates: List<RebateDTO>? = null,
