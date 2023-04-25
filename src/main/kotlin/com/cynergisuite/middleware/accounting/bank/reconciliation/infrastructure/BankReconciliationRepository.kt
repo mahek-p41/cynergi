@@ -463,6 +463,7 @@ class BankReconciliationRepository @Inject constructor(
 
    @ReadOnly
    fun findTransactions(filterRequest: BankReconciliationTransactionsFilterRequest, company: CompanyEntity) : RepositoryPage<BankReconciliationEntity, PageRequest> {
+
       logger.trace("Searching for Reconciliation Transactions by Bank {} and Type {}", filterRequest.bank, filterRequest.bankReconciliationType)
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder(" WHERE bankRecon.company_id = :comp_id and bankRecon.deleted = FALSE")
@@ -550,7 +551,7 @@ class BankReconciliationRepository @Inject constructor(
          count(*) OVER() as total_elements
       FROM paged AS p
       ORDER by bankRecon_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
-      LIMIT ${filterRequest.size()} OFFSET ${filterRequest.offset()}
+      LIMIT ${filterRequest.size} OFFSET ${filterRequest.offset()}
    """
       var totalElements: Long? = null
       val resultList: MutableList<BankReconciliationEntity> = mutableListOf()
