@@ -3,9 +3,11 @@ package com.cynergisuite.middleware.accounting.general.ledger.summary.infrastruc
 import com.cynergisuite.domain.GeneralLedgerProfitCenterTrialBalanceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.domain.TrialBalanceWorksheetFilterRequest
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDTO
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryService
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.GeneralLedgerProfitCenterTrialBalanceReportTemplate
+import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.TrialBalanceWorksheetReportTemplate
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -230,5 +232,28 @@ class GeneralLedgerSummaryController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
       generalLedgerSummaryService.recalculateGLBalance(user.myCompany())
+   }
+
+   @Get(uri = "/trial-balance-worksheet{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["GeneralLedgerSummaryEndpoints"], summary = "Fetch a Profit Center Trial Worksheet", description = "Fetch a Profit Center Trial Balance Worksheet", operationId = "generalLedgerSummary-fetchTrialBalanceWorksheet")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerProfitCenterTrialBalanceReportFilterRequest::class))]),
+         ApiResponse(responseCode = "204", description = "The requested General Ledger Profit Center Trial Balance Worksheet was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchTrialBalanceWorksheet(
+      @Parameter(name = "trialBalanceWorksheetFilterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("trialBalanceWorksheetFilterRequest")
+      filterRequest: TrialBalanceWorksheetFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): TrialBalanceWorksheetReportTemplate {
+      logger.info("Fetching General Ledger Summaries for Profit Center Trial Balance Worksheet {}")
+
+      val user = userService.fetchUser(authentication)
+      return generalLedgerSummaryService.fetchTrialBalanceWorksheetReport(user.myCompany(), filterRequest)
    }
 }

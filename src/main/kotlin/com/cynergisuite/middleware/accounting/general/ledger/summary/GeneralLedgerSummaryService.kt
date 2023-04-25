@@ -3,9 +3,9 @@ package com.cynergisuite.middleware.accounting.general.ledger.summary
 import com.cynergisuite.domain.GeneralLedgerProfitCenterTrialBalanceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.TrialBalanceWorksheetFilterRequest
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
-import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeService
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerNetChangeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository
@@ -13,6 +13,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.Gener
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.GeneralLedgerProfitCenterTrialBalanceLocationDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.GeneralLedgerProfitCenterTrialBalanceReportExportDTO
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.GeneralLedgerProfitCenterTrialBalanceReportTemplate
+import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.TrialBalanceWorksheetReportTemplate
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.opencsv.CSVWriter
 import jakarta.inject.Inject
@@ -330,6 +331,12 @@ class GeneralLedgerSummaryService @Inject constructor(
       generalLedgerSummaryRepository.recalculateGLBalance(company)
       generalLedgerSummaryRepository.setNetActivityPeriods(company)
    }
+
+   fun fetchTrialBalanceWorksheetReport(company: CompanyEntity, filterRequest: TrialBalanceWorksheetFilterRequest): TrialBalanceWorksheetReportTemplate {
+      //TODO handle logic for creating report
+      return TrialBalanceWorksheetReportTemplate()
+   }
+
 
    private fun transformEntity(generalLedgerSummary: GeneralLedgerSummaryEntity): GeneralLedgerSummaryDTO {
       return GeneralLedgerSummaryDTO(entity = generalLedgerSummary)
