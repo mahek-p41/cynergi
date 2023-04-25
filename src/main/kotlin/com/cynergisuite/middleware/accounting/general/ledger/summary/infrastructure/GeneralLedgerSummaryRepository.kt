@@ -563,24 +563,24 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          	where glDetail.company_id = :comp_id and overall_period_id IN (3, 4) and srcCodes.value != 'BAL'
          ), detailSums as (
          	select account_id, profit_center_id_sfk, overall_period_id, period,
-			 case when glDetail.period = 1 then sum(amount) else 0 end as total1,
-			 case when glDetail.period = 2 then sum(amount) else 0 end as total2,
-			 case when glDetail.period = 3 then sum(amount) else 0 end as total3,
-			 case when glDetail.period = 4 then sum(amount) else 0 end as total4,
-			 case when glDetail.period = 5 then sum(amount) else 0 end as total5,
-			 case when glDetail.period = 6 then sum(amount) else 0 end as total6,
-			 case when glDetail.period = 7 then sum(amount) else 0 end as total7,
-			 case when glDetail.period = 8 then sum(amount) else 0 end as total8,
-			 case when glDetail.period = 9 then sum(amount) else 0 end as total9,
-			 case when glDetail.period = 10 then sum(amount) else 0 end as total10,
-			 case when glDetail.period = 11 then sum(amount) else 0 end as total11,
-			 case when glDetail.period = 12 then sum(amount) else 0 end as total12
+			 case when glDetail.period = 1 then sum(amount) else null end as total1,
+			 case when glDetail.period = 2 then sum(amount) else null end as total2,
+			 case when glDetail.period = 3 then sum(amount) else null end as total3,
+			 case when glDetail.period = 4 then sum(amount) else null end as total4,
+			 case when glDetail.period = 5 then sum(amount) else null end as total5,
+			 case when glDetail.period = 6 then sum(amount) else null end as total6,
+			 case when glDetail.period = 7 then sum(amount) else null end as total7,
+			 case when glDetail.period = 8 then sum(amount) else null end as total8,
+			 case when glDetail.period = 9 then sum(amount) else null end as total9,
+			 case when glDetail.period = 10 then sum(amount) else null end as total10,
+			 case when glDetail.period = 11 then sum(amount) else null end as total11,
+			 case when glDetail.period = 12 then sum(amount) else null end as total12
 			 from glDetail
          	group by account_id, profit_center_id_sfk, overall_period_id, period
 		 ), gltotals as (
 			 select account_id, profit_center_id_sfk, overall_period_id,
-			 max(total1) as total1, max(total2) as total2, max(total3) as total3, max(total4) as total4, max(total5) as total5, max(total6) as total6,
-			 max(total7) as total7, max(total8) as total8, max(total9) as total9, max(total10) as total10, max(total11) as total11, max(total12) as total12
+			 min(total1) as total1, min(total2) as total2, min(total3) as total3, min(total4) as total4, min(total5) as total5, min(total6) as total6,
+			 min(total7) as total7, min(total8) as total8, min(total9) as total9, min(total10) as total10, min(total11) as total11, min(total12) as total12
 			 FROM detailSums
 			 group by account_id, profit_center_id_sfk, overall_period_id
 		 )
