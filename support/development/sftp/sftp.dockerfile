@@ -1,4 +1,4 @@
-FROM debian:stretch-slim
+FROM debian:bullseye-slim
 
 ARG USER_ID=1001
 ARG GROUP_ID=1001
