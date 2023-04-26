@@ -207,6 +207,29 @@ class AccountRepository @Inject constructor(
       }
    }
 
+   @ReadOnly
+   fun findByAccountType(company: CompanyEntity, accountType: String): List<AccountEntity> {
+      val resultList: MutableList<AccountEntity> = mutableListOf()
+
+      jdbc.query(
+         """
+         ${selectBaseQuery()}
+         WHERE comp.id = :comp_id AND account.deleted = FALSE and type.value = :type_value
+         ORDER by account_number asc
+         """,
+         mapOf(
+            "comp_id" to company.id,
+            "type_value" to accountType
+         )
+      ) { rs, _ ->
+         resultList.add(mapRow(rs, company, "account_"))
+
+      }
+      if (resultList.isEmpty()) throw NotFoundException(accountType)
+      return resultList
+   }
+
+
    @Transactional
    fun insert(account: AccountEntity, company: CompanyEntity): AccountEntity {
       logger.debug("Inserting account {}", account)

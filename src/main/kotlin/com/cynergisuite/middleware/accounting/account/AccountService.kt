@@ -37,6 +37,12 @@ class AccountService @Inject constructor(
       }
    }
 
+   fun fetchAllByType(company: CompanyEntity, accountType: String, locale: Locale): List<AccountDTO> {
+      val found = accountRepository.findByAccountType(company, accountType)
+
+      return found.map { transformEntity(it, locale)}
+   }
+
    fun create(dto: AccountDTO, company: CompanyEntity, locale: Locale): AccountDTO {
       val toCreate = accountValidator.validateCreate(dto, company)
 
