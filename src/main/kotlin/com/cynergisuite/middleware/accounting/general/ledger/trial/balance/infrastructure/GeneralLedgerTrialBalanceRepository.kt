@@ -119,7 +119,7 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
             glDetail.source_id, glDetail.source_value, glDetail.source_description
       """.trimIndent()
 
-      logger.info("Querying for General Ledger Trial Balance report: {} {}", mainQuery, params)
+      logger.info("Querying for General Ledger Trial Balance report:")
       var reportAccounts = mutableListOf<GeneralLedgerTrialBalanceReportAccountDTO>()
       var currentReportAccountDTO: GeneralLedgerTrialBalanceReportAccountDTO? = null
       jdbc.query(mainQuery, params) { rs, element  ->
@@ -143,8 +143,6 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
             tempReportAccount.glDetails.add(mapDetails(rs))
          }
       }
-
-      logger.info("Querying for General Ledger Trial Balance report resulted in {}", reportAccounts)
 
       return reportAccounts
    }

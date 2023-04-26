@@ -9,8 +9,10 @@ import jakarta.inject.Singleton
 @Singleton
 class GeneralLedgerTrialBalanceService @Inject constructor(
    private val generalLedgerTrialBalanceRepository: GeneralLedgerTrialBalanceRepository,
+   private val generalLedgerTrialBalanceValidator: GeneralLedgerTrialBalanceValidator,
 ) {
    fun fetchReport(company: CompanyEntity, filterRequest: GeneralLedgerTrialBalanceReportFilterRequest): GeneralLedgerTrialBalanceReportTemplate {
+      generalLedgerTrialBalanceValidator.validateReport(filterRequest, company)
       return GeneralLedgerTrialBalanceReportTemplate(generalLedgerTrialBalanceRepository.fetchReport(company, filterRequest))
    }
 }

@@ -38,11 +38,21 @@ class GeneralLedgerTrialBalanceController @Inject constructor(
       tags = ["GeneralLedgerTrialBalanceEndpoints"],
       summary = "Fetch a General Ledger Trial Balance Report",
       description = "Fetch a General Ledger Trial Balance Report",
-      operationId = "generalLedgerTrialBalance-fetchReport")
+      operationId = "generalLedgerTrialBalance-fetchReport"
+   )
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerTrialBalanceReportTemplate::class))]),
-         ApiResponse(responseCode = "404", description = "The requested GeneralLedgerTrialBalance was unable to be found"),
+         ApiResponse(
+            responseCode = "200",
+            content = [Content(
+               mediaType = APPLICATION_JSON,
+               schema = Schema(implementation = GeneralLedgerTrialBalanceReportTemplate::class)
+            )]
+         ),
+         ApiResponse(
+            responseCode = "404",
+            description = "The requested GeneralLedgerTrialBalance was unable to be found"
+         ),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
@@ -55,10 +65,8 @@ class GeneralLedgerTrialBalanceController @Inject constructor(
       val userCompany = userService.fetchUser(authentication).myCompany()
 
       logger.info("Fetching General Ledger Trial Balance Report")
-      val response = generalLedgerTrialBalanceService.fetchReport(userCompany, filterRequest)
-      logger.info("Fetching General Ledger Trial Balance Report resulted in {}", response)
 
-      return response
+      return generalLedgerTrialBalanceService.fetchReport(userCompany, filterRequest)
    }
 
 }
