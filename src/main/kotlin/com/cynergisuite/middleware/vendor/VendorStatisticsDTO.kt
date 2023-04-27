@@ -1,8 +1,5 @@
 package com.cynergisuite.middleware.vendor
 
-import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryDTO
-import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
-import com.cynergisuite.middleware.vendor.rebate.RebateDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.micronaut.core.annotation.Introspected
@@ -27,14 +24,5 @@ data class VendorStatisticsDTO(
 
    @field:Schema(name = "unpaidAmounts", description = "Total unpaid amount and unpaid amount by AP Invoice due date")
    var unpaidAmounts: VendorStatisticsUnpaidAmountsEntity? = null,
-
-   @field:Schema(name = "rebates", description = "List of rebates")
-   var rebates: List<RebateDTO>? = null,
-
-   @field:Schema(name = "invoices", description = "List of invoices")
-   var invoices: List<AccountPayableInvoiceInquiryDTO>? = null,
-
-   @field:Schema(name = "purchaseOrders", description = "List of purchase orders")
-   var purchaseOrders: List<PurchaseOrderDTO>? = null
 
 )

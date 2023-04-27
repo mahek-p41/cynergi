@@ -8,7 +8,6 @@ import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorService
-import com.cynergisuite.middleware.vendor.VendorStatisticsDTO
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
@@ -206,32 +205,5 @@ class VendorController @Inject constructor(
       val user = userService.fetchUser(authentication)
 
       return vendorService.delete(id, user.myCompany())
-   }
-
-   @Throws(NotFoundException::class)
-   @Get(value = "/statistics/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["VendorEndpoints"], summary = "Fetch Vendor Statistics", description = "Fetch Vendor Statistics by vendor id", operationId = "vendor-fetchStatistics")
-   @ApiResponses(
-      value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = VendorStatisticsDTO::class))]),
-         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-         ApiResponse(responseCode = "404", description = "The requested Vendor was unable to be found"),
-         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-      ]
-   )
-   fun fetchStatistics(
-      @QueryValue("id") id: UUID,
-      authentication: Authentication,
-      httpRequest: HttpRequest<*>
-   ): VendorStatisticsDTO {
-      logger.info("Fetching Vendor Statistics by {}", id)
-
-      val user = userService.fetchUser(authentication)
-      val vendorDTO = vendorService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
-      val response = vendorService.fetchStatistics(vendorDTO, user.myCompany())
-
-      logger.debug("Fetching Vendor Statistics by {} resulted in", id, response)
-
-      return response
    }
 }

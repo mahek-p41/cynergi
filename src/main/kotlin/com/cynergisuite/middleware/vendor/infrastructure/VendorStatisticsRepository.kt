@@ -1,8 +1,15 @@
 package com.cynergisuite.middleware.vendor.infrastructure
 
+import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.VendorStatisticsFilterRequest
+import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceInquiryRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
@@ -14,6 +21,7 @@ import java.time.LocalDate
 
 @Singleton
 class VendorStatisticsRepository @Inject constructor(
+   private val accountPayableInvoiceInquiryRepository: AccountPayableInvoiceInquiryRepository,
    private val jdbc: Jdbi
 ) {
    @ReadOnly
@@ -58,11 +66,39 @@ class VendorStatisticsRepository @Inject constructor(
             "vendorNumber" to vendorNumber
          )
       ) { rs, _ ->
-         mapRow(rs)
+         mapUnpaidAmounts(rs)
       }
    }
 
-   private fun mapRow(rs: ResultSet): Pair<BigDecimal, LocalDate> {
+   @ReadOnly
+   fun fetchInvoices(company: CompanyEntity, filterRequest: VendorStatisticsFilterRequest): RepositoryPage<AccountPayableInvoiceInquiryDTO, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "vendorId" to filterRequest.vendorId)
+      val whereClause = StringBuilder("WHERE apInvoice.company_id = :comp_id AND vend.id = :vendorId ")
+
+      return jdbc.queryPaged(
+         """
+            ${accountPayableInvoiceInquiryRepository.selectBaseQuery()}
+            $whereClause
+            ORDER BY naturalsort(apInvoice.invoice)
+         """.trimIndent(),
+         params,
+         filterRequest
+      ) { rs, elements ->
+         do {
+
+            val apInvoiceId = rs.getUuid("apInvoice_id")
+            val inquiryDTO = accountPayableInvoiceInquiryRepository.mapInvoice(rs, "apInvoice_")
+
+            inquiryDTO.payments = accountPayableInvoiceInquiryRepository.fetchInquiryPayments(apInvoiceId, company)
+            inquiryDTO.glDist = accountPayableInvoiceInquiryRepository.fetchInquiryDistributions(apInvoiceId, company)
+
+            elements.add(inquiryDTO)
+
+         } while (rs.next())
+      }
+   }
+
+   private fun mapUnpaidAmounts(rs: ResultSet): Pair<BigDecimal, LocalDate> {
       return Pair(
          first = rs.getBigDecimal("unpaid_amount"),
          second = rs.getLocalDate("due_date")
