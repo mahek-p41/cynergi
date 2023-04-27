@@ -345,7 +345,11 @@ class GeneralLedgerDetailService @Inject constructor(
       if (toPurge.isEmpty()) {
          throw NotFoundException("A List of Matching General Ledger Entries")
       } else {
-         return generalLedgerDetailRepository.bulkDelete(toPurge, company)
+         val purgedCount = generalLedgerDetailRepository.bulkDelete(toPurge, company)
+         if (purgedCount != 0) {
+            generalLedgerSummaryService.recalculateGLBalance(company)
+         }
+         return purgedCount
       }
    }
 }
