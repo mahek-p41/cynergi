@@ -356,13 +356,13 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       response.message[0] == 'The GL open range chosen must encompass the whole open AP range'
    }
 
-   void "try to open ap starting before the open gl range" () {
+   void "set ap and gl range to the same thing then try to open ap starting before the open gl range" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('coravt')
-      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(7))
-      final dateRangeAP1 = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(7))
-      final dateRangeAP2 = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(6))
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().withDayOfMonth(1), true, true).collect()
+      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1).withDayOfMonth(1), LocalDate.now().plusMonths(7).withDayOfMonth(LocalDate.now().getMonth().length(LocalDate.now().isLeapYear())))
+      final dateRangeAP1 = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1).withDayOfMonth(1), LocalDate.now().plusMonths(7).withDayOfMonth(LocalDate.now().getMonth().length(LocalDate.now().isLeapYear())))
+      final dateRangeAP2 = new FinancialCalendarDateRangeDTO(LocalDate.now().withDayOfMonth(1), LocalDate.now().plusMonths(6).withDayOfMonth(LocalDate.now().getMonth().length(LocalDate.now().isLeapYear())))
 
       when:
       put("$path/open-ap", dateRangeAP1)
