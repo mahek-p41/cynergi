@@ -7,19 +7,18 @@ import java.math.BigDecimal
 import javax.validation.constraints.NotNull
 
 @JsonInclude(NON_NULL)
-@Schema(name = "GeneralLedgerProfitCenterTrialBalanceReportTemplate", title = "General Ledger Profit Center Trial Balance Report Template", description = "General Ledger Profit Center Trial Balance Report Template")
+@Schema(name = "TrialBalanceWorksheetReportTemplate", title = "Trial Balance Worksheet Report Template", description = "Trial Balance Worksheet Report Template")
 data class TrialBalanceWorksheetReportTemplate (
 
    @field:NotNull
-   @field:Schema(description = "List of location detail DTOs")
-   var trialBalanceList: List<TrialBalanceWorksheetDetailDTO>? = null,
+   @field:Schema(description = "List of location detail DTOs", required = true)
+   var trialBalanceList: List<TrialBalanceWorksheetDetailDTO>,
 
    @field:NotNull
-   @field:Schema(description = "Credit totals")
-   var creditTotals: BigDecimal? = null,
+   @field:Schema(description = "Credit totals", required = true)
+   var creditTotals: BigDecimal? = BigDecimal.ZERO,
 
    @field:NotNull
-   @field:Schema(description = "Debit totals")
-   var debitTotals: BigDecimal? = null,
-
+   @field:Schema(description = "Debit totals", required = true)
+   var debitTotals: BigDecimal? = BigDecimal.ZERO,
 )

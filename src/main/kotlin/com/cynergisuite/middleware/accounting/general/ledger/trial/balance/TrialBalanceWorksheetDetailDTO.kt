@@ -11,18 +11,17 @@ import javax.validation.constraints.NotNull
 data class TrialBalanceWorksheetDetailDTO(
 
    @field:NotNull
-   @field:Schema(description = "Account number")
-   var account: Int? = null,
+   @field:Schema(description = "Account number", required = true)
+   var account: Int,
 
-   @field:NotNull
    @field:Schema(description = "Description")
    var description: String? = null,
 
    @field:NotNull
    @field:Schema(description = "Debits")
-   var debits: BigDecimal? = null,
+   var debits: BigDecimal? = BigDecimal.ZERO,
 
    @field:NotNull
    @field:Schema(description = "Credits")
-   var credits: BigDecimal? = null
+   var credits: BigDecimal? = BigDecimal.ZERO
    )

@@ -17,19 +17,19 @@ class TrialBalanceWorksheetFilterRequest(
    sortBy: String? = null,
    sortDirection: String? = null,
 
-   @field:Schema(name = "beginProfitCenter", description = "Beginning General ledger profit center")
+   @field:Schema(name = "beginAccount", description = "Beginning Trial Balance account number")
    var beginAccount: Int? = null,
 
-   @field:Schema(name = "endProfitCenter", description = "Ending General ledger profit center")
+   @field:Schema(name = "endAccount", description = "Ending Trial Balance account number")
    var endAccount: Int? = null,
 
-   @field:Schema(name = "profitCenter", description = "Beginning General ledger profit center")
+   @field:Schema(name = "profitCenter", description = "Beginning Trial Balance profit center")
    var profitCenter: Int? = null,
 
-   @field:Schema(name = "entryDate", description = "From date for general ledger journal")
+   @field:Schema(name = "entryDate", description = "From date for Trial Balance journal")
    var fromDate: LocalDate? = null,
 
-   @field:Schema(name = "thruDate", description = "Thru date for general ledger journal")
+   @field:Schema(name = "thruDate", description = "Thru date for Trial Balance journal")
    var thruDate: LocalDate? = null,
 
 
