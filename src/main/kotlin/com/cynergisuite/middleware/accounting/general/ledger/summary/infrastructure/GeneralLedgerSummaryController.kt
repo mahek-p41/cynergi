@@ -245,8 +245,8 @@ class GeneralLedgerSummaryController @Inject constructor(
       ]
    )
    fun fetchTrialBalanceWorksheet(
-      @Parameter(name = "trialBalanceWorksheetFilterRequest", `in` = QUERY, required = false)
-      @Valid @QueryValue("trialBalanceWorksheetFilterRequest")
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
       filterRequest: TrialBalanceWorksheetFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>

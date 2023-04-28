@@ -4,6 +4,7 @@ import com.cynergisuite.domain.GeneralLedgerProfitCenterTrialBalanceReportFilter
 import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
 import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.TrialBalanceWorksheetFilterRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
@@ -13,6 +14,7 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.sumByBigDecimal
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
@@ -29,6 +31,8 @@ import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedg
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryEntity
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.GeneralLedgerProfitCenterTrialBalanceReportDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.TrialBalanceEndOfReportDTO
+import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.TrialBalanceWorksheetDetailDTO
+import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.TrialBalanceWorksheetReportTemplate
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.store.Store
@@ -953,6 +957,60 @@ class GeneralLedgerDetailRepository @Inject constructor(
       logger.info("Rows affected {}", rowsAffected)
 
       if (rowsAffected == 0) throw NotFoundException(idList) else return rowsAffected
+   }
+
+   @ReadOnly
+   fun fetchTrialBalanceWorksheetDetails(company: CompanyEntity, filterRequest: TrialBalanceWorksheetFilterRequest): TrialBalanceWorksheetReportTemplate {
+      val glDetails = mutableListOf<GeneralLedgerDetailEntity>()
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val whereClause = StringBuilder("WHERE glDetail.company_id = :comp_id AND glDetail.deleted = FALSE")
+
+      if (filterRequest.beginAccount != null || filterRequest.endAccount != null) {
+         params["beginAccount"] = filterRequest.beginAccount
+         params["endAccount"] = filterRequest.endAccount
+         whereClause.append(" AND acct.account_number")
+            .append(
+               buildFilterString(
+                  filterRequest.beginAccount != null,
+                  filterRequest.endAccount != null,
+                  "beginAccount",
+                  "endAccount"
+               )
+            )
+      }
+      if (filterRequest.fromDate != null || filterRequest.thruDate != null) {
+         params["fromDate"] = filterRequest.fromDate
+         params["thruDate"] = filterRequest.thruDate
+         whereClause.append(" AND glDetail.date")
+            .append(
+               buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate")
+            )
+      }
+      params["profitCenter"] = filterRequest.profitCenter
+      jdbc.query(
+         """
+         ${selectBaseQuery()}
+         $whereClause
+         AND glDetail.profit_center_id_sfk = :profitCenter
+         AND source.value NOT LIKE 'BAL'
+         ORDER BY glDetail.date
+      """.trimIndent(),
+         params
+      ) { rs, elements ->
+         do {
+            val account = accountRepository.mapRow(rs, company, "glDetail_account_")
+            val profitCenter = storeRepository.mapRow(rs, company, "glDetail_profitCenter_")
+            val sourceCode = sourceCodeRepository.mapRow(rs, "glDetail_source_")
+            glDetails.add(mapRow(rs, account, profitCenter, sourceCode, "glDetail_"))
+         } while (rs.next())
+      }
+
+      var details = glDetails.groupBy {it.account}
+         .map{ TrialBalanceWorksheetDetailDTO(
+            it.key,
+            it.value.sumByBigDecimal { if(it.amount >= BigDecimal.ZERO) it.amount else BigDecimal.ZERO},
+            it.value.sumByBigDecimal { if(it.amount < BigDecimal.ZERO) it.amount else BigDecimal.ZERO})}
+      return TrialBalanceWorksheetReportTemplate(details, details.sumOf{it.credits!!}, details.sumOf { it.debits!! })
    }
 
    fun mapRow(
