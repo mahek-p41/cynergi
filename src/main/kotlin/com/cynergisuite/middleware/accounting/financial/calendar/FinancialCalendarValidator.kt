@@ -65,7 +65,7 @@ class FinancialCalendarValidator @Inject constructor(
 
       doValidation { errors ->
          val from = dateRangeDTO.periodFrom
-         val thru = dateRangeDTO.periodTo!!.plusMonths(1).minusDays(1)
+         val thru = dateRangeDTO.periodTo
          val daysBetween = ChronoUnit.DAYS.between(from, thru)
 
          //Thru date cannot be before From date
@@ -92,7 +92,7 @@ class FinancialCalendarValidator @Inject constructor(
 
       doValidation { errors ->
          val from = dateRangeDTO.periodFrom
-         val thru = dateRangeDTO.periodTo!!.plusMonths(1).minusDays(1)
+         val thru = dateRangeDTO.periodTo
          val daysBetween = ChronoUnit.DAYS.between(from, thru)
 
          //Thru date cannot be before From date
@@ -106,7 +106,7 @@ class FinancialCalendarValidator @Inject constructor(
          }
 
          //If all dates exist, the AP range requested must fit within the existing GL range
-         if (thru != null && from != null && openedGL?.first != null && (openedGL.first > from || openedGL.second.plusMonths(1).minusDays(1) < thru)) {
+         if (thru != null && from != null && openedGL?.first != null && (openedGL.first > from || openedGL.second < thru)) {
             errors.add(ValidationError("from", APDatesSelectedOutsideGLDatesSet(from, thru, openedGL.first, openedGL.second)))
          }
 
