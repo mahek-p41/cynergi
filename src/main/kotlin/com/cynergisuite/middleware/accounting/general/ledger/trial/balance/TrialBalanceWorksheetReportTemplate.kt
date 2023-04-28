@@ -12,7 +12,7 @@ data class TrialBalanceWorksheetReportTemplate (
 
    @field:NotNull
    @field:Schema(description = "List of location detail DTOs", required = true)
-   var trialBalanceList: List<TrialBalanceWorksheetDetailDTO>,
+   var accounts: List<TrialBalanceWorksheetDetailDTO>,
 
    @field:NotNull
    @field:Schema(description = "Credit totals", required = true)

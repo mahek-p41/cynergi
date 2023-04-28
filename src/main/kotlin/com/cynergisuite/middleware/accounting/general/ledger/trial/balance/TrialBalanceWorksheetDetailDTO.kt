@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.trial.balance
 
+import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
@@ -12,7 +13,7 @@ data class TrialBalanceWorksheetDetailDTO(
 
    @field:NotNull
    @field:Schema(description = "Account number", required = true)
-   var account: Int,
+   var account: Long,
 
    @field:Schema(description = "Description")
    var description: String? = null,
@@ -25,3 +26,12 @@ data class TrialBalanceWorksheetDetailDTO(
    @field:Schema(description = "Credits")
    var credits: BigDecimal? = BigDecimal.ZERO
    )
+{
+   constructor(account: AccountEntity, debit: BigDecimal?, credit: BigDecimal?) :
+      this(
+         account = account.number,
+         description = account.name,
+         debits = debit,
+         credits = credit
+      )
+}

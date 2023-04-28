@@ -333,8 +333,7 @@ class GeneralLedgerSummaryService @Inject constructor(
    }
 
    fun fetchTrialBalanceWorksheetReport(company: CompanyEntity, filterRequest: TrialBalanceWorksheetFilterRequest): TrialBalanceWorksheetReportTemplate {
-      //TODO handle logic for creating report
-      return TrialBalanceWorksheetReportTemplate()
+      return generalLedgerDetailRepository.fetchTrialBalanceWorksheetDetails(company, filterRequest)
    }
 
 
