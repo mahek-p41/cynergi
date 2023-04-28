@@ -40,7 +40,7 @@ class GeneralLedgerTrialBalanceReportFilterRequest(
          "beginAccount" to beginAccount,
          "endAccount" to endAccount,
          "profitCenter" to profitCenter,
-         "fromDate" to from,
-         "thruDate" to thru,
+         "from" to from,
+         "thru" to thru,
       )
 }

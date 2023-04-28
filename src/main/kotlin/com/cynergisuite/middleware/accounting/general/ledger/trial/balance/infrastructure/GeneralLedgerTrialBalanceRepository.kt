@@ -17,6 +17,7 @@ import jakarta.inject.Singleton
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
 import java.sql.ResultSet
 
 @Singleton
@@ -34,14 +35,16 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
              acct.name                                                                       AS account_name,
              acctType.value                                                                  AS account_type,
              glSummary.profit_center_id_sfk                                                  AS profit_center,
-             SUM(CASE WHEN glDetail.date BETWEEN :from AND :thru
-                  AND glDetail.amount >= 0 THEN glDetail.amount ELSE 0 END)                  AS debit,
-             SUM(CASE WHEN glDetail.date BETWEEN :from AND :thru
-                  AND glDetail.amount < 0 THEN glDetail.amount ELSE 0 END)                   AS credit,
-             SUM(CASE WHEN glDetail.date BETWEEN :from AND :thru
-                  THEN glDetail.amount ELSE 0 END)                                           AS net_change,
-             COALESCE(glSummary.beginning_balance, 0)
-                  + SUM(CASE WHEN glDetail.date < :from THEN glDetail.amount ELSE 0 END)     AS begin_balance,
+             CASE WHEN glDetail.date BETWEEN :from AND :thru
+               AND glDetail.amount >= 0 THEN glDetail.amount ELSE 0 END                      AS debit,
+             CASE WHEN glDetail.date BETWEEN :from AND :thru
+               AND glDetail.amount < 0 THEN glDetail.amount ELSE 0 END                       AS credit,
+             CASE WHEN glDetail.amount >= 0 THEN glDetail.amount ELSE 0 END                  AS ytd_debit,
+             CASE WHEN glDetail.amount < 0 THEN glDetail.amount ELSE 0 END                   AS ytd_credit,
+             CASE WHEN glDetail.date BETWEEN :from AND :thru
+               THEN glDetail.amount ELSE 0 END                                               AS net_change,
+             COALESCE(glSummary.beginning_balance, 0)                                        AS begin_balance1,
+             CASE WHEN glDetail.date < :from THEN glDetail.amount ELSE 0 END                 AS begin_balance2,
              COALESCE(glSummary.beginning_balance, 0) + SUM(COALESCE(glDetail.amount, 0))    AS end_balance,
              glDetail.date                                                                   AS detail_date,
              glDetail.id                                                                     AS detail_id,
@@ -77,7 +80,6 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val innerWhere = StringBuilder(" WHERE glSummary.company_id = :comp_id ")
       val subQueryWhere = StringBuilder(" WHERE glDetail.company_id = :comp_id AND glDetail.deleted = FALSE ")
-      val outerWhere = StringBuilder()
       if (filterRequest.from != null && filterRequest.thru != null) {
          params["from"] = filterRequest.from
          params["thru"] = filterRequest.thru
@@ -88,14 +90,15 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
                AND :thru """)
 
          innerWhere.append(""" AND glSummary.overall_period_id =
-            (SELECT DISTINCT overall_period_id
-            FROM financial_calendar
-            WHERE :from BETWEEN period_from AND period_to AND company_id = :comp_id) """.trimIndent())
+               (SELECT DISTINCT overall_period_id
+               FROM financial_calendar
+               WHERE :from BETWEEN period_from AND period_to AND company_id = :comp_id)
+            """.trimIndent())
       }
       if (filterRequest.profitCenter != null) {
          params["profitCenter"] = filterRequest.profitCenter
          subQueryWhere.append(" AND glDetail.profit_center_id_sfk = :profitCenter ")
-         outerWhere.append(" WHERE profit_center_number = :profitCenter ")
+         innerWhere.append(" AND glSummary.profit_center_id_sfk = :profitCenter ")
       }
       if (filterRequest.beginAccount != null && filterRequest.endAccount != null) {
          params["beginAccount"] = filterRequest.beginAccount
@@ -120,8 +123,10 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
       """.trimIndent()
 
       logger.info("Querying for General Ledger Trial Balance report:")
-      var reportAccounts = mutableListOf<GeneralLedgerTrialBalanceReportAccountDTO>()
+      val reportAccounts = mutableListOf<GeneralLedgerTrialBalanceReportAccountDTO>()
       var currentReportAccountDTO: GeneralLedgerTrialBalanceReportAccountDTO? = null
+      // the map used to remove repeated begin balance values
+      val beginBalancesMap: MutableMap<Pair<Int, Int>, BigDecimal> = mutableMapOf()
       jdbc.query(mainQuery, params) { rs, element  ->
          val tempReportAccount = if (currentReportAccountDTO?.accountID != rs.getUuid("account_id")) {
             val localReportAccount = mapRow(rs)
@@ -134,14 +139,33 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
          }
 
          if (tempReportAccount.glTotals != null) {
-            tempReportAccount.glTotals!! += mapGLTotals(rs)
+            val otherGLTotals = mapGLTotals(rs)
+            tempReportAccount.glTotals!!.debit += otherGLTotals.debit
+            tempReportAccount.glTotals!!.credit += otherGLTotals.credit
+            tempReportAccount.glTotals!!.ytdDebit += otherGLTotals.ytdDebit
+            tempReportAccount.glTotals!!.ytdCredit += otherGLTotals.ytdCredit
+            tempReportAccount.glTotals!!.beginBalance = otherGLTotals.beginBalance
+            tempReportAccount.glTotals!!.beginBalance2 = tempReportAccount.glTotals!!.beginBalance2?.plus(otherGLTotals.beginBalance2!!)
+            tempReportAccount.glTotals!!.netChange += otherGLTotals.netChange
          } else {
             tempReportAccount.glTotals = mapGLTotals(rs)
          }
+         beginBalancesMap[Pair(tempReportAccount.accountNumber, rs.getInt("profit_center"))] = tempReportAccount.glTotals!!.beginBalance
 
          if (rs.getUuidOrNull("detail_id") != null) {
-            tempReportAccount.glDetails.add(mapDetails(rs))
+            val details = mapDetails(rs).takeIf { it.date >= filterRequest.from && it.date <= filterRequest.thru }
+            if (details != null) tempReportAccount.glDetails.add(details)
          }
+      }
+
+      val beginBalancesSumMap:Map<Int, BigDecimal> = beginBalancesMap.toList().groupBy { it.first.first }.mapValues { it.value.sumOf { it.second } }
+
+      reportAccounts.forEach {
+         it.glTotals!!.beginBalance =
+            (beginBalancesSumMap[it.accountNumber] ?: BigDecimal.ZERO) + it.glTotals!!.beginBalance2!!
+         it.glTotals!!.endBalance =
+            it.glTotals!!.beginBalance + it.glTotals!!.netChange
+         it.glTotals!!.beginBalance2 = null
       }
 
       return reportAccounts
@@ -160,9 +184,12 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
       return GeneralLedgerNetChangeDTO(
          debit = rs.getBigDecimal("debit"),
          credit = rs.getBigDecimal("credit"),
-         beginBalance = rs.getBigDecimal("begin_balance"),
+         beginBalance = rs.getBigDecimal("begin_balance1"),
          endBalance = rs.getBigDecimal("end_balance"),
-         netChange = rs.getBigDecimal("net_change")
+         netChange = rs.getBigDecimal("net_change"),
+         ytdDebit = rs.getBigDecimal("ytd_debit"),
+         ytdCredit = rs.getBigDecimal("ytd_credit"),
+         beginBalance2 = rs.getBigDecimal("begin_balance2"),
       )
    }
 

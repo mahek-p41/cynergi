@@ -31,11 +31,11 @@ data class GeneralLedgerTrialBalanceEndOfReportDTO(
 
    @field:NotNull
    @field:Schema(description = "YTD total debits for income & expenses")
-   val ytdDebitIE: BigDecimal = glTotalsIE.sumOf { it.debit + it.beginBalance  }
+   val ytdDebitIE: BigDecimal = glTotalsIE.sumOf { it.ytdDebit }
 
    @field:NotNull
    @field:Schema(description = "YTD total credits for income & expenses")
-   val ytdCreditIE: BigDecimal = glTotalsIE.sumOf { it.credit + it.beginBalance  }
+   val ytdCreditIE: BigDecimal = glTotalsIE.sumOf { it.ytdCredit }
 
    @field:NotNull
    @field:Schema(description = "YTD difference of debits and credits for income & expenses")
@@ -55,11 +55,11 @@ data class GeneralLedgerTrialBalanceEndOfReportDTO(
 
    @field:NotNull
    @field:Schema(description = "YTD total debits for assets & liabilities")
-   val ytdDebitAL: BigDecimal = glTotalsAL.sumOf { it.debit + it.beginBalance  }
+   val ytdDebitAL: BigDecimal = glTotalsAL.sumOf { it.ytdDebit }
 
    @field:NotNull
    @field:Schema(description = "YTD total credits for assets & liabilities")
-   val ytdCreditAL: BigDecimal = glTotalsAL.sumOf { it.credit + it.beginBalance  }
+   val ytdCreditAL: BigDecimal = glTotalsAL.sumOf { it.ytdCredit }
 
    @field:NotNull
    @field:Schema(description = "YTD difference of debits and credits for assets & liabilities")

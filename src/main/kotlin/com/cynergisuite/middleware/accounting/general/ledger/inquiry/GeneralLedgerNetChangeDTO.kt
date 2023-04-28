@@ -11,16 +11,10 @@ data class GeneralLedgerNetChangeDTO(
    var beginBalance: BigDecimal,
    var endBalance: BigDecimal,
    var netChange: BigDecimal,
+   var ytdDebit: BigDecimal = BigDecimal.ZERO,
+   var ytdCredit: BigDecimal = BigDecimal.ZERO,
+   var beginBalance2: BigDecimal? = null,
 ) {
-   operator fun plusAssign(otherAccountTotals: GeneralLedgerNetChangeDTO) {
-      debit = debit.plus(otherAccountTotals.debit)
-      credit = credit.plus(otherAccountTotals.credit)
-      netActivityPeriod = netActivityPeriod.plus(otherAccountTotals.netActivityPeriod)
-      beginBalance = beginBalance.plus(otherAccountTotals.beginBalance)
-      endBalance = endBalance.plus(otherAccountTotals.endBalance)
-      netChange = netChange.plus(otherAccountTotals.netChange)
-   }
-
    operator fun plus(other: GeneralLedgerNetChangeDTO): GeneralLedgerNetChangeDTO {
       return GeneralLedgerNetChangeDTO(
          debit  = debit.plus(other.debit),
@@ -28,7 +22,8 @@ data class GeneralLedgerNetChangeDTO(
          beginBalance  = beginBalance.plus(other.beginBalance),
          endBalance  = endBalance.plus(other.endBalance),
          netChange  = netChange.plus(other.netChange),
-         netActivityPeriod = netActivityPeriod.plus(other.netActivityPeriod)
+         ytdDebit  = other.ytdDebit.let { ytdDebit.plus(it) },
+         ytdCredit  = other.ytdCredit.let { ytdCredit.plus(it) },
       )
    }
 }

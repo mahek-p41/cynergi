@@ -4,6 +4,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedg
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.swagger.v3.oas.annotations.media.Schema
+import java.math.BigDecimal
 import javax.validation.constraints.NotNull
 
 @JsonInclude(NON_NULL)
@@ -17,9 +18,9 @@ data class GeneralLedgerTrialBalanceReportTemplate (
 ) {
    @field:Schema(description = "Report GL totals")
    val reportGLTotals: GeneralLedgerNetChangeDTO =
-      accounts?.mapNotNull { it.glTotals }.orEmpty().reduce { accumulator, eachGLTotals ->
+      accounts?.mapNotNull { it.glTotals }.orEmpty().reduceOrNull { accumulator, eachGLTotals ->
          accumulator + eachGLTotals
-      }
+      }?: GeneralLedgerNetChangeDTO(BigDecimal.ZERO,BigDecimal.ZERO, mutableListOf(),BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO)
 
    @field:Schema(description = "End of report totals")
    val endOfReport = GeneralLedgerTrialBalanceEndOfReportDTO(
