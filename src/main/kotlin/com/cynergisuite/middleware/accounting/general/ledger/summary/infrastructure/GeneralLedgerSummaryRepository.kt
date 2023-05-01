@@ -124,6 +124,24 @@ class GeneralLedgerSummaryRepository @Inject constructor(
    }
 
    @ReadOnly
+   fun existsByCompanyOnly(company: CompanyEntity): Boolean {
+      val params = mutableMapOf("comp_id" to company.id)
+      val exists = jdbc.queryForObject(
+         """
+         SELECT EXISTS (SELECT id
+                        FROM general_ledger_summary
+                        WHERE company_id = :comp_id)
+         """.trimIndent(),
+         params,
+         Boolean::class.java
+      )
+
+      logger.trace("Checking if general_ledger_summary by company only: {} exists resulted in {}", params, exists)
+
+      return exists
+   }
+
+   @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): GeneralLedgerSummaryEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
       val query = "${selectBaseQuery()}\nWHERE glSummary.id = :id AND glSummary.company_id = :comp_id"

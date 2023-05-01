@@ -8,6 +8,8 @@ import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalend
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarService
 import com.cynergisuite.middleware.accounting.financial.calendar.FiscalYearDTO
+import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
+import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -42,6 +44,8 @@ import javax.validation.Valid
 @Controller("/api/accounting/financial-calendar")
 class FinancialCalendarController @Inject constructor(
    private val financialCalendarService: FinancialCalendarService,
+   private val generalLedgerDetailRepository: GeneralLedgerDetailRepository,
+   private val generalLedgerSummaryRepository: GeneralLedgerSummaryRepository,
    private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(FinancialCalendarController::class.java)
@@ -372,6 +376,36 @@ class FinancialCalendarController @Inject constructor(
       val response = isFromDateFound || isThruDateFound || sameFiscalYear
 
       logger.debug("Validating Financial Calendar for given date resulted in", response)
+
+      return response
+   }
+
+   //Used to confirm whether or not both general_ledger_detail and general_ledger_summary are empty prior to creating a financial calendar
+   @Throws(NotFoundException::class)
+   @Get(value = "/gl-exist", produces = [APPLICATION_JSON])
+   @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Returns True if GL Detail and Summary are empty", description = "Returns True if GL Detail and Summary are empty", operationId = "financialCalendar-generalLedgerDetailAndSummaryExist")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Boolean::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Financial Calendar was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun generalLedgerDetailAndSummaryExist(
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Boolean {
+      logger.info("Checking for existing general_ledger_detail or general_ledger_summary records")
+
+      val user = userService.fetchUser(authentication)
+
+      val isGLDFound = generalLedgerDetailRepository.exists(user.myCompany())
+      val isGLSFound = generalLedgerSummaryRepository.existsByCompanyOnly(user.myCompany())
+
+      val response = isGLDFound || isGLSFound
+
+      logger.debug("Checking for existing general_ledger_detail or general_ledger_summary records resulted in {}", response)
 
       return response
    }
