@@ -5,11 +5,14 @@ import com.cynergisuite.domain.VendorStatisticsFilterRequest
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
+import com.cynergisuite.middleware.purchase.order.PurchaseOrderEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorStatisticsRepository
+import com.cynergisuite.middleware.vendor.rebate.RebateDTO
+import com.cynergisuite.middleware.vendor.rebate.RebateEntity
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.time.LocalDate
-import java.util.UUID
 
 @Singleton
 class VendorStatisticsService @Inject constructor(
@@ -41,8 +44,10 @@ class VendorStatisticsService @Inject constructor(
       return dto
    }
 
-   fun fetchRebates() {
+   fun fetchRebates(company: CompanyEntity, filterRequest: VendorStatisticsFilterRequest): Page<RebateDTO> {
+      val found = vendorStatisticsRepository.fetchRebates(company, filterRequest)
 
+      return found.toPage { rebateEntity: RebateEntity -> RebateDTO(rebateEntity) }
    }
 
    fun fetchInvoices(company: CompanyEntity, filterRequest: VendorStatisticsFilterRequest): Page<AccountPayableInvoiceInquiryDTO> {
@@ -51,7 +56,9 @@ class VendorStatisticsService @Inject constructor(
       return found.toPage { dto: AccountPayableInvoiceInquiryDTO -> dto }
    }
 
-   fun fetchPurchaseOrders() {
+   fun fetchPurchaseOrders(company: CompanyEntity, filterRequest: VendorStatisticsFilterRequest): Page<PurchaseOrderDTO> {
+      val found = vendorStatisticsRepository.fetchPurchaseOrders(company, filterRequest)
 
+      return found.toPage { purchaseOrderEntity: PurchaseOrderEntity -> PurchaseOrderDTO(purchaseOrderEntity) }
    }
 }

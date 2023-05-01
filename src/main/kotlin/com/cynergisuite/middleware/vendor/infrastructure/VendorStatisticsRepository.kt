@@ -11,6 +11,10 @@ import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceInquiryRepository
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.purchase.order.PurchaseOrderEntity
+import com.cynergisuite.middleware.purchase.order.infrastructure.PurchaseOrderRepository
+import com.cynergisuite.middleware.vendor.rebate.RebateEntity
+import com.cynergisuite.middleware.vendor.rebate.infrastructure.RebateRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -22,6 +26,8 @@ import java.time.LocalDate
 @Singleton
 class VendorStatisticsRepository @Inject constructor(
    private val accountPayableInvoiceInquiryRepository: AccountPayableInvoiceInquiryRepository,
+   private val purchaseOrderRepository: PurchaseOrderRepository,
+   private val rebateRepository: RebateRepository,
    private val jdbc: Jdbi
 ) {
    @ReadOnly
@@ -71,17 +77,39 @@ class VendorStatisticsRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun fetchInvoices(company: CompanyEntity, filterRequest: VendorStatisticsFilterRequest): RepositoryPage<AccountPayableInvoiceInquiryDTO, PageRequest> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "vendorId" to filterRequest.vendorId)
-      val whereClause = StringBuilder("WHERE apInvoice.company_id = :comp_id AND vend.id = :vendorId ")
+   fun fetchRebates(company: CompanyEntity, filterRequest: VendorStatisticsFilterRequest): RepositoryPage<RebateEntity, PageRequest> {
+      return jdbc.queryPaged(
+         """
+            ${rebateRepository.selectBaseQuery()}
+               JOIN rebate_to_vendor r_to_v ON r.id = r_to_v.rebate_id
+               JOIN vendor vend ON r_to_v.vendor_id = vend.id
+            WHERE vend.company_id = :comp_id AND vend.id = :vendorId
+            ORDER BY r.description
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "vendorId" to filterRequest.vendorId
+         ),
+         filterRequest
+      ) { rs, elements ->
+         do {
+            elements.add(rebateRepository.mapRow(rs, company, "r_"))
+         } while (rs.next())
+      }
+   }
 
+   @ReadOnly
+   fun fetchInvoices(company: CompanyEntity, filterRequest: VendorStatisticsFilterRequest): RepositoryPage<AccountPayableInvoiceInquiryDTO, PageRequest> {
       return jdbc.queryPaged(
          """
             ${accountPayableInvoiceInquiryRepository.selectBaseQuery()}
-            $whereClause
+            WHERE vend.company_id = :comp_id AND vend.id = :vendorId
             ORDER BY naturalsort(apInvoice.invoice)
          """.trimIndent(),
-         params,
+         mapOf(
+            "comp_id" to company.id,
+            "vendorId" to filterRequest.vendorId
+         ),
          filterRequest
       ) { rs, elements ->
          do {
@@ -94,6 +122,26 @@ class VendorStatisticsRepository @Inject constructor(
 
             elements.add(inquiryDTO)
 
+         } while (rs.next())
+      }
+   }
+
+   @ReadOnly
+   fun fetchPurchaseOrders(company: CompanyEntity, filterRequest: VendorStatisticsFilterRequest): RepositoryPage<PurchaseOrderEntity, PageRequest> {
+      return jdbc.queryPaged(
+         """
+            ${purchaseOrderRepository.selectBaseQuery()}
+            WHERE vendor.company_id = :comp_id AND vendor.id = :vendorId
+            ORDER BY po.number
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "vendorId" to filterRequest.vendorId
+         ),
+         filterRequest
+      ) { rs, elements ->
+         do {
+            elements.add(purchaseOrderRepository.mapRow(rs, company, "po_"))
          } while (rs.next())
       }
    }

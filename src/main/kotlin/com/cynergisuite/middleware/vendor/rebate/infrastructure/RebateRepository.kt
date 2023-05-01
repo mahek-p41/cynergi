@@ -39,7 +39,7 @@ class RebateRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(RebateRepository::class.java)
 
-   private fun selectBaseQuery(): String {
+   fun selectBaseQuery(): String {
       return """
          WITH account AS (
             ${accountRepository.selectBaseQuery()}
@@ -319,7 +319,7 @@ class RebateRepository @Inject constructor(
       )
    }
 
-   private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): RebateEntity {
+   fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): RebateEntity {
       val id = rs.getUuid("${columnPrefix}id")
       val vendors = vendorRepository.findVendorIdsByRebate(id, company)
 

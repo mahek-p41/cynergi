@@ -6,9 +6,11 @@ import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPay
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
+import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.vendor.VendorService
 import com.cynergisuite.middleware.vendor.VendorStatisticsDTO
 import com.cynergisuite.middleware.vendor.VendorStatisticsService
+import com.cynergisuite.middleware.vendor.rebate.RebateDTO
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Controller
@@ -67,8 +69,36 @@ class VendorStatisticsController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/rebates{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["VendorStatisticsEndpoints"], summary = "Fetch Rebates", description = "Fetch Rebates for Vendor Statistics", operationId = "vendorStatistics-fetchRebates")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested Rebates were unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchRebates(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: VendorStatisticsFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Page<RebateDTO> {
+      logger.info("Fetching Rebates for Vendor Statistics by {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+      val response = vendorStatisticsService.fetchRebates(user.myCompany(), filterRequest)
+
+      logger.debug("Fetching Rebates for Vendor Statistics by {} resulted in", filterRequest.vendorId, response)
+
+      return response
+   }
+
+   @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/invoices{?filterRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["VendorStatisticsEndpoints"], summary = "Fetch Account Payable Invoices",description = "Fetch Account Payable Invoices for Vendor Statistics", operationId = "vendorStatistics-fetchInvoices")
+   @Operation(tags = ["VendorStatisticsEndpoints"], summary = "Fetch Account Payable Invoices", description = "Fetch Account Payable Invoices for Vendor Statistics", operationId = "vendorStatistics-fetchInvoices")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
@@ -90,6 +120,34 @@ class VendorStatisticsController @Inject constructor(
       val response = vendorStatisticsService.fetchInvoices(user.myCompany(), filterRequest)
 
       logger.debug("Fetching Invoices for Vendor Statistics by {} resulted in", filterRequest.vendorId, response)
+
+      return response
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/purchase-orders{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["VendorStatisticsEndpoints"], summary = "Fetch Purchase Orders", description = "Fetch Purchase Orders for Vendor Statistics", operationId = "vendorStatistics-fetchPurchaseOrders")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested Purchase Orders were unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchPurchaseOrders(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: VendorStatisticsFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Page<PurchaseOrderDTO> {
+      logger.info("Fetching Purchase Orders for Vendor Statistics by {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+      val response = vendorStatisticsService.fetchPurchaseOrders(user.myCompany(), filterRequest)
+
+      logger.debug("Fetching Purchase Orders for Vendor Statistics by {} resulted in", filterRequest.vendorId, response)
 
       return response
    }
