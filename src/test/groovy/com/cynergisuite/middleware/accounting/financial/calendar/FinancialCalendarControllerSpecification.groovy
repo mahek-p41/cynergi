@@ -3,8 +3,18 @@ package com.cynergisuite.middleware.accounting.financial.calendar
 import com.cynergisuite.domain.FinancialCalendarValidateDatesFilterRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
+import com.cynergisuite.middleware.accounting.bank.BankFactoryService
+import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDataLoaderService
+import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
+import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryService
+import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -21,6 +31,10 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
    private static final String path = "/accounting/financial-calendar"
 
    @Inject FinancialCalendarDataLoaderService financialCalendarDataLoaderService
+   @Inject AccountTestDataLoaderService accountDataLoaderService
+   @Inject GeneralLedgerSourceCodeDataLoaderService sourceCodeDataLoaderService
+   @Inject GeneralLedgerDetailDataLoaderService generalLedgerDetailDataLoaderService
+   @Inject GeneralLedgerSummaryDataLoaderService generalLedgerSummaryDataLoaderService
 
    void "fetch one" () {
       given:
@@ -606,5 +620,65 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
 
       then:
       notThrown(Exception)
+   }
+
+   void "check for existing general_ledger_summary records when they exist" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
+
+      when:
+      def result = get("$path/gl-exist")
+
+      then:
+      notThrown(Exception)
+      result == true
+   }
+
+   void "check for existing general_ledger_summary records when they do not exist" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+
+      when:
+      def result = get("$path/gl-exist")
+
+      then:
+      notThrown(Exception)
+      result == false
+   }
+
+   void "check for existing general_ledger_detail records when they exist" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource = sourceCodeDataLoaderService.single(company)
+      generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource).toList()
+
+      when:
+      def result = get("$path/gl-exist")
+
+      then:
+      notThrown(Exception)
+      result == true
+   }
+
+   void "check for existing general_ledger_detail records when they do not exist" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource = sourceCodeDataLoaderService.single(company)
+
+      when:
+      def result = get("$path/gl-exist")
+
+      then:
+      notThrown(Exception)
+      result == false
    }
 }
