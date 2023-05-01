@@ -912,7 +912,7 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       filterRequest['employeeNumber'] = employee.number
 
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate, true, true).collect()
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(80))
+      final dateRangeDTO = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(90))
       final glDetailPage = new GeneralLedgerDetailPageRequest([account: acct.number, profitCenter: store.myNumber(), fiscalYear: entryDate.getYear(), from: glRecurringDTO.beginDate.minusDays(20), thru: glRecurringDTO.endDate.plusDays(20)])
 
       final dateRangeAP = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(60))

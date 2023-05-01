@@ -374,9 +374,9 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       given:
       final tstds1 = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().withDayOfMonth(1), true, true).collect()
-      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1).withDayOfMonth(1), LocalDate.now().plusMonths(7).withDayOfMonth(LocalDate.now().getMonth().length(LocalDate.now().isLeapYear())))
-      final dateRangeAP1 = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1).withDayOfMonth(1), LocalDate.now().plusMonths(7).withDayOfMonth(LocalDate.now().getMonth().length(LocalDate.now().isLeapYear())))
-      final dateRangeAP2 = new FinancialCalendarDateRangeDTO(LocalDate.now().withDayOfMonth(1), LocalDate.now().plusMonths(6).withDayOfMonth(LocalDate.now().getMonth().length(LocalDate.now().isLeapYear())))
+      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1).withDayOfMonth(1), LocalDate.now().plusMonths(7).withDayOfMonth(LocalDate.now().plusMonths(7).getMonth().length(LocalDate.now().plusMonths(7).isLeapYear())))
+      final dateRangeAP1 = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1).withDayOfMonth(1), LocalDate.now().plusMonths(7).withDayOfMonth(LocalDate.now().plusMonths(7).getMonth().length(LocalDate.now().plusMonths(7).isLeapYear())))
+      final dateRangeAP2 = new FinancialCalendarDateRangeDTO(LocalDate.now().withDayOfMonth(1), LocalDate.now().plusMonths(6).withDayOfMonth(LocalDate.now().plusMonths(6).getMonth().length(LocalDate.now().plusMonths(6).isLeapYear())))
 
       when:
       put("$path/open-ap", dateRangeAP1)
