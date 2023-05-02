@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.infrastructure
 
+import com.cynergisuite.domain.AccountFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
@@ -113,28 +114,30 @@ class AccountRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<AccountEntity, PageRequest> {
+   fun findAll(company: CompanyEntity, filterRequest: AccountFilterRequest): RepositoryPage<AccountEntity, PageRequest> {
       var totalElements: Long? = null
       val resultList: MutableList<AccountEntity> = mutableListOf()
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
+      val whereClause = StringBuilder(" WHERE comp.id = :comp_id and account.deleted = FALSE")
+      if (filterRequest.accountType != null) {
+         params["accountType"] = filterRequest.accountType
+         whereClause.append(" AND type.value = :accountType")
+      }
 
       jdbc.query(
          """
          WITH paged AS (
             ${selectBaseQuery()}
-            WHERE comp.id = :comp_id AND account.deleted = FALSE
+            $whereClause
          )
          SELECT
             p.*,
             count(*) OVER() as total_elements
          FROM paged AS p
-         ORDER by account_${page.snakeSortBy()} ${page.sortDirection()}
+         ORDER by account_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """,
-         mapOf(
-            "comp_id" to company.id,
-            "limit" to page.size(),
-            "offset" to page.offset()
-         )
+         params
       ) { rs, _ ->
          resultList.add(mapRow(rs, company, "account_"))
          if (totalElements == null) {
@@ -143,7 +146,7 @@ class AccountRepository @Inject constructor(
       }
 
       return RepositoryPage(
-         requested = page,
+         requested = filterRequest,
          elements = resultList,
          totalElements = totalElements ?: 0
       )
@@ -206,29 +209,6 @@ class AccountRepository @Inject constructor(
          } while (rs.next())
       }
    }
-
-   @ReadOnly
-   fun findByAccountType(company: CompanyEntity, accountType: String): List<AccountEntity> {
-      val resultList: MutableList<AccountEntity> = mutableListOf()
-
-      jdbc.query(
-         """
-         ${selectBaseQuery()}
-         WHERE comp.id = :comp_id AND account.deleted = FALSE and type.value = :type_value
-         ORDER by account_number asc
-         """,
-         mapOf(
-            "comp_id" to company.id,
-            "type_value" to accountType
-         )
-      ) { rs, _ ->
-         resultList.add(mapRow(rs, company, "account_"))
-
-      }
-      if (resultList.isEmpty()) throw NotFoundException(accountType)
-      return resultList
-   }
-
 
    @Transactional
    fun insert(account: AccountEntity, company: CompanyEntity): AccountEntity {

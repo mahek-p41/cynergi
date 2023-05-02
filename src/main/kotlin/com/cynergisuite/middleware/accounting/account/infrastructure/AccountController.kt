@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.accounting.account.infrastructure
 
+import com.cynergisuite.domain.AccountFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.SearchPageRequest
-import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountService
@@ -80,15 +80,15 @@ class AccountController @Inject constructor(
    fun fetchAll(
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false)
       @Valid @QueryValue("pageRequest")
-      pageRequest: StandardPageRequest,
+      filterRequest: AccountFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<AccountDTO> {
       val user = userService.fetchUser(authentication)
-      val accounts = accountService.fetchAll(user.myCompany(), pageRequest, httpRequest.findLocaleWithDefault())
+      val accounts = accountService.fetchAll(user.myCompany(), filterRequest, httpRequest.findLocaleWithDefault())
 
       if (accounts.elements.isEmpty()) {
-         throw PageOutOfBoundsException(pageRequest)
+         throw PageOutOfBoundsException(filterRequest)
       }
 
       logger.debug("Listing of Account Currency Codes resulted in {}", accounts)
@@ -124,28 +124,6 @@ class AccountController @Inject constructor(
       }
 
       return page
-   }
-
-   @Throws(PageOutOfBoundsException::class)
-   @Get(uri = "/by-type/{type:[0-9a-zA-Z\\-]+}", produces = [MediaType.APPLICATION_JSON])
-   @Operation(tags = ["AccountEndpoints"], summary = "Search for a list of accounts by type", description = "search of a listing of accounts based on account type", operationId = "account-fetchByType")
-   @ApiResponses(
-      value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-         ApiResponse(responseCode = "204", description = "The requested Account type was unable to be found, or the result is empty"),
-         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
-      ]
-   )
-   fun fetchByType(
-      @QueryValue("type") accountType: String,
-      authentication: Authentication,
-      httpRequest: HttpRequest<*>
-   ): List<AccountDTO> {
-      logger.info("Search for accounts with account type{}", accountType)
-
-      val user = userService.fetchUser(authentication)
-      return accountService.fetchAllByType(user.myCompany(), accountType, httpRequest.findLocaleWithDefault())
    }
 
    @Post(processes = [MediaType.APPLICATION_JSON])
