@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.accounting.account
 
+import com.cynergisuite.domain.AccountFilterRequest
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -21,8 +21,8 @@ class AccountService @Inject constructor(
    fun fetchById(id: UUID, company: CompanyEntity, locale: Locale): AccountDTO? =
       accountRepository.findOne(id, company)?.let { transformEntity(it, locale) }
 
-   fun fetchAll(company: CompanyEntity, pageRequest: PageRequest, locale: Locale): Page<AccountDTO> {
-      val found = accountRepository.findAll(company, pageRequest)
+   fun fetchAll(company: CompanyEntity, filterRequest: AccountFilterRequest, locale: Locale): Page<AccountDTO> {
+      val found = accountRepository.findAll(company, filterRequest)
 
       return found.toPage { account: AccountEntity ->
          transformEntity(account, locale)

@@ -1,8 +1,8 @@
 package com.cynergisuite.middleware.accounting.account.infrastructure
 
+import com.cynergisuite.domain.AccountFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.SearchPageRequest
-import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountService
@@ -80,15 +80,15 @@ class AccountController @Inject constructor(
    fun fetchAll(
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false)
       @Valid @QueryValue("pageRequest")
-      pageRequest: StandardPageRequest,
+      filterRequest: AccountFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<AccountDTO> {
       val user = userService.fetchUser(authentication)
-      val accounts = accountService.fetchAll(user.myCompany(), pageRequest, httpRequest.findLocaleWithDefault())
+      val accounts = accountService.fetchAll(user.myCompany(), filterRequest, httpRequest.findLocaleWithDefault())
 
       if (accounts.elements.isEmpty()) {
-         throw PageOutOfBoundsException(pageRequest)
+         throw PageOutOfBoundsException(filterRequest)
       }
 
       logger.debug("Listing of Account Currency Codes resulted in {}", accounts)
