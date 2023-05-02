@@ -33,6 +33,7 @@ class VendorStatisticsService @Inject constructor(
          dto.unpaidAmounts!!.balance += it.first
 
          when {
+            it.third == 1 -> dto.unpaidAmounts!!.heldInvoices += it.first
             it.second <= LocalDate.now() -> dto.unpaidAmounts!!.currentDue += it.first
             it.second <= LocalDate.now().plusDays(30) -> dto.unpaidAmounts!!.next30Days += it.first
             it.second <= LocalDate.now().plusDays(60) -> dto.unpaidAmounts!!.next60Days += it.first

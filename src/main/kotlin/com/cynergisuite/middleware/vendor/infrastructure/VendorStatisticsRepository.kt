@@ -55,12 +55,13 @@ class VendorStatisticsRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun calculateUnpaidAmounts(vendorNumber: Int, company: CompanyEntity): List<Pair<BigDecimal, LocalDate>> {
+   fun calculateUnpaidAmounts(vendorNumber: Int, company: CompanyEntity): List<Triple<BigDecimal, LocalDate, Int>> {
       return jdbc.query(
          """
             SELECT
                apInv.invoice_amount - apInv.discount_taken - apInv.paid_amount AS unpaid_amount,
-               apInv.due_date AS due_date
+               apInv.due_date AS due_date,
+               apInv.status_id AS status_id
             FROM account_payable_invoice apInv
                JOIN vendor ON apInv.vendor_id = vendor.id
             WHERE vendor.company_id = :company_id
@@ -146,10 +147,11 @@ class VendorStatisticsRepository @Inject constructor(
       }
    }
 
-   private fun mapUnpaidAmounts(rs: ResultSet): Pair<BigDecimal, LocalDate> {
-      return Pair(
+   private fun mapUnpaidAmounts(rs: ResultSet): Triple<BigDecimal, LocalDate, Int> {
+      return Triple(
          first = rs.getBigDecimal("unpaid_amount"),
-         second = rs.getLocalDate("due_date")
+         second = rs.getLocalDate("due_date"),
+         third = rs.getInt("status_id")
       )
    }
 }
