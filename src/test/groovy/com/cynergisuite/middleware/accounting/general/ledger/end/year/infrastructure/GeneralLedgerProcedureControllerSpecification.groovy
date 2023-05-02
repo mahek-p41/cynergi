@@ -40,14 +40,14 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company, "BAL")
       glJournalDataLoaderService.stream(12, company, capitalAccount, store, LocalDate.now(), glSourceCode).toList()
       glJournalDataLoaderService.stream(1, company2, capitalAccount, store, beginDate.plusMonths(1), glSourceCode).toList()
-      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "R"})
-      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "P"})
-      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "C"})
-      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "N"})
       def body = new EndYearProceduresDTO(new SimpleIdentifiableDTO(capitalAccount), new SimpleLegacyIdentifiableDTO(store.myId()))
 
       when:
       post("/accounting/financial-calendar/complete", financialCalendarDTO)
+      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "R"})
+      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "P"})
+      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "C"})
+      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "N"})
       post("$path/end-year", body)
 
       then:
@@ -65,14 +65,14 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company, "BAL")
       glJournalDataLoaderService.stream(12, company, capitalAccount, store, beginDate.plusMonths(1), glSourceCode).toList()
       glJournalDataLoaderService.stream(1, company2, capitalAccount, store, LocalDate.now(), glSourceCode).toList()
-      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "R"})
-      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "P"})
-      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "C"})
-      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "N"})
       def body = new EndYearProceduresDTO(new SimpleIdentifiableDTO(capitalAccount), new SimpleLegacyIdentifiableDTO(store.myId()))
 
       when:
       post("/accounting/financial-calendar/complete", financialCalendarDTO)
+      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "R"})
+      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "P"})
+      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "C"})
+      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "N"})
       post("$path/end-year", body)
 
       then:
@@ -96,14 +96,14 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company, "BAL")
       glJournalDataLoaderService.stream(12, company, conCapitalAccount, store, beginDate.plusMonths(1), glSourceCode).toList()
       glJournalDataLoaderService.stream(1, company2, conCapitalAccount, store, LocalDate.now(), glSourceCode).toList()
-      generalLedgerSummaryDataLoaderService.single(company, conCapitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "R"})
-      generalLedgerSummaryDataLoaderService.single(company, conCapitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "P"})
-      generalLedgerSummaryDataLoaderService.single(company, conCapitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "C"})
-      generalLedgerSummaryDataLoaderService.single(company, conCapitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "N"})
       def body = new EndYearProceduresDTO(new SimpleIdentifiableDTO(conCapitalAccount), new SimpleLegacyIdentifiableDTO(store.myId()))
 
       when:
       post("/accounting/financial-calendar/complete", financialCalendarDTO)
+      generalLedgerSummaryDataLoaderService.single(company, conCapitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "R"})
+      generalLedgerSummaryDataLoaderService.single(company, conCapitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "P"})
+      generalLedgerSummaryDataLoaderService.single(company, conCapitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "C"})
+      generalLedgerSummaryDataLoaderService.single(company, conCapitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "N"})
       post("$path/end-year", body)
 
       then:
