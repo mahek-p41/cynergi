@@ -127,4 +127,44 @@ class FinancialCalendarValidator @Inject constructor(
 
       return dateRangeDTO
    }
+
+   fun validateOpenGLAPDates(dateRangeDTO: FinancialCalendarGLAPDateRangeDTO): FinancialCalendarGLAPDateRangeDTO {
+
+      doValidation { errors ->
+         val glFrom = dateRangeDTO.glPeriodFrom
+         val glThru = dateRangeDTO.glPeriodTo
+         val glDaysBetween = ChronoUnit.DAYS.between(glFrom, glThru)
+
+         val apFrom = dateRangeDTO.apPeriodFrom
+         val apThru = dateRangeDTO.apPeriodTo
+         val apDaysBetween = ChronoUnit.DAYS.between(apFrom, apThru)
+
+         //GL Thru date cannot be before From date
+         if (glThru.isBefore(glFrom)) {
+            errors.add(ValidationError("gl_dates", CalendarThruDateIsBeforeFrom(glFrom, glThru)))
+         }
+
+         //AP Thru date cannot be before From date
+         if (apThru.isBefore(apFrom)) {
+            errors.add(ValidationError("ap_dates", CalendarThruDateIsBeforeFrom(apFrom, apThru)))
+         }
+
+         //Total GL range requested cannot span more than 2 years
+         if (glDaysBetween > 731) {
+            errors.add(ValidationError("gl_dates", CalendarDatesSpanMoreThanTwoYears(glFrom, glThru)))
+         }
+
+         //Total AP range requested cannot span more than 2 years
+         if (apDaysBetween > 731) {
+            errors.add(ValidationError("ap_dates", CalendarDatesSpanMoreThanTwoYears(apFrom, apThru)))
+         }
+
+         //The AP range requested must fit within the GL range requested
+         if ((glFrom > apFrom || glThru < apThru)) {
+            errors.add(ValidationError("ap_dates", APDatesSelectedOutsideGLDatesSelected(apFrom, apThru, glFrom, glThru)))
+         }
+      }
+
+      return dateRangeDTO
+   }
 }

@@ -6,6 +6,7 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarCompleteDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarGLAPDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarService
 import com.cynergisuite.middleware.accounting.financial.calendar.FiscalYearDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
@@ -292,6 +293,31 @@ class FinancialCalendarController @Inject constructor(
       val response = financialCalendarService.openAPAccountsForPeriods(dateRangeDTO, user.myCompany())
 
       logger.debug("Requested set APAccounts Open for periods in date range {} resulted in {}", dateRangeDTO, response)
+   }
+
+   @Put(value = "/open-gl-ap", processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class)
+   @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Set GL/AP Accounts Open for a period", description = "Set GL/AP Accounts to false then set to true for the desired period(s)", operationId = "financialCalendar-open-gl-ap")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = FinancialCalendarDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun openGLAndAP(
+      @Body @Valid
+      dateRangeDTO: FinancialCalendarGLAPDateRangeDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ) {
+      logger.info("Requested set GL/AP Accounts Open for periods in date range {}", dateRangeDTO)
+
+      val user = userService.fetchUser(authentication)
+      val response = financialCalendarService.openGLAPAccountsForPeriods(dateRangeDTO, user.myCompany())
+
+      logger.debug("Requested set GLAccounts Open for periods in date range {} resulted in {}", dateRangeDTO, response)
    }
 
    @Throws(NotFoundException::class)
