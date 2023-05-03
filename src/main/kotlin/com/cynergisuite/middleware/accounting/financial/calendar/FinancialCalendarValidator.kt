@@ -3,6 +3,8 @@ package com.cynergisuite.middleware.accounting.financial.calendar
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.type.infrastructure.OverallPeriodTypeRepository
+import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
+import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
@@ -19,12 +21,20 @@ import javax.xml.datatype.DatatypeConstants.DAYS
 @Singleton
 class FinancialCalendarValidator @Inject constructor(
    private val financialCalendarRepository: FinancialCalendarRepository,
+   private val generalLedgerDetailRepository: GeneralLedgerDetailRepository,
+   private val generalLedgerSummaryRepository: GeneralLedgerSummaryRepository,
    private val overallPeriodTypeRepository: OverallPeriodTypeRepository
 ) : ValidatorBase() {
    private val logger: Logger = LoggerFactory.getLogger(FinancialCalendarValidator::class.java)
 
    fun validateCreate(dto: FinancialCalendarDTO, company: CompanyEntity): FinancialCalendarEntity {
       logger.trace("Validating Create Financial Calendar{}", dto)
+      val isGLDFound = generalLedgerDetailRepository.exists(company)
+      val isGLSFound = generalLedgerSummaryRepository.existsByCompanyOnly(company)
+
+      doValidation { errors ->
+         if (isGLDFound || isGLSFound) errors.add(ValidationError("general_ledger", GeneralLedgerRecordsBlockFinCalCreation(isGLDFound, isGLSFound)))
+      }
       return doSharedValidation(dto, company)
    }
 

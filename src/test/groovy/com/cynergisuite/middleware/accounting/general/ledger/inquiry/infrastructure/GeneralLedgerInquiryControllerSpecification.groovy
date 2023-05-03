@@ -21,8 +21,6 @@ class GeneralLedgerInquiryControllerSpecification extends ControllerSpecificatio
    void "fetch one" () {
       given:
       final acct = accountDataLoaderService.single(tstds1)
-      dataLoaderService.single(tstds1, acct, store3Tstds1, OverallPeriodTypeDataLoader.predefined().get(1))
-      final glSummary2 = dataLoaderService.single(tstds1, acct, store3Tstds1, OverallPeriodTypeDataLoader.predefined().get(2))
       final beginDate = LocalDate.parse("2021-11-09")
       final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
       final filterRequest = new GeneralLedgerInquiryFilterRequest([account: acct.number, profitCenter: store3Tstds1.myNumber(), fiscalYear: 2022])
@@ -35,6 +33,8 @@ class GeneralLedgerInquiryControllerSpecification extends ControllerSpecificatio
       result2 != null
 
       when:
+      dataLoaderService.single(tstds1, acct, store3Tstds1, OverallPeriodTypeDataLoader.predefined().get(1))
+      def glSummary2 = dataLoaderService.single(tstds1, acct, store3Tstds1, OverallPeriodTypeDataLoader.predefined().get(2))
       def result = get("$path$filterRequest")
 
       then:

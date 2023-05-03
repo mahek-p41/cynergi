@@ -763,6 +763,8 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.single(store)
+      final entryDate = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
+      final finCal = financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate, true, true).collect()
       def glRecurringDistributionDTOs = GeneralLedgerRecurringDistributionDataLoader.streamDTO(
          2,
          glRecurringDTO,
@@ -779,14 +781,12 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       ).toList()
       glRecurringDistributionDTOs.addAll(glRecurringDistributionCreditDTOs)
       def glRecurringEntriesDTO = dataLoaderService.singleDTO(glRecurringDTO, glRecurringDistributionDTOs)
-      def entryDate = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
       def filterRequest = new GeneralLedgerRecurringEntriesFilterRequest([sortBy: "id", sortDirection: "ASC"])
       filterRequest['entryType'] = glRecurringDTO.type.value
       filterRequest['sourceCode'] = glRecurringDTO.source.value
       filterRequest['entryDate'] = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
       filterRequest['employeeNumber'] = employee.number
 
-      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate, true, true).collect()
       final dateRangeDTO = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(80))
       final glDetailPage = new GeneralLedgerDetailPageRequest([account: acct.number, profitCenter: store.myNumber(), fiscalYear: entryDate.getYear(), from: glRecurringDTO.beginDate.minusDays(20), thru: glRecurringDTO.endDate.plusDays(20)])
 

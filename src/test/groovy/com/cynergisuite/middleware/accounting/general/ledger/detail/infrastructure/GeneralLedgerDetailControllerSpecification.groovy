@@ -116,10 +116,8 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glAccount2 = accountDataLoaderService.single(company)
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
-      final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final beginDate = LocalDate.parse("2021-11-09")
       final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
-      final generalLedgerDetails = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource).toList()
       final filterOne = new GeneralLedgerDetailPageRequest([account: glAccount.number, profitCenter: profitCenter.myNumber(), fiscalYear: 2021, from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
       final filterTwo = new GeneralLedgerDetailPageRequest([account: glAccount2.number, profitCenter: profitCenter.myNumber(), fiscalYear: 202, from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
       final filterThree = new GeneralLedgerDetailPageRequest([account: glAccount.number, fiscalYear: 2021, from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
@@ -132,6 +130,9 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       result1 != null
 
       when:
+      final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
+      def generalLedgerDetails = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource).toList()
+
       def result = get("$path$filterOne")
 
       then:
@@ -916,15 +917,10 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glSrcCode = sourceCodeDataLoaderService.single(company)
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
-      final glSummary1 = generalLedgerSummaryDataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(1))
-      final glSummary2 = generalLedgerSummaryDataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(2))
       final beginDate = LocalDate.now().minusYears(1).plusMonths(1)
       final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: LocalDate.now().year, periodFrom: beginDate])
-      final glDetails = generalLedgerDetailDataLoaderService.single(company, acct, store, glSrcCode)
       final filterRequest1 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: acct.number, profitCenter: store.myNumber(), fiscalYear: LocalDate.now().year])
       final filterRequest2 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: 9999, profitCenter: store.myNumber(), fiscalYear: LocalDate.now().year])
-      final creditAmount = (glDetails.amount < 0) ? glDetails.amount : 0
-      final debitAmount = (glDetails.amount > 0) ? glDetails.amount : 0
 
       when:
       def result1 = post("/accounting/financial-calendar/complete", financialCalendarDTO)
@@ -934,6 +930,11 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       result1 != null
 
       when:
+      final glSummary1 = generalLedgerSummaryDataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(1))
+      def glSummary2 = generalLedgerSummaryDataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(2))
+      def glDetails = generalLedgerDetailDataLoaderService.single(company, acct, store, glSrcCode)
+      def creditAmount = (glDetails.amount < 0) ? glDetails.amount : 0
+      def debitAmount = (glDetails.amount > 0) ? glDetails.amount : 0
       def result2 = get("$path/netchange$filterRequest1")
 
       then:

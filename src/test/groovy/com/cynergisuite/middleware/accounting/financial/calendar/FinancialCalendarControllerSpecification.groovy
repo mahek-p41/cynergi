@@ -681,4 +681,49 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       notThrown(Exception)
       result == false
    }
+
+   void "try to create complete financial calendar when general_ledger_summary records exist" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
+      final beginDate = LocalDate.parse("2021-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+
+      when:
+      def result = post("$path/complete", financialCalendarDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.path[0] == 'general_ledger'
+      response.message[0] == "Cannot create financial calendar when general_ledger_detail (false) or general_ledger_summary (true) records exist."
+      response.code[0] == 'cynergi.validation.general.ledger.records.block.fincal.creation'
+
+   }
+
+   void "try to create complete financial calendar when general_ledger_detail records exist" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource = sourceCodeDataLoaderService.single(company)
+      generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource).toList()
+      final beginDate = LocalDate.parse("2021-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+
+      when:
+      def result = post("$path/complete", financialCalendarDTO)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.path[0] == 'general_ledger'
+      response.message[0] == "Cannot create financial calendar when general_ledger_detail (true) or general_ledger_summary (false) records exist."
+      response.code[0] == 'cynergi.validation.general.ledger.records.block.fincal.creation'
+
+   }
 }
