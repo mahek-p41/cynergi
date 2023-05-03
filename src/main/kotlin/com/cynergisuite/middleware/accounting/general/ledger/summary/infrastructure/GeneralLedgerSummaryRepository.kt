@@ -578,7 +578,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          	select glDetail.*, finCal.period_from, finCal.period_to, finCal.overall_period_id, finCal.period, srcCodes.value from general_ledger_detail glDetail
          	join general_ledger_source_codes srcCodes on glDetail.source_id = srcCodes.id
          	join financial_calendar finCal on glDetail.company_id = finCal.company_id and glDetail.date >= finCal.period_from and glDetail.date <= finCal.period_to
-         	where glDetail.company_id = :comp_id and overall_period_id IN (3, 4) and srcCodes.value != 'BAL'
+         	where glDetail.company_id = :comp_id and glDetail.deleted = FALSE AND overall_period_id IN (3, 4) and srcCodes.value != 'BAL'
          ), detailSums as (
          	select account_id, profit_center_id_sfk, overall_period_id, period,
 			 case when glDetail.period = 1 then sum(amount) else null end as total1,
