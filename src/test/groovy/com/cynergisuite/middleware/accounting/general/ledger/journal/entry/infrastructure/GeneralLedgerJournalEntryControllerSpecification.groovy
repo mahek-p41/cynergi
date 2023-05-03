@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankRecon
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarGLAPDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
@@ -38,7 +39,6 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
 
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final account = accountDataLoaderService.single(company)
@@ -58,16 +58,10 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
       def glJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs, false)
 
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80), LocalDate.now(), LocalDate.now().plusMonths(1))
 
       when:
-      put("/accounting/financial-calendar/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when: 'open GL in financial calendar'
-      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)
@@ -104,7 +98,6 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
 
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final account1 = accountDataLoaderService.single(company)
@@ -125,16 +118,10 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
       def glJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), true, glJournalEntryDetailDTOs, false)
 
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80), LocalDate.now(), LocalDate.now().plusMonths(1))
 
       when:
-      put("/accounting/financial-calendar/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when: 'open GL in financial calendar'
-      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)
@@ -177,7 +164,6 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
 
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final account1 = accountDataLoaderService.single(company)
@@ -198,16 +184,15 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
       def glJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), true, glJournalEntryDetailDTOs, true)
 
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80), LocalDate.now(), LocalDate.now().plusMonths(1))
 
       when:
-      put("/accounting/financial-calendar/open-ap", dateRangeAP)
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)
 
       when: 'create journal entry'
-      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
       def result = post(path, glJournalEntryDTO)
 
       then:
@@ -240,7 +225,6 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
 
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final account = accountDataLoaderService.single(company)
@@ -261,16 +245,10 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       def glJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs, false)
       glJournalEntryDTO["$nonNullableProp"] = null
 
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80), LocalDate.now(), LocalDate.now().plusMonths(1))
 
       when:
-      put("/accounting/financial-calendar/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when: 'open GL in financial calendar'
-      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)
@@ -297,7 +275,6 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
 
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final account = accountDataLoaderService.single(company)
@@ -318,16 +295,10 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       def glJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs, false)
       glJournalEntryDTO.source = new GeneralLedgerSourceCodeDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702'), 'Z', 'Invalid DTO')
 
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80), LocalDate.now(), LocalDate.now().plusMonths(1))
 
       when:
-      put("/accounting/financial-calendar/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when: 'open GL in financial calendar'
-      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)
@@ -348,7 +319,6 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
 
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final account = accountDataLoaderService.single(company)
@@ -372,16 +342,10 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       }
       bankFactoryService.single(company, profitCenter, account)
 
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80), LocalDate.now(), LocalDate.now().plusMonths(1))
 
       when:
-      put("/accounting/financial-calendar/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when: 'open GL in financial calendar'
-      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)
@@ -404,7 +368,6 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
 
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final account = accountDataLoaderService.single(company)
@@ -430,16 +393,10 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
          it.bankType = new BankReconciliationTypeDTO(bankReconciliationTypeDataLoaderService.random())
       }
 
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80), LocalDate.now(), LocalDate.now().plusMonths(1))
 
       when:
-      put("/accounting/financial-calendar/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when: 'open GL in financial calendar'
-      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)
@@ -462,7 +419,6 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
 
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final account1 = accountDataLoaderService.single(company)
@@ -500,16 +456,10 @@ class GeneralLedgerJournalEntryControllerSpecification extends ControllerSpecifi
       secondGLJournalEntryDetailDebitDTOs.addAll(secondGLJournalEntryDetailCreditDTOs)
       def secondGLJournalEntryDTO = dataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, secondGLJournalEntryDetailDebitDTOs, false)
 
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80), LocalDate.now(), LocalDate.now().plusMonths(1))
 
       when:
-      put("/accounting/financial-calendar/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when: 'open GL in financial calendar'
-      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)
