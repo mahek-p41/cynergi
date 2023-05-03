@@ -87,6 +87,11 @@ class FinancialCalendarService @Inject constructor(
       financialCalendarRepository.openAPAccountsForPeriods(toBeOpened, company)
    }
 
+   fun openGLAPAccountsForPeriods(dateRangeDTO: FinancialCalendarGLAPDateRangeDTO, company: CompanyEntity) {
+      val toBeOpened = financialCalendarValidator.validateOpenGLAPDates(dateRangeDTO)
+      financialCalendarRepository.openGLAPAccountsForPeriods(toBeOpened, company)
+   }
+
    fun fetchDateRangeWhenGLIsOpen(company: CompanyEntity): Pair<LocalDate, LocalDate>? =
       financialCalendarRepository.findDateRangeWhenGLIsOpen(company)
 

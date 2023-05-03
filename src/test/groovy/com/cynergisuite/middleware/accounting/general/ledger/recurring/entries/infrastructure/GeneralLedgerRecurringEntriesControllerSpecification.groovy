@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarGLAPDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
@@ -787,19 +788,12 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       filterRequest['entryDate'] = glRecurringDTO.lastTransferDate.atStartOfDay(ZoneId.of("-05:00")).toLocalDate()
       filterRequest['employeeNumber'] = employee.number
 
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(80))
       final glDetailPage = new GeneralLedgerDetailPageRequest([account: acct.number, profitCenter: store.myNumber(), fiscalYear: entryDate.getYear(), from: glRecurringDTO.beginDate.minusDays(20), thru: glRecurringDTO.endDate.plusDays(20)])
 
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(30))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(entryDate, entryDate.plusDays(80), entryDate, entryDate.plusDays(30))
 
       when:
-      put("/accounting/financial-calendar/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when: 'open GL in financial calendar'
-      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)
@@ -912,19 +906,12 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       filterRequest['employeeNumber'] = employee.number
 
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate, true, true).collect()
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(90))
       final glDetailPage = new GeneralLedgerDetailPageRequest([account: acct.number, profitCenter: store.myNumber(), fiscalYear: entryDate.getYear(), from: glRecurringDTO.beginDate.minusDays(20), thru: glRecurringDTO.endDate.plusDays(20)])
 
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(60))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(entryDate, entryDate.plusDays(90), entryDate, entryDate.plusDays(60))
 
       when:
-      put("/accounting/financial-calendar/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when: 'open GL in financial calendar'
-      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)
@@ -1028,18 +1015,11 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       filterRequest['employeeNumber'] = employee.number
 
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate, true, true).collect()
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(80))
 
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(30))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(entryDate, entryDate.plusDays(80), entryDate, entryDate.plusDays(30))
 
       when:
-      put("/accounting/financial-calendar/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when: 'open GL in financial calendar'
-      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)
@@ -1113,18 +1093,11 @@ class GeneralLedgerRecurringEntriesControllerSpecification extends ControllerSpe
       filterRequest['employeeNumber'] = employee.number
 
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, entryDate, true, true).collect()
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(80))
 
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(entryDate, entryDate.plusDays(30))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(entryDate, entryDate.plusDays(80), entryDate, entryDate.plusDays(30))
 
       when:
-      put("/accounting/financial-calendar/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when: 'open GL in financial calendar'
-      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)

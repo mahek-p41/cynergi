@@ -15,6 +15,7 @@ import com.cynergisuite.middleware.accounting.account.AccountTypeFactory
 import com.cynergisuite.middleware.accounting.account.AccountTypeFactoryService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarGLAPDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
@@ -599,7 +600,6 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
       final periodFrom = LocalDate.now()
       final periodTo = LocalDate.now().plusDays(80)
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(periodFrom, periodTo)
 
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final status = new AccountStatusType(1, 'A', 'Active', 'active')
@@ -644,16 +644,10 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
             break
       }
 
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(1))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(periodFrom, periodTo, LocalDate.now(), LocalDate.now().plusMonths(1))
 
       when:
-      put("/accounting/financial-calendar/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when: 'open GL in financial calendar'
-      put("/accounting/financial-calendar/open-gl", dateRangeDTO)
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)

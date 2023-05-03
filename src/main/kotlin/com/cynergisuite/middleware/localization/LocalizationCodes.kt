@@ -53,6 +53,7 @@ class CalendarDatesSpanMoreThanTwoYears(from: LocalDate, thru: LocalDate) : Cyne
 class PendingJEsFoundForCurrentFiscalYear(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.pending.jes.found.for.current.year", arrayOf(from, thru))
 class GLDatesSelectedOutsideAPDatesSet(fromGL: LocalDate, thruGL: LocalDate, fromAP: LocalDate, thruAP: LocalDate) : Cynergi("cynergi.validation.gl.not.encompassing.ap.window", arrayOf(fromGL, thruGL, fromAP, thruAP))
 class APDatesSelectedOutsideGLDatesSet(fromAP: LocalDate, thruAP: LocalDate, fromGL: LocalDate, thruGL: LocalDate) : Cynergi("cynergi.validation.ap.outside.of.gl.window", arrayOf(fromAP, thruAP, fromGL, thruGL))
+class APDatesSelectedOutsideGLDatesSelected(fromAP: LocalDate, thruAP: LocalDate, fromGL: LocalDate, thruGL: LocalDate) : Cynergi("cynergi.validation.ap.outside.of.gl.window", arrayOf(fromAP, thruAP, fromGL, thruGL))
 class DatesSelectedMustBeWithinFinancialCalendar(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.dates.not.in.financial.calendar", arrayOf(from, thru))
 class DatesMustBeWithinCurrentOrNextFiscalYear(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.dates.not.in.current.or.next.fiscal.year", arrayOf(from, thru))
 class SourceCodeDoesNotExist(value: String) : Cynergi("cynergi.validation.source.code.does.not.exist", arrayOf(value))

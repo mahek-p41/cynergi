@@ -235,50 +235,23 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       given:
       final tstds1 = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(120))
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now().plusDays(7), LocalDate.now().plusDays(80))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(120), LocalDate.now().plusDays(7), LocalDate.now().plusDays(80))
 
       when:
-      put("$path/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when:
-      put("$path/open-gl", dateRangeGL)
+      put("$path/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)
    }
 
-   void "modify the open ap range" () {
+    void "fetch gl open date range" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRangeDTO = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(80))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(9), LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(7))
 
       when:
-      put("$path/open-ap", dateRangeDTO)
-
-      then:
-      notThrown(Exception)
-   }
-
-   void "fetch gl open date range" () {
-      given:
-      final tstds1 = companyFactoryService.forDatasetCode('coravt')
-      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(9))
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(7))
-
-      when:
-      put("$path/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when: 'open GL for a date range'
-      put("$path/open-gl", dateRangeGL)
+      put("$path/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)
@@ -289,25 +262,18 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       then:
       notThrown(Exception)
       result != null
-      result.first == dateRangeGL.periodFrom.toString()
-      result.second == dateRangeGL.periodTo.plusMonths(1).minusDays(1).toString()
+      result.first == dateRanges.glPeriodFrom.toString()
+      result.second == dateRanges.glPeriodTo.plusMonths(1).minusDays(1).toString()
    }
 
    void "fetch ap open date range" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(9))
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(7))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(9), LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(7))
 
       when:
-      put("$path/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when: 'open GL for a date range'
-      put("$path/open-gl", dateRangeGL)
+      put("$path/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)
@@ -318,80 +284,18 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       then:
       notThrown(Exception)
       result != null
-      result.first == dateRangeAP.periodFrom.toString()
-      result.second == dateRangeAP.periodTo.plusMonths(1).minusDays(1).toString()
+      result.first == dateRanges.apPeriodFrom.toString()
+      result.second == dateRanges.apPeriodTo.plusMonths(1).minusDays(1).toString()
    }
 
    void "try to open gl account starting after the open ap range" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(7))
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(7))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(7), LocalDate.now(), LocalDate.now().plusMonths(7))
 
       when:
-      put("$path/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when:
-      put("$path/open-gl", dateRangeGL)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.code[0] == 'cynergi.validation.gl.not.encompassing.ap.window'
-      response.message[0] == 'The GL open range chosen must encompass the whole open AP range'
-   }
-
-   void "try to open gl account ending before the open ap range" () {
-      given:
-      final tstds1 = companyFactoryService.forDatasetCode('coravt')
-      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(6))
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(7))
-
-      when:
-      put("$path/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when:
-      put("$path/open-gl", dateRangeGL)
-
-      then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.code[0] == 'cynergi.validation.gl.not.encompassing.ap.window'
-      response.message[0] == 'The GL open range chosen must encompass the whole open AP range'
-   }
-
-   void "set ap and gl range to the same thing then try to open ap starting before the open gl range" () {
-      given:
-      final tstds1 = companyFactoryService.forDatasetCode('coravt')
-      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().withDayOfMonth(1), true, true).collect()
-      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1).withDayOfMonth(1), LocalDate.now().plusMonths(7).withDayOfMonth(LocalDate.now().plusMonths(7).getMonth().length(LocalDate.now().plusMonths(7).isLeapYear())))
-      final dateRangeAP1 = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1).withDayOfMonth(1), LocalDate.now().plusMonths(7).withDayOfMonth(LocalDate.now().plusMonths(7).getMonth().length(LocalDate.now().plusMonths(7).isLeapYear())))
-      final dateRangeAP2 = new FinancialCalendarDateRangeDTO(LocalDate.now().withDayOfMonth(1), LocalDate.now().plusMonths(6).withDayOfMonth(LocalDate.now().plusMonths(6).getMonth().length(LocalDate.now().plusMonths(6).isLeapYear())))
-
-      when:
-      put("$path/open-ap", dateRangeAP1)
-
-      then:
-      notThrown(Exception)
-
-      when:
-      put("$path/open-gl", dateRangeGL)
-
-      then:
-      notThrown(Exception)
-
-      when:
-      put("$path/open-ap", dateRangeAP2)
+      put("$path/open-gl-ap", dateRanges)
 
       then:
       def exception = thrown(HttpClientResponseException)
@@ -401,34 +305,48 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       response.message[0] == 'The AP open range chosen must be within the open GL range'
    }
 
-   void "try to set the open gl window when no ap window is open" () {
+   void "try to open gl account ending before the open ap range" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('coravt')
-      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().plusMonths(1), false, false).collect()
-      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(7))
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(6), LocalDate.now(), LocalDate.now().plusMonths(7))
 
       when:
-      put("$path/open-gl", dateRangeGL)
-
-      then:
-      notThrown(Exception)
-   }
-
-   void "try to set the open ap window when no gl window is open" () {
-      given:
-      final tstds1 = companyFactoryService.forDatasetCode('coravt')
-      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().plusMonths(1), false, false).collect()
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(7))
-
-      when:
-      put("$path/open-ap", dateRangeAP)
+      put("$path/open-gl-ap", dateRanges)
 
       then:
       def exception = thrown(HttpClientResponseException)
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.code[0] == 'cynergi.validation.gl.must.be.open.to.open.ap.range'
-      response.message[0] == 'Must set an open GL range before setting an open AP range'
+      response.code[0] == 'cynergi.validation.ap.outside.of.gl.window'
+      response.message[0] == 'The AP open range chosen must be within the open GL range'
+   }
+
+   void "set ap and gl range to the same thing then try to open ap starting before the open gl range" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().withDayOfMonth(1), true, true).collect()
+      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1).withDayOfMonth(1), LocalDate.now().plusMonths(7).withDayOfMonth(LocalDate.now().plusMonths(7).getMonth().length(LocalDate.now().plusMonths(7).isLeapYear())))
+      final dateRangeAP1 = new FinancialCalendarDateRangeDTO(LocalDate.now().plusMonths(1).withDayOfMonth(1), LocalDate.now().plusMonths(7).withDayOfMonth(LocalDate.now().plusMonths(7).getMonth().length(LocalDate.now().plusMonths(7).isLeapYear())))
+      final dateRangeAP2 = new FinancialCalendarDateRangeDTO(LocalDate.now().withDayOfMonth(1), LocalDate.now().plusMonths(6).withDayOfMonth(LocalDate.now().plusMonths(6).getMonth().length(LocalDate.now().plusMonths(6).isLeapYear())))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now().plusMonths(1).withDayOfMonth(1), LocalDate.now().plusMonths(7).withDayOfMonth(LocalDate.now().plusMonths(7).getMonth().length(LocalDate.now().plusMonths(7).isLeapYear())), LocalDate.now().plusMonths(1).withDayOfMonth(1), LocalDate.now().plusMonths(7).withDayOfMonth(LocalDate.now().plusMonths(7).getMonth().length(LocalDate.now().plusMonths(7).isLeapYear())))
+      final dateRanges2 = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now().plusMonths(1).withDayOfMonth(1), LocalDate.now().plusMonths(7).withDayOfMonth(LocalDate.now().plusMonths(7).getMonth().length(LocalDate.now().plusMonths(7).isLeapYear())), LocalDate.now().withDayOfMonth(1), LocalDate.now().plusMonths(6).withDayOfMonth(LocalDate.now().plusMonths(6).getMonth().length(LocalDate.now().plusMonths(6).isLeapYear())))
+
+      when:
+      put("$path/open-gl-ap", dateRanges)
+
+      then:
+      notThrown(Exception)
+
+      when:
+      put("$path/open-gl-ap", dateRanges2)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.code[0] == 'cynergi.validation.ap.outside.of.gl.window'
+      response.message[0] == 'The AP open range chosen must be within the open GL range'
    }
 
    void "create fiscal calendar year" () {
@@ -606,17 +524,10 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       final tstds2 = companyFactoryService.forDatasetCode('corrto')
       financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
       financialCalendarDataLoaderService.streamFiscalYear(tstds2, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRangeGL = new FinancialCalendarDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(120))
-      final dateRangeAP = new FinancialCalendarDateRangeDTO(LocalDate.now().plusDays(7), LocalDate.now().plusDays(80))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now(), LocalDate.now().plusDays(120), LocalDate.now().plusDays(7), LocalDate.now().plusDays(80))
 
       when:
-      put("$path/open-ap", dateRangeAP)
-
-      then:
-      notThrown(Exception)
-
-      when:
-      put("$path/open-gl", dateRangeGL)
+      put("$path/open-gl-ap", dateRanges)
 
       then:
       notThrown(Exception)

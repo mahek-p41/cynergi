@@ -13,6 +13,7 @@ import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarEntity
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarGLAPDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FiscalYearDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodType
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
@@ -330,6 +331,116 @@ class FinancialCalendarRepository @Inject constructor(
       )
 
       logger.info("Affected row count when opening APAccounts {}", newAffectedRowCount)
+   }
+
+   @Transactional
+   fun openGLAPAccountsForPeriods(dateRangeDTO: FinancialCalendarGLAPDateRangeDTO, company: CompanyEntity) {
+      logger.debug("Set GLAccounts to false")
+
+      logger.info("Closing GL Account range for company {}", company.id)
+
+      val glAffectedRowCount = jdbc.update(
+         """
+         UPDATE financial_calendar
+         SET
+            general_ledger_open = :general_ledger_open
+         WHERE financial_calendar.id IN (
+            select finCal.id FROM financial_calendar finCal
+               JOIN company ON finCal.company_id = company.id AND company.deleted = FALSE
+               JOIN overall_period_type_domain overallPeriod ON overallPeriod.id = finCal.overall_period_id
+               WHERE ((finCal.company_id = :comp_id) AND (overallPeriod.value = :financial_period1 OR overallPeriod.value = :financial_period2)))
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "financial_period1" to "C",
+            "financial_period2" to "N",
+            "general_ledger_open" to false
+         )
+      )
+
+      logger.info("Affected row count {}", glAffectedRowCount)
+
+      logger.debug("Set GLAccounts to true for selected period(s)")
+
+      logger.info("Opening GL Account range for company {}", company.id)
+
+      val glNewAffectedRowCount = jdbc.update(
+         """
+         UPDATE financial_calendar finCal
+         SET
+            general_ledger_open = :general_ledger_open
+         FROM overall_period_type_domain overallPeriod
+         WHERE overallPeriod.id = finCal.overall_period_id
+            AND finCal.company_id = :comp_id
+            AND (overallPeriod.value = :financial_period1 OR
+                 overallPeriod.value = :financial_period2)
+            AND finCal.period_from BETWEEN :from_date AND :to_date
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "financial_period1" to "C",
+            "financial_period2" to "N",
+            "general_ledger_open" to true,
+            "from_date" to dateRangeDTO.glPeriodFrom,
+            "to_date" to dateRangeDTO.glPeriodTo
+         )
+      )
+
+      logger.info("Affected row count when opening GLAccounts {}", glNewAffectedRowCount)
+
+      logger.debug("Set APAccounts to false")
+
+      logger.info("Closing AP Account range for company {}", company.id)
+
+      val apAffectedRowCount = jdbc.update(
+         """
+         UPDATE financial_calendar
+         SET
+            account_payable_open = :account_payable_open
+         WHERE financial_calendar.id IN (
+            select finCal.id FROM financial_calendar finCal
+               JOIN company ON finCal.company_id = company.id AND company.deleted = FALSE
+               JOIN overall_period_type_domain overallPeriod ON overallPeriod.id = finCal.overall_period_id
+               WHERE ((finCal.company_id = :comp_id) AND (overallPeriod.value = :financial_period1 OR overallPeriod.value = :financial_period2)))
+
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "financial_period1" to "C",
+            "financial_period2" to "N",
+            "account_payable_open" to false
+         )
+      )
+
+      logger.info("Affected row count {}", apAffectedRowCount)
+
+      logger.debug("Set APAccounts to true for selected period(s)")
+
+      logger.info("Opening AP Account range for company {}", company.id)
+
+      val apNewAffectedRowCount = jdbc.update(
+         """
+         UPDATE financial_calendar finCal
+         SET
+            account_payable_open = :account_payable_open
+         FROM overall_period_type_domain overallPeriod
+         WHERE overallPeriod.id = finCal.overall_period_id
+            AND finCal.company_id = :comp_id
+            AND (overallPeriod.value = :financial_period1 OR
+                 overallPeriod.value = :financial_period2)
+            AND finCal.period_from BETWEEN :from_date AND :to_date
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "financial_period1" to "C",
+            "financial_period2" to "N",
+            "account_payable_open" to true,
+            "from_date" to dateRangeDTO.apPeriodFrom,
+            "to_date" to dateRangeDTO.apPeriodTo
+         )
+      )
+
+      logger.info("Affected row count when opening APAccounts {}", apNewAffectedRowCount)
    }
 
    @ReadOnly
