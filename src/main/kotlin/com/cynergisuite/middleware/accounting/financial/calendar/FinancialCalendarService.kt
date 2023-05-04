@@ -41,15 +41,15 @@ class FinancialCalendarService @Inject constructor(
       return transformEntity(financialCalendarRepository.insert(toCreate, company))
    }
 
-   fun create(date: LocalDate, year: Int, company: CompanyEntity): List<FinancialCalendarDTO> {
+   fun create(date: LocalDate, company: CompanyEntity): List<FinancialCalendarDTO> {
       val overallPeriods = overallPeriodTypeService.fetchAll()
       val calList: MutableList<FinancialCalendarEntity> = mutableListOf()
       for (overallPeriod in overallPeriods) {
          for (j in 1..12) {
-            val baseDate = date.plusYears(overallPeriod.id - 3L)
+            val baseDate = date.plusYears(overallPeriod.id - 1L)
             val periodFrom = baseDate.plusMonths(j - 1L)
             val periodTo = periodFrom.plusMonths(1).minusDays(1)
-            val fiscalYear = year.plus(overallPeriod.id - 3)
+            val fiscalYear = date.year.plus(overallPeriod.id - 1)
             val dto = FinancialCalendarDTO(
                null,
                overallPeriod = OverallPeriodTypeDTO(overallPeriod),

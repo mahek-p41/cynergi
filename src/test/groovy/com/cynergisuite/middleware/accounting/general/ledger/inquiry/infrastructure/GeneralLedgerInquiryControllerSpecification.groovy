@@ -21,8 +21,8 @@ class GeneralLedgerInquiryControllerSpecification extends ControllerSpecificatio
    void "fetch one" () {
       given:
       final acct = accountDataLoaderService.single(tstds1)
-      final beginDate = LocalDate.parse("2021-11-09")
-      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+      final beginDate = LocalDate.parse("2020-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
       final filterRequest = new GeneralLedgerInquiryFilterRequest([account: acct.number, profitCenter: store3Tstds1.myNumber(), fiscalYear: 2022])
 
       when:

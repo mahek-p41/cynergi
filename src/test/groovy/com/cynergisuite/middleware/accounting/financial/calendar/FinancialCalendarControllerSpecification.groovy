@@ -381,7 +381,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
    void "create complete financial calendar and fetch fiscal years" () {
       given:
       final beginDate = LocalDate.parse("2021-11-09")
-      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
 
       when:
       def result = post("$path/complete", financialCalendarDTO)
@@ -417,9 +417,9 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       fiscalYears != null
       fiscalYears.size() == 4
       with(fiscalYears[0]) {
-         begin == '2019-11-09'
-         end == '2020-11-08'
-         fiscalYear == 2020
+         begin == '2021-11-09'
+         end == '2022-11-08'
+         fiscalYear == 2021
          with(overallPeriod) {
             value == 'R'
             abbreviation == 'Prior to Prev'
@@ -427,9 +427,9 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
          }
       }
       with(fiscalYears[2]) {
-         begin == '2021-11-09'
-         end == '2022-11-08'
-         fiscalYear == 2022
+         begin == '2023-11-09'
+         end == '2024-11-08'
+         fiscalYear == 2023
          with(overallPeriod) {
             value == 'C'
             abbreviation == 'Curr'
@@ -441,7 +441,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
    void "starting date not in financial calendar" () {
       given:
       final beginDate = LocalDate.parse("2021-11-09")
-      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
 
       final testDate = LocalDate.parse("2000-01-01")
       def filterRequest = new FinancialCalendarValidateDatesFilterRequest([fromDate: testDate])
@@ -467,7 +467,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
    void "ending date not in financial calendar" () {
       given:
       final beginDate = LocalDate.parse("2021-11-09")
-      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
 
       final testDate = LocalDate.parse("2030-01-01")
       def filterRequest = new FinancialCalendarValidateDatesFilterRequest([fromDate: testDate])
@@ -493,7 +493,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
    void "starting and ending dates not in same fiscal year" () {
       given:
       final beginDate = LocalDate.parse("2021-11-09")
-      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
 
       final testStartingDate = LocalDate.parse("2021-12-01")
       final testEndingDate = LocalDate.parse("2023-01-01")
@@ -600,7 +600,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final beginDate = LocalDate.parse("2021-11-09")
-      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
 
       when:
       def result = post("$path/complete", financialCalendarDTO)
@@ -623,7 +623,7 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       final glSource = sourceCodeDataLoaderService.single(company)
       generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource).toList()
       final beginDate = LocalDate.parse("2021-11-09")
-      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
 
       when:
       def result = post("$path/complete", financialCalendarDTO)

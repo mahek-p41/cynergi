@@ -117,10 +117,10 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
       final glSource = sourceCodeDataLoaderService.single(company)
       final beginDate = LocalDate.parse("2021-11-09")
-      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
-      final filterOne = new GeneralLedgerDetailPageRequest([account: glAccount.number, profitCenter: profitCenter.myNumber(), fiscalYear: 2021, from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
+      final filterOne = new GeneralLedgerDetailPageRequest([account: glAccount.number, profitCenter: profitCenter.myNumber(), fiscalYear: 2022, from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
       final filterTwo = new GeneralLedgerDetailPageRequest([account: glAccount2.number, profitCenter: profitCenter.myNumber(), fiscalYear: 202, from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
-      final filterThree = new GeneralLedgerDetailPageRequest([account: glAccount.number, fiscalYear: 2021, from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
+      final filterThree = new GeneralLedgerDetailPageRequest([account: glAccount.number, fiscalYear: 2022, from: OffsetDateTime.now().minusDays(90).toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate()])
 
       when:
       def result1 = post("/accounting/financial-calendar/complete", financialCalendarDTO)
@@ -917,10 +917,10 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glSrcCode = sourceCodeDataLoaderService.single(company)
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
-      final beginDate = LocalDate.now().minusYears(1).plusMonths(1)
-      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: LocalDate.now().year, periodFrom: beginDate])
-      final filterRequest1 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: acct.number, profitCenter: store.myNumber(), fiscalYear: LocalDate.now().year])
-      final filterRequest2 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: 9999, profitCenter: store.myNumber(), fiscalYear: LocalDate.now().year])
+      final beginDate = LocalDate.now().minusYears(3).plusMonths(1)
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
+      final filterRequest1 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: acct.number, profitCenter: store.myNumber(), fiscalYear: LocalDate.now().minusYears(1).year])
+      final filterRequest2 = new GeneralLedgerDetailFilterRequest([from: OffsetDateTime.now().toLocalDate(), thru: OffsetDateTime.now().plusDays(10).toLocalDate(), account: 9999, profitCenter: store.myNumber(), fiscalYear: LocalDate.now().minusYears(1).year])
 
       when:
       def result1 = post("/accounting/financial-calendar/complete", financialCalendarDTO)

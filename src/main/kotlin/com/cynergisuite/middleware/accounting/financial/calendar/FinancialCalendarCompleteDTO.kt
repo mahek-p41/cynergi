@@ -10,10 +10,6 @@ import javax.validation.constraints.NotNull
 class FinancialCalendarCompleteDTO {
 
    @field:NotNull
-   @field:Schema(description = "Current Fiscal Year.")
-   var year: Int? = null
-
-   @field:NotNull
    @field:Schema(description = "Beginning period.")
    var periodFrom: LocalDate? = null
 }
