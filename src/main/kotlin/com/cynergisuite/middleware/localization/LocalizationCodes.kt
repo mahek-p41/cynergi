@@ -67,6 +67,7 @@ class AccountIsRequired(account: AccountEntity?) : Cynergi("cynergi.validation.a
 class PercentTotalGreaterThan100(percent: BigDecimal) : Cynergi("cynergi.validation.percent.total.greater.than.100", arrayOf(percent))
 class BalanceMustBeZero(balance: BigDecimal) : Cynergi("cynergi.validation.balance.must.be.zero", arrayOf(balance))
 class GLNotOpen(date: LocalDate) : Cynergi("cynergi.validation.gl.not.open", arrayOf(date))
+class GLNotInBalance() : Cynergi("cynergi.validation.gl.not.in.balance", emptyArray())
 class GeneralLedgerRecordsBlockFinCalCreation(generalLedgerDetailExists: Boolean, generalLedgerSummaryExists: Boolean) : Cynergi("cynergi.validation.general.ledger.records.block.fincal.creation", arrayOf(generalLedgerDetailExists, generalLedgerSummaryExists))
 class ProfitCenterMustMatchBankProfitCenter(profitCenter: StoreEntity) : Cynergi("cynergi.validation.profit.center.must.match.bank.profit.center", arrayOf(profitCenter))
 class DatesMustBeInSameFiscalYear(startDate: LocalDate, endDate: LocalDate) : Cynergi("cynergi.validation.dates.must.be.in.same.fiscal.year", arrayOf(startDate, endDate))

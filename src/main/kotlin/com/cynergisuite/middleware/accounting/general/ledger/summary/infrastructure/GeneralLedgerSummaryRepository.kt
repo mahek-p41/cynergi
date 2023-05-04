@@ -622,6 +622,30 @@ class GeneralLedgerSummaryRepository @Inject constructor(
       val found = jdbc.update(query, mapOf("comp_id" to company.id))
    }
 
+   fun isGLBalanceForCurrentYear(companyId: UUID): Boolean {
+      logger.info("Checking if GL is balance for current year:")
+      return jdbc.queryForObject(
+         """SELECT
+                   CASE
+                       WHEN SUM(COALESCE(net_activity_period_1, 0) + COALESCE(net_activity_period_2, 0) +
+                               COALESCE(net_activity_period_3, 0) + COALESCE(net_activity_period_4, 0) +
+                               COALESCE(net_activity_period_5, 0) + COALESCE(net_activity_period_6, 0) +
+                               COALESCE(net_activity_period_7, 0) + COALESCE(net_activity_period_8, 0) +
+                               COALESCE(net_activity_period_9, 0) + COALESCE(net_activity_period_10, 0) +
+                               COALESCE(net_activity_period_11, 0) + COALESCE(net_activity_period_12, 0)) = 0
+                           THEN true
+                       ELSE false
+                   END AS result
+               FROM
+                   general_ledger_summary
+               WHERE
+                   company_id = :comp_id AND
+                   overall_period_id = 3
+         """,
+         mapOf("comp_id" to companyId),
+         Boolean::class.java
+      )
+   }
 
 
    private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): GeneralLedgerSummaryEntity {
