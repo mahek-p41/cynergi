@@ -32,7 +32,7 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
    void "end current year with no pending journal entries" () {
       given:
       final beginDate = LocalDate.parse("2021-11-09")
-      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
       final company = companyFactoryService.forDatasetCode('coravt')
       final company2 = companyFactoryService.forDatasetCode('corrto')
       final capitalAccount = accountDataLoaderService.single(company, AccountStatusFactory.predefined().find {it.value == "A" }, AccountTypeFactory.predefined().find {it.value == "C" })
@@ -56,14 +56,14 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
 
    void "end current year with pending journal entries and capital account" () {
       given:
-      final beginDate = LocalDate.parse("2021-11-09")
-      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+      final beginDate = LocalDate.parse("2019-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
       final company = companyFactoryService.forDatasetCode('coravt')
       final company2 = companyFactoryService.forDatasetCode('corrto')
       final capitalAccount = accountDataLoaderService.single(company, AccountStatusFactory.predefined().find {it.value == "A" }, AccountTypeFactory.predefined().find {it.value == "C" })
       final store = storeFactoryService.store(3, company)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company, "BAL")
-      glJournalDataLoaderService.stream(12, company, capitalAccount, store, beginDate.plusMonths(1), glSourceCode).toList()
+      glJournalDataLoaderService.stream(12, company, capitalAccount, store, beginDate.plusYears(2).plusMonths(1), glSourceCode).toList()
       glJournalDataLoaderService.stream(1, company2, capitalAccount, store, LocalDate.now(), glSourceCode).toList()
       def body = new EndYearProceduresDTO(new SimpleIdentifiableDTO(capitalAccount), new SimpleLegacyIdentifiableDTO(store.myId()))
 
@@ -87,14 +87,14 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
 
    void "end current year with pending journal entries and non capital account" () {
       given:
-      final beginDate = LocalDate.parse("2021-11-09")
-      final financialCalendarDTO = new FinancialCalendarCompleteDTO([year: 2022, periodFrom: beginDate])
+      final beginDate = LocalDate.parse("2019-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
       final company = companyFactoryService.forDatasetCode('coravt')
       final company2 = companyFactoryService.forDatasetCode('corrto')
       final conCapitalAccount = accountDataLoaderService.single(company, AccountStatusFactory.predefined().find {it.value == "A" }, AccountTypeFactory.predefined().find {it.value != "C" })
       final store = storeFactoryService.store(3, company)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company, "BAL")
-      glJournalDataLoaderService.stream(12, company, conCapitalAccount, store, beginDate.plusMonths(1), glSourceCode).toList()
+      glJournalDataLoaderService.stream(12, company, conCapitalAccount, store, beginDate.plusYears(2).plusMonths(1), glSourceCode).toList()
       glJournalDataLoaderService.stream(1, company2, conCapitalAccount, store, LocalDate.now(), glSourceCode).toList()
       def body = new EndYearProceduresDTO(new SimpleIdentifiableDTO(conCapitalAccount), new SimpleLegacyIdentifiableDTO(store.myId()))
 

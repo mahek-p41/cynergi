@@ -206,8 +206,7 @@ class FinancialCalendarController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
       val date = createDate.periodFrom!!
-      val year = createDate.year!!
-      val response = financialCalendarService.create(date, year, user.myCompany())
+      val response = financialCalendarService.create(date, user.myCompany())
 
       logger.debug("Requested Create Financial Calendar {} resulted in {}", date, response)
 
