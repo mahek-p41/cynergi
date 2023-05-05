@@ -37,6 +37,6 @@ class VendorStatisticsFilterRequest(
 
    override fun myToStringValues(): List<Pair<String, Any?>> =
       listOf(
-         "vendor" to vendorId
+         "vendorId" to vendorId
       )
 }

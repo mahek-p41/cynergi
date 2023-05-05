@@ -23,6 +23,6 @@ data class VendorStatisticsDTO(
    var ptdPaid: BigDecimal? = null,
 
    @field:Schema(name = "unpaidAmounts", description = "Total unpaid amount and unpaid amount by AP Invoice due date")
-   var unpaidAmounts: VendorStatisticsUnpaidAmountsEntity? = null,
+   var unpaidAmounts: VendorStatisticsUnpaidAmountsEntity = VendorStatisticsUnpaidAmountsEntity(),
 
 )

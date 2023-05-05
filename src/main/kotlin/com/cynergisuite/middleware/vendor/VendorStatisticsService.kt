@@ -24,12 +24,12 @@ class VendorStatisticsService @Inject constructor(
       val dto = VendorStatisticsDTO(vendorDTO)
       val ytdRange = Pair(financialCalendarRepository.findFirstDateOfFiscalYear(company, 3), financialCalendarRepository.findEndDateOfFiscalYear(company, 3))
       val ptdRange = financialCalendarRepository.findDateRangeWhenAPIsOpen(company)
-      val unpaidAmtsByDate = vendorStatisticsRepository.calculateUnpaidAmounts(vendorDTO.number!!, company)
+      val unpaidAmountsList = vendorStatisticsRepository.calculateUnpaidAmounts(vendorDTO.number!!, company)
 
       dto.ytdPaid = vendorStatisticsRepository.calculatePaid(vendorDTO.number!!, ytdRange, company)
       dto.ptdPaid = vendorStatisticsRepository.calculatePaid(vendorDTO.number!!, ptdRange!!, company)
 
-      unpaidAmtsByDate.forEach {
+      unpaidAmountsList.forEach {
          dto.unpaidAmounts!!.balance += it.first
 
          when {

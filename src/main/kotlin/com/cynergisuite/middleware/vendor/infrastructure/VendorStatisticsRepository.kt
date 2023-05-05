@@ -132,7 +132,7 @@ class VendorStatisticsRepository @Inject constructor(
       return jdbc.queryPaged(
          """
             ${purchaseOrderRepository.selectBaseQuery()}
-            WHERE vendor.company_id = :comp_id AND vendor.id = :vendorId
+            WHERE vendor.v_company_id = :comp_id AND vendor.v_id = :vendorId
             ORDER BY po.number
          """.trimIndent(),
          mapOf(
