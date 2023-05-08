@@ -3,15 +3,19 @@ package com.cynergisuite.middleware.accounting.general.ledger.end.year.infrastru
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountStatusFactory
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.AccountTypeFactory
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarCompleteDTO
-import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarGLAPDateRangeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.end.year.EndYearProceduresDTO
-import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDataLoaderService
+import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDataLoader
+import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -27,36 +31,54 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
    @Inject GeneralLedgerJournalDataLoaderService glJournalDataLoaderService
    @Inject AccountTestDataLoaderService accountDataLoaderService
    @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
-   @Inject GeneralLedgerSummaryDataLoaderService generalLedgerSummaryDataLoaderService
+   @Inject GeneralLedgerJournalEntryDataLoaderService generalLedgerJournalEntryDataLoaderService
 
    void "end current year with no pending journal entries" () {
       given:
-      final beginDate = LocalDate.parse("2021-11-09")
+      final beginDate = LocalDate.now().minusMonths(26)
       final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
       final company = companyFactoryService.forDatasetCode('coravt')
       final company2 = companyFactoryService.forDatasetCode('corrto')
       final capitalAccount = accountDataLoaderService.single(company, AccountStatusFactory.predefined().find {it.value == "A" }, AccountTypeFactory.predefined().find {it.value == "C" })
       final store = storeFactoryService.store(3, company)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company, "BAL")
-      glJournalDataLoaderService.stream(12, company, capitalAccount, store, LocalDate.now(), glSourceCode).toList()
-      glJournalDataLoaderService.stream(1, company2, capitalAccount, store, beginDate.plusMonths(1), glSourceCode).toList()
       def body = new EndYearProceduresDTO(new SimpleIdentifiableDTO(capitalAccount), new SimpleLegacyIdentifiableDTO(store.myId()))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now().minusMonths(2), LocalDate.now().plusMonths(2), LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1))
+
+      def glJournalEntryDetailDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(capitalAccount), new StoreDTO(store), 1000 as BigDecimal).toList()
+      def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(capitalAccount), new StoreDTO(store), -1000 as BigDecimal).toList()
+      glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
+      def glJournalEntryDTO = generalLedgerJournalEntryDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs, false)
 
       when:
       post("/accounting/financial-calendar/complete", financialCalendarDTO)
-      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "R"})
-      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "P"})
-      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "C"})
-      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "N"})
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      when:
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
+
+      then:
+      notThrown(Exception)
+
+      when: 'create journal entries'
+      def result = post("/accounting/general-ledger/journal-entry", glJournalEntryDTO)
+
+      then:
+      notThrown(Exception)
+      result != null
+
+      when:
       post("$path/end-year", body)
 
       then:
       notThrown(HttpClientResponseException)
    }
 
-   void "end current year with pending journal entries and capital account" () {
+   void "end current year with pending journal entries, unbalance GL, and capital account" () {
       given:
-      final beginDate = LocalDate.parse("2019-11-09")
+      final beginDate = LocalDate.now().minusMonths(26)
       final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
       final company = companyFactoryService.forDatasetCode('coravt')
       final company2 = companyFactoryService.forDatasetCode('corrto')
@@ -66,44 +88,21 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
       glJournalDataLoaderService.stream(12, company, capitalAccount, store, beginDate.plusYears(2).plusMonths(1), glSourceCode).toList()
       glJournalDataLoaderService.stream(1, company2, capitalAccount, store, LocalDate.now(), glSourceCode).toList()
       def body = new EndYearProceduresDTO(new SimpleIdentifiableDTO(capitalAccount), new SimpleLegacyIdentifiableDTO(store.myId()))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now().minusMonths(2), LocalDate.now().plusMonths(2), LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1))
 
       when:
       post("/accounting/financial-calendar/complete", financialCalendarDTO)
-      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "R"})
-      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "P"})
-      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "C"})
-      generalLedgerSummaryDataLoaderService.single(company, capitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "N"})
-      post("$path/end-year", body)
 
       then:
-      def exception = thrown(HttpClientResponseException)
-      exception.response.status() == BAD_REQUEST
-      def response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].message == 'Pending Journal Entries found for General Ledger fiscal year to be closed. All pending journal entries for this date range (2021-11-09 -> 2022-11-08) must be posted before the General Ledger fiscal year can be closed.'
-      response[0].code == 'cynergi.validation.pending.jes.found.for.current.year'
-   }
-
-
-   void "end current year with pending journal entries and non capital account" () {
-      given:
-      final beginDate = LocalDate.parse("2019-11-09")
-      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
-      final company = companyFactoryService.forDatasetCode('coravt')
-      final company2 = companyFactoryService.forDatasetCode('corrto')
-      final conCapitalAccount = accountDataLoaderService.single(company, AccountStatusFactory.predefined().find {it.value == "A" }, AccountTypeFactory.predefined().find {it.value != "C" })
-      final store = storeFactoryService.store(3, company)
-      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company, "BAL")
-      glJournalDataLoaderService.stream(12, company, conCapitalAccount, store, beginDate.plusYears(2).plusMonths(1), glSourceCode).toList()
-      glJournalDataLoaderService.stream(1, company2, conCapitalAccount, store, LocalDate.now(), glSourceCode).toList()
-      def body = new EndYearProceduresDTO(new SimpleIdentifiableDTO(conCapitalAccount), new SimpleLegacyIdentifiableDTO(store.myId()))
+      notThrown(HttpClientResponseException)
 
       when:
-      post("/accounting/financial-calendar/complete", financialCalendarDTO)
-      generalLedgerSummaryDataLoaderService.single(company, conCapitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "R"})
-      generalLedgerSummaryDataLoaderService.single(company, conCapitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "P"})
-      generalLedgerSummaryDataLoaderService.single(company, conCapitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "C"})
-      generalLedgerSummaryDataLoaderService.single(company, conCapitalAccount, store, OverallPeriodTypeDataLoader.predefined().find {it.value == "N"})
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
+
+      then:
+      notThrown(Exception)
+
+      when:
       post("$path/end-year", body)
 
       then:
@@ -111,12 +110,53 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 2
-      response[0].message == 'Pending Journal Entries found for General Ledger fiscal year to be closed. All pending journal entries for this date range (2021-11-09 -> 2022-11-08) must be posted before the General Ledger fiscal year can be closed.'
+      response[0].message == "Pending Journal Entries found for General Ledger fiscal year to be closed. All pending journal entries for this date range (${beginDate.plusYears(2)} -> ${beginDate.plusYears(3).minusDays(1)}) must be posted before the General Ledger fiscal year can be closed."
       response[0].code == 'cynergi.validation.pending.jes.found.for.current.year'
-      response[0].path == null
+      response[1].message == 'GL is NOT in Balance'
+      response[1].code == 'cynergi.validation.gl.not.in.balance'
+   }
+
+   void "end current year with pending journal entries, unbalance GL, and non-capital account" () {
+      given:
+      final beginDate = LocalDate.now().minusMonths(26)
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final company2 = companyFactoryService.forDatasetCode('corrto')
+      final nonCapitalAccount = accountDataLoaderService.single(company, AccountStatusFactory.predefined().find {it.value == "A" }, AccountTypeFactory.predefined().find {it.value != "C" })
+      final store = storeFactoryService.store(3, company)
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company, "BAL")
+      glJournalDataLoaderService.stream(12, company, nonCapitalAccount, store, beginDate.plusYears(2).plusMonths(1), glSourceCode).toList()
+      glJournalDataLoaderService.stream(1, company2, nonCapitalAccount, store, LocalDate.now(), glSourceCode).toList()
+      def body = new EndYearProceduresDTO(new SimpleIdentifiableDTO(nonCapitalAccount), new SimpleLegacyIdentifiableDTO(store.myId()))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now().minusMonths(2), LocalDate.now().plusMonths(2), LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1))
+
+      when:
+      post("/accounting/financial-calendar/complete", financialCalendarDTO)
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      when:
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
+
+      then:
+      notThrown(Exception)
+
+      when:
+      post("$path/end-year", body)
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == BAD_REQUEST
+      def response = exception.response.bodyAsJson()
+      response.size() == 3
+      response[0].message == "Pending Journal Entries found for General Ledger fiscal year to be closed. All pending journal entries for this date range (${beginDate.plusYears(2)} -> ${beginDate.plusYears(3).minusDays(1)}) must be posted before the General Ledger fiscal year can be closed."
+      response[0].code == 'cynergi.validation.pending.jes.found.for.current.year'
       response[1].message == 'Must be capital account'
       response[1].code == 'cynergi.validation.must.be'
       response[1].path == 'account'
+      response[2].message == 'GL is NOT in Balance'
+      response[2].code == 'cynergi.validation.gl.not.in.balance'
    }
 
 }
