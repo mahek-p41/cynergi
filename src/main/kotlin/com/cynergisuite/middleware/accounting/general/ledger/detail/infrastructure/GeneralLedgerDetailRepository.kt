@@ -963,7 +963,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
    fun fetchTrialBalanceWorksheetDetails(company: CompanyEntity, filterRequest: TrialBalanceWorksheetFilterRequest): TrialBalanceWorksheetReportTemplate {
       val glDetails = mutableListOf<GeneralLedgerDetailEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder("WHERE glDetail.company_id = :comp_id AND glDetail.deleted = FALSE")
+      val whereClause = StringBuilder("WHERE glDetail.company_id = :comp_id AND glDetail.deleted = FALSE AND source.value NOT LIKE 'BAL'")
 
       if (filterRequest.beginAccount != null || filterRequest.endAccount != null) {
          params["beginAccount"] = filterRequest.beginAccount
@@ -986,13 +986,14 @@ class GeneralLedgerDetailRepository @Inject constructor(
                buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate")
             )
       }
-      params["profitCenter"] = filterRequest.profitCenter
+      if (filterRequest.profitCenter != null) {
+         params["profitCenter"] = filterRequest.profitCenter
+         whereClause.append(" AND glDetail.profit_center_id_sfk = :profitCenter")
+      }
       jdbc.query(
          """
          ${selectBaseQuery()}
          $whereClause
-         AND glDetail.profit_center_id_sfk = :profitCenter
-         AND source.value NOT LIKE 'BAL'
          ORDER BY glDetail.date
       """.trimIndent(),
          params
