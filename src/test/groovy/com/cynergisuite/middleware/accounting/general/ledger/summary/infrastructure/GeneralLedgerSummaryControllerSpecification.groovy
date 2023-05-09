@@ -4,27 +4,24 @@ import com.cynergisuite.domain.GeneralLedgerProfitCenterTrialBalanceReportFilter
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.domain.TrialBalanceWorksheetFilterRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.AccountStatusFactory
 import com.cynergisuite.middleware.accounting.account.AccountStatusType
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
-import com.cynergisuite.middleware.accounting.account.AccountType
 import com.cynergisuite.middleware.accounting.account.AccountTypeFactory
 import com.cynergisuite.middleware.accounting.account.AccountTypeFactoryService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
-import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarGLAPDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
-import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDataLoaderService
-import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDataLoaderService
 import com.cynergisuite.middleware.store.StoreDTO
@@ -940,5 +937,82 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
          beginningBalance == glSumPeriod2.closingBalance
          closingBalance == 0.00
       }
+   }
+
+   void "filter for trial balance worksheet report #criteria" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
+      final periodFrom = LocalDate.now()
+      final periodTo = LocalDate.now().plusDays(80)
+
+      final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
+      final status = new AccountStatusType(1, 'A', 'Active', 'active')
+      final account = accountDataLoaderService.single(company, null, null, status)
+      final account2 = accountDataLoaderService.single(company, null, null, status)
+      final profitCenter = storeFactoryService.store(1, company)
+      final profitCenter2 = storeFactoryService.store(3, company)
+      def glJournalEntryDetailDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account), new StoreDTO(profitCenter), 1000 as BigDecimal).toList()
+      def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account), new StoreDTO(profitCenter), -1000 as BigDecimal).toList()
+      glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
+      def glJournalEntryDTO = generalLedgerJournalEntryDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs, false)
+      def glJournalEntryDetailDTOs2 = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account2), new StoreDTO(profitCenter2), 200 as BigDecimal).toList()
+      def glJournalEntryDetailCreditDTOs2 = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account2), new StoreDTO(profitCenter2), -200 as BigDecimal).toList()
+      glJournalEntryDetailDTOs2.addAll(glJournalEntryDetailCreditDTOs2)
+      def glJournalEntryDTO2 = generalLedgerJournalEntryDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs2, false)
+
+      def filterRequest = new TrialBalanceWorksheetFilterRequest()
+
+
+      filterRequest['fromDate'] = periodFrom
+      filterRequest['thruDate'] = periodFrom.plusDays(30)
+
+      switch (criteria) {
+         case 'Select one account':
+            filterRequest['beginAccount'] = account.number
+            filterRequest['endAccount'] = account.number
+            break
+         case 'Multiple Accounts':
+            filterRequest['beginAccount'] = account.number
+            filterRequest['endAccount'] = account2.number
+
+      }
+
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(periodFrom, periodTo, LocalDate.now(), LocalDate.now().plusMonths(1))
+
+      when:
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
+
+      then:
+      notThrown(Exception)
+
+      when: 'create journal entries'
+      def result = post("/accounting/general-ledger/journal-entry", glJournalEntryDTO)
+      def result2 = post("/accounting/general-ledger/journal-entry", glJournalEntryDTO2)
+
+      then:
+      notThrown(Exception)
+      result != null
+      result2 != null
+
+      when: 'fetch report'
+      def response = get("$path/trial-balance-worksheet/$filterRequest")
+
+      then:
+      notThrown(Exception)
+      response != null
+      response.debitTotals == totalDebit
+      response.creditTotals == totalCredit
+      if (response.accounts.size > 1) {
+         response.accounts[1].credits == credit
+         response.accounts[1].debits == debit
+      }
+
+      where:
+      criteria                            | debit | credit | totalDebit | totalCredit
+
+      'Select one account'                | 2000  | -2000  |  2000      | -2000
+      'Multiple Accounts'                 | 400   | -400   |  2400      | -2400
+
    }
 }
