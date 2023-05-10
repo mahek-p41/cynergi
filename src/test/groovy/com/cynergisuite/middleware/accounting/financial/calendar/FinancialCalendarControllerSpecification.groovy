@@ -266,6 +266,19 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       result.second == dateRanges.glPeriodTo.plusMonths(1).minusDays(1).toString()
    }
 
+   void "fetch gl open date range when none exists" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), false, false).collect()
+
+      when: 'fetch date range'
+      def result = get("$path/gl-dates-open")
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == NO_CONTENT
+   }
+
    void "fetch ap open date range" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('coravt')
@@ -286,6 +299,19 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       result != null
       result.first == dateRanges.apPeriodFrom.toString()
       result.second == dateRanges.apPeriodTo.plusMonths(1).minusDays(1).toString()
+   }
+
+   void "fetch ap open date range when none exists" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), false, false).collect()
+
+      when: 'fetch date range'
+      def result = get("$path/ap-dates-open")
+
+      then:
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status() == NO_CONTENT
    }
 
    void "try to open gl account starting after the open ap range" () {

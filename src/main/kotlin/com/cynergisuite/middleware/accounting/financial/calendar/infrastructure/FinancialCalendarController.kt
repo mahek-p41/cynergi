@@ -12,6 +12,7 @@ import com.cynergisuite.middleware.accounting.financial.calendar.FiscalYearDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository
 import com.cynergisuite.middleware.authentication.user.UserService
+import com.cynergisuite.middleware.error.NoContentException
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
@@ -319,54 +320,52 @@ class FinancialCalendarController @Inject constructor(
       logger.debug("Requested set GLAccounts Open for periods in date range {} resulted in {}", dateRangeDTO, response)
    }
 
-   @Throws(NotFoundException::class)
    @Get(value = "/gl-dates-open", produces = [APPLICATION_JSON])
    @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Fetch the date range when GL is open", description = "Fetch the Financial Calendar date range when the General Ledger is open", operationId = "financialCalendar-fetchDateRangeWhenGLIsOpen")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Pair::class))]),
+         ApiResponse(responseCode = "204", description = "Open GL range was unable to be found"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-         ApiResponse(responseCode = "404", description = "The requested Financial Calendar was unable to be found"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
    fun fetchDateRangeWhenGLIsOpen(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): Pair<LocalDate, LocalDate>? {
+   ): Pair<LocalDate, LocalDate> {
       logger.info("Fetching Financial Calendar date range when General Ledger is open")
 
       val user = userService.fetchUser(authentication)
       val response = financialCalendarService.fetchDateRangeWhenGLIsOpen(user.myCompany())
 
-      logger.debug("Fetching Financial Calendar date range when General Ledger is open resulted in", response)
+      logger.debug("Fetching Financial Calendar date range when General Ledger is open resulted in {}", response)
 
-      return response
+      return response ?: throw NoContentException()
    }
 
-   @Throws(NotFoundException::class)
    @Get(value = "/ap-dates-open", produces = [APPLICATION_JSON])
    @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Fetch the date range when AP is open", description = "Fetch the Financial Calendar date range when the Accounts Payable is open", operationId = "financialCalendar-fetchDateRangeWhenAPIsOpen")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Pair::class))]),
+         ApiResponse(responseCode = "204", description = "Open AP range was unable to be found"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
-         ApiResponse(responseCode = "404", description = "The requested Financial Calendar was unable to be found"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
    )
    fun fetchDateRangeWhenAPIsOpen(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): Pair<LocalDate, LocalDate>? {
+   ): Pair<LocalDate, LocalDate> {
       logger.info("Fetching Financial Calendar date range when Accounts Payable is open")
 
       val user = userService.fetchUser(authentication)
       val response = financialCalendarService.fetchDateRangeWhenAPIsOpen(user.myCompany())
 
-      logger.debug("Fetching Financial Calendar date range when Accounts Payable is open resulted in", response)
+      logger.debug("Fetching Financial Calendar date range when Accounts Payable is open resulted in {}", response)
 
-      return response
+      return response ?: throw NoContentException()
    }
 
    @Throws(NotFoundException::class)
