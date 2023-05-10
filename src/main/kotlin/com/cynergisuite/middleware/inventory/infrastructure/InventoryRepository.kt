@@ -195,7 +195,6 @@ class InventoryRepository(
          $selectBase
          WHERE i.lookup_key = :lookup_key
                AND comp.id = :comp_id
-               AND i.status in ('N', 'R')
          """.trimIndent(),
          mapOf(
             "lookup_key" to lookupKey,
@@ -223,8 +222,9 @@ class InventoryRepository(
          "offset" to pageRequest.offset()
       )
 
+      var statusFilterString = ""
       if (statuses.isNotEmpty()) {
-         params["statuses"] = statuses
+         statusFilterString = buildStatusFilterString(statuses)
       }
       if (!pageRequest.locationType.isNullOrBlank()) {
          params["location_type"] = pageRequest.locationType!!
@@ -235,9 +235,8 @@ class InventoryRepository(
       WITH paged AS (
          $selectBase
          WHERE i.primary_location = :location
-               AND i.location = :location
                AND comp.id = :comp_id
-               ${if (params.containsKey("statuses")) "AND i.status IN (<statuses>)" else ""}
+               AND $statusFilterString
                ${if (params.containsKey("location_type")) "AND iltd.value = :location_type" else ""}
       )
       SELECT
@@ -302,15 +301,15 @@ class InventoryRepository(
       WITH paged AS (
          ${
          if (audit.currentStatus() == Created || audit.currentStatus() == InProgress) {
-            "$selectBase JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location)"
+            "$selectBase JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.primary_location)"
          } else {
-            "$selectFromAuditInventory JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.location AND a.id = i.audit_id)"
+            "$selectFromAuditInventory JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.primary_location AND a.id = i.audit_id)"
          }
          }
          WHERE
             comp.id = :comp_id
             AND a.id = :audit_id
-            AND i.status in ('N', 'R')
+            AND i.status in ('N', 'R', 'D')
             AND i.lookup_key NOT IN (SELECT lookup_key
                                         FROM audit_detail
                                         WHERE audit_id = :audit_id)
@@ -377,5 +376,27 @@ class InventoryRepository(
             localizationCode = rs.getString("location_type_localization_code")
          )
       )
+   }
+
+   private fun buildStatusFilterString(statuses: List<String>): String {
+      val str = StringBuilder(" ( ")
+      var isFirstCondition = true
+      if (statuses.contains("N")) {
+         str.append(" (i.status = 'N' AND i.location = :location) ")
+         isFirstCondition = false
+      }
+      if (statuses.contains("R")) {
+         str.append(" ${if(!isFirstCondition) "OR" else ""} (i.status = 'R' AND i.location = :location) ")
+         isFirstCondition = false
+      }
+      if (statuses.contains("D")) {
+         str.append(" ${if(!isFirstCondition) "OR" else ""} i.status = 'D' ")
+         isFirstCondition = false
+      }
+      if (statuses.contains("O")) {
+         str.append(" ${if(!isFirstCondition) "OR" else ""} i.status = 'O' ")
+      }
+      str.append(" ) ")
+      return str.toString()
    }
 }

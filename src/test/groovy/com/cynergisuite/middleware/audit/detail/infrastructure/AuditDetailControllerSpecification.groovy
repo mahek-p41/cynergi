@@ -73,7 +73,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
       final storeWarehouse = auditScanAreaFactoryService.warehouse(store, company)
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 3, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 3, locationType: "STORE", inventoryStatus: ["R", "D", "N"]]), company, locale).elements
 
       final twentyAuditDetails = auditDetailFactoryService.stream(20, audit, storeWarehouse, employee, inventoryListing).sorted { o1, o2 -> o1.id <=> o2.id }.map { new AuditDetailValueObject(it, new AuditScanAreaDTO(storeWarehouse)) }.toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
@@ -126,7 +126,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final audit = audits[0]
       final secondAudit = audits[1]
       final storeShowroom = auditScanAreaFactoryService.showroom(store, company)
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 3, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 3, locationType: "STORE", inventoryStatus: ["R", "D", "N"]]), company, locale).elements
       final twelveAuditDetails = auditDetailFactoryService.stream(12, audit, storeShowroom, employee, inventoryListing[0..24]).sorted { o1, o2 -> o1.id <=> o2.id }.map { new AuditDetailValueObject(it, new AuditScanAreaDTO(storeShowroom)) }.toList()
       final firstTenDetails = twelveAuditDetails[0..9]
       auditDetailFactoryService.generate(12, secondAudit, employee, storeShowroom, inventoryListing[25..49])
@@ -153,7 +153,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final showroom = auditScanAreaFactoryService.showroom(store, company)
       final storeroom = auditScanAreaFactoryService.storeroom(store, company)
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created()] as Set)
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 1, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 1, locationType: "STORE", inventoryStatus: ["R", "D", "N"]]), company, locale).elements
       final auditDetailsWarehouse = auditDetailFactoryService.stream(11, audit, warehouse, employee, inventoryListing[0..19]).map { new AuditDetailValueObject(it, new AuditScanAreaDTO(warehouse)) }.toList()
       final auditDetailsShowroom = auditDetailFactoryService.stream(5, audit, showroom, employee, inventoryListing[20..30]).map { new AuditDetailValueObject(it, new AuditScanAreaDTO(showroom)) }.toList()
       final auditDetailsStoreroom = auditDetailFactoryService.stream(5, audit, storeroom, employee, inventoryListing[30..40]).map { new AuditDetailValueObject(it, new AuditScanAreaDTO(storeroom)) }.toList()
@@ -193,7 +193,37 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.myNumber(), locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.myNumber(), locationType: "STORE", inventoryStatus: ["R", "D", "N"]]), company, locale).elements
+      final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
+      final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
+
+      when:
+      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleLegacyIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
+
+      then:
+      notThrown(HttpClientResponseException)
+      result.id != null
+      result.scanArea.name == scanArea.name
+      result.scanArea.store.storeNumber == scanArea.store.number
+      result.scanArea.store.name == scanArea.store.name
+      result.lookupKey == inventoryItem.lookupKey
+      result.barcode == inventoryItem.barcode
+      result.serialNumber == inventoryItem.serialNumber
+      result.inventoryBrand == inventoryItem.brand
+      result.inventoryModel == inventoryItem.modelNumber
+      result.scannedBy.number == nineNineEightAuthenticatedEmployee.number
+      result.audit.id == audit.id
+   }
+
+   void "create audit detail with inventory item with status 'D'" () {
+      given:
+      final locale = Locale.US
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(1, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.myNumber(), locationType: "STORE", inventoryStatus: ["D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
@@ -223,7 +253,32 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.myNumber(), locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.myNumber(), locationType: "STORE", inventoryStatus: ["R", "D", "N"]]), company, locale).elements
+      final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
+      final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
+      final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
+      final storeWarehouse = auditScanAreaFactoryService.warehouse(store, company)
+      final savedAuditDetail = auditDetailFactoryService.single(audit, storeWarehouse, employee, [inventoryItem])
+
+      when:
+      def response = postForResponse("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleLegacyIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
+
+      then:
+      notThrown(Exception)
+      response.status == NOT_MODIFIED
+      final result = response.bodyAsJson()
+      result == null // 304 doesn't return a body
+   }
+
+
+   void "create duplicate audit detail with inventory item with status 'D'" () {
+      given:
+      final locale = US
+      final company = companyFactoryService.forDatasetCode('tstds1')
+      final store = storeFactoryService.store(1, company)
+      final department = departmentFactoryService.random(company)
+      final employee = employeeFactoryService.single(store, department)
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.myNumber(), locationType: "STORE", inventoryStatus: ["D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
@@ -280,7 +335,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final employee = employeeFactoryService.single(store, department)
       final audit = auditFactoryService.single(store, employee, [AuditStatusFactory.created()] as Set)
       final locale = US
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["R", "D", "N"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
 
@@ -304,7 +359,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["R", "D", "N"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final showroom = auditScanAreaFactoryService.showroom(store, company)
@@ -336,7 +391,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
-      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["R", "D", "N"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final inventoryItem2 = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)

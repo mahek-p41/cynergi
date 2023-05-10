@@ -12,7 +12,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
-      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), inventoryStatus: ["N", "O", "R", "D"]])
+      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), inventoryStatus: ["R", "D", "N"]])
 
       when:
       def pageOneResult = get("${path}${pageOne}&extraParamter=one&exParamTwo=2", tstds1Store1UserLogin)
@@ -21,11 +21,11 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       pageOneResult.locationType == null
       pageOneResult.requested.storeNumber == tstds1Store1User.myLocation().myNumber()
-      pageOneResult.requested.inventoryStatus == ["R", "D", "N", "O"]
+      pageOneResult.requested.inventoryStatus == ["R", "D", "N"]
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
-      pageOneResult.totalElements == 423
-      pageOneResult.totalPages == 85
+      pageOneResult.totalElements == 427
+      pageOneResult.totalPages == 86
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements[0].id == 73821
@@ -61,7 +61,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
-      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), inventoryStatus: ["N", "O", "R", "D"]])
+      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), inventoryStatus: ["R", "D", "N"]])
 
       when:
       def pageOneResult = get("inventory/${pageOne}&extraParamter=one&exParamTwo=2", tstds1Store1UserLogin)
@@ -71,11 +71,11 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       with(pageOneResult) {
          locationType == null
          requested.storeNumber == tstds1Store1User.myLocation().myNumber()
-         requested.inventoryStatus == ["R", "D", "N", "O"]
+         requested.inventoryStatus == ["R", "D", "N"]
          elements != null
          elements.size() == 5
-         totalElements == 423
-         totalPages == 85
+         totalElements == 427
+         totalPages == 86
          first == true
          last == false
          elements[0].id == 73821
@@ -103,7 +103,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       given:
       final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
-      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]])
+      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", locationType: "STORE", inventoryStatus: ["R", "D", "N"]])
 
       when:
       def pageOneResult = get("${path}${pageOne}", tstds1Store1UserLogin)
@@ -112,11 +112,11 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       pageOneResult.requested.storeNumber == tstds1Store1User.myLocation().myNumber()
       pageOneResult.requested.locationType == "STORE"
-      pageOneResult.requested.inventoryStatus == ["R", "D", "N", "O"]
+      pageOneResult.requested.inventoryStatus == ["R", "D", "N"]
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
-      pageOneResult.totalElements == 423
-      pageOneResult.totalPages == 85
+      pageOneResult.totalElements == 427
+      pageOneResult.totalPages == 86
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements[1].id == 73823
@@ -197,11 +197,11 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[2].locationType.description == "Store"
    }
 
-   void "fetch by location type store"() {
+   void "fetch first page of inventory with status of D" () {
       given:
       final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
-      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]])
+      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), inventoryStatus: ["D"]])
 
       when:
       def pageOneResult = get("${path}${pageOne}", tstds1Store1UserLogin)
@@ -209,11 +209,60 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       pageOneResult.requested.storeNumber == tstds1Store1User.myLocation().myNumber()
-      pageOneResult.requested.inventoryStatus == ["R", "D", "N", "O"]
+      pageOneResult.requested.inventoryStatus.size() == 1
+      pageOneResult.requested.inventoryStatus == ["D"]
+      pageOneResult.elements != null
+      pageOneResult.elements.size() == 4
+      pageOneResult.totalElements == 4
+      pageOneResult.totalPages == 1
+      pageOneResult.first == true
+      pageOneResult.last == true
+      pageOneResult.elements[2].id == 85324
+      pageOneResult.elements[2].serialNumber == "3CUK902302"
+      pageOneResult.elements[2].lookupKey == "3CUK902302"
+      pageOneResult.elements[2].lookupKeyType == "ALT_ID"
+      pageOneResult.elements[2].barcode == "3CUK902302"
+      pageOneResult.elements[2].altId == "3CUK902302"
+      pageOneResult.elements[2].brand == "SAMSUNG"
+      pageOneResult.elements[2].modelNumber == "TTSAMUN58NU710DXNA"
+      pageOneResult.elements[2].productCode == "T-TV 58 SMART"
+      pageOneResult.elements[2].description == "TV 58 SMART"
+      pageOneResult.elements[2].receivedDate == "2018-11-21"
+      pageOneResult.elements[2].originalCost == 479.00
+      pageOneResult.elements[2].actualCost == 479.00
+      pageOneResult.elements[2].modelCategory == "T"
+      pageOneResult.elements[2].timesRented == 0
+      pageOneResult.elements[2].totalRevenue == 0.00
+      pageOneResult.elements[2].remainingValue == 479.00
+      pageOneResult.elements[2].sellPrice == 0.00
+      pageOneResult.elements[2].assignedValue == 0.00
+      pageOneResult.elements[2].idleDays == 0
+      pageOneResult.elements[2].condition == null
+      pageOneResult.elements[2].status == "D"
+      pageOneResult.elements[2].primaryLocation.id == 1
+      pageOneResult.elements[2].primaryLocation.storeNumber == 1
+      pageOneResult.elements[2].primaryLocation.name == "KANSAS CITY"
+      pageOneResult.elements[2].locationType.value == "STORE"
+      pageOneResult.elements[2].locationType.description == "Store"
+   }
+
+   void "fetch by location type store"() {
+      given:
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1)
+      final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
+      final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), locationType: "STORE", inventoryStatus: ["R", "D", "N"]])
+
+      when:
+      def pageOneResult = get("${path}${pageOne}", tstds1Store1UserLogin)
+
+      then:
+      notThrown(HttpClientResponseException)
+      pageOneResult.requested.storeNumber == tstds1Store1User.myLocation().myNumber()
+      pageOneResult.requested.inventoryStatus == ["R", "D", "N"]
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
-      pageOneResult.totalElements == 423
-      pageOneResult.totalPages == 85
+      pageOneResult.totalElements == 427
+      pageOneResult.totalPages == 86
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements[3].id == 73830
