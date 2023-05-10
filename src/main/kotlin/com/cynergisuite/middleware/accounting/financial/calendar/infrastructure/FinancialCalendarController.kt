@@ -12,6 +12,7 @@ import com.cynergisuite.middleware.accounting.financial.calendar.FiscalYearDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository
 import com.cynergisuite.middleware.authentication.user.UserService
+import com.cynergisuite.middleware.error.NoContentException
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
@@ -333,7 +334,7 @@ class FinancialCalendarController @Inject constructor(
    fun fetchDateRangeWhenGLIsOpen(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): HttpResponse<Pair<LocalDate, LocalDate>> {
+   ): Pair<LocalDate, LocalDate> {
       logger.info("Fetching Financial Calendar date range when General Ledger is open")
 
       val user = userService.fetchUser(authentication)
@@ -341,12 +342,7 @@ class FinancialCalendarController @Inject constructor(
 
       logger.debug("Fetching Financial Calendar date range when General Ledger is open resulted in {}", response)
 
-      return if(response != null){
-         HttpResponse.ok(response)
-      }
-      else {
-         HttpResponse.noContent()
-      }
+      return response ?: throw NoContentException()
    }
 
    @Get(value = "/ap-dates-open", produces = [APPLICATION_JSON])
@@ -362,7 +358,7 @@ class FinancialCalendarController @Inject constructor(
    fun fetchDateRangeWhenAPIsOpen(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): HttpResponse<Pair<LocalDate, LocalDate>> {
+   ): Pair<LocalDate, LocalDate> {
       logger.info("Fetching Financial Calendar date range when Accounts Payable is open")
 
       val user = userService.fetchUser(authentication)
@@ -370,12 +366,7 @@ class FinancialCalendarController @Inject constructor(
 
       logger.debug("Fetching Financial Calendar date range when Accounts Payable is open resulted in {}", response)
 
-      return if(response != null){
-         HttpResponse.ok(response)
-      }
-      else {
-         HttpResponse.noContent()
-      }
+      return response ?: throw NoContentException()
    }
 
    @Throws(NotFoundException::class)
