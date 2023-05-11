@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice
 
+import com.cynergisuite.domain.AccountPayableCheckPreviewFilterRequest
 import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
@@ -98,6 +99,10 @@ class AccountPayableInvoiceService @Inject constructor(
       val found = accountPayableInvoiceInquiryRepository.fetchInquiry(company, filterRequest)
 
       return found.toPage { dto: AccountPayableInvoiceInquiryDTO -> dto }
+   }
+
+   fun checkPreview(company: CompanyEntity, filterRequest: AccountPayableCheckPreviewFilterRequest): AccountPayableCheckPreviewDTO {
+      return accountPayableInvoiceInquiryRepository.fetchCheckPreview(company, filterRequest)
    }
 
    fun update(id: UUID, dto: AccountPayableInvoiceDTO, company: CompanyEntity): AccountPayableInvoiceDTO {
