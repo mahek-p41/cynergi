@@ -63,7 +63,7 @@ class VendorStatisticsController @Inject constructor(
       val vendorDTO = vendorService.fetchById(vendorId, user.myCompany()) ?: throw NotFoundException(vendorId)
       val response = vendorStatisticsService.fetchStatistics(vendorDTO, user.myCompany())
 
-      logger.debug("Fetching Vendor Statistics by {} resulted in", vendorId, response)
+      logger.debug("Fetching Vendor Statistics by {} resulted in {}", vendorId, response)
 
       return response
    }
@@ -91,7 +91,7 @@ class VendorStatisticsController @Inject constructor(
       val user = userService.fetchUser(authentication)
       val response = vendorStatisticsService.fetchRebates(user.myCompany(), filterRequest)
 
-      logger.debug("Fetching Rebates for Vendor Statistics by {} resulted in", filterRequest.vendorId, response)
+      logger.debug("Fetching Rebates for Vendor Statistics by {} resulted in {}", filterRequest.vendorId, response)
 
       return response
    }
@@ -119,7 +119,7 @@ class VendorStatisticsController @Inject constructor(
       val user = userService.fetchUser(authentication)
       val response = vendorStatisticsService.fetchInvoices(user.myCompany(), filterRequest)
 
-      logger.debug("Fetching Invoices for Vendor Statistics by {} resulted in", filterRequest.vendorId, response)
+      logger.debug("Fetching Invoices for Vendor Statistics by {} resulted in {}", filterRequest.vendorId, response)
 
       return response
    }
@@ -147,7 +147,7 @@ class VendorStatisticsController @Inject constructor(
       val user = userService.fetchUser(authentication)
       val response = vendorStatisticsService.fetchPurchaseOrders(user.myCompany(), filterRequest)
 
-      logger.debug("Fetching Purchase Orders for Vendor Statistics by {} resulted in", filterRequest.vendorId, response)
+      logger.debug("Fetching Purchase Orders for Vendor Statistics by {} resulted in {}", filterRequest.vendorId, response)
 
       return response
    }
