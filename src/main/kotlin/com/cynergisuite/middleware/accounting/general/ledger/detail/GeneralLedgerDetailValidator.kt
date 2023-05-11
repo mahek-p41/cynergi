@@ -4,7 +4,6 @@ import com.cynergisuite.domain.FinancialCalendarValidateDatesFilterRequest
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarService
-import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeService
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -29,7 +28,6 @@ class GeneralLedgerDetailValidator @Inject constructor(
    private val generalLedgerDetailRepository: GeneralLedgerDetailRepository,
    private val generalLedgerSourceCodeRepository: GeneralLedgerSourceCodeRepository,
    private val accountRepository: AccountRepository,
-   private val overallPeriodTypeService: OverallPeriodTypeService,
    private val storeRepository: StoreRepository,
    private val sourceCodeRepository: GeneralLedgerSourceCodeRepository
 ) : ValidatorBase() {
