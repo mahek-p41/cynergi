@@ -1,11 +1,14 @@
 package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure
 
+import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
 import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
 import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingResponseDTO
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerDetailPurgeCountDTO
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingJournalCountDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
@@ -281,5 +284,30 @@ class GeneralLedgerDetailController @Inject constructor(
       logger.trace("Controller - findAllPurgePost using: from {} thru {} source {}", filterRequest.fromDate, filterRequest.thruDate, filterRequest.sourceCode)
       val user = userService.fetchUser(authentication)
       return generalLedgerDetailService.purge(filterRequest, user.myCompany())
+   }
+
+   @Get(uri = "/purgeCount{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Calculate Number of Records That Would Be Included In a Purge", description = "Calculate Number of Records That Would Be Included In a Purge", operationId = "GeneralLedgerDetailEndpoints-purgeCount")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If GeneralLedgerDetail count was successfully returned"),
+         ApiResponse(responseCode = "204", description = "The requested General Ledger Detail Count was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun purgeCount(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: GeneralLedgerDetailPostPurgeDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): GeneralLedgerDetailPurgeCountDTO {
+      val user = userService.fetchUser(authentication)
+      val countToBePurged = generalLedgerDetailService.purgeCount(filterRequest, user.myCompany())
+
+      logger.info("Fetching count of General Ledger Detail records that would be included in a purge resulted in {}", countToBePurged)
+
+      return countToBePurged
    }
 }

@@ -964,20 +964,33 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glSource1 = sourceCodeDataLoaderService.single(company)
       final glSource2 = sourceCodeDataLoaderService.single(company)
       final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
-      final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
+      final generalLedgerDetails1a = generalLedgerDetailDataLoaderService.stream(1, company, glAccount, profitCenter, glSource1, 50000.00).toList()
+      final generalLedgerDetails1b = generalLedgerDetailDataLoaderService.stream(1, company, glAccount, profitCenter, glSource1, -50000.00).toList()
+      final generalLedgerDetails1c = generalLedgerDetailDataLoaderService.stream(1, company, glAccount, profitCenter, glSource1, 25000.00).toList()
       final generalLedgerDetails2 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource2).toList()
 
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.parse("2023-01-01"), true, false).collect()
 
-      def gld1 = get("$path/${generalLedgerDetails1[0].id}")
-      def gld2 = get("$path/${generalLedgerDetails1[1].id}")
-      def gld3 = get("$path/${generalLedgerDetails1[2].id}")
+      def gld1 = get("$path/${generalLedgerDetails1a[0].id}")
+      def gld2 = get("$path/${generalLedgerDetails1b[0].id}")
+      def gld3 = get("$path/${generalLedgerDetails1c[0].id}")
 
       def gld4 = get("$path/${generalLedgerDetails2[0].id}")
       def gld5 = get("$path/${generalLedgerDetails2[1].id}")
       def gld6 = get("$path/${generalLedgerDetails2[2].id}")
 
       final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.now(), LocalDate.now().plusDays(5), glSource1.value)
+
+      when:
+      def toBeDeletedCount = get("$path/purgeCount$toBeDeleted")
+      then:
+      notThrown(HttpClientResponseException)
+      with(toBeDeletedCount) {
+         gldCount == 3
+         balance == 25000.00
+         debitTotal == 75000.00
+         creditTotal == -50000.00
+      }
 
       when:
       def deletedCount = delete("$path/purge$toBeDeleted")
@@ -1040,6 +1053,17 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.now(), LocalDate.now().plusDays(5), glSource2.value)
 
       when:
+      def toBeDeletedCount = get("$path/purgeCount$toBeDeleted")
+      then:
+      notThrown(HttpClientResponseException)
+      with(toBeDeletedCount) {
+         gldCount == 0
+         balance == 0
+         debitTotal == 0
+         creditTotal == 0
+      }
+
+      when:
       delete("$path/purge$toBeDeleted")
       then:
       final ex = thrown(HttpClientResponseException)
@@ -1064,6 +1088,30 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
 
       when:
       delete("$path/purge$toBeDeleted")
+      then:
+      final ex = thrown(HttpClientResponseException)
+      def response = ex.response.bodyAsJson()
+      ex.status == NOT_FOUND
+      response.message == "${ LocalDate.now() } was unable to be found"
+   }
+
+   void "Try to get count of general ledger detail to be purged with dates outside the range of the financial calendar"() {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource1 = sourceCodeDataLoaderService.single(company)
+      final glSource2 = sourceCodeDataLoaderService.single(company)
+      final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
+      final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
+
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.parse("2021-01-01"), true, false).collect()
+
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.now(), LocalDate.now().plusDays(5), glSource2.value)
+
+      when:
+      get("$path/purgeCount$toBeDeleted")
+
       then:
       final ex = thrown(HttpClientResponseException)
       def response = ex.response.bodyAsJson()
@@ -1096,6 +1144,32 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       response.message[0] == 'Dates 2023-03-28 and 2024-04-02 must be in same fiscal year'
    }
 
+   void "Try to count general ledger detail to be purged with dates not in the same fiscal year"() {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource1 = sourceCodeDataLoaderService.single(company)
+      final glSource2 = sourceCodeDataLoaderService.single(company)
+      final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
+      final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
+
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.parse("2023-01-01"), true, false).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "N" }, LocalDate.parse("2024-01-01"), true, false).collect()
+
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-03-28"), LocalDate.parse("2024-04-02"), glSource2.value)
+
+      when:
+      get("$path/purgeCount$toBeDeleted")
+
+      then:
+      final ex = thrown(HttpClientResponseException)
+      def response = ex.response.bodyAsJson()
+      ex.status == BAD_REQUEST
+      response.code[0] == 'cynergi.validation.dates.must.be.in.same.fiscal.year'
+      response.message[0] == 'Dates 2023-03-28 and 2024-04-02 must be in same fiscal year'
+   }
+
    void "Try to delete general ledger detail with dates not in the Current or Next fiscal years"() {
       given:
       final company = nineNineEightEmployee.company
@@ -1112,6 +1186,32 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
 
       when:
       delete("$path/purge$toBeDeleted")
+
+      then:
+      final ex = thrown(HttpClientResponseException)
+      def response = ex.response.bodyAsJson()
+      ex.status == BAD_REQUEST
+      response.code[0] == 'cynergi.validation.dates.not.in.current.or.next.fiscal.year'
+      response.message[0] == 'The selected dates must both be within the Current or Next fiscal year'
+   }
+
+   void "Try to count general ledger detail to be purged with dates not in the Current or Next fiscal years"() {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource1 = sourceCodeDataLoaderService.single(company)
+      final glSource2 = sourceCodeDataLoaderService.single(company)
+      final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
+      final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
+
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "P" }, LocalDate.parse("2023-01-01"), true, false).collect()
+
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.now(), LocalDate.now().plusDays(5), glSource2.value)
+
+      when:
+      get("$path/purgeCount$toBeDeleted")
+
       then:
       final ex = thrown(HttpClientResponseException)
       def response = ex.response.bodyAsJson()
@@ -1135,6 +1235,30 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
 
       when:
       delete("$path/purge$toBeDeleted")
+      then:
+      final ex = thrown(HttpClientResponseException)
+      def response = ex.response.bodyAsJson()
+      ex.status == BAD_REQUEST
+      response.code[0] == 'cynergi.validation.source.code.does.not.exist'
+      response.message[0] == 'The general ledger source value entered does not exist'
+   }
+
+   void "Try to count general ledger detail to be purged with a non-existing source code value"() {
+      given:
+      final company = nineNineEightEmployee.company
+      final glAccount = accountDataLoaderService.single(company)
+      final profitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final glSource1 = sourceCodeDataLoaderService.single(company)
+      final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
+      final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
+
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.parse("2023-01-01"), true, false).collect()
+
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.now(), LocalDate.now().plusDays(5), 'XYZ')
+
+      when:
+      get("$path/purgeCount$toBeDeleted")
+
       then:
       final ex = thrown(HttpClientResponseException)
       def response = ex.response.bodyAsJson()

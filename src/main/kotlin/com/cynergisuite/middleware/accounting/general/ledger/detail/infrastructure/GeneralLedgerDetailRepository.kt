@@ -20,6 +20,8 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingJournalCountDTO
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerDetailPurgeCountDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportSourceDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailEntity
@@ -895,6 +897,50 @@ class GeneralLedgerDetailRepository @Inject constructor(
       }
 
       return endOfReportDTO
+   }
+
+   @ReadOnly
+   fun findPurgeCounts(company: CompanyEntity, filterRequest: GeneralLedgerDetailPostPurgeDTO) : GeneralLedgerDetailPurgeCountDTO {
+      val glDetails = mutableListOf<GeneralLedgerDetailEntity>()
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val whereClause = StringBuilder("WHERE glDetail.company_id = :comp_id AND glDetail.deleted = FALSE")
+
+      logger.trace("Repository - findPurgeCounts using: from {} thru {} source {}", filterRequest.fromDate, filterRequest.thruDate, filterRequest.sourceCode)
+
+      params["source"] = filterRequest.sourceCode
+      whereClause.append(" AND source.value = :source")
+
+      params["fromDate"] = filterRequest.fromDate
+      params["thruDate"] = filterRequest.thruDate
+      whereClause.append(" AND glDetail.date")
+         .append(
+            buildFilterString(
+               filterRequest.fromDate != null,
+               filterRequest.thruDate != null,
+               "fromDate",
+               "thruDate"
+            )
+         )
+
+      jdbc.query(
+         """
+         ${selectBaseQuery()}
+         $whereClause
+      """.trimIndent(),
+         params
+      ) { rs, _ ->
+         do {
+            val account = accountRepository.mapRow(rs, company, "glDetail_account_")
+            val profitCenter = storeRepository.mapRow(rs, company, "glDetail_profitCenter_")
+            val sourceCode = sourceCodeRepository.mapRow(rs, "glDetail_source_")
+            glDetails.add(mapRow(rs, account, profitCenter, sourceCode, "glDetail_"))
+         } while (rs.next())
+      }
+
+      val balance = glDetails.sumByBigDecimal { it.amount }
+
+      return GeneralLedgerDetailPurgeCountDTO(glDetails, balance)
+
    }
 
    @ReadOnly
