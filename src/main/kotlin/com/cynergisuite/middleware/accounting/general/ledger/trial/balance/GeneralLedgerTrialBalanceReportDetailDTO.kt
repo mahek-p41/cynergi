@@ -18,6 +18,11 @@ data class GeneralLedgerTrialBalanceReportDetailDTO(
    var id: UUID,
 
    @field:NotNull
+   @field:Schema(description = "Profit center", required = true)
+   var profitCenter: Int,
+
+
+   @field:NotNull
    @field:Schema(description = "General ledger detail date", required = true)
    var date: LocalDate,
 

@@ -40,11 +40,11 @@ class GeneralLedgerTrialBalanceControllerSpecification extends ControllerSpecifi
       final account = accountDataLoaderService.single(company, status, AccountTypeFactory.predefined().find {it.value == "A" })
       final account2 = accountDataLoaderService.single(company, status, AccountTypeFactory.predefined().find {it.value == "E" })
       final account3 = accountDataLoaderService.single(company, status, AccountTypeFactory.predefined().find {it.value == "R" })
-      final profitCenter = storeFactoryService.store(1, company)
+      final profitCenter1 = storeFactoryService.store(1, company)
       final profitCenter2 = storeFactoryService.store(3, company)
 
-      def glJournalEntryDetailDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account), new StoreDTO(profitCenter), 1000 as BigDecimal).toList()
-      def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account), new StoreDTO(profitCenter), -1000 as BigDecimal).toList()
+      def glJournalEntryDetailDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account), new StoreDTO(profitCenter1), 1000 as BigDecimal).toList()
+      def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account), new StoreDTO(profitCenter1), -1000 as BigDecimal).toList()
       glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
       def glJournalEntryDTO = generalLedgerJournalEntryDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs, false)
 
@@ -53,8 +53,8 @@ class GeneralLedgerTrialBalanceControllerSpecification extends ControllerSpecifi
       glJournalEntryDetailDTOs2.addAll(glJournalEntryDetailCreditDTOs2)
       def glJournalEntryDTO2 = generalLedgerJournalEntryDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs2, false)
 
-      def glJournalEntryDetailDTOs3 = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account3), new StoreDTO(profitCenter), 600 as BigDecimal).toList()
-      def glJournalEntryDetailCreditDTOs3 = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account3), new StoreDTO(profitCenter), -600 as BigDecimal).toList()
+      def glJournalEntryDetailDTOs3 = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account3), new StoreDTO(profitCenter1), 600 as BigDecimal).toList()
+      def glJournalEntryDetailCreditDTOs3 = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(account3), new StoreDTO(profitCenter1), -600 as BigDecimal).toList()
       glJournalEntryDetailDTOs3.addAll(glJournalEntryDetailCreditDTOs3)
       def glJournalEntryDTO3 = generalLedgerJournalEntryDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs3, false)
 
@@ -95,6 +95,7 @@ class GeneralLedgerTrialBalanceControllerSpecification extends ControllerSpecifi
             accountNumber == account.number
             accountType == 'A'
             with(glDetails) {
+               profitCenter == [1, 1, 1, 1]
                amount == [1000, 1000, -1000, -1000]
             }
          }
@@ -102,6 +103,7 @@ class GeneralLedgerTrialBalanceControllerSpecification extends ControllerSpecifi
             accountNumber == account2.number
             accountType == 'E'
             with(glDetails) {
+               profitCenter == [3, 3, 3, 3]
                amount == [200, 200, -200, -200]
             }
          }
@@ -133,7 +135,7 @@ class GeneralLedgerTrialBalanceControllerSpecification extends ControllerSpecifi
       when: 'fetch report by profit center'
       filterRequest['beginAccount'] = null
       filterRequest['endAccount'] = null
-      filterRequest['profitCenter'] = profitCenter.myNumber()
+      filterRequest['profitCenter'] = profitCenter1.myNumber()
       def response2 = get("$path/report$filterRequest")
 
       then:
@@ -144,6 +146,7 @@ class GeneralLedgerTrialBalanceControllerSpecification extends ControllerSpecifi
             accountNumber == account.number
             accountType == 'A'
             with(glDetails) {
+               profitCenter == [1, 1, 1, 1]
                amount == [1000, 1000, -1000, -1000]
             }
          }
@@ -151,6 +154,7 @@ class GeneralLedgerTrialBalanceControllerSpecification extends ControllerSpecifi
             accountNumber == account3.number
             accountType == 'R'
             with(glDetails) {
+               profitCenter == [1, 1, 1, 1]
                amount == [600, 600, -600, -600]
             }
          }

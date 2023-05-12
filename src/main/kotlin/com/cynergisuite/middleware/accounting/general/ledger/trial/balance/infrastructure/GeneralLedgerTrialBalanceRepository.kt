@@ -46,8 +46,9 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
              COALESCE(glSummary.beginning_balance, 0)                                        AS begin_balance1,
              CASE WHEN glDetail.date < :from THEN glDetail.amount ELSE 0 END                 AS begin_balance2,
              COALESCE(glSummary.beginning_balance, 0) + SUM(COALESCE(glDetail.amount, 0))    AS end_balance,
-             glDetail.date                                                                   AS detail_date,
              glDetail.id                                                                     AS detail_id,
+             glDetail.profit_center_id_sfk                                                   AS detail_profit_center,
+             glDetail.date                                                                   AS detail_date,
              glDetail.journal_entry_number                                                   AS detail_je,
              glDetail.amount                                                                 AS detail_amount,
              glDetail.message                                                                AS detail_message,
@@ -118,7 +119,7 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
          ${selectTrialBalanceQuery(subQueryWhere.toString())}
          $innerWhere
          GROUP BY glSummary.company_id, acct.id, acctType.value, glSummary.id, glSummary.profit_center_id_sfk,
-            glDetail.id, glDetail.date, glDetail.journal_entry_number, glDetail.amount, glDetail.message,
+            glDetail.id, glDetail.profit_center_id_sfk, glDetail.date, glDetail.journal_entry_number, glDetail.amount, glDetail.message,
             glDetail.source_id, glDetail.source_value, glDetail.source_description
       """.trimIndent()
 
@@ -198,6 +199,7 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
    ): GeneralLedgerTrialBalanceReportDetailDTO {
       return GeneralLedgerTrialBalanceReportDetailDTO(
          id = rs.getUuid("detail_id"),
+         profitCenter = rs.getInt("detail_profit_center"),
          date = rs.getLocalDate("detail_date"),
          source = GeneralLedgerSourceCodeDTO(
             id = rs.getUuid("detail_source_id"),
