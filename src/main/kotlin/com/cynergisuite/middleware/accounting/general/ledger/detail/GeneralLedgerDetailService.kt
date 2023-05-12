@@ -18,6 +18,7 @@ import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPer
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeService
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingResponseDTO
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerDetailPurgeCountDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeService
@@ -351,5 +352,13 @@ class GeneralLedgerDetailService @Inject constructor(
          }
          return purgedCount
       }
+   }
+
+   fun purgeCount(purgeDTO: GeneralLedgerDetailPostPurgeDTO, company: CompanyEntity): GeneralLedgerDetailPurgeCountDTO {
+      logger.trace("Service - findPurgePostCounts using: from {} thru {} source {}", purgeDTO.fromDate, purgeDTO.thruDate, purgeDTO.sourceCode)
+
+      val validPurgeDetails = generalLedgerDetailValidator.validatePurgeDetails(purgeDTO, company)
+
+      return generalLedgerDetailRepository.findPurgeCounts(company, validPurgeDetails)
    }
 }

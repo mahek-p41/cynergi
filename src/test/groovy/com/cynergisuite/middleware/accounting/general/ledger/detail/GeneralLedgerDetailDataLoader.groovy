@@ -24,7 +24,8 @@ class GeneralLedgerDetailDataLoader {
       int numberIn = 1,
       AccountEntity account,
       Store profitCenter,
-      GeneralLedgerSourceCodeEntity source
+      GeneralLedgerSourceCodeEntity source,
+      BigDecimal amount = null
    ) {
       final number = numberIn > 0 ? numberIn : 1
       final faker = new Faker()
@@ -38,7 +39,7 @@ class GeneralLedgerDetailDataLoader {
             profitCenter,
             dateLocalDate,
             source,
-            random.nextInt(0, 1_000_000).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
+            amount ?: random.nextInt(0, 1_000_000).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
             faker.lorem().sentence(),
             random.nextInt(1, 1_000_000),
             random.nextInt(1, 1_000_000)
@@ -72,13 +73,15 @@ class GeneralLedgerDetailDataLoaderService {
       CompanyEntity company,
       AccountEntity account,
       Store profitCenter,
-      GeneralLedgerSourceCodeEntity source
+      GeneralLedgerSourceCodeEntity source,
+      BigDecimal amount = null
    ) {
       return GeneralLedgerDetailDataLoader.stream(
          numberIn,
          account,
          profitCenter,
-         source
+         source,
+         amount
       ).map {
          generalLedgerDetailRepository.insert(it, company)
       }
