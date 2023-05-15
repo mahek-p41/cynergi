@@ -1,0 +1,203 @@
+name: Cynergi Middleware CI
+run-name: Building the cynergi-middleware repo
+on:
+   workflow_dispatch:
+   push:
+env:
+   DEBUG_MODE: ${{ vars.ACTIONS_STEP_DEBUG == 'true' && 'set -x' || '' }}
+jobs:
+   build:
+      name: Build, Run Tests, Store Artifacts
+      runs-on: ubuntu-latest
+      outputs:
+         branchName: ${{ steps.setBuildVars.outputs.branchName }}
+         micronautEnv: ${{ steps.setBuildVars.outputs.micronautEnv }}
+         releaseEnvironment: ${{ steps.setBuildVars.outputs.releaseEnvironment }}
+         tarball: ${{ steps.buildDeployArtifact.outputs.deployFile }}
+      steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Set build variables
+        id: setBuildVars
+        run: |
+         ${DEBUG_MODE}
+         #only use the name after the last / in the ref
+         branchName=${GITHUB_REF_NAME##*/}
+
+         case "$branchName" in
+         "master")
+            micronautEnv=prod
+            releaseEnvironment=RELEASE
+            ;;
+         "staging")
+            micronautEnv=cstdevelop
+            releaseEnvironment=STAGING
+            ;;
+         #"develop")
+         *)
+            micronautEnv=cstdevelop
+            releaseEnvironment=DEVELOP
+            ;;
+         esac
+
+         #we'll pull the releaseVersion from here
+         source ./gradle.properties
+
+         envVars="
+         RELEASE_VERSION="$releaseVersion"
+         NETWORK_ID=$(uuidgen)
+         JENKINS_UID=$(id --user)
+         JENKINS_GID=$(id --group)
+         BRANCH_NAME=$branchName
+         MICRONAUT_ENV=$micronautEnv
+         "
+         echo "$envVars" >> "$GITHUB_ENV"
+         echo "$envVars" | sed 's/^/::debug::/'
+
+         outVars="
+         branchName=$branchName
+         micronautEnv=$micronautEnv
+         releaseEnvironment=$releaseEnvironment
+         "
+         echo "$outVars" >> "$GITHUB_OUTPUT"
+         echo "$outVars" | sed 's/^/::debug::/'
+
+      - name: Validate branch name
+        run: |
+         ${DEBUG_MODE}
+         if [ ${#BRANCH_NAME} -gt 50 ]; then
+            echo "Branch name is too long: ${BRANCH_NAME} (${#BRANCH_NAME} characters). Maximum length is 50 characters."
+            exit 1
+         fi
+
+      - name: Setup Docker
+        run: |
+         ${DEBUG_MODE}
+         docker network create "$NETWORK_ID"
+         mkdir -p gradleCache gradleWrapper
+
+      - name: Test
+        run: |
+         ${DEBUG_MODE}
+         echo "::group::docker build cynergibasedb"
+         docker build -t cynergibasedb:${BRANCH_NAME} -f ./support/development/cynergibasedb/cynergibasedb.dockerfile ./support/development/cynergibasedb
+         echo "::endgroup::"
+
+         echo "::group::docker build cynergitestdb"
+         docker build -t cynergitestdb:${BRANCH_NAME} --build-arg LOG_STATEMENT=all --build-arg DB_IMAGE=cynergibasedb:${BRANCH_NAME} -f ./support/development/cynergitestdb/cynergitestdb.dockerfile ./support/development/cynergitestdb
+         echo "::endgroup::"
+
+         echo "::group::docker build cynergitestsftp"
+         docker build -t cynergitestsftp:${BRANCH_NAME} --build-arg USER_ID=${JENKINS_UID} --build-arg GROUP_ID=${JENKINS_GID} -f ./support/development/sftp/sftp.dockerfile ./support/development/sftp
+         echo "::endgroup::"
+
+         echo "::group::docker build middleware"
+         docker build -t middleware:${BRANCH_NAME} --build-arg USER_ID=${JENKINS_UID} --build-arg GROUP_ID=${JENKINS_GID} -f ./support/deployment/cynmid/cynmid.dockerfile ./support/deployment/cynmid
+         echo "::endgroup::"
+
+         mkdir -p /tmp/sftpuser
+
+         echo "::group::docker run cynergitestdb"
+         docker run -d --rm --network ${NETWORK_ID} --name cynergitestdb${BRANCH_NAME} -e POSTGRES_PASSWORD=password --tmpfs /var/lib/postgresql/data:rw -v ${GITHUB_WORKSPACE}/support/development/cynergitestdb/fastinfo:/tmp/fastinfo cynergitestdb:${BRANCH_NAME}
+         echo "::endgroup::"
+
+         echo "::group::docker run cynergitestsftp"
+         docker run -d --rm --network ${NETWORK_ID} --name cynergitestsftp${BRANCH_NAME} cynergitestsftp:${BRANCH_NAME}
+         echo "::endgroup::"
+
+         echo "::group::docker run cynergibasedb"
+         docker run -i --rm --network ${NETWORK_ID} cynergibasedb:${BRANCH_NAME} /opt/scripts/db-ready.sh cynergitestdb${BRANCH_NAME}
+         echo "::endgroup::"
+
+         echo "::group::docker run middleware"
+         docker run --rm --network ${NETWORK_ID} -v ${GITHUB_WORKSPACE}/gradleCache:/home/jenkins/caches -v ${GITHUB_WORKSPACE}/gradleWrapper:/home/jenkins/wrapper -v ${GITHUB_WORKSPACE}:/home/jenkins/cynergi-middleware -e DATASOURCES_DEFAULT_URL=jdbc:postgresql://cynergitestdb${BRANCH_NAME}:5432/postgres -e TEST_SFTP_HOSTNAME=cynergitestsftp${BRANCH_NAME} -e TEST_SFTP_PORT=22 middleware:${BRANCH_NAME} /bin/bash -c '''
+            ${DEBUG_MODE}
+            set -o errexit -o pipefail -o noclobber -o nounset
+            export JAVA_OPTS="-Xms2048m -Xmx2048m -Xgcpolicy:gencon"
+
+            ./gradlew --no-daemon --stacktrace clean buildApiDocs 2>&1 1>/dev/null
+            ./gradlew --no-daemon test jacocoTestReport
+         '''
+         echo "::endgroup::"
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v3
+        if: ${{ success() || failure() }}
+        with:
+          report_paths: 'build/test-results/**/*.xml'
+
+      - name: Build deploy artifact
+        id: buildDeployArtifact
+        if: ${{ (success() || failure()) && contains('master staging develop', steps.setBuildVars.outputs.branchName) }}
+        run: |
+         ${DEBUG_MODE}
+         echo "::group::docker build middlewaretar"
+         docker build -t middlewaretar:${BRANCH_NAME} --build-arg USER_ID=${JENKINS_UID} --build-arg GROUP_ID=${JENKINS_GID} --build-arg GROOVY_VER=3.0.9 -f ./support/deployment/cynmid/cynmid.dockerfile ./support/deployment/cynmid
+         echo "::endgroup::"
+
+         echo "::group::docker run middlewaretar"
+         results=$(docker run --rm -v ${GITHUB_WORKSPACE}/gradleCache:/home/jenkins/caches -v ${GITHUB_WORKSPACE}/gradleWrapper:/home/jenkins/wrapper -v ${GITHUB_WORKSPACE}:/home/jenkins/cynergi-middleware -v ${GITHUB_WORKSPACE}/.github/workflows/scripts:/scripts -e BUILD_VERSION=${RELEASE_VERSION} -e MICRONAUT_ENV=${MICRONAUT_ENV} -e RELEASE_VERSION=${RELEASE_VERSION} middlewaretar:${BRANCH_NAME} /bin/bash -c "/scripts/build-tarball.sh")
+
+         echo "${results}" | sed 's/^/::debug::/'
+         #filter only the results which set variables as expected
+         echo "${results}" | sed -n '/^[a-zA-Z_][a-zA-Z0-9_]*=[^[:space:]]*$/p' >> "${GITHUB_OUTPUT}"
+         echo "::endgroup::"
+
+      - name: Store artifacts
+        id: storeArtifacts
+        if: ${{ (success() || failure()) && steps.buildDeployArtifact.outcome != 'skipped' }}
+        uses: actions/upload-artifact@v3
+        with:
+         name: ${{ steps.buildDeployArtifact.outputs.deployFile }}
+         path: ${{ steps.buildDeployArtifact.outputs.buildPath }}/${{ steps.buildDeployArtifact.outputs.deployFile }}
+
+      - name: Prepare build reports
+        id: prepareBuildReports
+        if: ${{ success() || failure() }}
+        run: |
+         ${DEBUG_MODE}
+         reportsPath="${GITHUB_WORKSPACE}/build/reports"
+         if [ -d "${reportsPath}" ] && [ "$(ls -A "${reportsPath}")" ]; then
+            tar -czf "${reportsPath}/reports.tar.gz" "${reportsPath}"/*
+            echo "reportsPath=${reportsPath}/reports.tar.gz" >> "${GITHUB_OUTPUT}"
+         else
+            echo "::warning ::Path not found: ${reportsPath}"
+         fi
+
+      - name: "Store reports"
+        if: ${{ (success() || failure()) && steps.prepareBuildReports.outputs.reportsPath != '' }}
+        uses: actions/upload-artifact@v3
+        with:
+         name: buildReports
+         path: ${{ steps.prepareBuildReports.outputs.reportsPath }}
+         if-no-files-found: warn
+
+   e2eTesting:
+      name: Trigger E2E testing
+      needs: build
+      runs-on: ubuntu-latest
+      steps:
+         - env:
+            GITHUB_TOKEN: ${{ secrets.READONLY_HTI_PAT }}
+           run: |
+            nextRun=$(gh run --repo hightouchinc/cynergi-e2e list --workflow='test-middleware.yml' --limit=1 --json displayTitle --jq '.[0].displayTitle' | sed 's/\/[^\/]*$/\/${{ github.sha }}/')
+            gh workflow --repo hightouchinc/cynergi-e2e run --ref='master' test-middleware.yml --field 'middlewareBranch=${{ github.sha }}' --field 'clientBranch=develop'
+            echo "View the triggered run by finding '$nextRun' at https://github.com/hightouchinc/cynergi-e2e/actions/workflows/test-middleware.yml"
+
+   deploy:
+      needs: build
+      name: Deploy to ${{ needs.build.outputs.releaseEnvironment }} patch
+      if: ${{ contains('master staging develop', needs.build.outputs.branchName) }}
+      uses: hightouchinc/cynergi-client/.github/workflows/deploy-tarball.yml@develop
+      with:
+         tarball: ${{ needs.build.outputs.tarball }}
+         targetDeployable: 'cynergi-middleware-current.tar.xz'
+         releaseEnvironment: ${{ needs.build.outputs.releaseEnvironment }}
+      secrets: inherit

@@ -16,6 +16,10 @@ plugins {
 
 version "${releaseVersion}"
 group "com.cynergisuite"
+// https://docs.gradle.org/current/userguide/writing_build_scripts.html#sec:standard_project_properties
+project.buildDir = "${projectDir}/build"
+// https://docs.gradle.org/current/userguide/java_testing.html#communicating_test_results_to_CI_servers_and_other_tools_via_xml_files
+project.testResultsDirName = "${buildDir}/test-results"
 
 repositories {
    mavenCentral()
