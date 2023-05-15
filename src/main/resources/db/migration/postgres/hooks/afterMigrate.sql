@@ -1,54 +1,3 @@
--- setup a simple view for getting employees that can be authenticated against
-DO $$
-DECLARE
-    sqlToExec VARCHAR;
-BEGIN
-   sqlToExec := 'CREATE OR REPLACE VIEW authenticated_user_vw AS SELECT * FROM (';
-
-   IF EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'employee_vw' AND table_schema = 'fastinfo_prod_import') THEN
-      sqlToExec := sqlToExec || '
-         SELECT
-            1                               AS from_priority,
-            emp.id                          AS id,
-            ''sysz''                        AS type,
-            emp.number                      AS number,
-            emp.active                      AS active,
-            false                           AS cynergi_system_admin,
-            emp.department                  AS department,
-            emp.pass_code                   AS pass_code,
-            emp.alternative_store_indicator AS alternative_store_indicator,
-            emp.alternative_area            AS alternative_area,
-            emp.store_number                AS store_number,
-            comp.id                         AS company_id
-         FROM company comp
-           JOIN fastinfo_prod_import.employee_vw emp ON comp.dataset_code = emp.dataset
-         UNION
-   ';
-   END IF;
-
-   sqlToExec := sqlToExec || '
-      SELECT
-         2                               AS from_priority,
-         emp.id                          AS id,
-         ''eli''                         AS type,
-         emp.number                      AS number,
-         emp.active                      AS active,
-         emp.cynergi_system_admin        AS cynergi_system_admin,
-         emp.department                  AS department,
-         emp.pass_code                   AS pass_code,
-         emp.alternative_store_indicator AS alternative_store_indicator,
-         emp.alternative_area            AS alternative_area,
-         emp.store_number                AS store_number,
-         emp.company_id                  AS company_id
-      FROM company comp
-         JOIN employee emp ON comp.id = emp.company_id
-      WHERE active = true
-      ORDER BY from_priority, id
-   ) AS users ';
-
-   EXECUTE sqlToExec;
-END $$;
-
 -- setup view for querying employees
 DO $$
 DECLARE
@@ -221,3 +170,54 @@ BEGIN
    END IF;
 END;
 $$ LANGUAGE plpgsql;
+
+-- setup a simple view for getting employees that can be authenticated against
+DO $$
+DECLARE
+    sqlToExec VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW authenticated_user_vw AS SELECT * FROM (';
+
+   IF EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'employee_vw' AND table_schema = 'fastinfo_prod_import') THEN
+      sqlToExec := sqlToExec || '
+         SELECT
+            1                                   AS from_priority,
+            emp.emp_id                          AS id,
+            ''sysz''                            AS type,
+            emp.emp_number                      AS number,
+            emp.emp_active                      AS active,
+            false                               AS cynergi_system_admin,
+            emp.emp_department                  AS department,
+            emp.emp_pass_code                   AS pass_code,
+            emp.emp_alternative_store_indicator AS alternative_store_indicator,
+            emp.emp_alternative_area            AS alternative_area,
+            emp.store_number                    AS store_number,
+            comp.id                             AS company_id
+         FROM company comp
+           JOIN system_employees_fimvw emp ON comp.dataset_code = emp.comp_dataset_code
+         UNION
+   ';
+   END IF;
+
+   sqlToExec := sqlToExec || '
+      SELECT
+         2                               AS from_priority,
+         emp.id                          AS id,
+         ''eli''                         AS type,
+         emp.number                      AS number,
+         emp.active                      AS active,
+         emp.cynergi_system_admin        AS cynergi_system_admin,
+         emp.department                  AS department,
+         emp.pass_code                   AS pass_code,
+         emp.alternative_store_indicator AS alternative_store_indicator,
+         emp.alternative_area            AS alternative_area,
+         emp.store_number                AS store_number,
+         emp.company_id                  AS company_id
+      FROM company comp
+         JOIN employee emp ON comp.id = emp.company_id
+      WHERE active = true
+      ORDER BY from_priority, id
+   ) AS users ';
+
+   EXECUTE sqlToExec;
+END $$;
