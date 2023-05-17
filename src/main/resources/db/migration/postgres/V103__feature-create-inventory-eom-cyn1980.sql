@@ -54,35 +54,38 @@ CREATE TRIGGER update_vendor_group_trg
 EXECUTE PROCEDURE update_user_table_fn();
 
 CREATE SEQUENCE vendor_number_seq START 10000;
+
+--Not sure what to change above this
 CREATE TABLE inventory_end_of_month
 (
     id                                  UUID        DEFAULT uuid_generate_v1()                  NOT NULL PRIMARY KEY,
     time_created                        TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()                   NOT NULL,
     time_updated                        TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()                   NOT NULL,
     company_id                          UUID REFERENCES company (id)                            NOT NULL,
-    store
-    year
-    month
-    serial_nbr
-    cost
-    book_value
-    depreciation
-    asset_account
-    contra_asset_account
-    model
-    alt_id
-    current_inv_nbr
-    macrs_pfy_end_cost
-    macrs_pfy_end_depr
-    macrs_pfy_end_amt_depr
-    macrs_pfy_end_date
-    macrs_lfy_end_cost
-    macrs_lfy_end_depr
-    macrs_lfy_end_amt_depr
-    macrs_pfy_bonus
-    macrs_lfy_end_bonus
+    store                               INTEGER,
+    year                                INTEGER CHECK (char_length(trim(year)) = 4),
+    month                               INTEGER,
+    serial_nbr                          VARCHAR(10),
+    cost                                NUMERIC(12, 2),
+    book_value                          NUMERIC(12, 2),
+    depreciation                        NUMERIC(12, 2),
+    asset_account                       INTEGER,
+    contra_asset_account                INTEGER,
+    model                               VARCHAR(18),
+    alt_id                              VARCHAR(30),
+    current_inv_nbr                     BOOLEAN     DEFAULT FALSE                               NOT NULL,
+    macrs_pfy_end_cost                  NUMERIC(12, 2),
+    macrs_pfy_end_depr                  NUMERIC(12, 2),
+    macrs_pfy_end_amt_depr              NUMERIC(12, 2),
+    macrs_pfy_end_date                  INTEGER,
+    macrs_lfy_end_cost                  NUMERIC(12, 2),
+    macrs_lfy_end_depr                  NUMERIC(12, 2),
+    macrs_lfy_end_amt_depr              NUMERIC(12, 2),
+    macrs_pfy_bonus                     NUMERIC(12, 2),
+    macrs_lfy_bonus                     NUMERIC(12, 2),
     UNIQUE (company_id, number)
 );
+--Not sure what to change below this
 CREATE TRIGGER update_vendor_trg
     BEFORE UPDATE
     ON vendor
