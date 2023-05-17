@@ -62,33 +62,32 @@ CREATE TABLE inventory_end_of_month
     time_created                        TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()                   NOT NULL,
     time_updated                        TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()                   NOT NULL,
     company_id                          UUID REFERENCES company (id)                            NOT NULL,
-    store                               INTEGER,
+    store_number_sfk                    BIGINT,                                                 NOT NULL, 
     year                                INTEGER CHECK (char_length(trim(year)) = 4),
     month                               INTEGER,
-    serial_nbr                          VARCHAR(10),
-    cost                                NUMERIC(12, 2),
-    book_value                          NUMERIC(12, 2),
-    depreciation                        NUMERIC(12, 2),
-    asset_account                       INTEGER,
-    contra_asset_account                INTEGER,
-    model                               VARCHAR(18),
-    alt_id                              VARCHAR(30),
-    current_inv_nbr                     BOOLEAN     DEFAULT FALSE                               NOT NULL,
-    macrs_pfy_end_cost                  NUMERIC(12, 2),
-    macrs_pfy_end_depr                  NUMERIC(12, 2),
-    macrs_pfy_end_amt_depr              NUMERIC(12, 2),
+    inv_serial_number                   VARCHAR(10),
+    inv_cost                            NUMERIC(13, 2),
+    net_book_value                      NUMERIC(13, 2),
+    book_depreciation                   NUMERIC(13, 2),
+    asset_account_id                    UUID REFERENCES asset_account (id)                      NOT NULL, --need to check reference table
+    contra_asset_account_id             UUID REFERENCES contra_asset_account (id)               NOT NULL, --need to check reference table
+    inv_model                           VARCHAR(18),
+    inv_alt_id                          VARCHAR(30),
+    current_inv_indr                    BOOLEAN     DEFAULT FALSE                               NOT NULL,
+    macrs_pfy_end_cost                  NUMERIC(13, 2),
+    macrs_pfy_end_depr                  NUMERIC(13, 2),
+    macrs_pfy_end_amt_depr              NUMERIC(13, 2),
     macrs_pfy_end_date                  INTEGER,
-    macrs_lfy_end_cost                  NUMERIC(12, 2),
-    macrs_lfy_end_depr                  NUMERIC(12, 2),
-    macrs_lfy_end_amt_depr              NUMERIC(12, 2),
-    macrs_pfy_bonus                     NUMERIC(12, 2),
-    macrs_lfy_bonus                     NUMERIC(12, 2),
-    UNIQUE (company_id, number)
+    macrs_lfy_end_cost                  NUMERIC(13, 2),
+    macrs_lfy_end_depr                  NUMERIC(13, 2),
+    macrs_lfy_end_amt_depr              NUMERIC(13, 2),
+    macrs_pfy_bonus                     NUMERIC(8, 7),
+    macrs_lfy_bonus                     NUMERIC(8, 7)
 );
 --Not sure what to change below this
 CREATE TRIGGER update_vendor_trg
     BEFORE UPDATE
-    ON vendor
+    ON inventory_end_of_month
     FOR EACH ROW
 EXECUTE PROCEDURE update_user_table_fn();
 
