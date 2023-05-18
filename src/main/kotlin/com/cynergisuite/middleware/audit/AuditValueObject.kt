@@ -25,6 +25,9 @@ data class AuditValueObject(
    @field:Schema(name = "timeCreated", required = false, description = "UTC Timestamp when the Audit was created")
    val timeCreated: OffsetDateTime? = null,
 
+   @field:Schema(name = "timeUpdated", required = false, description = "UTC Timestamp when the Audit was updated")
+   val timeUpdated: OffsetDateTime,
+
    @field:Schema(name = "store", required = false, description = "Store the audit is associated with")
    var store: StoreDTO? = null,
 
@@ -63,6 +66,7 @@ data class AuditValueObject(
       this (
          id = entity.id,
          timeCreated = entity.timeCreated,
+         timeUpdated = entity.timeUpdated,
          store = StoreDTO(entity.store),
          auditNumber = entity.number,
          totalDetails = entity.totalDetails,

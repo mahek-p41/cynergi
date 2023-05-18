@@ -74,7 +74,7 @@ abstract class PageRequestBase<out PAGE : PageRequest>(
    var size: Int?,
 
    @field:Schema(description = "The column to sort the data by.  Currently only id and name are supported", defaultValue = "id")
-   var sortBy: String?,
+   open var sortBy: String?,
 
    @field:Pattern(regexp = "ASC|DESC", flags = [CASE_INSENSITIVE])
    @field:Schema(description = "The direction the results should be sorted by.  Either Ascending or Descending", defaultValue = "ASC")
