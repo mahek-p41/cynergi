@@ -87,8 +87,8 @@ class AuditRepository @Inject constructor(
             SELECT COUNT (*)
             FROM fastinfo_prod_import.inventory_vw i
             WHERE i.primary_location = a.store_number
-                  AND i.location = a.store_number
-                  AND i.status in ('N', 'R')
+                  AND (i.status = 'D'
+                        OR (i.status in ('N', 'R') AND i.location = a.store_number))
                   AND i.dataset = auditStore.dataset
             )
          ELSE
@@ -96,7 +96,6 @@ class AuditRepository @Inject constructor(
             SELECT COUNT (*)
             FROM audit_inventory i
             WHERE i.primary_location = a.store_number
-                  AND i.location = a.store_number
                   AND i.dataset = auditStore.dataset
                   AND i.audit_id = a.id
             )
@@ -214,8 +213,8 @@ class AuditRepository @Inject constructor(
                SELECT COUNT (*)
                FROM fastinfo_prod_import.inventory_vw i
                WHERE i.primary_location = a.store_number
-                     AND i.location = a.store_number
-                     AND i.status in ('N', 'R')
+                     AND (i.status = 'D'
+                        OR (i.status in ('N', 'R') AND i.location = a.store_number))
                      AND i.dataset = auditStore.dataset
                )
             ELSE
@@ -223,7 +222,6 @@ class AuditRepository @Inject constructor(
                SELECT COUNT (*)
                FROM audit_inventory i
                WHERE i.primary_location = a.store_number
-                     AND i.location = a.store_number
                      AND i.dataset = auditStore.dataset
                      AND i.audit_id = a.id
                )
@@ -421,9 +419,9 @@ class AuditRepository @Inject constructor(
               SELECT count(i.id)
                FROM fastinfo_prod_import.inventory_vw i
                     LEFT JOIN audit_detail ad ON a.id = ad.audit_id and i.lookup_key = ad.lookup_key
-               WHERE i.status in ('N', 'R')
+               WHERE i.status in ('N', 'R', 'D')
                      AND ad.id IS NULL
-                     and a.company_id = comp.id AND a.store_number = i.location
+                     and a.company_id = comp.id AND a.store_number = i.primary_location
                      and comp.dataset_code = i.dataset
               )
             ELSE
@@ -431,9 +429,9 @@ class AuditRepository @Inject constructor(
               SELECT count(i.id)
                FROM audit_inventory i
                     LEFT JOIN audit_detail ad ON a.id = ad.audit_id and i.lookup_key = ad.lookup_key
-               WHERE i.status in ('N', 'R')
+               WHERE i.status in ('N', 'R', 'D')
                      AND ad.id IS NULL
-                     and a.company_id = comp.id AND a.store_number = i.location AND a.id = i.audit_id
+                     and a.company_id = comp.id AND a.store_number = i.primary_location AND a.id = i.audit_id
                      and comp.dataset_code = i.dataset
               )
             END                                                 AS a_total_unscanned,
@@ -457,8 +455,8 @@ class AuditRepository @Inject constructor(
                SELECT COUNT (*)
                FROM fastinfo_prod_import.inventory_vw i
                WHERE i.primary_location = a.store_number
-                     AND i.location = a.store_number
-                     AND i.status in ('N', 'R')
+                     AND (i.status = 'D'
+                           OR (i.status in ('N', 'R') AND i.location = a.store_number))
                      AND i.dataset = auditStore.dataset
                )
             ELSE
@@ -466,7 +464,6 @@ class AuditRepository @Inject constructor(
                SELECT COUNT (*)
                FROM audit_inventory i
                WHERE i.primary_location = a.store_number
-                     AND i.location = a.store_number
                      AND i.dataset = auditStore.dataset
                      AND i.audit_id = a.id
                )
