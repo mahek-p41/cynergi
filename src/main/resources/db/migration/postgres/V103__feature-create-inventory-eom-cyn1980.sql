@@ -29,29 +29,10 @@ CREATE TABLE inventory_end_of_month
 
 CREATE TRIGGER update_inventory_end_of_month_trg
     BEFORE UPDATE
-    ON vendor
+    ON inventory_end_of_month
     FOR EACH ROW
 EXECUTE PROCEDURE update_user_table_fn();
 
-CREATE OR REPLACE FUNCTION inventory_end_of_month_search_update_fn()
-    RETURNS TRIGGER AS
-$$
-DECLARE
-    invNum CONSTANT TEXT := CAST(new.number AS TEXT);
-    invName CONSTANT TEXT := new.name;
-BEGIN
-    new.search_vector :=
-        setweight(to_tsvector(invNum), 'A') ||
-        setweight(to_tsvector(invName), 'B');
-
-    RETURN new;
-END;
-$$
-    LANGUAGE plpgsql STRICT;
-
-CREATE TRIGGER inventory_end_of_month_search_update_trg
-    BEFORE INSERT OR UPDATE
-    ON vendor FOR EACH ROW EXECUTE PROCEDURE inventory_end_of_month_search_update_fn();
 
 CREATE company_id_idx
     ON inventory_end_of_month (company_id);
