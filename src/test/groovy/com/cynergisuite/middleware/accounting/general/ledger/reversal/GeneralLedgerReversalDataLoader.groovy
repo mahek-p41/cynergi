@@ -16,7 +16,7 @@ import java.util.stream.Stream
 @CompileStatic
 class GeneralLedgerReversalDataLoader {
 
-   static Stream<GeneralLedgerReversalEntity> stream(int numberIn = 1, GeneralLedgerSourceCodeEntity sourceIn) {
+   static Stream<GeneralLedgerReversalEntity> stream(int numberIn = 1, GeneralLedgerSourceCodeEntity sourceIn, LocalDate reversalDate = null) {
       final number = numberIn > 0 ? numberIn : 1
       final faker = new Faker()
       final lorem = faker.lorem()
@@ -27,7 +27,7 @@ class GeneralLedgerReversalDataLoader {
             null,
             sourceIn,
             LocalDate.now(),
-            LocalDate.now(),
+            reversalDate ? reversalDate : LocalDate.now(),
             lorem.sentence(),
             random.nextInt(1, 12),
             random.nextInt(1, 1000000)
@@ -64,13 +64,17 @@ class GeneralLedgerReversalDataLoaderService {
       this.repository = repository
    }
 
-   Stream<GeneralLedgerReversalEntity> stream(int numberIn = 1, CompanyEntity company, GeneralLedgerSourceCodeEntity sourceIn) {
-      return GeneralLedgerReversalDataLoader.stream(numberIn, sourceIn)
+   Stream<GeneralLedgerReversalEntity> stream(int numberIn = 1, CompanyEntity company, GeneralLedgerSourceCodeEntity sourceIn, LocalDate reversalDate = null) {
+      return GeneralLedgerReversalDataLoader.stream(numberIn, sourceIn, reversalDate)
          .map { repository.insert(it, company) }
    }
 
    GeneralLedgerReversalEntity single(CompanyEntity company, GeneralLedgerSourceCodeEntity sourceIn) {
-      return stream(1, company, sourceIn).findFirst().orElseThrow { new Exception("Unable to find GeneralLedgerReversal") }
+      return stream(1, company, sourceIn, null).findFirst().orElseThrow { new Exception("Unable to find GeneralLedgerReversal") }
+   }
+
+   GeneralLedgerReversalEntity single(CompanyEntity company, GeneralLedgerSourceCodeEntity sourceIn, LocalDate reversalDate) {
+      return stream(1, company, sourceIn, reversalDate).findFirst().orElseThrow { new Exception("Unable to find GeneralLedgerReversal") }
    }
 
    GeneralLedgerReversalDTO singleDTO(GeneralLedgerSourceCodeDTO sourceIn) {

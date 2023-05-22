@@ -15,6 +15,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSource
 import com.cynergisuite.middleware.accounting.general.ledger.end.year.EndYearProceduresDTO
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDataLoader
+import com.cynergisuite.middleware.accounting.general.ledger.reversal.GeneralLedgerReversalDataLoaderService
 import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -32,6 +33,7 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
    @Inject AccountTestDataLoaderService accountDataLoaderService
    @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
    @Inject GeneralLedgerJournalEntryDataLoaderService generalLedgerJournalEntryDataLoaderService
+   @Inject GeneralLedgerReversalDataLoaderService generalLedgerReversalDataLoaderService
 
    void "end current year with no pending journal entries" () {
       given:
@@ -49,6 +51,7 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
       def glJournalEntryDetailCreditDTOs = GeneralLedgerJournalEntryDetailDataLoader.streamDTO(2, new AccountDTO(capitalAccount), new StoreDTO(store), -1000 as BigDecimal).toList()
       glJournalEntryDetailDTOs.addAll(glJournalEntryDetailCreditDTOs)
       def glJournalEntryDTO = generalLedgerJournalEntryDataLoaderService.singleDTO(new GeneralLedgerSourceCodeDTO(glSourceCode), false, glJournalEntryDetailDTOs, false)
+      generalLedgerReversalDataLoaderService.single(company, glSourceCode, beginDate)
 
       when:
       post("/accounting/financial-calendar/complete", financialCalendarDTO)
@@ -89,6 +92,7 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
       glJournalDataLoaderService.stream(1, company2, capitalAccount, store, LocalDate.now(), glSourceCode).toList()
       def body = new EndYearProceduresDTO(new SimpleIdentifiableDTO(capitalAccount), new SimpleLegacyIdentifiableDTO(store.myId()))
       final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now().minusMonths(2), LocalDate.now().plusMonths(2), LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1))
+      generalLedgerReversalDataLoaderService.single(company, glSourceCode, beginDate)
 
       when:
       post("/accounting/financial-calendar/complete", financialCalendarDTO)
@@ -116,7 +120,7 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
       response[1].code == 'cynergi.validation.gl.not.in.balance'
    }
 
-   void "end current year with pending journal entries, unbalance GL, and non-capital account" () {
+   void "end current year with pending journal entries, reversal entries, unbalance GL, and non-capital account" () {
       given:
       final beginDate = LocalDate.now().minusMonths(26)
       final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
@@ -129,6 +133,7 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
       glJournalDataLoaderService.stream(1, company2, nonCapitalAccount, store, LocalDate.now(), glSourceCode).toList()
       def body = new EndYearProceduresDTO(new SimpleIdentifiableDTO(nonCapitalAccount), new SimpleLegacyIdentifiableDTO(store.myId()))
       final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now().minusMonths(2), LocalDate.now().plusMonths(2), LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1))
+      generalLedgerReversalDataLoaderService.single(company, glSourceCode, LocalDate.now())
 
       when:
       post("/accounting/financial-calendar/complete", financialCalendarDTO)
@@ -149,14 +154,16 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
       def exception = thrown(HttpClientResponseException)
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.size() == 3
+      response.size() == 4
       response[0].message == "Pending Journal Entries found for General Ledger fiscal year to be closed. All pending journal entries for this date range (${beginDate.plusYears(2)} -> ${beginDate.plusYears(3).minusDays(1)}) must be posted before the General Ledger fiscal year can be closed."
       response[0].code == 'cynergi.validation.pending.jes.found.for.current.year'
-      response[1].message == 'Must be capital account'
-      response[1].code == 'cynergi.validation.must.be'
-      response[1].path == 'account'
-      response[2].message == 'GL is NOT in Balance'
-      response[2].code == 'cynergi.validation.gl.not.in.balance'
+      response[1].message == "Reversal Journal Entries found for General Ledger fiscal year to be closed. All Reversal Journal Entries for this date range must be posted before the General Ledger fiscal year can be closed."
+      response[1].code == 'cynergi.validation.unposted.reversals.found.for.current.year'
+      response[2].message == 'Must be capital account'
+      response[2].code == 'cynergi.validation.must.be'
+      response[2].path == 'account'
+      response[3].message == 'GL is NOT in Balance'
+      response[3].code == 'cynergi.validation.gl.not.in.balance'
    }
 
 }
