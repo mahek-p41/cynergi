@@ -51,6 +51,7 @@ class ThruDateIsBeforeFrom(from: OffsetDateTime, thru: OffsetDateTime) : Cynergi
 class CalendarThruDateIsBeforeFrom(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.calendar.thru.before.from", arrayOf(from, thru))
 class CalendarDatesSpanMoreThanTwoYears(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.dates.span.more.than.two.years", arrayOf(from, thru))
 class PendingJEsFoundForCurrentFiscalYear(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.pending.jes.found.for.current.year", arrayOf(from, thru))
+class PendingReversalsFoundForCurrentFiscalYear(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.unposted.reversals.found.for.current.year", arrayOf(from, thru))
 class GLDatesSelectedOutsideAPDatesSet(fromGL: LocalDate, thruGL: LocalDate, fromAP: LocalDate, thruAP: LocalDate) : Cynergi("cynergi.validation.gl.not.encompassing.ap.window", arrayOf(fromGL, thruGL, fromAP, thruAP))
 class APDatesSelectedOutsideGLDatesSet(fromAP: LocalDate, thruAP: LocalDate, fromGL: LocalDate, thruGL: LocalDate) : Cynergi("cynergi.validation.ap.outside.of.gl.window", arrayOf(fromAP, thruAP, fromGL, thruGL))
 class APDatesSelectedOutsideGLDatesSelected(fromAP: LocalDate, thruAP: LocalDate, fromGL: LocalDate, thruGL: LocalDate) : Cynergi("cynergi.validation.ap.outside.of.gl.window", arrayOf(fromAP, thruAP, fromGL, thruGL))
