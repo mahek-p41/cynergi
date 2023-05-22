@@ -380,6 +380,13 @@ class AuditRepository @Inject constructor(
          whereClause.append(" AND current_status IN (<current_status>) ")
       }
 
+      val sortBy = when (pageRequest.sortBy) {
+         "timeupdated" -> "a_time_updated"
+         "store" -> "auditStore_number"
+         "status" -> "a_current_status"
+         else -> "a_id"
+      }
+
       val sql =
          """
          WITH status AS (
@@ -490,7 +497,7 @@ class AuditRepository @Inject constructor(
               JOIN status s ON s.audit_id = a.id
               JOIN max_status ms ON s.action_id = ms.action_id AND a.id = ms.audit_id
          $whereClause
-         ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+         ORDER BY ${sortBy} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """.trimIndent()
 
