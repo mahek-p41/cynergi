@@ -5,14 +5,14 @@ CREATE TABLE inventory_end_of_month
     time_updated                        TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()                   NOT NULL,
     company_id                          UUID REFERENCES company (id)                            NOT NULL,
     store_number_sfk                    BIGINT                                                  NOT NULL,
-    year                                INTEGER CHECK (char_length(trim(year)) = 4),
+    year                                INTEGER CHECK (char_length(trim(year ::text)) = 4),
     month                               INTEGER,
     inv_serial_number                   VARCHAR(10),
     inv_cost                            NUMERIC(13, 2),
     net_book_value                      NUMERIC(13, 2),
     book_depreciation                   NUMERIC(13, 2),
-    asset_account_id                    UUID REFERENCES asset_account (id)                      NOT NULL, --need to check reference table
-    contra_asset_account_id             UUID REFERENCES contra_asset_account (id)               NOT NULL, --need to check reference table
+    asset_account_id                    UUID REFERENCES account (id)                            NOT NULL,
+    contra_asset_account_id             UUID REFERENCES account (id)                            NOT NULL,
     inv_model                           VARCHAR(18),
     inv_alt_id                          VARCHAR(30),
     current_inv_indr                    BOOLEAN     DEFAULT FALSE                               NOT NULL,
@@ -34,11 +34,11 @@ CREATE TRIGGER update_inventory_end_of_month_trg
 EXECUTE PROCEDURE update_user_table_fn();
 
 
-CREATE company_id_idx
+CREATE INDEX inventory_end_of_month_company_id_idx
     ON inventory_end_of_month (company_id);
 
-CREATE asset_account_id_idx
+CREATE INDEX inventory_end_of_month_asset_account_id_idx
     ON inventory_end_of_month (asset_account_id);
 
-CREATE contra_asset_account_id_idx
+CREATE INDEX inventory_end_of_month_contra_asset_account_id_idx
     ON inventory_end_of_month (contra_asset_account_id);
