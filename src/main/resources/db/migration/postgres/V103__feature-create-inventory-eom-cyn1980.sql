@@ -19,7 +19,7 @@ CREATE TABLE inventory_end_of_month
     macrs_pfy_end_cost                  NUMERIC(13, 2),
     macrs_pfy_end_depr                  NUMERIC(13, 2),
     macrs_pfy_end_amt_depr              NUMERIC(13, 2),
-    macrs_pfy_end_date                  INTEGER,
+    macrs_pfy_end_date                  DATE,
     macrs_lfy_end_cost                  NUMERIC(13, 2),
     macrs_lfy_end_depr                  NUMERIC(13, 2),
     macrs_lfy_end_amt_depr              NUMERIC(13, 2),
