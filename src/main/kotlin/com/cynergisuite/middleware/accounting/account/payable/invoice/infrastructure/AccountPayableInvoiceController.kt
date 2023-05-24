@@ -7,6 +7,7 @@ import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewService
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceListByVendorDTO
@@ -48,6 +49,7 @@ import javax.validation.Valid
 @Controller("/api/accounting/account-payable/invoice")
 class AccountPayableInvoiceController @Inject constructor(
    private val accountPayableInvoiceService: AccountPayableInvoiceService,
+   private val accountPayableCheckPreviewService: AccountPayableCheckPreviewService,
    private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableInvoiceController::class.java)
@@ -327,6 +329,6 @@ class AccountPayableInvoiceController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
 
-      return accountPayableInvoiceService.checkPreview(user.myCompany(), filterRequest)
+      return accountPayableCheckPreviewService.checkPreview(user.myCompany(), filterRequest)
    }
 }

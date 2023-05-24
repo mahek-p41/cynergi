@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.accounting.account.payable.invoice
 
 import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.v3.oas.annotations.media.Schema
-import java.time.LocalDate
+import java.math.BigDecimal
 import javax.validation.constraints.NotNull
 
 @JsonView
@@ -10,18 +10,32 @@ import javax.validation.constraints.NotNull
 data class AccountPayableCheckPreviewDTO(
 
    @field:NotNull
-   @field:Schema(description = "Vendor number")
-   var vendorNumber: Int? = null,
+   @field:Schema(description = "List of vendors")
+   var vendorList: List<AccountPayableCheckPreviewVendorsDTO>,
 
-   @field:Schema(description = "Vendor name")
-   var vendorName: String? = null,
+   @field:NotNull
+   @field:Schema(description = "Gross")
+   var gross: BigDecimal,
 
-   @field:Schema(description = "Check number")
-   var checkNumber: Int? = null,
+   @field:NotNull
+   @field:Schema(description = "Gross")
+   var discount: BigDecimal,
 
-   @field:Schema(description = "Distribution amount")
-   var date: LocalDate? = null,
+   @field:NotNull
+   @field:Schema(description = "Gross")
+   var deduction: BigDecimal? = BigDecimal.ZERO,
 
-   @field:Schema(description = "Account Payable Invoices")
-   var invoiceList: List<AccountPayableInvoiceDTO>? = null,
-   )
+   @field:NotNull
+   @field:Schema(description = "Gross")
+   var netPaid: BigDecimal? = BigDecimal.ZERO,
+) {
+   constructor(entity: AccountPayableCheckPreviewEntity) :
+      this(
+         vendorList = entity.vendorList.asSequence().map { vendorEntity ->
+            AccountPayableCheckPreviewVendorsDTO(vendorEntity)}.toMutableList(),
+         gross = entity.gross,
+         discount = entity.discount,
+         deduction = entity.deduction,
+         netPaid = entity.netPaid
+      )
+}

@@ -1,7 +1,9 @@
 package com.cynergisuite.domain
 
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
+import java.util.*
 
 @Schema(
    name = "AccountPayableCheckPreviewFilterRequest",
@@ -9,10 +11,14 @@ import java.time.LocalDate
    description = "Defines the parameters available for a sortable request.",
    allOf = [SortableRequestBase::class]
 )
+@Introspected
 class AccountPayableCheckPreviewFilterRequest(
 
    @field:Schema(name = "bank", description = "Bank number")
-   var bank: Int? = null,
+   var bank: Int,
+
+   @field:Schema(name = "checkNumber", description = "Check Number")
+   var checkNumber: Int,
 
    @field:Schema(name = "checkDate", description = "Check date")
    var checkDate: LocalDate? = null,
@@ -24,7 +30,7 @@ class AccountPayableCheckPreviewFilterRequest(
    var discountDate: LocalDate? = null,
 
    @field:Schema(name = "vendorGroup", description = "Vendor group")
-   var vendorGroup: Int? = null,
+   var vendorGroup: UUID? = null,
 
    @field:Schema(name = "printNotes", description = "Print notes")
    var printNotes: Boolean? = null
@@ -36,6 +42,7 @@ class AccountPayableCheckPreviewFilterRequest(
    override fun myToStringValues(): List<Pair<String, Any?>> =
       listOf(
          "bank" to bank,
+         "checkNumber" to checkNumber,
          "checkDate" to checkDate,
          "dueDate" to dueDate,
          "discountDate" to discountDate,

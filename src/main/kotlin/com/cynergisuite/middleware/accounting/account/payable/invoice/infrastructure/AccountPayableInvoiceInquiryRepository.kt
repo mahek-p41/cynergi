@@ -196,14 +196,6 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
       return distDTOs
    }
 
-   @ReadOnly
-   fun fetchCheckPreview(company: CompanyEntity, filterRequest: AccountPayableCheckPreviewFilterRequest): AccountPayableCheckPreviewDTO {
-      //TODO: create check preview report
-      val checkPreviewDTO = AccountPayableCheckPreviewDTO()
-
-      return checkPreviewDTO
-   }
-
    fun mapInvoice(rs: ResultSet, columnPrefix: String = EMPTY): AccountPayableInvoiceInquiryDTO {
       val type = typeRepository.mapRow(rs, "${columnPrefix}type_")
       val status = statusRepository.mapRow(rs, "${columnPrefix}status_")
