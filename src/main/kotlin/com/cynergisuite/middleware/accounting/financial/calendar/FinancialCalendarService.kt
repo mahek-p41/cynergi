@@ -7,7 +7,6 @@ import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeService
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.error.NotFoundException
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.time.LocalDate
@@ -109,13 +108,13 @@ class FinancialCalendarService @Inject constructor(
       return isDateFound
    }
 
-   fun sameFiscalYear(company: CompanyEntity, filterRequest: FinancialCalendarValidateDatesFilterRequest): Boolean {
+   fun sameFiscalYear(company: CompanyEntity, filterRequest: FinancialCalendarValidateDatesFilterRequest, validationPath: String? = "startingDate"): Boolean {
       return if (filterRequest.fromDate != filterRequest.thruDate) {
          val fromDateOverallPeriodId = financialCalendarRepository.findOverallPeriodIdAndPeriod(company, filterRequest.fromDate!!)?.first
          val thruDateOverallPeriodId = financialCalendarRepository.findOverallPeriodIdAndPeriod(company, filterRequest.thruDate!!)?.first
          val sameFiscalYear = fromDateOverallPeriodId == thruDateOverallPeriodId
 
-         financialCalendarValidator.validateSameFiscalYear(sameFiscalYear, filterRequest.fromDate!!, filterRequest.thruDate!!)
+         financialCalendarValidator.validateSameFiscalYear(sameFiscalYear, filterRequest.fromDate!!, filterRequest.thruDate!!, validationPath)
 
          sameFiscalYear
       } else {

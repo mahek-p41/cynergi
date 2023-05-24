@@ -89,27 +89,27 @@ class GeneralLedgerDetailValidator @Inject constructor(
 
          //Thru date cannot be before From date
          if (thru.isBefore(from)) {
-            errors.add(ValidationError("from", CalendarThruDateIsBeforeFrom(from, thru)))
+            errors.add(ValidationError("fromDate", CalendarThruDateIsBeforeFrom(from, thru)))
          }
 
          //Check that the from date is even in a financial calendar
          if (!financialCalendarService.dateFoundInFinancialCalendar(company, from)) {
-            errors.add(ValidationError("from", DatesSelectedMustBeWithinFinancialCalendar(from, thru)))
+            errors.add(ValidationError("fromDate", DatesSelectedMustBeWithinFinancialCalendar(from, thru)))
          }
 
          //Check that the dates are in the same fiscal year
          val otherDTO = FinancialCalendarValidateDatesFilterRequest(from, thru)
-         financialCalendarService.sameFiscalYear(company, otherDTO)
+         financialCalendarService.sameFiscalYear(company, otherDTO, "fromDate")
 
          //Check that the fiscal year is Current or Next
          val fiscalYear = financialCalendarService.fetchByDate(company, from)
          if (fiscalYear!!.overallPeriod!!.value != "C" && fiscalYear.overallPeriod!!.value != "N") {
-            errors.add(ValidationError("from", DatesMustBeWithinCurrentOrNextFiscalYear(from, thru)))
+            errors.add(ValidationError("fromDate", DatesMustBeWithinCurrentOrNextFiscalYear(from, thru)))
          }
 
          //Check that the source code value is valid
          if (!generalLedgerSourceCodeRepository.exists(purgeDTO.sourceCode, company)) {
-            errors.add(ValidationError("source", SourceCodeDoesNotExist(purgeDTO.sourceCode)))
+            errors.add(ValidationError("sourceCode", SourceCodeDoesNotExist(purgeDTO.sourceCode)))
          }
       }
 
