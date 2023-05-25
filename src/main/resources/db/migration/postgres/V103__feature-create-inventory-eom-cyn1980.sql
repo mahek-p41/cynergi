@@ -20,11 +20,11 @@ CREATE TABLE inventory_end_of_month
     macrs_previous_fiscal_year_end_depr                  NUMERIC(13, 2),
     macrs_previous_fiscal_year_end_amt_depr              NUMERIC(13, 2),
     macrs_previous_fiscal_year_end_date                  DATE,
-    macrs_latest_fiscal_year_end_cost                      NUMERIC(13, 2),
-    macrs_latest_fiscal_year_end_depr                      NUMERIC(13, 2),
-    macrs_latest_fiscal_year_end_amt_depr                  NUMERIC(13, 2),
+    macrs_latest_fiscal_year_end_cost                    NUMERIC(13, 2),
+    macrs_latest_fiscal_year_end_depr                    NUMERIC(13, 2),
+    macrs_latest_fiscal_year_end_amt_depr                NUMERIC(13, 2),
     macrs_previous_fiscal_year_bonus                     NUMERIC(8, 7),
-    macrs_latest_fiscal_year_bonus                         NUMERIC(8, 7)
+    macrs_latest_fiscal_year_bonus                       NUMERIC(8, 7)
 );
 
 CREATE TRIGGER update_inventory_end_of_month_trg
