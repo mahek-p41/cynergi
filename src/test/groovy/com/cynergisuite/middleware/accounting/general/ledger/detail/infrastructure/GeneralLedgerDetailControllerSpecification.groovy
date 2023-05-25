@@ -1166,6 +1166,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final ex = thrown(HttpClientResponseException)
       def response = ex.response.bodyAsJson()
       ex.status == BAD_REQUEST
+      response.path[0] == 'fromDate'
       response.code[0] == 'cynergi.validation.dates.must.be.in.same.fiscal.year'
       response.message[0] == 'Dates 2023-03-28 and 2024-04-02 must be in same fiscal year'
    }
@@ -1191,6 +1192,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final ex = thrown(HttpClientResponseException)
       def response = ex.response.bodyAsJson()
       ex.status == BAD_REQUEST
+      response.path[0] == 'fromDate'
       response.code[0] == 'cynergi.validation.dates.not.in.current.or.next.fiscal.year'
       response.message[0] == 'The selected dates must both be within the Current or Next fiscal year'
    }
@@ -1216,6 +1218,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final ex = thrown(HttpClientResponseException)
       def response = ex.response.bodyAsJson()
       ex.status == BAD_REQUEST
+      response.path[0] == 'fromDate'
       response.code[0] == 'cynergi.validation.dates.not.in.current.or.next.fiscal.year'
       response.message[0] == 'The selected dates must both be within the Current or Next fiscal year'
    }
@@ -1239,6 +1242,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final ex = thrown(HttpClientResponseException)
       def response = ex.response.bodyAsJson()
       ex.status == BAD_REQUEST
+      response.path[0] == 'sourceCode'
       response.code[0] == 'cynergi.validation.source.code.does.not.exist'
       response.message[0] == 'The general ledger source value entered does not exist'
    }
@@ -1263,6 +1267,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final ex = thrown(HttpClientResponseException)
       def response = ex.response.bodyAsJson()
       ex.status == BAD_REQUEST
+      response.path[0] == 'sourceCode'
       response.code[0] == 'cynergi.validation.source.code.does.not.exist'
       response.message[0] == 'The general ledger source value entered does not exist'
    }

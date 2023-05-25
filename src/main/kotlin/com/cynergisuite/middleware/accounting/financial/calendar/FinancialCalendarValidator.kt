@@ -8,7 +8,15 @@ import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastruct
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
-import com.cynergisuite.middleware.localization.*
+import com.cynergisuite.middleware.localization.APDatesSelectedOutsideGLDatesSelected
+import com.cynergisuite.middleware.localization.APDatesSelectedOutsideGLDatesSet
+import com.cynergisuite.middleware.localization.CalendarDatesSpanMoreThanTwoYears
+import com.cynergisuite.middleware.localization.CalendarThruDateIsBeforeFrom
+import com.cynergisuite.middleware.localization.DatesMustBeInSameFiscalYear
+import com.cynergisuite.middleware.localization.Duplicate
+import com.cynergisuite.middleware.localization.GLDatesSelectedOutsideAPDatesSet
+import com.cynergisuite.middleware.localization.GeneralLedgerRecordsBlockFinCalCreation
+import com.cynergisuite.middleware.localization.NoGLDatesSet
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.slf4j.Logger
@@ -16,7 +24,6 @@ import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.UUID
-import javax.xml.datatype.DatatypeConstants.DAYS
 
 @Singleton
 class FinancialCalendarValidator @Inject constructor(
@@ -52,9 +59,9 @@ class FinancialCalendarValidator @Inject constructor(
       }
    }
 
-   fun validateSameFiscalYear(sameFiscalYear: Boolean, startingDate: LocalDate, endingDate: LocalDate) =
+   fun validateSameFiscalYear(sameFiscalYear: Boolean, startingDate: LocalDate, endingDate: LocalDate, validationPath: String? = "startingDate") =
       doValidation { errors ->
-         if (!sameFiscalYear) errors.add(ValidationError("startingDate", DatesMustBeInSameFiscalYear(startingDate, endingDate)))
+         if (!sameFiscalYear) errors.add(ValidationError(validationPath, DatesMustBeInSameFiscalYear(startingDate, endingDate)))
       }
 
    private fun doSharedValidation(dto: FinancialCalendarDTO, company: CompanyEntity, existingFinancialCalendar: FinancialCalendarEntity? = null): FinancialCalendarEntity {
