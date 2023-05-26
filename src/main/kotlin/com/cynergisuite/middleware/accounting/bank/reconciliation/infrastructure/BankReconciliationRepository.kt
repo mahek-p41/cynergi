@@ -464,7 +464,7 @@ class BankReconciliationRepository @Inject constructor(
    @ReadOnly
    fun findTransactions(filterRequest: BankReconciliationTransactionsFilterRequest, company: CompanyEntity) : RepositoryPage<BankReconciliationEntity, PageRequest> {
 
-      logger.trace("Searching for Reconciliation Transactions by Bank {} and Type {}", filterRequest.bank, filterRequest.bankReconciliationType)
+      logger.trace("Searching for Reconciliation Transactions by Bank {} and Type {}", filterRequest.bank, filterRequest.bankType)
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder(" WHERE bankRecon.company_id = :comp_id and bankRecon.deleted = FALSE")
 
@@ -506,8 +506,8 @@ class BankReconciliationRepository @Inject constructor(
          whereClause.append(" AND bankRecon.description ILIKE \'%${filterRequest.description}%\'") //ILIKE is case-insensitive LIKE
       }
 
-      if (filterRequest.bankReconciliationType != null) {
-         params["type"] = filterRequest.bankReconciliationType
+      if (filterRequest.bankType != null) {
+         params["type"] = filterRequest.bankType
          whereClause.append(" AND bankReconType.value = :type") //bankReconType_value
       }
 
