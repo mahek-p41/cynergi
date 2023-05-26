@@ -37,9 +37,9 @@ class GeneralLedgerProcedureValidator @Inject constructor(
             currentYear.begin!!, currentYear.end!!)
          if (pendingJEs > 0) errors.add(ValidationError(null, PendingJEsFoundForCurrentFiscalYear(currentYear.begin!!, currentYear.end!!)))
 
-         val pendingReversals = generalLedgerReversalRepository.findPendingJournalReversalEntriesForCurrentFiscalYear(company,
+         val unpostedReversals = generalLedgerReversalRepository.findPendingJournalReversalEntriesForCurrentFiscalYear(company,
             currentYear.begin!!, currentYear.end!!)
-         if (pendingReversals > 0) errors.add(ValidationError(null, PendingReversalsFoundForCurrentFiscalYear(currentYear.begin!!, currentYear.end!!)))
+         if (unpostedReversals > 0) errors.add(ValidationError(null, PendingReversalsFoundForCurrentFiscalYear(currentYear.begin!!, currentYear.end!!)))
 
          val account = accountRepository.findOne(dto.account.id!!, company)
          if (account == null) {

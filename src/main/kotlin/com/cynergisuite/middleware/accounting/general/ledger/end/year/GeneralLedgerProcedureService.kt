@@ -4,6 +4,7 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.end.year.infrastructure.GeneralLedgerProcedureRepository
+import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryService
 import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository
 import com.cynergisuite.middleware.authentication.user.User
 import jakarta.inject.Inject
@@ -17,11 +18,13 @@ class GeneralLedgerProcedureService @Inject constructor(
    private val generalLedgerDetailRepository: GeneralLedgerDetailRepository,
    private val financialCalendarRepository: FinancialCalendarRepository,
    private val generalLedgerProcedureRepository: GeneralLedgerProcedureRepository,
+   private val generalLedgerSummaryService: GeneralLedgerSummaryService,
 ) {
 
    @Transactional
    fun endCurrentYear(dto: EndYearProceduresDTO, user: User) {
       val company = user.myCompany()
+      generalLedgerSummaryService.recalculateGLBalance(company)
       generalLedgerProcedureValidator.validateEndCurrentYear(dto, company)
       generalLedgerSummaryRepository.updateClosingBalanceForCurrentFiscalYear(company)
 
