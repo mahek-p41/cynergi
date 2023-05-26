@@ -4,11 +4,11 @@ CREATE TABLE verify_staging
     time_created                                         TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()                   NOT NULL,
     time_updated                                         TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()                   NOT NULL,
     company_id                                           UUID REFERENCES company (id)                            NOT NULL,
+    verify_id                                            UUID REFERENCES verify (id)                             NOT NULL,
     store                                                INTEGER                                                 NOT NULL,
     date                                                 DATE                                                    NOT NULL,
-    verify_successful                                    BOOLEAN     DEFAULT FALSE                               NOT NULL,
-    error_amount                                         NUMERIC(13,2)                                           NOT NULL,
-    moved_to_pending_jes                                 BOOLEAN     DEFAULT FALSE                               NOT NULL
+    deposit_type_id                                      UUID REFERENCES deposit (id)                            NOT NULL,
+    deposit_amount                                       NUMERIC(13,2)                                           NOT NULL
 );
 
 CREATE TRIGGER update_verify_staging_trg
