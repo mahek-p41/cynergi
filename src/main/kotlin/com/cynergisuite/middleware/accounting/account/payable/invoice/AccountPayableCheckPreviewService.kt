@@ -18,7 +18,7 @@ class AccountPayableCheckPreviewService @Inject constructor(
       val checkPreviews = accountPayableCheckPreviewRepository.fetchCheckPreview(company, filterRequest)
 
       val checksInUse = accountPayableCheckPreviewRepository.validateCheckNums(filterRequest.checkNumber, filterRequest.bank, checkPreviews.vendorList)
-      if( checksInUse){
+      if (checksInUse){
          val errors: Set<ValidationError> = mutableSetOf(ValidationError("Check previously used", CheckInUse()))
             throw ValidationException(errors)
       } else {

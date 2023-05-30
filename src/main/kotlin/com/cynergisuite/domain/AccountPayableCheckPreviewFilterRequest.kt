@@ -3,7 +3,7 @@ package com.cynergisuite.domain
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 
 @Schema(
    name = "AccountPayableCheckPreviewFilterRequest",
