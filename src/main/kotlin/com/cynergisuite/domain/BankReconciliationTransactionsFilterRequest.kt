@@ -40,7 +40,7 @@ class BankReconciliationTransactionsFilterRequest(
    var description: String? = null,
 
    @field:Schema(name = "status", description = "Bank Reconciliation Status")
-   var status: String? = null,
+   var status: String? = "B",
 
    @field:Schema(name = "fromClearedDate", description = "From cleared date for bank reconciliation transactions")
    var fromClearedDate: LocalDate? = null,
