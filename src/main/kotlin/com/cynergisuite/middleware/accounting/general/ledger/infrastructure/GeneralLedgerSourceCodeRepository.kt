@@ -68,6 +68,20 @@ class GeneralLedgerSourceCodeRepository @Inject constructor(
    }
 
    @ReadOnly
+   fun findOne(value: String, company: CompanyEntity): GeneralLedgerSourceCodeEntity? {
+      val params = mutableMapOf<String, Any?>("value" to value, "comp_id" to company.id)
+      val query = "${selectBaseQuery()}\nWHERE glSrcCodes.value = :value AND glSrcCodes.company_id = :comp_id AND glSrcCodes.deleted = FALSE"
+
+      logger.debug("Searching for GeneralLedgerSourceCode using {} {}", query, params)
+
+      val found = jdbc.findFirstOrNull(query, params) { rs, _ -> mapRow(rs, "glSrcCodes_") }
+
+      logger.trace("Searching for GeneralLedgerSourceCode by value: {} resulted in {}", value, found)
+
+      return found
+   }
+
+   @ReadOnly
    fun findAll(
       pageRequest: PageRequest,
       company: CompanyEntity
