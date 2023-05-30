@@ -21,8 +21,8 @@ class BankReconciliationTransactionsFilterRequest(
    @field:Schema(name = "Bank", description = "Bank Number")
    var bank: Long? = null,
 
-   @field:Schema(name = "bankReconciliationType", description = "Bank Reconciliation Type Value")
-   var bankReconciliationType: String? = null,
+   @field:Schema(name = "bankType", description = "Bank Reconciliation Type Value")
+   var bankType: String? = null,
 
    @field:Schema(name = "fromTransactionDate", description = "From transaction date for bank reconciliation transactions")
    var fromTransactionDate: LocalDate? = null,
@@ -61,7 +61,7 @@ class BankReconciliationTransactionsFilterRequest(
             EqualsBuilder()
                .appendSuper(super.equals(other))
                .append(this.bank, other.bank)
-               .append(this.bankReconciliationType, other.bankReconciliationType)
+               .append(this.bankType, other.bankType)
                .append(this.fromTransactionDate, other.fromTransactionDate)
                .append(this.thruTransactionDate, other.thruTransactionDate)
                .append(this.beginDocNum, other.beginDocNum)
@@ -80,7 +80,7 @@ class BankReconciliationTransactionsFilterRequest(
       HashCodeBuilder()
          .appendSuper(super.hashCode())
          .append(this.bank)
-         .append(this.bankReconciliationType)
+         .append(this.bankType)
          .append(this.fromTransactionDate)
          .append(this.thruTransactionDate)
          .append(this.beginDocNum)
@@ -99,7 +99,7 @@ class BankReconciliationTransactionsFilterRequest(
          sortBy = sortBy,
          sortDirection = sortDirection,
          bank = this.bank,
-         bankReconciliationType = this.bankReconciliationType,
+         bankType = this.bankType,
          fromTransactionDate = this.fromTransactionDate,
          thruTransactionDate = this.thruTransactionDate,
          beginDocNum = this.beginDocNum,
@@ -113,7 +113,7 @@ class BankReconciliationTransactionsFilterRequest(
    override fun myToStringValues(): List<Pair<String, Any?>> =
       listOf(
          "bank" to bank,
-         "bankReconciliationType" to bankReconciliationType,
+         "bankType" to bankType,
          "fromTransactionDate" to fromTransactionDate,
          "thruTransactionDate" to thruTransactionDate,
          "beginDocNum" to beginDocNum,
