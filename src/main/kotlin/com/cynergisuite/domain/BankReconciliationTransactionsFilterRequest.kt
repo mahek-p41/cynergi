@@ -39,7 +39,7 @@ class BankReconciliationTransactionsFilterRequest(
    @field:Schema(name = "description", description = "Description of documents to be viewed")
    var description: String? = null,
 
-   @field:Schema(name = "status", description = "Bank Reconciliation Status")
+   @field:Schema(name = "status", description = "Bank Reconciliation Status", defaultValue = "B")
    var status: String? = "B",
 
    @field:Schema(name = "fromClearedDate", description = "From cleared date for bank reconciliation transactions")
