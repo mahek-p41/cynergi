@@ -247,8 +247,8 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
     void "fetch gl open date range" () {
       given:
       final tstds1 = companyFactoryService.forDatasetCode('coravt')
-      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
-      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(9), LocalDate.now().plusMonths(1), LocalDate.now().plusMonths(7))
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().withDayOfMonth(1), true, true).collect()
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now().withDayOfMonth(1), LocalDate.now().plusMonths(9).withDayOfMonth(1), LocalDate.now().plusMonths(1).withDayOfMonth(1), LocalDate.now().plusMonths(7).withDayOfMonth(1))
 
       when:
       put("$path/open-gl-ap", dateRanges)

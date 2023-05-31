@@ -22,6 +22,7 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 
 import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 
@@ -81,7 +82,7 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
 
    void "end current year with pending journal entries, unbalance GL, and capital account" () {
       given:
-      final beginDate = LocalDate.now().minusMonths(26)
+      final beginDate = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).minusMonths(26)
       final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
       final company = companyFactoryService.forDatasetCode('coravt')
       final company2 = companyFactoryService.forDatasetCode('corrto')
@@ -91,7 +92,7 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
       glJournalDataLoaderService.stream(12, company, capitalAccount, store, beginDate.plusYears(2).plusMonths(1), glSourceCode).toList()
       glJournalDataLoaderService.stream(1, company2, capitalAccount, store, LocalDate.now(), glSourceCode).toList()
       def body = new EndYearProceduresDTO(new SimpleIdentifiableDTO(capitalAccount), new SimpleLegacyIdentifiableDTO(store.myId()))
-      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now().minusMonths(2), LocalDate.now().plusMonths(2), LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).minusMonths(2), LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).plusMonths(2), LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).minusMonths(1), LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).plusMonths(1))
       generalLedgerReversalDataLoaderService.single(company, glSourceCode, beginDate)
 
       when:
@@ -122,7 +123,7 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
 
    void "end current year with pending journal entries, reversal entries, unbalance GL, and non-capital account" () {
       given:
-      final beginDate = LocalDate.now().minusMonths(26)
+      final beginDate = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).minusMonths(26)
       final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
       final company = companyFactoryService.forDatasetCode('coravt')
       final company2 = companyFactoryService.forDatasetCode('corrto')
@@ -132,7 +133,7 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
       glJournalDataLoaderService.stream(12, company, nonCapitalAccount, store, beginDate.plusYears(2).plusMonths(1), glSourceCode).toList()
       glJournalDataLoaderService.stream(1, company2, nonCapitalAccount, store, LocalDate.now(), glSourceCode).toList()
       def body = new EndYearProceduresDTO(new SimpleIdentifiableDTO(nonCapitalAccount), new SimpleLegacyIdentifiableDTO(store.myId()))
-      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now().minusMonths(2), LocalDate.now().plusMonths(2), LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(1))
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).minusMonths(2), LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).plusMonths(2), LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).minusMonths(1), LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).plusMonths(1))
       generalLedgerReversalDataLoaderService.single(company, glSourceCode, LocalDate.now())
 
       when:
