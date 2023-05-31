@@ -542,10 +542,10 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       dataLoaderService.stream(5, companyFactoryService.forDatasetCode('corrto'), bankIn, LocalDate.now(), null)
       final bankRecons = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now(), null).toList()
-      final pageOne = new BankReconciliationTransactionsFilterRequest(1, 5, "id", "ASC", bankIn.number, null, null, null, null, null, null, null, null, null, null)
-      final pageTwo = new BankReconciliationTransactionsFilterRequest(2, 5, "id", "ASC", bankIn.number, null, null, null, null, null, null, null, null, null, null)
-      final pageLast = new BankReconciliationTransactionsFilterRequest(3, 5, "id", "ASC", bankIn.number, null, null, null, null, null, null, null, null, null, null)
-      final pageFour = new BankReconciliationTransactionsFilterRequest(4, 5, "id", "ASC", bankIn.number, null, null, null, null, null, null, null, null, null, null)
+      final pageOne = new BankReconciliationTransactionsFilterRequest(1, 5, "id", "ASC", bankIn.number, null, null, null, null, null, null, "B", null, null, null)
+      final pageTwo = new BankReconciliationTransactionsFilterRequest(2, 5, "id", "ASC", bankIn.number, null, null, null, null, null, null, "B", null, null, null)
+      final pageLast = new BankReconciliationTransactionsFilterRequest(3, 5, "id", "ASC", bankIn.number, null, null, null, null, null, null, "B", null, null, null)
+      final pageFour = new BankReconciliationTransactionsFilterRequest(4, 5, "id", "ASC", bankIn.number, null, null, null, null, null, null, "B", null, null, null)
       final firstPageBankRecon = bankRecons[0..4]
       final secondPageBankRecon = bankRecons[5..9]
       final lastPageBankRecon = bankRecons[10,11]
@@ -649,10 +649,10 @@ class BankReconciliationControllerSpecification extends ControllerSpecificationB
       final bankIn = bankFactoryService.single(nineNineEightEmployee.company, store, account)
       dataLoaderService.stream(5, companyFactoryService.forDatasetCode('corrto'), bankIn, LocalDate.now(), null)
       final bankRecons = dataLoaderService.stream(12, tstds1, bankIn, LocalDate.now(), null, 'A').toList()
-      final pageOne = new BankReconciliationTransactionsFilterRequest(1, 5, "id", "ASC", bankIn.number, 'A', null, null, null, null, null, null, null, null, null)
-      final pageTwo = new BankReconciliationTransactionsFilterRequest(2, 5, "id", "ASC", bankIn.number, 'A', null, null, null, null, null, null, null, null, null)
-      final pageLast = new BankReconciliationTransactionsFilterRequest(3, 5, "id", "ASC", bankIn.number, 'A', null, null, null, null, null, null, null, null, null)
-      final pageFour = new BankReconciliationTransactionsFilterRequest(4, 5, "id", "ASC", bankIn.number, 'A', null, null, null, null, null, null, null, null, null)
+      final pageOne = new BankReconciliationTransactionsFilterRequest(1, 5, "id", "ASC", bankIn.number, 'A', null, null, null, null, null, "B", null, null, null)
+      final pageTwo = new BankReconciliationTransactionsFilterRequest(2, 5, "id", "ASC", bankIn.number, 'A', null, null, null, null, null, "B", null, null, null)
+      final pageLast = new BankReconciliationTransactionsFilterRequest(3, 5, "id", "ASC", bankIn.number, 'A', null, null, null, null, null, "B", null, null, null)
+      final pageFour = new BankReconciliationTransactionsFilterRequest(4, 5, "id", "ASC", bankIn.number, 'A', null, null, null, null, null, "B", null, null, null)
       final firstPageBankRecon = bankRecons[0..4]
       final secondPageBankRecon = bankRecons[5..9]
       final lastPageBankRecon = bankRecons[10,11]
