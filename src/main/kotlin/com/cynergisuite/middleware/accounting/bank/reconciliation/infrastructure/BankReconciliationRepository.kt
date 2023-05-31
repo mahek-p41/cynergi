@@ -513,26 +513,39 @@ class BankReconciliationRepository @Inject constructor(
 
       if (filterRequest.status != null) {
          params["status"] = filterRequest.status
+         if (filterRequest.status == "B") {
+               if (filterRequest.fromClearedDate != null || filterRequest.thruClearedDate != null) {
+                  params["fromClearedDate"] = filterRequest.fromClearedDate
+                  params["thruClearedDate"] = filterRequest.thruClearedDate
+                  whereClause.append(" AND (bankRecon.cleared_date")
+                     .append(
+                        buildFilterString(
+                           filterRequest.fromClearedDate != null,
+                           filterRequest.thruClearedDate != null,
+                           "fromClearedDate",
+                           "thruClearedDate"
+                        )
+                     ).append(" OR bankRecon.cleared_date IS NULL)")
+               }
+         }
          if (filterRequest.status == "C") {
-            whereClause.append(" AND bankRecon.cleared_date IS NOT NULL")
+            if (filterRequest.fromClearedDate != null || filterRequest.thruClearedDate != null) {
+               params["fromClearedDate"] = filterRequest.fromClearedDate
+               params["thruClearedDate"] = filterRequest.thruClearedDate
+               whereClause.append(" AND bankRecon.cleared_date")
+                  .append(
+                     buildFilterString(
+                        filterRequest.fromClearedDate != null,
+                        filterRequest.thruClearedDate != null,
+                        "fromClearedDate",
+                        "thruClearedDate"
+                     )
+                  )
+            }
          }
          if (filterRequest.status == "O") {
             whereClause.append(" AND bankRecon.cleared_date IS NULL")
          }
-      }
-
-      if (filterRequest.fromClearedDate != null || filterRequest.thruClearedDate != null) {
-         params["fromClearedDate"] = filterRequest.fromClearedDate
-         params["thruClearedDate"] = filterRequest.thruClearedDate
-         whereClause.append(" AND bankRecon.cleared_date")
-            .append(
-               buildFilterString(
-                  filterRequest.fromClearedDate != null,
-                  filterRequest.thruClearedDate != null,
-                  "fromClearedDate",
-                  "thruClearedDate"
-               )
-            )
       }
 
       if (filterRequest.amount != null) {
