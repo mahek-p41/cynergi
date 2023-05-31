@@ -4,7 +4,7 @@ CREATE TABLE inventory_end_of_month
     time_created                                         TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()                   NOT NULL,
     time_updated                                         TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()                   NOT NULL,
     company_id                                           UUID REFERENCES company (id)                            NOT NULL,
-    store_number_sfk                                     BIGINT                                                  NOT NULL,
+    store_number_sfk                                     INTEGER                                                 NOT NULL,
     year                                                 INTEGER CHECK (char_length(trim(year ::text)) = 4)      NOT NULL,
     month                                                INTEGER                                                 NOT NULL,
     serial_number                                        VARCHAR(30)                                             NOT NULL,
