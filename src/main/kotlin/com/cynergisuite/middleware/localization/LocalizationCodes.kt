@@ -86,6 +86,7 @@ class AuditUpdateRequiresApprovedOrNote() : Cynergi("cynergi.audit.update.requir
 class AuditExceptionHasNotBeenApproved(auditExceptionId: UUID) : Cynergi("cynergi.audit.exception.has.been.approved.no.new.notes.allowed", arrayOf(auditExceptionId))
 class AuditDueToday(auditNumber: Int) : Cynergi("cynergi.audit.due.today", arrayOf(auditNumber))
 class AuditPastDue(auditNumber: Int) : Cynergi("cynergi.audit.past.due", arrayOf(auditNumber))
+class CheckInUse(): Cynergi("cynergi.validation.check.in.use", emptyArray())
 
 class VendorPaymentTermDuePercentDoesNotAddUp(percent: String) : Cynergi("vendor.payment.term.does.not.add.up", arrayOf(percent))
 class DataConstraintIntegrityViolation : Cynergi("cynergi.data.constraint.violated", emptyArray())
