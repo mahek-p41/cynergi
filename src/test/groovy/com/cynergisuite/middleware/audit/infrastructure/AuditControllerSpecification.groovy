@@ -75,7 +75,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.inventoryCount == 260
       result.id == savedAudit.id
       result.timeCreated == savedAudit.timeCreated
-      result.lastUpdated == null
+      result.lastUpdated == savedAudit.actions[0].timeUpdated
       result.currentStatus.value == 'CREATED'
       result.totalDetails == 0
       result.totalExceptions == 0
@@ -104,7 +104,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.inventoryCount == 260
       result.id == savedAudit.id
       result.timeCreated == savedAudit.timeCreated
-      result.lastUpdated == null
+      result.lastUpdated == savedAudit.actions[0].timeUpdated
       result.currentStatus.value == 'CREATED'
       result.totalDetails == 0
       result.totalExceptions == 0

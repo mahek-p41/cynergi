@@ -25,9 +25,6 @@ data class AuditValueObject(
    @field:Schema(name = "timeCreated", required = false, description = "UTC Timestamp when the Audit was created")
    val timeCreated: OffsetDateTime? = null,
 
-   @field:Schema(name = "timeUpdated", required = false, description = "UTC Timestamp when the Audit was updated")
-   val timeUpdated: OffsetDateTime,
-
    @field:Schema(name = "store", required = false, description = "Store the audit is associated with")
    var store: StoreDTO? = null,
 
@@ -46,7 +43,7 @@ data class AuditValueObject(
    @field:Schema(name = "hasExceptionNotes", description = "Indicates if any associated audit exception has one or more notes")
    var hasExceptionNotes: Boolean = false,
 
-   @field:Schema(name = "lastUpdated", description = "Last time an audit detail or audit exception was created", readOnly = true, required = false)
+   @field:Schema(name = "lastUpdated", description = "Last time an audit detail, audit action, or audit exception was created", readOnly = true, required = false)
    val lastUpdated: OffsetDateTime? = null,
 
    @field:Positive
@@ -66,7 +63,6 @@ data class AuditValueObject(
       this (
          id = entity.id,
          timeCreated = entity.timeCreated,
-         timeUpdated = entity.timeUpdated,
          store = StoreDTO(entity.store),
          auditNumber = entity.number,
          totalDetails = entity.totalDetails,
