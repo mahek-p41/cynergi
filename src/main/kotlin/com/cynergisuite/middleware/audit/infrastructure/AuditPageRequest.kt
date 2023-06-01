@@ -32,8 +32,8 @@ class AuditPageRequest(
    @field:Schema(name = "status", description = "Collection of statues that an audit must be in")
    var status: Set<String>? = emptySet(),
 
-   @field:Pattern(regexp = "timeupdated|store|status|id")
-   @field:Schema(description = "The column to sort the audits by (timeupdated|store|status|id).", defaultValue = "timeupdated", allowableValues = ["timeupdated", "store", "status", "id"])
+   @field:Pattern(regexp = "lastupdated|store|status|id")
+   @field:Schema(description = "The column to sort the audits by (timeupdated|store|status|id).", defaultValue = "lastupdated", allowableValues = ["lastupdated", "store", "status", "id"])
    override var sortBy: String? = null,
 
 ) : PageRequestBase<AuditPageRequest>(page, size, sortBy, sortDirection) {

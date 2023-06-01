@@ -77,6 +77,8 @@ class AuditRepository @Inject constructor(
                SELECT time_updated FROM audit_detail WHERE audit_id = a.id
                UNION
                SELECT time_updated FROM audit_exception WHERE audit_id = a.id
+               UNION
+               SELECT time_updated FROM audit_action WHERE audit_id = a.id
                ) AS m
          )                                                             AS a_last_updated,
          $queryAuditCurrentStatus                                      AS current_status,
@@ -178,6 +180,8 @@ class AuditRepository @Inject constructor(
                    SELECT time_updated FROM audit_detail WHERE audit_id = a.id
                    UNION
                    SELECT time_updated FROM audit_exception WHERE audit_id = a.id
+                   UNION
+                   SELECT time_updated FROM audit_action WHERE audit_id = a.id
                 ) AS m
                ) AS last_updated,
                a.company_id AS company_id,
@@ -381,7 +385,7 @@ class AuditRepository @Inject constructor(
       }
 
       val sortBy = when (pageRequest.sortBy) {
-         "timeupdated" -> "a_time_updated"
+         "lastupdated" -> "a_last_updated"
          "store" -> "auditStore_number"
          "status" -> "a_current_status"
          else -> "a_id"
@@ -452,6 +456,8 @@ class AuditRepository @Inject constructor(
                 SELECT time_updated FROM audit_detail WHERE audit_id = a.id
                 UNION
                 SELECT time_updated FROM audit_exception WHERE audit_id = a.id
+                UNION
+                SELECT time_updated FROM audit_action WHERE audit_id = a.id
              ) AS m
             )                                                   AS a_last_updated,
             s.current_status                                   AS a_current_status,
