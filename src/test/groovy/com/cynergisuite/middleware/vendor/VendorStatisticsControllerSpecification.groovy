@@ -3,9 +3,16 @@ package com.cynergisuite.middleware.vendor
 import com.cynergisuite.domain.VendorStatisticsFilterRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDataLoader
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDetailDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentStatusTypeDataLoader
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeTypeDataLoader
+import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarGLAPDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
@@ -21,8 +28,12 @@ import java.time.LocalDate
 class VendorStatisticsControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/vendor-statistics"
 
+   @Inject AccountTestDataLoaderService accountFactoryService
    @Inject AccountPayableInvoiceDataLoaderService accountPayableInvoiceDataLoaderService
+   @Inject AccountPayablePaymentDataLoaderService accountPayablePaymentDataLoaderService
+   @Inject AccountPayablePaymentDetailDataLoaderService apPaymentDetailDataLoaderService
    @Inject AccountTestDataLoaderService accountTestDataLoaderService
+   @Inject BankFactoryService bankFactoryService
    @Inject FinancialCalendarDataLoaderService financialCalendarDataLoaderService
    @Inject PurchaseOrderTestDataLoaderService purchaseOrderDataLoaderService
    @Inject RebateTestDataLoaderService rebateTestDataLoaderService
@@ -30,14 +41,39 @@ class VendorStatisticsControllerSpecification extends ControllerSpecificationBas
    @Inject VendorPaymentTermTestDataLoaderService vendorPaymentTermTestDataLoaderService
    @Inject VendorTestDataLoaderService vendorTestDataLoaderService
 
-   void "fetch statistics" () {
+   void "fetch statistics with unpaid balance" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
+      def store = storeFactoryService.store(3, company)
+      def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
 
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
+
+      def employeeList = employeeFactoryService.stream(4, company).toList()
+      def poApprovedBy = employeeList[0]
+      def poPurchaseAgent = employeeList[1]
+      def poPmtTerm = vendorPaymentTermList[2]
+      def poVendorSubEmp = employeeList[2]
+
+      def payToPmtTerm = vendorPaymentTermList[3]
+
+      def account = accountFactoryService.single(company)
+      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, shipVia)
+
+      def purchaseOrderIn = purchaseOrderDataLoaderService.single(company, vendor, poApprovedBy, poPurchaseAgent, shipVia, store, poPmtTerm, poVendorSubEmp)
+      def employeeIn = employeeList[3]
+
+      def openAccountPayableInvoiceStatus = AccountPayableInvoiceStatusTypeDataLoader.predefined().get(0)
+
+      def apInvoice = accountPayableInvoiceDataLoaderService.single(company, vendor, purchaseOrderIn, 1000.00, employeeIn, 500.00, openAccountPayableInvoiceStatus, payToIn, store, 300.00)
+
+      def apPayment = accountPayablePaymentDataLoaderService.single(company, bank, vendor)
+      def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendor, apInvoice, apPayment).toList()
 
       when:
       def result = get("$path/${vendor.id}")
@@ -46,6 +82,63 @@ class VendorStatisticsControllerSpecification extends ControllerSpecificationBas
       notThrown(Exception)
       result != null
       result.vendor.id == vendor.id
+      result.unpaidAmounts.balance == 200.00
+   }
+
+   void "fetch statistics with ytdPaid and ptdPaid" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      def store = storeFactoryService.store(3, company)
+      def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
+      final shipVia = shipViaTestDataLoaderService.single(company)
+      final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
+      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), false, false).collect()
+
+      final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(9), LocalDate.now(), LocalDate.now().plusMonths(7))
+
+      when:
+      put("/accounting/financial-calendar/open-gl-ap", dateRanges)
+
+      then:
+      notThrown(Exception)
+
+      when:
+      def employeeList = employeeFactoryService.stream(4, company).toList()
+      def poApprovedBy = employeeList[0]
+      def poPurchaseAgent = employeeList[1]
+      def poPmtTerm = vendorPaymentTermList[2]
+      def poVendorSubEmp = employeeList[2]
+
+      def payToPmtTerm = vendorPaymentTermList[3]
+
+      def account = accountFactoryService.single(company)
+      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+
+      def payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, shipVia)
+
+      def purchaseOrderIn = purchaseOrderDataLoaderService.single(company, vendor, poApprovedBy, poPurchaseAgent, shipVia, store, poPmtTerm, poVendorSubEmp)
+      def employeeIn = employeeList[3]
+
+      def openAccountPayableInvoiceStatus = AccountPayableInvoiceStatusTypeDataLoader.predefined().get(2)
+
+      def apInvoice = accountPayableInvoiceDataLoaderService.single(company, vendor, purchaseOrderIn, 1000.00, employeeIn, 700.00, openAccountPayableInvoiceStatus, payToIn, store, 300.00)
+
+      def accountPayablePaymentStatus = AccountPayablePaymentStatusTypeDataLoader.predefined().get(0)
+      def paymentType = AccountPayablePaymentTypeTypeDataLoader.predefined().get(0)
+      def apPayment = accountPayablePaymentDataLoaderService.single(company, bank, vendor, accountPayablePaymentStatus, paymentType, LocalDate.now(), null, 1500.00)
+
+      def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendor, apInvoice, apPayment, 75000.00, 1000.00).toList()
+
+      def result = get("$path/${vendor.id}")
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.vendor.id == vendor.id
+      result.ptdPaid == 375000.00
+      result.ytdPaid == 375000.00
    }
 
    void "fetch rebates" () {

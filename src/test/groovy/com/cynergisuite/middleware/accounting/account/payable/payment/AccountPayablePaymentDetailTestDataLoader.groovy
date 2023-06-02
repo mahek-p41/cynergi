@@ -22,7 +22,8 @@ class AccountPayablePaymentDetailTestDataLoader {
       VendorEntity vendorIn = null,
       AccountPayableInvoiceEntity invoiceIn,
       AccountPayablePaymentEntity apPaymentIn,
-      BigDecimal amountIn = null
+      BigDecimal amountIn = null,
+      BigDecimal discountIn = null
    ) {
       final number = numberIn < 0 ? 1 : numberIn
       final faker = new Faker()
@@ -35,7 +36,7 @@ class AccountPayablePaymentDetailTestDataLoader {
             invoiceIn,
             apPaymentIn,
             amountIn ? amountIn : random.nextInt(1, 100000).toBigDecimal(),
-            random.nextInt(1, 100000).toBigDecimal()
+            discountIn ? discountIn : random.nextInt(1, 100000).toBigDecimal()
          )
       }
    }
@@ -79,9 +80,10 @@ class AccountPayablePaymentDetailDataLoaderService {
       VendorEntity vendorIn = null,
       AccountPayableInvoiceEntity invoiceIn,
       AccountPayablePaymentEntity apPaymentIn,
-      BigDecimal amountIn = null
+      BigDecimal amountIn = null,
+      BigDecimal discountIn = null
    ) {
-      return AccountPayablePaymentDetailTestDataLoader.stream(numberIn, vendorIn, invoiceIn, apPaymentIn, amountIn)
+      return AccountPayablePaymentDetailTestDataLoader.stream(numberIn, vendorIn, invoiceIn, apPaymentIn, amountIn, discountIn)
          .map { accountPayablePaymentDetailRepository.insert(it, company) }
    }
 
