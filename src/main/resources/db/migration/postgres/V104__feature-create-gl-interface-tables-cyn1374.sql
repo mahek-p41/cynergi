@@ -35,6 +35,15 @@ CREATE TABLE deposits_staging_deposit_type_domain
 
 COMMENT ON TABLE deposits_staging_deposit_type_domain IS 'Used by SUMMARY to General Ledger Interface. Defines each of the deposit types available.';
 
+INSERT INTO deposits_staging_deposit_type_domain(id, value, description, localization_code)
+VALUES ('DEP_1', 'Deposit Cash', 'deposit.cash')
+       ('DEP_2', 'Deposit For Other Stores', 'deposit.for.other.stores'),
+       ('DEP_3', 'Deposit From Other Stores', 'deposit.from.other.stores'),
+       ('DEP_4', 'Deposit CC In Store', 'deposit..cc.in.store'),
+       ('DEP_5', 'Deposit ACH OLP', 'deposit.ach.old'),
+       ('DEP_6', 'Deposit CC OLP', 'deposit.cc.olp'),
+       ('DEP_7', 'Deposit Debit Card', 'deposit.debit.card');
+
 
 
 CREATE TABLE deposits_staging
