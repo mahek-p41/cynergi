@@ -44,7 +44,8 @@ class AccountPayableInvoiceDataLoader {
       AccountPayableInvoiceStatusType statusTypeIn = null,
       LocalDate dueDateIn = null,
       VendorEntity payToIn,
-      Store locationIn = null
+      Store locationIn = null,
+      BigDecimal discountTakenIn = null
    ) {
       final number = numberIn > 0 ? numberIn : 1
       final faker = new Faker()
@@ -54,6 +55,7 @@ class AccountPayableInvoiceDataLoader {
       final date = faker.date()
       final invoiceDate = invoiceDateIn ?: date.past(365, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate()
       final invoiceAmount = invoiceAmountIn ?: numbers.randomDouble(2, 1, 1000000).toBigDecimal()
+      final discountTaken = discountTakenIn ?: numbers.randomDouble(2, 1, 1000000).toBigDecimal()
       def paidAmount
       if (paidAmountIn >= BigDecimal.ZERO) {
          paidAmount = paidAmountIn
@@ -73,7 +75,7 @@ class AccountPayableInvoiceDataLoader {
             numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
             random.nextInt(1, 100).toBigDecimal().divide(BigDecimal.valueOf(100)).setScale(7, RoundingMode.HALF_EVEN),
             random.nextBoolean(),
-            numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
+            discountTaken,
             LocalDate.now(),
             LocalDate.now(),
             LocalDate.now(),
@@ -167,9 +169,10 @@ class AccountPayableInvoiceDataLoaderService {
       BigDecimal paidAmountIn = null,
       AccountPayableInvoiceStatusType statusTypeIn = null,
       VendorEntity payToIn,
-      Store locationIn = null
+      Store locationIn = null,
+      BigDecimal discountTakenIn = null
    ) {
-      return AccountPayableInvoiceDataLoader.stream(numberIn, vendorIn, purchaseOrderIn, null, invoiceAmountIn, employeeIn, paidAmountIn, statusTypeIn, null, payToIn, locationIn)
+      return AccountPayableInvoiceDataLoader.stream(numberIn, vendorIn, purchaseOrderIn, null, invoiceAmountIn, employeeIn, paidAmountIn, statusTypeIn, null, payToIn, locationIn, discountTakenIn)
          .map { accountPayableInvoiceRepository.insert(it, company) }
    }
 
@@ -200,9 +203,10 @@ class AccountPayableInvoiceDataLoaderService {
       BigDecimal paidAmountIn = null,
       AccountPayableInvoiceStatusType statusTypeIn = null,
       VendorEntity payToIn,
-      Store locationIn = null
+      Store locationIn = null,
+      BigDecimal discountTakenIn = null
    ) {
-      return stream(1, company, vendorIn, purchaseOrderIn, invoiceAmountIn, employeeIn, paidAmountIn, statusTypeIn, payToIn, locationIn).findFirst().orElseThrow { new Exception("Unable to create Account Payable Invoice Entity") }
+      return stream(1, company, vendorIn, purchaseOrderIn, invoiceAmountIn, employeeIn, paidAmountIn, statusTypeIn, payToIn, locationIn, discountTakenIn).findFirst().orElseThrow { new Exception("Unable to create Account Payable Invoice Entity") }
    }
 
    AccountPayableInvoiceDTO singleDTO(
