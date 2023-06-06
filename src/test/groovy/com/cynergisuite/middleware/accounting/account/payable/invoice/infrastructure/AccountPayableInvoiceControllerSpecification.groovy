@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
+import com.cynergisuite.domain.AccountPayableCheckPreviewFilterRequest
 import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
@@ -13,6 +14,7 @@ import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvo
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusType
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceTypeDTO
+import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDetailDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionTemplateDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
@@ -55,6 +57,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    @Inject AccountPayableDistributionDetailDataLoaderService apDistDetailDataLoaderService
    @Inject AccountPayableDistributionTemplateDataLoaderService apDistTemplateDataLoaderService
    @Inject SimpleTransactionalSql sql
+   @Inject AccountPayableControlTestDataLoaderService accountPayableControlDataLoaderService
 
    void "fetch one" () {
       given:
@@ -1298,5 +1301,88 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       'type'          | new AccountPayableInvoiceTypeDTO('Z', 'Invalid DTO')                               || 'type.value'       | "Z was unable to be found"
       'status'        | new AccountPayableInvoiceStatusTypeDTO('Z', 'Invalid DTO')                         || 'status.value'     | "Z was unable to be found"
       'location'      | new SimpleLegacyIdentifiableDTO(0)                                                 || 'location.id'      | "0 was unable to be found"
+   }
+
+   void "fetch check preview" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final store = storeFactoryService.store(1, company)
+      final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
+      final shipViaList = shipViaFactoryService.stream(4, company).toList()
+      final employeeList = employeeFactoryService.stream(4, company).toList()
+
+      final vendorPmtTerm = vendorPaymentTermList[0]
+      final vendorShipVia = shipViaList[0]
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+
+      final poVendorPmtTerm = vendorPaymentTermList[1]
+      final poVendorShipVia = shipViaList[1]
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poApprovedBy = employeeList[0]
+      final poPurchaseAgent = employeeList[1]
+      final poShipVia = shipViaList[2]
+      final poPmtTerm = vendorPaymentTermList[2]
+      final poVendorSubEmp = employeeList[2]
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+
+      final employeeIn = employeeList[3]
+
+      final payToPmtTerm = vendorPaymentTermList[3]
+      final payToShipVia = shipViaList[3]
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      final statusO = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
+
+      def apInvoiceEntities = dataLoaderService.stream(20, company, vendorIn, purchaseOrderIn, null, employeeIn, null, statusO, payToIn, store, 0.02)
+              .sorted { o1, o2 -> o1.id <=> o2.id }.sorted{
+         o1, o2 -> o1.invoice <=> o2.invoice
+      }.toList()
+
+      def apInvoices = apInvoiceEntities.stream().map { new AccountPayableInvoiceDTO(it) }.toList()
+
+      def account = accountFactoryService.single(company)
+      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      def pmtStatuses = AccountPayablePaymentStatusTypeDataLoader.predefined()
+      def pmtTypes = AccountPayablePaymentTypeTypeDataLoader.predefined()
+
+      def apPayments = accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }).toList()
+      apPayments.addAll(accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'V' }, pmtTypes.find { it.value == 'C' }, null, null, null, true).toList())
+      final accountPayableControl = accountPayableControlDataLoaderService.single(company, account, account)
+
+
+      def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendorIn, apInvoiceEntities[0], apPayments[0]).toList()
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendorIn, apInvoiceEntities[0], apPayments[1]).toList())
+      apPaymentDetailDataLoaderService.stream(5, company, vendorIn, apInvoiceEntities[1], apPayments[2]).toList()
+      apPaymentDetailDataLoaderService.stream(5, company, vendorIn, apInvoiceEntities[1], apPayments[3]).toList()
+
+      def template = apDistTemplateDataLoaderService.single(company)
+      def apDistribution = apDistDetailDataLoaderService.single(store, account, company, template)
+
+      sql.executeUpdate([invoice_id: apInvoices[0].id, account_id: account.id, profit_center_sfk: store.number, amount: 1000], """
+         INSERT INTO account_payable_invoice_distribution(invoice_id, distribution_account_id, distribution_profit_center_id_sfk, distribution_amount)
+	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
+         """)
+      sql.executeUpdate([invoice_id: apInvoices[1].id, account_id: account.id, profit_center_sfk: store.number, amount: 2000], """
+         INSERT INTO account_payable_invoice_distribution(invoice_id, distribution_account_id, distribution_profit_center_id_sfk, distribution_amount)
+	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
+         """)
+
+      def filterRequest = new AccountPayableCheckPreviewFilterRequest(bank.number, 100, null, null, null, null, null)
+
+      when:
+      def result = get("$path/check-preview${filterRequest}")
+
+      then:
+      notThrown(Exception)
+      with(result) {
+         netPaid != null
+         gross != null
+         vendorList.eachWithIndex { vendor, index ->
+            vendor.netPaid != null
+            vendor.gross != null
+            vendor.vendorNumber == vendorIn.number
+            vendor.vendorName == vendorIn.name
+            vendor.invoiceList != null
+         }
+      }
    }
 }

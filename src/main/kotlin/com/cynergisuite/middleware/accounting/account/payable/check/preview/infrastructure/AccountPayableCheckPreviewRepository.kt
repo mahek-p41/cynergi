@@ -5,19 +5,14 @@ import com.cynergisuite.extensions.getBigDecimalOrNull
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
-import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.sumByBigDecimal
-import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceSelectedTypeRepository
-import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
-import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewEntity
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewInvoiceEntity
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewVendorsEntity
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceRepository
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
@@ -45,7 +40,6 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
             apInvoice.id                                                AS apInvoice_id,
             apInvoice.company_id                                        AS apInvoice_company_id,
             apInvoice.invoice                                           AS apInvoice_invoice,
-            apInvoice.purchase_order_id                                 AS apInvoice_purchase_order_id,
             apInvoice.invoice_date                                      AS apInvoice_invoice_date,
             apInvoice.invoice_amount                                    AS apInvoice_invoice_amount,
             apInvoice.discount_amount                                   AS apInvoice_discount_amount,
@@ -106,7 +100,8 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
             status.id                                                   AS apInvoice_status_id,
             status.value                                                AS apInvoice_status_value,
             status.description                                          AS apInvoice_status_description,
-            status.localization_code                                    AS apInvoice_status_localization_code
+            status.localization_code                                    AS apInvoice_status_localization_code,
+            poHeader.number                                             AS apInvoice_po_number
          FROM account_payable_invoice apInvoice
             JOIN company comp                                           ON apInvoice.company_id = comp.id AND comp.deleted = FALSE
             JOIN vend                                                   ON apInvoice.vendor_id = vend.v_id
@@ -119,13 +114,14 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
             JOIN account_payable_invoice_distribution invDist           ON apInvoice.id = invDist.invoice_id
             JOIN account_payable_control apControl                      ON invDist.distribution_account_id = apControl.general_ledger_inventory_account_id
             LEFT JOIN bank                                              ON pmt.bank_id = bank.id AND bank.deleted = FALSE
-
+            JOIN purchase_order_header poHeader                         ON apInvoice.purchase_order_id = poHeader.id
       """
    }
 
    @ReadOnly
    fun fetchCheckPreview(company: CompanyEntity, filterRequest: AccountPayableCheckPreviewFilterRequest): AccountPayableCheckPreviewEntity {
       var currentVendor: AccountPayableCheckPreviewVendorsEntity? = null
+      var previousCheck: Boolean = false
       var checkNumber = filterRequest.checkNumber
       val previewDetails = mutableListOf<AccountPayableCheckPreviewVendorsEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
@@ -155,7 +151,7 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY apInvoice_vendor_number
+            ORDER BY apInvoice_vendor_number, apInvoice_invoice
          """.trimIndent(),
          params)
       { rs, elements ->
@@ -169,7 +165,7 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
 
                   localVendor
             } else {
-               if(separateCheck) {
+               if(separateCheck || previousCheck ) {
                   val localVendor = mapCheckPreview(rs, checkNumber)
                   checkNumber++
                   previewDetails.add(localVendor)
@@ -187,6 +183,7 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
                tempVendor.deduction = tempVendor.deduction.plus(it.deduction ?: BigDecimal.ZERO)
                tempVendor.netPaid = tempVendor.netPaid.plus(it.netPaid ?: BigDecimal.ZERO)
             }
+            previousCheck = separateCheck
          } while (rs.next())
       }
 
@@ -212,7 +209,7 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
          invoiceNumber = rs.getString("${columnPrefix}invoice"),
          date = rs.getLocalDate("${columnPrefix}invoice_date"),
          dueDate = rs.getLocalDate("${columnPrefix}due_date"),
-         poNumber = rs.getUuidOrNull("${columnPrefix}purchase_order_id"),
+         poNumber = rs.getInt("${columnPrefix}po_number"),
          gross = gross,
          discount = discount,
          deduction = BigDecimal.ZERO,
@@ -239,22 +236,25 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun validateCheckNums(checkNumber: Int, bank: Int, vendorList: List<AccountPayableCheckPreviewVendorsEntity>): Boolean {
+   fun validateCheckNums(
+      checkNumber: Int,
+      bank: Long,
+      vendorList: List<AccountPayableCheckPreviewVendorsEntity>
+   ): Boolean {
       val numOfChecks = vendorList.size
-      val range = checkNumber..checkNumber.plus(numOfChecks-1)
+      val range = checkNumber..checkNumber.plus(numOfChecks - 1L)
       val list = range.toList()
 
-      val exists = jdbc.queryForObject(
+      return jdbc.queryForObject(
          "SELECT EXISTS(SELECT payment_number FROM account_payable_payment " +
-            "JOIN bank on account_payable_payment.bank_id = bank.id AND bank.deleted = FALSE " +
-            "WHERE account_payable_payment.payment_number = " +
-            "any(array[<checkList>]::varchar[]) AND bank.number = :bank" +
-            ")",
+                 "JOIN bank on account_payable_payment.bank_id = bank.id AND bank.deleted = FALSE " +
+                 "WHERE account_payable_payment.payment_number = " +
+                 "any(array[<checkList>]::varchar[]) AND bank.number = :bank" +
+                 ")",
          mapOf(
             "checkList" to list, "bank" to bank
          ),
          Boolean::class.java
       )
-      return exists
    }
 }

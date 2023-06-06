@@ -28,7 +28,7 @@ data class AccountPayableCheckPreviewInvoiceDTO(
    var dueDate: LocalDate,
 
    @field:Schema(description = "PO Number")
-   var poNumber: UUID? = null,
+   var poNumber: Int? = null,
 
    @field:NotNull
    @field:Schema(description = "Gross amount")

@@ -320,7 +320,7 @@ class AccountPayableInvoiceController @Inject constructor(
    )
    fun checkPreview(
       @Parameter(name = "filterRequest", `in` = QUERY, required = false)
-      @Valid @QueryValue("filterRequest")
+      @QueryValue("filterRequest")
       filterRequest: AccountPayableCheckPreviewFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
