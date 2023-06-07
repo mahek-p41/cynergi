@@ -201,6 +201,7 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
       val status = statusRepository.mapRow(rs, "${columnPrefix}status_")
 
       return AccountPayableInvoiceInquiryDTO(
+         id = rs.getUuid("${columnPrefix}id"),
          invoice = rs.getString("${columnPrefix}invoice"),
          invAmount = rs.getBigDecimal("${columnPrefix}invoice_amount"),
          invDate = rs.getLocalDate("${columnPrefix}invoice_date"),
