@@ -386,7 +386,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
 
    @ReadOnly
    fun findAllByVendor(company: CompanyEntity, filterRequest: AccountPayableInvoiceListByVendorFilterRequest): RepositoryPage<AccountPayableInvoiceListByVendorDTO, PageRequest> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder("WHERE apInvoice.company_id = :comp_id ")
 
       val query = """
@@ -423,6 +423,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
             $query
             $whereClause
             ORDER BY vend.number, apInvoice.invoice
+            LIMIT :limit OFFSET :offset
          """.trimIndent(),
          params,
          filterRequest
