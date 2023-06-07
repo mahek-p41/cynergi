@@ -26,7 +26,7 @@ COMMENT ON TABLE verify_staging IS 'Used by SUMMARY to General Ledger Interface.
 
 CREATE TABLE deposits_staging_deposit_type_domain
 (
-    id                                                   UUID         DEFAULT uuid_generate_v1()                        NOT NULL PRIMARY KEY,
+    id                                                   INTEGER                                                        NOT NULL PRIMARY KEY,
     value                                                VARCHAR(10)                                                    NOT NULL,
     description                                          VARCHAR(100) CHECK ( char_length(trim(description)) > 1)       NOT NULL,
     localization_code                                    VARCHAR(100) CHECK ( char_length(trim(localization_code)) > 1) NOT NULL,
@@ -35,28 +35,28 @@ CREATE TABLE deposits_staging_deposit_type_domain
 
 COMMENT ON TABLE deposits_staging_deposit_type_domain IS 'Used by SUMMARY to General Ledger Interface. Defines each of the deposit types available.';
 
-INSERT INTO deposits_staging_deposit_type_domain(value, description, localization_code)
-VALUES ('DEP_1', 'Deposit Cash', 'deposit.cash'),
-       ('DEP_2', 'Deposit For Other Stores', 'deposit.for.other.stores'),
-       ('DEP_3', 'Deposit From Other Stores', 'deposit.from.other.stores'),
-       ('DEP_4', 'Deposit CC In Store', 'deposit..cc.in.store'),
-       ('DEP_5', 'Deposit ACH OLP', 'deposit.ach.old'),
-       ('DEP_6', 'Deposit CC OLP', 'deposit.cc.olp'),
-       ('DEP_7', 'Deposit Debit Card', 'deposit.debit.card');
+INSERT INTO deposits_staging_deposit_type_domain(id, value, description, localization_code)
+VALUES (1, 'DEP_1', 'Deposit Cash', 'deposit.cash'),
+       (2, 'DEP_2', 'Deposit For Other Stores', 'deposit.for.other.stores'),
+       (3, 'DEP_3', 'Deposit From Other Stores', 'deposit.from.other.stores'),
+       (4, 'DEP_4', 'Deposit CC In Store', 'deposit..cc.in.store'),
+       (5, 'DEP_5', 'Deposit ACH OLP', 'deposit.ach.old'),
+       (6, 'DEP_6', 'Deposit CC OLP', 'deposit.cc.olp'),
+       (7, 'DEP_7', 'Deposit Debit Card', 'deposit.debit.card');
 
 
 
 CREATE TABLE deposits_staging
 (
-    id                                                   UUID        DEFAULT uuid_generate_v1()                      NOT NULL PRIMARY KEY,
-    time_created                                         TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()                       NOT NULL,
-    time_updated                                         TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()                       NOT NULL,
-    company_id                                           UUID REFERENCES company (id)                                NOT NULL,
-    verify_id                                            UUID REFERENCES verify_staging (id)                         NOT NULL,
-    store_number_sfk                                     INTEGER                                                     NOT NULL,
-    business_date                                        DATE                                                        NOT NULL,
-    deposit_type_id                                      UUID REFERENCES deposits_staging_deposit_type_domain (id)   NOT NULL,
-    deposit_amount                                       NUMERIC(13,2)                                               NOT NULL
+    id                                                   UUID        DEFAULT uuid_generate_v1()                         NOT NULL PRIMARY KEY,
+    time_created                                         TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()                          NOT NULL,
+    time_updated                                         TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()                          NOT NULL,
+    company_id                                           UUID REFERENCES company (id)                                   NOT NULL,
+    verify_id                                            UUID REFERENCES verify_staging (id)                            NOT NULL,
+    store_number_sfk                                     INTEGER                                                        NOT NULL,
+    business_date                                        DATE                                                           NOT NULL,
+    deposit_type_id                                      INTEGER REFERENCES deposits_staging_deposit_type_domain (id)   NOT NULL,
+    deposit_amount                                       NUMERIC(13,2)                                                  NOT NULL
 );
 
 CREATE TRIGGER update_deposits_staging_trg
