@@ -339,7 +339,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
             JOIN company comp                                           ON apInvoice.company_id = comp.id AND comp.deleted = FALSE
             JOIN vend                                                   ON apInvoice.vendor_id = vend.v_id
             JOIN vend payTo                                             ON apInvoice.pay_to_id = payTo.v_id
-            JOIN system_employees_fimvw employee                        ON apInvoice.employee_number_id_sfk = employee.emp_number AND employee.comp_id = comp.id
+            LEFT JOIN system_employees_fimvw employee                        ON apInvoice.employee_number_id_sfk = employee.emp_number AND employee.comp_id = comp.id
             JOIN account_payable_invoice_selected_type_domain selected  ON apInvoice.selected_id = selected.id
             JOIN account_payable_invoice_type_domain type               ON apInvoice.type_id = type.id
             JOIN account_payable_invoice_status_type_domain status      ON apInvoice.status_id = status.id
@@ -516,7 +516,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
             "entry_date" to entity.entryDate,
             "expense_date" to entity.expenseDate,
             "discount_date" to entity.discountDate,
-            "employee_number_id_sfk" to entity.employee.number,
+            "employee_number_id_sfk" to entity.employee?.number,
             "original_invoice_amount" to entity.originalInvoiceAmount,
             "message" to entity.message,
             "selected_id" to entity.selected.id,
@@ -592,7 +592,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
             "entry_date" to entity.entryDate,
             "expense_date" to entity.expenseDate,
             "discount_date" to entity.discountDate,
-            "employee_number_id_sfk" to entity.employee.number,
+            "employee_number_id_sfk" to entity.employee?.number,
             "original_invoice_amount" to entity.originalInvoiceAmount,
             "message" to entity.message,
             "selected_id" to entity.selected.id,
@@ -628,7 +628,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
    ): AccountPayableInvoiceEntity {
       val vendor = vendorRepository.mapRow(rs, company, "${columnPrefix}vendor_")
       val payTo = vendorRepository.mapRow(rs, company, "${columnPrefix}payTo_")
-      val employee = employeeRepository.mapRow(
+      val employee = employeeRepository.mapRowOrNull(
          rs,
          "${columnPrefix}employee_",
          "${columnPrefix}employee_comp_",
