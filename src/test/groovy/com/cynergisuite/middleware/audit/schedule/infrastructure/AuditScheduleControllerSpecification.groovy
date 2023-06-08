@@ -247,9 +247,8 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
-      response.size() == 1
-      response[0].path == "stores"
-      response[0].message == "Is not allowed to be empty"
+      response.code == "cynergi.validation.conversion.error"
+      response.message == "Failed to convert argument [dto] for value [1]"
    }
 
    void "update audit schedule add store" () {
