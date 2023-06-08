@@ -1,6 +1,5 @@
 package com.cynergisuite.domain
 
-import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 import java.util.UUID
@@ -11,11 +10,10 @@ import java.util.UUID
    description = "Defines the parameters available for a sortable request.",
    allOf = [SortableRequestBase::class]
 )
-@Introspected
 class AccountPayableCheckPreviewFilterRequest(
 
    @field:Schema(name = "bank", description = "Bank number")
-   var bank: Int,
+   var bank: Long,
 
    @field:Schema(name = "checkNumber", description = "Check Number")
    var checkNumber: Int,

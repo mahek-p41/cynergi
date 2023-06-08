@@ -15,7 +15,7 @@ data class AccountPayableCheckPreviewInvoiceEntity(
    var invoiceNumber: String,
    var date: LocalDate,
    var dueDate: LocalDate,
-   var poNumber: UUID? = null,
+   var poNumber: Int? = null,
    var gross: BigDecimal,
    var discount: BigDecimal,
    var deduction: BigDecimal? = BigDecimal.ZERO,
