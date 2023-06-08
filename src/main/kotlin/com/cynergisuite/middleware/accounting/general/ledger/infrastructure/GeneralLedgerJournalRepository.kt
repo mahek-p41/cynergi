@@ -30,6 +30,7 @@ import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import org.apache.commons.csv.CSVRecord
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
@@ -254,6 +255,35 @@ class GeneralLedgerJournalRepository @Inject constructor(
             "message" to entity.message
          )
       ) { rs, _ -> mapRowUpsert(rs, entity.account, entity.profitCenter, entity.source) }
+   }
+
+   @Transactional
+   fun insert(record: CSVRecord, map: Map<String, *>) {
+      logger.debug("Inserting GeneralLedgerJournal from CSVRecord {}", record)
+
+      jdbc.update(
+         """
+         INSERT INTO general_ledger_journal(
+            company_id,
+            account_id,
+            profit_center_id_sfk,
+            date,
+            source_id,
+            amount,
+            message
+         )
+         VALUES (
+            :company_id,
+            :account_id,
+            :profit_center_id_sfk,
+            :date,
+            :source_id,
+            :amount,
+            :message
+         )
+         """.trimIndent(),
+         map
+      )
    }
 
    @Transactional
