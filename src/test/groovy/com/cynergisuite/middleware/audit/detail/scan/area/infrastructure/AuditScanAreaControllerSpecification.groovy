@@ -145,6 +145,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
       def response = exception.response.bodyAsJson()
       response.size() == 1
       response[0].path == 'auditScanAreaDTO.name'
+      response[0].code == 'javax.validation.constraints.NotNull.message'
       response[0].message == 'Is required'
    }
 
