@@ -1,11 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
-import com.cynergisuite.domain.AccountPayableCheckPreviewFilterRequest
-import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
-import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
-import com.cynergisuite.domain.InvoiceReportFilterRequest
-import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.domain.*
+import com.cynergisuite.middleware.accounting.account.VendorBalanceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewService
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
@@ -330,5 +326,30 @@ class AccountPayableInvoiceController @Inject constructor(
       val user = userService.fetchUser(authentication)
 
       return accountPayableCheckPreviewService.checkPreview(user.myCompany(), filterRequest)
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/vendor-balance{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Fetch an Account Payable Check Preview Report", description = "Fetch an Account Payable Check Preview Report", operationId = "accountPayableInvoice-checkPreview")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested Account Payable Check Preview Report was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun vendorBalance(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @QueryValue("filterRequest")
+      filterRequest: AccountPayableVendorBalanceReportFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): VendorBalanceDTO {
+      logger.info("Fetching Account Payable Check Preview Report {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+
+      return accountPayableInvoiceService.vendorBalance(user.myCompany(), filterRequest)
    }
 }

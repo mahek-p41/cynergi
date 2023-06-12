@@ -1,9 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
-import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
-import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.SimpleIdentifiableEntity
-import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
+import com.cynergisuite.domain.*
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
@@ -14,6 +11,8 @@ import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.accounting.account.VendorBalanceDTO
+import com.cynergisuite.middleware.accounting.account.VendorBalanceEntity
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceSelectedTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
@@ -612,6 +611,14 @@ class AccountPayableInvoiceRepository @Inject constructor(
       ) { rs, _ ->
          mapRow(rs, entity)
       }
+   }
+
+   @ReadOnly
+   fun vendorBalance(company: CompanyEntity, filterRequest: AccountPayableVendorBalanceReportFilterRequest): VendorBalanceDTO {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val whereClause = StringBuilder("WHERE apInvoice.company_id = :comp_id ")
+      //todo placeholder
+      return VendorBalanceDTO()
    }
 
    fun mapRow(

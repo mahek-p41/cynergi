@@ -1,10 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice
 
-import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
-import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
-import com.cynergisuite.domain.InvoiceReportFilterRequest
-import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.*
+import com.cynergisuite.middleware.accounting.account.VendorBalanceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceInquiryRepository
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceReportRepository
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceRepository
@@ -104,6 +101,11 @@ class AccountPayableInvoiceService @Inject constructor(
       val toUpdate = accountPayableInvoiceValidator.validateUpdate(id, dto, company)
 
       return transformEntity(accountPayableInvoiceRepository.update(toUpdate, company))
+   }
+
+   fun vendorBalance(company: CompanyEntity, filterRequest: AccountPayableVendorBalanceReportFilterRequest): VendorBalanceDTO {
+      return accountPayableInvoiceRepository.vendorBalance(company, filterRequest)
+
    }
 
    private fun transformEntity(accountPayableInvoiceEntity: AccountPayableInvoiceEntity): AccountPayableInvoiceDTO {
