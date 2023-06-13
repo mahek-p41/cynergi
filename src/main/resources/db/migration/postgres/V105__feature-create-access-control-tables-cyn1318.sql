@@ -145,6 +145,6 @@ CREATE TABLE employee_to_security_group (
       security_group_id   UUID   REFERENCES security_group (id)            NOT NULL
 );
 
-COMMENT ON TABLE security_group_to_security_access_point IS 'Mapping of employees to security groups.';
+COMMENT ON TABLE employee_to_security_group IS 'Mapping of employees to security groups.';
 
 CREATE INDEX employee_to_security_group_id_idx ON security_group(id);
