@@ -8,6 +8,7 @@ import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 import javax.validation.constraints.DecimalMax
 import javax.validation.constraints.DecimalMin
 import javax.validation.constraints.Digits
@@ -18,6 +19,12 @@ import javax.validation.constraints.Size
 @JsonInclude(NON_NULL)
 @Schema(name = "AccountPayableInvoiceInquiry", title = "Account Payable Invoice Inquiry", description = "Account payable invoice inquiry")
 data class AccountPayableInvoiceInquiryDTO(
+
+
+   @field:NotNull
+   @field:Size(max = 20)
+   @field:Schema(description = "Account payable invoice id", maxLength = 20)
+   var id: UUID? = null,
 
    @field:NotNull
    @field:Size(max = 20)

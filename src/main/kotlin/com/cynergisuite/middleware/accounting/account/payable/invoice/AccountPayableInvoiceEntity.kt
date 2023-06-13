@@ -27,7 +27,7 @@ data class AccountPayableInvoiceEntity(
    val entryDate: LocalDate,
    val expenseDate: LocalDate,
    val discountDate: LocalDate?,
-   val employee: EmployeeEntity,
+   val employee: EmployeeEntity?,
    val originalInvoiceAmount: BigDecimal,
    val message: String?,
    val selected: AccountPayableInvoiceSelectedType,

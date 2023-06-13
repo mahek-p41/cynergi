@@ -10,6 +10,7 @@ import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.vendor.VendorDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import com.fasterxml.jackson.annotation.JsonInclude.Include.ALWAYS
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
@@ -77,6 +78,7 @@ data class AccountPayableInvoiceDTO(
    var discountDate: LocalDate? = null,
 
    @field:NotNull
+   @JsonInclude(ALWAYS)
    @field:Schema(description = "Employee number")
    var employee: EmployeeValueObject? = null,
 
@@ -147,7 +149,7 @@ data class AccountPayableInvoiceDTO(
          entryDate = entity.entryDate,
          expenseDate = entity.expenseDate,
          discountDate = entity.discountDate,
-         employee = EmployeeValueObject(entity.employee),
+         employee = entity?.employee?.let { EmployeeValueObject(it) },
          originalInvoiceAmount = entity.originalInvoiceAmount,
          message = entity.message,
          selected = AccountPayableInvoiceSelectedTypeDTO(entity.selected),
