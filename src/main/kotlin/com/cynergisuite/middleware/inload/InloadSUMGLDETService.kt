@@ -24,7 +24,7 @@ class InloadSUMGLDETService @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(InloadSUMGLDETService::class.java)
 
    override fun inloadCsv(record: CSVRecord, batchId: UUID) {
-      logger.debug("Loading sumgldet record {}", record)
+      logger.debug("Loading daily general ledger journal record SUMGLDET {}", record)
 
       // Todo: make some improvements on next task
       val company = companyRepository.findByDataset(record["Data_Set_ID"].trim())!!

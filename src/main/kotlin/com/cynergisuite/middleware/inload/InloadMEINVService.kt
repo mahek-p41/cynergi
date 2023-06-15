@@ -24,7 +24,7 @@ class InloadMEINVService @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(InloadMEINVService::class.java)
 
    override fun inloadCsv(record: CSVRecord, batchId: UUID) {
-      logger.debug("Loading employee record {}", record)
+      logger.debug("Loading month end general ledger journal record MEINV {}", record)
 
       // Todo: make some improvements on next task
       val company = companyRepository.findByDataset(record["Data_Set_ID"].trim())!!
