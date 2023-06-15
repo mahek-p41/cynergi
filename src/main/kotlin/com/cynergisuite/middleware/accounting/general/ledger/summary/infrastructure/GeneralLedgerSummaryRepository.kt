@@ -12,7 +12,6 @@ import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
-import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.type.infrastructure.OverallPeriodTypeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryEntity
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -471,8 +470,10 @@ class GeneralLedgerSummaryRepository @Inject constructor(
       """, mapOf("comp_id" to company.id, "retained_earnings_account" to retainedEarningsAccount.id), BigDecimal::class.java)
    }
 
+   @Transactional
    fun rollOneFinancialYear(company: CompanyEntity) {
-      logger.debug("Roll one financial year for general_ledger_summary {}", company)
+      logger.debug("Roll one financial year for general_ledger_summary and update beginning_balance {}", company)
+
       jdbc.update("""
          DELETE FROM general_ledger_summary
          WHERE company_id = :comp_id
@@ -504,6 +505,8 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          """.trimIndent(),
          mapOf("comp_id" to company.id)
       )
+
+      recalculateGLBalance(company)
    }
 
    @Transactional
