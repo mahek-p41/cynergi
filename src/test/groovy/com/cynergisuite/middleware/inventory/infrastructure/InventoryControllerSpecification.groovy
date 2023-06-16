@@ -7,6 +7,7 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 @MicronautTest(transactional = false)
 class InventoryControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/inventory/all"
+   private static final String mobilePath = "/inventory"
 
    void "fetch first page without locationType" () {
       given:
@@ -146,6 +147,54 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[1].primaryLocation.name == "KANSAS CITY"
       pageOneResult.elements[1].locationType.value == "STORE"
       pageOneResult.elements[1].locationType.description == "Store"
+   }
+
+   // Unfortunately, this test can not make the real request to test the real issues
+   // Use postman to make a mobile-app-like-request for a reliable test result
+   void "mobile-app-like-request fetch first page with locationType" () {
+      given:
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1)
+      final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
+      final pageOne = new InventoryPageRequest([page: 1, size: 100, locationType: "STORE"])
+
+      when:
+      def pageOneResult = get("${mobilePath}${pageOne}", tstds1Store1UserLogin)
+
+      then:
+      notThrown(HttpClientResponseException)
+      pageOneResult.requested.storeNumber == tstds1Store1User.myLocation().myNumber()
+      pageOneResult.requested.locationType == "STORE"
+      pageOneResult.requested.inventoryStatus == ["R", "D", "N"]
+      pageOneResult.elements != null
+      pageOneResult.elements.size() == 100
+      pageOneResult.totalElements == 427
+      pageOneResult.totalPages == 5
+      pageOneResult.first == true
+      pageOneResult.last == false
+      pageOneResult.elements[1].id == 73823
+      pageOneResult.elements[1].lookupKey == "201-00925"
+      pageOneResult.elements[1].modelNumber == "FPGIDFRAMEDART"
+      pageOneResult.elements[1].description == "MISCELLANEOUS FURNITURE PICT"
+      pageOneResult.elements[1].serialNumber == null
+      pageOneResult.elements[1].barcode == null
+      pageOneResult.elements[1].altId == null
+      pageOneResult.elements[1].lookupKeyType == null
+      pageOneResult.elements[1].brand == null
+      pageOneResult.elements[1].productCode == null
+      pageOneResult.elements[1].receivedDate == null
+      pageOneResult.elements[1].originalCost == null
+      pageOneResult.elements[1].actualCost == null
+      pageOneResult.elements[1].modelCategory == null
+      pageOneResult.elements[1].timesRented == null
+      pageOneResult.elements[1].totalRevenue == null
+      pageOneResult.elements[1].remainingValue == null
+      pageOneResult.elements[1].sellPrice == null
+      pageOneResult.elements[1].assignedValue == null
+      pageOneResult.elements[1].idleDays == null
+      pageOneResult.elements[1].condition == null
+      pageOneResult.elements[1].status == null
+      pageOneResult.elements[1].primaryLocation == null
+      pageOneResult.elements[1].locationType == null
    }
 
    void "fetch first page of inventory with status of N" () {
