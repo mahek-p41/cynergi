@@ -1,7 +1,9 @@
 CREATE TABLE accounting_entries_staging
 (
     id                     UUID         DEFAULT uuid_generate_v1()                     NOT NULL PRIMARY KEY,
-    company_id             UUID                                                        NOT NULL,
+    time_created           TIMESTAMPTZ  DEFAULT clock_timestamp()                      NOT NULL,
+    time_updated           TIMESTAMPTZ  DEFAULT clock_timestamp()                      NOT NULL,
+    company_id             UUID         REFERENCES company (id)                        NOT NULL,
     verify_id              UUID         REFERENCES verify_staging (id)                 NOT NULL,
     store_number_sfk       INTEGER                                                     NOT NULL,
     business_date          DATE                                                        NOT NULL,
