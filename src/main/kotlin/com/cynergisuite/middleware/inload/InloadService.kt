@@ -16,6 +16,7 @@ class InloadService @Inject constructor(
    @Named("inload")
    private val executorService: ExecutorService,
    private val inloadMEINVService: InloadMEINVService,
+   private val inloadSUMGLDETService: InloadSUMGLDETService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(InloadService::class.java)
 
@@ -52,12 +53,36 @@ class InloadService @Inject constructor(
                      logger.warn("Unable to lock {}", path)
                   }
                }
+
+               if (inloadSUMGLDETService.canProcess(path)) {
+                  logger.info("Processing {} with {}", path, inloadSUMGLDETService)
+
+                  val lockedSuccessfully = path.tryLockForReader { reader ->
+                     inloadSUMGLDETService.inload(reader)
+                  }
+
+                  if (lockedSuccessfully) {
+                     val target = path.resolveSibling("archive/${path.fileName}.PROCESSED")
+
+                     if (!Files.exists(target.parent)) {
+                        Files.createDirectories(target.parent)
+                     }
+
+                     logger.debug("Moving {} to {}", path, target)
+
+                     Files.move(path, target)
+                  } else {
+                     logger.warn("Unable to lock {}", path)
+                  }
+               }
             } else {
                logger.warn("{} did not exist", path)
             }
+
          } catch (e: Throwable) {
             logger.error("Error occurred during inloading of {}", path)
          }
+
       }
    }
 

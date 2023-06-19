@@ -14,17 +14,17 @@ import java.time.LocalDate
 import java.util.UUID
 
 @Singleton
-class InloadMEINVService @Inject constructor(
+class InloadSUMGLDETService @Inject constructor(
    private val companyRepository: CompanyRepository,
    private val accountRepository: AccountRepository,
    private val sourceCodeRepository: GeneralLedgerSourceCodeRepository,
    private val glJournalRepository: GeneralLedgerJournalRepository,
-) : CsvInloaderBase(FileSystems.getDefault().getPathMatcher("glob:MEINV_*")) {
+) : CsvInloaderBase(FileSystems.getDefault().getPathMatcher("glob:SUMGLDET_*")) {
 
-   private val logger: Logger = LoggerFactory.getLogger(InloadMEINVService::class.java)
+   private val logger: Logger = LoggerFactory.getLogger(InloadSUMGLDETService::class.java)
 
    override fun inloadCsv(record: CSVRecord, batchId: UUID) {
-      logger.debug("Loading month end general ledger journal record MEINV {}", record)
+      logger.debug("Loading daily general ledger journal record SUMGLDET {}", record)
 
       // Todo: make some improvements on next task
       val company = companyRepository.findByDataset(record["Data_Set_ID"].trim())!!
