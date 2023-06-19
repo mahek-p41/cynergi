@@ -121,6 +121,7 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
          GROUP BY glSummary.company_id, acct.id, acctType.value, glSummary.id, glSummary.profit_center_id_sfk,
             glDetail.id, glDetail.profit_center_id_sfk, glDetail.date, glDetail.journal_entry_number, glDetail.amount, glDetail.message,
             glDetail.source_id, glDetail.source_value, glDetail.source_description
+         ORDER BY account_number, profit_center, detail_date
       """.trimIndent()
 
       logger.info("Querying for General Ledger Trial Balance report:")
