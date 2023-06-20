@@ -91,6 +91,12 @@ class AccountTestDataLoaderService {
          .findFirst().orElseThrow { new Exception("Unable to create Account") }
    }
 
+   AccountEntity single(CompanyEntity company, Long acctNumber) {
+      return AccountTestDataLoader.stream(1, company, null, acctNumber, null)
+         .map { accountRepository.insert(it, company) }
+         .findFirst().orElseThrow { new Exception("Unable to create Account") }
+   }
+
    AccountDTO singleDTO(CompanyEntity company) {
       return AccountTestDataLoader.streamDTO(1).findFirst().orElseThrow { new Exception("Unable to create Account") }
    }
