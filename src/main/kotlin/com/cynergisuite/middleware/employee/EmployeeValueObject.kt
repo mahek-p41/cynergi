@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.employee
 
 import com.cynergisuite.domain.LegacyIdentifiable
+import com.cynergisuite.middleware.authentication.user.SecurityGroup
 import com.cynergisuite.middleware.store.StoreDTO
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -64,11 +65,16 @@ data class EmployeeValueObject(
    @field:JsonIgnoreProperties
    @field:NotNull
    @field:Schema(name = "active", description = "true|false value describing whether an employee/user is active or not", hidden = true)
-   var active: Boolean? = true
+   var active: Boolean? = true,
+
+   @field:JsonIgnoreProperties
+   @field:NotNull
+   @field:Schema(name = "securityGroup", description = "true|false value describing whether an employee/user is active or not", hidden = true)
+   var securityGroup: SecurityGroup,
 
 ) : LegacyIdentifiable {
 
-   constructor(id: Long, type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreDTO, active: Boolean, altStoreIndicator: String, alternativeArea: Long) :
+   constructor(id: Long, type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreDTO, active: Boolean, altStoreIndicator: String, alternativeArea: Long, securityGroup: SecurityGroup) :
       this(
          id = id,
          type = type,
@@ -79,7 +85,8 @@ data class EmployeeValueObject(
          store = store,
          active = active,
          alternativeStoreIndicator = altStoreIndicator,
-         alternativeArea = alternativeArea
+         alternativeArea = alternativeArea,
+         securityGroup = securityGroup
       )
 
    constructor(entity: EmployeeEntity) :
@@ -93,7 +100,8 @@ data class EmployeeValueObject(
          store = entity.store?.let { StoreDTO(it) },
          active = entity.active,
          alternativeStoreIndicator = entity.alternativeStoreIndicator,
-         alternativeArea = entity.alternativeArea
+         alternativeArea = entity.alternativeArea,
+         securityGroup = entity.securityGroup
       )
 
    override fun myId(): Long? = id

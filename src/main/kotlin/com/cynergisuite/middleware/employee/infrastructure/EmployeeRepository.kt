@@ -2,13 +2,10 @@ package com.cynergisuite.middleware.employee.infrastructure
 
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.query
-import com.cynergisuite.extensions.queryForObject
-import com.cynergisuite.extensions.trimToNull
+import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.authentication.user.User
+import com.cynergisuite.middleware.authentication.user.infrastructure.SecurityGroupRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.DepartmentEntity
@@ -32,6 +29,7 @@ class EmployeeRepository @Inject constructor(
    private val departmentRepository: DepartmentRepository,
    private val jdbc: Jdbi,
    private val storeRepository: StoreRepository,
+   private val securityGroupRepository: SecurityGroupRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(EmployeeRepository::class.java)
 
@@ -263,7 +261,7 @@ class EmployeeRepository @Inject constructor(
             "first_name_mi" to entity.firstNameMi.trimToNull(), // not sure this is a good practice as it isn't being enforced by the database, but should be once the employee data is managed in PostgreSQL
             "pass_code" to entity.passCode,
             "active" to entity.active,
-            "cynergi_system_admin" to entity.cynergiSystemAdmin,
+         //   "cynergi_system_admin" to entity.cynergiSystemAdmin,
             "company_id" to entity.company.id,
             "department" to entity.department?.myCode(),
             "store_number" to entity.store?.myNumber(),
@@ -284,7 +282,7 @@ class EmployeeRepository @Inject constructor(
       storeColumnPrefix: String = "store_"
    ): EmployeeEntity {
       val company = companyRepository.mapRow(rs, companyColumnPrefix, companyAddressColumnPrefix)
-
+      val securityGroup = securityGroupRepository.findOne(rs.getLong("${columnPrefix}id"))
       return EmployeeEntity(
          id = rs.getLong("${columnPrefix}id"),
          type = rs.getString("${columnPrefix}type"),
@@ -296,9 +294,11 @@ class EmployeeRepository @Inject constructor(
          store = storeRepository.mapRowOrNull(rs, company, storeColumnPrefix),
          active = rs.getBoolean("${columnPrefix}active"),
          department = departmentRepository.mapRowOrNull(rs, company, departmentColumnPrefix),
-         cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
+       //  cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
          alternativeStoreIndicator = rs.getString("${columnPrefix}alternative_store_indicator"),
-         alternativeArea = rs.getLong("${columnPrefix}alternative_area")
+         alternativeArea = rs.getLong("${columnPrefix}alternative_area"),
+         //employee_to_security_group mapRow eventually
+         securityGroup = securityGroup!!
       )
    }
 
@@ -325,13 +325,15 @@ class EmployeeRepository @Inject constructor(
          firstNameMi = rs.getString("first_name_mi"), // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
          passCode = rs.getString("pass_code"),
          active = rs.getBoolean("active"),
-         cynergiSystemAdmin = rs.getBoolean("cynergi_system_admin"),
+       //  cynergiSystemAdmin = rs.getBoolean("cynergi_system_admin"),
          company = company,
          department = department,
          store = store,
          alternativeStoreIndicator = rs.getString("alternative_store_indicator"),
-         alternativeArea = rs.getLong("alternative_area")
-      )
+         alternativeArea = rs.getLong("alternative_area"),
+         securityGroup = securityGroupRepository.findOne(rs.getLong("id"))!!
+
+   )
 
    @ReadOnly
    fun findPurchaseOrderApprovers(user: User): List<EmployeeEntity> {

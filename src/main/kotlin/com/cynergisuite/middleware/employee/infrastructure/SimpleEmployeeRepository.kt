@@ -9,6 +9,7 @@ import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.trimToNull
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.authentication.user.User
+import com.cynergisuite.middleware.authentication.user.infrastructure.SecurityGroupRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.DepartmentEntity
@@ -34,6 +35,7 @@ import javax.transaction.Transactional
 class SimpleEmployeeRepository @Inject constructor(
    private val companyRepository: CompanyRepository,
    private val departmentRepository: DepartmentRepository,
+   private val securityGroupRepository: SecurityGroupRepository,
    private val jdbc: Jdbi,
 ) {
    private val logger: Logger = LoggerFactory.getLogger(SimpleEmployeeRepository::class.java)
@@ -236,7 +238,7 @@ class SimpleEmployeeRepository @Inject constructor(
             "first_name_mi" to entity.firstNameMi.trimToNull(), // not sure this is a good practice as it isn't being enforced by the database, but should be once the employee data is managed in PostgreSQL
             "pass_code" to entity.passCode,
             "active" to entity.active,
-            "cynergi_system_admin" to entity.cynergiSystemAdmin,
+         //   "cynergi_system_admin" to entity.cynergiSystemAdmin,
             "company_id" to entity.company.id,
             "department" to entity.department?.myCode(),
             "store_number" to entity.store?.myNumber(),
@@ -269,9 +271,11 @@ class SimpleEmployeeRepository @Inject constructor(
             companyRepository.mapRow(rs, companyColumnPrefix),
             departmentColumnPrefix
          ),
-         cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
+        // cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
          alternativeStoreIndicator = rs.getString("${columnPrefix}alternative_store_indicator"),
-         alternativeArea = rs.getLong("${columnPrefix}alternative_area")
+         alternativeArea = rs.getLong("${columnPrefix}alternative_area"),
+         securityGroup = securityGroupRepository.findOne(rs.getLong("${columnPrefix}id"))!!
+
       )
    }
 
@@ -298,6 +302,7 @@ class SimpleEmployeeRepository @Inject constructor(
       department: DepartmentEntity?,
       store: Store?
    ): EmployeeEntity =
+
       EmployeeEntity(
          id = rs.getLong("id"),
          type = "eli",
@@ -306,11 +311,13 @@ class SimpleEmployeeRepository @Inject constructor(
          firstNameMi = rs.getString("first_name_mi"), // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
          passCode = rs.getString("pass_code"),
          active = rs.getBoolean("active"),
-         cynergiSystemAdmin = rs.getBoolean("cynergi_system_admin"),
+       //  cynergiSystemAdmin = rs.getBoolean("cynergi_system_admin"),
          company = company,
          department = department,
          store = store,
          alternativeStoreIndicator = rs.getString("alternative_store_indicator"),
-         alternativeArea = rs.getLong("alternative_area")
-      )
+         alternativeArea = rs.getLong("alternative_area"),
+         securityGroup =  securityGroupRepository.findOne(rs.getLong("id"))!!
+
+   )
 }

@@ -37,10 +37,15 @@ data class AuthenticatedEmployee(
    @Relation(ONE_TO_ONE)
    val fallbackLocation: LocationEntity,
 
+   @Relation(ONE_TO_ONE)
+   val securityGroup: SecurityGroup,
+
    val passCode: String,
-   val cynergiSystemAdmin: Boolean,
+ //  val cynergiSystemAdmin: Boolean,
    val alternativeStoreIndicator: String,
-   val alternativeArea: Long
+   val alternativeArea: Long,
+
+
 ) : User {
 
    constructor(user: AuthenticatedEmployee, passCodeOverride: String) :
@@ -54,9 +59,10 @@ data class AuthenticatedEmployee(
          chosenLocation = user.chosenLocation,
          fallbackLocation = user.fallbackLocation,
          passCode = passCodeOverride,
-         cynergiSystemAdmin = user.cynergiSystemAdmin,
+     //    cynergiSystemAdmin = user.cynergiSystemAdmin,
          alternativeStoreIndicator = user.alternativeStoreIndicator,
-         alternativeArea = user.alternativeArea
+         alternativeArea = user.alternativeArea,
+          securityGroup = user.securityGroup
       )
 
    constructor(employeeId: Long, employee: EmployeeEntity, store: Store) :
@@ -70,9 +76,10 @@ data class AuthenticatedEmployee(
          chosenLocation = null, // since we are copying a row from the db for this, we don't have a chosenLocation
          fallbackLocation = LocationEntity(store),
          passCode = employee.passCode,
-         cynergiSystemAdmin = employee.cynergiSystemAdmin,
+      //   cynergiSystemAdmin = employee.cynergiSystemAdmin,
          alternativeStoreIndicator = employee.alternativeStoreIndicator,
-         alternativeArea = employee.alternativeArea
+         alternativeArea = employee.alternativeArea,
+          securityGroup = employee.securityGroup
       )
 
    override fun myId(): Long = id
@@ -83,5 +90,5 @@ data class AuthenticatedEmployee(
    override fun myEmployeeNumber(): Int = number
    override fun myAlternativeStoreIndicator(): String = alternativeStoreIndicator
    override fun myAlternativeArea(): Long = alternativeArea
-   override fun isCynergiAdmin(): Boolean = cynergiSystemAdmin
+   override fun isCynergiAdmin(): Boolean = securityGroup.value == "admin"
 }

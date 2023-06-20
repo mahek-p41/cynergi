@@ -21,6 +21,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditSc
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
+import com.cynergisuite.middleware.authentication.user.SecurityGroup
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
@@ -111,6 +112,10 @@ class AuditExceptionRepository @Inject constructor(
          scannedBy.store_id                                         AS scannedBy_store_id,
          scannedBy.store_number                                     AS scannedBy_store_number,
          scannedBy.store_name                                       AS scannedBy_store_name,
+         secgrp.id                                                  AS scannedBy_secgrp_id,
+         secgrp.value                                               AS scannedBy_secgrp_value,
+         secgrp.description,                                        AS scannedBy_secgrp_description, 
+         secgrp.company,                                            AS scannedBy_secgrp_company, 
          approvedBy.emp_id                                          AS approvedBy_id,
          approvedBy.emp_type                                        AS approvedBy_type,
          approvedBy.emp_number                                      AS approvedBy_number,
@@ -152,6 +157,7 @@ class AuditExceptionRepository @Inject constructor(
            JOIN audit a ON auditException.audit_id = a.id
            JOIN (${companyRepository.companyBaseQuery()}) comp ON a.company_id = comp.id AND comp.deleted = FALSE
            JOIN system_employees_fimvw scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
+           JOIN employee_to_security_group secgrp on secgrp.employee_id_sfk = scannedBy.id and secgrp.deleted = FALSE 
            JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND auditScanArea.store_number_sfk = store.number
            LEFT OUTER JOIN system_employees_fimvw approvedBy ON auditException.approved_by = approvedBy.emp_number AND comp.id = approvedBy.comp_id
            LEFT OUTER JOIN audit_exception_note auditExceptionNote ON auditException.id = auditExceptionNote.audit_exception_id
@@ -534,9 +540,10 @@ class AuditExceptionRepository @Inject constructor(
          store = mapScannedByStore(rs, address, columnPrefix),
          active = rs.getBoolean("${columnPrefix}active"),
          department = mapScannedByDepartment(rs, address, columnPrefix),
-         cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
+         //cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
          alternativeStoreIndicator = rs.getString("${columnPrefix}alternative_store_indicator"),
-         alternativeArea = rs.getLong("${columnPrefix}alternative_area")
+         alternativeArea = rs.getLong("${columnPrefix}alternative_area"),
+         securityGroup = mapSecurityGroup(rs, address, columnPrefix)
       )
    }
 
@@ -588,4 +595,13 @@ class AuditExceptionRepository @Inject constructor(
       } else {
          null
       }
+
+   private fun mapSecurityGroup(rs: ResultSet, address: AddressEntity?, columnPrefix: String): SecurityGroup {
+      return SecurityGroup(
+         id = rs.getUuid("${columnPrefix}secgrp_id"),
+         value = rs.getString("${columnPrefix}secgrp_id"),
+         description = rs.getString("${columnPrefix}secgrp_id"),
+         company = mapCompany(rs, address)
+      )
+   }
 }

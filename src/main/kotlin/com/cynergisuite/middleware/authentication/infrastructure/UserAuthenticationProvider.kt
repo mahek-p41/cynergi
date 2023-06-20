@@ -36,7 +36,7 @@ class UserAuthenticationProvider @Inject constructor(
          val chosenStore = employee.chosenLocation // this is what the user chose as their store during login
          val fallbackStore = employee.fallbackLocation // use this if user is a cynergi admin and they didn't pick a store to log into
 
-         if (employee.cynergiSystemAdmin) {
+         if (employee.isCynergiAdmin()) {
             logger.info("Employee {} is cynergi admin, authentication successful", authenticationRequest.username)
 
             credentialsAssociatedWithAdmin(employee, fallbackStore)

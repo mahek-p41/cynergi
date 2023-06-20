@@ -14,7 +14,8 @@ data class AuthenticatedUser(
    val location: Location,
    val alternativeStoreIndicator: String,
    val alternativeArea: Long,
-   val cynergiSystemAdmin: Boolean
+ //  val cynergiSystemAdmin: Boolean,
+   val securityGroup: SecurityGroup
 ) : User, ServerAuthentication(
    number.toString(),
    mutableListOf(), // TODO add roles here
@@ -37,7 +38,8 @@ data class AuthenticatedUser(
          location = employee.myLocation(),
          alternativeStoreIndicator = employee.alternativeStoreIndicator,
          alternativeArea = employee.alternativeArea,
-         cynergiSystemAdmin = employee.cynergiSystemAdmin
+     //    cynergiSystemAdmin = employee.cynergiSystemAdmin,
+         securityGroup = employee.securityGroup
       )
 
    constructor(employee: AuthenticatedEmployee, overrideStore: Location) :
@@ -50,7 +52,8 @@ data class AuthenticatedUser(
          location = overrideStore,
          alternativeStoreIndicator = employee.alternativeStoreIndicator,
          alternativeArea = employee.alternativeArea,
-         cynergiSystemAdmin = employee.cynergiSystemAdmin
+     //    cynergiSystemAdmin = employee.cynergiSystemAdmin,
+         securityGroup = employee.securityGroup
       )
 
    override fun myId(): Long = id
@@ -61,5 +64,5 @@ data class AuthenticatedUser(
    override fun myDepartment(): Department? = department
    override fun myAlternativeStoreIndicator(): String = alternativeStoreIndicator
    override fun myAlternativeArea(): Long = alternativeArea
-   override fun isCynergiAdmin(): Boolean = cynergiSystemAdmin
+   override fun isCynergiAdmin(): Boolean = securityGroup.value == "admin"
 }

@@ -144,10 +144,11 @@ class AuditScheduleService @Inject constructor(
                assignedLocation = LocationEntity(store),
                alternativeStoreIndicator = employee.alternativeStoreIndicator,
                alternativeArea = employee.alternativeArea,
-               cynergiSystemAdmin = employee.cynergiSystemAdmin,
+               //cynergiSystemAdmin = employee.cynergiSystemAdmin,
                chosenLocation = LocationEntity(store),
                fallbackLocation = LocationEntity(store),
-               passCode = employee.passCode
+               passCode = employee.passCode,
+               securityGroup = employee.securityGroup
             )
 
             val (audit, existing) = if (schedule.schedule == time.dayOfWeek.name) {

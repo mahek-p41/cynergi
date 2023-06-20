@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.employee
 
+import com.cynergisuite.middleware.authentication.user.SecurityGroup
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.store.Store
@@ -12,15 +13,16 @@ data class EmployeeEntity(
    val firstNameMi: String?,
    val passCode: String,
    val active: Boolean,
-   val cynergiSystemAdmin: Boolean = false,
+  // val cynergiSystemAdmin: Boolean = false,
    val company: CompanyEntity,
    val department: DepartmentEntity?,
    val store: Store? = null,
    val alternativeStoreIndicator: String,
-   val alternativeArea: Long
+   val alternativeArea: Long,
+   val securityGroup: SecurityGroup
 ) : Employee {
 
-   constructor(vo: EmployeeValueObject, company: CompanyEntity, department: DepartmentEntity?, store: Store?) :
+   constructor(vo: EmployeeValueObject, company: CompanyEntity, department: DepartmentEntity?, store: Store?, securityGroup: SecurityGroup) :
       this(
          id = vo.id,
          type = vo.type!!,
@@ -33,7 +35,8 @@ data class EmployeeEntity(
          department = department,
          store = store,
          alternativeStoreIndicator = vo.alternativeStoreIndicator!!,
-         alternativeArea = vo.alternativeArea!!
+         alternativeArea = vo.alternativeArea!!,
+         securityGroup = securityGroup
       )
 
    fun getEmpName(): String = "$firstNameMi $lastName"
