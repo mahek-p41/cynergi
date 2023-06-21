@@ -13,14 +13,14 @@ CREATE TABLE accounting_entries_staging
     journal_entry_amount   NUMERIC(13,2)                                               NOT NULL
 );
 
-COMMENT ON TABLE security_access_point_type_domain IS 'Security points for HOA application.';
+COMMENT ON TABLE accounting_entries_staging IS 'Used by SUMMARY to General Ledger Interface. Records for each store for each business day.';
 
 
 CREATE TRIGGER update_accounting_entries_staging_trg
     BEFORE UPDATE
     ON accounting_entries_staging
     FOR EACH ROW
-EXECUTE PROCEDURE last_updated_column_fn();
+EXECUTE PROCEDURE update_user_table_fn();
 
 CREATE INDEX accounting_entries_staging_company_id_idx ON accounting_entries_staging (company_id);
 CREATE INDEX accounting_entries_staging_verify_id_idx ON accounting_entries_staging (verify_id);
