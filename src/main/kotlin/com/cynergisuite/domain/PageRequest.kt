@@ -8,6 +8,10 @@ import com.cynergisuite.extensions.isAllSameCase
 import com.google.common.base.CaseFormat.LOWER_CAMEL
 import com.google.common.base.CaseFormat.LOWER_UNDERSCORE
 import io.micronaut.core.annotation.Introspected
+import io.micronaut.data.model.Pageable
+import io.micronaut.data.model.Sort
+import io.micronaut.data.model.Sort.Order.Direction.ASC
+import io.micronaut.data.model.Sort.Order.Direction.DESC
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
@@ -32,6 +36,25 @@ interface PageRequest {
    fun offset(): Int
    fun nextPage(): PageRequest
    fun copyFillInDefaults(): PageRequest
+
+   fun toPageable(): Pageable {
+      val me = this
+
+      return object : Pageable {
+         override fun getNumber(): Int = me.page() - 1
+         override fun getSize(): Int = me.size()
+         override fun getSort(): Sort {
+            return Sort.of(Sort.Order(sortBy(), toSortDirection(), false))
+         }
+      }
+   }
+
+   fun toSortDirection() =
+      when (sortBy().uppercase()) {
+         "ASC" -> ASC
+         "DESC" -> DESC
+         else -> DESC
+      }
 }
 
 @Introspected

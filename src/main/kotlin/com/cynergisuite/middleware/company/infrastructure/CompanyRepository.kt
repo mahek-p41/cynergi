@@ -128,7 +128,7 @@ class CompanyRepository @Inject constructor(
          mapOf("dataset_code" to datasetCode)
       ) { rs, _ -> mapRow(rs) }
 
-      logger.trace("Searching for Company: {} resulted in {}", datasetCode, found)
+      logger.trace("Searching for Company by dataset: {} resulted in: {}", datasetCode, found)
 
       return found
    }

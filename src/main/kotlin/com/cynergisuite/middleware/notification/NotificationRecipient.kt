@@ -44,15 +44,20 @@ data class NotificationRecipient(
 
    override fun equals(other: Any?): Boolean {
       return when (other) {
-         this === other -> true
-         is NotificationRecipient ->
+         (this === other) -> {
+            true
+         }
+         is NotificationRecipient -> {
             EqualsBuilder()
                .append(this.id, other.id)
                .append(this.description, other.description)
                .append(this.recipient, other.recipient)
                .append(this.notification.myId(), other.notification.myId())
                .build()
-         else -> false
+         }
+         else -> {
+            false
+         }
       }
    }
 

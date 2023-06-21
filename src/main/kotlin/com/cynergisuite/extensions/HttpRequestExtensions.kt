@@ -1,6 +1,8 @@
 package com.cynergisuite.extensions
 
 import io.micronaut.http.HttpRequest
+import io.micronaut.http.MutableHttpRequest
+import io.micronaut.http.uri.UriBuilder
 import java.util.Locale
 
 fun <B> HttpRequest<B>?.findLocaleWithDefault(): Locale {
@@ -9,4 +11,10 @@ fun <B> HttpRequest<B>?.findLocaleWithDefault(): Locale {
    } else {
       Locale.US
    }
+}
+
+fun <T> MutableHttpRequest<T>.withUri(block: UriBuilder.() -> Unit): MutableHttpRequest<T> {
+   this.uri { block(it) }
+
+   return this
 }

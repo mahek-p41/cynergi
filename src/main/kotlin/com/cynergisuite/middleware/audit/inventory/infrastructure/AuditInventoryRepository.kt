@@ -17,7 +17,7 @@ class AuditInventoryRepository @Inject constructor(
 
    @Transactional
    fun createInventorySnapshot(entity: AuditEntity) {
-      // Inventory snapshot creates snapshot for all inventory items in statuses ('N', 'R')
+      // Inventory snapshot creates snapshot for all inventory items in statuses ('N', 'R', 'D')
       logger.debug("Create inventory snapshot for audit {}", entity.id)
 
       val affectedRows = jdbc.update(
@@ -28,10 +28,9 @@ class AuditInventoryRepository @Inject constructor(
          FROM fastinfo_prod_import.inventory_vw i
             JOIN company comp ON i.dataset = comp.dataset_code AND comp.deleted = FALSE
          WHERE i.primary_location = :store_number
-               AND i.location = :store_number
-               AND (i.status IN ('N', 'R')
-                     OR i.lookup_key IN (SELECT lookup_key FROM audit_detail WHERE audit_id = :audit_id))
                AND comp.id = :company_id
+               AND ((i.status = 'D' OR (i.status in ('N', 'R') AND i.location = :store_number))
+                     OR i.lookup_key IN (SELECT lookup_key FROM audit_detail WHERE audit_id = :audit_id))
          """.trimIndent(),
          mapOf(
             "audit_id" to entity.id,

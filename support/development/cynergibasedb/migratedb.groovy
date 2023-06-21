@@ -1,16 +1,15 @@
-#!/usr/bin/env /opt/cyn/v01/cynmid/groovy/bin/groovy
+#!/usr/bin/env /opt/cyn/v01/cynmid/groovy/current/bin/groovy
 @GrabConfig(systemClassLoader = true)
 @Grab(group = 'org.postgresql', module = 'postgresql', version = '42.2.15')
-@Grab(group='org.flywaydb', module='flyway-core', version='5.2.4')
-@Grab(group='info.picocli', module='picocli', version='4.6.1')
-@Grab(group='org.slf4j', module='slf4j-simple', version='1.7.32')
-@Grab(group='org.slf4j', module='jcl-over-slf4j', version='1.7.32')
-@Grab(group='org.slf4j', module='jul-to-slf4j', version='1.7.32')
-@Grab(group='commons-io', module='commons-io', version='2.11.0')
+@Grab(group = 'org.flywaydb', module = 'flyway-core', version = '5.2.4')
+@Grab(group = 'info.picocli', module = 'picocli', version = '4.6.3')
+@Grab(group = 'org.slf4j', module = 'slf4j-simple', version = '1.7.32')
+@Grab(group = 'org.slf4j', module = 'jcl-over-slf4j', version = '1.7.32')
+@Grab(group = 'org.slf4j', module = 'jul-to-slf4j', version = '1.7.32')
+@Grab(group = 'commons-io', module = 'commons-io', version = '2.11.0')
 
 import org.flywaydb.core.Flyway
 import groovy.cli.picocli.CliBuilder
-
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.FileSystems
@@ -18,7 +17,7 @@ import java.util.zip.ZipFile
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.FilenameUtils
 
-boolean isCst143() {
+static boolean isCst143() {
    try {
       return (InetAddress.getLocalHost().getHostName() == "cst143")
    } catch(Throwable e) {

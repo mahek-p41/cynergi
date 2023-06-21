@@ -1,12 +1,12 @@
 package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.PageRequestBase
-import com.cynergisuite.domain.ValidPageSortBy
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
 import java.time.OffsetDateTime
+import javax.validation.constraints.Pattern
 
 @Schema(
    name = "AuditPageRequest",
@@ -18,7 +18,6 @@ import java.time.OffsetDateTime
 class AuditPageRequest(
    page: Int? = null,
    size: Int? = null,
-   sortBy: String? = null,
    sortDirection: String? = null,
 
    @field:Schema(name = "from", description = "Bottom end of the range which will be used to filter audits.  If from is found thru is required.  If both from and thru are empty then the result will include all audits")
@@ -31,11 +30,14 @@ class AuditPageRequest(
    var storeNumber: Set<Int>? = emptySet(),
 
    @field:Schema(name = "status", description = "Collection of statues that an audit must be in")
-   var status: Set<String>? = emptySet()
+   var status: Set<String>? = emptySet(),
+
+   @field:Pattern(regexp = "lastupdated|store|status|id")
+   @field:Schema(description = "The column to sort the audits by (timeupdated|store|status|id).", defaultValue = "lastupdated", allowableValues = ["lastupdated", "store", "status", "id"])
+   override var sortBy: String? = null,
 
 ) : PageRequestBase<AuditPageRequest>(page, size, sortBy, sortDirection) {
 
-   @ValidPageSortBy("id", "storeNumber")
    override fun sortByMe(): String = sortBy()
 
    override fun equals(other: Any?): Boolean =

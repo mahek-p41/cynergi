@@ -88,6 +88,7 @@ class AuditValidator @Inject constructor(
          number = 0,
          totalDetails = 0,
          totalExceptions = 0,
+         totalUnscanned = null,
          hasExceptionNotes = false,
          lastUpdated = OffsetDateTime.now(),
          inventoryCount = 0,
