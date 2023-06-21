@@ -20,7 +20,7 @@ class WowAllRtoAgreementsJobSpecification extends ServiceSpecificationBase{
 
    void "upload all rto agreements" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final Schedules = wowTestDataLoaderService.enableWow(tstds1)
       final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)
       final wowAllRtoAgreementSchedule = Schedules.find { it.title == "Wow All Rto Agreements"}

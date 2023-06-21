@@ -14,6 +14,6 @@ class ValidationException(
 }
 
 data class ValidationError(
-   val path: String?,
+   val path: String? = null,
    val localizationCode: LocalizationCode
 )

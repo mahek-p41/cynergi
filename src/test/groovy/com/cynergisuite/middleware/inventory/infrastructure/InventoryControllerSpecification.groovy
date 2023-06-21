@@ -156,7 +156,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
    // Use postman to make a mobile-app-like-request for a reliable test result
    void "mobile-app-like-request fetch first page with locationType" () {
       given:
-      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1)
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'coravt', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
       final pageOne = new InventoryPageRequest([page: 1, size: 100, locationType: "STORE"])
 
@@ -251,7 +251,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch first page of inventory with status of D" () {
       given:
-      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'tstds1', 1)
+      final tstds1Store1User = userService.fetchUserByAuthentication(100, 'pass', 'coravt', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
       final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), inventoryStatus: ["D"]])
 

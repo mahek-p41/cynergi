@@ -26,10 +26,31 @@ import org.slf4j.LoggerFactory
 @Secured(IS_AUTHENTICATED)
 @Controller("/api/area")
 class AreaController @Inject constructor(
-   private val areaService: AreaService,
    private val userService: UserService,
+   private val areaService: AreaService,
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AreaController::class.java)
+
+   @Get
+   @Operation(tags = ["AreaEndpoints"], description = "Fetch the canonical structure of areas - menus - modules", operationId = "area-fetchAll")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AreaDTO::class))])
+      ]
+   )
+   fun fetchAll(
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ): List<AreaDTO> {
+      val locale = httpRequest.findLocaleWithDefault()
+
+      val user = userService.fetchUser(authentication)
+      val areas = areaService.fetchAllVisibleWithMenusAndAreas(user.myCompany(), locale)
+
+      logger.debug("Canonical structure of resulted in {}", areas)
+
+      return areas
+   }
 
    @Get("/available/{area}")
    @Operation(tags = ["AreaEndpoints"], description = "Check if an area is available. OK if it is Not Found if it isn't", operationId = "area-fetchEnabled")
@@ -52,26 +73,5 @@ class AreaController @Inject constructor(
 
          HttpResponse.notFound<Any>()
       }
-   }
-
-   @Get
-   @Operation(tags = ["AreaEndpoints"], description = "Fetch the canonical structure of areas - menus - modules", operationId = "area-fetchAll")
-   @ApiResponses(
-      value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AreaDTO::class))])
-      ]
-   )
-   fun fetchAll(
-      httpRequest: HttpRequest<*>,
-      authentication: Authentication
-   ): List<AreaDTO> {
-      val locale = httpRequest.findLocaleWithDefault()
-
-      val user = userService.fetchUser(authentication)
-      val areas = areaService.fetchAllVisibleWithMenusAndAreas(user.myCompany(), locale)
-
-      logger.debug("Canonical structure of resulted in {}", areas)
-
-      return areas
    }
 }

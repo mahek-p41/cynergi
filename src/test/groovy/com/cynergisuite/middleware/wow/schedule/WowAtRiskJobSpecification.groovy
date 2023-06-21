@@ -19,7 +19,7 @@ class WowAtRiskJobSpecification extends ServiceSpecificationBase {
 
    void "upload at risk customer" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final wowSchedules = wowTestDataLoaderService.enableWow(tstds1)
       final scheduleEntity = wowSchedules.find { it.title == "Wow At Risk Anyone Overdue" }
       final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)

@@ -1201,7 +1201,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "process audit with inventory item in status 'D' from CREATED to IN-PROGRESS finally to COMPLETED" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(1, company)
       final savedAudit = auditFactoryService.single(store)
       final storeroom = auditScanAreaFactoryService.storeroom(store, company)

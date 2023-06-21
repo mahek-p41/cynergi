@@ -19,7 +19,7 @@ class WowPayoutJobSpecification extends ServiceSpecificationBase {
 
    void "upload payout customer" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final wowSchedules = wowTestDataLoaderService.enableWow(tstds1)
       final scheduleEntity = wowSchedules.find { it.title == "Wow Payouts Last 120 Days" }
       final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)

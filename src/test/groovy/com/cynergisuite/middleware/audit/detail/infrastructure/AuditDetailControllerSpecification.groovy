@@ -248,7 +248,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
    void "create duplicate audit detail" () {
       given:
       final locale = US
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -273,7 +273,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
    void "create duplicate audit detail with inventory item with status 'D'" () {
       given:
       final locale = US
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(1, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
