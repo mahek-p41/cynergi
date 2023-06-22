@@ -59,7 +59,7 @@ class SignHereTokenControllerSpecification extends ServiceSpecificationBase {
       then:
       final exception = thrown(HttpClientResponseException)
       final body = exception.response.bodyAsJson()
-      body.message == "tstds1 -> 55 was unable to be found"
+      body.message == "coravt -> 55 was unable to be found"
    }
 
    void "fetch one token by id not found" () {

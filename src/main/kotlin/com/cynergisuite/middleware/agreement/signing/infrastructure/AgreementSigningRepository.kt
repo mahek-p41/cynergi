@@ -52,6 +52,19 @@ class AgreementSigningRepository(
          comp.client_id AS comp_client_id,
          comp.dataset_code AS comp_dataset_code,
          comp.federal_id_number AS comp_federal_id_number,
+         compAddress.id                AS comp_address_id,
+         compAddress.name              AS comp_address_name,
+         compAddress.address1          AS comp_address_address1,
+         compAddress.address2          AS comp_address_address2,
+         compAddress.city              AS comp_address_city,
+         compAddress.state             AS comp_address_state,
+         compAddress.postal_code       AS comp_address_postal_code,
+         compAddress.latitude          AS comp_address_latitude,
+         compAddress.longitude         AS comp_address_longitude,
+         compAddress.country           AS comp_address_country,
+         compAddress.county            AS comp_address_county,
+         compAddress.phone             AS comp_address_phone,
+         compAddress.fax               AS comp_address_fax,
          store.id AS store_id,
          store.number AS store_number,
          store.name AS store_name,
@@ -62,6 +75,7 @@ class AgreementSigningRepository(
          asstd.localization_code AS status_type_localization_code
       FROM agreement_signing asn
            JOIN company comp ON comp.id = asn.company_id
+           LEFT JOIN address AS compAddress ON comp.address_id = compAddress.id AND compAddress.deleted = FALSE
            JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND asn.store_number_sfk = store.number
            JOIN agreement_signing_status_type_domain asstd ON asn.status_id = asstd.id
       """.trimIndent()
@@ -311,7 +325,7 @@ class AgreementSigningRepository(
    }
 
    fun mapRow(rs: ResultSet): AgreementSigningEntity {
-      val company = companyRepository.mapRow(rs, "comp_")
+      val company = companyRepository.mapRow(rs, "comp_", addressPrefix = "comp_address_")
 
       return AgreementSigningEntity(
          id = rs.getUuid("asn_id"),
