@@ -210,7 +210,7 @@ CREATE TRIGGER update_security_group_trg
     BEFORE UPDATE
     ON security_group
     FOR EACH ROW
-EXECUTE PROCEDURE last_updated_column_fn();
+EXECUTE PROCEDURE update_user_table_fn();
 
 CREATE INDEX security_group_company_id_idx ON security_group (company_id);
 
