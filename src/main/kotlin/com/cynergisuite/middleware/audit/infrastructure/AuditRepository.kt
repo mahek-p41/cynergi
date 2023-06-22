@@ -426,6 +426,8 @@ class AuditRepository @Inject constructor(
          whereClause.append(" AND current_status IN (<current_status>) ")
       }
 
+      whereClause.append(" AND $subQuery ")
+
       val sortBy = when (pageRequest.sortBy) {
          "lastupdated" -> "a_last_updated"
          "store" -> "auditStore_number"
@@ -435,7 +437,9 @@ class AuditRepository @Inject constructor(
 
       val sql =
          """
-         WITH status AS (
+         WITH company AS (
+            ${companyRepository.companyBaseQuery()}
+         ), status AS (
             SELECT
                csastd.value   AS current_status,
                csaa.audit_id  AS audit_id,
@@ -547,16 +551,15 @@ class AuditRepository @Inject constructor(
             comp.address_fax                                    AS comp_address_fax,
             count(*) OVER() AS total_elements
          FROM audit a
-              JOIN company comp ON a.company_id = comp.id
-              JOIN division div ON comp.id = div.company_id
-              JOIN region reg ON div.id = reg.division_id
-              JOIN region_to_store rts ON reg.id = rts.region_id
+              JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
               JOIN system_stores_fimvw auditStore
-                   ON rts.store_number = auditStore.number
-                      AND comp.dataset_code = auditStore.dataset
+                   ON comp.dataset_code = auditStore.dataset
                       AND a.store_number = auditStore.number
               JOIN status s ON s.audit_id = a.id
               JOIN max_status ms ON s.action_id = ms.action_id AND a.id = ms.audit_id
+              LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
+                             LEFT JOIN region reg ON reg.id = rts.region_id AND reg.deleted = FALSE
+                             LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id AND div.deleted = FALSE
          $whereClause
          ORDER BY ${sortBy} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset

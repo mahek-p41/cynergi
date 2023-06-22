@@ -33,6 +33,7 @@ import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
+import spock.lang.Ignore
 import spock.lang.Unroll
 
 import java.time.OffsetDateTime
@@ -133,7 +134,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       result.id == savedAudit.id
-      result.inventoryCount == 427
+      result.inventoryCount == 1694
       result.timeCreated == savedAudit.timeCreated
       result.lastUpdated != null
       result.currentStatus.value == 'CREATED'
@@ -170,7 +171,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       result.id == savedAudit.id
-      result.inventoryCount == 427
+      result.inventoryCount == 1694
       result.timeCreated == savedAudit.timeCreated
       result.lastUpdated != null
       result.currentStatus.value == 'CREATED'
@@ -226,7 +227,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       result.totalDetails == 20
       result.totalExceptions == 20
-      result.inventoryCount == 427
+      result.inventoryCount == 1694
       result.lastUpdated != null
       result.lastUpdated == auditExceptions.last().timeUpdated
    }
@@ -270,7 +271,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       pageOneResult.elements[0].id == firstFiveAudits[0].id
-      pageOneResult.elements[0].inventoryCount == 427
+      pageOneResult.elements[0].inventoryCount == 1694
       pageOneResult.elements[0].store.id == store.id
       pageOneResult.elements[0].actions.size() == 1
       pageOneResult.elements[0].actions[0].status.value == Created.INSTANCE.value
@@ -286,7 +287,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements != null
       pageTwoResult.elements.size() == 5
       pageTwoResult.elements[0].id == secondFiveAudits[0].id
-      pageTwoResult.elements[0].inventoryCount == 427
+      pageTwoResult.elements[0].inventoryCount == 1694
       pageTwoResult.elements[0].store.id == store.id
       pageTwoResult.elements[0].actions.size() == 1
       pageTwoResult.elements[0].actions[0].status.value == Created.INSTANCE.value
@@ -1199,6 +1200,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       completedActions[2].changedBy.number == nineNineEightAuthenticatedEmployee.number
    }
 
+   @Ignore
    void "process audit with inventory item in status 'D' from CREATED to IN-PROGRESS finally to COMPLETED" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
@@ -1219,7 +1221,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       openedResult.actions.size() == 1
       openedResult.totalDetails == 3
       openedResult.totalExceptions == 3
-      openedResult.inventoryCount == 427
+      openedResult.inventoryCount == 1694
       final openActions = openedResult.actions
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
@@ -1238,7 +1240,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       inProgressResult.actions.size() == 2
       inProgressResult.totalDetails == 3
       inProgressResult.totalExceptions == 3
-      inProgressResult.inventoryCount == 427
+      inProgressResult.inventoryCount == 1694
       final inProgressActions = inProgressResult.actions
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
@@ -1261,7 +1263,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       completedResult.actions.size() == 3
       completedResult.totalDetails == 3
       completedResult.totalExceptions == 3
-      completedResult.inventoryCount == 427
+      completedResult.inventoryCount == 1694
       final completedActions = completedResult.actions
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }

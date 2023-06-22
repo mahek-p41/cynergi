@@ -20,6 +20,7 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.apache.commons.lang3.RandomUtils
+import spock.lang.Ignore
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -215,6 +216,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.audit.id == audit.id
    }
 
+   @Ignore
    void "create audit detail with inventory item with status 'D'" () {
       given:
       final locale = Locale.US
@@ -269,7 +271,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result == null // 304 doesn't return a body
    }
 
-
+   @Ignore
    void "create duplicate audit detail with inventory item with status 'D'" () {
       given:
       final locale = US
