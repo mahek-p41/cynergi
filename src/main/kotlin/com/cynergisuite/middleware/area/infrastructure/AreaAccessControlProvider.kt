@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.audit.infrastructure
+package com.cynergisuite.middleware.area.infrastructure
 
 import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionRepository
 import com.cynergisuite.middleware.authentication.AccessException
@@ -10,16 +10,16 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 
 @Singleton
-class AuditAccessControlProvider @Inject constructor(
-   private val auditPermissionRepository: AuditPermissionRepository
+class AreaAccessControlProvider @Inject constructor(
+   private val areaRepository: AreaRepository
 ) : AccessControlProvider {
 
    override fun canUserAccess(user: User, asset: String, parameters: MutableMap<String, MutableArgumentValue<*>>): Boolean {
-      val auditPermission = auditPermissionRepository.permissionDepartmentByAsset(asset, user.myCompany())
+      val areaPermission = areaRepository.findAllVisibleByCompany(user.myCompany())
 
       return user.isCynergiAdmin() || // if user is high touch admin then allow no questions asked
-         //auditPermission.isEmpty() || // if no permissions have been setup for this asset then allow
-         auditPermission.contains(user.myDepartment()) // if permissions have been setup and the user's department is contained in that permission then allow
+         //areaPermission.isEmpty()  // if no permissions have been setup for this asset then allow
+         areaPermission.any { it.areaType.value == asset } // if permissions have been setup and the company's area is contained in that permission then allow
    }
 
    override fun generateException(user: User, asset: String?, parameters: MutableMap<String, MutableArgumentValue<*>>): Exception {

@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceListByVendorDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -51,6 +52,7 @@ class AccountPayableInvoiceController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableInvoiceController::class.java)
 
    @Throws(NotFoundException::class)
+   @AreaControl("AP")
    @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Fetch a single Account Payable Invoice", description = "Fetch a single Account Payable Invoice by its system generated primary key", operationId = "accountPayableInvoice-fetchOne")
    @ApiResponses(
