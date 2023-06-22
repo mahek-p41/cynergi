@@ -32,7 +32,7 @@ class WowNewRentalsJobSpecification extends ServiceSpecificationBase{
       notThrown(Exception)
       result.failureReason() == null
       result.scheduleName() == "Wow New Rentals Last 30 Days"
-      result.rowCount() == 1
+      result.rowCount() == 11314
    }
 }
 

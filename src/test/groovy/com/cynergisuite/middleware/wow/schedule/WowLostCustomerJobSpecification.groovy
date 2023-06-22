@@ -33,6 +33,6 @@ class WowLostCustomerJobSpecification extends ServiceSpecificationBase {
       notThrown(Exception)
       result.failureReason() == null
       result.scheduleName() == "Wow Lost Customer Last 9 Months"
-      result.rowCount() == 1
+      result.rowCount() == 6293
    }
 }

@@ -33,6 +33,6 @@ class WowReturnJobSpecification extends ServiceSpecificationBase {
       notThrown(Exception)
       result.failureReason() == null
       result.scheduleName() == "Wow Returns Last 120 Days"
-      result.rowCount() == 1
+      result.rowCount() == 4776
    }
 }

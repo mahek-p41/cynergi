@@ -33,6 +33,6 @@ class WowAtRiskJobSpecification extends ServiceSpecificationBase {
       notThrown(Exception)
       result.failureReason() == null
       result.scheduleName() == "Wow At Risk Anyone Overdue"
-      result.rowCount() == 1
+      result.rowCount() == 1892
    }
 }

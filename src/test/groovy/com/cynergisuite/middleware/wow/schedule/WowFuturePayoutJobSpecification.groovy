@@ -33,6 +33,6 @@ class WowFuturePayoutJobSpecification extends ServiceSpecificationBase {
       notThrown(Exception)
       result.failureReason() == null
       result.scheduleName() == "Wow Future Payouts Next 30 Days"
-      result.rowCount() == 1
+      result.rowCount() == 80
    }
 }

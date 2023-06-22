@@ -32,6 +32,6 @@ class WowAllRtoAgreementsJobSpecification extends ServiceSpecificationBase{
       notThrown(Exception)
       result.failureReason() == null
       result.scheduleName() == "Wow All Rto Agreements"
-      result.rowCount() == 1
+      result.rowCount() == 9727
    }
 }

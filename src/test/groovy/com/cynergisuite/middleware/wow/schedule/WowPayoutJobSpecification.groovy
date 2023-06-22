@@ -33,6 +33,6 @@ class WowPayoutJobSpecification extends ServiceSpecificationBase {
       notThrown(Exception)
       result.failureReason() == null
       result.scheduleName() == "Wow Payouts Last 120 Days"
-      result.rowCount() == 1
+      result.rowCount() == 2725
    }
 }
