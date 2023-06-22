@@ -1040,7 +1040,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
          """
          ${selectBaseQuery()}
          $whereClause
-         ORDER BY glDetail.date
+         ORDER BY glDetail_account_number ${filterRequest.sortDirection()}
       """.trimIndent(),
          params
       ) { rs, elements ->
