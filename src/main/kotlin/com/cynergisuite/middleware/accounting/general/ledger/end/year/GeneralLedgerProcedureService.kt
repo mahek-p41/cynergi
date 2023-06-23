@@ -56,6 +56,7 @@ class GeneralLedgerProcedureService @Inject constructor(
          val params = mapOf(
             "comp_id" to company.id!!,
             "emp_number" to user.myEmployeeNumber(),
+            "je_number" to jeNumber,
             "gl_date" to firstDateOfNextFiscalYear,
             "retained_earnings_account" to dto.account.id!!,
          )

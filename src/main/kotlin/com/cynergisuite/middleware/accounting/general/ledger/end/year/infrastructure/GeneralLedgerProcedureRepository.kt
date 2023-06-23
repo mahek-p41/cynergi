@@ -38,7 +38,7 @@ class GeneralLedgerProcedureRepository @Inject constructor(
                     glSummary.closing_balance,
                     'Balance forward from the previous year',
                     :emp_number,
-                    (SELECT MAX(journal_entry_number) FROM general_ledger_detail WHERE company_id = :comp_id)
+                    :je_number + ROW_NUMBER() OVER (ORDER BY glSummary.id) - 1
          FROM general_ledger_summary glSummary
                JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
                JOIN account acct ON glSummary.account_id = acct.id AND acct.deleted = FALSE
@@ -48,6 +48,7 @@ class GeneralLedgerProcedureRepository @Inject constructor(
              AND glSummary.company_id = :comp_id
              AND glSummary.closing_balance <> 0
              AND glSummary.account_id <> :retained_earnings_account
+         ORDER BY glSummary.id
          """.trimIndent(),
          params
       )
@@ -78,7 +79,7 @@ class GeneralLedgerProcedureRepository @Inject constructor(
                     :corporate_net_income,
                     'Balance forward from the previous year',
                     :emp_number,
-                    :je_number
+                    :je_number + ROW_NUMBER() OVER (ORDER BY glSummary.id) - 1
          FROM general_ledger_summary glSummary
                JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
                JOIN account acct ON glSummary.account_id = acct.id AND acct.deleted = FALSE
@@ -88,6 +89,7 @@ class GeneralLedgerProcedureRepository @Inject constructor(
              AND glSummary.closing_balance <> 0
              AND glSummary.account_id = :retained_earnings_account
              AND glSummary.profit_center_id_sfk = :profit_center
+         ORDER BY glSummary.id
          """.trimIndent(),
          params
       )
@@ -118,7 +120,7 @@ class GeneralLedgerProcedureRepository @Inject constructor(
                     glSummary.closing_balance,
                     'Balance forward from the previous year',
                     :emp_number,
-                    (SELECT MAX(journal_entry_number) FROM general_ledger_detail WHERE company_id = :comp_id) + ROW_NUMBER() OVER (ORDER BY glSummary.id)
+                    :je_number + ROW_NUMBER() OVER (ORDER BY glSummary.id) - 1
          FROM general_ledger_summary glSummary
                JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
                JOIN account acct ON glSummary.account_id = acct.id AND acct.deleted = FALSE
@@ -159,7 +161,7 @@ class GeneralLedgerProcedureRepository @Inject constructor(
                     netIncomePerProfitCenter.net_income,
                     'Balance forward from the previous year',
                     :emp_number,
-                    (SELECT MAX(journal_entry_number) FROM general_ledger_detail WHERE company_id = :comp_id) + ROW_NUMBER() OVER (ORDER BY glSummary.id)
+                    :je_number + ROW_NUMBER() OVER (ORDER BY glSummary.id) - 1
          FROM general_ledger_summary glSummary
                JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
                JOIN account acct ON glSummary.account_id = acct.id AND acct.deleted = FALSE
