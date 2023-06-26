@@ -18,28 +18,19 @@ import java.util.zip.ZipFile
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.FilenameUtils
 
-boolean isCst143() {
-   try {
-      return (InetAddress.getLocalHost().getHostName() == "cst143")
-   } catch(Throwable e) {
-      return false
-   }
-}
-
 def migrate(Path dir, String dbUrl, String username, String password, boolean forceClean = false) {
-   final isCst143 = isCst143()
 
    final flyway = Flyway
       .configure()
       .locations("filesystem:$dir")
-      .cleanDisabled(!isCst143)
-      .cleanOnValidationError(isCst143)
+      .cleanDisabled(true)
+      .cleanOnValidationError(false)
       .table("flyway_schema_history")
       .initSql("SELECT 1")
       .dataSource(dbUrl, username, password)
       .load()
 
-   if (forceClean && isCst143) {
+   if (forceClean) {
       println "Cleaning db"
       flyway.clean()
    }
