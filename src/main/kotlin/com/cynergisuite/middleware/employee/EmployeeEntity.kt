@@ -13,16 +13,16 @@ data class EmployeeEntity(
    val firstNameMi: String?,
    val passCode: String,
    val active: Boolean,
-  // val cynergiSystemAdmin: Boolean = false,
+   val cynergiSystemAdmin: Boolean = false,
    val company: CompanyEntity,
    val department: DepartmentEntity?,
    val store: Store? = null,
    val alternativeStoreIndicator: String,
    val alternativeArea: Long,
-   val securityGroup: SecurityGroup
+   val securityGroups: List<SecurityGroup>? = null
 ) : Employee {
 
-   constructor(vo: EmployeeValueObject, company: CompanyEntity, department: DepartmentEntity?, store: Store?, securityGroup: SecurityGroup) :
+   constructor(vo: EmployeeValueObject, company: CompanyEntity, department: DepartmentEntity?, store: Store?, securityGroups: MutableList<SecurityGroup>) :
       this(
          id = vo.id,
          type = vo.type!!,
@@ -36,7 +36,7 @@ data class EmployeeEntity(
          store = store,
          alternativeStoreIndicator = vo.alternativeStoreIndicator!!,
          alternativeArea = vo.alternativeArea!!,
-         securityGroup = securityGroup
+         securityGroups = securityGroups
       )
 
    fun getEmpName(): String = "$firstNameMi $lastName"

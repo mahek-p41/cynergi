@@ -12,6 +12,8 @@ import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
 import io.micronaut.data.annotation.Relation
 import io.micronaut.data.annotation.Relation.Kind.ONE_TO_ONE
+import io.micronaut.data.annotation.Relation.Kind.ONE_TO_MANY
+
 
 @MappedEntity("authenticated_user_vw")
 data class AuthenticatedEmployee(
@@ -37,8 +39,8 @@ data class AuthenticatedEmployee(
    @Relation(ONE_TO_ONE)
    val fallbackLocation: LocationEntity,
 
-   @Relation(ONE_TO_ONE)
-   val securityGroup: SecurityGroup,
+   @Relation(ONE_TO_MANY)
+   val securityGroups: List<SecurityGroup>?,
 
    val passCode: String,
  //  val cynergiSystemAdmin: Boolean,
@@ -62,7 +64,7 @@ data class AuthenticatedEmployee(
      //    cynergiSystemAdmin = user.cynergiSystemAdmin,
          alternativeStoreIndicator = user.alternativeStoreIndicator,
          alternativeArea = user.alternativeArea,
-          securityGroup = user.securityGroup
+         securityGroups = user.securityGroups
       )
 
    constructor(employeeId: Long, employee: EmployeeEntity, store: Store) :
@@ -79,7 +81,7 @@ data class AuthenticatedEmployee(
       //   cynergiSystemAdmin = employee.cynergiSystemAdmin,
          alternativeStoreIndicator = employee.alternativeStoreIndicator,
          alternativeArea = employee.alternativeArea,
-          securityGroup = employee.securityGroup
+         securityGroups = employee.securityGroups
       )
 
    override fun myId(): Long = id
@@ -90,5 +92,5 @@ data class AuthenticatedEmployee(
    override fun myEmployeeNumber(): Int = number
    override fun myAlternativeStoreIndicator(): String = alternativeStoreIndicator
    override fun myAlternativeArea(): Long = alternativeArea
-   override fun isCynergiAdmin(): Boolean = securityGroup.value == "admin"
+   override fun isCynergiAdmin(): Boolean = securityGroups?.any{it.value == "admin"} ?: false
 }

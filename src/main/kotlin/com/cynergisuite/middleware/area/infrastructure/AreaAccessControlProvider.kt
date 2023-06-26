@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.area.infrastructure
 
-import com.cynergisuite.middleware.audit.permission.infrastructure.AuditPermissionRepository
 import com.cynergisuite.middleware.authentication.AccessException
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControlProvider
 import com.cynergisuite.middleware.authentication.user.User
@@ -18,7 +17,6 @@ class AreaAccessControlProvider @Inject constructor(
       val areaPermission = areaRepository.findAllVisibleByCompany(user.myCompany())
 
       return user.isCynergiAdmin() || // if user is high touch admin then allow no questions asked
-         //areaPermission.isEmpty()  // if no permissions have been setup for this asset then allow
          areaPermission.any { it.areaType.value == asset } // if permissions have been setup and the company's area is contained in that permission then allow
    }
 

@@ -148,7 +148,7 @@ class AuditScheduleService @Inject constructor(
                chosenLocation = LocationEntity(store),
                fallbackLocation = LocationEntity(store),
                passCode = employee.passCode,
-               securityGroup = employee.securityGroup
+               securityGroups = employee.securityGroups
             )
 
             val (audit, existing) = if (schedule.schedule == time.dayOfWeek.name) {

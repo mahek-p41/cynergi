@@ -30,7 +30,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       final novemberTuesday = OffsetDateTime.of(2021, 11, 23, 0, 0, 0, 0, UTC)
       final employee = employeeFactoryService.single(storeOne)
-      final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, false) // make ourselves a user who can see all audits
+      final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, employee.securityGroups) // make ourselves a user who can see all audits
 
       auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company)
 
@@ -56,7 +56,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       final employee = employeeFactoryService.single(storeOne)
       final novemberTuesday = OffsetDateTime.of(2021, 11, 23, 0, 0, 0, 0, UTC)
-      final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, false) // make ourselves a user who can see all audits
+      final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, employee.securityGroups) // make ourselves a user who can see all audits
 
       auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company)
 
@@ -80,7 +80,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(storeOne)
       auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, false) // make ourselves a user who can see all audits
+      final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, employee.securityGroups) // make ourselves a user who can see all audits
       final novemberWednesday = OffsetDateTime.of(2021, 11, 24, 0, 0, 0, 0, UTC)
       auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company)
 

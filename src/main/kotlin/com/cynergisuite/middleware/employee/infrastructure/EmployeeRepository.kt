@@ -4,6 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
+import com.cynergisuite.middleware.authentication.user.SecurityGroup
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.authentication.user.infrastructure.SecurityGroupRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -250,8 +251,8 @@ class EmployeeRepository @Inject constructor(
 
       return jdbc.insertReturning(
          """
-         INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, department, cynergi_system_admin, company_id, alternative_store_indicator, alternative_area)
-         VALUES (:number, :last_name, :first_name_mi, hash_passcode(:pass_code), :store_number, :active, :department, :cynergi_system_admin, :company_id, :alternative_store_indicator, :alternative_area)
+         INSERT INTO employee(number, last_name, first_name_mi, pass_code, store_number, active, cynergi_system_admin, department, company_id, alternative_store_indicator, alternative_area)
+         VALUES (:number, :last_name, :first_name_mi, hash_passcode(:pass_code), :store_number, :active, :cynergi_system_admin, :department, :company_id, :alternative_store_indicator, :alternative_area)
          RETURNING
             *
          """.trimIndent(),
@@ -261,7 +262,7 @@ class EmployeeRepository @Inject constructor(
             "first_name_mi" to entity.firstNameMi.trimToNull(), // not sure this is a good practice as it isn't being enforced by the database, but should be once the employee data is managed in PostgreSQL
             "pass_code" to entity.passCode,
             "active" to entity.active,
-         //   "cynergi_system_admin" to entity.cynergiSystemAdmin,
+            "cynergi_system_admin" to entity.cynergiSystemAdmin,
             "company_id" to entity.company.id,
             "department" to entity.department?.myCode(),
             "store_number" to entity.store?.myNumber(),
@@ -269,7 +270,7 @@ class EmployeeRepository @Inject constructor(
             "alternative_area" to entity.alternativeArea
          )
       ) { rs, _ ->
-         mapDDLRow(rs, entity.company, entity.department, entity.store)
+         mapDDLRow(rs, entity.company, entity.department, entity.store, entity.securityGroups!!)
       }
    }
 
@@ -282,7 +283,7 @@ class EmployeeRepository @Inject constructor(
       storeColumnPrefix: String = "store_"
    ): EmployeeEntity {
       val company = companyRepository.mapRow(rs, companyColumnPrefix, companyAddressColumnPrefix)
-      val securityGroup = securityGroupRepository.findOne(rs.getLong("${columnPrefix}id"))
+      val securityGroups = securityGroupRepository.findAll(rs.getLong("${columnPrefix}id"))
       return EmployeeEntity(
          id = rs.getLong("${columnPrefix}id"),
          type = rs.getString("${columnPrefix}type"),
@@ -298,7 +299,7 @@ class EmployeeRepository @Inject constructor(
          alternativeStoreIndicator = rs.getString("${columnPrefix}alternative_store_indicator"),
          alternativeArea = rs.getLong("${columnPrefix}alternative_area"),
          //employee_to_security_group mapRow eventually
-         securityGroup = securityGroup!!
+         securityGroups = securityGroups
       )
    }
 
@@ -316,7 +317,7 @@ class EmployeeRepository @Inject constructor(
          null
       }
 
-   private fun mapDDLRow(rs: ResultSet, company: CompanyEntity, department: DepartmentEntity?, store: Store?): EmployeeEntity =
+   private fun mapDDLRow(rs: ResultSet, company: CompanyEntity, department: DepartmentEntity?, store: Store?, securityGroups: List<SecurityGroup>): EmployeeEntity =
       EmployeeEntity(
          id = rs.getLong("id"),
          type = "eli",
@@ -331,7 +332,7 @@ class EmployeeRepository @Inject constructor(
          store = store,
          alternativeStoreIndicator = rs.getString("alternative_store_indicator"),
          alternativeArea = rs.getLong("alternative_area"),
-         securityGroup = securityGroupRepository.findOne(rs.getLong("id"))!!
+         securityGroups = securityGroups
 
    )
 

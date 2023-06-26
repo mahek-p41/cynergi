@@ -140,30 +140,30 @@ abstract class AuthenticationRepository @Inject constructor(
          fallbackLoc.id                 AS fallback_location_id,
          fallbackLoc.number             AS fallback_location_number,
          fallbackLoc.name               AS fallback_location_name,
-         secgrp.id                      AS security_group_id,
-         secgrp.value                   AS security_group_value,
-         secgrp.description             AS security_group_description,
-         comp.id                        AS security_group_company_id,
-         comp.name                      AS security_group_company_name,
-         comp.doing_business_as         AS security_group_company_doing_business_as,
-         comp.client_code               AS security_group_company_client_code,
-         comp.client_id                 AS security_group_company_client_id,
-         comp.dataset_code              AS security_group_company_dataset_code,
-         comp.federal_id_number         AS security_group_company_federal_id_number,
-         compAddr.id                    AS security_group_company_address_id,
-         compAddr.number                AS security_group_company_address_number,
-         compAddr.name                  AS security_group_company_address_name,
-         compAddr.address1              AS security_group_company_address_address1,
-         compAddr.address2              AS security_group_company_address_address2,
-         compAddr.city                  AS security_group_company_address_city,
-         compAddr.state                 AS security_group_company_address_state,
-         compAddr.postal_code           AS security_group_company_address_postal_code,
-         compAddr.latitude              AS security_group_company_address_latitude,
-         compAddr.longitude             AS security_group_company_address_longitude,
-         compAddr.country               AS security_group_company_address_country,
-         compAddr.county                AS security_group_company_address_county,
-         compAddr.phone                 AS security_group_company_address_phone,
-         compAddr.fax                   AS security_group_company_address_fax
+         secgrp.id                      AS security_groups_id,
+         secgrp.value                   AS security_groups_value,
+         secgrp.description             AS security_groups_description,
+         comp.id                        AS security_groups_company_id,
+         comp.name                      AS security_groups_company_name,
+         comp.doing_business_as         AS security_groups_company_doing_business_as,
+         comp.client_code               AS security_groups_company_client_code,
+         comp.client_id                 AS security_groups_company_client_id,
+         comp.dataset_code              AS security_groups_company_dataset_code,
+         comp.federal_id_number         AS security_groups_company_federal_id_number,
+         compAddr.id                    AS security_groups_company_address_id,
+         compAddr.number                AS security_groups_company_address_number,
+         compAddr.name                  AS security_groups_company_address_name,
+         compAddr.address1              AS security_groups_company_address_address1,
+         compAddr.address2              AS security_groups_company_address_address2,
+         compAddr.city                  AS security_groups_company_address_city,
+         compAddr.state                 AS security_groups_company_address_state,
+         compAddr.postal_code           AS security_groups_company_address_postal_code,
+         compAddr.latitude              AS security_groups_company_address_latitude,
+         compAddr.longitude             AS security_groups_company_address_longitude,
+         compAddr.country               AS security_groups_company_address_country,
+         compAddr.county                AS security_groups_company_address_county,
+         compAddr.phone                 AS security_groups_company_address_phone,
+         compAddr.fax                   AS security_groups_company_address_fax
       FROM authenticated_user_vw au
            JOIN company comp ON comp.id = au.company_id AND comp.deleted = FALSE
            LEFT JOIN address compAddr on comp.address_id = compAddr.id AND compAddr.deleted = FALSE
@@ -171,8 +171,8 @@ abstract class AuthenticationRepository @Inject constructor(
            LEFT OUTER JOIN system_stores_fimvw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND au.store_number = assignedLoc.number
            LEFT OUTER JOIN system_stores_fimvw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number  = :storeNumber
            JOIN system_stores_fimvw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
-           JOIN employee_to_security_group empsecgrp on empsecgrp.employee_id_sfk = au.id
-           JOIN security_group secgrp on secgrp.id = empsecgrp.security_group_id and secgrp.deleted = FALSE
+           LEFT OUTER JOIN employee_to_security_group empsecgrp on empsecgrp.employee_id_sfk = au.id
+           LEFT OUTER JOIN security_group secgrp on secgrp.id = empsecgrp.security_group_id and secgrp.deleted = FALSE
       WHERE comp.dataset_code = :dataset
             AND au.number = :employeeNumber
             AND au.pass_code = convert_passcode(au.type, :passCode, au.pass_code)
@@ -194,8 +194,8 @@ abstract class AuthenticationRepository @Inject constructor(
       Join("fallbackLocation"),
       Join("fallbackLocation.company"),
       Join("fallbackLocation.company.address"),
-      Join("securityGroup"),
-      Join("securityGroup.company")
+      Join("securityGroups"),
+      Join("securityGroups.company")
    )
    abstract fun findUserByAuthenticationWithStore(employeeNumber: Int, passCode: String, dataset: String, storeNumber: Int): AuthenticatedEmployee?
 
@@ -326,30 +326,30 @@ abstract class AuthenticationRepository @Inject constructor(
          compAddr.county                AS fallback_location_company_address_county,
          compAddr.phone                 AS fallback_location_company_address_phone,
          compAddr.fax                   AS fallback_location_company_address_fax,
-         secgrp.id                      AS security_group_id,
-         secgrp.value                   AS security_group_value,
-         secgrp.description             AS security_group_description,
-         comp.id                        AS security_group_company_id,
-         comp.name                      AS security_group_company_name,
-         comp.doing_business_as         AS security_group_company_doing_business_as,
-         comp.client_code               AS security_group_company_client_code,
-         comp.client_id                 AS security_group_company_client_id,
-         comp.dataset_code              AS security_group_company_dataset_code,
-         comp.federal_id_number         AS security_group_company_federal_id_number,
-         compAddr.id                    AS security_group_company_address_id,
-         compAddr.number                AS security_group_company_address_number,
-         compAddr.name                  AS security_group_company_address_name,
-         compAddr.address1              AS security_group_company_address_address1,
-         compAddr.address2              AS security_group_company_address_address2,
-         compAddr.city                  AS security_group_company_address_city,
-         compAddr.state                 AS security_group_company_address_state,
-         compAddr.postal_code           AS security_group_company_address_postal_code,
-         compAddr.latitude              AS security_group_company_address_latitude,
-         compAddr.longitude             AS security_group_company_address_longitude,
-         compAddr.country               AS security_group_company_address_country,
-         compAddr.county                AS security_group_company_address_county,
-         compAddr.phone                 AS security_group_company_address_phone,
-         compAddr.fax                   AS security_group_company_address_fax
+         secgrp.id                      AS security_groups_id,
+         secgrp.value                   AS security_groups_value,
+         secgrp.description             AS security_groups_description,
+         comp.id                        AS security_groups_company_id,
+         comp.name                      AS security_groups_company_name,
+         comp.doing_business_as         AS security_groups_company_doing_business_as,
+         comp.client_code               AS security_groups_company_client_code,
+         comp.client_id                 AS security_groups_company_client_id,
+         comp.dataset_code              AS security_groups_company_dataset_code,
+         comp.federal_id_number         AS security_groups_company_federal_id_number,
+         compAddr.id                    AS security_groups_company_address_id,
+         compAddr.number                AS security_groups_company_address_number,
+         compAddr.name                  AS security_groups_company_address_name,
+         compAddr.address1              AS security_groups_company_address_address1,
+         compAddr.address2              AS security_groups_company_address_address2,
+         compAddr.city                  AS security_groups_company_address_city,
+         compAddr.state                 AS security_groups_company_address_state,
+         compAddr.postal_code           AS security_groups_company_address_postal_code,
+         compAddr.latitude              AS security_groups_company_address_latitude,
+         compAddr.longitude             AS security_groups_company_address_longitude,
+         compAddr.country               AS security_groups_company_address_country,
+         compAddr.county                AS security_groups_company_address_county,
+         compAddr.phone                 AS security_groups_company_address_phone,
+         compAddr.fax                   AS security_groups_company_address_fax
       FROM authenticated_user_vw au
            JOIN company comp ON comp.id = au.company_id AND comp.deleted = FALSE
            LEFT JOIN address compAddr on comp.address_id = compAddr.id AND compAddr.deleted = FALSE
@@ -357,8 +357,8 @@ abstract class AuthenticationRepository @Inject constructor(
            LEFT OUTER JOIN system_stores_fimvw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND au.store_number = assignedLoc.number
            LEFT OUTER JOIN system_stores_fimvw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number IS NULL
            JOIN system_stores_fimvw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
-           JOIN employee_to_security_group empsecgrp on empsecgrp.employee_id_sfk = au.id
-           JOIN security_group secgrp on secgrp.id = empsecgrp.security_group_id and secgrp.deleted = FALSE
+           LEFT OUTER JOIN employee_to_security_group empsecgrp on empsecgrp.employee_id_sfk = au.id
+           LEFT OUTER JOIN security_group secgrp on secgrp.id = empsecgrp.security_group_id and secgrp.deleted = FALSE
       WHERE comp.dataset_code = :dataset
             AND au.number = :employeeNumber
             AND au.pass_code = convert_passcode(au.type, :passCode, au.pass_code)
@@ -380,8 +380,8 @@ abstract class AuthenticationRepository @Inject constructor(
       Join("fallbackLocation"),
       Join("fallbackLocation.company"),
       Join("fallbackLocation.company.address"),
-      Join("securityGroup"),
-      Join("securityGroup.company")
+      Join("securityGroups"),
+      Join("securityGroups.company")
    )
    abstract fun findUserByAuthentication(employeeNumber: Int, passCode: String, dataset: String): AuthenticatedEmployee?
 
@@ -406,7 +406,7 @@ abstract class AuthenticationRepository @Inject constructor(
          chosenLocation = location,
          fallbackLocation = location,
          passCode = employee.passCode,
-         securityGroup = employee.securityGroup
+         securityGroups = employee.securityGroups
       )
    }
 

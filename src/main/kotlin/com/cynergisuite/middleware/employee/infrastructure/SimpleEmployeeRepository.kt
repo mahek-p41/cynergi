@@ -274,7 +274,7 @@ class SimpleEmployeeRepository @Inject constructor(
         // cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
          alternativeStoreIndicator = rs.getString("${columnPrefix}alternative_store_indicator"),
          alternativeArea = rs.getLong("${columnPrefix}alternative_area"),
-         securityGroup = securityGroupRepository.findOne(rs.getLong("${columnPrefix}id"))!!
+         securityGroups = securityGroupRepository.findAll(rs.getLong("${columnPrefix}id"))
 
       )
    }
@@ -317,7 +317,7 @@ class SimpleEmployeeRepository @Inject constructor(
          store = store,
          alternativeStoreIndicator = rs.getString("alternative_store_indicator"),
          alternativeArea = rs.getLong("alternative_area"),
-         securityGroup =  securityGroupRepository.findOne(rs.getLong("id"))!!
+         securityGroups =  securityGroupRepository.findAll(rs.getLong("id"))
 
    )
 }

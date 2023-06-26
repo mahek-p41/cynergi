@@ -2,43 +2,41 @@ package com.cynergisuite.middleware.authentication.user
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.company.CompanyDTO
-import com.cynergisuite.middleware.company.CompanyEntity
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.UUID
-import javax.validation.Valid
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Positive
 
 @Introspected
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Schema(name = "Account", title = "A data transfer object containing account information", description = "An data transfer object containing a account information.")
+@Schema(name = "SecurityGroupDTO", title = "A data transfer object containing security group information", description = "An data transfer object containing security group information.")
 data class SecurityGroupDTO(
 
+    @field:NotNull
+    @field:Schema(name = "id", required = false, nullable = true, description = "System generated ID")
     var id: UUID? = null,
 
     @field:NotNull
-    @field:Schema(name = "name", description = "Description for a Vendor.")
-    var value: String,
-
-    @field:Valid
-    @field:NotNull
-    @field:Schema(name = "balance", description = "Vendor Balance")
-    var description: String,
+    @field:Schema(name = "value", description = "Security Group value")
+    var value: String? = null,
 
     @field:NotNull
-    @field:Positive
-    @field:Schema(name = "number", description = "Vendor number")
-    var company: CompanyEntity
+    @field:Schema(name = "description", description = "Security Group description")
+    var description: String? = null,
 
-    ) : Identifiable {
-    constructor(securityGroupDto: SecurityGroup) :
+    @field:NotNull
+    @field:Schema(name = "company", description = "Company")
+    var company: CompanyDTO? = null
+
+) : Identifiable {
+
+    constructor(securityGroup: SecurityGroup) :
             this(
-                id = securityGroupDto.id,
-                value = securityGroupDto.value,
-                description = securityGroupDto.description,
-                company = securityGroupDto.company
+                id = securityGroup.id,
+                value = securityGroup.value,
+                description = securityGroup.description,
+                company = CompanyDTO(securityGroup.company)
             )
 
     override fun myId(): UUID? = id

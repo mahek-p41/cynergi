@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.employee
 
 import com.cynergisuite.domain.LegacyIdentifiable
-import com.cynergisuite.middleware.authentication.user.SecurityGroup
+import com.cynergisuite.middleware.authentication.user.SecurityGroupDTO
 import com.cynergisuite.middleware.store.StoreDTO
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -67,14 +67,13 @@ data class EmployeeValueObject(
    @field:Schema(name = "active", description = "true|false value describing whether an employee/user is active or not", hidden = true)
    var active: Boolean? = true,
 
-   @field:JsonIgnoreProperties
    @field:NotNull
-   @field:Schema(name = "securityGroup", description = "true|false value describing whether an employee/user is active or not", hidden = true)
-   var securityGroup: SecurityGroup,
+   @field:Schema(name = "securityGroup", description = "Employee's security groups", hidden = true)
+   var securityGroups: MutableList<SecurityGroupDTO>? = null,
 
 ) : LegacyIdentifiable {
 
-   constructor(id: Long, type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreDTO, active: Boolean, altStoreIndicator: String, alternativeArea: Long, securityGroup: SecurityGroup) :
+   constructor(id: Long, type: String, number: Int, lastName: String, firstNameMi: String, passCode: String, store: StoreDTO, active: Boolean, altStoreIndicator: String, alternativeArea: Long, securityGroups: MutableList<SecurityGroupDTO>?) :
       this(
          id = id,
          type = type,
@@ -86,7 +85,7 @@ data class EmployeeValueObject(
          active = active,
          alternativeStoreIndicator = altStoreIndicator,
          alternativeArea = alternativeArea,
-         securityGroup = securityGroup
+         securityGroups = securityGroups
       )
 
    constructor(entity: EmployeeEntity) :
@@ -101,9 +100,8 @@ data class EmployeeValueObject(
          active = entity.active,
          alternativeStoreIndicator = entity.alternativeStoreIndicator,
          alternativeArea = entity.alternativeArea,
-         securityGroup = entity.securityGroup
+         securityGroups = entity.securityGroups?.map{SecurityGroupDTO(it)} as MutableList<SecurityGroupDTO>
       )
-
    override fun myId(): Long? = id
 
    override fun equals(other: Any?): Boolean =

@@ -28,7 +28,8 @@ val company: CompanyEntity
         id = dto.id,
         value = dto.value!!,
         description = dto.description!!,
-        company = dto.company!!,
+        company = CompanyEntity(dto.company!!),
     )
+
     override fun myId(): UUID? = id
 }

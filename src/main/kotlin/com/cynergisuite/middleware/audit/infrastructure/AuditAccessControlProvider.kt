@@ -18,7 +18,7 @@ class AuditAccessControlProvider @Inject constructor(
       val auditPermission = auditPermissionRepository.permissionDepartmentByAsset(asset, user.myCompany())
 
       return user.isCynergiAdmin() || // if user is high touch admin then allow no questions asked
-         //auditPermission.isEmpty() || // if no permissions have been setup for this asset then allow
+         auditPermission.isEmpty() || // if no permissions have been setup for this asset then allow
          auditPermission.contains(user.myDepartment()) // if permissions have been setup and the user's department is contained in that permission then allow
    }
 

@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.purchase.order.control
 
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeDataLoader
+import com.cynergisuite.middleware.authentication.user.SecurityGroup
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeValueObject
@@ -80,7 +81,7 @@ class PurchaseOrderControlTestDataLoader {
             Random.nextBoolean(),
             Random.nextBoolean(),
             Random.nextBoolean(),
-            new EmployeeValueObject(defaultApprover.myId(), null, null, null, null, null, null, null, null, null),
+            new EmployeeValueObject(defaultApprover.myId(), null, null, null, null, null, null, null, null, null, null),
             new ApprovalRequiredFlagDTO(ApprovalRequiredFlagTypeTestDataLoader.random())
          )
       }
