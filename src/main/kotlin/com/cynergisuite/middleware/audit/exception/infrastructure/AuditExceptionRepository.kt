@@ -5,14 +5,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.findFirstOrNull
-import com.cynergisuite.extensions.getOffsetDateTime
-import com.cynergisuite.extensions.getUuid
-import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.queryForObject
-import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.extensions.update
-import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.extensions.*
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.audit.AuditEntity
@@ -22,11 +15,11 @@ import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
 import com.cynergisuite.middleware.authentication.user.User
+import com.cynergisuite.middleware.authentication.user.infrastructure.SecurityGroupRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
-import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.transaction.annotation.ReadOnly
@@ -46,7 +39,7 @@ class AuditExceptionRepository @Inject constructor(
    private val auditScanAreaRepository: AuditScanAreaRepository,
    private val auditExceptionNoteRepository: AuditExceptionNoteRepository,
    private val companyRepository: CompanyRepository,
-   private val employeeRepository: EmployeeRepository,
+   private val securityGroupRepository: SecurityGroupRepository,
    private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionRepository::class.java)
@@ -111,6 +104,10 @@ class AuditExceptionRepository @Inject constructor(
          scannedBy.store_id                                         AS scannedBy_store_id,
          scannedBy.store_number                                     AS scannedBy_store_number,
          scannedBy.store_name                                       AS scannedBy_store_name,
+		   secGrp.id													           AS secGrp_id,
+		   secGrp.value											              AS secGrp_value,
+         secGrp.description											        AS secGrp_description,
+         secGrp.company_id											           AS secGrp_company,
          approvedBy.emp_id                                          AS approvedBy_id,
          approvedBy.emp_type                                        AS approvedBy_type,
          approvedBy.emp_number                                      AS approvedBy_number,
@@ -152,6 +149,8 @@ class AuditExceptionRepository @Inject constructor(
            JOIN audit a ON auditException.audit_id = a.id
            JOIN (${companyRepository.companyBaseQuery()}) comp ON a.company_id = comp.id AND comp.deleted = FALSE
            JOIN system_employees_fimvw scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
+           LEFT JOIN employee_to_security_group empSecGrp on scannedBy.emp_number = empSecGrp.employee_id_sfk and empSecGrp.deleted = FALSE
+		     LEFT JOIN security_group secGrp on empSecGrp.security_group_id = secGrp.id
            JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND auditScanArea.store_number_sfk = store.number
            LEFT OUTER JOIN system_employees_fimvw approvedBy ON auditException.approved_by = approvedBy.emp_number AND comp.id = approvedBy.comp_id
            LEFT OUTER JOIN audit_exception_note auditExceptionNote ON auditException.id = auditExceptionNote.audit_exception_id
@@ -523,6 +522,7 @@ class AuditExceptionRepository @Inject constructor(
    }
 
    private fun mapEmployeeNotNull(rs: ResultSet, address: AddressEntity?, columnPrefix: String): EmployeeEntity {
+      val securityGroups = securityGroupRepository.findAll(rs.getLong("${columnPrefix}id"))
       return EmployeeEntity(
          id = rs.getLong("${columnPrefix}id"),
          type = rs.getString("${columnPrefix}type"),
@@ -534,9 +534,10 @@ class AuditExceptionRepository @Inject constructor(
          store = mapScannedByStore(rs, address, columnPrefix),
          active = rs.getBoolean("${columnPrefix}active"),
          department = mapScannedByDepartment(rs, address, columnPrefix),
-         cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
+         //cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
          alternativeStoreIndicator = rs.getString("${columnPrefix}alternative_store_indicator"),
-         alternativeArea = rs.getLong("${columnPrefix}alternative_area")
+         alternativeArea = rs.getLong("${columnPrefix}alternative_area"),
+         securityGroups = securityGroups
       )
    }
 

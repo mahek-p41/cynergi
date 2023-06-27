@@ -1,6 +1,8 @@
 package com.cynergisuite.middleware.employee
 
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
+import com.cynergisuite.middleware.authentication.user.SecurityGroup
+import com.cynergisuite.middleware.authentication.user.infrastructure.SecurityGroupRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.company.CompanyFactoryService
@@ -34,13 +36,15 @@ class EmployeeTestDataLoader {
       DepartmentEntity departmentIn = null,
       Store storeIn = null,
       String alternativeStoreIndicatorIn = null,
-      Long alternativeAreaIn = null
+      Long alternativeAreaIn = null,
+      List<SecurityGroup> securityGroupIn = null
    ) {
       final number = numberIn > 0 ? numberIn : 1
       final faker = new Faker()
       final name = faker.name()
       final lorem = faker.lorem()
       final company = companyIn ?: departmentIn?.myCompany() ?: storeIn?.myCompany() ?: CompanyFactory.random()
+      final secgrp = securityGroupIn
 
       if (departmentIn != null && departmentIn.myCompany() != company) {
          throw new Exception("Department's Company and Company do not match ${departmentIn.myCompany()} / $company")
@@ -66,7 +70,8 @@ class EmployeeTestDataLoader {
             departmentIn,
             storeIn,
             alternativeStoreIndicatorIn ?: "N",
-            alternativeAreaIn ?: 0
+            alternativeAreaIn ?: 0,
+            secgrp
          )
       }
    }
@@ -84,6 +89,8 @@ class EmployeeTestDataLoader {
 class EmployeeTestDataLoaderService {
    @Inject CompanyFactoryService companyFactoryService
    @Inject EmployeeRepository employeeRepository
+   @Inject SecurityGroupTestDataLoaderService securityGroupTestDataLoader
+   @Inject SecurityGroupRepository securityGroupRepository
 
    EmployeeEntity single(CompanyEntity company) {
       return stream(company).findFirst().orElseThrow { new Exception("Unable to create EmployeeEntity") }
@@ -129,8 +136,9 @@ class EmployeeTestDataLoaderService {
                new LocationEntity(employee.store),
                new LocationEntity(employee.store),
                new LocationEntity(employee.store),
+               employee.securityGroups,
                employee.passCode,
-               employee.cynergiSystemAdmin,
+             //  employee.cynergiSystemAdmin,
                employee.alternativeStoreIndicator,
                employee.alternativeArea
             )
@@ -162,10 +170,11 @@ class EmployeeTestDataLoaderService {
                new LocationEntity(employee.store),
                new LocationEntity(employee.store),
                new LocationEntity(store),
+               employee.securityGroups,
                employee.passCode,
-               employee.cynergiSystemAdmin,
+               //employee.cynergiSystemAdmin,
                employee.alternativeStoreIndicator,
-               employee.alternativeArea
+               employee.alternativeArea,
             )
          }
    }
@@ -182,15 +191,26 @@ class EmployeeTestDataLoaderService {
       DepartmentEntity departmentIn = null,
       Store storeIn = null,
       String alternativeStoreIndicator = null,
-      Long alternativeArea = null
+      Long alternativeArea = null,
+      SecurityGroup securityGroupIn = null
    ) {
       final company = companyIn ?: departmentIn?.myCompany() ?: storeIn?.myCompany() ?: companyFactoryService.random()
+      SecurityGroup securityGroup = (cynergiSystemAdminIn) ?
+         (securityGroupRepository.findByName(company, "admin") ?: securityGroupTestDataLoader.single(company, "admin"))
+         : (securityGroupRepository.findByName(company, "basic") ?: securityGroupTestDataLoader.single(company, "basic"))
+      List<SecurityGroup> securityGroupList = Collections.singletonList(securityGroup)
 
-      return EmployeeTestDataLoader.stream(numberIn, employeeNumberIn, lastNameIn, firstNameMiIn, passCodeIn, activeIn, cynergiSystemAdminIn, company, departmentIn, storeIn, alternativeStoreIndicator, alternativeArea)
-         .map { employeeRepository.insert(it).copyMeWithDifferentPassCode(it.passCode) }
+      return EmployeeTestDataLoader.stream(numberIn, employeeNumberIn, lastNameIn, firstNameMiIn, passCodeIn, activeIn, cynergiSystemAdminIn, company, departmentIn, storeIn, alternativeStoreIndicator, alternativeArea, securityGroupList)
+         .map {
+            employeeRepository.insert(it).copyMeWithDifferentPassCode(it.passCode)
+            }.peek(emp -> {
+               emp.securityGroups.forEach {
+                  securityGroupTestDataLoader.assignEmployeeToSecurityGroup(emp, it)
+               }
+      })
    }
 
    Stream<EmployeeEntity> stream(int numberIn = 1, CompanyEntity company) {
-      return stream(numberIn, null, null, null, null, true, false, company)
+      return stream(numberIn, null, null, null, null, true, false, company, null, null, null, null)
    }
 }
