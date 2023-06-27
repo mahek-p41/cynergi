@@ -23,7 +23,7 @@ def migrate(Path dir, String dbUrl, String username, String password, boolean fo
    final flyway = Flyway
       .configure()
       .locations("filesystem:$dir")
-      .cleanDisabled(true)
+      .cleanDisabled(!forceClean)
       .cleanOnValidationError(false)
       .table("flyway_schema_history")
       .initSql("SELECT 1")
