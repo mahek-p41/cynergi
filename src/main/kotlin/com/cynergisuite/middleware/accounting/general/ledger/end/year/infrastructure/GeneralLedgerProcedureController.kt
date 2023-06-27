@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.end.year.infrastru
 
 import com.cynergisuite.middleware.accounting.general.ledger.end.year.EndYearProceduresDTO
 import com.cynergisuite.middleware.accounting.general.ledger.end.year.GeneralLedgerProcedureService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationException
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory
 import javax.validation.Valid
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
+@AreaControl("GL")
 @Controller("/api/general-ledger/procedure")
 class GeneralLedgerProcedureController @Inject constructor(
    private val generalLedgerProcedureService: GeneralLedgerProcedureService,

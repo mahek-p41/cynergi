@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.cashout.infrastru
 import com.cynergisuite.domain.CashRequirementFilterRequest
 import com.cynergisuite.middleware.accounting.account.payable.cashout.AccountPayableCashRequirementDTO
 import com.cynergisuite.middleware.accounting.account.payable.cashout.AccountPayableCashRequirementService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
@@ -24,6 +25,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("AP")
 @Controller("/api/accounting/account-payable/cashout")
 class AccountPayableCashRequirementController @Inject constructor(
    private val accountPayableCashRequirementService: AccountPayableCashRequirementService,

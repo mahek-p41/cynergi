@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribut
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionService
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.distribution.GeneralLedgerRecurringDistributionTotalsDTO
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -38,6 +39,7 @@ import java.util.UUID
 import javax.validation.Valid
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
+@AreaControl("GL")
 @Controller("/api/accounting/general-ledger/recurring/distribution")
 class GeneralLedgerRecurringDistributionController @Inject constructor(
    private val generalLedgerRecurringDistributionService: GeneralLedgerRecurringDistributionService,

@@ -5,6 +5,7 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.GeneralLedgerRecurringService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -36,6 +37,7 @@ import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("GL")
 @Controller("/api/accounting/general-ledger/recurring")
 class GeneralLedgerRecurringController @Inject constructor(
    private val generalLedgerRecurringService: GeneralLedgerRecurringService,

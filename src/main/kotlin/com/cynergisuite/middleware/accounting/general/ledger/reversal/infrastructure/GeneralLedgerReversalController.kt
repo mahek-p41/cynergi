@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.GeneralLedgerReversalDTO
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.GeneralLedgerReversalService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -35,6 +36,7 @@ import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("GL")
 @Controller("/api/general-ledger/reversal")
 class GeneralLedgerReversalController @Inject constructor(
    private val generalLedgerReversalService: GeneralLedgerReversalService,

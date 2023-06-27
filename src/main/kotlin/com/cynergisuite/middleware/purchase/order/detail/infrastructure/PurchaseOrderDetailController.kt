@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.purchase.order.detail.infrastructure
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -35,6 +36,7 @@ import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("PO")
 @Controller("/api/purchase-order/detail")
 class PurchaseOrderDetailController @Inject constructor(
    private val purchaseOrderDetailService: PurchaseOrderDetailService,

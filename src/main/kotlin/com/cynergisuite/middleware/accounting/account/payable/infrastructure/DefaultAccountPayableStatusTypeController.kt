@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.infrastructure
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.DefaultAccountPayableStatusTypeService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
@@ -20,6 +21,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("AP")
 @Controller("/api/accounting/account-payable/type/default-account-payable-status")
 class DefaultAccountPayableStatusTypeController @Inject constructor(
    private val defaultAccountPayableStatusTypeService: DefaultAccountPayableStatusTypeService,

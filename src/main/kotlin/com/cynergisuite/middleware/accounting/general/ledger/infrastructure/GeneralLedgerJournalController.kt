@@ -12,6 +12,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendin
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -46,6 +47,7 @@ import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("GL")
 @Controller("/api/general-ledger/journal")
 class GeneralLedgerJournalController @Inject constructor(
    private val generalLedgerJournalService: GeneralLedgerJournalService,

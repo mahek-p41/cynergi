@@ -3,12 +3,11 @@ package com.cynergisuite.middleware.accounting.account.payable.payment.infrastru
 import com.cynergisuite.domain.AccountPayableListPaymentsFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PaymentReportFilterRequest
-import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -42,6 +41,7 @@ import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("AP")
 @Controller("/api/accounting/account-payable/payment")
 class AccountPayablePaymentController @Inject constructor(
    private val accountPayablePaymentService: AccountPayablePaymentService,

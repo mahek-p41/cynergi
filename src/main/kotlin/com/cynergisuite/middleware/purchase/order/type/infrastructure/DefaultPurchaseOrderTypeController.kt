@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.purchase.order.type.infrastructure
 
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.purchase.order.type.DefaultPurchaseOrderTypeDTO
 import com.cynergisuite.middleware.purchase.order.type.DefaultPurchaseOrderTypeService
@@ -20,6 +21,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("PO")
 @Controller("/api/purchase-order/type/default")
 class DefaultPurchaseOrderTypeController @Inject constructor(
    private val defaultPurchaseOrderTypeService: DefaultPurchaseOrderTypeService,

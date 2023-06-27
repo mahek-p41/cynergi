@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedg
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryService
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.GeneralLedgerProfitCenterTrialBalanceReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.TrialBalanceWorksheetReportTemplate
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -40,6 +41,7 @@ import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("GL")
 @Controller("/api/general-ledger/summary")
 class GeneralLedgerSummaryController @Inject constructor(
    private val generalLedgerSummaryService: GeneralLedgerSummaryService,

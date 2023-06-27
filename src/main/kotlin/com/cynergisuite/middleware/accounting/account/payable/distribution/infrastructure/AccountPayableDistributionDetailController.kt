@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDetailDTO
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDetailService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -35,6 +36,7 @@ import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("AP")
 @Controller("/api/accounting/account-payable/distribution/detail")
 class AccountPayableDistributionDetailController @Inject constructor(
    private val accountPayableDistributionService: AccountPayableDistributionDetailService,
