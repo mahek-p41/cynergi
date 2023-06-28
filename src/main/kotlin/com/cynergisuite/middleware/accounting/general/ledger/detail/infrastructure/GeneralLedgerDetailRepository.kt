@@ -20,7 +20,6 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingJournalCountDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerDetailPurgeCountDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportSourceDetailDTO
@@ -449,7 +448,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
       val query = """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY glDetail_${page.snakeSortBy()} ${page.sortDirection()}
+            ORDER BY glDetail_profit_center_id_sfk, glDetail_date, glDetail_source_value
             LIMIT :limit OFFSET :offset
          """.trimIndent()
 
