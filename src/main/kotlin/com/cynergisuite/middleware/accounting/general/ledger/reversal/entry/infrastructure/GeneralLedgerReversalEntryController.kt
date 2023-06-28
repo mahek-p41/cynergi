@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.inf
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.entry.GeneralLedgerReversalEntryDTO
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import io.micronaut.http.HttpRequest
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("GL")
 @Controller("/api/accounting/general-ledger/reversal/entry")
 class GeneralLedgerReversalEntryController @Inject constructor(
    private val generalLedgerDetailService: GeneralLedgerDetailService,

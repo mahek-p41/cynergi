@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.control.infrastruc
 
 import com.cynergisuite.middleware.accounting.general.ledger.control.GeneralLedgerControlDTO
 import com.cynergisuite.middleware.accounting.general.ledger.control.GeneralLedgerControlService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationException
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("GL")
 @Controller("/api/general-ledger/control")
 class GeneralLedgerControlController @Inject constructor(
    private val generalLedgerControlService: GeneralLedgerControlService,

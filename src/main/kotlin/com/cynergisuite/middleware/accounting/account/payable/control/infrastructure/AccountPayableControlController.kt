@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.account.payable.control.infrastru
 
 import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlDTO
 import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationException
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("AP")
 @Controller("/api/accounting/account-payable/control")
 class AccountPayableControlController @Inject constructor(
    private val accountPayableControlService: AccountPayableControlService,

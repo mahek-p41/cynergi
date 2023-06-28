@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.journal.entry.infr
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDTO
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationException
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("GL")
 @Controller("/api/accounting/general-ledger/journal-entry")
 class GeneralLedgerJournalEntryController @Inject constructor(
    private val journalEntryService: GeneralLedgerJournalEntryService,

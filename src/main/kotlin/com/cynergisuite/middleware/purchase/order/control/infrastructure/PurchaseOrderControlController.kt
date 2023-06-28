@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.purchase.order.control.infrastructure
 
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.NotFoundException
@@ -29,6 +30,7 @@ import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("PO")
 @Controller("/api/purchase-order/control")
 class PurchaseOrderControlController @Inject constructor(
    private val purchaseOrderControlService: PurchaseOrderControlService,

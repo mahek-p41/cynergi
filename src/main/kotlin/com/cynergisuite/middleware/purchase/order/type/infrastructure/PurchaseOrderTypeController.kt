@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.purchase.order.type.infrastructure
 
 import com.cynergisuite.extensions.findLocaleWithDefault
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderTypeService
 import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderTypeValueObject
@@ -20,6 +21,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
+@AreaControl("PO")
 @Controller("/api/purchase-order/type/type")
 class PurchaseOrderTypeController @Inject constructor(
    private val purchaseOrderTypeService: PurchaseOrderTypeService,

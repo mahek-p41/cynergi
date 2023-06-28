@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.aging.infrastruct
 import com.cynergisuite.domain.AgingReportFilterRequest
 import com.cynergisuite.middleware.accounting.account.payable.aging.AccountPayableAgingReportDTO
 import com.cynergisuite.middleware.accounting.account.payable.aging.AccountPayableAgingReportService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
@@ -24,6 +25,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("AP")
 @Controller("/api/accounting/account-payable/aging")
 class AccountPayableAgingReportController @Inject constructor(
    private val accountPayableAgingReportService: AccountPayableAgingReportService,

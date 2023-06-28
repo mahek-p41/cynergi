@@ -4,6 +4,7 @@ import com.cynergisuite.domain.CashFlowFilterRequest
 import com.cynergisuite.middleware.accounting.account.payable.cashflow.AccountPayableCashFlowDTO
 import com.cynergisuite.middleware.accounting.account.payable.cashflow.AccountPayableCashFlowService
 import com.cynergisuite.middleware.accounting.account.payable.cashout.infrastructure.AccountPayableCashRequirementController
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory
 
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
+@AreaControl("AP")
 @Controller("/api/accounting/account-payable/cashflow")
 class CashFlowController @Inject constructor(
    private val accountPayableCashFlowService: AccountPayableCashFlowService,

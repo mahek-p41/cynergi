@@ -20,7 +20,7 @@ import kotlin.annotation.AnnotationTarget.FUNCTION
  */
 @MustBeDocumented
 @Retention(RUNTIME)
-@Target(FUNCTION)
+@Target(FUNCTION, AnnotationTarget.CLASS)
 @Around
 @Type(AreaControlService::class)
 annotation class AreaControl(

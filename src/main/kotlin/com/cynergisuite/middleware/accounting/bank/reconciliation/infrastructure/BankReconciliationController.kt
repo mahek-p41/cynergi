@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.accounting.bank.ReconcileBankAccountReportTem
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationService
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -40,6 +41,7 @@ import java.util.UUID
 import javax.validation.Valid
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
+@AreaControl("BR")
 @Controller("/api/accounting/bank-recon")
 class BankReconciliationController @Inject constructor(
    private val userService: UserService,

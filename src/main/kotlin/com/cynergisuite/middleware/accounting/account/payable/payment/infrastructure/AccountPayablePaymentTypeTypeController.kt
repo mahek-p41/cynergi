@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.payment.infrastru
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeTypeService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
@@ -20,6 +21,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("AP")
 @Controller("/api/accounting/account-payable/payment/type/type")
 class AccountPayablePaymentTypeTypeController @Inject constructor(
    private val accountPayablePaymentTypeTypeService: AccountPayablePaymentTypeTypeService,

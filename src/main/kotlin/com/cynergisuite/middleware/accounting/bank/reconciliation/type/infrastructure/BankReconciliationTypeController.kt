@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastr
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.localization.LocalizationService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
@@ -20,6 +21,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("BR")
 @Controller("/api/accounting/bank-recon/type")
 class BankReconciliationTypeController @Inject constructor(
    private val bankReconciliationTypeService: BankReconciliationTypeService,

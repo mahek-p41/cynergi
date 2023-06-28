@@ -43,6 +43,7 @@ import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("AP")
 @Controller("/api/accounting/account-payable/invoice")
 class AccountPayableInvoiceController @Inject constructor(
    private val accountPayableInvoiceService: AccountPayableInvoiceService,
@@ -52,7 +53,6 @@ class AccountPayableInvoiceController @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableInvoiceController::class.java)
 
    @Throws(NotFoundException::class)
-   @AreaControl("AP")
    @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Fetch a single Account Payable Invoice", description = "Fetch a single Account Payable Invoice by its system generated primary key", operationId = "accountPayableInvoice-fetchOne")
    @ApiResponses(

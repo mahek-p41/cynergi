@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.inquiry.infrastruc
 import com.cynergisuite.domain.GeneralLedgerInquiryFilterRequest
 import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerInquiryDTO
 import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerInquiryService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NoContentException
 import io.micronaut.http.MediaType.APPLICATION_JSON
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("GL")
 @Controller("/api/general-ledger/inquiry")
 class GeneralLedgerInquiryController @Inject constructor(
    private val generalLedgerInquiryService: GeneralLedgerInquiryService,

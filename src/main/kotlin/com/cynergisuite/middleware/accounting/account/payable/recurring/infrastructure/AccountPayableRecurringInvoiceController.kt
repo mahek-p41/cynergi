@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -34,6 +35,7 @@ import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("AP")
 @Controller("/api/accounting/account-payable/recurring")
 class AccountPayableRecurringInvoiceController @Inject constructor(
    private val accountPayableRecurringInvoiceService: AccountPayableRecurringInvoiceService,
