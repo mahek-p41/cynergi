@@ -26,6 +26,11 @@ data class SecurityGroupDTO(
     var description: String? = null,
 
     @field:NotNull
+    @field:Schema(name = "description", description = "Security Group description")
+    var types: List<SecurityType>? = null,
+
+
+    @field:NotNull
     @field:Schema(name = "company", description = "Company")
     var company: CompanyDTO? = null
 
@@ -36,8 +41,12 @@ data class SecurityGroupDTO(
                 id = securityGroup.id,
                 value = securityGroup.value,
                 description = securityGroup.description,
+                types = securityGroup.types,
                 company = CompanyDTO(securityGroup.company)
             )
 
     override fun myId(): UUID? = id
+
+   @field:Schema(name = "securityTypes")
+   private val securityTypes: List<String> = types!!.map{it.value}.toList()
 }

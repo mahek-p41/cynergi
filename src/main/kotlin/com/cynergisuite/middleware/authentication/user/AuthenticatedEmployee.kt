@@ -45,7 +45,7 @@ data class AuthenticatedEmployee(
    val passCode: String,
  //  val cynergiSystemAdmin: Boolean,
    val alternativeStoreIndicator: String,
-   val alternativeArea: Long,
+   val alternativeArea: Long
 
 
 ) : User {
@@ -93,4 +93,9 @@ data class AuthenticatedEmployee(
    override fun myAlternativeStoreIndicator(): String = alternativeStoreIndicator
    override fun myAlternativeArea(): Long = alternativeArea
    override fun isCynergiAdmin(): Boolean = securityGroups?.any{it.value == "admin"} ?: false
+   override fun mySecurityTypes(): List<String> = securityGroups!!.flatMap { outer ->
+      outer.types.map { inner ->
+         inner.value
+      }?.distinctBy{ it }
+   }
 }

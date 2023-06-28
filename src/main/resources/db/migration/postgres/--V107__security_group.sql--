@@ -1,0 +1,16 @@
+WITH security_id AS (
+	INSERT INTO security_group (value, description, company_id, deleted)
+	VALUES ('admin', 'admin', '6f8c31f2-fb09-11ed-9d43-005056bb008a', FALSE)
+	RETURNING id
+),
+access_point AS (
+	SELECT * FROM security_access_point_type_domain
+),
+emp_to_sec AS (
+	INSERT INTO employee_to_security_group (employee_id_sfk, security_group_id)
+	SELECT 998, security_id.id
+	FROM security_id
+)
+INSERT INTO security_group_to_security_access_point (security_group_id, security_access_point_id)
+SELECT security_id.id, access_point.id
+FROM security_id, access_point;
