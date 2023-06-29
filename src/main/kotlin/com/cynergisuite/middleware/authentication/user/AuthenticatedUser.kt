@@ -40,7 +40,7 @@ data class AuthenticatedUser(
          alternativeStoreIndicator = employee.alternativeStoreIndicator,
          alternativeArea = employee.alternativeArea,
      //    cynergiSystemAdmin = employee.cynergiSystemAdmin,
-         securityGroups = employee.mySecurityTypes()!!
+         securityGroups = employee.mySecurityTypes()
       )
 
    constructor(employee: AuthenticatedEmployee, overrideStore: Location) :
@@ -54,7 +54,7 @@ data class AuthenticatedUser(
          alternativeStoreIndicator = employee.alternativeStoreIndicator,
          alternativeArea = employee.alternativeArea,
      //    cynergiSystemAdmin = employee.cynergiSystemAdmin,
-         securityGroups = employee.mySecurityTypes()!!
+         securityGroups = employee.mySecurityTypes()
       )
 
    override fun myId(): Long = id

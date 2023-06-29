@@ -40,7 +40,7 @@ data class AuthenticatedEmployee(
    val fallbackLocation: LocationEntity,
 
    @Relation(ONE_TO_MANY)
-   val securityGroups: List<SecurityGroup>?,
+   val securityGroups: List<SecurityGroup>,
 
    val passCode: String,
  //  val cynergiSystemAdmin: Boolean,
@@ -92,10 +92,10 @@ data class AuthenticatedEmployee(
    override fun myEmployeeNumber(): Int = number
    override fun myAlternativeStoreIndicator(): String = alternativeStoreIndicator
    override fun myAlternativeArea(): Long = alternativeArea
-   override fun isCynergiAdmin(): Boolean = securityGroups?.any{it.value == "admin"} ?: false
-   override fun mySecurityTypes(): List<String> = securityGroups!!.flatMap { outer ->
+   override fun isCynergiAdmin(): Boolean = securityGroups.any{it.value == "admin"}
+   override fun mySecurityTypes(): List<String> = securityGroups.flatMap { outer ->
       outer.types.map { inner ->
          inner.value
-      }?.distinctBy{ it }
+      }.distinctBy{ it }
    }
 }

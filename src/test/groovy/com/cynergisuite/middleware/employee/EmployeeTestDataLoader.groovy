@@ -44,7 +44,7 @@ class EmployeeTestDataLoader {
       final name = faker.name()
       final lorem = faker.lorem()
       final company = companyIn ?: departmentIn?.myCompany() ?: storeIn?.myCompany() ?: CompanyFactory.random()
-      final secgrp = securityGroupIn
+      final secGrp = securityGroupIn ?: Collections.singletonList(SecurityGroupTestDataLoader.random())
 
       if (departmentIn != null && departmentIn.myCompany() != company) {
          throw new Exception("Department's Company and Company do not match ${departmentIn.myCompany()} / $company")
@@ -71,14 +71,13 @@ class EmployeeTestDataLoader {
             storeIn,
             alternativeStoreIndicatorIn ?: "N",
             alternativeAreaIn ?: 0,
-            secgrp
+            secGrp
          )
       }
    }
 
    static EmployeeEntity single(CompanyEntity companyIn) {
       final company = companyIn ?: CompanyFactory.random()
-
       return stream(1, null, null, null, null, true, false, company, null, null, null, null).findFirst().orElseThrow { new Exception("Unable to create EmployeeEntity") }
    }
 }

@@ -168,7 +168,7 @@ abstract class AuthenticationRepository @Inject constructor(
          compAddr.country               AS security_groups_company_address_country,
          compAddr.county                AS security_groups_company_address_county,
          compAddr.phone                 AS security_groups_company_address_phone,
-         compAddr.fax                   AS security_groups_company_address_fax,
+         compAddr.fax                   AS security_groups_company_address_fax
       FROM authenticated_user_vw au
            JOIN company comp ON comp.id = au.company_id AND comp.deleted = FALSE
            LEFT JOIN address compAddr on comp.address_id = compAddr.id AND compAddr.deleted = FALSE
@@ -178,8 +178,8 @@ abstract class AuthenticationRepository @Inject constructor(
            JOIN system_stores_fimvw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
            LEFT OUTER JOIN employee_to_security_group empsecgrp on empsecgrp.employee_id_sfk = au.id
            LEFT OUTER JOIN security_group secgrp on secgrp.id = empsecgrp.security_group_id and secgrp.deleted = FALSE
-           JOIN security_group_to_security_access_point sgsap ON sgsap.security_group_id = secgrp.id
-		     JOIN security_access_point_type_domain sapd ON sgsap.security_access_point_id = sapd.id
+           LEFT JOIN security_group_to_security_access_point sgsap ON sgsap.security_group_id = secgrp.id
+		     LEFT JOIN security_access_point_type_domain sapd ON sgsap.security_access_point_id = sapd.id
       WHERE comp.dataset_code = :dataset
             AND au.number = :employeeNumber
             AND au.pass_code = convert_passcode(au.type, :passCode, au.pass_code)
@@ -371,8 +371,8 @@ abstract class AuthenticationRepository @Inject constructor(
            JOIN system_stores_fimvw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
            LEFT OUTER JOIN employee_to_security_group empsecgrp on empsecgrp.employee_id_sfk = au.id
            LEFT OUTER JOIN security_group secgrp on secgrp.id = empsecgrp.security_group_id and secgrp.deleted = FALSE
-           JOIN security_group_to_security_access_point sgsap ON sgsap.security_group_id = secgrp.id
-		     JOIN security_access_point_type_domain sapd ON sgsap.security_access_point_id = sapd.id
+           LEFT JOIN security_group_to_security_access_point sgsap ON sgsap.security_group_id = secgrp.id
+		     LEFT JOIN security_access_point_type_domain sapd ON sgsap.security_access_point_id = sapd.id
       WHERE comp.dataset_code = :dataset
             AND au.number = :employeeNumber
             AND au.pass_code = convert_passcode(au.type, :passCode, au.pass_code)
