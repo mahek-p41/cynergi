@@ -134,6 +134,20 @@ class SecurityGroupRepository @Inject constructor(
      )
    }
 
+   @Transactional
+   fun assignAccessPointsToSecurityGroups(securityGroup: SecurityGroup) {
+      logger.trace("Assigning Access points to Security Groups {}",  securityGroup)
+      jdbc.update(
+         """
+            INSERT INTO security_group_to_security_access_point (security_group_id, security_access_point_id)
+            SELECT :security_id, sap.id
+            FROM security_access_point_type_domain sap
+         """.trimIndent(),
+         mapOf("security_id" to securityGroup.id)
+      )
+
+   }
+
    fun mapRow(
      rs: ResultSet,
      columnPrefix: String = EMPTY
