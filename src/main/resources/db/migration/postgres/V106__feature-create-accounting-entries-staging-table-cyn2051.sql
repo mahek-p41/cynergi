@@ -11,7 +11,8 @@ CREATE TABLE accounting_entries_staging
     profit_center_id_sfk   INTEGER                                                     NOT NULL,
     source_id              UUID         REFERENCES general_ledger_source_codes (id)    NOT NULL,
     journal_entry_amount   NUMERIC(13,2)                                               NOT NULL,
-    deleted                BOOLEAN      DEFAULT FALSE                                  NOT NULL
+    deleted                BOOLEAN      DEFAULT FALSE                                  NOT NULL,
+    message                text
 );
 
 COMMENT ON TABLE accounting_entries_staging IS 'Used by SUMMARY to General Ledger Interface. Records for each store for each business day.';
