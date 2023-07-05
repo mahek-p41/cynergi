@@ -127,12 +127,6 @@ jobs:
          '''
          echo "::endgroup::"
 
-      - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v3
-        if: ${{ success() || failure() }}
-        with:
-          report_paths: 'build/test-results/**/*.xml'
-
       - name: Build deploy artifact
         id: buildDeployArtifact
         if: ${{ (success() || failure()) && contains('master staging develop', steps.setBuildVars.outputs.branchName) }}
@@ -161,6 +155,7 @@ jobs:
       - name: Prepare build reports
         id: prepareBuildReports
         if: ${{ success() || failure() }}
+        continue-on-error: true
         run: |
          ${DEBUG_MODE}
          reportsPath="${GITHUB_WORKSPACE}/build/reports"
@@ -173,11 +168,19 @@ jobs:
 
       - name: "Store reports"
         if: ${{ (success() || failure()) && steps.prepareBuildReports.outputs.reportsPath != '' }}
+        continue-on-error: true
         uses: actions/upload-artifact@v3
         with:
          name: buildReports
          path: ${{ steps.prepareBuildReports.outputs.reportsPath }}
          if-no-files-found: warn
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v3
+        if: ${{ success() || failure() }}
+        continue-on-error: true
+        with:
+          report_paths: 'build/test-results/**/*.xml'
 
    e2eTesting:
       name: Trigger E2E testing
