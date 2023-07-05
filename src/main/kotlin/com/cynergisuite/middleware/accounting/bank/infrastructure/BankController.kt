@@ -107,12 +107,13 @@ class BankController @Inject constructor(
    fun save(
       @Body @Valid
       dto: BankDTO,
-      authentication: Authentication
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
    ): BankDTO {
       logger.info("Requested Save Bank {}", dto)
 
       val user = userService.fetchUser(authentication)
-      val response = bankService.create(dto, user.myCompany())
+      val response = bankService.create(dto, user.myCompany(), httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Save Bank {} resulted in {}", dto, response)
 
@@ -134,12 +135,13 @@ class BankController @Inject constructor(
       @QueryValue("id") id: UUID,
       @Body @Valid
       dto: BankDTO,
-      authentication: Authentication
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
    ): BankDTO {
       logger.info("Requested Update Bank {}", dto)
 
       val user = userService.fetchUser(authentication)
-      val response = bankService.update(id, dto, user.myCompany())
+      val response = bankService.update(id, dto, user.myCompany(), httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Update Bank {} resulted in {}", dto, response)
 
@@ -166,6 +168,6 @@ class BankController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
 
-      return bankService.delete(id, user.myCompany())
+      return bankService.delete(id, user.myCompany(), httpRequest.findLocaleWithDefault())
    }
 }
