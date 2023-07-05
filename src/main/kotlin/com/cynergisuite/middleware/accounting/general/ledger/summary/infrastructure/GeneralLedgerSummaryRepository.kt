@@ -512,7 +512,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
    @Transactional
    fun resetGLBalance(company: CompanyEntity) {
 
-      val rowsAffected = jdbc.update(
+      jdbc.update(
          """
          UPDATE general_ledger_summary summary
          SET beginning_balance = 0.00,
@@ -563,7 +563,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
             JOIN account_type_domain acct_type on acct.type_id = acct_type.id
             JOIN overall_period_type_domain overallPeriod ON glSummary.overall_period_id = overallPeriod.id
             LEFT OUTER JOIN bank ON bank.general_ledger_account_id = acct.id AND bank.deleted = FALSE
-            WHERE glSummary.company_id = :comp_id AND acct_type.value IN ('A', 'L', 'C') AND overallPeriod.id = 2
+            WHERE glSummary.company_id = :comp_id AND acct_type.value IN ('A', 'L') AND overallPeriod.id = 2
          )
          update general_ledger_summary summary
          set beginning_balance = glSum.glSummary_closing_balance
@@ -571,58 +571,137 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          WHERE summary.account_id = glSum.glSummary_account_id AND summary.profit_center_id_sfk = glSum.glSummary_profit_center_id_sfk and summary.overall_period_id = 3
       """
 
-      val found = jdbc.update(query, mapOf("comp_id" to company.id))
+      jdbc.update(query, mapOf("comp_id" to company.id))
+   }
+
+   @Transactional
+   fun recalculateCapitalAccounts(company: CompanyEntity) {
+      val query = """
+         with details as (
+         SELECT glDetail.*, finCal.period_from, finCal.period_to, finCal.overall_period_id, finCal.period, srcCodes.value from general_ledger_detail glDetail
+         JOIN general_ledger_source_codes srcCodes on glDetail.source_id = srcCodes.id
+         JOIN financial_calendar finCal on glDetail.company_id = finCal.company_id and glDetail.date >= finCal.period_from and glDetail.date <= finCal.period_to
+         JOIN account acct ON glDetail.account_id = acct.id
+		   JOIN account_type_domain acct_type ON acct.type_id = acct_type.id
+         WHERE glDetail.company_id = :comp_id and glDetail.deleted = FALSE AND srcCodes.value = 'BAL' AND acct_type.value = 'C'
+         ),
+         detailSums as (
+            SELECT account_id, profit_center_id_sfk, overall_period_id, SUM(amount) AS total_amount
+            FROM details
+            GROUP BY account_id, profit_center_id_sfk, overall_period_id
+         )
+         UPDATE general_ledger_summary
+         SET beginning_balance = detailSums.total_amount
+         FROM detailSums
+         WHERE general_ledger_summary.account_id = detailSums.account_id AND general_ledger_summary.profit_center_id_sfk = detailSums.profit_center_id_sfk  AND general_ledger_summary.overall_period_id = detailSums.overall_period_id
+      """
+
+      jdbc.update(query, mapOf("comp_id" to company.id))
    }
 
    @Transactional
    fun setNetActivityPeriods(company: CompanyEntity) {
       val query = """
          with glDetail as (
-         	select glDetail.*, finCal.period_from, finCal.period_to, finCal.overall_period_id, finCal.period, srcCodes.value from general_ledger_detail glDetail
-         	join general_ledger_source_codes srcCodes on glDetail.source_id = srcCodes.id
-         	join financial_calendar finCal on glDetail.company_id = finCal.company_id and glDetail.date >= finCal.period_from and glDetail.date <= finCal.period_to
-         	where glDetail.company_id = :comp_id and glDetail.deleted = FALSE AND overall_period_id IN (3, 4) and srcCodes.value != 'BAL'
-         ), detailSums as (
-         	select account_id, profit_center_id_sfk, overall_period_id, period,
-			 case when glDetail.period = 1 then sum(amount) else null end as total1,
-			 case when glDetail.period = 2 then sum(amount) else null end as total2,
-			 case when glDetail.period = 3 then sum(amount) else null end as total3,
-			 case when glDetail.period = 4 then sum(amount) else null end as total4,
-			 case when glDetail.period = 5 then sum(amount) else null end as total5,
-			 case when glDetail.period = 6 then sum(amount) else null end as total6,
-			 case when glDetail.period = 7 then sum(amount) else null end as total7,
-			 case when glDetail.period = 8 then sum(amount) else null end as total8,
-			 case when glDetail.period = 9 then sum(amount) else null end as total9,
-			 case when glDetail.period = 10 then sum(amount) else null end as total10,
-			 case when glDetail.period = 11 then sum(amount) else null end as total11,
-			 case when glDetail.period = 12 then sum(amount) else null end as total12
-			 from glDetail
-         	group by account_id, profit_center_id_sfk, overall_period_id, period
-		 ), gltotals as (
-			 select account_id, profit_center_id_sfk, overall_period_id,
-			 min(total1) as total1, min(total2) as total2, min(total3) as total3, min(total4) as total4, min(total5) as total5, min(total6) as total6,
-			 min(total7) as total7, min(total8) as total8, min(total9) as total9, min(total10) as total10, min(total11) as total11, min(total12) as total12
-			 FROM detailSums
-			 group by account_id, profit_center_id_sfk, overall_period_id
-		 )
-		 update general_ledger_summary summary set
-		     net_activity_period_1 = gltotals.total1,
-             net_activity_period_2 = gltotals.total2,
-             net_activity_period_3 = gltotals.total3,
-             net_activity_period_4 = gltotals.total4,
-             net_activity_period_5 = gltotals.total5,
-             net_activity_period_6 = gltotals.total6,
-             net_activity_period_7 = gltotals.total7,
-             net_activity_period_8 = gltotals.total8,
-             net_activity_period_9 = gltotals.total9,
-             net_activity_period_10 =gltotals.total10,
-             net_activity_period_11 =gltotals.total11,
-             net_activity_period_12 =gltotals.total12
-         from gltotals
-         WHERE summary.account_id = gltotals.account_id AND summary.profit_center_id_sfk = gltotals.profit_center_id_sfk and summary.overall_period_id = 3
+         	SELECT glDetail.*, finCal.period_from, finCal.period_to, finCal.overall_period_id, finCal.period, srcCodes.value
+            FROM general_ledger_detail glDetail
+         	JOIN general_ledger_source_codes srcCodes on glDetail.source_id = srcCodes.id
+         	JOIN financial_calendar finCal on glDetail.company_id = finCal.company_id and glDetail.date >= finCal.period_from and glDetail.date <= finCal.period_to
+         	WHERE glDetail.company_id = :comp_id and glDetail.deleted = FALSE AND overall_period_id IN (3, 4) and srcCodes.value != 'BAL'
+         ), detailSums3 as (
+               SELECT account_id, profit_center_id_sfk, overall_period_id, period,
+                  SUM(case when glDetail.period = 1 then amount end) as total1,
+                  SUM(case when glDetail.period = 2 then amount end) as total2,
+                  SUM(case when glDetail.period = 3 then amount end) as total3,
+                  SUM(case when glDetail.period = 4 then amount end) as total4,
+                  SUM(case when glDetail.period = 5 then amount end) as total5,
+                  SUM(case when glDetail.period = 6 then amount end) as total6,
+                  SUM(case when glDetail.period = 7 then amount end) as total7,
+                  SUM(case when glDetail.period = 8 then amount end) as total8,
+                  SUM(case when glDetail.period = 9 then amount end) as total9,
+                  SUM(case when glDetail.period = 10 then amount end) as total10,
+                  SUM(case when glDetail.period = 11 then amount end) as total11,
+                  SUM(case when glDetail.period = 12 then amount end) as total12
+               FROM glDetail
+               WHERE overall_period_id = 3
+               GROUP BY account_id, profit_center_id_sfk, overall_period_id, period
+         ), gltotals3 as (
+               SELECT account_id, profit_center_id_sfk, overall_period_id,
+                  min(total1) as total1, min(total2) as total2, min(total3) as total3, min(total4) as total4, min(total5) as total5, min(total6) as total6,
+                  min(total7) as total7, min(total8) as total8, min(total9) as total9, min(total10) as total10, min(total11) as total11, min(total12) as total12
+               FROM detailSums3
+               GROUP BY account_id, profit_center_id_sfk, overall_period_id
+         )
+         UPDATE general_ledger_summary AS summary
+         SET
+            net_activity_period_1 = gltotals3.total1,
+            net_activity_period_2 = gltotals3.total2,
+            net_activity_period_3 = gltotals3.total3,
+            net_activity_period_4 = gltotals3.total4,
+            net_activity_period_5 = gltotals3.total5,
+            net_activity_period_6 = gltotals3.total6,
+            net_activity_period_7 = gltotals3.total7,
+            net_activity_period_8 = gltotals3.total8,
+            net_activity_period_9 = gltotals3.total9,
+            net_activity_period_10 = gltotals3.total10,
+            net_activity_period_11 = gltotals3.total11,
+            net_activity_period_12 = gltotals3.total12
+         from gltotals3
+           WHERE summary.account_id = gltotals3.account_id
+             AND summary.profit_center_id_sfk = gltotals3.profit_center_id_sfk
+             AND summary.overall_period_id = 3;
+
+         WITH glDetail as (
+         	SELECT glDetail.*, finCal.period_from, finCal.period_to, finCal.overall_period_id, finCal.period, srcCodes.value
+            FROM general_ledger_detail glDetail
+         	JOIN general_ledger_source_codes srcCodes on glDetail.source_id = srcCodes.id
+         	JOIN financial_calendar finCal on glDetail.company_id = finCal.company_id and glDetail.date >= finCal.period_from and glDetail.date <= finCal.period_to
+         	WHERE glDetail.company_id = :comp_id and glDetail.deleted = FALSE AND overall_period_id IN (3, 4) and srcCodes.value != 'BAL'
+         ), detailSums4 as (
+            SELECT account_id, profit_center_id_sfk, overall_period_id, period,
+            SUM(case when glDetail.period = 1 then amount end) as total1,
+            SUM(case when glDetail.period = 2 then amount end) as total2,
+            SUM(case when glDetail.period = 3 then amount end) as total3,
+            SUM(case when glDetail.period = 4 then amount end) as total4,
+            SUM(case when glDetail.period = 5 then amount end) as total5,
+            SUM(case when glDetail.period = 6 then amount end) as total6,
+            SUM(case when glDetail.period = 7 then amount end) as total7,
+            SUM(case when glDetail.period = 8 then amount end) as total8,
+            SUM(case when glDetail.period = 9 then amount end) as total9,
+            SUM(case when glDetail.period = 10 then amount end) as total10,
+            SUM(case when glDetail.period = 11 then amount end) as total11,
+            SUM(case when glDetail.period = 12 then amount end) as total12
+         FROM glDetail
+            WHERE overall_period_id = 4
+            GROUP BY account_id, profit_center_id_sfk, overall_period_id, period
+         ), gltotals4 as (
+            SELECT account_id, profit_center_id_sfk, overall_period_id,
+               min(total1) as total1, min(total2) as total2, min(total3) as total3, min(total4) as total4, min(total5) as total5, min(total6) as total6,
+               min(total7) as total7, min(total8) as total8, min(total9) as total9, min(total10) as total10, min(total11) as total11, min(total12) as total12
+            FROM detailSums4
+            GROUP BY account_id, profit_center_id_sfk, overall_period_id
+         )
+         UPDATE general_ledger_summary AS summary
+         SET
+           net_activity_period_1 = gltotals4.total1,
+           net_activity_period_2 = gltotals4.total2,
+           net_activity_period_3 = gltotals4.total3,
+           net_activity_period_4 = gltotals4.total4,
+           net_activity_period_5 = gltotals4.total5,
+           net_activity_period_6 = gltotals4.total6,
+           net_activity_period_7 = gltotals4.total7,
+           net_activity_period_8 = gltotals4.total8,
+           net_activity_period_9 = gltotals4.total9,
+           net_activity_period_10 = gltotals4.total10,
+           net_activity_period_11 = gltotals4.total11,
+           net_activity_period_12 = gltotals4.total12
+         FROM gltotals4
+         WHERE summary.account_id = gltotals4.account_id
+           AND summary.profit_center_id_sfk = gltotals4.profit_center_id_sfk
+           AND summary.overall_period_id = 4;
        """.trimIndent()
 
-      val found = jdbc.update(query, mapOf("comp_id" to company.id))
+      jdbc.update(query, mapOf("comp_id" to company.id))
    }
 
    fun isGLBalanceForCurrentYear(companyId: UUID): Boolean {
