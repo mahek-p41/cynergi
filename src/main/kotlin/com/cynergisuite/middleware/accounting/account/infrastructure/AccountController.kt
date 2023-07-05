@@ -199,6 +199,6 @@ class AccountController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
 
-      return accountService.delete(id, user.myCompany())
+      return accountService.delete(id, user.myCompany(), httpRequest.findLocaleWithDefault())
    }
 }
