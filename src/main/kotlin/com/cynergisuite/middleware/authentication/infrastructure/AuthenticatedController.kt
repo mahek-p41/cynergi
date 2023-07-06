@@ -45,6 +45,7 @@ class AuthenticatedController @Inject constructor(
          val company = user.myCompany()
          val department = user.myDepartment()
          val companyWithNullFederalIdNumber = CompanyDTO(company = company)
+         val securityTypes = user.mySecurityTypes()
          val permissions = when {
             user.isCynergiAdmin() -> {
                userService.fetchAllPermissions()
@@ -61,7 +62,7 @@ class AuthenticatedController @Inject constructor(
 
          logger.info("User is authenticated {}", user)
 
-         HttpResponse.ok(AuthenticatedUserInformation(user, permissions, companyWithNullFederalIdNumber, securityLevels))
+         HttpResponse.ok(AuthenticatedUserInformation(user, permissions, companyWithNullFederalIdNumber, securityLevels, securityTypes!!))
       } else {
          logger.info("User was not authenticated")
 

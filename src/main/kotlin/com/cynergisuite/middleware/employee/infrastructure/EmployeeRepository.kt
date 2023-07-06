@@ -300,6 +300,7 @@ class EmployeeRepository @Inject constructor(
          alternativeArea = rs.getLong("${columnPrefix}alternative_area"),
          //employee_to_security_group mapRow eventually
          securityGroups = securityGroups
+
       )
    }
 

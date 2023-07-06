@@ -26,6 +26,10 @@ data class SecurityGroupDTO(
     var description: String? = null,
 
     @field:NotNull
+    @field:Schema(name = "types", description = "List of Security Types")
+    var types: List<SecurityType>? = null,
+
+    @field:NotNull
     @field:Schema(name = "company", description = "Company")
     var company: CompanyDTO? = null
 
@@ -36,6 +40,7 @@ data class SecurityGroupDTO(
                 id = securityGroup.id,
                 value = securityGroup.value,
                 description = securityGroup.description,
+                types = securityGroup.types,
                 company = CompanyDTO(securityGroup.company)
             )
 

@@ -19,7 +19,7 @@ data class EmployeeEntity(
    val store: Store? = null,
    val alternativeStoreIndicator: String,
    val alternativeArea: Long,
-   val securityGroups: List<SecurityGroup>? = null
+   val securityGroups: List<SecurityGroup>
 ) : Employee {
 
    constructor(vo: EmployeeValueObject, company: CompanyEntity, department: DepartmentEntity?, store: Store?, securityGroups: MutableList<SecurityGroup>) :
