@@ -26,7 +26,7 @@ data class SecurityGroupDTO(
     var description: String? = null,
 
     @field:NotNull
-    @field:Schema(name = "description", description = "Security Group description")
+    @field:Schema(name = "types", description = "List of Security Types")
     var types: List<SecurityType>? = null,
 
     @field:NotNull
