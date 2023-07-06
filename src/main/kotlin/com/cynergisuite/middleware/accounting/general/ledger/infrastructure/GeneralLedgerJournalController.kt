@@ -54,7 +54,7 @@ class GeneralLedgerJournalController @Inject constructor(
    private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerJournalController::class.java)
-
+   @Secured("GL")
    @Throws(NotFoundException::class)
    @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a single GeneralLedgerJournal", description = "Fetch a single GeneralLedgerJournal by its system generated primary key", operationId = "generalLedgerJournal-fetchOne")

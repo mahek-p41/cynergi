@@ -34,6 +34,7 @@ class GeneralLedgerJournalEntryController @Inject constructor(
 ){
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerJournalEntryController::class.java)
 
+   @Secured("GL")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerJournalEntryEndpoints"], summary = "Create a new GeneralLedgerJournalEntry", description = "Create a new GeneralLedgerJournalEntry", operationId = "generalLedgerJournalEntry-create")
