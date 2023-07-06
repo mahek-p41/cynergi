@@ -329,6 +329,7 @@ class GeneralLedgerSummaryService @Inject constructor(
    fun recalculateGLBalance(company: CompanyEntity) {
       generalLedgerSummaryRepository.resetGLBalance(company)
       generalLedgerSummaryRepository.recalculateGLBalance(company)
+      generalLedgerSummaryRepository.recalculateCapitalAccounts(company)
       generalLedgerSummaryRepository.setNetActivityPeriods(company)
    }
 
