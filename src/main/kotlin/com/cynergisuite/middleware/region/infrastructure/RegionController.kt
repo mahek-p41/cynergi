@@ -95,6 +95,7 @@ class RegionController @Inject constructor(
       return regions
    }
 
+   @Secured("MCFREGADD")
    @Post(processes = [APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
@@ -122,6 +123,7 @@ class RegionController @Inject constructor(
       return response
    }
 
+   @Secured("MCFREGCHG")
    @Put(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)

@@ -68,6 +68,7 @@ class VendorController @Inject constructor(
       return response
    }
 
+   @Secured("MCFVENDORRPT")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorEndpoints"], summary = "Fetch a listing of Vendors", description = "Fetch a paginated listing of Vendor", operationId = "vendor-fetchAll")
@@ -126,6 +127,7 @@ class VendorController @Inject constructor(
       return page
    }
 
+   @Secured("MCFVENDORADD")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorEndpoints"], summary = "Create a single Vendor", description = "Create a single Vendor. The logged in Employee is used for the scannedBy property", operationId = "vendor-create")
@@ -154,6 +156,7 @@ class VendorController @Inject constructor(
       return response
    }
 
+   @Secured("MCFVENDORCHG")
    @Put(value = "/{id}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorEndpoints"], summary = "Update a single Vendor", description = "Update a single Vendor where the update is the addition of a note", operationId = "vendor-update")
@@ -184,6 +187,7 @@ class VendorController @Inject constructor(
       return response
    }
 
+   @Secured("MCFVENDORDEL")
    @Delete(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @AccessControl
    @Operation(tags = ["VendorEndpoints"], summary = "Delete a vendor", description = "Delete a single vendor", operationId = "vendor-delete")

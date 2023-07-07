@@ -68,6 +68,7 @@ class ShipViaController @Inject constructor(
       return response
    }
 
+   @Secured("MCFVIARPT")
    @Throws(PageOutOfBoundsException::class)
    @Get(value = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["ShipViaEndpoints"], summary = "Fetch a listing of Ship Vias", description = "Fetch a paginated listing of Ship Vias", operationId = "shipvia-fetchAll")
@@ -94,6 +95,7 @@ class ShipViaController @Inject constructor(
       return page
    }
 
+   @Secured("MCFVIADEL")
    @Delete(uri = "/{id:[0-9a-fA-F\\-]+}")
    @Operation(tags = ["ShipViaEndpoints"], summary = "Delete a single ship via", description = "Deletes a ship via based on passed id", operationId = "shipvia-delete")
    @ApiResponses(
@@ -115,6 +117,7 @@ class ShipViaController @Inject constructor(
       return shipViaService.delete(id, user.myCompany())
    }
 
+   @Secured("MCFVIAADD")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["ShipViaEndpoints"], summary = "Create a single ship via", description = "Create a single ship via.", operationId = "shipvia-create")
@@ -142,6 +145,7 @@ class ShipViaController @Inject constructor(
       return response
    }
 
+   @Secured("MCFVIACHG")
    @Put(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["ShipViaEndpoints"], summary = "Create a single ship via", description = "Create a single ship via.", operationId = "shipvia-update")

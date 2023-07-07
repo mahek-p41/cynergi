@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 import javax.validation.Valid
 
-@Secured(IS_AUTHENTICATED)
+@Secured(IS_AUTHENTICATED, "PO")
 @AreaControl("PO")
 @Controller("/api/purchase-order/detail")
 class PurchaseOrderDetailController @Inject constructor(
@@ -44,6 +44,7 @@ class PurchaseOrderDetailController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(PurchaseOrderDetailController::class.java)
 
+   @Secured("POLST")
    @Throws(NotFoundException::class)
    @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["PurchaseOrderDetailEndpoints"], summary = "Fetch a single PurchaseOrderDetail", description = "Fetch a single PurchaseOrderDetail by its system generated primary key", operationId = "purchaseOrderDetail-fetchOne")
@@ -71,6 +72,7 @@ class PurchaseOrderDetailController @Inject constructor(
       return response
    }
 
+   @Secured("POLST")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["PurchaseOrderDetailEndpoints"], summary = "Fetch a listing of PurchaseOrderDetails", description = "Fetch a paginated listing of PurchaseOrderDetail", operationId = "purchaseOrderDetail-fetchAll")
@@ -101,6 +103,7 @@ class PurchaseOrderDetailController @Inject constructor(
       return page
    }
 
+   @Secured("POADD")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["PurchaseOrderDetailEndpoints"], summary = "Create a single PurchaseOrderDetail", description = "Create a single PurchaseOrderDetail", operationId = "purchaseOrderDetail-create")
@@ -129,6 +132,7 @@ class PurchaseOrderDetailController @Inject constructor(
       return response
    }
 
+   @Secured("POUPDT")
    @Put(value = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["PurchaseOrderDetailEndpoints"], summary = "Update a single PurchaseOrderDetail", description = "Update a single PurchaseOrderDetail", operationId = "purchaseOrderDetail-update")
@@ -160,6 +164,7 @@ class PurchaseOrderDetailController @Inject constructor(
       return response
    }
 
+   @Secured("PODEL")
    @Delete(uri = "/{id:[0-9a-fA-F\\-]+}")
    @Operation(tags = ["PurchaseOrderDetailEndpoints"], summary = "Delete a single purchase order detail", description = "Deletes a purchase order detail based on passed id", operationId = "purchaseOrderDetail-delete")
    @ApiResponses(

@@ -164,6 +164,7 @@ class GeneralLedgerDetailController @Inject constructor(
       return response
    }
 
+   @Secured("GLSRCH")
    @Get(uri = "/search-report{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Fetch a General Ledger Search Report", description = "Fetch a General Ledger Search Report", operationId = "generalLedgerJournal-fetchReport")
    @ApiResponses(
@@ -187,6 +188,7 @@ class GeneralLedgerDetailController @Inject constructor(
       return generalLedgerDetailService.fetchReport(user.myCompany(), filterRequest)
    }
 
+   @Secured("GLRPTTRAN")
    @Get(uri = "/source-report{?sourceReportFilterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a General Ledger Source Report", description = "Fetch a General Ledger Source Report", operationId = "generalLedgerJournal-fetchSourceReport")
    @ApiResponses(

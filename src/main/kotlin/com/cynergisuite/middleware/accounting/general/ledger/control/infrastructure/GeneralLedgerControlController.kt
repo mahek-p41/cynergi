@@ -25,7 +25,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.validation.Valid
 
-@Secured(IS_AUTHENTICATED)
+@Secured(IS_AUTHENTICATED, "MCFGLPARAMS")
 @AreaControl("GL")
 @Controller("/api/general-ledger/control")
 class GeneralLedgerControlController @Inject constructor(
@@ -83,6 +83,7 @@ class GeneralLedgerControlController @Inject constructor(
       return response
    }
 
+   @Secured("MCFGLPARAMSCHG")
    @Put(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerControlEndpoints"], summary = "Update a GeneralLedgerControlEntity", description = "Update an GeneralLedgerControlEntity from a body of GeneralLedgerControlDTO", operationId = "GeneralLedgerControl-update")

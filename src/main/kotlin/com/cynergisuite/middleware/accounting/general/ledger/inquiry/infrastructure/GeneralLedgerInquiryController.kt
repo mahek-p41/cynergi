@@ -25,7 +25,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.validation.Valid
 
-@Secured(IS_AUTHENTICATED)
+@Secured(IS_AUTHENTICATED, "GL")
 @AreaControl("GL")
 @Controller("/api/general-ledger/inquiry")
 class GeneralLedgerInquiryController @Inject constructor(

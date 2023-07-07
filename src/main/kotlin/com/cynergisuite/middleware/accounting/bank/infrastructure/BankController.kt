@@ -94,6 +94,7 @@ class BankController @Inject constructor(
       return banks
    }
 
+   @Secured("MCFBANKADD")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["BankEndpoints"], summary = "Create a single bank", description = "Create a single bank.", operationId = "bank-create")
@@ -120,6 +121,7 @@ class BankController @Inject constructor(
       return response
    }
 
+   @Secured("MCFBANKCHG")
    @Put(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["BankEndpoints"], summary = "Create a single bank", description = "Create a single bank.", operationId = "bank-update")
@@ -148,6 +150,7 @@ class BankController @Inject constructor(
       return response
    }
 
+   @Secured("MCFBANKDEL")
    @Delete(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @AccessControl
    @Operation(tags = ["BankEndpoints"], summary = "Delete a bank", description = "Delete a single bank", operationId = "bank-delete")

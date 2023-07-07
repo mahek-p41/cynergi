@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 import javax.validation.Valid
 
-@Secured(IS_AUTHENTICATED)
+@Secured(IS_AUTHENTICATED,"MCFPOPARAMS")
 @AreaControl("PO")
 @Controller("/api/purchase-order/control")
 class PurchaseOrderControlController @Inject constructor(
@@ -38,6 +38,7 @@ class PurchaseOrderControlController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(PurchaseOrderControlController::class.java)
 
+   @Secured("POLST")
    @Get(produces = [APPLICATION_JSON])
    @Operation(tags = ["PurchaseOrderControlEndpoints"], summary = "Fetch a single PurchaseOrderControlDTO", description = "Fetch a single PurchaseOrderControlDTO that is associated with the logged-in user's company", operationId = "purchaseOrderControl-fetchOne")
    @ApiResponses(
@@ -61,6 +62,7 @@ class PurchaseOrderControlController @Inject constructor(
       return response
    }
 
+   @Secured("POADD")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["PurchaseOrderControlEndpoint"], summary = "Create a PurchaseOrderControlEntity", description = "Create a PurchaseOrderControlEntity", operationId = "purchaseOrderControl-create")
@@ -87,6 +89,7 @@ class PurchaseOrderControlController @Inject constructor(
       return response
    }
 
+   @Secured("MCFPOPARAMSCHG")
    @Put(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["PurchaseOrderControlEndpoints"], summary = "Update a PurchaseOrderControlEntity", description = "Update a PurchaseOrderControlEntity from a body of PurchaseOrderControlDTO", operationId = "purchaseOrderControl-update")
