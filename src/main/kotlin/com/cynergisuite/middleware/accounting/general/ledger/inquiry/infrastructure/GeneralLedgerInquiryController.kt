@@ -34,6 +34,7 @@ class GeneralLedgerInquiryController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerInquiryController::class.java)
 
+   @Secured("GLSRCH")
    @Get(uri = "{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerInquiryEndpoints"], summary = "Fetch a single GeneralLedgerInquiryDTO", description = "Fetch a single GeneralLedgerInquiryDTO that is associated with the logged-in user's company", operationId = "generalLedgerInquiry-fetchOne")
    @ApiResponses(

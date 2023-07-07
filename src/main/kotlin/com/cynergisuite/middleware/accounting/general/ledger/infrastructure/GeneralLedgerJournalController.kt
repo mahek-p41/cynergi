@@ -46,15 +46,16 @@ import java.io.ByteArrayInputStream
 import java.util.UUID
 import javax.validation.Valid
 
-@Secured(IS_AUTHENTICATED)
+@Secured(IS_AUTHENTICATED, "GL")
 @AreaControl("GL")
+
 @Controller("/api/general-ledger/journal")
 class GeneralLedgerJournalController @Inject constructor(
    private val generalLedgerJournalService: GeneralLedgerJournalService,
    private val userService: UserService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerJournalController::class.java)
-   @Secured("GL")
+   @Secured("GLLSTJE")
    @Throws(NotFoundException::class)
    @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a single GeneralLedgerJournal", description = "Fetch a single GeneralLedgerJournal by its system generated primary key", operationId = "generalLedgerJournal-fetchOne")
@@ -82,6 +83,7 @@ class GeneralLedgerJournalController @Inject constructor(
       return response
    }
 
+   @Secured("GLLSTJE")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a listing of GeneralLedgerJournals", description = "Fetch a paginated listing of GeneralLedgerJournals", operationId = "generalLedgerJournal-fetchAll")
@@ -112,6 +114,7 @@ class GeneralLedgerJournalController @Inject constructor(
       return page
    }
 
+   @Secured("GLADDJE")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Create a single GeneralLedgerJournal", description = "Create a single GeneralLedgerJournal", operationId = "generalLedgerJournal-create")
@@ -140,6 +143,7 @@ class GeneralLedgerJournalController @Inject constructor(
       return response
    }
 
+   @Secured("GLCHGJE")
    @Put(value = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Update a single GeneralLedgerJournal", description = "Update a single GeneralLedgerJournal", operationId = "generalLedgerJournal-update")
@@ -170,6 +174,7 @@ class GeneralLedgerJournalController @Inject constructor(
       return response
    }
 
+   @Secured("GLDELJE")
    @Delete(value = "/{id:[0-9a-fA-F\\-]+}")
    @AccessControl
    @Throws(NotFoundException::class)
@@ -194,6 +199,7 @@ class GeneralLedgerJournalController @Inject constructor(
       return generalLedgerJournalService.delete(id, user.myCompany())
    }
 
+   @Secured("GLDELJE")
    @Delete(value = "/purge{?filterRequest*}")
    @AccessControl
    @Throws(NotFoundException::class)
@@ -241,6 +247,7 @@ class GeneralLedgerJournalController @Inject constructor(
       return generalLedgerJournalService.fetchPendingTotals(user.myCompany(), filterRequest)
    }
 
+   @Secured("GLPOSTJE")
    @Post(uri = "/transfer", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Use GL Journal to post journal entries", description = "Fetch a list of General Ledger Journal Entries to create General Ledger Detail records", operationId = "GeneralLedgerJournalEndpoints-transfer")
    @ApiResponses(
@@ -265,6 +272,7 @@ class GeneralLedgerJournalController @Inject constructor(
 
    }
 
+   @Secured("GLPOSTJE")
    @Post(uri = "/transfer/single", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Use GL Journal to post a single journal entry", description = "Create General Ledger Detail records from a requested General Ledger Journal Entry", operationId = "GeneralLedgerJournalEndpoints-singletransfer")
    @ApiResponses(
@@ -288,6 +296,7 @@ class GeneralLedgerJournalController @Inject constructor(
       generalLedgerJournalService.transfer(user, dto, locale)
    }
 
+   @Secured("GLEXPORTJE")
    @Throws(NotFoundException::class)
    @Get(uri = "/export{?filterRequest*}")
    @Operation(
@@ -318,6 +327,7 @@ class GeneralLedgerJournalController @Inject constructor(
       return StreamedFile(ByteArrayInputStream(byteArray), MediaType.ALL_TYPE).attach("GL Journal Export.csv")
    }
 
+   @Secured("GLRPTJE")
    @Throws(NotFoundException::class)
    @Get(uri = "report{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a report of pending GeneralLedgerJournals", description = "Fetch a pending report of GeneralLedgerJournals", operationId = "generalLedgerJournal-fetchReport")

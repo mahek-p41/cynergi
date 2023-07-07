@@ -109,6 +109,7 @@ class AccountPayableInvoiceController @Inject constructor(
       return page
    }
 
+   @Secured("APLST")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/list-by-vendor{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(
@@ -139,6 +140,7 @@ class AccountPayableInvoiceController @Inject constructor(
       return accountPayableInvoiceService.fetchAllByVendor(user.myCompany(), filterRequest)
    }
 
+   @Secured("APRPT")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/report{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(
@@ -207,6 +209,7 @@ class AccountPayableInvoiceController @Inject constructor(
       return StreamedFile(ByteArrayInputStream(byteArray), MediaType.ALL_TYPE).attach("AP Invoice Report Export.csv")
    }
 
+   @Secured("APSHO")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/inquiry{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(
@@ -246,6 +249,7 @@ class AccountPayableInvoiceController @Inject constructor(
       return accountPayableInvoiceService.inquiry(user.myCompany(), filterRequest)
    }
 
+   @Secured("APADD")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Create a single Account Payable Invoice", description = "Create a single AccountPayableInvoice", operationId = "accountPayableInvoice-create")
@@ -274,6 +278,7 @@ class AccountPayableInvoiceController @Inject constructor(
       return response
    }
 
+   @Secured("APCHG")
    @Put(value = "/{id}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Update a single Account Payable Invoice", description = "Update a single Account Payable Invoice", operationId = "accountPayableInvoice-update")
@@ -305,6 +310,7 @@ class AccountPayableInvoiceController @Inject constructor(
       return response
    }
 
+   @Secured("APPREVUE")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/check-preview{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Fetch an Account Payable Check Preview Report", description = "Fetch an Account Payable Check Preview Report", operationId = "accountPayableInvoice-checkPreview")
@@ -330,6 +336,7 @@ class AccountPayableInvoiceController @Inject constructor(
       return accountPayableCheckPreviewService.checkPreview(user.myCompany(), filterRequest)
    }
 
+   @Secured("APTRLBAL")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/vendor-balance{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Fetch an Account Payable Check Preview Report", description = "Fetch an Account Payable Check Preview Report", operationId = "accountPayableInvoice-checkPreview")

@@ -45,6 +45,7 @@ class GeneralLedgerRecurringController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerRecurringController::class.java)
 
+   @Secured("GLRECURLST")
    @Throws(NotFoundException::class)
    @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerRecurringEndpoints"], summary = "Fetch a single General Ledger Recurring", description = "Fetch a single General Ledger Recurring by it's system generated primary key", operationId = "generalLedgerRecurring-fetchOne")
@@ -72,6 +73,7 @@ class GeneralLedgerRecurringController @Inject constructor(
       return response
    }
 
+   @Secured("GLRECURLST")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerRecurringEndpoints"], summary = "Fetch a listing of General Ledger Recurrings", description = "Fetch a paginated listing of General Ledger Recurring", operationId = "generalLedgerRecurring-fetchAll")
@@ -102,6 +104,7 @@ class GeneralLedgerRecurringController @Inject constructor(
       return page
    }
 
+   @Secured("GLRECURADD")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerRecurringEndpoints"], summary = "Create a single General Ledger Recurring", description = "Create a single GeneralLedgerRecurring", operationId = "generalLedgerRecurring-create")
@@ -130,6 +133,7 @@ class GeneralLedgerRecurringController @Inject constructor(
       return response
    }
 
+   @Secured("GLRECURCHG")
    @Put(value = "/{id}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerRecurringEndpoints"], summary = "Update a single General Ledger Recurring", description = "Update a single General Ledger Recurring", operationId = "generalLedgerRecurring-update")
@@ -161,6 +165,7 @@ class GeneralLedgerRecurringController @Inject constructor(
       return response
    }
 
+   @Secured("GLRECURDEL")
    @Delete(value = "/{id:[0-9a-fA-F\\-]+}")
    @AccessControl
    @Throws(NotFoundException::class)

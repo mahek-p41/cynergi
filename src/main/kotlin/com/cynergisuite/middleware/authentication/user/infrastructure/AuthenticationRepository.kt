@@ -148,6 +148,7 @@ abstract class AuthenticationRepository @Inject constructor(
          sapd.value                     AS security_groups_types_value,
          sapd.description               AS security_groups_types_description,
          sapd.localization_code         AS security_groups_types_localization_code,
+         sapd.area_id                   AS security_groups_types_area_id,
          comp.id                        AS security_groups_company_id,
          comp.name                      AS security_groups_company_name,
          comp.doing_business_as         AS security_groups_company_doing_business_as,
@@ -202,7 +203,7 @@ abstract class AuthenticationRepository @Inject constructor(
       Join("fallbackLocation.company"),
       Join("fallbackLocation.company.address"),
       Join("securityGroups"),
-      Join("secuirtyGroups.types"),
+      Join("securityGroups.types"),
       Join("securityGroups.company")
    )
    abstract fun findUserByAuthenticationWithStore(employeeNumber: Int, passCode: String, dataset: String, storeNumber: Int): AuthenticatedEmployee?
@@ -341,6 +342,7 @@ abstract class AuthenticationRepository @Inject constructor(
          sapd.value                     AS security_groups_types_value,
          sapd.description               AS security_groups_types_description,
          sapd.localization_code         AS security_groups_types_localization_code,
+         sapd.area_id                   AS security_groups_types_area_id,
          comp.id                        AS security_groups_company_id,
          comp.name                      AS security_groups_company_name,
          comp.doing_business_as         AS security_groups_company_doing_business_as,

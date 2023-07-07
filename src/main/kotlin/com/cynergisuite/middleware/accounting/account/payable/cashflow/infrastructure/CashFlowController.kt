@@ -35,6 +35,7 @@ class CashFlowController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableCashRequirementController::class.java)
 
+   @Secured("APFLOWANAL")
    @Get(uri = "{?filterRequest*}", produces = [MediaType.APPLICATION_JSON])
    @Operation(tags = ["AccountPayableCashFlowReportEndpoints"], summary = "Fetch an Account Payable Cash Flow Report", description = "Fetch an Account Payable Cash Flow Report", operationId = "accountPayableCashFlowReport-fetchReport")
    @ApiResponses(

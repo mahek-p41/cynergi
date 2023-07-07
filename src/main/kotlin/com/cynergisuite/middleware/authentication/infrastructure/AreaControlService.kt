@@ -11,7 +11,6 @@ import io.micronaut.context.ApplicationContext
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import org.apache.commons.lang3.StringUtils.EMPTY
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -36,7 +35,10 @@ class AreaControlService @Inject constructor(
       val parameters = context.parameters
       val authenticatedUser: User = securityService.authentication.map { userService.fetchUser(it) }.orElseThrow { AccessException(AccessDenied(), securityService.username().orElse(null)) }
       val accessControl = context.annotationMetadata.getAnnotation(AreaControl::class.java)
-      val asset: String = accessControl!!.stringValue()!!.orElse(EMPTY)
+      val asset: Array<String> =  accessControl.values.values.flatMap {when (it) {
+         is Array<*> -> it.mapNotNull { element -> element.toString() }
+         else -> listOf(it.toString())
+      }}.toTypedArray()
       val accessControlProviderClass = AreaAccessControlProvider::class.java
       val accessControlProvider = applicationContext.getBean(accessControlProviderClass)
 
