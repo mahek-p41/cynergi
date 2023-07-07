@@ -38,7 +38,7 @@ class GeneralLedgerProcedureRepository @Inject constructor(
                     glSummary.closing_balance,
                     'Balance forward from the previous year',
                     :emp_number,
-                    :je_number + ROW_NUMBER() OVER (ORDER BY glSummary.id) - 1
+                    :je_number
          FROM general_ledger_summary glSummary
                JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
                JOIN account acct ON glSummary.account_id = acct.id AND acct.deleted = FALSE
@@ -79,7 +79,7 @@ class GeneralLedgerProcedureRepository @Inject constructor(
                     :corporate_net_income,
                     'Balance forward from the previous year',
                     :emp_number,
-                    :je_number + ROW_NUMBER() OVER (ORDER BY glSummary.id) - 1
+                    :je_number
          FROM general_ledger_summary glSummary
                JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
                JOIN account acct ON glSummary.account_id = acct.id AND acct.deleted = FALSE
@@ -120,7 +120,7 @@ class GeneralLedgerProcedureRepository @Inject constructor(
                     glSummary.closing_balance,
                     'Balance forward from the previous year',
                     :emp_number,
-                    :je_number + ROW_NUMBER() OVER (ORDER BY glSummary.id) - 1
+                    :je_number
          FROM general_ledger_summary glSummary
                JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
                JOIN account acct ON glSummary.account_id = acct.id AND acct.deleted = FALSE
@@ -161,7 +161,7 @@ class GeneralLedgerProcedureRepository @Inject constructor(
                     netIncomePerProfitCenter.net_income,
                     'Balance forward from the previous year',
                     :emp_number,
-                    :je_number + ROW_NUMBER() OVER (ORDER BY glSummary.id) - 1
+                    :je_number
          FROM general_ledger_summary glSummary
                JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
                JOIN account acct ON glSummary.account_id = acct.id AND acct.deleted = FALSE

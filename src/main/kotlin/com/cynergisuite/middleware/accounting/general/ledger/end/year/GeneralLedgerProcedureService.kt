@@ -28,16 +28,16 @@ class GeneralLedgerProcedureService @Inject constructor(
       generalLedgerProcedureValidator.validateEndCurrentYear(dto, company)
       generalLedgerSummaryRepository.updateClosingBalanceForCurrentFiscalYear(company)
 
-      createBalanceForwardGLDetailsForAssetLiabilityCapitalAccounts(user, dto.account)
-      createBalanceForwardGLDetailsForRetainedEarningsAccount(user, dto)
+      val jeNumber = generalLedgerDetailRepository.findNextJENumber(company)
+      createBalanceForwardGLDetailsForAssetLiabilityCapitalAccounts(user, dto.account, jeNumber)
+      createBalanceForwardGLDetailsForRetainedEarningsAccount(user, dto, jeNumber)
 
       generalLedgerSummaryRepository.rollOneFinancialYear(company)
       financialCalendarRepository.rollOneFinancialYear(company)
    }
 
-   private fun createBalanceForwardGLDetailsForRetainedEarningsAccount(user: User, dto: EndYearProceduresDTO) {
+   private fun createBalanceForwardGLDetailsForRetainedEarningsAccount(user: User, dto: EndYearProceduresDTO, jeNumber: Int) {
       val company = user.myCompany()
-      val jeNumber = generalLedgerDetailRepository.findNextJENumber(company)
       val firstDateOfNextFiscalYear = financialCalendarRepository.findFirstDateOfFiscalYear(company, 4)
       if (dto.profitCenter != null) {
          val corporateNetIncome = generalLedgerSummaryRepository.calculateNetIncomeForCurrentFiscalYear(company, dto.account)
@@ -66,10 +66,11 @@ class GeneralLedgerProcedureService @Inject constructor(
 
    private fun createBalanceForwardGLDetailsForAssetLiabilityCapitalAccounts(
       user: User,
-      retainedEarningsAccount: SimpleIdentifiableDTO
+      retainedEarningsAccount: SimpleIdentifiableDTO,
+      jeNumber: Int
    ) {
       val company = user.myCompany()
-      val jeNumber = generalLedgerDetailRepository.findNextJENumber(company)
+
       val firstDateOfNextFiscalYear = financialCalendarRepository.findFirstDateOfFiscalYear(company, 4)
       val params = mapOf(
          "comp_id" to company.id!!,
