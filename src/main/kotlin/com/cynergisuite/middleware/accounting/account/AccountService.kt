@@ -22,6 +22,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import org.zeroturnaround.exec.ProcessExecutor
+import java.io.File
 
 @Singleton
 class AccountService @Inject constructor(
@@ -95,8 +96,7 @@ class AccountService @Inject constructor(
       var bankInd: String
       var bankNbr: Int
 
-
-      val fileName = "tmp" + DateTimeFormatter.ofPattern("yyyyMMdd-HHmmssSSSSSS").withZone(ZoneOffset.UTC).format(Instant.now()) + ".csv"
+      val fileName = File.createTempFile("mracct", ".csv")
 
       try {
          fileWriter = FileWriter(fileName)
@@ -136,9 +136,9 @@ class AccountService @Inject constructor(
             val mnEnvironment = systemProps["micronaut.environments"]
             if (mnEnvironment == "prod") {
                val processExecutor: ProcessExecutor = ProcessExecutor()
-                  .command("/bin/bash", "/usr/bin/ht.updt_isam_account.sh", fileName)
+                  .command("/bin/bash", "/usr/bin/ht.updt_isam_account.sh", fileName.canonicalPath)
                   .exitValueNormal()
-                  .timeout(5, TimeUnit.SECONDS)  //Do we need some form of LOCK file to keep or a semaphore to que things up or better yet a blocking queue - Make this a separate ticket
+                  .timeout(5, TimeUnit.SECONDS)
                   .readOutput(true)
                logger.debug(processExecutor.execute().outputString())
             }
