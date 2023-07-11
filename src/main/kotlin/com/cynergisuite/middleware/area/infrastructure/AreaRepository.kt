@@ -107,7 +107,21 @@ abstract class AreaRepository @Inject constructor(
       )
    }
 
-   abstract fun deleteByCompanyAndAreaType(company: CompanyEntity, areaType: AreaTypeEntity)
+   @Transactional
+   fun deleteByCompanyAndAreaType(company: CompanyEntity, areaType: AreaTypeEntity) {
+      logger.debug("Deleting area {}", areaType)
+
+      jdbc.update(
+         """
+            DELETE FROM area
+            WHERE company_id = :company_id AND area_type_id = :area_type_id
+         """.trimIndent(),
+         mapOf(
+            "company_id" to company.id,
+            "area_type_id" to areaType.id
+         )
+      )
+   }
 
    @Transactional
    fun insert(company: CompanyEntity, areaType: AreaType): AreaEntity {
