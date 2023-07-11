@@ -14,6 +14,7 @@ import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastruc
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeValueObject
+import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderEntity
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.vendor.VendorDTO
@@ -36,7 +37,7 @@ class AccountPayableInvoiceDataLoader {
    static Stream<AccountPayableInvoiceEntity> stream(
       int numberIn = 1,
       VendorEntity vendorIn,
-      PurchaseOrderEntity purchaseOrderIn = null,
+      PurchaseOrderEntity purchaseOrderIn,
       LocalDate invoiceDateIn = null,
       BigDecimal invoiceAmountIn = null,
       EmployeeEntity employeeIn,
@@ -69,7 +70,8 @@ class AccountPayableInvoiceDataLoader {
             null,
             vendorIn,
             (9100029365 + it).toString(),
-            purchaseOrderIn?.with { po -> new SimpleIdentifiableEntity(po) },
+            new SimpleIdentifiableEntity(purchaseOrderIn.myId()),
+            purchaseOrderIn.number,
             invoiceDate,
             invoiceAmount,
             numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
@@ -101,7 +103,7 @@ class AccountPayableInvoiceDataLoader {
    static Stream<AccountPayableInvoiceDTO> streamDTO(
       int numberIn = 1,
       VendorDTO vendorIn,
-      SimpleIdentifiableDTO purchaseOrderIn  = null,
+      PurchaseOrderDTO purchaseOrderIn,
       EmployeeValueObject employeeIn,
       VendorDTO payToIn,
       SimpleLegacyIdentifiableDTO locationIn = null
@@ -119,7 +121,8 @@ class AccountPayableInvoiceDataLoader {
             null,
             vendorIn,
             lorem.characters(3, 20),
-            purchaseOrderIn,
+            new SimpleIdentifiableDTO(purchaseOrderIn.myId()),
+            purchaseOrderIn.number,
             invoiceDate,
             numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
             numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
@@ -212,7 +215,7 @@ class AccountPayableInvoiceDataLoaderService {
    AccountPayableInvoiceDTO singleDTO(
       CompanyEntity company,
       VendorDTO vendorIn,
-      SimpleIdentifiableDTO purchaseOrderIn = null,
+      PurchaseOrderDTO purchaseOrderIn = null,
       EmployeeValueObject employeeIn,
       VendorDTO payToIn,
       SimpleLegacyIdentifiableDTO locationIn = null

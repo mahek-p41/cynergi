@@ -25,6 +25,7 @@ import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeTypeDataLoader
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
+import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.vendor.VendorDTO
@@ -696,7 +697,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final apInvoiceDTO = dataLoaderService.singleDTO(
          company,
          new VendorDTO(vendorIn),
-         new SimpleIdentifiableDTO(purchaseOrderIn),
+         new PurchaseOrderDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new VendorDTO(payToIn),
          new SimpleLegacyIdentifiableDTO(store.myId())
@@ -785,7 +786,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final apInvoiceDTO = dataLoaderService.singleDTO(
          company,
          new VendorDTO(vendorIn),
-         new SimpleIdentifiableDTO(purchaseOrderIn),
+         new PurchaseOrderDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new VendorDTO(payToIn),
          new SimpleLegacyIdentifiableDTO(store.myId())
@@ -878,7 +879,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final apInvoiceDTO = dataLoaderService.singleDTO(
          company,
          new VendorDTO(vendorIn),
-         new SimpleIdentifiableDTO(purchaseOrderIn),
+         new PurchaseOrderDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new VendorDTO(payToIn),
          new SimpleLegacyIdentifiableDTO(store.myId())
@@ -950,7 +951,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final apInvoiceDTO = dataLoaderService.singleDTO(
          company,
          new VendorDTO(vendorIn),
-         new SimpleIdentifiableDTO(purchaseOrderIn),
+         new PurchaseOrderDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new VendorDTO(payToIn),
          new SimpleLegacyIdentifiableDTO(store.myId())
@@ -1013,7 +1014,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final updatedAPInvoice = dataLoaderService.singleDTO(
          company,
          new VendorDTO(vendorIn),
-         new SimpleIdentifiableDTO(purchaseOrderIn),
+         new PurchaseOrderDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new VendorDTO(payToIn),
          new SimpleLegacyIdentifiableDTO(store.myId())
@@ -1105,7 +1106,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final updatedAPInvoice = dataLoaderService.singleDTO(
          company,
          new VendorDTO(vendorIn),
-         new SimpleIdentifiableDTO(purchaseOrderIn),
+         new PurchaseOrderDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new VendorDTO(payToIn),
          new SimpleLegacyIdentifiableDTO(store.myId())
@@ -1200,7 +1201,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final updatedAPInvoice = dataLoaderService.singleDTO(
          company,
          new VendorDTO(vendorIn),
-         new SimpleIdentifiableDTO(purchaseOrderIn),
+         new PurchaseOrderDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new VendorDTO(payToIn),
          new SimpleLegacyIdentifiableDTO(store.myId())
@@ -1274,7 +1275,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final updatedAPInvoice = dataLoaderService.singleDTO(
          company,
          new VendorDTO(vendorIn),
-         new SimpleIdentifiableDTO(purchaseOrderIn),
+         new PurchaseOrderDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new VendorDTO(payToIn),
          new SimpleLegacyIdentifiableDTO(store.myId())

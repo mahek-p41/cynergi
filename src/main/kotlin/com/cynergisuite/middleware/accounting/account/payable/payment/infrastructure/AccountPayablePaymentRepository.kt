@@ -485,6 +485,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             paymentDetail.apPaymentDetail_apInvoice_status_value                                      AS apPaymentDetail_apInvoice_status_value,
             paymentDetail.apPaymentDetail_apInvoice_status_description                                AS apPaymentDetail_apInvoice_status_description,
             paymentDetail.apPaymentDetail_apInvoice_status_localization_code                          AS apPaymentDetail_apInvoice_status_localization_code,
+            paymentDetail.apPaymentDetail_apInvoice_purchase_order_number                             AS apPaymentDetail_apInvoice_purchase_order_number,
             paymentDetail.apPaymentDetail_vendor_id                                                   AS apPaymentDetail_vendor_id,
             paymentDetail.apPaymentDetail_vendor_number                                               AS apPaymentDetail_vendor_number,
             paymentDetail.apPaymentDetail_vendor_company_id                                           AS apPaymentDetail_vendor_company_id,

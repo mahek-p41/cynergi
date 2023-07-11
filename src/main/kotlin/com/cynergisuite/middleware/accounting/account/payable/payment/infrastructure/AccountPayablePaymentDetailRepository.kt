@@ -44,6 +44,7 @@ class AccountPayablePaymentDetailRepository @Inject constructor(
             inv.apInvoice_company_id                                 AS apPaymentDetail_apInvoice_company_id,
             inv.apInvoice_invoice                                    AS apPaymentDetail_apInvoice_invoice,
             inv.apInvoice_purchase_order_id                          AS apPaymentDetail_apInvoice_purchase_order_id,
+            inv.apInvoice_purchase_order_number							   AS apPaymentDetail_apInvoice_purchase_order_number,
             inv.apInvoice_invoice_date                               AS apPaymentDetail_apInvoice_invoice_date,
             inv.apInvoice_invoice_amount                             AS apPaymentDetail_apInvoice_invoice_amount,
             inv.apInvoice_discount_amount                            AS apPaymentDetail_apInvoice_discount_amount,
