@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.accounting.general.ledger.summary.infrastruc
 
 import com.cynergisuite.domain.GeneralLedgerProfitCenterTrialBalanceReportFilterRequest
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
@@ -105,13 +104,13 @@ class GeneralLedgerSummaryRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun exists(company: CompanyEntity, accountId: Long, profitCenterId: Long, overallPeriodId: Long): Boolean {
-      val params = mutableMapOf("comp_id" to company.id, "accountId" to accountId, "profitCenterId" to profitCenterId, "overallPeriodId" to overallPeriodId)
+   fun exists(company: CompanyEntity, accountId: UUID, profitCenterNumber: Int, overallPeriodId: Int): Boolean {
+      val params = mutableMapOf("comp_id" to company.id, "accountId" to accountId, "profitCenterNumber" to profitCenterNumber, "overallPeriodId" to overallPeriodId)
       val exists = jdbc.queryForObject(
          """
          SELECT EXISTS (SELECT id
                         FROM general_ledger_summary
-                        WHERE company_id = :comp_id AND account_id = :accountId AND profit_center_id_sfk = :profitCenterId AND overall_period_id = :overallPeriodId)
+                        WHERE company_id = :comp_id AND account_id = :accountId AND profit_center_id_sfk = :profitCenterNumber AND overall_period_id = :overallPeriodId)
          """.trimIndent(),
          params,
          Boolean::class.java
@@ -457,7 +456,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          """, mapOf("comp_id" to company.id))
    }
 
-   fun calculateNetIncomeForCurrentFiscalYear(company: CompanyEntity, retainedEarningsAccount: SimpleIdentifiableDTO): BigDecimal {
+   fun calculateNetIncomeForCurrentFiscalYear(company: CompanyEntity): BigDecimal {
       return jdbc.queryForObject("""SELECT
           COALESCE(SUM(closing_balance), 0)
       FROM general_ledger_summary summary
@@ -466,8 +465,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
       WHERE summary.company_id = :comp_id
          AND type.value IN ('R', 'E')
          AND summary.overall_period_id = 3
-         AND summary.account_id = :retained_earnings_account
-      """, mapOf("comp_id" to company.id, "retained_earnings_account" to retainedEarningsAccount.id), BigDecimal::class.java)
+      """, mapOf("comp_id" to company.id), BigDecimal::class.java)
    }
 
    @Transactional
@@ -505,8 +503,27 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          """.trimIndent(),
          mapOf("comp_id" to company.id)
       )
+   }
 
-      recalculateGLBalance(company)
+
+   fun updateBeginningBalanceForNextYear(company: CompanyEntity, jeNumber: Int): Int {
+      logger.debug("Update beginning balance for the next year {}", company)
+
+      val affectedRows = jdbc.update("""
+         UPDATE general_ledger_summary AS summary
+         SET beginning_balance = detail.amount
+         FROM general_ledger_detail AS detail
+         WHERE summary.company_id = :comp_id
+            AND summary.overall_period_id = 4
+            AND detail.journal_entry_number = :je_number
+            AND summary.company_id = detail.company_id
+            AND summary.account_id = detail.account_id
+            AND summary.profit_center_id_sfk = detail.profit_center_id_sfk
+         """.trimIndent(),
+         mapOf("comp_id" to company.id, "je_number" to jeNumber)
+      )
+      logger.info("Updated {} general_ledger_summary rows.", affectedRows)
+      return affectedRows
    }
 
    @Transactional
