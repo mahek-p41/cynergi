@@ -40,4 +40,35 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
          enabled == true
       }
    }
+
+   void "disable then re-enable an area" () {
+      given:
+
+      def areas = get("/area")
+      def disabledArea = new AreaDTO(2, "BR", "Bank Reconciliation", true)
+      when:
+
+      put("/area/", areas[1])
+      def disabledResult = get("/area")
+
+      then:
+      notThrown(Exception)
+      disabledResult != null
+      disabledResult.size == 4
+      with(disabledResult) { it ->
+         any { value != disabledArea.value}
+      }
+
+      when:
+      put("/area/", areas[1])
+      def enabledResult = get("/area")
+
+      then:
+      notThrown(Exception)
+      enabledResult != null
+      enabledResult.size == 5
+      with(enabledResult) { area ->
+         value.any{ it == disabledArea.value }
+      }
+   }
 }
