@@ -98,6 +98,8 @@ class AccountService @Inject constructor(
       var bankInd: String
       var bankNbr: Int
 
+      var dataset = company.datasetCode
+
       val fileName = File.createTempFile("mracct", ".csv")
 
       try {
@@ -136,7 +138,7 @@ class AccountService @Inject constructor(
             csvPrinter!!.close()
             if (processUpdateIsamAccount) {
                val processExecutor: ProcessExecutor = ProcessExecutor()
-                  .command("/bin/bash", "/usr/bin/ht.updt_isam_account.sh", fileName.canonicalPath)
+                  .command("/bin/bash", "/usr/bin/ht.updt_isam_account.sh", fileName.canonicalPath, dataset)
                   .exitValueNormal()
                   .timeout(5, TimeUnit.SECONDS)
                   .readOutput(true)
