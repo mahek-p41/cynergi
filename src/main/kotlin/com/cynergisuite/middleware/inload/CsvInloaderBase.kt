@@ -9,6 +9,7 @@ import java.io.BufferedReader
 import java.nio.file.Path
 import java.nio.file.PathMatcher
 import java.util.UUID
+import javax.transaction.Transactional
 
 abstract class CsvInloaderBase(
    private val pathMatcher: PathMatcher
@@ -26,6 +27,7 @@ abstract class CsvInloaderBase(
       return matched
    }
 
+   @Transactional
    override fun inload(reader: BufferedReader): Int {
       var rowsLoaded = 0
       val batchId = UUID.randomUUID()

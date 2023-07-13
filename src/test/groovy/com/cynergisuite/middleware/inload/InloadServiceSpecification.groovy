@@ -132,6 +132,31 @@ class InloadServiceSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(Exception)
+
+      when:
+      def result = get("general-ledger/deposit?verifiedSuccessful=true")
+
+      then:
+      notThrown(HttpClientResponseException)
+      with(result) {
+         totalElements == 1
+         with(elements[0]) {
+            verifySuccessful == true
+            businessDate == "2020-03-31"
+            movedToPendingJournalEntries == false
+            store == 1
+            storeName == "HOUMA"
+            errorAmount == 0
+            deposit1Cash == 1050.28
+            deposit2PmtForOtherStores == 0
+            deposit3PmtFromOtherStores == 151.35
+            deposit4CCInStr == 3058.63
+            deposit5ACHOLP == 0
+            deposit6CCOLP == 548.74
+            deposit7DebitCard == -151.35
+            depositTotal == 4657.65
+         }
+      }
    }
 
 }
