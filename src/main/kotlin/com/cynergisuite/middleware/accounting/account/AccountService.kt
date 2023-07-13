@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.vendor.VendorTypeDTO
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.util.concurrent.TimeUnit
@@ -29,7 +30,8 @@ class AccountService @Inject constructor(
    private val accountRepository: AccountRepository,
    private val accountValidator: AccountValidator,
    private val bankRepository: BankRepository,
-   private val localizationService: LocalizationService
+   private val localizationService: LocalizationService,
+   @Value("\${cynergi.process.update.isam.account}") private val processUpdateIsamAccount: Boolean
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountService::class.java)
 
@@ -96,6 +98,8 @@ class AccountService @Inject constructor(
       var bankInd: String
       var bankNbr: Int
 
+      var dataset = company.datasetCode
+
       val fileName = File.createTempFile("mracct", ".csv")
 
       try {
@@ -132,11 +136,9 @@ class AccountService @Inject constructor(
             fileWriter!!.flush()
             fileWriter.close()
             csvPrinter!!.close()
-            val systemProps = System.getProperties()
-            val mnEnvironment = systemProps["micronaut.environments"]
-            if (mnEnvironment == "prod") {
+            if (processUpdateIsamAccount) {
                val processExecutor: ProcessExecutor = ProcessExecutor()
-                  .command("/bin/bash", "/usr/bin/ht.updt_isam_account.sh", fileName.canonicalPath)
+                  .command("/bin/bash", "/usr/bin/ht.updt_isam_account.sh", fileName.canonicalPath, dataset)
                   .exitValueNormal()
                   .timeout(5, TimeUnit.SECONDS)
                   .readOutput(true)
