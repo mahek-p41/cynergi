@@ -104,7 +104,7 @@ class AccountService @Inject constructor(
 
       try {
          fileWriter = FileWriter(fileName)
-         csvPrinter = CSVPrinter(fileWriter, CSVFormat.DEFAULT.withDelimiter('|').withHeader("action", "account_number", "type", "status", "normal_balance", "1099_field", "bank_ind", "bank_number", "dummy_field"))
+         csvPrinter = CSVPrinter(fileWriter, CSVFormat.DEFAULT.withDelimiter('|').withHeader("action", "account_number", "name", "type", "status", "normal_balance", "1099_field", "bank_ind", "bank_number", "dummy_field"))
 
          if (account.bankId != null) {
             var bank = bankRepository.findOne(account.bankId!!, company)
@@ -115,11 +115,12 @@ class AccountService @Inject constructor(
             bankNbr = 0
          }
 
-         var data = listOf("action", "account_number", "type", "status", "normal_balance", "1099_field", "bank_ind", "bank_number", "dummy_field")
+         var data = listOf("action", "account_number", "name", "type", "status", "normal_balance", "1099_field", "bank_ind", "bank_number", "dummy_field")
 
          data = listOf(
             task,
             account.number.toString(),
+            account.name!!,
             account.type!!.value!!,
             account.status!!.value!!,
             account.normalAccountBalance!!.value!!,
