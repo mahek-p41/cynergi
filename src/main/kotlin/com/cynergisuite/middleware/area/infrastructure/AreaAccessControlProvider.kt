@@ -13,14 +13,16 @@ class AreaAccessControlProvider @Inject constructor(
    private val areaRepository: AreaRepository
 ) : AccessControlProvider {
 
-   override fun canUserAccess(user: User, asset: String, parameters: MutableMap<String, MutableArgumentValue<*>>): Boolean {
+     fun canUserAccess(user: User, asset: Array<String>, parameters: MutableMap<String, MutableArgumentValue<*>>): Boolean {
       val areaPermission = areaRepository.findAllVisibleByCompany(user.myCompany())
 
       return user.isCynergiAdmin() || // if user is high touch admin then allow no questions asked
-         areaPermission.any { it.areaType.value == asset } // if permissions have been setup and the company's area is contained in that permission then allow
+         areaPermission.any {area ->  // if permissions have been setup and the company's area is contained in that permission then allow
+            asset.contains(area.areaType.value)
+         }
    }
 
-   override fun generateException(user: User, asset: String?, parameters: MutableMap<String, MutableArgumentValue<*>>): Exception {
+   fun generateException(user: User, asset: Array<String>?, parameters: MutableMap<String, MutableArgumentValue<*>>): Exception {
       return AccessException(AccessDenied(), user.myEmployeeNumber().toString())
    }
 }

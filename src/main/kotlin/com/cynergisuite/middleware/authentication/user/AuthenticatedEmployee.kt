@@ -92,7 +92,7 @@ data class AuthenticatedEmployee(
    override fun myEmployeeNumber(): Int = number
    override fun myAlternativeStoreIndicator(): String = alternativeStoreIndicator
    override fun myAlternativeArea(): Long = alternativeArea
-   override fun isCynergiAdmin(): Boolean = securityGroups.any{it.value == "admin"}
+   override fun isCynergiAdmin(): Boolean = securityGroups.any{it.value == "HTADMIN"}
    override fun mySecurityTypes(): List<String> = securityGroups.flatMap { outer ->
       outer.types.map { inner ->
          inner.value

@@ -71,6 +71,7 @@ class VendorPaymentTermController @Inject constructor(
       return response
    }
 
+   @Secured("MCFVENDTERMRPT")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Fetch a listing of VendorPaymentTerms", description = "Fetch a paginated listing of VendorPaymentTerms including associated schedule records", operationId = "vendorPaymentTerm-fetchAll")
@@ -100,6 +101,7 @@ class VendorPaymentTermController @Inject constructor(
       return page
    }
 
+   @Secured("MCFVENDTERMADD")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Create a single VendorPaymentTerm", description = "Create a single VendorPaymentTerm. The logged in Employee is used for the scannedBy property", operationId = "vendorPaymentTerm-create")
@@ -129,6 +131,8 @@ class VendorPaymentTermController @Inject constructor(
    }
 
    // TODO security validation that this vendor_payment_term id is owned by the same company as user that is logged in
+
+   @Secured("MCFVENDTERMCHG")
    @Put(value = "/{id}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Update a single VendorPaymentTerm", description = "Update a single VendorPaymentTerm where the update is the addition of a note", operationId = "vendorPaymentTerm-update")
@@ -159,6 +163,7 @@ class VendorPaymentTermController @Inject constructor(
       return response
    }
 
+   @Secured("MCFVENDTERMDEL")
    @Delete(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [MediaType.APPLICATION_JSON])
    @AccessControl
    @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Delete a vendor payment term", description = "Delete a single vendor payment term", operationId = "vendorPaymentTerm-delete")

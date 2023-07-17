@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 import javax.validation.Valid
 
-@Secured(IS_AUTHENTICATED)
+@Secured(IS_AUTHENTICATED, "PO")
 @AreaControl("PO")
 @Controller("/api/purchase-order")
 class PurchaseOrderController @Inject constructor(
@@ -101,6 +101,7 @@ class PurchaseOrderController @Inject constructor(
       return page
    }
 
+   @Secured("POADD")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["PurchaseOrderEndpoints"], summary = "Create a single PurchaseOrder", description = "Create a single PurchaseOrder", operationId = "purchaseOrder-create")
@@ -129,6 +130,7 @@ class PurchaseOrderController @Inject constructor(
       return response
    }
 
+   @Secured("POUPDT")
    @Put(value = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["PurchaseOrderEndpoints"], summary = "Update a single PurchaseOrder", description = "Update a single PurchaseOrder", operationId = "purchaseOrder-update")
@@ -160,6 +162,7 @@ class PurchaseOrderController @Inject constructor(
       return response
    }
 
+   @Secured("PODEL")
    @Delete(uri = "/{id:[0-9a-fA-F\\-]+}")
    @Operation(tags = ["PurchaseOrderEndpoints"], summary = "Delete a single purchase order", description = "Deletes a purchase order based on passed id", operationId = "purchaseOrder-delete")
    @ApiResponses(

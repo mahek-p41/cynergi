@@ -67,6 +67,9 @@ data class AuthenticatedUser(
    override fun myAlternativeArea(): Long = alternativeArea
    override fun isCynergiAdmin(): Boolean = securityGroups.any{it == "admin"}
    override fun mySecurityTypes(): List<String> = securityGroups
+   override fun getRoles(): List<String> {
+      return securityGroups
+   }
 
 
 }

@@ -104,7 +104,8 @@ class SecurityGroupRepository @Inject constructor(
             sap.id                                                             AS secgrp_sac_id,
             sap.value                                                          AS secgrp_sac_value,
             sap.description                                                    AS secgrp_sac_description,
-            sap.localization_code                                              AS secgrp_sac_localization_code
+            sap.localization_code                                              AS secgrp_sac_localization_code,
+            sap.area_id                                                        AS secgrp_sac_area_id
          FROM security_group secgrp
             JOIN employee_to_security_group empSecGrp ON secgrp.id = empSecGrp.security_group_id AND empSecGrp.deleted = FALSE
             JOIN security_group_to_security_access_point sgap ON secgrp.id = sgap.security_group_id
@@ -167,7 +168,8 @@ class SecurityGroupRepository @Inject constructor(
            id = rs.getInt("${columnPrefix}id"),
            value = rs.getString("${columnPrefix}value"),
            description = rs.getString("${columnPrefix}description"),
-           localizationCode = rs.getString("${columnPrefix}localization_code")
+           localizationCode = rs.getString("${columnPrefix}localization_code"),
+           areaId = rs.getInt("${columnPrefix}area_id")
         )
    }
 }

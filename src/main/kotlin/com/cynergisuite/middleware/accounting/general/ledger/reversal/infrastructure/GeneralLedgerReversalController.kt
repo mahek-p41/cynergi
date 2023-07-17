@@ -44,6 +44,7 @@ class GeneralLedgerReversalController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReversalController::class.java)
 
+   @Secured("GLREVERSAL")
    @Throws(NotFoundException::class)
    @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerReversalEndpoints"], summary = "Fetch a single GeneralLedgerReversal", description = "Fetch a single GeneralLedgerReversal by its system generated primary key", operationId = "generalLedgerReversal-fetchOne")
@@ -71,6 +72,7 @@ class GeneralLedgerReversalController @Inject constructor(
       return response
    }
 
+   @Secured("GLREVERSAL")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerReversalEndpoints"], summary = "Fetch a listing of GeneralLedgerReversals", description = "Fetch a paginated listing of GeneralLedgerReversals", operationId = "generalLedgerReversal-fetchAll")
@@ -101,6 +103,7 @@ class GeneralLedgerReversalController @Inject constructor(
       return page
    }
 
+   @Secured("GLREVERSALPOST")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerReversalEndpoints"], summary = "Create a single GeneralLedgerReversal", description = "Create a single GeneralLedgerReversal", operationId = "generalLedgerReversal-create")
@@ -129,6 +132,7 @@ class GeneralLedgerReversalController @Inject constructor(
       return response
    }
 
+   @Secured("GLREVERSALCHG")
    @Put(value = "/{id}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerReversalEndpoints"], summary = "Update a single GeneralLedgerReversal", description = "Update a single GeneralLedgerReversal", operationId = "generalLedgerReversal-update")
@@ -159,6 +163,7 @@ class GeneralLedgerReversalController @Inject constructor(
       return response
    }
 
+   @Secured("GLREVERSALDEL")
    @Delete(value = "/{id}")
    @Throws(NotFoundException::class)
    @Operation(tags = ["GeneralLedgerReversalEndpoints"], summary = "Delete a single GeneralLedgerReversal", description = "Delete a single GeneralLedgerReversal", operationId = "generalLedgerReversal-delete")

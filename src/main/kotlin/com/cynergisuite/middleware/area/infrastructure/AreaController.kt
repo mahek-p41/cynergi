@@ -53,6 +53,7 @@ class AreaController @Inject constructor(
       return areas
    }
 
+   @Secured("MCFAREACHG")
    @Put(processes = [MediaType.APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AreaEndpoints"], summary = "Update a company's Areas", description = "Update a company's Areas", operationId = "area-update")
@@ -85,6 +86,7 @@ class AreaController @Inject constructor(
 
    }
 
+   @Secured("MCFAREACHG")
    @Post(processes = [MediaType.APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AreaEndpoints"], summary = "Enable a company's Areas", description = "Enable a company's Areas", operationId = "area-enable")
@@ -114,6 +116,7 @@ class AreaController @Inject constructor(
       logger.debug("Requested enable Area with ID {} resulted in {}", areaDTO)
    }
 
+   @Secured("MCFAREACHG")
    @Delete(processes = [MediaType.APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AreaEndpoints"], summary = "Disable a company's Areas", description = "Disable a company's Areas", operationId = "area-disable")

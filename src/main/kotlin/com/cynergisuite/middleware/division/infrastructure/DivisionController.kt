@@ -93,6 +93,7 @@ class DivisionController @Inject constructor(
       return divisions
    }
 
+   @Secured("MCFDIVADD")
    @Post(processes = [MediaType.APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
@@ -120,6 +121,7 @@ class DivisionController @Inject constructor(
       return response
    }
 
+   @Secured("MCFDIVCHG")
    @Put(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [MediaType.APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)

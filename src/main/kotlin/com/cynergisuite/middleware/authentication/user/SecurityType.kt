@@ -12,7 +12,8 @@ data class SecurityType(
    val id: Int,
    val value: String,
    val description: String,
-   val localizationCode: String
+   val localizationCode: String,
+   val areaId: Int?
 
 ): TypeDomain() {
 

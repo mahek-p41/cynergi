@@ -23,7 +23,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.validation.Valid
 
-@Secured(SecurityRule.IS_AUTHENTICATED)
+@Secured(SecurityRule.IS_AUTHENTICATED, "GL")
 @AreaControl("GL")
 @Controller("/api/general-ledger/procedure")
 class GeneralLedgerProcedureController @Inject constructor(
@@ -32,6 +32,7 @@ class GeneralLedgerProcedureController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerProcedureController::class.java)
 
+   @Secured("GLYREND")
    @Post(uri = "end-year", processes = [MediaType.APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerProcedureEndpoints"], summary = "Close current GL year", description = "Close current GL year", operationId = "GeneralLedgerProcedure-endCurrentYear")

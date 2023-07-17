@@ -23,7 +23,8 @@ class SecurityGroupTestDataLoader {
             1,
             "test",
             "test",
-            "test"
+            "test",
+            1
          )],
          CompanyFactory.tstds1()
       ),
@@ -35,7 +36,8 @@ class SecurityGroupTestDataLoader {
             2,
             "test2",
             "test2",
-            "test2"
+            "test2",
+            2
          )],
          CompanyFactory.tstds1()
       )
@@ -49,7 +51,7 @@ class SecurityGroupTestDataLoader {
               null,
               value,
               value,
-              Collections.singletonList(new SecurityType(1, "admin", "admin", "admin")),
+              Collections.singletonList(new SecurityType(1, "HTADMIN", "HTADMIN", "HTADMIN", 1)),
               companyIn
           )
       }

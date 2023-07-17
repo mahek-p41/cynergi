@@ -76,6 +76,7 @@ class AccountPayablePaymentController @Inject constructor(
       return response
    }
 
+   @Secured("APCHKRPT")
    @Get(uri = "{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayablePaymentEndpoints"], summary = "Fetch a Account Payable Payments Report", description = "Fetch a Account Payable Payments Report", operationId = "accountPayablePayment-fetchReport")
    @ApiResponses(
@@ -99,6 +100,7 @@ class AccountPayablePaymentController @Inject constructor(
       return accountPayablePaymentService.fetchReport(user.myCompany(), filterRequest)
    }
 
+   @Secured("APCHKLST")
    @Throws(PageOutOfBoundsException::class)
    @Operation(tags = ["AccountPayablePaymentEndpoints"], summary = "Fetch a Listing of Account Payable Payments", description = "Fetch a listing of account payable payments", operationId = "accountPayablePayment-fetchPaymentsListing")
    @ApiResponses(
@@ -185,6 +187,7 @@ class AccountPayablePaymentController @Inject constructor(
       return response
    }
 
+   @Secured("APDEL")
    @Delete(value = "/{id}")
    @Throws(NotFoundException::class)
    @Operation(tags = ["AccountPayablePaymentEndpoints"], summary = "Delete a single AccountPayablePayment", description = "Delete a single Account Payable Payment", operationId = "accountPayablePayment-delete")

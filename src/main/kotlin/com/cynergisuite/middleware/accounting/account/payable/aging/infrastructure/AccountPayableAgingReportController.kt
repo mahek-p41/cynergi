@@ -33,6 +33,7 @@ class AccountPayableAgingReportController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableAgingReportController::class.java)
 
+   @Secured("APAGERPT", "APCASHOUT")
    @Get(uri = "{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableAgingReportEndpoints"], summary = "Fetch an Account Payable Aging Report", description = "Fetch an Account Payable Aging Report", operationId = "accountPayableAgingReport-fetchReport")
    @ApiResponses(

@@ -25,7 +25,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.validation.Valid
 
-@Secured(IS_AUTHENTICATED)
+@Secured(IS_AUTHENTICATED, "GL")
 @AreaControl("GL")
 @Controller("/api/general-ledger/inquiry")
 class GeneralLedgerInquiryController @Inject constructor(
@@ -34,6 +34,7 @@ class GeneralLedgerInquiryController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerInquiryController::class.java)
 
+   @Secured("GLSRCH")
    @Get(uri = "{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerInquiryEndpoints"], summary = "Fetch a single GeneralLedgerInquiryDTO", description = "Fetch a single GeneralLedgerInquiryDTO that is associated with the logged-in user's company", operationId = "generalLedgerInquiry-fetchOne")
    @ApiResponses(

@@ -22,6 +22,7 @@ import static io.micronaut.http.HttpStatus.CONFLICT
 import static io.micronaut.http.HttpStatus.METHOD_NOT_ALLOWED
 import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
+import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 
 @MicronautTest(transactional = false)
 class CompanyControllerSpecification extends ControllerSpecificationBase {
@@ -335,9 +336,9 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
 
       then:
       final exception = thrown(HttpClientResponseException)
-      exception.status == BAD_REQUEST
+      exception.status == UNAUTHORIZED
       def response = exception.response.bodyAsJson()
-      response.message == 'Required argument authentication not specified'
+      response.message == 'You are not logged in'
    }
 
    void "update a valid company" () {
