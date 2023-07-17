@@ -48,7 +48,7 @@ class GeneralLedgerRecurringEntriesController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerRecurringEntriesController::class.java)
 
-   @Secured("GLRECULST")
+   @Secured("GLRECURLST")
    @Throws(NotFoundException::class)
    @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerRecurringEntriesEndpoints"], summary = "Fetch a single General Ledger Recurring Entry", description = "Fetch a single General Ledger Recurring Entry by its system generated primary key", operationId = "generalLedgerRecurringEntries-fetchOne")
