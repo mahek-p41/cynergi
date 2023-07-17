@@ -195,7 +195,7 @@ class EmployeeTestDataLoaderService {
    ) {
       final company = companyIn ?: departmentIn?.myCompany() ?: storeIn?.myCompany() ?: companyFactoryService.random()
       SecurityGroup securityGroup = (cynergiSystemAdminIn) ?
-         (securityGroupRepository.findByName(company, "admin") ?: securityGroupTestDataLoader.single(company, "admin"))
+         (securityGroupRepository.findByName(company, "HTADMIN") ?: securityGroupTestDataLoader.single(company, "HTADMIN"))
          : (securityGroupRepository.findByName(company, "basic") ?: securityGroupTestDataLoader.single(company, "basic"))
       List<SecurityGroup> securityGroupList = Collections.singletonList(securityGroup)
 

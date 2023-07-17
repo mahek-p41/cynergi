@@ -51,7 +51,7 @@ class SecurityGroupTestDataLoader {
               null,
               value,
               value,
-              Collections.singletonList(new SecurityType(1, "admin", "admin", "admin", 1)),
+              Collections.singletonList(new SecurityType(1, "HTADMIN", "HTADMIN", "HTADMIN", 1)),
               companyIn
           )
       }
