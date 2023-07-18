@@ -117,14 +117,14 @@ jobs:
          echo "::endgroup::"
 
          echo "::group::docker run middleware"
-         docker run --rm --network ${NETWORK_ID} -v ${GITHUB_WORKSPACE}/gradleCache:/home/jenkins/caches -v ${GITHUB_WORKSPACE}/gradleWrapper:/home/jenkins/wrapper -v ${GITHUB_WORKSPACE}:/home/jenkins/cynergi-middleware -e DATASOURCES_DEFAULT_URL=jdbc:postgresql://cynergitestdb${BRANCH_NAME}:5432/postgres -e TEST_SFTP_HOSTNAME=cynergitestsftp${BRANCH_NAME} -e TEST_SFTP_PORT=22 middleware:${BRANCH_NAME} /bin/bash -c '''
+         docker run --rm --network ${NETWORK_ID} -v ${GITHUB_WORKSPACE}/gradleCache:/home/jenkins/caches -v ${GITHUB_WORKSPACE}/gradleWrapper:/home/jenkins/wrapper -v ${GITHUB_WORKSPACE}:/home/jenkins/cynergi-middleware -e DATASOURCES_DEFAULT_URL=jdbc:postgresql://cynergitestdb${BRANCH_NAME}:5432/postgres -e TEST_SFTP_HOSTNAME=cynergitestsftp${BRANCH_NAME} -e TEST_SFTP_PORT=22 middleware:${BRANCH_NAME} /bin/bash -c "
             ${DEBUG_MODE}
             set -o errexit -o pipefail -o noclobber -o nounset
-            export JAVA_OPTS="-Xms2048m -Xmx2048m -Xgcpolicy:gencon"
+            export JAVA_OPTS='-Xms2048m -Xmx2048m -Xgcpolicy:gencon'
 
             ./gradlew --no-daemon --stacktrace clean buildApiDocs 2>&1 1>/dev/null
             ./gradlew --no-daemon test --fail-fast jacocoTestReport
-         '''
+         "
          echo "::endgroup::"
 
       - name: Build deploy artifact
@@ -186,13 +186,13 @@ jobs:
       name: Trigger E2E testing
       needs: build
       runs-on: ubuntu-latest
+      continue-on-error: true
       steps:
          - env:
             GITHUB_TOKEN: ${{ secrets.READONLY_HTI_PAT }}
            run: |
-            nextRun=$(gh run --repo hightouchinc/cynergi-e2e list --workflow='test-middleware.yml' --limit=1 --json displayTitle --jq '.[0].displayTitle' | sed 's/\/[^\/]*$/\/${{ github.sha }}/')
-            gh workflow --repo hightouchinc/cynergi-e2e run --ref='master' test-middleware.yml --field 'middlewareBranch=${{ github.sha }}' --field 'clientBranch=develop'
-            echo "View the triggered run by finding '$nextRun' at https://github.com/hightouchinc/cynergi-e2e/actions/workflows/test-middleware.yml"
+            ${DEBUG_MODE}
+            gh workflow --repo hightouchinc/cynergi-e2e run --ref='master' test-middleware.yml --field 'middlewareBranch=${{ github.ref_name }}' --field 'middlewareSha=${{ github.sha }}' --field 'clientBranch=develop' --field 'callingUser=${{ github.triggering_actor }}'
 
    deploy:
       needs: build
