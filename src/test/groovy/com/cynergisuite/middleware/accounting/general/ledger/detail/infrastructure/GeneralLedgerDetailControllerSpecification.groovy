@@ -713,7 +713,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       'Sort by description'               || 2               | 600        | 600
       'Select one source code'            || 1               | 300        | 300
       'Select one profit center'          || 1               | 300        | 100
-      'Select by dates'                   || 1               | 0          | 300
+      'Select by dates'                   || 2               | 200        | 500
       'Select one journal entry number'   || 1               | 200        | 200
    }
 

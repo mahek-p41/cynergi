@@ -132,7 +132,7 @@ class StagingDepositRepository @Inject constructor(
 
    private fun buildFilterString(begin: Boolean, end: Boolean, beginningParam: String, endingParam: String): String {
       return if (begin && end) " BETWEEN :$beginningParam AND :$endingParam "
-      else if (begin) " > :$beginningParam "
-      else " < :$endingParam "
+      else if (begin) " >= :$beginningParam "
+      else " <= :$endingParam "
    }
 }
