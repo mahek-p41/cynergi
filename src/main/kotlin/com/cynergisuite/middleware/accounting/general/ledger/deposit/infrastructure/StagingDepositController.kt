@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.deposit.infrastructure
 
 import com.cynergisuite.domain.Page
+import com.cynergisuite.middleware.accounting.general.ledger.deposit.AccountingDetailWrapper
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositDTO
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositPageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositService
@@ -25,6 +26,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
@@ -64,5 +66,42 @@ class StagingDepositController @Inject constructor(
       }
 
       return page
+   }
+
+   @Get(uri = "/detail/{id:[0-9a-fA-F\\-]+}", produces = [MediaType.APPLICATION_JSON])
+   @Operation(
+      tags = ["StagingDepositEndpoints"],
+      summary = "Fetch a listing of accounting entry details",
+      description = "Fetch a listing of accounting entry details",
+      operationId = "StagingDeposits-fetchAccountingDetails"
+   )
+   @ApiResponses(
+      value = [
+         ApiResponse(
+            responseCode = "200",
+            content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Page::class))]
+         ),
+         ApiResponse(
+            responseCode = "204",
+            description = "The requested Staging Deposits was unable to be found, or the result is empty"
+         ),
+         ApiResponse(
+            responseCode = "401",
+            description = "If the user calling this endpoint does not have permission to operate it"
+         ),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchAccountingDetails(
+      @QueryValue("id")
+      verifyId: UUID,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): AccountingDetailWrapper {
+      logger.info("Fetching staging accounting entry details for verifyId {}", verifyId)
+
+      val user = userService.fetchUser(authentication)
+
+      return stagingDepositService.fetchAccountingDetails(user.myCompany(), verifyId)
    }
 }

@@ -5,6 +5,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.deposit.infrastruct
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.UUID
 
 @Singleton
 class StagingDepositService @Inject constructor(
@@ -16,5 +17,10 @@ class StagingDepositService @Inject constructor(
       return found.toPage { entity: StagingDepositEntity ->
          StagingDepositDTO(entity)
       }
+   }
+
+   fun fetchAccountingDetails(company: CompanyEntity, verifyId: UUID): AccountingDetailWrapper {
+      val found = stagingDepositRepository.fetchAccountingDetails(company, verifyId)
+      return AccountingDetailWrapper(found)
    }
 }
