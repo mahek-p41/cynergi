@@ -58,7 +58,9 @@ class AccountService @Inject constructor(
       val toCreate = accountValidator.validateCreate(dto, company)
 
       val newAccount = transformEntity(accountRepository.insert(toCreate, company), locale)
-      accountToISAM("I", newAccount, company)
+      if (processUpdateIsamAccount) {
+         accountToISAM("I", newAccount, company)
+      }
       return newAccount
 
    }
@@ -67,7 +69,9 @@ class AccountService @Inject constructor(
       val toUpdate = accountValidator.validateUpdate(id, dto, company)
 
       val updatedAccount = transformEntity(accountRepository.update(toUpdate, company), locale)
-      accountToISAM("U", updatedAccount, company)
+      if (processUpdateIsamAccount) {
+         accountToISAM("U", updatedAccount, company)
+      }
       return updatedAccount
    }
 
@@ -89,7 +93,9 @@ class AccountService @Inject constructor(
    fun delete(id: UUID, company: CompanyEntity, locale: Locale) {
       val deletedAccount = accountRepository.findOne(id, company)?.let {transformEntity(it, locale) }
       accountRepository.delete(id, company)
-      accountToISAM("D", deletedAccount!!, company)
+      if (processUpdateIsamAccount) {
+         accountToISAM("D", deletedAccount!!, company)
+      }
    }
 
    fun accountToISAM(task: String, account: AccountDTO, company: CompanyEntity) {
@@ -97,6 +103,7 @@ class AccountService @Inject constructor(
       var csvPrinter: CSVPrinter? = null
       var bankInd: String
       var bankNbr: Int
+      var corporateInd: String
 
       var dataset = company.datasetCode
 
@@ -104,7 +111,7 @@ class AccountService @Inject constructor(
 
       try {
          fileWriter = FileWriter(fileName)
-         csvPrinter = CSVPrinter(fileWriter, CSVFormat.DEFAULT.withDelimiter('|').withHeader("action", "account_number", "name", "type", "status", "normal_balance", "1099_field", "bank_ind", "bank_number", "dummy_field"))
+         csvPrinter = CSVPrinter(fileWriter, CSVFormat.DEFAULT.withDelimiter('|').withHeader("action", "account_number", "name", "type", "status", "normal_balance", "1099_field", "bank_ind", "bank_number", "corporate_acct", "dummy_field"))
 
          if (account.bankId != null) {
             var bank = bankRepository.findOne(account.bankId!!, company)
@@ -115,7 +122,13 @@ class AccountService @Inject constructor(
             bankNbr = 0
          }
 
-         var data = listOf("action", "account_number", "name", "type", "status", "normal_balance", "1099_field", "bank_ind", "bank_number", "dummy_field")
+         corporateInd = if (account.corporateAccountIndicator!!) {
+            "Y"
+         } else {
+            "N"
+         }
+
+         var data = listOf("action", "account_number", "name", "type", "status", "normal_balance", "1099_field", "bank_ind", "bank_number", "corporate_acct", "dummy_field")
 
          data = listOf(
             task,
@@ -127,6 +140,7 @@ class AccountService @Inject constructor(
             account.form1099Field?.value.toString(),
             bankInd,
             bankNbr.toString(),
+            corporateInd,
             "1")
          csvPrinter.printRecord(data)
 
@@ -137,14 +151,12 @@ class AccountService @Inject constructor(
             fileWriter!!.flush()
             fileWriter.close()
             csvPrinter!!.close()
-            if (processUpdateIsamAccount) {
-               val processExecutor: ProcessExecutor = ProcessExecutor()
-                  .command("/bin/bash", "/usr/bin/ht.updt_isam_account.sh", fileName.canonicalPath, dataset)
-                  .exitValueNormal()
-                  .timeout(5, TimeUnit.SECONDS)
-                  .readOutput(true)
-               logger.debug(processExecutor.execute().outputString())
-            }
+            val processExecutor: ProcessExecutor = ProcessExecutor()
+               .command("/bin/bash", "/usr/bin/ht.updt_isam_account.sh", fileName.canonicalPath, dataset)
+               .exitValueNormal()
+               .timeout(5, TimeUnit.SECONDS)
+               .readOutput(true)
+            logger.debug(processExecutor.execute().outputString())
          } catch (e: Throwable) {
             logger.error("Error occurred in creating account csv file!", e)
          }
