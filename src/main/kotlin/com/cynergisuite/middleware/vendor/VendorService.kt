@@ -34,7 +34,9 @@ class VendorService @Inject constructor(
       val toCreate = vendorValidator.validateCreate(dto, company)
 
       val vendorEntity = vendorRepository.insert(entity = toCreate)
-      vendorToISAM("I", vendorEntity, company)
+      if (processUpdateIsamVendor) {
+         vendorToISAM("I", vendorEntity, company)
+      }
       return VendorDTO(
          vendorEntity
       )
@@ -60,7 +62,9 @@ class VendorService @Inject constructor(
       val (existing, toUpdate) = vendorValidator.validateUpdate(id, dto, company)
 
       val vendorEntity = vendorRepository.update(existing, toUpdate)
-      vendorToISAM("U", vendorEntity, company)
+      if (processUpdateIsamVendor) {
+         vendorToISAM("U", vendorEntity, company)
+      }
       return VendorDTO(
          vendorEntity
       )
@@ -69,7 +73,9 @@ class VendorService @Inject constructor(
    fun delete(id: UUID, company: CompanyEntity) {
       val deleletedVendor = vendorRepository.findOne(id, company)
       vendorRepository.delete(id, company)
-      vendorToISAM("D", deleletedVendor!!, company)
+      if (processUpdateIsamVendor) {
+         vendorToISAM("D", deleletedVendor!!, company)
+      }
    }
 
    fun vendorToISAM(task: String, vendor: VendorEntity, company: CompanyEntity) {
@@ -329,14 +335,12 @@ class VendorService @Inject constructor(
             fileWriter!!.flush()
             fileWriter.close()
             csvPrinter!!.close()
-            if (processUpdateIsamVendor) {
-               val processExecutor: ProcessExecutor = ProcessExecutor()
-                  .command("/bin/bash", "/usr/bin/ht.updt_isam_vendor.sh", fileName.canonicalPath, dataset)
-                  .exitValueNormal()
-                  .timeout(5, TimeUnit.SECONDS)
-                  .readOutput(true)
-               logger.debug(processExecutor.execute().outputString())
-            }
+            val processExecutor: ProcessExecutor = ProcessExecutor()
+               .command("/bin/bash", "/usr/bin/ht.updt_isam_vendor.sh", fileName.canonicalPath, dataset)
+               .exitValueNormal()
+               .timeout(5, TimeUnit.SECONDS)
+               .readOutput(true)
+            logger.debug(processExecutor.execute().outputString())
          } catch (e: Throwable) {
             logger.error("Error occurred in creating vendor csv file!", e)
          }
