@@ -25,7 +25,7 @@ class VendorService @Inject constructor(
    private val vendorValidator: VendorValidator,
    @Value("\${cynergi.process.update.isam.vendor}") private val processUpdateIsamVendor: Boolean
 ) {
-   private val logger: Logger = LoggerFactory.getLogger(AccountService::class.java)
+   private val logger: Logger = LoggerFactory.getLogger(VendorService::class.java)
 
    fun fetchById(id: UUID, company: CompanyEntity): VendorDTO? =
       vendorRepository.findOne(id, company)?.let { VendorDTO(entity = it) }
