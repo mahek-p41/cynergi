@@ -13,6 +13,7 @@ import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.vendor.VendorTypeDTO
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.util.Locale
@@ -24,7 +25,8 @@ class BankService @Inject constructor(
    private val accountService: AccountService,
    private val bankRepository: BankRepository,
    private val bankValidator: BankValidator,
-   private val localizationService: LocalizationService
+   private val localizationService: LocalizationService,
+   @Value("\${cynergi.process.update.isam.account}") private val processUpdateIsamAccount: Boolean
 ) {
    fun fetchById(id: UUID, company: CompanyEntity, locale: Locale): BankDTO? =
       bankRepository.findOne(id, company)?.let { BankDTO(it) }
@@ -44,16 +46,28 @@ class BankService @Inject constructor(
 
       val bankAdded = BankDTO(bankRepository.insert(toCreate))
       val associatedAccount = accountRepository.findOne(bankAdded.generalLedgerAccount!!.id!!, company)?.let {transformAccountEntity(it, locale) }
-      accountService.accountToISAM("U", associatedAccount!!, company)
+      if (processUpdateIsamAccount) {
+         accountService.accountToISAM("U", associatedAccount!!, company)
+      }
       return bankAdded
    }
 
    fun update(id: UUID, dto: BankDTO, company: CompanyEntity, locale: Locale): BankDTO {
       val toUpdate = bankValidator.validateUpdate(id, dto, company)
 
+      val startingBank = bankRepository.findOne(id, company)
+      val startingGLAccountId = startingBank!!.generalLedgerAccount.id
+
       val bankUpdated = BankDTO(bankRepository.update(toUpdate))
-      val associatedAccount = accountRepository.findOne(bankUpdated.generalLedgerAccount!!.id!!, company)?.let {transformAccountEntity(it, locale) }
-      accountService.accountToISAM("U", associatedAccount!!, company)
+      val endingGLAccount = accountRepository.findOne(bankUpdated.generalLedgerAccount!!.id!!, company)?.let {transformAccountEntity(it, locale) }
+      val endingGLAccountId = endingGLAccount!!.id
+      if (processUpdateIsamAccount) {
+         accountService.accountToISAM("U", endingGLAccount, company)
+      }
+      if (processUpdateIsamAccount && (startingGLAccountId != endingGLAccountId)) {
+         val changedAccount = accountRepository.findOne(startingGLAccountId!!, company)?.let {transformAccountEntity(it, locale) }
+         accountService.accountToISAM("U", changedAccount!!, company)
+      }
 
       return bankUpdated
    }
@@ -63,7 +77,9 @@ class BankService @Inject constructor(
 
       bankRepository.delete(id, company)
       val associatedAccount = accountRepository.findOne(bankBeingDeleted!!.generalLedgerAccount!!.id!!, company)?.let {transformAccountEntity(it, locale) }
-      accountService.accountToISAM("U", associatedAccount!!, company)
+      if (processUpdateIsamAccount) {
+         accountService.accountToISAM("U", associatedAccount!!, company)
+      }
    }
 
    private fun transformAccountEntity(accountEntity: AccountEntity, locale: Locale): AccountDTO {
