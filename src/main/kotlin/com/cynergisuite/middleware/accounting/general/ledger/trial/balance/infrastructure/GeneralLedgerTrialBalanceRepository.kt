@@ -208,7 +208,7 @@ class GeneralLedgerTrialBalanceRepository @Inject constructor(
             description = rs.getString("detail_source_description"),
          ),
          journalEntryNumber = rs.getIntOrNull("detail_je"),
-         message = rs.getString("detail_message"),
+         message = rs.getString("detail_message")?.replace("/n", ""),
          amount = rs.getBigDecimal("detail_amount"),
       )
    }
