@@ -26,7 +26,6 @@ class AccountPayableInvoiceInquiryFilterRequest(
    @field:Schema(name = "vendor", description = "Vendor number")
    var vendor: Int? = null,
 
-   @field:NotNull
    @field:Schema(name = "payTo", description = "Pay to vendor number")
    var payTo: Int? = null,
 
