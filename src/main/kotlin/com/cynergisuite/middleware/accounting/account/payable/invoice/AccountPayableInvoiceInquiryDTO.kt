@@ -46,6 +46,9 @@ data class AccountPayableInvoiceInquiryDTO(
    @field:Schema(description = "Separate check indicator")
    var separateCheckIndicator: Boolean? = null,
 
+   @field:Schema(description = "Purchase order ID", required = false)
+   val poId: UUID? = null,
+
    @field:Schema(description = "Purchase order number", required = false)
    var poNbr: Int? = null,
 
