@@ -4,6 +4,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -33,7 +34,8 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 import javax.validation.Valid
 
-@Secured(IS_AUTHENTICATED)
+@Secured(IS_AUTHENTICATED, "APRECUR")
+@AreaControl("AP")
 @Controller("/api/accounting/account-payable/recurring")
 class AccountPayableRecurringInvoiceController @Inject constructor(
    private val accountPayableRecurringInvoiceService: AccountPayableRecurringInvoiceService,
@@ -41,6 +43,7 @@ class AccountPayableRecurringInvoiceController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableRecurringInvoiceController::class.java)
 
+   @Secured("APRECURLST")
    @Throws(NotFoundException::class)
    @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableRecurringInvoiceEndpoints"], summary = "Fetch a single Account Payable Recurring Invoice", description = "Fetch a single Account Payable Recurring Invoice by it's system generated primary key", operationId = "accountPayableRecurringInvoice-fetchOne")
@@ -68,6 +71,7 @@ class AccountPayableRecurringInvoiceController @Inject constructor(
       return response
    }
 
+   @Secured("APRECURLST")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableRecurringInvoiceEndpoints"], summary = "Fetch a listing of Account Payable Recurring Invoices", description = "Fetch a paginated listing of Account Payable Recurring Invoice", operationId = "accountPayableRecurringInvoice-fetchAll")
@@ -98,6 +102,7 @@ class AccountPayableRecurringInvoiceController @Inject constructor(
       return page
    }
 
+   @Secured("APRECURADD")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AccountPayableRecurringInvoiceEndpoints"], summary = "Create a single Account Payable Recurring Invoice", description = "Create a single AccountPayableRecurringInvoice", operationId = "accountPayableRecurringInvoice-create")
@@ -126,6 +131,7 @@ class AccountPayableRecurringInvoiceController @Inject constructor(
       return response
    }
 
+   @Secured("APRECURCHG")
    @Put(value = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["AccountPayableRecurringInvoiceEndpoints"], summary = "Update a single Account Payable Recurring Invoice", description = "Update a single Account Payable Recurring Invoice", operationId = "accountPayableRecurringInvoice-update")

@@ -6,13 +6,13 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
+import com.cynergisuite.extensions.getLongOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.VendorBalanceDTO
-import com.cynergisuite.middleware.accounting.account.VendorBalanceEntity
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceSelectedTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
@@ -334,15 +334,17 @@ class AccountPayableInvoiceRepository @Inject constructor(
             status.value                                                AS apInvoice_status_value,
             status.description                                          AS apInvoice_status_description,
             status.localization_code                                    AS apInvoice_status_localization_code,
+			   poHeader.number												         AS apInvoice_purchase_order_number,
             count(*) OVER()                                             AS total_elements
          FROM account_payable_invoice apInvoice
             JOIN company comp                                           ON apInvoice.company_id = comp.id AND comp.deleted = FALSE
             JOIN vend                                                   ON apInvoice.vendor_id = vend.v_id
             JOIN vend payTo                                             ON apInvoice.pay_to_id = payTo.v_id
-            LEFT JOIN system_employees_fimvw employee                        ON apInvoice.employee_number_id_sfk = employee.emp_number AND employee.comp_id = comp.id
+            LEFT JOIN system_employees_fimvw employee                   ON apInvoice.employee_number_id_sfk = employee.emp_number AND employee.comp_id = comp.id
             JOIN account_payable_invoice_selected_type_domain selected  ON apInvoice.selected_id = selected.id
             JOIN account_payable_invoice_type_domain type               ON apInvoice.type_id = type.id
             JOIN account_payable_invoice_status_type_domain status      ON apInvoice.status_id = status.id
+            JOIN purchase_order_header poHeader                         ON apInvoice.purchase_order_id = poHeader.id AND poHeader.deleted = FALSE
       """
    }
 
@@ -550,6 +552,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
             vendor_id = :vendor_id,
             invoice = :invoice,
             purchase_order_id = :purchase_order_id,
+
             invoice_date = :invoice_date,
             invoice_amount = :invoice_amount,
             discount_amount = :discount_amount,
@@ -646,6 +649,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
          vendor = vendor,
          invoice = rs.getString("${columnPrefix}invoice"),
          purchaseOrder = rs.getUuidOrNull("${columnPrefix}purchase_order_id")?.let { SimpleIdentifiableEntity(it) },
+         poNumber = rs.getLongOrNull("${columnPrefix}purchase_order_number"),
          invoiceDate = rs.getLocalDate("${columnPrefix}invoice_date"),
          invoiceAmount = rs.getBigDecimal("${columnPrefix}invoice_amount"),
          discountAmount = rs.getBigDecimal("${columnPrefix}discount_amount"),
@@ -683,6 +687,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
          vendor = entity.vendor,
          invoice = rs.getString("${columnPrefix}invoice"),
          purchaseOrder = entity.purchaseOrder,
+         poNumber = entity.poNumber,
          invoiceDate = rs.getLocalDate("${columnPrefix}invoice_date"),
          invoiceAmount = rs.getBigDecimal("${columnPrefix}invoice_amount"),
          discountAmount = rs.getBigDecimal("${columnPrefix}discount_amount"),

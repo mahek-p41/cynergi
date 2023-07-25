@@ -682,7 +682,7 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().minusYears(1), true, true).collect()
-      final acct = accountDataLoaderService.single(company, AccountStatusFactory.predefined().find {it.value == "A" }, AccountTypeFactory.predefined().find {it.value == "C" })
+      final acct = accountDataLoaderService.single(company, AccountStatusFactory.predefined().find {it.value == "A" }, AccountTypeFactory.predefined().find {it.value == "A" })
       final store1 = storeFactoryService.store(1, company)
       final store2 = storeFactoryService.store(4, company)
       final sourceCode = generalLedgerSourceCodeDataLoaderService.single(company, "AJE")
@@ -813,7 +813,7 @@ class GeneralLedgerSummaryControllerSpecification extends ControllerSpecificatio
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().minusYears(1), true, true).collect()
-      final acct = accountDataLoaderService.single(company, AccountStatusFactory.predefined().find {it.value == "A" }, AccountTypeFactory.predefined().find {it.value == "C" })
+      final acct = accountDataLoaderService.single(company, AccountStatusFactory.predefined().find {it.value == "A" }, AccountTypeFactory.predefined().find {it.value == "A" })
       final store1 = storeFactoryService.store(1, company)
       final store2 = storeFactoryService.store(4, company)
       final sourceCode = generalLedgerSourceCodeDataLoaderService.single(company, "AJE")

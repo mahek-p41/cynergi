@@ -97,6 +97,7 @@ class GeneralLedgerSourceCodeController @Inject constructor(
       return page
    }
 
+   @Secured("MCFGLCODADD")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerSourceCodeEndpoints"], summary = "Create a single GeneralLedgerSourceCode", description = "Create a single GeneralLedgerSourceCode", operationId = "generalLedgerSourceCode-create")
@@ -125,6 +126,7 @@ class GeneralLedgerSourceCodeController @Inject constructor(
       return response
    }
 
+   @Secured("MCFGLCODCHG")
    @Put(value = "/{id}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerSourceCodeEndpoints"], summary = "Update a single GeneralLedgerSourceCode", description = "Update a single GeneralLedgerSourceCode", operationId = "generalLedgerSourceCode-update")
@@ -155,6 +157,7 @@ class GeneralLedgerSourceCodeController @Inject constructor(
       return response
    }
 
+   @Secured("MCFGLCODDEL")
    @Delete(value = "/{id}")
    @Throws(NotFoundException::class)
    @Operation(tags = ["GeneralLedgerSourceCodeEndpoints"], summary = "Delete a single GeneralLedgerSourceCode", description = "Delete a single GeneralLedgerSourceCode", operationId = "generalLedgerSourceCode-delete")

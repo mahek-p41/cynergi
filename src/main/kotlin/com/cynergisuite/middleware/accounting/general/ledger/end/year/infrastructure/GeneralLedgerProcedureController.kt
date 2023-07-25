@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.end.year.infrastru
 
 import com.cynergisuite.middleware.accounting.general.ledger.end.year.EndYearProceduresDTO
 import com.cynergisuite.middleware.accounting.general.ledger.end.year.GeneralLedgerProcedureService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationException
@@ -22,7 +23,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.validation.Valid
 
-@Secured(SecurityRule.IS_AUTHENTICATED)
+@Secured(SecurityRule.IS_AUTHENTICATED, "GL")
+@AreaControl("GL")
 @Controller("/api/general-ledger/procedure")
 class GeneralLedgerProcedureController @Inject constructor(
    private val generalLedgerProcedureService: GeneralLedgerProcedureService,
@@ -30,6 +32,7 @@ class GeneralLedgerProcedureController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerProcedureController::class.java)
 
+   @Secured("GLYREND")
    @Post(uri = "end-year", processes = [MediaType.APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerProcedureEndpoints"], summary = "Close current GL year", description = "Close current GL year", operationId = "GeneralLedgerProcedure-endCurrentYear")

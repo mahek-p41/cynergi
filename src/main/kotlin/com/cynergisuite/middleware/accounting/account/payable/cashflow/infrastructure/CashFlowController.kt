@@ -4,6 +4,7 @@ import com.cynergisuite.domain.CashFlowFilterRequest
 import com.cynergisuite.middleware.accounting.account.payable.cashflow.AccountPayableCashFlowDTO
 import com.cynergisuite.middleware.accounting.account.payable.cashflow.AccountPayableCashFlowService
 import com.cynergisuite.middleware.accounting.account.payable.cashout.infrastructure.AccountPayableCashRequirementController
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory
 
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
+@AreaControl("AP")
 @Controller("/api/accounting/account-payable/cashflow")
 class CashFlowController @Inject constructor(
    private val accountPayableCashFlowService: AccountPayableCashFlowService,
@@ -33,6 +35,7 @@ class CashFlowController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableCashRequirementController::class.java)
 
+   @Secured("APFLOWANAL")
    @Get(uri = "{?filterRequest*}", produces = [MediaType.APPLICATION_JSON])
    @Operation(tags = ["AccountPayableCashFlowReportEndpoints"], summary = "Fetch an Account Payable Cash Flow Report", description = "Fetch an Account Payable Cash Flow Report", operationId = "accountPayableCashFlowReport-fetchReport")
    @ApiResponses(

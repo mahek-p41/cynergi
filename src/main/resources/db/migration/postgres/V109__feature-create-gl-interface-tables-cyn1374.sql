@@ -3,12 +3,13 @@ CREATE TABLE verify_staging
     id                                                   UUID        DEFAULT uuid_generate_v1()                  NOT NULL PRIMARY KEY,
     time_created                                         TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()                   NOT NULL,
     time_updated                                         TIMESTAMPTZ DEFAULT CLOCK_TIMESTAMP()                   NOT NULL,
-    company_id                                           UUID REFERENCES company (id)                            NOT NULL,
+    company_id                                           UUID        REFERENCES company (id)                     NOT NULL,
     store_number_sfk                                     INTEGER                                                 NOT NULL,
     business_date                                        DATE                                                    NOT NULL,
     verify_successful                                    BOOLEAN                                                 NOT NULL,
     error_amount                                         NUMERIC(13,2)                                           NOT NULL,
-    moved_to_pending_journal_entries                     BOOLEAN     DEFAULT FALSE                               NOT NULL
+    moved_to_pending_journal_entries                     BOOLEAN     DEFAULT FALSE                               NOT NULL,
+    deleted                                              BOOLEAN     DEFAULT FALSE                               NOT NULL
 );
 
 CREATE TRIGGER update_verify_staging_trg
@@ -56,7 +57,8 @@ CREATE TABLE deposits_staging
     store_number_sfk                                     INTEGER                                                        NOT NULL,
     business_date                                        DATE                                                           NOT NULL,
     deposit_type_id                                      INTEGER REFERENCES deposits_staging_deposit_type_domain (id)   NOT NULL,
-    deposit_amount                                       NUMERIC(13,2)                                                  NOT NULL
+    deposit_amount                                       NUMERIC(13,2)                                                  NOT NULL,
+    deleted                                              BOOLEAN     DEFAULT FALSE                                      NOT NULL
 );
 
 CREATE TRIGGER update_deposits_staging_trg

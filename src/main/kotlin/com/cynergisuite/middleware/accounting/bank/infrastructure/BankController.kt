@@ -94,6 +94,7 @@ class BankController @Inject constructor(
       return banks
    }
 
+   @Secured("MCFBANKADD")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["BankEndpoints"], summary = "Create a single bank", description = "Create a single bank.", operationId = "bank-create")
@@ -107,18 +108,20 @@ class BankController @Inject constructor(
    fun save(
       @Body @Valid
       dto: BankDTO,
-      authentication: Authentication
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
    ): BankDTO {
       logger.info("Requested Save Bank {}", dto)
 
       val user = userService.fetchUser(authentication)
-      val response = bankService.create(dto, user.myCompany())
+      val response = bankService.create(dto, user.myCompany(), httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Save Bank {} resulted in {}", dto, response)
 
       return response
    }
 
+   @Secured("MCFBANKCHG")
    @Put(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["BankEndpoints"], summary = "Create a single bank", description = "Create a single bank.", operationId = "bank-update")
@@ -134,18 +137,20 @@ class BankController @Inject constructor(
       @QueryValue("id") id: UUID,
       @Body @Valid
       dto: BankDTO,
-      authentication: Authentication
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
    ): BankDTO {
       logger.info("Requested Update Bank {}", dto)
 
       val user = userService.fetchUser(authentication)
-      val response = bankService.update(id, dto, user.myCompany())
+      val response = bankService.update(id, dto, user.myCompany(), httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested Update Bank {} resulted in {}", dto, response)
 
       return response
    }
 
+   @Secured("MCFBANKDEL")
    @Delete(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @AccessControl
    @Operation(tags = ["BankEndpoints"], summary = "Delete a bank", description = "Delete a single bank", operationId = "bank-delete")
@@ -166,6 +171,6 @@ class BankController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
 
-      return bankService.delete(id, user.myCompany())
+      return bankService.delete(id, user.myCompany(), httpRequest.findLocaleWithDefault())
    }
 }

@@ -42,6 +42,10 @@ class GeneralLedgerSummaryService @Inject constructor(
       }
    }
 
+   fun exists(company: CompanyEntity, accountId: UUID, profitCenterNumber: Int, overallPeriodId: Int): Boolean {
+      return generalLedgerSummaryRepository.exists(company, accountId, profitCenterNumber, overallPeriodId)
+   }
+
    fun create(dto: GeneralLedgerSummaryDTO, company: CompanyEntity): GeneralLedgerSummaryDTO {
       val toCreate = generalLedgerSummaryValidator.validateCreate(dto, company)
 
@@ -329,6 +333,7 @@ class GeneralLedgerSummaryService @Inject constructor(
    fun recalculateGLBalance(company: CompanyEntity) {
       generalLedgerSummaryRepository.resetGLBalance(company)
       generalLedgerSummaryRepository.recalculateGLBalance(company)
+      generalLedgerSummaryRepository.recalculateCapitalAccounts(company)
       generalLedgerSummaryRepository.setNetActivityPeriods(company)
    }
 

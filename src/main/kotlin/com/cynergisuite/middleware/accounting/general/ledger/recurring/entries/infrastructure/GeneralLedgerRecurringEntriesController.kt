@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedge
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.GeneralLedgerRecurringEntriesDTO
 import com.cynergisuite.middleware.accounting.general.ledger.recurring.entries.GeneralLedgerRecurringEntriesService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -37,7 +38,8 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 import javax.validation.Valid
 
-@Secured(IS_AUTHENTICATED)
+@Secured(IS_AUTHENTICATED, "GL")
+@AreaControl("GL")
 @Controller("/api/accounting/general-ledger/recurring/entries")
 class GeneralLedgerRecurringEntriesController @Inject constructor(
    private val generalLedgerDetailService: GeneralLedgerDetailService,
@@ -46,6 +48,7 @@ class GeneralLedgerRecurringEntriesController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerRecurringEntriesController::class.java)
 
+   @Secured("GLRECURLST")
    @Throws(NotFoundException::class)
    @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerRecurringEntriesEndpoints"], summary = "Fetch a single General Ledger Recurring Entry", description = "Fetch a single General Ledger Recurring Entry by its system generated primary key", operationId = "generalLedgerRecurringEntries-fetchOne")
@@ -73,6 +76,7 @@ class GeneralLedgerRecurringEntriesController @Inject constructor(
       return response
    }
 
+   @Secured("GLRECURSHO")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerRecurringEntriesEndpoints"], summary = "Fetch a listing of General Ledger Recurring Entries", description = "Fetch a paginated listing of General Ledger Recurring Entries", operationId = "generalLedgerRecurringEntries-fetchAll")
@@ -103,6 +107,7 @@ class GeneralLedgerRecurringEntriesController @Inject constructor(
       return page
    }
 
+   @Secured("GLRECURPRT")
    @Get(uri = "report{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerRecurringEntriesEndpoints"], summary = "Fetch a General Ledger Recurring Entries report", description = "Fetch a General Ledger Recurring Entries report", operationId = "generalLedgerRecurringEntries-fetchReport")
    @ApiResponses(
@@ -126,6 +131,7 @@ class GeneralLedgerRecurringEntriesController @Inject constructor(
       return generalLedgerRecurringEntriesService.fetchReport(user.myCompany(), filterRequest)
    }
 
+   @Secured("GLRECURADD")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerRecurringEntriesEndpoints"], summary = "Create a single General Ledger Recurring Entry", description = "Create a single GeneralLedgerRecurringEntries", operationId = "generalLedgerRecurringEntries-create")
@@ -154,6 +160,7 @@ class GeneralLedgerRecurringEntriesController @Inject constructor(
       return response
    }
 
+   @Secured("GLRECURCHG")
    @Put(value = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["GeneralLedgerRecurringEntriesEndpoints"], summary = "Update a single General Ledger Recurring Entry", description = "Update a single General Ledger Recurring Entry", operationId = "generalLedgerRecurringEntries-update")
@@ -185,6 +192,7 @@ class GeneralLedgerRecurringEntriesController @Inject constructor(
       return response
    }
 
+   @Secured("GLRECURDEL")
    @Delete(value = "/{id:[0-9a-fA-F\\-]+}")
    @Throws(NotFoundException::class)
    @Operation(tags = ["GeneralLedgerRecurringEntriesEndpoints"], summary = "Delete a single GeneralLedgerRecurringEntries", description = "Delete a single GeneralLedgerRecurringEntries", operationId = "generalLedgerRecurringEntries-delete")
@@ -208,6 +216,7 @@ class GeneralLedgerRecurringEntriesController @Inject constructor(
       return generalLedgerRecurringEntriesService.delete(id, user.myCompany())
    }
 
+   @Secured("GLRECURTRN")
    @Post(uri = "/transfer{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerRecurringEntriesEndpoints"], summary = "Use GL Recurring to post journal entries", description = "Fetch a list of General Ledger Recurring Entries to create General Ledger Detail records", operationId = "generalLedgerRecurringEntries-transfer")
    @ApiResponses(
@@ -232,6 +241,7 @@ class GeneralLedgerRecurringEntriesController @Inject constructor(
       generalLedgerDetailService.transfer(user, filterRequest, locale)
    }
 
+   @Secured("GLRECURTRN")
    @Post(uri = "/transfer/single", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerRecurringEntriesEndpoints"], summary = "Use GL Recurring to post a single journal entry", description = "Create General Ledger Detail records from a requested General Ledger Recurring Entry", operationId = "generalLedgerRecurringEntry-singletransfer")
    @ApiResponses(

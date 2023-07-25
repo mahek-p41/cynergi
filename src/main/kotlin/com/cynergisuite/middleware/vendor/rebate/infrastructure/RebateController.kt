@@ -70,6 +70,7 @@ class RebateController @Inject constructor(
       return response
    }
 
+   @Secured("MCFVENDREBATERPT")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["RebateEndpoints"], summary = "Fetch a listing of Rebates", description = "Fetch a paginated listing of Rebate", operationId = "rebate-fetchAll")
@@ -100,6 +101,7 @@ class RebateController @Inject constructor(
       return page
    }
 
+   @Secured("MCFVENDREBATEADD")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["RebateEndpoints"], summary = "Create a single Rebate", description = "Create a single Rebate", operationId = "rebate-create")
@@ -128,6 +130,7 @@ class RebateController @Inject constructor(
       return response
    }
 
+   @Secured("MCFVENDREBATECHG")
    @Put(value = "/{id}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["RebateEndpoints"], summary = "Update a single Rebate", description = "Update a single Rebate", operationId = "rebate-update")
@@ -183,6 +186,7 @@ class RebateController @Inject constructor(
       rebateService.assignVendorToRebate(rebateId, vendorDTO, user.myCompany())
    }
 
+   @Secured("MCFVENDREBATEDEL")
    @Delete(uri = "/{rebateId:[0-9a-fA-F\\-]+}/vendor/{vendorId:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @AccessControl
    @Operation(tags = ["RebateToVendorEndpoints"], summary = "Disassociate a vendor from rebate", description = "Disassociate a vendor from rebate", operationId = "rebate-disassociateVendor")

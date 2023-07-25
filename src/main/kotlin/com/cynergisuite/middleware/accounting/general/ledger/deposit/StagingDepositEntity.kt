@@ -1,0 +1,23 @@
+package com.cynergisuite.middleware.accounting.general.ledger.deposit
+
+import io.micronaut.core.annotation.Introspected
+import java.math.BigDecimal
+import java.time.LocalDate
+
+@Introspected
+data class StagingDepositEntity(
+   val verifySuccessful: Boolean,
+   val businessDate: LocalDate,
+   val movedToPendingJournalEntries: Boolean,
+   val store: Int,
+   val storeName: String,
+   val errorAmount: BigDecimal,
+   val deposit1Cash: BigDecimal,
+   val deposit2PmtForOtherStores: BigDecimal,
+   val deposit3PmtFromOtherStores: BigDecimal,
+   val deposit4CCInStr: BigDecimal,
+   val deposit5ACHOLP: BigDecimal,
+   val deposit6CCOLP: BigDecimal,
+   val deposit7DebitCard: BigDecimal,
+   val depositTotal: BigDecimal
+)

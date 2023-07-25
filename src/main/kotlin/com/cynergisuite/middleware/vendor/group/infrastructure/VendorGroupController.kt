@@ -69,6 +69,7 @@ class VendorGroupController @Inject constructor(
       return response
    }
 
+   @Secured("MCFVENDGROUPRPT")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Fetch a listing of VendorGroups", description = "Fetch a paginated listing of VendorGroups including associated schedule records", operationId = "vendorGroup-fetchAll")
@@ -98,6 +99,7 @@ class VendorGroupController @Inject constructor(
       return page
    }
 
+   @Secured("MCFVENDGROUPADD")
    @Post(processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Create a single VendorGroup", description = "Create a single VendorGroup. The logged in Employee is used for the scannedBy property", operationId = "vendorGroup-create")
@@ -126,6 +128,7 @@ class VendorGroupController @Inject constructor(
       return response
    }
 
+   @Secured("MCFVENDGROUPCHG")
    @Put(value = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Update a single VendorGroup", description = "Update a single VendorGroup where the update is the addition of a note", operationId = "vendorGroup-update")
@@ -156,6 +159,7 @@ class VendorGroupController @Inject constructor(
       return response
    }
 
+   @Secured("MCFVENDGROUPDEL")
    @Delete(uri = "/{id:[0-9a-fA-F\\-]+}", processes = [APPLICATION_JSON])
    @AccessControl
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Delete a vendor group", description = "Delete a single vendor group", operationId = "vendorGroup-delete")

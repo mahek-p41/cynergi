@@ -1,6 +1,9 @@
 package com.cynergisuite.middleware.accounting.general.ledger.end.year.infrastructure
 
+import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.update
+import com.cynergisuite.middleware.company.CompanyEntity
+import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.jdbi.v3.core.Jdbi
@@ -14,9 +17,34 @@ class GeneralLedgerProcedureRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerProcedureRepository::class.java)
 
+   @ReadOnly
+   fun findProfitCentersWithNetIncome(company: CompanyEntity): List<Int> {
+      return jdbc.queryFullList(
+         """
+            SELECT profit_center_id_sfk AS profit_center
+            FROM general_ledger_summary summary
+               JOIN account ON summary.account_id = account.id AND account.deleted = FALSE
+               JOIN account_type_domain type ON account.type_id = type.id
+            WHERE summary.company_id = :comp_id
+               AND type.value IN ('R', 'E')
+               AND summary.overall_period_id = 3
+            GROUP BY profit_center_id_sfk
+            HAVING COALESCE(SUM(closing_balance), 0) <> 0
+            ORDER BY profit_center
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id
+         )
+      ) { rs, _, elements ->
+         do {
+            elements.add(rs.getInt("profit_center"))
+         } while (rs.next())
+      }
+   }
+
    @Transactional
-   fun createBalanceForwardGLDetailsForAssetLiabilityCapitalAccounts(params: Map<String, Any>): Int {
-      logger.debug("Creating Balance Forward GL Details for Asset, Liability, and Capital Accounts {}", params)
+   fun createBalEntriesForAssetLiabilityCapitalAccounts(params: Map<String, Any>): Int {
+      logger.debug("Creating BAL entries for Asset, Liability, and Capital Accounts {}", params)
       val affectedRows = jdbc.update(
          """
          INSERT INTO general_ledger_detail(
@@ -38,7 +66,7 @@ class GeneralLedgerProcedureRepository @Inject constructor(
                     glSummary.closing_balance,
                     'Balance forward from the previous year',
                     :emp_number,
-                    (SELECT MAX(journal_entry_number) FROM general_ledger_detail WHERE company_id = :comp_id)
+                    :je_number
          FROM general_ledger_summary glSummary
                JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
                JOIN account acct ON glSummary.account_id = acct.id AND acct.deleted = FALSE
@@ -48,15 +76,16 @@ class GeneralLedgerProcedureRepository @Inject constructor(
              AND glSummary.company_id = :comp_id
              AND glSummary.closing_balance <> 0
              AND glSummary.account_id <> :retained_earnings_account
+         ORDER BY glSummary.id
          """.trimIndent(),
          params
       )
-      logger.info("Inserted general_ledger_detail rows {}", affectedRows)
+      logger.info("Inserted {} general_ledger_detail rows.", affectedRows)
       return affectedRows
    }
 
-   fun createBalanceForwardGLDetailsForRetainedEarningsAccountForCorporateProfitCenter(params: Map<String, Any>): Int {
-      logger.debug("Creating Balance Forward GL Detail for Retained Earnings Account for Corporate Profit Center {}", params)
+   fun createBalEntryForRetainedEarningsAccountForCorporateProfitCenter(params: Map<String, Any>): Int {
+      logger.debug("Creating BAL entries for Retained Earnings Account for Corporate Profit Center {}", params)
       val affectedRows = jdbc.update(
          """
          INSERT INTO general_ledger_detail(
@@ -75,7 +104,7 @@ class GeneralLedgerProcedureRepository @Inject constructor(
                     glSummary.profit_center_id_sfk,
                     :gl_date,
                     (SELECT id FROM general_ledger_source_codes WHERE company_id = :comp_id AND deleted = false AND value = 'BAL'),
-                    :corporate_net_income,
+                    glSummary.closing_balance + :corporate_net_income,
                     'Balance forward from the previous year',
                     :emp_number,
                     :je_number
@@ -85,18 +114,18 @@ class GeneralLedgerProcedureRepository @Inject constructor(
                JOIN account_type_domain accType ON accType.id = acct.type_id
          WHERE glSummary.overall_period_id = 3
              AND glSummary.company_id = :comp_id
-             AND glSummary.closing_balance <> 0
              AND glSummary.account_id = :retained_earnings_account
              AND glSummary.profit_center_id_sfk = :profit_center
+         ORDER BY glSummary.id
          """.trimIndent(),
          params
       )
-      logger.info("Inserted general_ledger_detail rows {}", affectedRows)
+      logger.info("Inserted {} general_ledger_detail rows.", affectedRows)
       return affectedRows
    }
 
-   fun createBalanceForwardGLDetailsForRetainedEarningsAccountForOtherProfitCenters(params: Map<String, Any>): Int {
-      logger.debug("Creating Balance Forward GL Details for Retained Earnings Account for other Profit Centers {}", params)
+   fun createBalEntriesForRetainedEarningsAccountForOtherProfitCenters(params: Map<String, Any>): Int {
+      logger.debug("Creating BAL entries for Retained Earnings Account for other Profit Centers {}", params)
       val affectedRows = jdbc.update(
          """
          INSERT INTO general_ledger_detail(
@@ -118,7 +147,7 @@ class GeneralLedgerProcedureRepository @Inject constructor(
                     glSummary.closing_balance,
                     'Balance forward from the previous year',
                     :emp_number,
-                    (SELECT MAX(journal_entry_number) FROM general_ledger_detail WHERE company_id = :comp_id) + ROW_NUMBER() OVER (ORDER BY glSummary.id)
+                    :je_number
          FROM general_ledger_summary glSummary
                JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
                JOIN account acct ON glSummary.account_id = acct.id AND acct.deleted = FALSE
@@ -132,12 +161,12 @@ class GeneralLedgerProcedureRepository @Inject constructor(
          """.trimIndent(),
          params
       )
-      logger.info("Inserted general_ledger_detail rows {}", affectedRows)
+      logger.info("Inserted {} general_ledger_detail rows.", affectedRows)
       return affectedRows
    }
 
-   fun createBalanceForwardGLDetailsForRetainedEarningsAccountForEachProfitCenter(params: Map<String, Any>): Int {
-      logger.debug("Creating Balance Forward GL Details for Retained Earnings Account for other Profit Centers {}", params)
+   fun createBalEntriesForRetainedEarningsAccountForEachProfitCenter(params: Map<String, Any>): Int {
+      logger.debug("Creating BAL entries for Retained Earnings Account for each Profit Center {}", params)
       val affectedRows = jdbc.update(
          """
          INSERT INTO general_ledger_detail(
@@ -156,10 +185,10 @@ class GeneralLedgerProcedureRepository @Inject constructor(
                     glSummary.profit_center_id_sfk,
                     :gl_date,
                     (SELECT id FROM general_ledger_source_codes WHERE company_id = :comp_id AND deleted = false AND value = 'BAL'),
-                    netIncomePerProfitCenter.net_income,
+                    glSummary.closing_balance + netIncomePerProfitCenter.net_income,
                     'Balance forward from the previous year',
                     :emp_number,
-                    (SELECT MAX(journal_entry_number) FROM general_ledger_detail WHERE company_id = :comp_id) + ROW_NUMBER() OVER (ORDER BY glSummary.id)
+                    :je_number
          FROM general_ledger_summary glSummary
                JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
                JOIN account acct ON glSummary.account_id = acct.id AND acct.deleted = FALSE
@@ -172,19 +201,17 @@ class GeneralLedgerProcedureRepository @Inject constructor(
                      WHERE summary.company_id = :comp_id
                         AND type.value IN ('R', 'E')
                         AND summary.overall_period_id = 3
-                        AND summary.account_id = :retained_earnings_account
                      GROUP BY profit_center_id_sfk
                      ORDER BY profit_center
                ) AS netIncomePerProfitCenter ON glSummary.profit_center_id_sfk = netIncomePerProfitCenter.profit_center
          WHERE glSummary.overall_period_id = 3
              AND glSummary.company_id = :comp_id
-             AND glSummary.closing_balance <> 0
              AND glSummary.account_id = :retained_earnings_account
          ORDER BY glSummary.id
          """.trimIndent(),
          params
       )
-      logger.info("Inserted general_ledger_detail rows {}", affectedRows)
+      logger.info("Inserted {} general_ledger_detail rows.", affectedRows)
       return affectedRows
    }
 

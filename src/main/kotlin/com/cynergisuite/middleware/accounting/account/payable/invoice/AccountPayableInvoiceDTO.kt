@@ -42,6 +42,9 @@ data class AccountPayableInvoiceDTO(
    @field:Schema(description = "Purchase order id", required = false)
    var purchaseOrder: SimpleIdentifiableDTO? = null,
 
+   @field:Schema(description = "Purchase Order Number", required = false)
+   var poNumber: Long? = null,
+
    @field:NotNull
    @field:Schema(description = "Invoice date")
    var invoiceDate: LocalDate? = null,
@@ -140,6 +143,7 @@ data class AccountPayableInvoiceDTO(
          vendor = VendorDTO(entity.vendor),
          invoice = entity.invoice,
          purchaseOrder = SimpleIdentifiableDTO(entity.purchaseOrder?.myId()),
+         poNumber = entity.poNumber,
          invoiceDate = entity.invoiceDate,
          invoiceAmount = entity.invoiceAmount,
          discountAmount = entity.discountAmount,
@@ -149,7 +153,7 @@ data class AccountPayableInvoiceDTO(
          entryDate = entity.entryDate,
          expenseDate = entity.expenseDate,
          discountDate = entity.discountDate,
-         employee = entity?.employee?.let { EmployeeValueObject(it) },
+         employee = entity.employee?.let { EmployeeValueObject(it) },
          originalInvoiceAmount = entity.originalInvoiceAmount,
          message = entity.message,
          selected = AccountPayableInvoiceSelectedTypeDTO(entity.selected),

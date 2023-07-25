@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.account.payable.payment.infrastru
 
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDetailDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDetailService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationException
@@ -31,6 +32,7 @@ import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("AP")
 @Controller("/api/accounting/account-payable/payment/detail")
 class AccountPayablePaymentDetailController @Inject constructor(
    private val apPaymentDetailService: AccountPayablePaymentDetailService,

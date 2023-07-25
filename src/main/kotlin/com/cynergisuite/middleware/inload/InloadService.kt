@@ -16,7 +16,9 @@ class InloadService @Inject constructor(
    @Named("inload")
    private val executorService: ExecutorService,
    private val inloadMEINVService: InloadMEINVService,
-   private val inloadSUMGLDETService: InloadSUMGLDETService
+   private val inloadSUMGLDETService: InloadSUMGLDETService,
+   private val inloadSUMGLINTVService: InloadSUMGLINTVService,
+   private val inloadSUMGLINTAService: InloadSUMGLINTAService,
 ) {
    private val logger: Logger = LoggerFactory.getLogger(InloadService::class.java)
 
@@ -32,49 +34,10 @@ class InloadService @Inject constructor(
 
                logger.debug("Searching for Inloader using {}", baseFileName)
 
-               if (inloadMEINVService.canProcess(path)) {
-                  logger.info("Processing {} with {}", path, inloadMEINVService)
-
-                  val lockedSuccessfully = path.tryLockForReader { reader ->
-                     inloadMEINVService.inload(reader)
-                  }
-
-                  if (lockedSuccessfully) {
-                     val target = path.resolveSibling("archive/${path.fileName}.PROCESSED")
-
-                     if (!Files.exists(target.parent)) {
-                        Files.createDirectories(target.parent)
-                     }
-
-                     logger.debug("Moving {} to {}", path, target)
-
-                     Files.move(path, target)
-                  } else {
-                     logger.warn("Unable to lock {}", path)
-                  }
-               }
-
-               if (inloadSUMGLDETService.canProcess(path)) {
-                  logger.info("Processing {} with {}", path, inloadSUMGLDETService)
-
-                  val lockedSuccessfully = path.tryLockForReader { reader ->
-                     inloadSUMGLDETService.inload(reader)
-                  }
-
-                  if (lockedSuccessfully) {
-                     val target = path.resolveSibling("archive/${path.fileName}.PROCESSED")
-
-                     if (!Files.exists(target.parent)) {
-                        Files.createDirectories(target.parent)
-                     }
-
-                     logger.debug("Moving {} to {}", path, target)
-
-                     Files.move(path, target)
-                  } else {
-                     logger.warn("Unable to lock {}", path)
-                  }
-               }
+               checkProcessable(inloadMEINVService, path)
+               checkProcessable(inloadSUMGLDETService, path)
+               checkProcessable(inloadSUMGLINTVService, path)
+               checkProcessable(inloadSUMGLINTAService, path)
             } else {
                logger.warn("{} did not exist", path)
             }
@@ -83,6 +46,30 @@ class InloadService @Inject constructor(
             logger.error("Error occurred during inloading of {}", path)
          }
 
+      }
+   }
+
+   private fun checkProcessable(inloadService: CsvInloaderBase, path: Path) {
+      if (inloadService.canProcess(path)) {
+         logger.info("Processing {} with {}", path, inloadService)
+
+         val lockedSuccessfully = path.tryLockForReader { reader ->
+            inloadService.inload(reader)
+         }
+
+         if (lockedSuccessfully) {
+            val target = path.resolveSibling("archive/${path.fileName}.PROCESSED")
+
+            if (!Files.exists(target.parent)) {
+               Files.createDirectories(target.parent)
+            }
+
+            logger.debug("Moving {} to {}", path, target)
+
+            Files.move(path, target)
+         } else {
+            logger.warn("Unable to lock {}", path)
+         }
       }
    }
 

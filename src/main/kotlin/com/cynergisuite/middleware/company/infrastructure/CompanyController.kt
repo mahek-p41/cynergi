@@ -92,6 +92,7 @@ class CompanyController @Inject constructor(
       return page
    }
 
+   @Secured("MCFCOMPADD")
    @Post(processes = [APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)
@@ -118,6 +119,7 @@ class CompanyController @Inject constructor(
       return response
    }
 
+   @Secured("MCFCOMPCHG")
    @Put(uri = "/{id}", processes = [APPLICATION_JSON])
    @AccessControl
    @Throws(ValidationException::class, NotFoundException::class)

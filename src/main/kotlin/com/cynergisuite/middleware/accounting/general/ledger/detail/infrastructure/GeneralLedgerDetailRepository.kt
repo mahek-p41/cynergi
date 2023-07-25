@@ -20,7 +20,6 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingJournalCountDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerDetailPurgeCountDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeEntity
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportSourceDetailDTO
@@ -449,7 +448,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
       val query = """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY glDetail_${page.snakeSortBy()} ${page.sortDirection()}
+            ORDER BY glDetail_profit_center_id_sfk, glDetail_date, glDetail_source_value
             LIMIT :limit OFFSET :offset
          """.trimIndent()
 
@@ -1040,7 +1039,7 @@ class GeneralLedgerDetailRepository @Inject constructor(
          """
          ${selectBaseQuery()}
          $whereClause
-         ORDER BY glDetail.date
+         ORDER BY glDetail_account_number ${filterRequest.sortDirection()}
       """.trimIndent(),
          params
       ) { rs, elements ->
@@ -1140,8 +1139,8 @@ class GeneralLedgerDetailRepository @Inject constructor(
 
    private fun buildFilterString(begin: Boolean, end: Boolean, beginningParam: String, endingParam: String): String {
       return if (begin && end) " BETWEEN :$beginningParam AND :$endingParam "
-      else if (begin) " > :$beginningParam "
-      else " < :$endingParam "
+      else if (begin) " >= :$beginningParam "
+      else " <= :$endingParam "
    }
 
 

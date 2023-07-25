@@ -167,6 +167,7 @@ object PurchaseOrder : AreaType(4, "PO", "Purchase Order", "purchase.order")
 object DarwillUpload : AreaType(5, "DARWILL", "Darwill Upload", "darwill.upload")
 object SignatureCapture : AreaType(6, "SIGNATURE_CAPTURE", "Online Signature Capture", "signature.capture")
 object WowUpload : AreaType(7, "WOW", "Wow Upload", "wow.upload")
+object MiniGL : AreaType(8, "MINIGL", "MINIGL", "minigl")
 
 @MappedEntity("area_type_domain")
 class AreaTypeEntity(
@@ -212,12 +213,14 @@ fun AreaType.toAreaEntity(company: CompanyEntity) =
       areaType = this.toAreaTypeEntity(),
       company = company
    )
+
 fun findAreaType(area: String): AreaType =
    when (area.uppercase().trim()) {
       "AP" -> AccountPayable
       "BR" -> BankReconciliation
       "GL" -> GeneralLedger
       "PO" -> PurchaseOrder
+      "MINIGL" -> MiniGL
       "DARWILL" -> DarwillUpload
       "SIGNATURE_CAPTURE" -> SignatureCapture
       else -> Unknown

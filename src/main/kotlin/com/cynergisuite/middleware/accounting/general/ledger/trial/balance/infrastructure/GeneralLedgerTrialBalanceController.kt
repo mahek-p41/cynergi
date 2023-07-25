@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.trial.balance.infr
 import com.cynergisuite.domain.GeneralLedgerTrialBalanceReportFilterRequest
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.GeneralLedgerTrialBalanceReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.GeneralLedgerTrialBalanceService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import io.micronaut.http.MediaType.APPLICATION_JSON
@@ -24,7 +25,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.validation.Valid
 
-@Secured(IS_AUTHENTICATED)
+@Secured(IS_AUTHENTICATED, "GLUTIL")
+@AreaControl("GL")
 @Controller("/api/general-ledger/trial-balance")
 class GeneralLedgerTrialBalanceController @Inject constructor(
    private val generalLedgerTrialBalanceService: GeneralLedgerTrialBalanceService,
@@ -32,6 +34,7 @@ class GeneralLedgerTrialBalanceController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerTrialBalanceController::class.java)
 
+   @Secured("GLTRIALBAL")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/report{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(

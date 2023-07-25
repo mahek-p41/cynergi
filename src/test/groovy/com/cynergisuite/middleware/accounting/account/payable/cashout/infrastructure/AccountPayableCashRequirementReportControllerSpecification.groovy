@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.cashout.infrastructure
 
 import com.cynergisuite.domain.CashRequirementFilterRequest
-import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
@@ -19,6 +18,7 @@ import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeTypeDataLoaderService
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
+import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
 import com.cynergisuite.middleware.vendor.VendorDTO
@@ -569,7 +569,7 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
       def statusTypeO = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
       def apInvoicesForVend1 = []
       for(int i = 0; i < 4; i++) {
-         apInvoicesForVend1.add(apInvoiceDataLoaderService.singleDTO(company, new VendorDTO(vendor1), new SimpleIdentifiableDTO(purchaseOrderIn1.myId()), new EmployeeValueObject(employeeIn),  new VendorDTO(payToIn), new SimpleLegacyIdentifiableDTO(store.myId())))
+         apInvoicesForVend1.add(apInvoiceDataLoaderService.singleDTO(company, new VendorDTO(vendor1), new PurchaseOrderDTO(purchaseOrderIn1), new EmployeeValueObject(employeeIn),  new VendorDTO(payToIn), new SimpleLegacyIdentifiableDTO(store.myId())))
       }
       def selected = AccountPayableInvoiceSelectedTypeDataLoader.random()
       def invoiceType = AccountPayableInvoiceTypeDataLoader.random()
@@ -584,7 +584,7 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
 
       def apInvoicesForVend2 = []
       for(int i = 0; i < 4; i++) {
-         apInvoicesForVend2.add(apInvoiceDataLoaderService.singleDTO(company, new VendorDTO(vendor2), new SimpleIdentifiableDTO(purchaseOrderIn2.myId()), new EmployeeValueObject(employeeIn),  new VendorDTO(payToIn), new SimpleLegacyIdentifiableDTO(store.myId())))
+         apInvoicesForVend2.add(apInvoiceDataLoaderService.singleDTO(company, new VendorDTO(vendor2), new PurchaseOrderDTO(purchaseOrderIn2), new EmployeeValueObject(employeeIn),  new VendorDTO(payToIn), new SimpleLegacyIdentifiableDTO(store.myId())))
       }
       def apInvoicesEntity2 = []
       apInvoicesForVend2.eachWithIndex { it, index ->
@@ -592,7 +592,7 @@ class AccountPayableCashRequirementReportControllerSpecification extends Control
          it.paidAmount = 100 - (index * 10)
          it.discountTaken = 50
          it.dueDate = LocalDate.now().minusWeeks(index)
-         apInvoicesEntity2.add(accountPayableInvoiceRepository.insert(new AccountPayableInvoiceEntity(it, vendor2, new SimpleIdentifiableEntity(purchaseOrderIn2), employeeIn, selected, invoiceType, statusTypeO, payToIn, new SimpleLegacyIdentifiableEntity(store.myId()) ), company))
+         apInvoicesEntity2.add(accountPayableInvoiceRepository.insert(new AccountPayableInvoiceEntity(it, vendor2, new SimpleIdentifiableEntity(purchaseOrderIn2),  employeeIn, selected, invoiceType, statusTypeO, payToIn, new SimpleLegacyIdentifiableEntity(store.myId()) ), company))
       }
 
       def account = accountTestDataLoaderService.single(company)

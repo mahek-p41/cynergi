@@ -3,12 +3,11 @@ package com.cynergisuite.middleware.accounting.account.payable.payment.infrastru
 import com.cynergisuite.domain.AccountPayableListPaymentsFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PaymentReportFilterRequest
-import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentService
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -42,6 +41,7 @@ import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("AP")
 @Controller("/api/accounting/account-payable/payment")
 class AccountPayablePaymentController @Inject constructor(
    private val accountPayablePaymentService: AccountPayablePaymentService,
@@ -76,6 +76,7 @@ class AccountPayablePaymentController @Inject constructor(
       return response
    }
 
+   @Secured("APCHKRPT")
    @Get(uri = "{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayablePaymentEndpoints"], summary = "Fetch a Account Payable Payments Report", description = "Fetch a Account Payable Payments Report", operationId = "accountPayablePayment-fetchReport")
    @ApiResponses(
@@ -99,6 +100,7 @@ class AccountPayablePaymentController @Inject constructor(
       return accountPayablePaymentService.fetchReport(user.myCompany(), filterRequest)
    }
 
+   @Secured("APCHKLST")
    @Throws(PageOutOfBoundsException::class)
    @Operation(tags = ["AccountPayablePaymentEndpoints"], summary = "Fetch a Listing of Account Payable Payments", description = "Fetch a listing of account payable payments", operationId = "accountPayablePayment-fetchPaymentsListing")
    @ApiResponses(
@@ -185,6 +187,7 @@ class AccountPayablePaymentController @Inject constructor(
       return response
    }
 
+   @Secured("APDEL")
    @Delete(value = "/{id}")
    @Throws(NotFoundException::class)
    @Operation(tags = ["AccountPayablePaymentEndpoints"], summary = "Delete a single AccountPayablePayment", description = "Delete a single Account Payable Payment", operationId = "accountPayablePayment-delete")

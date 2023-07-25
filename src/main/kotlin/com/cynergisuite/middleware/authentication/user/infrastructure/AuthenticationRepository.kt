@@ -30,6 +30,7 @@ abstract class AuthenticationRepository @Inject constructor(
    private val companyRepository: CompanyRepository,
    private val employeeRepository: EmployeeRepository,
    private val locationRepository: LocationRepository,
+   private val securityGroupRepository: SecurityGroupRepository,
    private val jdbi: Jdbi,
 ) : CrudRepository<AuthenticatedEmployee, Long> {
    private val logger: Logger = LoggerFactory.getLogger(AuthenticationRepository::class.java)
@@ -40,7 +41,6 @@ abstract class AuthenticationRepository @Inject constructor(
          au.id                          AS id,
          au.type                        AS type,
          au.number                      AS number,
-         au.cynergi_system_admin        AS cynergi_system_admin,
          au.pass_code                   AS pass_code,
          au.alternative_store_indicator AS alternative_store_indicator,
          au.alternative_area            AS alternative_area,
@@ -140,14 +140,47 @@ abstract class AuthenticationRepository @Inject constructor(
          compAddr.fax                   AS chosen_location_company_address_fax,
          fallbackLoc.id                 AS fallback_location_id,
          fallbackLoc.number             AS fallback_location_number,
-         fallbackLoc.name               AS fallback_location_name
+         fallbackLoc.name               AS fallback_location_name,
+         secgrp.id                      AS security_groups_id,
+         secgrp.value                   AS security_groups_value,
+         secgrp.description             AS security_groups_description,
+         sapd.id                        AS security_groups_types_id,
+         sapd.value                     AS security_groups_types_value,
+         sapd.description               AS security_groups_types_description,
+         sapd.localization_code         AS security_groups_types_localization_code,
+         sapd.area_id                   AS security_groups_types_area_id,
+         comp.id                        AS security_groups_company_id,
+         comp.name                      AS security_groups_company_name,
+         comp.doing_business_as         AS security_groups_company_doing_business_as,
+         comp.client_code               AS security_groups_company_client_code,
+         comp.client_id                 AS security_groups_company_client_id,
+         comp.dataset_code              AS security_groups_company_dataset_code,
+         comp.federal_id_number         AS security_groups_company_federal_id_number,
+         compAddr.id                    AS security_groups_company_address_id,
+         compAddr.number                AS security_groups_company_address_number,
+         compAddr.name                  AS security_groups_company_address_name,
+         compAddr.address1              AS security_groups_company_address_address1,
+         compAddr.address2              AS security_groups_company_address_address2,
+         compAddr.city                  AS security_groups_company_address_city,
+         compAddr.state                 AS security_groups_company_address_state,
+         compAddr.postal_code           AS security_groups_company_address_postal_code,
+         compAddr.latitude              AS security_groups_company_address_latitude,
+         compAddr.longitude             AS security_groups_company_address_longitude,
+         compAddr.country               AS security_groups_company_address_country,
+         compAddr.county                AS security_groups_company_address_county,
+         compAddr.phone                 AS security_groups_company_address_phone,
+         compAddr.fax                   AS security_groups_company_address_fax
       FROM authenticated_user_vw au
            JOIN company comp ON comp.id = au.company_id AND comp.deleted = FALSE
            LEFT JOIN address compAddr on comp.address_id = compAddr.id AND compAddr.deleted = FALSE
            LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND au.department = dept.code
            LEFT OUTER JOIN system_stores_fimvw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND au.store_number = assignedLoc.number
            LEFT OUTER JOIN system_stores_fimvw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number  = :storeNumber
-           JOIN system_stores_fimvw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM system_employees_fimvw WHERE comp_dataset_code = comp.dataset_code)
+           JOIN system_stores_fimvw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
+           LEFT OUTER JOIN employee_to_security_group empsecgrp on empsecgrp.employee_id_sfk = au.id
+           LEFT OUTER JOIN security_group secgrp on secgrp.id = empsecgrp.security_group_id and secgrp.deleted = FALSE
+           LEFT JOIN security_group_to_security_access_point sgsap ON sgsap.security_group_id = secgrp.id
+		     LEFT JOIN security_access_point_type_domain sapd ON sgsap.security_access_point_id = sapd.id
       WHERE comp.dataset_code = :dataset
             AND au.number = :employeeNumber
             AND au.pass_code = convert_passcode(au.type, :passCode, au.pass_code)
@@ -169,6 +202,9 @@ abstract class AuthenticationRepository @Inject constructor(
       Join("fallbackLocation"),
       Join("fallbackLocation.company"),
       Join("fallbackLocation.company.address"),
+      Join("securityGroups"),
+      Join("securityGroups.types"),
+      Join("securityGroups.company")
    )
    abstract fun findUserByAuthenticationWithStore(employeeNumber: Int, passCode: String, dataset: String, storeNumber: Int): AuthenticatedEmployee?
 
@@ -178,7 +214,6 @@ abstract class AuthenticationRepository @Inject constructor(
          au.id                          AS id,
          au.type                        AS type,
          au.number                      AS number,
-         au.cynergi_system_admin        AS cynergi_system_admin,
          au.pass_code                   AS pass_code,
          au.alternative_store_indicator AS alternative_store_indicator,
          au.alternative_area            AS alternative_area,
@@ -299,14 +334,47 @@ abstract class AuthenticationRepository @Inject constructor(
          compAddr.country               AS fallback_location_company_address_country,
          compAddr.county                AS fallback_location_company_address_county,
          compAddr.phone                 AS fallback_location_company_address_phone,
-         compAddr.fax                   AS fallback_location_company_address_fax
+         compAddr.fax                   AS fallback_location_company_address_fax,
+         secgrp.id                      AS security_groups_id,
+         secgrp.value                   AS security_groups_value,
+         secgrp.description             AS security_groups_description,
+         sapd.id                        AS security_groups_types_id,
+         sapd.value                     AS security_groups_types_value,
+         sapd.description               AS security_groups_types_description,
+         sapd.localization_code         AS security_groups_types_localization_code,
+         sapd.area_id                   AS security_groups_types_area_id,
+         comp.id                        AS security_groups_company_id,
+         comp.name                      AS security_groups_company_name,
+         comp.doing_business_as         AS security_groups_company_doing_business_as,
+         comp.client_code               AS security_groups_company_client_code,
+         comp.client_id                 AS security_groups_company_client_id,
+         comp.dataset_code              AS security_groups_company_dataset_code,
+         comp.federal_id_number         AS security_groups_company_federal_id_number,
+         compAddr.id                    AS security_groups_company_address_id,
+         compAddr.number                AS security_groups_company_address_number,
+         compAddr.name                  AS security_groups_company_address_name,
+         compAddr.address1              AS security_groups_company_address_address1,
+         compAddr.address2              AS security_groups_company_address_address2,
+         compAddr.city                  AS security_groups_company_address_city,
+         compAddr.state                 AS security_groups_company_address_state,
+         compAddr.postal_code           AS security_groups_company_address_postal_code,
+         compAddr.latitude              AS security_groups_company_address_latitude,
+         compAddr.longitude             AS security_groups_company_address_longitude,
+         compAddr.country               AS security_groups_company_address_country,
+         compAddr.county                AS security_groups_company_address_county,
+         compAddr.phone                 AS security_groups_company_address_phone,
+         compAddr.fax                   AS security_groups_company_address_fax
       FROM authenticated_user_vw au
            JOIN company comp ON comp.id = au.company_id AND comp.deleted = FALSE
            LEFT JOIN address compAddr on comp.address_id = compAddr.id AND compAddr.deleted = FALSE
            LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND au.department = dept.code
            LEFT OUTER JOIN system_stores_fimvw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND au.store_number = assignedLoc.number
            LEFT OUTER JOIN system_stores_fimvw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number IS NULL
-           JOIN system_stores_fimvw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM system_employees_fimvw WHERE comp_dataset_code = comp.dataset_code)
+           JOIN system_stores_fimvw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
+           LEFT OUTER JOIN employee_to_security_group empsecgrp on empsecgrp.employee_id_sfk = au.id
+           LEFT OUTER JOIN security_group secgrp on secgrp.id = empsecgrp.security_group_id and secgrp.deleted = FALSE
+           LEFT JOIN security_group_to_security_access_point sgsap ON sgsap.security_group_id = secgrp.id
+		     LEFT JOIN security_access_point_type_domain sapd ON sgsap.security_access_point_id = sapd.id
       WHERE comp.dataset_code = :dataset
             AND au.number = :employeeNumber
             AND au.pass_code = convert_passcode(au.type, :passCode, au.pass_code)
@@ -328,6 +396,9 @@ abstract class AuthenticationRepository @Inject constructor(
       Join("fallbackLocation"),
       Join("fallbackLocation.company"),
       Join("fallbackLocation.company.address"),
+      Join("securityGroups"),
+      Join("securityGroups.types"),
+      Join("securityGroups.company")
    )
    abstract fun findUserByAuthentication(employeeNumber: Int, passCode: String, dataset: String): AuthenticatedEmployee?
 
@@ -337,6 +408,7 @@ abstract class AuthenticationRepository @Inject constructor(
       val company = companyRepository.findOne(companyId) ?: throw Exception("Unable to find company")
       val employee = employeeRepository.findOne(employeeId, employeeType, company) ?: throw Exception("Unable to find employee")
       val location = locationRepository.findOne(storeNumber, company) ?: throw Exception("Unable to find store from authentication")
+      val securityGroups = securityGroupRepository.findAll(employeeId)
       val department = employee.department
 
       return AuthenticatedEmployee(
@@ -348,10 +420,11 @@ abstract class AuthenticationRepository @Inject constructor(
          assignedLocation = location,
          alternativeStoreIndicator = employee.alternativeStoreIndicator,
          alternativeArea = employee.alternativeArea,
-         cynergiSystemAdmin = employee.cynergiSystemAdmin,
+      //   cynergiSystemAdmin = employee.cynergiSystemAdmin,
          chosenLocation = location,
          fallbackLocation = location,
-         passCode = employee.passCode
+         passCode = employee.passCode,
+         securityGroups = securityGroups
       )
    }
 

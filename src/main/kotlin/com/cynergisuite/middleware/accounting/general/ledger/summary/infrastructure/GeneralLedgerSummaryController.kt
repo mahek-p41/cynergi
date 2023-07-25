@@ -8,6 +8,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedg
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryService
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.GeneralLedgerProfitCenterTrialBalanceReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.trial.balance.TrialBalanceWorksheetReportTemplate
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -39,7 +40,8 @@ import java.io.ByteArrayInputStream
 import java.util.UUID
 import javax.validation.Valid
 
-@Secured(IS_AUTHENTICATED)
+@Secured(IS_AUTHENTICATED, "GLSUM")
+@AreaControl("GL")
 @Controller("/api/general-ledger/summary")
 class GeneralLedgerSummaryController @Inject constructor(
    private val generalLedgerSummaryService: GeneralLedgerSummaryService,
@@ -155,6 +157,7 @@ class GeneralLedgerSummaryController @Inject constructor(
       return response
    }
 
+   @Secured("GLTRIALBAL")
    @Get(uri = "/profit-center-trial-balance-report{?profitCenterTrialBalanceReportFilterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerSummaryEndpoints"], summary = "Fetch a General Ledger Profit Center Trial Balance Report", description = "Fetch a General Ledger Profit Center Trial Balance Report", operationId = "generalLedgerSummary-fetchProfitCenterTrialBalanceReport")
    @ApiResponses(
@@ -178,6 +181,7 @@ class GeneralLedgerSummaryController @Inject constructor(
       return generalLedgerSummaryService.fetchProfitCenterTrialBalanceReportRecords(user.myCompany(), profitCenterTrialBalanceReportFilterRequest)
    }
 
+   @Secured("GLPFTBAL")
    @Throws(NotFoundException::class)
    @Get(uri = "/profit-center-trial-balance-report-export{?profitCenterTrialBalanceReportFilterRequest*}")
    @Operation(
@@ -208,6 +212,7 @@ class GeneralLedgerSummaryController @Inject constructor(
       return StreamedFile(ByteArrayInputStream(byteArray), ALL_TYPE).attach("GL Profit Center Trial Balance Report Export.csv")
    }
 
+   @Secured("GLACCTBAL")
    @Throws(NotFoundException::class)
    @Post(uri = "/recalculate-gl-balance")
    @Operation(

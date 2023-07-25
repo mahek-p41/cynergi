@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure
 
-import com.cynergisuite.domain.GeneralLedgerJournalFilterRequest
 import com.cynergisuite.domain.GeneralLedgerSearchReportFilterRequest
 import com.cynergisuite.domain.GeneralLedgerSourceReportFilterRequest
 import com.cynergisuite.domain.Page
@@ -8,7 +7,6 @@ import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerAccountPostingResponseDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerDetailPurgeCountDTO
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingJournalCountDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSearchReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailDTO
@@ -18,6 +16,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedge
 import com.cynergisuite.middleware.accounting.general.ledger.detail.GeneralLedgerDetailService
 import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerNetChangeDTO
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
+import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NoContentException
 import com.cynergisuite.middleware.error.NotFoundException
@@ -49,6 +48,7 @@ import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
+@AreaControl("GL")
 @Controller("/api/general-ledger/detail")
 class GeneralLedgerDetailController @Inject constructor(
    private val generalLedgerDetailService: GeneralLedgerDetailService,
@@ -164,6 +164,7 @@ class GeneralLedgerDetailController @Inject constructor(
       return response
    }
 
+   @Secured("GLSRCH")
    @Get(uri = "/search-report{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerDetailEndpoints"], summary = "Fetch a General Ledger Search Report", description = "Fetch a General Ledger Search Report", operationId = "generalLedgerJournal-fetchReport")
    @ApiResponses(
@@ -187,6 +188,7 @@ class GeneralLedgerDetailController @Inject constructor(
       return generalLedgerDetailService.fetchReport(user.myCompany(), filterRequest)
    }
 
+   @Secured("GLRPTTRAN")
    @Get(uri = "/source-report{?sourceReportFilterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a General Ledger Source Report", description = "Fetch a General Ledger Source Report", operationId = "generalLedgerJournal-fetchSourceReport")
    @ApiResponses(
