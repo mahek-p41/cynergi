@@ -41,7 +41,7 @@ class StagingDepositService @Inject constructor(
 
    fun postByDate(company: CompanyEntity, dto: List<StagingDepositDTO>){
       val stagingIds = dto.map { it.id }
-      val accountEntryEntity = stagingDepositRepository.findByVerifyId(company, stagingIds)
+      val accountEntryEntity = stagingDepositRepository.findByStagingIds(company, stagingIds)
       if (accountEntryEntity.isNotEmpty()) {
          accountEntryEntity.map {
             val account = accountRepository.findOne(it.accountId, company)
@@ -64,7 +64,7 @@ class StagingDepositService @Inject constructor(
 
    fun postByMonth(company: CompanyEntity, dto: List<StagingDepositDTO>, lastDayOfMonth: LocalDate){
       val stagingIds = dto.map { it.id }
-      val accountEntryEntity = stagingDepositRepository.findByVerifyId(company, stagingIds)
+      val accountEntryEntity = stagingDepositRepository.findByStagingIds(company, stagingIds)
       if (accountEntryEntity.isNotEmpty()) {
          val account = accountRepository.findOne(accountEntryEntity[0].accountId, company)
          val store = storeRepository.findOne(accountEntryEntity[0].profitCenterNumber, company)
