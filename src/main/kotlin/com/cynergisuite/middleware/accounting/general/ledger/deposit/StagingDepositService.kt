@@ -6,7 +6,6 @@ import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepo
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalService
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
-import com.cynergisuite.middleware.accounting.general.ledger.deposit.infrastructure.AccountingEntriesStagingRepository
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.infrastructure.StagingDepositRepository
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -22,7 +21,6 @@ import java.util.UUID
 @Singleton
 class StagingDepositService @Inject constructor(
    private val stagingDepositRepository: StagingDepositRepository,
-   private val accountingEntriesStagingRepository: AccountingEntriesStagingRepository,
    private val accountRepository: AccountRepository,
    private val storeRepository: StoreRepository,
    private val sourceCodeRepository: GeneralLedgerSourceCodeRepository,
@@ -43,11 +41,11 @@ class StagingDepositService @Inject constructor(
 
    fun postByDate(company: CompanyEntity, dto: List<StagingDepositDTO>){
       val stagingIds = dto.map { it.id }
-      val accountEntryEntity = accountingEntriesStagingRepository.findByVerifyId(company, stagingIds)
+      val accountEntryEntity = stagingDepositRepository.findByVerifyId(company, stagingIds)
       if (accountEntryEntity.isNotEmpty()) {
          accountEntryEntity.map {
             val account = accountRepository.findOne(it.accountId, company)
-            val store = storeRepository.findOne(it.profitCenter, company)
+            val store = storeRepository.findOne(it.profitCenterNumber, company)
             val source = sourceCodeRepository.findOne(it.sourceId, company)
             val glJournal = GeneralLedgerJournalDTO(
                id = null,
@@ -55,7 +53,7 @@ class StagingDepositService @Inject constructor(
                profitCenter = StoreDTO(store!!),
                date = it.date,
                source = GeneralLedgerSourceCodeDTO(source!!),
-               amount = it.amount,
+               amount = it.credit + it.debit,
                message = it.message
             )
             generalLedgerJournalService.create(glJournal, company)
@@ -66,10 +64,10 @@ class StagingDepositService @Inject constructor(
 
    fun postByMonth(company: CompanyEntity, dto: List<StagingDepositDTO>, lastDayOfMonth: LocalDate){
       val stagingIds = dto.map { it.id }
-      val accountEntryEntity = accountingEntriesStagingRepository.findByVerifyId(company, stagingIds)
+      val accountEntryEntity = stagingDepositRepository.findByVerifyId(company, stagingIds)
       if (accountEntryEntity.isNotEmpty()) {
          val account = accountRepository.findOne(accountEntryEntity[0].accountId, company)
-         val store = storeRepository.findOne(accountEntryEntity[0].profitCenter, company)
+         val store = storeRepository.findOne(accountEntryEntity[0].profitCenterNumber, company)
          val source = sourceCodeRepository.findOne(accountEntryEntity[0].sourceId, company)
          val glJournal = GeneralLedgerJournalDTO(
             id = null,
@@ -77,7 +75,7 @@ class StagingDepositService @Inject constructor(
             profitCenter = StoreDTO(store!!),
             date = lastDayOfMonth,
             source = GeneralLedgerSourceCodeDTO(source!!),
-            amount = accountEntryEntity.fold(BigDecimal.ZERO) { acc, item -> acc + item.amount},
+            amount = accountEntryEntity.fold(BigDecimal.ZERO) { acc, item -> acc + item.credit + item.debit},
             message = accountEntryEntity[0].message
          )
          generalLedgerJournalService.create(glJournal, company)

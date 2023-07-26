@@ -4,8 +4,8 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryFullList
-import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.AccountingDetailDTO
 import com.cynergisuite.extensions.update
@@ -156,6 +156,33 @@ class StagingDepositRepository @Inject constructor(
       }
    }
 
+   fun findByVerifyId(company: CompanyEntity, stagingIds: List<UUID?>): List<AccountingDetailDTO> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "verifyId" to stagingIds)
+
+      return jdbc.query(
+         """
+            SELECT
+                aes.id,
+                aes.company_id,
+                aes.verify_id,
+                aes.store_number_sfk,
+                aes.business_date,
+                aes.account_id,
+                aes.profit_center_id_sfk,
+                aes.source_id,
+                aes.journal_entry_amount,
+                aes.message
+            FROM
+                accounting_entries_staging aes
+                JOIN verify_staging vs on aes.verify_id = vs.id
+            WHERE vs.id IN (<verifyId>) AND vs.moved_to_pending_journal_entries = FALSE AND vs.verify_successful = TRUE
+         """.trimIndent(),
+         params
+      ){ rs, _ ->
+         mapAccountingDetail(rs)
+      }
+   }
+
    private fun mapAccountingDetail(rs: ResultSet): AccountingDetailDTO {
       return AccountingDetailDTO(
          verifyId = rs.getUuid("verify_id"),
@@ -167,6 +194,7 @@ class StagingDepositRepository @Inject constructor(
          debit = rs.getBigDecimal("debit"),
          credit = rs.getBigDecimal("credit"),
          message = rs.getString("message"),
+         date = rs.getLocalDate("business_date")
       )
    }
 
