@@ -55,9 +55,12 @@ class VendorPaymentTermService @Inject constructor(
    fun update(id: UUID, dto: VendorPaymentTermDTO, company: CompanyEntity): VendorPaymentTermDTO {
       val toUpdate = vendorPaymentTermValidator.validateUpdate(id, dto, company)
 
+      val startingVendorPaymentTerm = vendorPaymentTermRepository.findOne(dto.id!!, company)
+      val startingDescription = startingVendorPaymentTerm!!.description
+
       val vendorPaymentTermEntity = vendorPaymentTermRepository.update(entity = toUpdate)
       if (processUpdateIsamVendterm) {
-         vendtermToISAM("U", vendorPaymentTermEntity, company)
+         vendtermToISAM("U", vendorPaymentTermEntity, company, startingDescription)
       }
       return VendorPaymentTermDTO(
          vendorPaymentTermEntity
@@ -72,7 +75,7 @@ class VendorPaymentTermService @Inject constructor(
       }
    }
 
-   fun vendtermToISAM(task: String, vendterm: VendorPaymentTermEntity, company: CompanyEntity) {
+   fun vendtermToISAM(task: String, vendterm: VendorPaymentTermEntity, company: CompanyEntity, beginningDescription: String? = null) {
       var fileWriter: FileWriter? = null
       var csvPrinter: CSVPrinter? = null
       var discountMonth: String
@@ -157,6 +160,7 @@ class VendorPaymentTermService @Inject constructor(
          fileWriter = FileWriter(fileName)
          csvPrinter = CSVPrinter(fileWriter, CSVFormat.DEFAULT.withDelimiter('|').withHeader(
             "action",
+            "beginning_description",
             "description",
             "discount_month",
             "discount_days",
@@ -189,6 +193,7 @@ class VendorPaymentTermService @Inject constructor(
 
          var data = listOf(
             "action",
+            "beginning_description",
             "description",
             "discount_month",
             "discount_days",
@@ -221,6 +226,7 @@ class VendorPaymentTermService @Inject constructor(
 
          data = listOf(
             task,
+            beginningDescription ?: " ",
             vendterm.description,
             discountMonth,
             vendterm.discountDays.toString(),
