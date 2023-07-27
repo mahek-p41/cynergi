@@ -73,7 +73,7 @@ class ShipViaService @Inject constructor(
       )
    }
 
-   fun shipViaToISAM(task: String, shipVia: ShipViaEntity, company: CompanyEntity, beginningDescription: String? = null) {
+   fun shipViaToISAM(task: String, shipVia: ShipViaEntity, company: CompanyEntity, beginningDescription: String? = " ") {
       var fileWriter: FileWriter? = null
       var csvPrinter: CSVPrinter? = null
 
@@ -89,7 +89,7 @@ class ShipViaService @Inject constructor(
 
          data = listOf(
             task,
-            beginningDescription ?: " ",
+            beginningDescription!!,
             shipVia.description,
             "1")
          csvPrinter.printRecord(data)

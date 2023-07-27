@@ -75,7 +75,7 @@ class VendorPaymentTermService @Inject constructor(
       }
    }
 
-   fun vendtermToISAM(task: String, vendterm: VendorPaymentTermEntity, company: CompanyEntity, beginningDescription: String? = null) {
+   fun vendtermToISAM(task: String, vendterm: VendorPaymentTermEntity, company: CompanyEntity, beginningDescription: String? = " ") {
       var fileWriter: FileWriter? = null
       var csvPrinter: CSVPrinter? = null
       var discountMonth: String
@@ -226,7 +226,7 @@ class VendorPaymentTermService @Inject constructor(
 
          data = listOf(
             task,
-            beginningDescription ?: " ",
+            beginningDescription!!,
             vendterm.description,
             discountMonth,
             vendterm.discountDays.toString(),
