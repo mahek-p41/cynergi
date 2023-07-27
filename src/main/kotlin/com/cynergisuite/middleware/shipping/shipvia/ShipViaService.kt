@@ -60,18 +60,20 @@ class ShipViaService @Inject constructor(
 
    fun update(dto: ShipViaDTO, company: CompanyEntity): ShipViaDTO {
       val id = dto.id ?: throw NotFoundException(dto.id?.toString() ?: "") // FIXME need to better handle getting ID.  Should alter the UI to pass id as a path param
+      val startingShipVia = shipViaRepository.findOne(dto.id!!, company)
+      val startingDescription = startingShipVia!!.description
       val toUpdate = shipViaValidator.validateUpdate(id, dto, company)
 
       val updatedShipVia = shipViaRepository.update(entity = toUpdate)
       if (processUpdateIsamShipVia) {
-         shipViaToISAM("U", updatedShipVia, company)
+         shipViaToISAM("U", updatedShipVia, company, startingDescription)
       }
       return ShipViaDTO(
          updatedShipVia
       )
    }
 
-   fun shipViaToISAM(task: String, shipVia: ShipViaEntity, company: CompanyEntity) {
+   fun shipViaToISAM(task: String, shipVia: ShipViaEntity, company: CompanyEntity, beginningDescription: String? = " ") {
       var fileWriter: FileWriter? = null
       var csvPrinter: CSVPrinter? = null
 
@@ -81,12 +83,13 @@ class ShipViaService @Inject constructor(
 
       try {
          fileWriter = FileWriter(fileName)
-         csvPrinter = CSVPrinter(fileWriter, CSVFormat.DEFAULT.withDelimiter('|').withHeader("action", "description", "dummy_field"))
+         csvPrinter = CSVPrinter(fileWriter, CSVFormat.DEFAULT.withDelimiter('|').withHeader("action", "beginning_description", "description", "dummy_field"))
 
-         var data = listOf("action", "description", "dummy_field")
+         var data = listOf("action", "beginning_description", "description", "dummy_field")
 
          data = listOf(
             task,
+            beginningDescription!!,
             shipVia.description,
             "1")
          csvPrinter.printRecord(data)
