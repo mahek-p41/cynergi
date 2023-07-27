@@ -207,11 +207,11 @@ class StagingDepositController @Inject constructor(
       httpRequest: HttpRequest<*>
    ){
       logger.info("Fetching staging deposits {}", pageRequest)
-      var date = LocalDate.parse(lastDayOfMonth, DateTimeFormatter.ISO_LOCAL_DATE)
+      val date = LocalDate.parse(lastDayOfMonth, DateTimeFormatter.ISO_LOCAL_DATE)
       val user = userService.fetchUser(authentication)
       val page = stagingDepositService.fetchAll(user.myCompany(), pageRequest)
       if(page.elements.isNotEmpty()) {
-         stagingDepositService.postByMonth(user.myCompany(), page.elements, date!!)
+         stagingDepositService.postByMonth(user.myCompany(), page.elements, date)
       } else throw NotFoundException("No elements found to post to GL")
    }
 }
