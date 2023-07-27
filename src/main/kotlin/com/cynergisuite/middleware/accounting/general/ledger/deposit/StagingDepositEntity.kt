@@ -7,7 +7,7 @@ import java.util.UUID
 
 @Introspected
 data class StagingDepositEntity(
-   val id: UUID? = null,
+   val id: UUID,
    val verifySuccessful: Boolean,
    val businessDate: LocalDate,
    val movedToPendingJournalEntries: Boolean,

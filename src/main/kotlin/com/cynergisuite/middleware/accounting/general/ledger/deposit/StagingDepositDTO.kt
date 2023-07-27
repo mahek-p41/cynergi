@@ -12,7 +12,7 @@ import java.util.UUID
 @JsonInclude(NON_NULL)
 @Schema(name = "StagingDeposit", title = "Staging Deposit DTO", description = "Staging Deposit DTO")
 data class StagingDepositDTO(
-   var id: UUID? = null,
+   var id: UUID,
    var verifySuccessful: Boolean? = null,
    var businessDate: LocalDate? = null,
    var movedToPendingJournalEntries: Boolean? = null,
