@@ -41,9 +41,10 @@ class StagingDepositService @Inject constructor(
 
    fun postByDate(company: CompanyEntity, dto: List<StagingDepositDTO>){
       val stagingIds = dto.map { it.id }
-      val accountEntryEntity = stagingDepositRepository.findByStagingIds(company, stagingIds)
-      if (accountEntryEntity.isNotEmpty()) {
-         accountEntryEntity.map {
+      val accountEntryList = stagingDepositRepository.findByStagingIds(company, stagingIds)
+      //create glJournal for each accountEntry
+      if (accountEntryList.isNotEmpty()) {
+         accountEntryList.map {
             val account = accountRepository.findOne(it.accountId, company)
             val store = storeRepository.findOne(it.profitCenterNumber, company)
             val source = sourceCodeRepository.findOne(it.sourceId, company)
@@ -64,19 +65,20 @@ class StagingDepositService @Inject constructor(
 
    fun postByMonth(company: CompanyEntity, dto: List<StagingDepositDTO>, lastDayOfMonth: LocalDate){
       val stagingIds = dto.map { it.id }
-      val accountEntryEntity = stagingDepositRepository.findByStagingIds(company, stagingIds)
-      if (accountEntryEntity.isNotEmpty()) {
-         val account = accountRepository.findOne(accountEntryEntity[0].accountId, company)
-         val store = storeRepository.findOne(accountEntryEntity[0].profitCenterNumber, company)
-         val source = sourceCodeRepository.findOne(accountEntryEntity[0].sourceId, company)
+      val accountEntryList = stagingDepositRepository.findByStagingIds(company, stagingIds)
+      //combine all accountEntries into one glJournal
+      if (accountEntryList.isNotEmpty()) {
+         val account = accountRepository.findOne(accountEntryList[0].accountId, company)
+         val store = storeRepository.findOne(accountEntryList[0].profitCenterNumber, company)
+         val source = sourceCodeRepository.findOne(accountEntryList[0].sourceId, company)
          val glJournal = GeneralLedgerJournalDTO(
             id = null,
             account = AccountDTO(account!!),
             profitCenter = StoreDTO(store!!),
             date = lastDayOfMonth,
             source = GeneralLedgerSourceCodeDTO(source!!),
-            amount = accountEntryEntity.fold(BigDecimal.ZERO) { acc, item -> acc + item.credit + item.debit},
-            message = accountEntryEntity[0].message
+            amount = accountEntryList.fold(BigDecimal.ZERO) { acc, item -> acc + item.credit + item.debit},
+            message = accountEntryList[0].message
          )
          generalLedgerJournalService.create(glJournal, company)
 

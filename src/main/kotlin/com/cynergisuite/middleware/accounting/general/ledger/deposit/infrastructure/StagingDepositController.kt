@@ -186,6 +186,7 @@ class StagingDepositController @Inject constructor(
       val date = LocalDate.parse(lastDayOfMonth, DateTimeFormatter.ISO_LOCAL_DATE)
       stagingDepositService.postByMonth(user.myCompany(), dto, date)
    }
+
    @Throws(PageOutOfBoundsException::class)
    @Post(uri = "month-criteria{?pageRequest*}", produces = [MediaType.APPLICATION_JSON])
    @Operation(tags = ["StagingDepositEndpoints"], summary = "Move Accounting Details Staging to Pending Journal Entries by month with criteria", description = "Move Accounting Details Staging to Pending Journal Entries by month with criteria", operationId = "StagingDeposits-monthCriteria")
@@ -207,11 +208,11 @@ class StagingDepositController @Inject constructor(
       httpRequest: HttpRequest<*>
    ){
       logger.info("Fetching staging deposits {}", pageRequest)
-      var date = LocalDate.parse(lastDayOfMonth, DateTimeFormatter.ISO_LOCAL_DATE)
+      val date = LocalDate.parse(lastDayOfMonth, DateTimeFormatter.ISO_LOCAL_DATE)
       val user = userService.fetchUser(authentication)
       val page = stagingDepositService.fetchAll(user.myCompany(), pageRequest)
       if(page.elements.isNotEmpty()) {
-         stagingDepositService.postByMonth(user.myCompany(), page.elements, date!!)
+         stagingDepositService.postByMonth(user.myCompany(), page.elements, date)
       } else throw NotFoundException("No elements found to post to GL")
    }
 }
