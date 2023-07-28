@@ -71,7 +71,7 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
 
    @ReadOnly
    fun fetchInquiry(company: CompanyEntity, filterRequest: AccountPayableInvoiceInquiryFilterRequest): RepositoryPage<AccountPayableInvoiceInquiryDTO, PageRequest> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "vendor" to filterRequest.vendor)
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "vendor" to filterRequest.vendor, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder(
          "WHERE apInvoice.company_id = :comp_id " +
          "AND vend.number = :vendor "
@@ -125,6 +125,7 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
             ${selectBaseQuery()}
             $whereClause
             $sortBy
+            LIMIT :limit OFFSET :offset
          """.trimIndent(),
          params,
          filterRequest
