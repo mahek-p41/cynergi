@@ -9,7 +9,6 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.BalanceMustBeZero
-import com.cynergisuite.middleware.localization.GLNotOpen
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import jakarta.inject.Inject
@@ -65,9 +64,6 @@ class GeneralLedgerJournalValidator @Inject constructor(
 
          if (cal == null ) {
             errors.add(ValidationError("FinancialCalendar", NotFound(dto.date!!)))
-         }
-         if (cal != null && !cal.generalLedgerOpen!! ) {
-            errors.add(ValidationError("entryDate", GLNotOpen(dto.date!!)))
          }
       }
 
