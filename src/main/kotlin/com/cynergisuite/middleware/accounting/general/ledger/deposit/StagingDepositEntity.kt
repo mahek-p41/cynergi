@@ -3,9 +3,11 @@ package com.cynergisuite.middleware.accounting.general.ledger.deposit
 import io.micronaut.core.annotation.Introspected
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 
 @Introspected
 data class StagingDepositEntity(
+   val id: UUID,
    val verifySuccessful: Boolean,
    val businessDate: LocalDate,
    val movedToPendingJournalEntries: Boolean,

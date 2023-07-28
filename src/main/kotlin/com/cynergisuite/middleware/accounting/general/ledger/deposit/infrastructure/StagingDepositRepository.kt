@@ -4,20 +4,23 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.AccountingDetailDTO
+import com.cynergisuite.extensions.update
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositEntity
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositPageRequest
 import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.sql.ResultSet
+import java.util.UUID
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.sql.ResultSet
-import java.util.UUID
+import javax.transaction.Transactional
 
 @Singleton
 class StagingDepositRepository @Inject constructor(
@@ -74,6 +77,7 @@ class StagingDepositRepository @Inject constructor(
       return jdbc.queryPaged(
       """
          SELECT
+             vs.id,
              vs.verify_successful,
              vs.business_date,
              vs.moved_to_pending_journal_entries,
@@ -99,6 +103,7 @@ class StagingDepositRepository @Inject constructor(
              JOIN deposits_staging_deposit_type_domain dep ON ds.deposit_type_id = dep.id
          $whereClause
          GROUP BY
+             vs.id,
              vs.verify_successful,
              vs.business_date,
              vs.moved_to_pending_journal_entries,
@@ -151,6 +156,41 @@ class StagingDepositRepository @Inject constructor(
       }
    }
 
+   @ReadOnly
+   fun findByStagingIds(company: CompanyEntity, stagingIds: List<UUID?>): List<AccountingDetailDTO> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "verifyId" to stagingIds)
+
+      return jdbc.query(
+         """
+            SELECT
+                aes.id,
+                aes.company_id,
+                aes.verify_id,
+                aes.store_number_sfk,
+                aes.business_date,
+                aes.account_id,
+                acct.name AS account_name,
+                aes.profit_center_id_sfk AS profit_center_number,
+                aes.source_id,
+                source.value AS source_value,
+                CASE WHEN journal_entry_amount >= 0 THEN journal_entry_amount ELSE 0 END AS debit,
+                CASE WHEN journal_entry_amount < 0 THEN journal_entry_amount ELSE 0 END AS credit,
+                aes.deleted,
+                message
+            FROM
+                accounting_entries_staging aes
+                JOIN company comp ON aes.company_id = comp.id AND comp.deleted = FALSE
+                JOIN account acct ON aes.account_id = acct.id AND acct.deleted = FALSE
+                JOIN general_ledger_source_codes source ON aes.source_id = source.id AND source.deleted = FALSE
+                JOIN verify_staging vs on aes.verify_id = vs.id
+            WHERE vs.id IN (<verifyId>) AND vs.moved_to_pending_journal_entries = FALSE AND vs.verify_successful = TRUE
+         """.trimIndent(),
+         params
+      ){ rs, _ ->
+         mapAccountingDetail(rs)
+      }
+   }
+
    private fun mapAccountingDetail(rs: ResultSet): AccountingDetailDTO {
       return AccountingDetailDTO(
          verifyId = rs.getUuid("verify_id"),
@@ -162,11 +202,27 @@ class StagingDepositRepository @Inject constructor(
          debit = rs.getBigDecimal("debit"),
          credit = rs.getBigDecimal("credit"),
          message = rs.getString("message"),
+         date = rs.getLocalDate("business_date")
+      )
+   }
+
+
+   @Transactional
+   fun updateMovedPendingJE(company: CompanyEntity, dto: List<UUID?>) {
+      jdbc.update(
+         """
+            UPDATE verify_staging
+            SET
+               moved_to_pending_journal_entries = true
+            WHERE id IN (<ids>)
+         """.trimIndent(),
+         mapOf("ids" to dto)
       )
    }
 
    fun mapRow(rs: ResultSet): StagingDepositEntity =
       StagingDepositEntity(
+         id = rs.getUuid("id"),
          verifySuccessful = rs.getBoolean("verify_successful"),
          businessDate = rs.getLocalDate("business_date"),
          movedToPendingJournalEntries = rs.getBoolean("moved_to_pending_journal_entries"),
