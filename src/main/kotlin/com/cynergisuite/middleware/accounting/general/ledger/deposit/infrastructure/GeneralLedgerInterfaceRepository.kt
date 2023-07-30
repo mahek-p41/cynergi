@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.deposit.infrastructure
 
-import com.cynergisuite.extensions.findFirst
+import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
@@ -24,72 +24,86 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerInterfaceRepository::class.java)
 
    @Transactional
-   fun insert(record: CSVRecord, map: MutableMap<String, Any?>) {
-      logger.debug("Inserting verify_staging {}", record)
+   fun upsert(record: CSVRecord, map: MutableMap<String, Any?>) {
+      logger.debug("Upserting verify_staging {}", record)
 
-      val verifyID: UUID = jdbc.updateReturning(
-         """
+      if (!movedToPendingJournalEntries(
+            map["company_id"] as UUID?,
+            map["store_number_sfk"] as Int,
+            map["business_date"] as LocalDate?
+         )
+      ) {
+         jdbc.updateReturning(
+            """
          INSERT INTO verify_staging(
-            company_id,
-            store_number_sfk,
-            business_date,
-            verify_successful,
-            error_amount,
-            moved_to_pending_journal_entries
+             company_id,
+             store_number_sfk,
+             business_date,
+             verify_successful,
+             error_amount,
+             moved_to_pending_journal_entries
+         )
+         VALUES (
+             :company_id,
+             :store_number_sfk,
+             :business_date,
+             :verify_successful,
+             :error_amount,
+             :moved_to_pending_journal_entries
+         )
+         ON CONFLICT (company_id, store_number_sfk, business_date, deleted)
+         DO UPDATE
+         SET verify_successful = excluded.verify_successful,
+             error_amount = excluded.error_amount
+         RETURNING *
+         """.trimIndent(),
+            map
+         ) { rs, _ ->
+            map["verify_id"] = rs.getUuid("id")
+         }
+
+         val stagingDepositTypes: List<StagingDepositType> = stagingDepositTypeRepository.findAll()
+
+         stagingDepositTypes.forEach {
+            map["deposit_type_id"] = it.id
+            map["deposit_amount"] = map[it.value]
+
+            jdbc.update(
+               """
+         INSERT INTO deposits_staging (
+             company_id,
+             verify_id,
+             store_number_sfk,
+             business_date,
+             deposit_type_id,
+             deposit_amount
          )
          VALUES (
             :company_id,
+            :verify_id,
             :store_number_sfk,
             :business_date,
-            :verify_successful,
-            :error_amount,
-            :moved_to_pending_journal_entries
-         )
-         RETURNING
-            *
+            :deposit_type_id,
+            :deposit_amount
+            )
+         ON CONFLICT (verify_id, deposit_type_id, deleted)
+         DO UPDATE
+         SET deposit_amount = CASE
+                                 WHEN NOT excluded.deleted THEN excluded.deposit_amount
+                                 ELSE deposits_staging.deposit_amount
+                              END
+         WHERE NOT deposits_staging.deleted
          """.trimIndent(),
-         map
-      ) { rs, _ ->
-         rs.getUuid("id")
+               map
+            )
+         }
       }
 
-      map["verify_id"] = verifyID
-      val stagingDepositTypes: List<StagingDepositType> = stagingDepositTypeRepository.findAll()
-
-      stagingDepositTypes.forEach {
-
-         map["deposit_type_id"] = it.id
-         map["deposit_amount"] = map[it.value]
-
-         jdbc.update(
-            """
-            INSERT INTO deposits_staging(
-               company_id,
-               verify_id,
-               store_number_sfk,
-               business_date,
-               deposit_type_id,
-               deposit_amount
-            )
-            VALUES (
-               :company_id,
-               :verify_id,
-               :store_number_sfk,
-               :business_date,
-               :deposit_type_id,
-               :deposit_amount
-            )
-            RETURNING
-               *
-            """.trimIndent(),
-            map
-         )
-      }
    }
 
    @Transactional
-   fun insertStagingAccountEntries(record: CSVRecord, map: Map<String, *>) {
-      logger.debug("Inserting GeneralLedgerJournal from CSVRecord {}", record)
+   fun upsertStagingAccountEntries(record: CSVRecord, map: Map<String, *>) {
+      logger.debug("Upserting GeneralLedgerJournal from CSVRecord {}", record)
 
       jdbc.update(
          """
@@ -115,17 +129,37 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
             :journal_entry_amount,
             :message
          )
+         ON CONFLICT (company_id, store_number_sfk, business_date, deleted)
+         DO UPDATE
+         SET account_id = excluded.account_id,
+             source_id = excluded.source_id,
+             journal_entry_amount = excluded.journal_entry_amount,
+             message = excluded.message
          """.trimIndent(),
          map
       )
    }
 
    @ReadOnly
-   fun fetchVerifyId(companyId: UUID?, storeNumber: Int, jeDate: LocalDate?): UUID {
-      return jdbc.findFirst("SELECT id FROM verify_staging WHERE company_id = :comp_id AND store_number_sfk = :store_number AND business_date = :date AND deleted = false"
+   fun fetchVerifyId(companyId: UUID?, storeNumber: Int, jeDate: LocalDate?): UUID? {
+      return jdbc.findFirstOrNull("SELECT id FROM verify_staging WHERE company_id = :comp_id AND store_number_sfk = :store_number AND business_date = :date AND deleted = false"
          , mapOf("comp_id" to companyId, "store_number" to storeNumber, "date" to jeDate)) { rs, _ ->
          rs.getUuid("id")
       }
+   }
+
+   @ReadOnly
+   fun movedToPendingJournalEntries(companyId: UUID?, storeNumber: Int, jeDate: LocalDate?): Boolean {
+      return jdbc.findFirstOrNull("""
+         SELECT moved_to_pending_journal_entries
+         FROM verify_staging
+         WHERE company_id = :comp_id
+            AND store_number_sfk = :store_number
+            AND business_date = :date AND deleted = false
+         """.trimIndent()
+         , mapOf("comp_id" to companyId, "store_number" to storeNumber, "date" to jeDate)) { rs, _ ->
+         rs.getBoolean("moved_to_pending_journal_entries")
+      } ?: false
    }
 
 }
