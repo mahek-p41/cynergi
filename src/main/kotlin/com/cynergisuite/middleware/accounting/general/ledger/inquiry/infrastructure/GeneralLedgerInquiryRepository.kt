@@ -68,7 +68,8 @@ class GeneralLedgerInquiryRepository @Inject constructor(
             priorOverallPeriod.value                                                 AS glSummaryPrior_overallPeriod_value,
             priorOverallPeriod.abbreviation                                          AS glSummaryPrior_overallPeriod_abbreviation,
             priorOverallPeriod.description                                           AS glSummaryPrior_overallPeriod_description,
-            priorOverallPeriod.localization_code                                     AS glSummaryPrior_overallPeriod_localization_code
+            priorOverallPeriod.localization_code                                     AS glSummaryPrior_overallPeriod_localization_code,
+            acct_type.value                                                          AS glSummary_account_type_value
          FROM general_ledger_summary glSummary
             JOIN company comp ON glSummary.company_id = comp.id AND comp.deleted = FALSE
             JOIN fastinfo_prod_import.store_vw profitCenter
@@ -76,6 +77,7 @@ class GeneralLedgerInquiryRepository @Inject constructor(
                        AND profitCenter.number = glSummary.profit_center_id_sfk
             JOIN account acct ON glSummary.account_id = acct.account_id AND acct.account_deleted = FALSE
             JOIN overall_period_type_domain overallPeriod ON glSummary.overall_period_id = overallPeriod.id
+            JOIN account_type_domain acct_type on acct.account_type_id = acct_type.id
             LEFT JOIN general_ledger_summary glSummaryPrior ON glSummary.company_id = glSummaryPrior.company_id
                   AND glSummary.profit_center_id_sfk = glSummaryPrior.profit_center_id_sfk
                   AND glSummary.account_id = glSummaryPrior.account_id
@@ -111,7 +113,7 @@ class GeneralLedgerInquiryRepository @Inject constructor(
    fun findOne(company: CompanyEntity, filterRequest: GeneralLedgerInquiryFilterRequest): GeneralLedgerInquiryEntity? {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder("WHERE glSummary.company_id = :comp_id ")
-      val groupBy = " GROUP BY overallPeriod.id, priorOverallPeriod.id "
+      val groupBy = " GROUP BY overallPeriod.id, priorOverallPeriod.id, acct_type.value"
 
       if (filterRequest.profitCenter != null) {
          params["profitCenter"] = filterRequest.profitCenter
@@ -169,15 +171,30 @@ class GeneralLedgerInquiryRepository @Inject constructor(
       priorNetActivityPeriods.add(rs.getBigDecimal("${priorColumnPrefix}net_activity_period_11"))
       priorNetActivityPeriods.add(rs.getBigDecimal("${priorColumnPrefix}net_activity_period_12"))
 
+      val accountType = rs.getString("glSummary_account_type_value")
+      val beginningBalance: BigDecimal
+      val closingBalance = rs.getBigDecimal("${columnPrefix}closing_balance")
+      val overallPeriod = overallPeriodTypeRepository.mapRow(rs, "${columnPrefix}overallPeriod_")
+      val priorOverallPeriod = overallPeriodTypeRepository.mapRowOrNull(rs, "${priorColumnPrefix}overallPeriod_")
+      val priorBeginningBalance = rs.getBigDecimal("${priorColumnPrefix}beginning_balance")
+      val priorClosingBalance = priorNetActivityPeriods.runningFold(priorBeginningBalance) { sum, period -> sum!!.add(period) }.drop(1).last()
+      val expenseRevenueAcct = (accountType == "E" || accountType == "R")
+
+      beginningBalance = when {
+         overallPeriod.id != 4 || expenseRevenueAcct ->
+            rs.getBigDecimal("${columnPrefix}beginning_balance")
+         else ->
+            priorNetActivityPeriods.runningFold(priorBeginningBalance) { sum, period -> sum!!.add(period) }.drop(1).last()
+      }
       return GeneralLedgerInquiryEntity(
-         overallPeriod = overallPeriodTypeRepository.mapRow(rs, "${columnPrefix}overallPeriod_"),
+         overallPeriod = overallPeriod,
          netActivityPeriod = netActivityPeriods,
-         beginningBalance = rs.getBigDecimal("${columnPrefix}beginning_balance"),
-         closingBalance = rs.getBigDecimal("${columnPrefix}closing_balance"),
+         beginningBalance = beginningBalance,
+         closingBalance = closingBalance,
          priorNetActivityPeriod = priorNetActivityPeriods,
-         priorOverallPeriod = overallPeriodTypeRepository.mapRowOrNull(rs, "${priorColumnPrefix}overallPeriod_"),
-         priorBeginningBalance = rs.getBigDecimal("${priorColumnPrefix}beginning_balance"),
-         priorClosingBalance = rs.getBigDecimal("${priorColumnPrefix}closing_balance"),
+         priorOverallPeriod = priorOverallPeriod,
+         priorBeginningBalance = priorBeginningBalance,
+         priorClosingBalance = priorClosingBalance,
       )
    }
 }
