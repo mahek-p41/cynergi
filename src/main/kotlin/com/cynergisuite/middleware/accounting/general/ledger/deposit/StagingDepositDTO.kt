@@ -6,11 +6,13 @@ import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 
 @Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "StagingDeposit", title = "Staging Deposit DTO", description = "Staging Deposit DTO")
 data class StagingDepositDTO(
+   var id: UUID,
    var verifySuccessful: Boolean? = null,
    var businessDate: LocalDate? = null,
    var movedToPendingJournalEntries: Boolean? = null,
@@ -27,6 +29,7 @@ data class StagingDepositDTO(
    var depositTotal: BigDecimal? = null
 ) {
    constructor(entity: StagingDepositEntity) : this(
+      id = entity.id,
       verifySuccessful = entity.verifySuccessful,
       businessDate = entity.businessDate,
       movedToPendingJournalEntries = entity.movedToPendingJournalEntries,

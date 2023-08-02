@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
-import com.cynergisuite.domain.AccountPayableCheckPreviewFilterRequest
 import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
@@ -14,7 +13,6 @@ import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvo
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceTypeRepository
-import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableDistDetailReportDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryPaymentDTO
@@ -45,6 +43,7 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
             type.description                                   AS apInvoice_type_description,
             type.localization_code                             AS apInvoice_type_localization_code,
             apInvoice.separate_check_indicator                 AS apInvoice_separate_check_indicator,
+            poHeader.id                                        AS apInvoice_poHeader_id,
             poHeader.number                                    AS apInvoice_poHeader_number,
             apInvoice.use_tax_indicator                        AS apInvoice_use_tax_indicator,
             apInvoice.due_date                                 AS apInvoice_due_date,
@@ -72,13 +71,17 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
 
    @ReadOnly
    fun fetchInquiry(company: CompanyEntity, filterRequest: AccountPayableInvoiceInquiryFilterRequest): RepositoryPage<AccountPayableInvoiceInquiryDTO, PageRequest> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "vendor" to filterRequest.vendor, "payTo" to filterRequest.payTo)
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "vendor" to filterRequest.vendor, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder(
          "WHERE apInvoice.company_id = :comp_id " +
-         "AND vend.number = :vendor " +
-         "AND payTo.number = :payTo "
+         "AND vend.number = :vendor "
       )
       val sortBy = StringBuilder("ORDER BY ")
+
+      if (filterRequest.payTo != null) {
+         params["payTo"] = filterRequest.payTo
+         whereClause.append(" And payTo.number = :payTo")
+      }
 
       if (filterRequest.invStatus != null) {
          params["invStatus"] = filterRequest.invStatus
@@ -122,6 +125,7 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
             ${selectBaseQuery()}
             $whereClause
             $sortBy
+            LIMIT :limit OFFSET :offset
          """.trimIndent(),
          params,
          filterRequest
@@ -207,6 +211,7 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
          invDate = rs.getLocalDate("${columnPrefix}invoice_date"),
          type = AccountPayableInvoiceTypeDTO(type),
          separateCheckIndicator = rs.getBoolean("${columnPrefix}separate_check_indicator"),
+         poId = rs.getUuid("${columnPrefix}poHeader_id"),
          poNbr = rs.getInt("${columnPrefix}poHeader_number"),
          useTaxIndicator = rs.getBoolean("${columnPrefix}use_tax_indicator"),
          dueDate = rs.getLocalDate("${columnPrefix}due_date"),
