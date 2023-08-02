@@ -12,8 +12,16 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.store.StoreDTO
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
+import com.cynergisuite.util.CSVUtils.Companion.executeProcess
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVPrinter
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.io.File
+import java.io.FileWriter
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
@@ -24,8 +32,12 @@ class StagingDepositService @Inject constructor(
    private val accountRepository: AccountRepository,
    private val storeRepository: StoreRepository,
    private val sourceCodeRepository: GeneralLedgerSourceCodeRepository,
-   private val generalLedgerJournalService: GeneralLedgerJournalService
+   private val generalLedgerJournalService: GeneralLedgerJournalService,
+   @Value("\${cynergi.process.update.isam.summary}")
+   private val processUpdateIsamForSummary: Boolean,
 ) {
+   private val logger: Logger = LoggerFactory.getLogger(StagingDepositService::class.java)
+
    fun fetchAll(company: CompanyEntity, pageRequest: StagingDepositPageRequest): Page<StagingDepositDTO> {
       val found = stagingDepositRepository.findAll(company, pageRequest)
 
@@ -60,6 +72,9 @@ class StagingDepositService @Inject constructor(
             generalLedgerJournalService.create(glJournal, company)
          }
          stagingDepositRepository.updateMovedPendingJE(company, stagingIds)
+         if (processUpdateIsamForSummary) {
+            summaryToISAM(dto, company)
+         }
       } else throw NotFoundException("No Accounting Entries to Post To General Ledger Journal")
    }
 
@@ -81,8 +96,33 @@ class StagingDepositService @Inject constructor(
             message = accountEntryList[0].message
          )
          generalLedgerJournalService.create(glJournal, company)
-
          stagingDepositRepository.updateMovedPendingJE(company, stagingIds)
+         if (processUpdateIsamForSummary) {
+            summaryToISAM(dto, company)
+         }
       } else throw NotFoundException("No Accounting Entries to Post To General Ledger Journal")
+   }
+
+   fun summaryToISAM(dtos: List<StagingDepositDTO>, company: CompanyEntity) {
+      val fileName = File.createTempFile("mrsummary", ".csv")
+      val fileWriter = FileWriter(fileName)
+      val csvPrinter = CSVPrinter(fileWriter, CSVFormat.DEFAULT.withDelimiter('|').withHeader("action", "store", "business_date", "moved_to_pending_journal_entries", "dummy_field"))
+      val dataset = company.datasetCode
+      try {
+         csvPrinter.printRecord("action", "store", "business_date", "moved_to_pending_journal_entries", "dummy_field")
+         dtos.forEach {
+            csvPrinter.printRecord(
+               "U",
+               it.store.toString(),
+               it.businessDate.toString(),
+               if (it.movedToPendingJournalEntries == true) "Y" else "N" ,
+               "1"
+            )
+         }
+      } catch (e: Exception) {
+         logger.error("Error occurred in creating SUMMARY csv file!", e)
+      } finally {
+         executeProcess(fileName, fileWriter, csvPrinter, logger, dataset, "/usr/bin/ht.updt_isam_summary.sh")
+      }
    }
 }

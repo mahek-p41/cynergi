@@ -41,7 +41,7 @@ class InloadSUMGLINTVService @Inject constructor(
          "DEP_7" to record["Dep_Debit_Card_Amt"].toBigDecimal(),
          "message" to null
       )
-      generalLedgerInterfaceRepository.insert(record, map)
+      generalLedgerInterfaceRepository.upsert(record, map)
 
    }
 

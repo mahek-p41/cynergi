@@ -3,9 +3,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.deposit.infrastruc
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarCompleteDTO
-import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositPageRequest
 import com.cynergisuite.middleware.inload.InloadSUMGLINTAService
@@ -24,10 +22,8 @@ import static io.micronaut.http.HttpStatus.NO_CONTENT
 class StagingDepositControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/general-ledger/deposit"
 
-   @Inject GeneralLedgerJournalDataLoaderService dataLoaderService
    @Inject AccountTestDataLoaderService accountDataLoaderService
    @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
-   @Inject FinancialCalendarDataLoaderService financialCalendarDataLoaderService
    @Inject InloadSUMGLINTVService inloadSUMGLINTVService
    @Inject InloadSUMGLINTAService inloadSUMGLINTAService
 
