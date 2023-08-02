@@ -212,6 +212,8 @@ class CashFlowRepository @Inject constructor(
                            cashflowTotals.dateFiveAmount =
                               cashflowTotals.dateFiveAmount.plus(it.balance)
                         }
+
+                        else -> {}
                      }
                   }
                }

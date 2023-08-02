@@ -4,6 +4,7 @@ import org.apache.commons.lang3.math.NumberUtils
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.sql.ResultSet
+import java.sql.SQLException
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -27,11 +28,14 @@ fun ResultSet.getUuidOrNull(columnLabel: String): UUID? =
    this.getObject(columnLabel, UUID::class.java)
 
 fun ResultSet.getIntOrNull(columnLabel: String): Int? {
-   val column = this.getString(columnLabel)?.trimToNull()
-
-   return if (!column.isNullOrBlank() && column.isDigits()) {
-      NumberUtils.toInt(column)
-   } else {
+   return try {
+      val column = this.getString(columnLabel)?.trimToNull()
+      if (!column.isNullOrBlank() && column.isDigits()) {
+         NumberUtils.toInt(column)
+      } else {
+         null
+      }
+   } catch (e: SQLException) {
       null
    }
 }

@@ -247,8 +247,8 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.status == BAD_REQUEST
       final response = exception.response.bodyAsJson()
-      response.size() == 1
       response[0].path == "stores"
+      response[0].code == "javax.validation.constraints.NotEmpty.message"
       response[0].message == "Is not allowed to be empty"
    }
 

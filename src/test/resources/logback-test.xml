@@ -21,6 +21,7 @@
     <logger name="io.micronaut.data" level="TRACE"/>
     <logger name="io.micronaut.data.query" level="TRACE"/>
     <logger name="com.cynergisuite" level="TRACE"/>
+    <logger name="wiremock.org" level="ERROR"/>
 
     <root level="TRACE">
         <appender-ref ref="STDOUT" />

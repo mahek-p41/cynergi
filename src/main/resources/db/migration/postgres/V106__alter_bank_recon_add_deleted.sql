@@ -1,0 +1,2 @@
+ALTER TABLE bank_reconciliation
+ADD COLUMN deleted BOOLEAN DEFAULT FALSE NOT NULL

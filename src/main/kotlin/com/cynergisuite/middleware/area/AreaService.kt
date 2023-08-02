@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.area
 
 import com.cynergisuite.middleware.area.infrastructure.AreaRepository
-import com.cynergisuite.middleware.area.infrastructure.MenuRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.localization.LocalizationService
 import jakarta.inject.Inject
@@ -12,9 +11,20 @@ import java.util.Locale
 class AreaService @Inject constructor(
    private val areaRepository: AreaRepository,
    private val localizationService: LocalizationService,
-   private val menuRepository: MenuRepository,
    private val validator: AreaValidator
 ) {
+   fun enableFor(company: CompanyEntity, areaType: AreaType): AreaEntity? {
+      return when (areaType) {
+         is Unknown -> null
+         else -> {
+            if (!areaRepository.existsByCompanyAndAreaType(company, areaType.toAreaTypeEntity())) {
+               areaRepository.save(areaType.toAreaEntity(company))
+            } else {
+               null
+            }
+         }
+      }
+   }
 
    fun isEnabledFor(company: CompanyEntity, areaType: AreaType): Boolean =
       areaRepository.existsByCompanyAndAreaType(company, areaType.toAreaTypeEntity())

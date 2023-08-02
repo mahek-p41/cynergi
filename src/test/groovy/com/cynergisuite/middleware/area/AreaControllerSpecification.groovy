@@ -14,7 +14,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      response.size() == 5
+      response.size() == 6
       with(response[0]) {
          id == 1
          value == "AP"
@@ -54,7 +54,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(Exception)
       disabledResult != null
-      disabledResult.size == 4
+      disabledResult.size == 5
       with(disabledResult) { it ->
          any { value != disabledArea.value}
       }
@@ -66,7 +66,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(Exception)
       enabledResult != null
-      enabledResult.size == 5
+      enabledResult.size == 6
       with(enabledResult) { area ->
          value.any{ it == disabledArea.value }
       }

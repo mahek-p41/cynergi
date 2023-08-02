@@ -1,13 +1,13 @@
-ARG GROOVY_VER=3.0.9
+ARG GROOVY_VER=4.0.3
 FROM groovy:${GROOVY_VER}-jdk11 AS groovyImage
 
-ARG GROOVY_VER=3.0.9
+ARG GROOVY_VER=4.0.3
 RUN mkdir -pv /tmp/gdk/${GROOVY_VER} && \
     cp -r /opt/groovy/* /tmp/gdk/${GROOVY_VER}
 
-FROM ibm-semeru-runtimes:open-11.0.13_8-jdk-focal
+FROM ibm-semeru-runtimes:open-11.0.15_10-jdk-focal
 
-ARG GROOVY_VER=3.0.9
+ARG GROOVY_VER=4.0.3
 ARG USER_ID=1001
 ARG GROUP_ID=1001
 
@@ -23,7 +23,7 @@ RUN echo "org.gradle.daemon=false" >| /home/jenkins/.gradle/gradle.properties
 RUN chown -R jenkins:jenkins /home/jenkins/.gradle/
 
 ENV GRADLE_USER_HOME /home/jenkins
-ENV GROOVY_VERSON $GROOVY_VER
+ENV GROOVY_VERSION $GROOVY_VER
 
 USER jenkins
 

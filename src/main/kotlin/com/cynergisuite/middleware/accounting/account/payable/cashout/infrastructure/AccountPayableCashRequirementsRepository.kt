@@ -234,6 +234,8 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
                         tempVendor.vendorTotals.weekFivePaid =
                            tempVendor.vendorTotals.weekFivePaid.plus(it.invoicePaidAmount)
                      }
+
+                     else -> {}
                   }
 
                   when (it.balanceDisplay) {
@@ -267,6 +269,8 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
                         cashoutTotals.weekFivePaid =
                            cashoutTotals.weekFivePaid.plus(it.invoicePaidAmount)
                      }
+
+                     else -> {}
                   }
                }
             }

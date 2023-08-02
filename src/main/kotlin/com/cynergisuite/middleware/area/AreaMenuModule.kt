@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.area
 
 import com.cynergisuite.domain.TypeDomain
+import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
@@ -206,6 +207,12 @@ fun AreaTypeEntity.toAreaType(): AreaType =
 
 fun AreaType.toAreaTypeEntity(): AreaTypeEntity =
    AreaTypeEntity(this)
+
+fun AreaType.toAreaEntity(company: CompanyEntity) =
+   AreaEntity(
+      areaType = this.toAreaTypeEntity(),
+      company = company
+   )
 
 fun findAreaType(area: String): AreaType =
    when (area.uppercase().trim()) {

@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.localization
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.store.StoreEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.apache.commons.lang3.builder.ToStringBuilder
@@ -111,3 +112,5 @@ class AccessDeniedStore(user: String) : SystemCode("system.access.denied.store",
 class Unknown : SystemCode("system.word.unknown", arrayOf())
 class UnableToParseJson(jsonParseErrorMessage: String) : SystemCode("system.json.unable.parse", arrayOf(jsonParseErrorMessage))
 class PageOutOfBounds(page: Int?, size: Int?, sortBy: String?, sortDirection: String?) : SystemCode("system.page.out.of.bounds", arrayOf(page, size, sortBy, sortDirection))
+
+class SignHerePleaseNotEnabled(location: Location, company: CompanyEntity) : LocalizationCodeImpl("sign.here.please.not.enabled", arrayOf(location.myNumber(), company.datasetCode))

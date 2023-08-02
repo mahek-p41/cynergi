@@ -33,6 +33,7 @@ import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
+import spock.lang.Ignore
 import spock.lang.Unroll
 
 import java.time.OffsetDateTime
@@ -75,7 +76,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.inventoryCount == 1976
       result.id == savedAudit.id
       result.timeCreated == savedAudit.timeCreated
-      result.lastUpdated == null
+      result.lastUpdated == savedAudit.actions[0].timeUpdated
       result.currentStatus.value == 'CREATED'
       result.totalDetails == 0
       result.totalExceptions == 0
@@ -104,7 +105,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       result.inventoryCount == 1976
       result.id == savedAudit.id
       result.timeCreated == savedAudit.timeCreated
-      result.lastUpdated == null
+      result.lastUpdated == savedAudit.actions[0].timeUpdated
       result.currentStatus.value == 'CREATED'
       result.totalDetails == 0
       result.totalExceptions == 0
@@ -194,7 +195,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(3, company)
       final savedAudit = auditFactoryService.single(store)
       final storeroom = auditScanAreaFactoryService.storeroom(store, company)
-      final inventory = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 20, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventory = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 20, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["R", "D", "N"]]), company, locale).elements
       final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(20, savedAudit, storeroom, inventory).toList()
 
       when:
@@ -215,7 +216,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final store = storeFactoryService.store(1, company)
       final savedAudit = auditFactoryService.single(store)
       final storeroom = auditScanAreaFactoryService.storeroom(store, company)
-      final inventory = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 20, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final inventory = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 20, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["R", "D", "N"]]), company, locale).elements
       final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(20, savedAudit, storeroom, inventory).toList()
       final List<AuditExceptionEntity> auditExceptions = auditExceptionFactoryService.stream(20, savedAudit, storeroom).toList()
 
@@ -648,8 +649,8 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       final storeThreeWarehouse = auditScanAreaFactoryService.warehouse(storeThree, company)
       final storeThreeShowroom = auditScanAreaFactoryService.showroom(storeThree, company)
       final storeThreeStoreroom = auditScanAreaFactoryService.storeroom(storeThree, company)
-      final storeOneInventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 1, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
-      final storeThreeInventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 3, locationType: "STORE", inventoryStatus: ["N", "O", "R", "D"]]), company, locale).elements
+      final storeOneInventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 1, locationType: "STORE", inventoryStatus: ["R", "D", "N"]]), company, locale).elements
+      final storeThreeInventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 3, locationType: "STORE", inventoryStatus: ["R", "D", "N"]]), company, locale).elements
 
       // setup store one open audit
       final openStoreOneAudit = auditFactoryService.single(storeOne, storeOneEmployee)
@@ -1197,6 +1198,86 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       completedActions[2].status.value == "COMPLETED"
       completedActions[2].status.description == "Completed"
       completedActions[2].changedBy.number == nineNineEightAuthenticatedEmployee.number
+   }
+
+   @Ignore
+   void "process audit with inventory item in status 'D' from CREATED to IN-PROGRESS finally to COMPLETED" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final store = storeFactoryService.store(1, company)
+      final savedAudit = auditFactoryService.single(store)
+      final storeroom = auditScanAreaFactoryService.storeroom(store, company)
+      final inventory = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 20, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["D"]]), company, locale).elements
+      final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(3, savedAudit, storeroom, inventory).toList()
+      final List<AuditExceptionEntity> auditExceptions = auditExceptionFactoryService.stream(3, savedAudit, storeroom).toList()
+
+      when:
+      def openedResult = get("$path/${savedAudit.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+      openedResult.id != null
+      openedResult.store.storeNumber == 1
+      openedResult.actions.size() == 1
+      openedResult.totalDetails == 3
+      openedResult.totalExceptions == 3
+      openedResult.inventoryCount == 1694
+      final openActions = openedResult.actions
+         .collect{ new AuditActionValueObject(it) }
+         .sort { o1, o2 -> o1.id <=> o2.id }
+      openActions[0].id != null
+      openActions[0].status.value == "CREATED"
+      openActions[0].status.description == "Created"
+
+      when:
+      put(path, new AuditUpdateDTO([id: openedResult.id, status: new AuditStatusValueObject([value: "IN-PROGRESS"])]))
+      def inProgressResult = get("$path/${openedResult.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+      inProgressResult.id != null
+      inProgressResult.store.storeNumber == 1
+      inProgressResult.actions.size() == 2
+      inProgressResult.totalDetails == 3
+      inProgressResult.totalExceptions == 3
+      inProgressResult.inventoryCount == 1694
+      final inProgressActions = inProgressResult.actions
+         .collect{ new AuditActionValueObject(it) }
+         .sort { o1, o2 -> o1.id <=> o2.id }
+      inProgressActions[0].id != null
+      inProgressActions[0].status.value == "CREATED"
+      inProgressActions[0].status.description == "Created"
+      inProgressActions[1].id != null
+      inProgressActions[1].id > inProgressActions[0].id
+      inProgressActions[1].status.value == "IN-PROGRESS"
+      inProgressActions[1].status.description == "In Progress"
+
+      when:
+      put(path, new AuditUpdateDTO([id: openedResult.id, status: new AuditStatusValueObject([value: "COMPLETED"])]))
+      def completedResult = get("$path/${openedResult.id}")
+
+      then:
+      notThrown(HttpClientResponseException)
+      completedResult.id != null
+      completedResult.store.storeNumber == 1
+      completedResult.actions.size() == 3
+      completedResult.totalDetails == 3
+      completedResult.totalExceptions == 3
+      completedResult.inventoryCount == 1694
+      final completedActions = completedResult.actions
+         .collect{ new AuditActionValueObject(it) }
+         .sort { o1, o2 -> o1.id <=> o2.id }
+      completedActions[0].id != null
+      completedActions[0].status.value == "CREATED"
+      completedActions[0].status.description == "Created"
+      completedActions[1].id != null
+      completedActions[1].id > completedActions[0].id
+      completedActions[1].status.value == "IN-PROGRESS"
+      completedActions[1].status.description == "In Progress"
+      completedActions[2].id != null
+      completedActions[2].id > completedActions[1].id
+      completedActions[2].status.value == "COMPLETED"
+      completedActions[2].status.description == "Completed"
    }
 
    void "create new audit after existing open audit was COMPLETED" () {

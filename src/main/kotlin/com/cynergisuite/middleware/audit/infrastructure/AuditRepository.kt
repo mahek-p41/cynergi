@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.audit.infrastructure
 
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getOffsetDateTime
 import com.cynergisuite.extensions.getOffsetDateTimeOrNull
 import com.cynergisuite.extensions.getUuid
@@ -50,7 +51,7 @@ class AuditRepository @Inject constructor(
          FROM audit_action csaa
                JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
          WHERE csaa.audit_id = a.id
-         ORDER BY csaa.id DESC LIMIT 1
+         ORDER BY csaa.time_updated DESC LIMIT 1
          )
       """
 
@@ -76,6 +77,8 @@ class AuditRepository @Inject constructor(
                SELECT time_updated FROM audit_detail WHERE audit_id = a.id
                UNION
                SELECT time_updated FROM audit_exception WHERE audit_id = a.id
+               UNION
+               SELECT time_updated FROM audit_action WHERE audit_id = a.id
                ) AS m
          )                                                             AS a_last_updated,
          $queryAuditCurrentStatus                                      AS current_status,
@@ -86,8 +89,8 @@ class AuditRepository @Inject constructor(
             SELECT COUNT (*)
             FROM fastinfo_prod_import.inventory_vw i
             WHERE i.primary_location = a.store_number
-                  AND i.location = a.store_number
-                  AND i.status in ('N', 'R')
+                  AND (i.status = 'D'
+                        OR (i.status in ('N', 'R') AND i.location = a.store_number))
                   AND i.dataset = auditStore.dataset
             )
          ELSE
@@ -95,7 +98,6 @@ class AuditRepository @Inject constructor(
             SELECT COUNT (*)
             FROM audit_inventory i
             WHERE i.primary_location = a.store_number
-                  AND i.location = a.store_number
                   AND i.dataset = auditStore.dataset
                   AND i.audit_id = a.id
             )
@@ -152,7 +154,7 @@ class AuditRepository @Inject constructor(
            LEFT OUTER JOIN address compAddress ON comp.address_id = compAddress.id
            JOIN audit_action auditAction ON a.id = auditAction.audit_id
            JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
-           JOIN system_employees_vw auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
+           JOIN system_employees_fimvw auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
            JOIN system_stores_fimvw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
    """
 
@@ -192,6 +194,8 @@ class AuditRepository @Inject constructor(
                    SELECT time_updated FROM audit_detail WHERE audit_id = a.id
                    UNION
                    SELECT time_updated FROM audit_exception WHERE audit_id = a.id
+                   UNION
+                   SELECT time_updated FROM audit_action WHERE audit_id = a.id
                 ) AS m
                ) AS last_updated,
                a.company_id AS company_id,
@@ -227,8 +231,8 @@ class AuditRepository @Inject constructor(
                SELECT COUNT (*)
                FROM fastinfo_prod_import.inventory_vw i
                WHERE i.primary_location = a.store_number
-                     AND i.location = a.store_number
-                     AND i.status in ('N', 'R')
+                     AND (i.status = 'D'
+                        OR (i.status in ('N', 'R') AND i.location = a.store_number))
                      AND i.dataset = auditStore.dataset
                )
             ELSE
@@ -236,7 +240,6 @@ class AuditRepository @Inject constructor(
                SELECT COUNT (*)
                FROM audit_inventory i
                WHERE i.primary_location = a.store_number
-                     AND i.location = a.store_number
                      AND i.dataset = auditStore.dataset
                      AND i.audit_id = a.id
                )
@@ -295,7 +298,7 @@ class AuditRepository @Inject constructor(
               LEFT OUTER JOIN address compAddress ON comp.address_id = compAddress.id
               JOIN audit_action auditAction ON a.id = auditAction.audit_id
               JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
-              JOIN system_employees_vw auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
+              JOIN system_employees_fimvw auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
               JOIN system_stores_fimvw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
               LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
               LEFT JOIN region reg ON reg.id = rts.region_id AND reg.deleted = FALSE
@@ -425,24 +428,34 @@ class AuditRepository @Inject constructor(
 
       whereClause.append(" AND $subQuery ")
 
+      val sortBy = when (pageRequest.sortBy) {
+         "lastupdated" -> "a_last_updated"
+         "store" -> "auditStore_number"
+         "status" -> "a_current_status"
+         else -> "a_id"
+      }
+
       val sql =
          """
          WITH company AS (
             ${companyRepository.companyBaseQuery()}
-         ), maxStatus AS (
-            SELECT id AS current_status_id, audit_id
-               FROM audit_action
-               WHERE (status_id, audit_id) IN
-                  (
-                     SELECT MAX(status_id), audit_id
-                     FROM audit_action
-                     GROUP BY audit_id
-                  )
          ), status AS (
             SELECT
-               csastd.value AS current_status,
-               csaa.audit_id AS audit_id, csaa.id
+               csastd.value   AS current_status,
+               csaa.audit_id  AS audit_id,
+               csaa.id        AS action_id
             FROM audit_action csaa JOIN audit_status_type_domain csastd ON csaa.status_id = csastd.id
+         ), max_status AS (
+            SELECT
+               id AS action_id,
+               audit_id
+            FROM audit_action
+            WHERE (status_id, audit_id) IN
+               (
+                  SELECT MAX(status_id), audit_id
+                  FROM audit_action
+                  GROUP BY audit_id
+               )
          )
          SELECT
             a.id                                                          AS a_id,
@@ -454,6 +467,31 @@ class AuditRepository @Inject constructor(
             a.number                                                      AS a_number,
             (SELECT count(id) FROM audit_detail WHERE audit_id = a.id)    AS a_total_details,
             (SELECT count(id) FROM audit_exception WHERE audit_id = a.id) AS a_total_exceptions,
+            CASE
+            WHEN
+               s.current_status
+            IN ('CREATED', 'IN-PROGRESS')
+            THEN
+              (
+              SELECT count(i.id)
+               FROM fastinfo_prod_import.inventory_vw i
+                    LEFT JOIN audit_detail ad ON a.id = ad.audit_id and i.lookup_key = ad.lookup_key
+               WHERE i.status in ('N', 'R', 'D')
+                     AND ad.id IS NULL
+                     and a.company_id = comp.id AND a.store_number = i.primary_location
+                     and comp.dataset_code = i.dataset
+              )
+            ELSE
+              (
+              SELECT count(i.id)
+               FROM audit_inventory i
+                    LEFT JOIN audit_detail ad ON a.id = ad.audit_id and i.lookup_key = ad.lookup_key
+               WHERE i.status in ('N', 'R', 'D')
+                     AND ad.id IS NULL
+                     and a.company_id = comp.id AND a.store_number = i.primary_location AND a.id = i.audit_id
+                     and comp.dataset_code = i.dataset
+              )
+            END                                                 AS a_total_unscanned,
             (SELECT count(aen.id) > 0
                FROM audit_exception ae
                   JOIN audit_exception_note aen ON ae.id = aen.audit_exception_id
@@ -464,18 +502,20 @@ class AuditRepository @Inject constructor(
                 SELECT time_updated FROM audit_detail WHERE audit_id = a.id
                 UNION
                 SELECT time_updated FROM audit_exception WHERE audit_id = a.id
+                UNION
+                SELECT time_updated FROM audit_action WHERE audit_id = a.id
              ) AS m
             )                                                   AS a_last_updated,
-            $queryAuditCurrentStatus                            AS a_current_status,
+            s.current_status                                   AS a_current_status,
             CASE
-            WHEN $queryAuditCurrentStatus IN ('CREATED', 'IN-PROGRESS')
+            WHEN s.current_status IN ('CREATED', 'IN-PROGRESS')
             THEN
                (
                SELECT COUNT (*)
                FROM fastinfo_prod_import.inventory_vw i
                WHERE i.primary_location = a.store_number
-                     AND i.location = a.store_number
-                     AND i.status in ('N', 'R')
+                     AND (i.status = 'D'
+                           OR (i.status in ('N', 'R') AND i.location = a.store_number))
                      AND i.dataset = auditStore.dataset
                )
             ELSE
@@ -483,12 +523,10 @@ class AuditRepository @Inject constructor(
                SELECT COUNT (*)
                FROM audit_inventory i
                WHERE i.primary_location = a.store_number
-                     AND i.location = a.store_number
                      AND i.dataset = auditStore.dataset
                      AND i.audit_id = a.id
                )
             END                                                 AS a_inventory_count,
-
             comp.id                                             AS comp_id,
             comp.time_created                                   AS comp_time_created,
             comp.time_updated                                   AS comp_time_updated,
@@ -513,17 +551,17 @@ class AuditRepository @Inject constructor(
             comp.address_fax                                    AS comp_address_fax,
             count(*) OVER() AS total_elements
          FROM audit a
-               JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
-               JOIN system_stores_fimvw auditStore
-                     ON comp.dataset_code = auditStore.dataset
-                        AND a.store_number = auditStore.number
-               JOIN status s ON s.audit_id = a.id
-               JOIN maxStatus ms ON s.id = ms.current_status_id
-               LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
-               LEFT JOIN region reg ON reg.id = rts.region_id AND reg.deleted = FALSE
-               LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id AND div.deleted = FALSE
+              JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
+              JOIN system_stores_fimvw auditStore
+                   ON comp.dataset_code = auditStore.dataset
+                      AND a.store_number = auditStore.number
+              JOIN status s ON s.audit_id = a.id
+              JOIN max_status ms ON s.action_id = ms.action_id AND a.id = ms.audit_id
+              LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
+                             LEFT JOIN region reg ON reg.id = rts.region_id AND reg.deleted = FALSE
+                             LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id AND div.deleted = FALSE
          $whereClause
-         ORDER BY a_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+         ORDER BY ${sortBy} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """.trimIndent()
 
@@ -541,7 +579,7 @@ class AuditRepository @Inject constructor(
 
       val actions = auditActionRepository.findAll(auditIds)
 
-      return repoPage.copy(
+       return repoPage.copy(
          elements = repoPage.elements.asSequence()
             .onEach { it.actions.addAll(actions.get(it.id!!)) }
             .onEach(this::loadNextStates)
@@ -725,6 +763,7 @@ class AuditRepository @Inject constructor(
          number = rs.getInt("number"),
          totalDetails = 0,
          totalExceptions = 0,
+         totalUnscanned = 0,
          hasExceptionNotes = false,
          inventoryCount = 0,
          lastUpdated = null,
@@ -768,6 +807,7 @@ class AuditRepository @Inject constructor(
          number = rs.getInt("a_number"),
          totalDetails = rs.getInt("a_total_details"),
          totalExceptions = rs.getInt("a_total_exceptions"),
+         totalUnscanned = rs.getIntOrNull("a_total_unscanned"),
          hasExceptionNotes = rs.getBoolean("a_exception_has_notes"),
          inventoryCount = rs.getInt("a_inventory_count"),
          lastUpdated = rs.getOffsetDateTimeOrNull("a_last_updated")

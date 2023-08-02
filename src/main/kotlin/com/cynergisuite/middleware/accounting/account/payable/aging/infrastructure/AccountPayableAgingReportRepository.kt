@@ -148,11 +148,11 @@ class AccountPayableAgingReportRepository @Inject constructor(
                      it.balanceDisplay = BalanceDisplayEnum.CURRENT
                   }
                   // 1 to 30 - if the invoiceDate is 1 to 30 days after agingDate
-                  else if (daysUntil >= 1 && daysUntil <= 30) {
+                  else if (daysUntil in 1..30) {
                      it.balanceDisplay = BalanceDisplayEnum.ONETOTHIRTY
                   }
                   // 31 to 60 - if the invoiceDate is 31 to 60 days after agingDate
-                  else if (daysUntil > 30 && daysUntil <= 60) {
+                  else if (daysUntil in 31..60) {
                      it.balanceDisplay = BalanceDisplayEnum.THIRTYONETOSIXTY
                   }
                   // Over 60 - if the invoiceDate is 61+ days after agingDate
@@ -175,6 +175,8 @@ class AccountPayableAgingReportRepository @Inject constructor(
                      BalanceDisplayEnum.OVERSIXTY ->
                         tempVendor.vendorTotals.overSixtyTotal =
                            tempVendor.vendorTotals.overSixtyTotal.plus(it.balance)
+
+                     else -> {}
                   }
 
                   // add invoice balance to running totals for balance and the proper balance display column
@@ -192,6 +194,8 @@ class AccountPayableAgingReportRepository @Inject constructor(
                      BalanceDisplayEnum.OVERSIXTY ->
                         agedTotals.overSixtyTotal =
                            agedTotals.overSixtyTotal.plus(it.balance)
+
+                     else -> {}
                   }
                }
             }
