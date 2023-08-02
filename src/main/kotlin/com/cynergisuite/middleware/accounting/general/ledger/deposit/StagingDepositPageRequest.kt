@@ -9,7 +9,6 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.ValidPageSortBy
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
-import javax.validation.constraints.NotNull
 
 @Schema(
    name = "StagingDepositPageRequest",
@@ -24,8 +23,7 @@ class StagingDepositPageRequest(
    sortDirection: String? = DEFAULT_SORT_DIRECTION,
 ) : StandardPageRequest(page, size, sortBy, sortDirection) {
 
-   @field:NotNull
-   @field:Schema(name = "verifiedSuccessful", description = "Verify Successful", required = true)
+   @field:Schema(name = "verifiedSuccessful", description = "Verify Successful", required = false)
    var verifiedSuccessful: Boolean? = null
 
    @field:Schema(name = "movedToJe", description = "Moved to pending JEs", required = false)

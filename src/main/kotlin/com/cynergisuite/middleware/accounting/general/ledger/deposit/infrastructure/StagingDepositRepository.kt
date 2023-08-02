@@ -7,19 +7,19 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.queryPaged
-import com.cynergisuite.middleware.accounting.general.ledger.deposit.AccountingDetailDTO
 import com.cynergisuite.extensions.update
+import com.cynergisuite.middleware.accounting.general.ledger.deposit.AccountingDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositEntity
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositPageRequest
 import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.sql.ResultSet
-import java.util.UUID
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.sql.ResultSet
+import java.util.UUID
 import javax.transaction.Transactional
 
 @Singleton
@@ -33,17 +33,12 @@ class StagingDepositRepository @Inject constructor(
       company: CompanyEntity,
       filterRequest: StagingDepositPageRequest
    ): RepositoryPage<StagingDepositEntity, PageRequest> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder(" WHERE vs.deleted = false AND vs.company_id = :comp_id AND dep.value IN ('DEP_1', 'DEP_2', 'DEP_3', 'DEP_4', 'DEP_5', 'DEP_6', 'DEP_7') ")
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "movedToJe" to filterRequest.movedToJe)
+      val whereClause = StringBuilder(" WHERE vs.deleted = false AND vs.company_id = :comp_id AND dep.value IN ('DEP_1', 'DEP_2', 'DEP_3', 'DEP_4', 'DEP_5', 'DEP_6', 'DEP_7')  AND vs.moved_to_pending_journal_entries = :movedToJe ")
 
       if (filterRequest.verifiedSuccessful != null) {
          params["verifiedSuccessful"] = filterRequest.verifiedSuccessful
          whereClause.append(" AND vs.verify_successful = :verifiedSuccessful")
-      }
-
-      if (filterRequest.movedToJe != null) {
-         params["movedToJe"] = filterRequest.movedToJe
-         whereClause.append(" AND vs.moved_to_pending_journal_entries = :movedToJe")
       }
 
       if (filterRequest.from != null || filterRequest.thru != null) {
@@ -134,6 +129,7 @@ class StagingDepositRepository @Inject constructor(
                 verify_id,
                 business_date,
                 account_id,
+                acct.number AS account_number,
                 acct.name AS account_name,
                 aes.profit_center_id_sfk AS profit_center_number,
                 source_id,
@@ -169,6 +165,7 @@ class StagingDepositRepository @Inject constructor(
                 aes.store_number_sfk,
                 aes.business_date,
                 aes.account_id,
+                acct.number AS account_number,
                 acct.name AS account_name,
                 aes.profit_center_id_sfk AS profit_center_number,
                 aes.source_id,
@@ -195,6 +192,7 @@ class StagingDepositRepository @Inject constructor(
       return AccountingDetailDTO(
          verifyId = rs.getUuid("verify_id"),
          accountId = rs.getUuid("account_id"),
+         accountNumber = rs.getInt("account_number"),
          accountName = rs.getString("account_name"),
          profitCenterNumber = rs.getInt("profit_center_number"),
          sourceId = rs.getUuid("source_id"),

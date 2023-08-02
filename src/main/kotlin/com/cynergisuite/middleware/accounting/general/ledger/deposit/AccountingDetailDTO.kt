@@ -9,6 +9,7 @@ import java.util.UUID
 data class AccountingDetailDTO(
    val verifyId: UUID,
    val accountId: UUID,
+   val accountNumber: Int,
    val accountName: String,
    val profitCenterNumber: Int,
    val sourceId: UUID,
