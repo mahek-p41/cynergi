@@ -31,8 +31,9 @@ mkdir -p "/opt/cyn/v01/cynmid/java/openj9/${VER_BUILD}/jitcache"
 cp /home/jenkins/cynergi-middleware/support/deployment/cynergi-middleware.httpd.conf /opt/cyn/v01/cynmid/cynergi-middleware.httpd.conf
 ln -s /opt/cyn/v01/cynmid/java/openj9/${VER_BUILD} /opt/cyn/v01/cynmid/java/current
 ln -s /opt/cyn/v01/cynmid/groovy/${GROOVY_VERSION} /opt/cyn/v01/cynmid/groovy/current
-sed -i '/^#!\\/usr\\/bin\\/env.*/a export JAVA_HOME=/opt/cyn/v01/cynmid/java/current' /opt/cyn/v01/cynmid/groovy/current/bin/startGroovy
-sed -i  '/^export\\ JAVA_HOME=\\/opt\\/cyn\\/v01\\/cynmid\\/java\\/current/a export GROOVY_HOME=/opt/cyn/v01/cynmid/groovy/current' /opt/cyn/v01/cynmid/groovy/current/bin/startGroovy
+#sed's 1a command means to append the following text after line 1 of the file
+sed -i '1a export JAVA_HOME=/opt/cyn/v01/cynmid/java/current' /opt/cyn/v01/cynmid/groovy/current/bin/startGroovy
+sed -i '2a export GROOVY_HOME=/opt/cyn/v01/cynmid/groovy/current' /opt/cyn/v01/cynmid/groovy/current/bin/startGroovy
 cp /home/jenkins/cynergi-middleware/support/development/cynergidb/setup-database.sql /opt/cyn/v01/cynmid/data/
 cp /home/jenkins/cynergi-middleware/${buildPath}/${jarFile} /opt/cyn/v01/cynmid/${jarFile}
 mkdir -p "/opt/cyn/v01/cynmid/java/openj9/${VER_BUILD}/jitcache"
