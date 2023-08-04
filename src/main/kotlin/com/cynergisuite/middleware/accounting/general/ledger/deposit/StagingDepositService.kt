@@ -51,9 +51,13 @@ class StagingDepositService @Inject constructor(
       return AccountingDetailWrapper(found)
    }
 
-   fun postByDate(company: CompanyEntity, dto: List<StagingDepositDTO>){
+   fun postByDate(company: CompanyEntity, dto: List<StagingDepositDTO>, isAdmin: Boolean){
       val stagingIds = dto.map { it.id }
-      val accountEntryList = stagingDepositRepository.findByStagingIds(company, stagingIds)
+      val accountEntryList = if(isAdmin) {
+         stagingDepositRepository.findByStagingIdsAdmin(company, stagingIds)
+      } else {
+         stagingDepositRepository.findByStagingIds(company, stagingIds)
+      }
       //create glJournal for each accountEntry
       if (accountEntryList.isNotEmpty()) {
          accountEntryList.map {

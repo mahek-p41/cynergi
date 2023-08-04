@@ -130,7 +130,7 @@ class StagingDepositController @Inject constructor(
       logger.info("Fetching staging deposits {}", dto)
 
       val user = userService.fetchUser(authentication)
-      stagingDepositService.postByDate(user.myCompany(), dto)
+      stagingDepositService.postByDate(user.myCompany(), dto, false)
    }
 
    @Throws(PageOutOfBoundsException::class)
@@ -157,7 +157,7 @@ class StagingDepositController @Inject constructor(
       val page = stagingDepositService.fetchAll(user.myCompany(), pageRequest)
 
       if(page.elements.isNotEmpty()) {
-         stagingDepositService.postByDate(user.myCompany(), page.elements)
+         stagingDepositService.postByDate(user.myCompany(), page.elements, false)
       } else throw NotFoundException("No elements found to post to GL")
    }
 
@@ -214,5 +214,28 @@ class StagingDepositController @Inject constructor(
       if(page.elements.isNotEmpty()) {
          stagingDepositService.postByMonth(user.myCompany(), page.elements, date)
       } else throw NotFoundException("No elements found to post to GL")
+   }
+
+   @Secured("APPURGE")
+   @Throws(PageOutOfBoundsException::class)
+   @Post(uri = "day-secured", produces = [MediaType.APPLICATION_JSON])
+   @Operation(tags = ["StagingDepositEndpoints"], summary = "Move Accounting Details Staging to Pending Journal Entries by day", description = "Move Accounting Details Staging to Pending Journal Entries by day", operationId = "StagingDeposits-daySelected")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested Accounting Details was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun daySelectedAdmin(
+      @Body @Valid
+      dto: List<StagingDepositDTO>,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ){
+      logger.info("Fetching staging deposits {}", dto)
+      val user = userService.fetchUser(authentication)
+      stagingDepositService.postByDate(user.myCompany(), dto, true)
    }
 }
