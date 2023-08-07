@@ -72,16 +72,6 @@ pipeline {
          }
       }
 
-      stage('Setup environment') {
-         when { branch 'develop'; }
-
-         steps {
-            script {
-               micronautEnv = 'cstdevelop'
-            }
-         }
-      }
-
       stage('Build tarball') {
          when { anyOf { branch 'master'; branch 'staging'; branch 'develop'; } }
 
