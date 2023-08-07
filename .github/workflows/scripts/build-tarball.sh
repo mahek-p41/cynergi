@@ -23,7 +23,7 @@ jlink --module-path "$JAVA_HOME\jmods" \
    --compress 2 \
    --no-header-files \
    --no-man-pages \
-   --add-modules java.base,java.sql,openj9.jvm,openj9.sharedclasses,jdk.net,java.naming,java.management,jdk.unsupported,java.desktop,java.scripting,java.rmi \
+   java.base,java.compiler,java.datatransfer,java.desktop,java.instrument,java.logging,java.management,java.management.rmi,java.naming,java.net.http,java.prefs,java.rmi,java.scripting,java.se,java.security.jgss,java.security.sasl,java.smartcardio,java.sql,java.sql.rowset,java.transaction.xa,java.xml,java.xml.crypto,jdk.accessibility,jdk.attach,jdk.charsets,jdk.compiler,jdk.crypto.cryptoki,jdk.crypto.ec,jdk.dynalink,jdk.editpad,jdk.internal.ed,jdk.internal.jvmstat,jdk.internal.le,jdk.internal.opt,jdk.jcmd,jdk.jdeps,jdk.jdi,jdk.jdwp.agent,jdk.jsobject,jdk.localedata,jdk.management,jdk.management.agent,jdk.naming.dns,jdk.naming.ldap,jdk.naming.rmi,jdk.net,jdk.pack,jdk.rmic,jdk.sctp,jdk.security.auth,jdk.security.jgss,jdk.unsupported,jdk.unsupported.desktop,jdk.xml.dom,jdk.zipfs,openj9.dataaccess,openj9.dtfj,openj9.dtfjview,openj9.gpu,openj9.jvm,openj9.sharedclasses,openj9.traceformat \
    --strip-debug \
    --output "/opt/cyn/v01/cynmid/java/openj9/${VER_BUILD}"
 mkdir -p "/opt/cyn/v01/cynmid/java/openj9/${VER_BUILD}/jitcache"
@@ -32,6 +32,7 @@ cp /home/jenkins/cynergi-middleware/support/deployment/cynergi-middleware.httpd.
 ln -s /opt/cyn/v01/cynmid/java/openj9/${VER_BUILD} /opt/cyn/v01/cynmid/java/current
 ln -s /opt/cyn/v01/cynmid/groovy/${GROOVY_VERSION} /opt/cyn/v01/cynmid/groovy/current
 #sed's 1a command means to append the following text after line 1 of the file
+sed "s/@@JAVA_VER_BUILD@@/${VER_BUILD}/g; s/@@MICRONAUT_ENV@@/${MICRONAUT_ENV}/g" /home/jenkins/cynergi-middleware/support/deployment/cynergi-middleware.conf > /opt/cyn/v01/cynmid/cynergi-middleware.conf
 sed -i '1a export JAVA_HOME=/opt/cyn/v01/cynmid/java/current' /opt/cyn/v01/cynmid/groovy/current/bin/startGroovy
 sed -i '2a export GROOVY_HOME=/opt/cyn/v01/cynmid/groovy/current' /opt/cyn/v01/cynmid/groovy/current/bin/startGroovy
 cp /home/jenkins/cynergi-middleware/support/development/cynergidb/setup-database.sql /opt/cyn/v01/cynmid/data/
