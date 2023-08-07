@@ -33,7 +33,7 @@ class StagingDepositRepository @Inject constructor(
       company: CompanyEntity,
       filterRequest: StagingDepositPageRequest
    ): RepositoryPage<StagingDepositEntity, PageRequest> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "movedToJe" to filterRequest.movedToJe)
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "movedToJe" to filterRequest.movedToJe, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder(" WHERE vs.deleted = false AND vs.company_id = :comp_id AND dep.value IN ('DEP_1', 'DEP_2', 'DEP_3', 'DEP_4', 'DEP_5', 'DEP_6', 'DEP_7')  AND vs.moved_to_pending_journal_entries = :movedToJe ")
 
       if (filterRequest.verifiedSuccessful != null) {
@@ -106,6 +106,7 @@ class StagingDepositRepository @Inject constructor(
              sv.name,
              vs.error_amount
          ORDER BY vs.verify_successful, vs.business_date DESC, vs.store_number_sfk
+         LIMIT :limit OFFSET :offset
                """.trimIndent()
       , params
       , filterRequest
