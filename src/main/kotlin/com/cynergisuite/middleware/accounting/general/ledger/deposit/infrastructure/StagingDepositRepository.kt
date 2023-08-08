@@ -119,6 +119,53 @@ class StagingDepositRepository @Inject constructor(
    }
 
    @ReadOnly
+   fun findByListId(company: CompanyEntity, idList: List<UUID>): List<StagingDepositEntity> {
+
+      return jdbc.query(
+         """
+         SELECT
+             vs.id,
+             vs.verify_successful,
+             vs.business_date,
+             vs.moved_to_pending_journal_entries,
+             vs.store_number_sfk,
+             sv.name AS store_name,
+             vs.error_amount,
+             SUM(CASE WHEN dep.value = 'DEP_1' THEN ds.deposit_amount ELSE 0 END)   AS deposit_1,
+             SUM(CASE WHEN dep.value = 'DEP_2' THEN ds.deposit_amount ELSE 0 END)   AS deposit_2,
+             SUM(CASE WHEN dep.value = 'DEP_3' THEN ds.deposit_amount ELSE 0 END)   AS deposit_3,
+             SUM(CASE WHEN dep.value = 'DEP_4' THEN ds.deposit_amount ELSE 0 END)   AS deposit_4,
+             SUM(CASE WHEN dep.value = 'DEP_5' THEN ds.deposit_amount ELSE 0 END)   AS deposit_5,
+             SUM(CASE WHEN dep.value = 'DEP_6' THEN ds.deposit_amount ELSE 0 END)   AS deposit_6,
+             SUM(CASE WHEN dep.value = 'DEP_7' THEN ds.deposit_amount ELSE 0 END)   AS deposit_7,
+             SUM(ds.deposit_amount)                                                 AS deposit_total,
+             count(*) OVER()                                                        AS total_elements
+         FROM
+             verify_staging vs
+             JOIN deposits_staging ds ON vs.company_id = ds.company_id AND vs.id = ds.verify_id
+             JOIN company comp ON vs.company_id = comp.id AND comp.deleted = FALSE
+             JOIN fastinfo_prod_import.store_vw sv
+                    ON sv.dataset = comp.dataset_code
+                       AND sv.number = vs.store_number_sfk
+             JOIN deposits_staging_deposit_type_domain dep ON ds.deposit_type_id = dep.id
+         WHERE vs.id IN (<idList>)
+         GROUP BY
+             vs.id,
+             vs.verify_successful,
+             vs.business_date,
+             vs.moved_to_pending_journal_entries,
+             vs.store_number_sfk,
+             sv.name,
+             vs.error_amount
+         ORDER BY vs.verify_successful, vs.business_date DESC, vs.store_number_sfk
+               """.trimIndent(),
+         mapOf("idList" to idList),
+      ) { rs, _ ->
+        mapRow(rs)
+      }
+   }
+
+   @ReadOnly
    fun fetchAccountingDetails(
       company: CompanyEntity,
       verifyId: UUID

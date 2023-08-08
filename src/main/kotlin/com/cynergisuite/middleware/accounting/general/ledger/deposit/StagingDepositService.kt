@@ -51,12 +51,12 @@ class StagingDepositService @Inject constructor(
       return AccountingDetailWrapper(found)
    }
 
-   fun postByDate(company: CompanyEntity, dto: List<StagingDepositDTO>, isAdmin: Boolean){
-      val stagingIds = dto.map { it.id }
+   fun postByDate(company: CompanyEntity, idList: List<UUID>, isAdmin: Boolean){
+
       val accountEntryList = if(isAdmin) {
-         stagingDepositRepository.findByStagingIdsAdmin(company, stagingIds)
+         stagingDepositRepository.findByStagingIdsAdmin(company, idList)
       } else {
-         stagingDepositRepository.findByStagingIds(company, stagingIds)
+         stagingDepositRepository.findByStagingIds(company, idList)
       }
       //create glJournal for each accountEntry
       if (accountEntryList.isNotEmpty()) {
@@ -75,16 +75,17 @@ class StagingDepositService @Inject constructor(
             )
             generalLedgerJournalService.create(glJournal, company)
          }
-         stagingDepositRepository.updateMovedPendingJE(company, stagingIds)
+         stagingDepositRepository.updateMovedPendingJE(company, idList)
          if (processUpdateIsamForSummary) {
-            summaryToISAM(dto, company)
+            val entityList = stagingDepositRepository.findByListId(company, idList)
+            val dtoList = entityList.map { StagingDepositDTO(it) }
+            summaryToISAM(dtoList, company)
          }
       } else throw NotFoundException("No Accounting Entries to Post To General Ledger Journal")
    }
 
-   fun postByMonth(company: CompanyEntity, dto: List<StagingDepositDTO>, lastDayOfMonth: LocalDate){
-      val stagingIds = dto.map { it.id }
-      val accountEntryList = stagingDepositRepository.findByStagingIds(company, stagingIds)
+   fun postByMonth(company: CompanyEntity, idList: List<UUID>, lastDayOfMonth: LocalDate){
+      val accountEntryList = stagingDepositRepository.findByStagingIds(company, idList)
       //combine all accountEntries into one glJournal
       if (accountEntryList.isNotEmpty()) {
          val account = accountRepository.findOne(accountEntryList[0].accountId, company)
@@ -100,9 +101,11 @@ class StagingDepositService @Inject constructor(
             message = accountEntryList[0].message
          )
          generalLedgerJournalService.create(glJournal, company)
-         stagingDepositRepository.updateMovedPendingJE(company, stagingIds)
+         stagingDepositRepository.updateMovedPendingJE(company, idList)
          if (processUpdateIsamForSummary) {
-            summaryToISAM(dto, company)
+            val entityList = stagingDepositRepository.findByListId(company, idList)
+            val dtoList = entityList.map { StagingDepositDTO(it) }
+            summaryToISAM(dtoList, company)
          }
       } else throw NotFoundException("No Accounting Entries to Post To General Ledger Journal")
    }

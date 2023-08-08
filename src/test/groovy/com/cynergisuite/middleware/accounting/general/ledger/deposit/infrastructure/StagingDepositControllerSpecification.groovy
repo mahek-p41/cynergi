@@ -60,7 +60,8 @@ class StagingDepositControllerSpecification extends ControllerSpecificationBase 
       def filter = new StagingDepositPageRequest([verifiedSuccessful: true])
       when:
       def stagingDTO = get("$path$filter")
-      def result = post("$path/day", stagingDTO.elements)
+      def idList = stagingDTO.elements.collect { it.id }
+      def result = post("$path/day", idList)
       get("$path$filter")
       then:
       final notFoundException = thrown(HttpClientResponseException)
