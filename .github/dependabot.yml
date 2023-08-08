@@ -7,7 +7,41 @@ version: 2
 updates:
    - package-ecosystem: gradle
      directory: /
-     open-pull-requests-limit: 5
-     rebase-strategy: auto
+     rebase-strategy: disabled
      schedule:
-      interval: "weekly"
+      interval: weekly
+   - package-ecosystem: github-actions
+     directory: /
+     rebase-strategy: disabled
+     schedule:
+      interval: weekly
+   - package-ecosystem: docker
+     directory: /support/development/sftp/
+     rebase-strategy: disabled
+     schedule:
+      interval: weekly
+   - package-ecosystem: docker
+     directory: /support/development/cynergitestdb/
+     rebase-strategy: disabled
+     schedule:
+      interval: weekly
+   - package-ecosystem: docker
+     directory: /support/development/cynmid/
+     rebase-strategy: disabled
+     schedule:
+      interval: weekly
+   - package-ecosystem: docker
+     directory: /support/development/cynergidb/
+     rebase-strategy: disabled
+     schedule:
+      interval: weekly
+   - package-ecosystem: docker
+     directory: /support/development/cynergibasedb/
+     rebase-strategy: disabled
+     schedule:
+      interval: weekly
+   - package-ecosystem: docker
+     directory: /support/deployment/cynmid/
+     rebase-strategy: disabled
+     schedule:
+      interval: weekly
