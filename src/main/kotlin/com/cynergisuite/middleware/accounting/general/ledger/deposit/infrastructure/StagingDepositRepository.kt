@@ -201,44 +201,12 @@ class StagingDepositRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findByStagingIds(company: CompanyEntity, stagingIds: List<UUID?>): List<AccountingDetailDTO> {
+   fun findByStagingIds(company: CompanyEntity, stagingIds: List<UUID?>, isAdmin: Boolean): List<AccountingDetailDTO> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "verifyId" to stagingIds)
-
-      return jdbc.query(
-         """
-            SELECT
-                aes.id,
-                aes.company_id,
-                aes.verify_id,
-                aes.store_number_sfk,
-                aes.business_date,
-                aes.account_id,
-                acct.number AS account_number,
-                acct.name AS account_name,
-                aes.profit_center_id_sfk AS profit_center_number,
-                aes.source_id,
-                source.value AS source_value,
-                CASE WHEN journal_entry_amount >= 0 THEN journal_entry_amount ELSE 0 END AS debit,
-                CASE WHEN journal_entry_amount < 0 THEN journal_entry_amount ELSE 0 END AS credit,
-                aes.deleted,
-                message
-            FROM
-                accounting_entries_staging aes
-                JOIN company comp ON aes.company_id = comp.id AND comp.deleted = FALSE
-                JOIN account acct ON aes.account_id = acct.id AND acct.deleted = FALSE
-                JOIN general_ledger_source_codes source ON aes.source_id = source.id AND source.deleted = FALSE
-                JOIN verify_staging vs on aes.verify_id = vs.id
-            WHERE vs.id IN (<verifyId>) AND vs.moved_to_pending_journal_entries = FALSE AND vs.verify_successful = TRUE
-         """.trimIndent(),
-         params
-      ){ rs, _ ->
-         mapAccountingDetail(rs)
+      val whereClause = StringBuilder("WHERE vs.deleted = false AND vs.company_id = :comp_id AND vs.id IN (<verifyId>) AND vs.verify_successful = TRUE")
+      if (!isAdmin) {
+         whereClause.append(" AND vs.moved_to_pending_journal_entries = FALSE")
       }
-   }
-
-   @ReadOnly
-   fun findByStagingIdsAdmin(company: CompanyEntity, stagingIds: List<UUID?>): List<AccountingDetailDTO> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "verifyId" to stagingIds)
 
       return jdbc.query(
          """
@@ -264,7 +232,7 @@ class StagingDepositRepository @Inject constructor(
                 JOIN account acct ON aes.account_id = acct.id AND acct.deleted = FALSE
                 JOIN general_ledger_source_codes source ON aes.source_id = source.id AND source.deleted = FALSE
                 JOIN verify_staging vs on aes.verify_id = vs.id
-            WHERE vs.id IN (<verifyId>) AND vs.verify_successful = TRUE
+            $whereClause
          """.trimIndent(),
          params
       ){ rs, _ ->

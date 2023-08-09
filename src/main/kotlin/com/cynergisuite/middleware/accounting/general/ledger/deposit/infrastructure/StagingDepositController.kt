@@ -130,7 +130,7 @@ class StagingDepositController @Inject constructor(
       logger.info("Fetching staging deposits {}", dto)
 
       val user = userService.fetchUser(authentication)
-      stagingDepositService.postByDate(user.myCompany(), dto, false)
+      stagingDepositService.postByDate(user.myCompany(), dto, user.isCynergiAdmin())
    }
 
    @Throws(PageOutOfBoundsException::class)
@@ -154,10 +154,11 @@ class StagingDepositController @Inject constructor(
       logger.info("Fetching staging deposits {}", pageRequest)
 
       val user = userService.fetchUser(authentication)
+
       val page = stagingDepositService.fetchAll(user.myCompany(), pageRequest)
       val idList = page.elements.map { it.id }.toList()
       if(page.elements.isNotEmpty()) {
-         stagingDepositService.postByDate(user.myCompany(), idList, false)
+         stagingDepositService.postByDate(user.myCompany(), idList, user.isCynergiAdmin())
       } else throw NotFoundException("No elements found to post to GL")
    }
 
@@ -173,7 +174,7 @@ class StagingDepositController @Inject constructor(
       ]
    )
    fun month(
-      @Body @Valid
+      @Body
       dto: List<UUID>,
       @QueryValue
       lastDayOfMonth: String,
@@ -184,7 +185,7 @@ class StagingDepositController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
       val date = LocalDate.parse(lastDayOfMonth, DateTimeFormatter.ISO_LOCAL_DATE)
-      stagingDepositService.postByMonth(user.myCompany(), dto, date)
+      stagingDepositService.postByMonth(user.myCompany(), dto, date, user.isCynergiAdmin())
    }
 
    @Throws(PageOutOfBoundsException::class)
@@ -214,7 +215,7 @@ class StagingDepositController @Inject constructor(
       val idList = page.elements.map { it.id }.toList()
 
       if(page.elements.isNotEmpty()) {
-         stagingDepositService.postByMonth(user.myCompany(), idList, date)
+         stagingDepositService.postByMonth(user.myCompany(), idList, date, user.isCynergiAdmin())
       } else throw NotFoundException("No elements found to post to GL")
    }
 }

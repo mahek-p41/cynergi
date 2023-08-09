@@ -53,11 +53,8 @@ class StagingDepositService @Inject constructor(
 
    fun postByDate(company: CompanyEntity, idList: List<UUID>, isAdmin: Boolean){
 
-      val accountEntryList = if(isAdmin) {
-         stagingDepositRepository.findByStagingIdsAdmin(company, idList)
-      } else {
-         stagingDepositRepository.findByStagingIds(company, idList)
-      }
+      val accountEntryList = stagingDepositRepository.findByStagingIds(company, idList, isAdmin)
+
       //create glJournal for each accountEntry
       if (accountEntryList.isNotEmpty()) {
          accountEntryList.map {
@@ -84,8 +81,9 @@ class StagingDepositService @Inject constructor(
       } else throw NotFoundException("No Accounting Entries to Post To General Ledger Journal")
    }
 
-   fun postByMonth(company: CompanyEntity, idList: List<UUID>, lastDayOfMonth: LocalDate){
-      val accountEntryList = stagingDepositRepository.findByStagingIds(company, idList)
+   fun postByMonth(company: CompanyEntity, idList: List<UUID>, lastDayOfMonth: LocalDate, isAdmin: Boolean){
+      val accountEntryList = stagingDepositRepository.findByStagingIds(company, idList, isAdmin)
+
       //combine all accountEntries into one glJournal
       if (accountEntryList.isNotEmpty()) {
          val account = accountRepository.findOne(accountEntryList[0].accountId, company)
