@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.deposit.infrastructure
 
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StagingStatusFilterRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
@@ -11,6 +12,7 @@ import com.cynergisuite.extensions.update
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.AccountingDetailDTO
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositEntity
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositPageRequest
+import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositStatusDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
@@ -114,6 +116,45 @@ class StagingDepositRepository @Inject constructor(
       { rs, elements ->
          do {
             elements.add(mapRow(rs))
+         }  while (rs.next())
+      }
+   }
+
+   @ReadOnly
+   fun findAll(
+      company: CompanyEntity,
+      filterRequest: StagingStatusFilterRequest
+   ): List<StagingDepositStatusDTO> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "year" to filterRequest.yearMonth.year, "month" to filterRequest.yearMonth.monthValue)
+      val whereClause = StringBuilder(" WHERE vs.deleted = false AND vs.company_id = :comp_id ")
+
+      whereClause.append(" AND EXTRACT(YEAR FROM vs.business_date) = :year AND EXTRACT(MONTH FROM vs.business_date) = :month ")
+
+      return jdbc.queryFullList(
+         """
+         SELECT
+             vs.id,
+             vs.verify_successful,
+             vs.business_date,
+             vs.moved_to_pending_journal_entries,
+             vs.store_number_sfk,
+             sv.name AS store_name,
+             vs.error_amount,
+             count(*) OVER()                                                        AS total_elements
+         FROM
+             verify_staging vs
+             JOIN company comp ON vs.company_id = comp.id AND comp.deleted = FALSE
+             JOIN fastinfo_prod_import.store_vw sv
+                    ON sv.dataset = comp.dataset_code
+                       AND sv.number = vs.store_number_sfk
+         $whereClause
+         ORDER BY vs.business_date, vs.store_number_sfk
+               """.trimIndent()
+         , params
+      )
+      { rs, _, elements ->
+         do {
+            elements.add(mapStatusRow(rs))
          }  while (rs.next())
       }
    }
@@ -287,6 +328,16 @@ class StagingDepositRepository @Inject constructor(
          deposit6CCOLP = rs.getBigDecimal("deposit_6"),
          deposit7DebitCard = rs.getBigDecimal("deposit_7"),
          depositTotal = rs.getBigDecimal("deposit_total")
+      )
+
+   fun mapStatusRow(rs: ResultSet): StagingDepositStatusDTO =
+      StagingDepositStatusDTO(
+         id = rs.getUuid("id"),
+         verifySuccessful = rs.getBoolean("verify_successful"),
+         businessDate = rs.getLocalDate("business_date"),
+         movedToPendingJournalEntries = rs.getBoolean("moved_to_pending_journal_entries"),
+         store = rs.getInt("store_number_sfk"),
+         storeName = rs.getString("store_name"),
       )
 
    private fun buildFilterString(begin: Boolean, end: Boolean, beginningParam: String, endingParam: String): String {

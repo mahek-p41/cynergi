@@ -1,10 +1,12 @@
 package com.cynergisuite.middleware.accounting.general.ledger.deposit.infrastructure
 
 import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.StagingStatusFilterRequest
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.AccountingDetailWrapper
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositDTO
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositPageRequest
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositService
+import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositStatusDTO
 import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
@@ -22,6 +24,7 @@ import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -71,6 +74,45 @@ class StagingDepositController @Inject constructor(
       }
 
       return page
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/status{?filterRequest*}", produces = [MediaType.APPLICATION_JSON])
+   @Operation(
+      tags = ["StagingDepositEndpoints"],
+      summary = "Fetch staging status",
+      description = "Fetch staging status",
+      operationId = "StagingDeposits-fetchStatus"
+   )
+   @ApiResponses(
+      value = [
+         ApiResponse(
+            responseCode = "200",
+            content = [Content(mediaType = MediaType.APPLICATION_JSON, array = ArraySchema(schema = Schema(implementation = StagingDepositStatusDTO::class)))]
+         ),
+         ApiResponse(
+            responseCode = "204",
+            description = "The requested Staging Status was unable to be found, or the result is empty"
+         ),
+         ApiResponse(
+            responseCode = "401",
+            description = "If the user calling this endpoint does not have permission to operate it"
+         ),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchStagingStatus(
+      @Parameter(name = "filterRequest", `in` = ParameterIn.QUERY, required = true)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: StagingStatusFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): List<StagingDepositStatusDTO> {
+      logger.info("Fetching staging deposits {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+
+      return stagingDepositService.fetchStatus(user.myCompany(), filterRequest)
    }
 
    @Get(uri = "/detail/{id:[0-9a-fA-F\\-]+}", produces = [MediaType.APPLICATION_JSON])
@@ -150,7 +192,7 @@ class StagingDepositController @Inject constructor(
       pageRequest: StagingDepositPageRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ){
+   ) {
       logger.info("Fetching staging deposits {}", pageRequest)
 
       val user = userService.fetchUser(authentication)
@@ -180,7 +222,7 @@ class StagingDepositController @Inject constructor(
       lastDayOfMonth: String,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ){
+   ) {
       logger.info("Fetching staging deposits {}", dto)
 
       val user = userService.fetchUser(authentication)
@@ -207,7 +249,7 @@ class StagingDepositController @Inject constructor(
       lastDayOfMonth: String,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ){
+   ) {
       logger.info("Fetching staging deposits {}", pageRequest)
       val date = LocalDate.parse(lastDayOfMonth, DateTimeFormatter.ISO_LOCAL_DATE)
       val user = userService.fetchUser(authentication)

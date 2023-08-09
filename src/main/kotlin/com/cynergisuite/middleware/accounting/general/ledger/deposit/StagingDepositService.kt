@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.deposit
 
 import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.StagingStatusFilterRequest
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalDTO
@@ -131,5 +132,11 @@ class StagingDepositService @Inject constructor(
       } finally {
          executeProcess(fileName, fileWriter, csvPrinter, logger, dataset, "/usr/bin/ht.updt_isam_summary.sh")
       }
+   }
+
+   fun fetchStatus(company: CompanyEntity, filterRequest: StagingStatusFilterRequest): List<StagingDepositStatusDTO> {
+      val found = stagingDepositRepository.findAll(company, filterRequest)
+
+      return found
    }
 }
