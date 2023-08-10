@@ -33,7 +33,7 @@ class StagingDepositRepository @Inject constructor(
       company: CompanyEntity,
       filterRequest: StagingDepositPageRequest
    ): RepositoryPage<StagingDepositEntity, PageRequest> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "movedToJe" to filterRequest.movedToJe)
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "movedToJe" to filterRequest.movedToJe, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder(" WHERE vs.deleted = false AND vs.company_id = :comp_id AND dep.value IN ('DEP_1', 'DEP_2', 'DEP_3', 'DEP_4', 'DEP_5', 'DEP_6', 'DEP_7')  AND vs.moved_to_pending_journal_entries = :movedToJe ")
 
       if (filterRequest.verifiedSuccessful != null) {
@@ -106,6 +106,7 @@ class StagingDepositRepository @Inject constructor(
              sv.name,
              vs.error_amount
          ORDER BY vs.verify_successful, vs.business_date DESC, vs.store_number_sfk
+         LIMIT :limit OFFSET :offset
                """.trimIndent()
       , params
       , filterRequest
@@ -114,6 +115,53 @@ class StagingDepositRepository @Inject constructor(
          do {
             elements.add(mapRow(rs))
          }  while (rs.next())
+      }
+   }
+
+   @ReadOnly
+   fun findByListId(company: CompanyEntity, idList: List<UUID>): List<StagingDepositEntity> {
+
+      return jdbc.query(
+         """
+         SELECT
+             vs.id,
+             vs.verify_successful,
+             vs.business_date,
+             vs.moved_to_pending_journal_entries,
+             vs.store_number_sfk,
+             sv.name AS store_name,
+             vs.error_amount,
+             SUM(CASE WHEN dep.value = 'DEP_1' THEN ds.deposit_amount ELSE 0 END)   AS deposit_1,
+             SUM(CASE WHEN dep.value = 'DEP_2' THEN ds.deposit_amount ELSE 0 END)   AS deposit_2,
+             SUM(CASE WHEN dep.value = 'DEP_3' THEN ds.deposit_amount ELSE 0 END)   AS deposit_3,
+             SUM(CASE WHEN dep.value = 'DEP_4' THEN ds.deposit_amount ELSE 0 END)   AS deposit_4,
+             SUM(CASE WHEN dep.value = 'DEP_5' THEN ds.deposit_amount ELSE 0 END)   AS deposit_5,
+             SUM(CASE WHEN dep.value = 'DEP_6' THEN ds.deposit_amount ELSE 0 END)   AS deposit_6,
+             SUM(CASE WHEN dep.value = 'DEP_7' THEN ds.deposit_amount ELSE 0 END)   AS deposit_7,
+             SUM(ds.deposit_amount)                                                 AS deposit_total,
+             count(*) OVER()                                                        AS total_elements
+         FROM
+             verify_staging vs
+             JOIN deposits_staging ds ON vs.company_id = ds.company_id AND vs.id = ds.verify_id
+             JOIN company comp ON vs.company_id = comp.id AND comp.deleted = FALSE
+             JOIN fastinfo_prod_import.store_vw sv
+                    ON sv.dataset = comp.dataset_code
+                       AND sv.number = vs.store_number_sfk
+             JOIN deposits_staging_deposit_type_domain dep ON ds.deposit_type_id = dep.id
+         WHERE vs.id IN (<idList>)
+         GROUP BY
+             vs.id,
+             vs.verify_successful,
+             vs.business_date,
+             vs.moved_to_pending_journal_entries,
+             vs.store_number_sfk,
+             sv.name,
+             vs.error_amount
+         ORDER BY vs.verify_successful, vs.business_date DESC, vs.store_number_sfk
+               """.trimIndent(),
+         mapOf("idList" to idList),
+      ) { rs, _ ->
+        mapRow(rs)
       }
    }
 
@@ -153,8 +201,12 @@ class StagingDepositRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findByStagingIds(company: CompanyEntity, stagingIds: List<UUID?>): List<AccountingDetailDTO> {
+   fun findByStagingIds(company: CompanyEntity, stagingIds: List<UUID?>, isAdmin: Boolean): List<AccountingDetailDTO> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "verifyId" to stagingIds)
+      val whereClause = StringBuilder("WHERE vs.deleted = false AND vs.company_id = :comp_id AND vs.id IN (<verifyId>) AND vs.verify_successful = TRUE")
+      if (!isAdmin) {
+         whereClause.append(" AND vs.moved_to_pending_journal_entries = FALSE")
+      }
 
       return jdbc.query(
          """
@@ -180,7 +232,7 @@ class StagingDepositRepository @Inject constructor(
                 JOIN account acct ON aes.account_id = acct.id AND acct.deleted = FALSE
                 JOIN general_ledger_source_codes source ON aes.source_id = source.id AND source.deleted = FALSE
                 JOIN verify_staging vs on aes.verify_id = vs.id
-            WHERE vs.id IN (<verifyId>) AND vs.moved_to_pending_journal_entries = FALSE AND vs.verify_successful = TRUE
+            $whereClause
          """.trimIndent(),
          params
       ){ rs, _ ->
