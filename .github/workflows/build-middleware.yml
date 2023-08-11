@@ -38,12 +38,20 @@ jobs:
             ;;
          "staging")
             micronautEnv=cstdevelop
-            releaseEnvironment=STAGING
+            releaseEnvironment=cst145
+            ;;
+         "pre-staging")
+            micronautEnv=cstdevelop
+            releaseEnvironment=cst144
+            ;;
+         "esig-staging")
+            micronautEnv=cstdevelop
+            releaseEnvironment=cst145
             ;;
          #"develop")
          *)
             micronautEnv=cstdevelop
-            releaseEnvironment=DEVELOP
+            releaseEnvironment=cst143
             ;;
          esac
 
@@ -129,7 +137,7 @@ jobs:
 
       - name: Build deploy artifact
         id: buildDeployArtifact
-        if: ${{ (success() || failure()) && contains('master staging develop', steps.setBuildVars.outputs.branchName) }}
+        if: ${{ (success() || failure()) && contains('master staging develop pre-staging esig-staging', steps.setBuildVars.outputs.branchName) }}
         run: |
          ${DEBUG_MODE}
          echo "::group::docker build middlewaretar"
@@ -197,7 +205,7 @@ jobs:
    deploy:
       needs: build
       name: Deploy to ${{ needs.build.outputs.releaseEnvironment }} patch
-      if: ${{ contains('master staging develop', needs.build.outputs.branchName) }}
+      if: ${{ contains('master staging develop pre-staging esig-staging', needs.build.outputs.branchName) }}
       uses: hightouchinc/cynergi-client/.github/workflows/deploy-tarball.yml@develop
       with:
          tarball: ${{ needs.build.outputs.tarball }}

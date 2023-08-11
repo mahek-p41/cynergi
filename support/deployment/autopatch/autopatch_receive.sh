@@ -1,5 +1,6 @@
-# Runs on cst machines   -  Look in cron.minute directory
-#
+#!/usr/bin/env bash
+#script to help automate non-production deployment of updates to Project Elimination repos
+
 logit() {
   echo "$(date) $*" >> $LOGGER
 }
@@ -7,28 +8,21 @@ error() {
   ERR=$1
   shift 1
   logit "$*   ERROR: $ERR"
-  exit $ERR
+  exit "$ERR"
 }
-make_directory() {
-  BASE=$(basename "$1")
-  [ ! -d /tmp/ELIM ] && mkdir /tmp/ELIM
-  [ ! -d /tmp/ELIM/$BASE ] && mkdir /tmp/ELIM/$BASE
-}
-install_Develop_system() {
-  NOTIFY="develop $1"
-  logit "Installing for Develop"
-  install_this_system "/tmp/ELIM/D"
-}
-install_Staging_system() {
-  NOTIFY="staging $1"
-  logit "Installing for Staging"
-  install_this_system "/tmp/ELIM/S"
+prepare_directories() {
+  [[ ! -d /tmp/ELIM ]] && mkdir /tmp/ELIM
+  [[ ! -d /tmp/ELIM/R ]] && mkdir /tmp/ELIM/R
+  [[ -d /tmp/ELIM/S ]] && rm -vrf /tmp/ELIM/S
+  [[ ! -L /tmp/ELIM/S ]] && ln -vs ./R /tmp/ELIM/S
+  [[ -d /tmp/ELIM/D ]] && rm -vrf /tmp/ELIM/D
+  [[ ! -L /tmp/ELIM/D ]] && ln -vs ./R /tmp/ELIM/D
 }
 install_this_system() {
   DIR="$1"
-  make_directory $DIR
-  mv $CLIENT $DIR
-  mv $MIDDLE $DIR
+  prepare_directories
+  mv "$TAR_CLIENT" "$DIR"
+  mv "$TAR_MIDDLE" "$DIR"
   sh /opt/cyn/v01/SCRIPTS/ht.patch_elimination.sh
   RET=$?
   logit "Status: $RET ht.patch_elimination.sh"
@@ -38,56 +32,40 @@ install_this_system() {
     logit "SKIPPING ht.patch_FC430.sh call"
     logit "Status: $? ht.patch_FC430.sh"
   else
-    TEMP=/tmp/junk.a.$$
-    tail -100 /opt/cyn/v01/cynmid/logs/cynergi-middleware.log > $TEMP
+    tail -100 /opt/cyn/v01/cynmid/logs/cynergi-middleware.log >> $MAIL_BODY
     sendEmail "Continuous build FAILED! for $NOTIFY"
-    rm -f $TEMP
     exit 99
   fi
 }
 sendEmail() {
-  sh /opt/cyn/v01/SCRIPTS/ht.cyn_email.sh -s "$*" -to montem@hightouchinc.com,garym@hightouchinc.com,vun@hightouchinc.com -fb $TEMP
+  sh /opt/cyn/v01/SCRIPTS/ht.cyn_email.sh -s "$*" -to montem@hightouchinc.com,garym@hightouchinc.com,vun@hightouchinc.com,grantg@hightouchinc.com -fb $MAIL_BODY
 }
 LOGGER=/tmp/autoBuild2.log; chmod 666 $LOGGER
 TRIGGER=/tmp/autoBuild.trigger
+TAR_CLIENT="/tmp/cynergi-client-current.tar.xz"
+TAR_MIDDLE="/tmp/cynergi-middleware-current.tar.xz"
 
 if [ -f $TRIGGER ]
 then
   rm -f $TRIGGER
-  cd /tmp
-  CLIENT=$(ls -ltr cynergi-client*tar.xz | tail -1 | awk '{print $NF}')
-  MIDDLE=$(ls -ltr cynergi-middleware*tar.xz | tail -1 | awk '{print $NF}')
 
-  [ ! "$CLIENT" ] && error 1 "Missing cynergi-client tarball"
-  [ ! "$MIDDLE" ] && error 2 "Missing cynergi-middleware tarball"
+  [[ ! -f "$TAR_CLIENT" ]] && error 1 "Missing cynergi-client tarball"
+  [[ ! -f "$TAR_MIDDLE" ]] && error 2 "Missing cynergi-middleware tarball"
 
-  IP=$(ifconfig | grep "inet addr" | head -1 | cut -d: -f2 | awk '{print $1}')
+  MAIL_BODY=/tmp/junk.a.$$
+  : > $MAIL_BODY #this just ensures we start with an empty file
+  NOTIFY=$(hostname)
+  logit "Installing for $NOTIFY"
 
-  unset NOTIFY
-  case $IP in
-    "172.29.3.143")
-       install_Develop_system cst143
-            ;;
-    "172.29.3.145")
-       install_Staging_system cst145
-            ;;
-    *)
-     logit "Nothing to do for system $IP"
-            ;;
-  esac
+  install_this_system "/tmp/ELIM/R"
   logit "Exit $0"
   if [ "$NOTIFY" ]
   then
     openssl genrsa -out /opt/cyn/v01/cynmid/jwt.pem 2048 1>/dev/null 2>/dev/null
 
-    TEMP=/tmp/junk.a.$$
-    initctl status cynergi-client > $TEMP
-    initctl status cynergi-middleware >> $TEMP
+    initctl status cynergi-client >> $MAIL_BODY
+    initctl status cynergi-middleware >> $MAIL_BODY
     sendEmail "Continuous build finished for $NOTIFY"
-    rm -f $TEMP
+    rm -f $MAIL_BODY
   fi
 fi
-
-
-
-
