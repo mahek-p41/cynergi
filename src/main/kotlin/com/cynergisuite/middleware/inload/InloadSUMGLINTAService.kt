@@ -31,7 +31,7 @@ class InloadSUMGLINTAService @Inject constructor(
       val account = accountRepository.findByNumber(record["Account_Number"].toLong(), company)!!
       val source = sourceCodeRepository.findOne(record["Source_Code"], company)!!
       val verifyId = generalLedgerInterfaceRepository.fetchVerifyId(company.id, record["Store"].toInt(), LocalDate.parse(record["JE_Date"])) ?: throw NotFoundException("Unable to find corresponding verify ID")
-      val movedToPendingJEs = generalLedgerInterfaceRepository.movedToPendingJournalEntries(company.id, record["Store"].toInt(), LocalDate.parse(record["JE_Date"]))
+      val movedToPendingJEs = generalLedgerInterfaceRepository.movedToPendingJournalEntries(company.id!!, record["Store"].toInt(), LocalDate.parse(record["JE_Date"]))
 
       if (!movedToPendingJEs) {
          val map = mapOf(

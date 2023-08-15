@@ -28,38 +28,54 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
       logger.debug("Upserting verify_staging {}", record)
 
       if (!movedToPendingJournalEntries(
-            map["company_id"] as UUID?,
+            map["company_id"] as UUID,
             map["store_number_sfk"] as Int,
             map["business_date"] as LocalDate?
          )
       ) {
-         jdbc.updateReturning(
-            """
-         INSERT INTO verify_staging(
-             company_id,
-             store_number_sfk,
-             business_date,
-             verify_successful,
-             error_amount,
-             moved_to_pending_journal_entries
+         var verifyID = findVerifyID(
+            map["company_id"] as UUID,
+            map["store_number_sfk"] as Int,
+            map["business_date"] as LocalDate
          )
-         VALUES (
-             :company_id,
-             :store_number_sfk,
-             :business_date,
-             :verify_successful,
-             :error_amount,
-             :moved_to_pending_journal_entries
-         )
-         ON CONFLICT (company_id, store_number_sfk, business_date, deleted)
-         DO UPDATE
-         SET verify_successful = excluded.verify_successful,
-             error_amount = excluded.error_amount
-         RETURNING *
-         """.trimIndent(),
-            map
-         ) { rs, _ ->
-            map["verify_id"] = rs.getUuid("id")
+         if (verifyID == null) {
+            verifyID = jdbc.updateReturning(
+               """
+                  INSERT INTO verify_staging(
+                      company_id,
+                      store_number_sfk,
+                      business_date,
+                      verify_successful,
+                      error_amount,
+                      moved_to_pending_journal_entries
+                  )
+                  VALUES (
+                      :company_id,
+                      :store_number_sfk,
+                      :business_date,
+                      :verify_successful,
+                      :error_amount,
+                      :moved_to_pending_journal_entries
+                  )
+                  RETURNING *
+               """.trimIndent(),
+               map
+            ) { rs, _ ->
+               rs.getUuid("id")
+            }
+            map["verify_id"] = verifyID
+         } else {
+            map["verify_id"] = verifyID
+            jdbc.update(
+               """
+                  UPDATE verify_staging
+                  SET
+                     verify_successful = :verify_successful,
+                     error_amount = :error_amount
+                  WHERE id = :verify_id AND deleted = false
+               """.trimIndent(),
+               map
+            )
          }
 
          val stagingDepositTypes: List<StagingDepositType> = stagingDepositTypeRepository.findAll()
@@ -68,34 +84,42 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
             map["deposit_type_id"] = it.id
             map["deposit_amount"] = map[it.value]
 
-            jdbc.update(
-               """
-         INSERT INTO deposits_staging (
-             company_id,
-             verify_id,
-             store_number_sfk,
-             business_date,
-             deposit_type_id,
-             deposit_amount
-         )
-         VALUES (
-            :company_id,
-            :verify_id,
-            :store_number_sfk,
-            :business_date,
-            :deposit_type_id,
-            :deposit_amount
-            )
-         ON CONFLICT (verify_id, deposit_type_id, deleted)
-         DO UPDATE
-         SET deposit_amount = CASE
-                                 WHEN NOT excluded.deleted THEN excluded.deposit_amount
-                                 ELSE deposits_staging.deposit_amount
-                              END
-         WHERE NOT deposits_staging.deleted
-         """.trimIndent(),
-               map
-            )
+            val depositID = findDepositID(verifyID!!, it.id)
+
+            if (depositID == null) {
+               jdbc.update(
+                  """
+                  INSERT INTO deposits_staging (
+                      company_id,
+                      verify_id,
+                      store_number_sfk,
+                      business_date,
+                      deposit_type_id,
+                      deposit_amount
+                  )
+                  VALUES (
+                     :company_id,
+                     :verify_id,
+                     :store_number_sfk,
+                     :business_date,
+                     :deposit_type_id,
+                     :deposit_amount
+                     )
+               """.trimIndent(),
+                  map
+               )
+            } else {
+               jdbc.update(
+                  """
+                  UPATE deposits_staging
+                  SET deposit_amount = :deposit_amount
+                  WHERE verify_id = :verify_id
+                     AND deposit_type_id = :deposit_type_id
+                     AND deleted = FALSE
+               """.trimIndent(),
+                  map
+               )
+            }
          }
       }
 
@@ -105,39 +129,55 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
    fun upsertStagingAccountEntries(record: CSVRecord, map: Map<String, *>) {
       logger.debug("Upserting GeneralLedgerJournal from CSVRecord {}", record)
 
-      jdbc.update(
-         """
-         INSERT INTO accounting_entries_staging(
-            company_id,
-            verify_id,
-            store_number_sfk,
-            business_date,
-            account_id,
-            profit_center_id_sfk,
-            source_id,
-            journal_entry_amount,
-            message
-         )
-         VALUES (
-            :company_id,
-            :verify_id,
-            :store_number_sfk,
-            :business_date,
-            :account_id,
-            :profit_center_id_sfk,
-            :source_id,
-            :journal_entry_amount,
-            :message
-         )
-         ON CONFLICT (company_id, store_number_sfk, business_date, deleted)
-         DO UPDATE
-         SET account_id = excluded.account_id,
-             source_id = excluded.source_id,
-             journal_entry_amount = excluded.journal_entry_amount,
-             message = excluded.message
-         """.trimIndent(),
-         map
+      var stagingAccountID = findStagingAccountID(
+         map["company_id"] as UUID,
+         map["store_number_sfk"] as Int,
+         map["business_date"] as LocalDate
       )
+      if (stagingAccountID == null) {
+         jdbc.update(
+            """
+               INSERT INTO accounting_entries_staging(
+                  company_id,
+                  verify_id,
+                  store_number_sfk,
+                  business_date,
+                  account_id,
+                  profit_center_id_sfk,
+                  source_id,
+                  journal_entry_amount,
+                  message
+               )
+               VALUES (
+                  :company_id,
+                  :verify_id,
+                  :store_number_sfk,
+                  :business_date,
+                  :account_id,
+                  :profit_center_id_sfk,
+                  :source_id,
+                  :journal_entry_amount,
+                  :message
+               )
+            """.trimIndent(),
+            map
+         )
+      } else {
+         jdbc.update(
+            """
+         UPDATE accounting_entries_staging
+         SET account_id = :account_id,
+             source_id = :source_id,
+             journal_entry_amount = :journal_entry_amount,
+             message = :message
+         WHERE company_id = :company_id
+            AND store_number_sfk = :store_number_sfk
+            AND business_date = :business_date
+            AND deleted = FALSE
+         """.trimIndent(),
+            map
+         )
+      }
    }
 
    @ReadOnly
@@ -149,7 +189,7 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun movedToPendingJournalEntries(companyId: UUID?, storeNumber: Int, jeDate: LocalDate?): Boolean {
+   fun movedToPendingJournalEntries(companyId: UUID, storeNumber: Int, jeDate: LocalDate?): Boolean {
       return jdbc.findFirstOrNull("""
          SELECT moved_to_pending_journal_entries
          FROM verify_staging
@@ -162,4 +202,55 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
       } ?: false
    }
 
+   @ReadOnly
+   fun findVerifyID(companyId: UUID, storeNumber: Int, businessDate: LocalDate): UUID? {
+      return jdbc.findFirstOrNull(
+         """SELECT id
+            FROM verify_staging
+            WHERE company_id = :comp_id
+              AND store_number_sfk = :storeNumber
+              AND business_date = :date
+              AND deleted = FALSE""",
+         mapOf<String, Any>(
+            "comp_id" to companyId,
+            "storeNumber" to storeNumber,
+            "date" to businessDate
+         )
+      )
+      { rs, _ -> rs.getUuid("id") }
+   }
+
+   @ReadOnly
+   fun findDepositID(verifyID: UUID, depositTypeID: Int): UUID? {
+      return jdbc.findFirstOrNull(
+         """SELECT id
+            FROM deposits_staging
+            WHERE verify_id = :verifyId
+               AND deposit_type_id = :depositTypeID
+               AND deleted = FALSE""",
+         mapOf<String, Any>(
+            "verifyId" to verifyID,
+            "depositTypeID" to depositTypeID,
+         )
+      )
+      { rs, _ -> rs.getUuid("id") }
+   }
+
+   @ReadOnly
+   fun findStagingAccountID(companyId: UUID, storeNumber: Int, businessDate: LocalDate): UUID? {
+      return jdbc.findFirstOrNull(
+         """SELECT id
+            FROM accounting_entries_staging
+            WHERE company_id = :comp_id
+              AND store_number_sfk = :storeNumber
+              AND business_date = :date
+              AND deleted = FALSE""",
+         mapOf<String, Any>(
+            "comp_id" to companyId,
+            "storeNumber" to storeNumber,
+            "date" to businessDate
+         )
+      )
+      { rs, _ -> rs.getUuid("id") }
+   }
 }
