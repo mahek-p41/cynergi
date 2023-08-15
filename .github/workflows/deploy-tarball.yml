@@ -1,0 +1,50 @@
+name: Deploy Tarball
+on:
+   workflow_call:
+      inputs:
+         tarball:
+            description: The case-sensitive name of the file to deploy. Must match the stored artifact. (e.g. cynergi-client-r18.tar.xz, cynergi-middleware-r19.tar.xz)
+            required: true
+            type: string
+         targetDeployable:
+            description: The case-sensitive Filename which is targeted by the patching script. (e.g. cynergi-client-current.tar.xz, cynergi-middleware-current.tar.xz)
+            required: true
+            type: string
+         releaseEnvironment:
+            description: Which environment should the build be deployed to? (e.g. DEVELOP, STAGING, cst143, cst144)
+            required: false
+            type: string
+env:
+   DEBUG_MODE: ${{ vars.ACTIONS_STEP_DEBUG == 'true' && 'set -x' || '' }}
+jobs:
+   deploy:
+      runs-on: self-hosted
+      steps:
+         - uses: actions/download-artifact@v3
+           with:
+            name: ${{ inputs.tarball }}
+
+         - env:
+            TARBALL: ${{ inputs.tarball }}
+            TARGET: ${{ inputs.targetDeployable }}
+            TRIGGER: build.trigger
+            GOLDBOX_SSH_OPTIONS: ${{ vars.GOLDBOX_SSH_OPTIONS }}
+            GOLDBOX_SSH_USER_HOST: '${{ secrets.CYNERGI_DEPLOY_JENKINS_USR }}@${{ secrets.GOLDBOX_IP_ADDRESS }}'
+            GOLDBOX_SSH_PASSWORD: ${{ secrets.CYNERGI_DEPLOY_JENKINS_PSW }}
+            RELEASE_ENVIRONMENT: ${{ inputs.releaseEnvironment != '' && inputs.releaseEnvironment || 'DEVELOP' }}
+           run: |
+            ${DEBUG_MODE}
+
+            sshpass -p "$GOLDBOX_SSH_PASSWORD" \
+               scp ${GOLDBOX_SSH_OPTIONS} ${TARBALL} ${GOLDBOX_SSH_USER_HOST}:/home/jenkins/ELIMINATION/${RELEASE_ENVIRONMENT}/${TARBALL}
+            scode=$?
+            [[ $scode -gt 0 ]] && echo "scp command failed. Make sure the path /home/jenkins/ELIMINATION/${RELEASE_ENVIRONMENT}/ exists and is writable on the target." && exit $scode
+
+            sshpass -p "$GOLDBOX_SSH_PASSWORD" ssh ${GOLDBOX_SSH_OPTIONS} $GOLDBOX_SSH_USER_HOST "
+               ${DEBUG_MODE}
+               set -o errexit -o pipefail -o noclobber -o nounset
+
+               cd /home/jenkins/ELIMINATION/${RELEASE_ENVIRONMENT}/
+               ln -vf ${TARBALL} ${TARGET}
+               touch ${TRIGGER}
+            "

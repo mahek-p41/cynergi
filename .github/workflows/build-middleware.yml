@@ -206,7 +206,7 @@ jobs:
       needs: build
       name: Deploy to ${{ needs.build.outputs.releaseEnvironment }} patch
       if: ${{ contains('master staging develop pre-staging esig-staging', needs.build.outputs.branchName) }}
-      uses: hightouchinc/cynergi-client/.github/workflows/deploy-tarball.yml@develop
+      uses: ./.github/workflows/deploy-tarball.yml
       with:
          tarball: ${{ needs.build.outputs.tarball }}
          targetDeployable: 'cynergi-middleware-current.tar.xz'
