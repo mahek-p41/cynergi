@@ -90,7 +90,7 @@ class SignHereAgreementProxyControllerSpecification extends ControllerSpecificat
          customerNumber == "123456789"
          agreementType == "R"
          timeCreated != null
-         name == "test name"
+         customerName == "test name"
       }
    }
 
