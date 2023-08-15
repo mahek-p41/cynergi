@@ -111,7 +111,7 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
             } else {
                jdbc.update(
                   """
-                  UPATE deposits_staging
+                  UPDATE deposits_staging
                   SET deposit_amount = :deposit_amount
                   WHERE verify_id = :verify_id
                      AND deposit_type_id = :deposit_type_id

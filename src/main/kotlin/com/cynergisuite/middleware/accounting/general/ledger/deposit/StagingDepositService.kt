@@ -116,13 +116,15 @@ class StagingDepositService @Inject constructor(
       try {
          csvPrinter.printRecord("action", "store", "business_date", "moved_to_pending_journal_entries", "dummy_field")
          dtos.forEach {
-            csvPrinter.printRecord(
-               "U",
-               it.store.toString(),
-               it.businessDate.toString(),
-               if (it.movedToPendingJournalEntries == true) "Y" else "N" ,
-               "1"
-            )
+            if (it.movedToPendingJournalEntries == true) {
+               csvPrinter.printRecord(
+                  "U",
+                  it.store.toString(),
+                  it.businessDate.toString(),
+                  "Y",
+                  "1"
+               )
+            }
          }
       } catch (e: Exception) {
          logger.error("Error occurred in creating SUMMARY csv file!", e)
