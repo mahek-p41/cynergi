@@ -68,7 +68,6 @@ class VendorController @Inject constructor(
       return response
    }
 
-   @Secured("MCFVENDORRPT")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorEndpoints"], summary = "Fetch a listing of Vendors", description = "Fetch a paginated listing of Vendor", operationId = "vendor-fetchAll")

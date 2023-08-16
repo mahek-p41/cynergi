@@ -1,7 +1,7 @@
-package com.cynergisuite.middleware.area.infrastructure
+package com.cynergisuite.middleware.authentication.infrastructure
 
+import com.cynergisuite.middleware.area.infrastructure.AreaRepository
 import com.cynergisuite.middleware.authentication.AccessException
-import com.cynergisuite.middleware.authentication.infrastructure.AccessControlProvider
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.localization.AccessDenied
 import io.micronaut.core.type.MutableArgumentValue
@@ -9,7 +9,7 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 
 @Singleton
-class AreaAccessControlProvider @Inject constructor(
+class AreaControlProvider @Inject constructor(
    private val areaRepository: AreaRepository
 ) : AccessControlProvider {
 

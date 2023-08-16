@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 import javax.validation.Valid
 
-@Secured(IS_AUTHENTICATED,"MCFPOPARAMS")
+@Secured(IS_AUTHENTICATED)
 @AreaControl("PO")
 @Controller("/api/purchase-order/control")
 class PurchaseOrderControlController @Inject constructor(
@@ -38,7 +38,6 @@ class PurchaseOrderControlController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(PurchaseOrderControlController::class.java)
 
-   @Secured("POLST")
    @Get(produces = [APPLICATION_JSON])
    @Operation(tags = ["PurchaseOrderControlEndpoints"], summary = "Fetch a single PurchaseOrderControlDTO", description = "Fetch a single PurchaseOrderControlDTO that is associated with the logged-in user's company", operationId = "purchaseOrderControl-fetchOne")
    @ApiResponses(
