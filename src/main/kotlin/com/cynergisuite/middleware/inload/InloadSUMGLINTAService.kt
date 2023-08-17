@@ -43,7 +43,7 @@ class InloadSUMGLINTAService @Inject constructor(
             "profit_center_id_sfk" to record["Profit_Center_Number"].toInt(),
             "source_id" to source.id,
             "journal_entry_amount" to record["JE_Amount"].toBigDecimal(),
-            "message" to null,
+            "message" to record["Message"],
          )
          generalLedgerInterfaceRepository.upsertStagingAccountEntries(record, map)
       }

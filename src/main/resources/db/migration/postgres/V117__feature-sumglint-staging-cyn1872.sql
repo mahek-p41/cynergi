@@ -9,5 +9,5 @@ UNIQUE (verify_id, deposit_type_id, deleted);
 
 ALTER TABLE accounting_entries_staging
 ADD CONSTRAINT accounting_entries_staging_unique_constraint
-UNIQUE (company_id, store_number_sfk, business_date, deleted);
+UNIQUE (company_id, store_number_sfk, business_date, account_id, deleted);
 

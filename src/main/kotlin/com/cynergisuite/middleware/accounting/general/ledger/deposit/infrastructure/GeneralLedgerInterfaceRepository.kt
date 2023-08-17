@@ -132,7 +132,8 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
       var stagingAccountID = findStagingAccountID(
          map["company_id"] as UUID,
          map["store_number_sfk"] as Int,
-         map["business_date"] as LocalDate
+         map["business_date"] as LocalDate,
+         map["account_id"] as UUID
       )
       if (stagingAccountID == null) {
          jdbc.update(
@@ -166,13 +167,13 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
          jdbc.update(
             """
          UPDATE accounting_entries_staging
-         SET account_id = :account_id,
-             source_id = :source_id,
+         SET source_id = :source_id,
              journal_entry_amount = :journal_entry_amount,
              message = :message
          WHERE company_id = :company_id
             AND store_number_sfk = :store_number_sfk
             AND business_date = :business_date
+            AND account_id = :account_id
             AND deleted = FALSE
          """.trimIndent(),
             map
@@ -237,18 +238,20 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findStagingAccountID(companyId: UUID, storeNumber: Int, businessDate: LocalDate): UUID? {
+   fun findStagingAccountID(companyId: UUID, storeNumber: Int, businessDate: LocalDate, accountID: UUID): UUID? {
       return jdbc.findFirstOrNull(
          """SELECT id
             FROM accounting_entries_staging
             WHERE company_id = :comp_id
               AND store_number_sfk = :storeNumber
               AND business_date = :date
+              AND account_id = :accountID
               AND deleted = FALSE""",
          mapOf<String, Any>(
             "comp_id" to companyId,
             "storeNumber" to storeNumber,
-            "date" to businessDate
+            "date" to businessDate,
+            "accountID" to accountID
          )
       )
       { rs, _ -> rs.getUuid("id") }
