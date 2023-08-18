@@ -27,7 +27,11 @@ class InloadService @Inject constructor(
 
       executorService.submit {
          try {
-            if (path.fileExists()) {
+            if (!path.fileExists()) {
+               logger.warn("{} did not exist", path)
+            } else if (!Files.isReadable(path) || !Files.isWritable(path)) {
+               logger.warn("{} need to be in read-write mode", path)
+            } else {
                logger.info("{} existed", path)
 
                val baseFileName = extractBaseFileName(path)
@@ -38,10 +42,7 @@ class InloadService @Inject constructor(
                checkProcessable(inloadSUMGLDETService, path)
                checkProcessable(inloadSUMGLINTVService, path)
                checkProcessable(inloadSUMGLINTAService, path)
-            } else {
-               logger.warn("{} did not exist", path)
             }
-
          } catch (e: Throwable) {
             logger.error("Error occurred during inloading of {}", path)
          }
