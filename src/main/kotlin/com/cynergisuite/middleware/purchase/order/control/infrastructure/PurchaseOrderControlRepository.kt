@@ -217,7 +217,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             defApp.address_latitude                                              AS defApp_comp_address_latitude,
             defApp.address_longitude                                             AS defApp_comp_address_longitude,
             defApp.address_country                                               AS defApp_comp_address_country,
-            defApp.address_county                                                AS _comp_address_county,
+            defApp.address_county                                                AS defApp_comp_address_county,
             defApp.address_phone                                                 AS defApp_comp_address_phone,
             defApp.address_fax                                                   AS defApp_comp_address_fax,
             appReqFlagType.id                                                    AS appReqFlagType_id,
