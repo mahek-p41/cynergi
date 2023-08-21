@@ -44,7 +44,6 @@ class PurchaseOrderDetailController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(PurchaseOrderDetailController::class.java)
 
-   @Secured("POLST")
    @Throws(NotFoundException::class)
    @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
    @Operation(tags = ["PurchaseOrderDetailEndpoints"], summary = "Fetch a single PurchaseOrderDetail", description = "Fetch a single PurchaseOrderDetail by its system generated primary key", operationId = "purchaseOrderDetail-fetchOne")
@@ -72,7 +71,6 @@ class PurchaseOrderDetailController @Inject constructor(
       return response
    }
 
-   @Secured("POLST")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["PurchaseOrderDetailEndpoints"], summary = "Fetch a listing of PurchaseOrderDetails", description = "Fetch a paginated listing of PurchaseOrderDetail", operationId = "purchaseOrderDetail-fetchAll")

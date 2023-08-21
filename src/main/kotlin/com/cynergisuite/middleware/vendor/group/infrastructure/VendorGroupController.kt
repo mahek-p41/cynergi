@@ -69,7 +69,6 @@ class VendorGroupController @Inject constructor(
       return response
    }
 
-   @Secured("MCFVENDGROUPRPT")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorGroupEndpoints"], summary = "Fetch a listing of VendorGroups", description = "Fetch a paginated listing of VendorGroups including associated schedule records", operationId = "vendorGroup-fetchAll")

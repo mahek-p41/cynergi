@@ -74,11 +74,14 @@ abstract class AreaRepository @Inject constructor(
                localization_code
             FROM area_type_domain
             WHERE menu_visible = TRUE) atd
-      cross join company c
-      LEFT OUTER JOIN area a ON atd.id = a.area_type_id and a.company_id = c.id
-      LEFT OUTER JOIN address ADD ON C.address_id = ADD.id
-      WHERE c.id = :company
-      ORDER BY atd.id
+      LEFT OUTER JOIN (
+          SELECT id, area_type_id, company_id
+          FROM area
+          WHERE company_id = :company OR id IS NULL
+         ) a ON atd.id = a.area_type_id
+      LEFT OUTER JOIN company c ON a.company_id = c.id
+      LEFT OUTER JOIN address add ON c.address_id = add.id
+      ORDER BY atd.id;
    """,
       nativeQuery = true
    )
