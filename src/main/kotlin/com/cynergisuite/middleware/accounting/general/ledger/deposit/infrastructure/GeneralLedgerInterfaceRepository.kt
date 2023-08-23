@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.deposit.infrastructure
 
+import com.cynergisuite.extensions.delete
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.update
@@ -127,7 +128,7 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
 
    @Transactional
    fun upsertStagingAccountEntries(record: CSVRecord, map: Map<String, *>) {
-      logger.debug("Upserting GeneralLedgerJournal from CSVRecord {}", record)
+      logger.debug("Upserting accounting_entries_staging from CSVRecord {}", record)
 
       var stagingAccountID = findStagingAccountID(
          map["company_id"] as UUID,
@@ -256,4 +257,56 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
       )
       { rs, _ -> rs.getUuid("id") }
    }
+
+   @Transactional
+   fun deleteUnmovedStagingAccountEntries(companyId: UUID, date: LocalDate, uploadedStores: List<Int>) {
+      logger.debug("Deleting Staging Account Entries that have not been moved and belong to uploaded stores.")
+
+      val rowsAffected = jdbc.delete(
+         """
+         DELETE FROM accounting_entries_staging
+         USING verify_staging
+         WHERE accounting_entries_staging.verify_id = verify_staging.id
+             AND verify_staging.company_id = :comp_id
+             AND verify_staging.business_date = :date
+             AND verify_staging.store_number_sfk IN (<stores>)
+             AND verify_staging.moved_to_pending_journal_entries = FALSE
+         """,
+         mapOf("comp_id" to companyId, "date" to date, "stores" to uploadedStores)
+      )
+      logger.info("Row affected {}", rowsAffected)
+   }
+
+   @Transactional
+   fun deleteStagingDataFromObsoleteStores(companyId: UUID, date: LocalDate, uploadedStores: List<Int>) {
+      logger.debug("Deleting Staging Data from obsolete stores.")
+
+      val rowsAffected = jdbc.delete("""
+         DELETE FROM accounting_entries_staging
+         USING verify_staging
+         WHERE accounting_entries_staging.verify_id = verify_staging.id
+             AND verify_staging.company_id = :comp_id
+             AND verify_staging.business_date = :date
+             AND verify_staging.store_number_sfk NOT IN (<stores>)
+             AND verify_staging.moved_to_pending_journal_entries = FALSE;
+
+         DELETE FROM deposits_staging
+         USING verify_staging
+         WHERE deposits_staging.verify_id = verify_staging.id
+             AND verify_staging.company_id = :comp_id
+             AND verify_staging.business_date = :date
+             AND verify_staging.store_number_sfk NOT IN (<stores>)
+             AND verify_staging.moved_to_pending_journal_entries = FALSE;
+
+         DELETE FROM verify_staging
+         WHERE company_id = :comp_id
+             AND business_date = :date
+             AND store_number_sfk NOT IN (<stores>)
+             AND moved_to_pending_journal_entries = FALSE;
+         """,
+         mapOf("comp_id" to companyId, "date" to date, "stores" to uploadedStores)
+      )
+      logger.info("Row affected {}", rowsAffected)
+   }
+
 }

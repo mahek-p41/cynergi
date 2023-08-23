@@ -5,5 +5,5 @@ import java.nio.file.Path
 
 interface Inloader {
    fun canProcess(path: Path): Boolean
-   fun inload(reader: BufferedReader): Int
+   fun inload(reader: BufferedReader, path: Path?): Int
 }

@@ -45,6 +45,7 @@ class InloadService @Inject constructor(
             }
          } catch (e: Throwable) {
             logger.error("Error occurred during inloading of {}", path)
+            logger.error(e.message)
          }
 
       }
@@ -55,7 +56,7 @@ class InloadService @Inject constructor(
          logger.info("Processing {} with {}", path, inloadService)
 
          val lockedSuccessfully = path.tryLockForReader { reader ->
-            inloadService.inload(reader)
+            inloadService.inload(reader, path)
          }
 
          if (lockedSuccessfully) {

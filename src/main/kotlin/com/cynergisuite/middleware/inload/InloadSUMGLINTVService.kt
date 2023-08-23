@@ -4,25 +4,30 @@ import com.cynergisuite.middleware.accounting.general.ledger.deposit.infrastruct
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.BufferedReader
 import java.nio.file.FileSystems
+import java.nio.file.Path
 import java.time.LocalDate
 import java.util.UUID
+import javax.transaction.Transactional
+import kotlin.io.path.name
 
 @Singleton
 class InloadSUMGLINTVService @Inject constructor(
    private val companyRepository: CompanyRepository,
    private val generalLedgerInterfaceRepository: GeneralLedgerInterfaceRepository,
-) : CsvInloaderBase(FileSystems.getDefault().getPathMatcher("glob:SUMGLINTV_*")) {
+) : CsvInloaderBase(FileSystems.getDefault().getPathMatcher("glob:SUMGLINTV_*.COMPLETE")) {
 
    private val logger: Logger = LoggerFactory.getLogger(InloadSUMGLINTVService::class.java)
 
    override fun inloadCsv(record: CSVRecord, batchId: UUID) {
       logger.debug("Loading daily current state record SUMGLINTV {}", record)
 
-      // Todo: make some improvements on next task
       val company = companyRepository.findByDataset(record["Data_Set_ID"].trim())!!
 
       val map: MutableMap<String, Any?> = mutableMapOf(
@@ -43,6 +48,34 @@ class InloadSUMGLINTVService @Inject constructor(
       )
       generalLedgerInterfaceRepository.upsert(record, map)
 
+   }
+
+   @Transactional
+   override fun inload(reader: BufferedReader, path: Path?): Int {
+      var rowsLoaded = 0
+      val batchId = UUID.randomUUID()
+      val company = companyRepository.findByDataset(extractDataset(path!!.name)!!)!!
+      val dateStorePairs: MutableSet<Pair<LocalDate, Int>> = HashSet()
+
+      try {
+         CSVParser(reader, CSVFormat.EXCEL.withHeader().withDelimiter('|')).use { parser ->
+            for (record in parser) {
+               dateStorePairs.add(Pair(LocalDate.parse(record["Date"]), record["Store_Number"].toInt()))
+               inloadCsv(record, batchId)
+               rowsLoaded++
+            }
+         }
+
+         val groupedStoresByDate: Map<LocalDate, List<Int>> = dateStorePairs.groupBy({ it.first }) { it.second }
+         groupedStoresByDate.forEach { (date, uploadedStores) ->
+            generalLedgerInterfaceRepository.deleteStagingDataFromObsoleteStores(company.id!!, date, uploadedStores.toList())
+         }
+      } catch (t: Throwable) {
+         logger.error("Error occurred importing CSV", t)
+         throw t
+      }
+
+      return rowsLoaded
    }
 
 }

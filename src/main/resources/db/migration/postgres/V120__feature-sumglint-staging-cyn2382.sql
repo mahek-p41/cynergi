@@ -1,0 +1,2 @@
+ALTER TABLE accounting_entries_staging
+DROP CONSTRAINT accounting_entries_staging_unique_constraint;

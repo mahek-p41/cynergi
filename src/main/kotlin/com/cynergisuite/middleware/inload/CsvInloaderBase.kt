@@ -10,6 +10,7 @@ import java.nio.file.Path
 import java.nio.file.PathMatcher
 import java.util.UUID
 import javax.transaction.Transactional
+import kotlin.io.path.Path
 
 abstract class CsvInloaderBase(
    private val pathMatcher: PathMatcher
@@ -19,8 +20,8 @@ abstract class CsvInloaderBase(
    protected abstract fun inloadCsv(record: CSVRecord, batchId: UUID)
 
    override fun canProcess(path: Path): Boolean {
-      val filename = path.fileName
-      val matched = pathMatcher.matches(path.fileName)
+      val filename = path.fileName.toString().uppercase()
+      val matched = pathMatcher.matches(Path(filename))
 
       logger.debug("Checking if path {} matches {}", filename, matched)
 
@@ -28,7 +29,7 @@ abstract class CsvInloaderBase(
    }
 
    @Transactional
-   override fun inload(reader: BufferedReader): Int {
+   override fun inload(reader: BufferedReader, path: Path?): Int {
       var rowsLoaded = 0
       val batchId = UUID.randomUUID()
 
@@ -45,5 +46,16 @@ abstract class CsvInloaderBase(
       }
 
       return rowsLoaded
+   }
+
+   fun extractDataset(input: String): String? {
+      val pattern = "_(\\w+)_\\d{8}" // Matches a word between two underscores
+
+      val matcher = Regex(pattern).find(input)
+      if (matcher != null) {
+         return matcher.groups[1]?.value
+      }
+
+      return null
    }
 }
