@@ -1,13 +1,14 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
-import com.cynergisuite.middleware.area.infrastructure.AreaAccessControlProvider
 import com.cynergisuite.middleware.authentication.AccessException
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.localization.AccessDenied
+import io.micronaut.aop.InterceptorBean
 import io.micronaut.aop.MethodInterceptor
 import io.micronaut.aop.MethodInvocationContext
 import io.micronaut.context.ApplicationContext
+import io.micronaut.security.rules.SecuredAnnotationRule
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory
  * for the employee who is attempting access to the endpoint
  */
 @Singleton
+@InterceptorBean(AreaControl::class)
 class AreaControlService @Inject constructor(
    private val applicationContext: ApplicationContext,
    private val userService: UserService,
@@ -39,18 +41,24 @@ class AreaControlService @Inject constructor(
          is Array<*> -> it.mapNotNull { element -> element.toString() }
          else -> listOf(it.toString())
       }}.toTypedArray()
-      val accessControlProviderClass = AreaAccessControlProvider::class.java
-      val accessControlProvider = applicationContext.getBean(accessControlProviderClass)
+      val areaControlProviderClass = AreaControlProvider::class.java
+      val areaControlProvider = applicationContext.getBean(areaControlProviderClass)
 
-      logger.trace("Checking access of asset {} using {} of user {}", asset, accessControlProviderClass, authenticatedUser)
+      logger.trace("Checking access of asset {} using {} of user {}", asset, areaControlProviderClass, authenticatedUser)
 
       return if (
          securityService.isAuthenticated &&
-         (authenticatedUser.isCynergiAdmin() || accessControlProvider.canUserAccess(authenticatedUser, asset, parameters))
+         (authenticatedUser.isCynergiAdmin() || areaControlProvider.canUserAccess(authenticatedUser, asset, parameters))
       ) {
          context.proceed()
       } else {
-         throw accessControlProvider.generateException(authenticatedUser, asset, parameters)
+         throw areaControlProvider.generateException(authenticatedUser, asset, parameters)
       }
+   }
+
+   val ORDER = SecuredAnnotationRule.ORDER - 10
+
+   override fun getOrder(): Int {
+      return ORDER
    }
 }

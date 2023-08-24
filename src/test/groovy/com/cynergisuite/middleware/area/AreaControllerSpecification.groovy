@@ -4,6 +4,7 @@ package com.cynergisuite.middleware.area
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import spock.lang.Unroll
 
 @MicronautTest(transactional = false)
 class AreaControllerSpecification extends ControllerSpecificationBase {
@@ -43,9 +44,7 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
 
    void "disable then re-enable an area" () {
       given:
-
       def areas = get("/area")
-      def disabledArea = new AreaDTO(2, "BR", "Bank Reconciliation", true)
       when:
 
       put("/area/", areas[1])
@@ -54,10 +53,10 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(Exception)
       disabledResult != null
-      disabledResult.size == 5
-      with(disabledResult) { it ->
-         any { value != disabledArea.value}
-      }
+      def disabledArea = disabledResult.find { it.value == "BR" }
+      disabledArea != null
+      !disabledArea.enabled
+
 
       when:
       put("/area/", areas[1])
@@ -65,10 +64,9 @@ class AreaControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(Exception)
+      def enabledArea = enabledResult.find { it.value == "BR" }
       enabledResult != null
-      enabledResult.size == 6
-      with(enabledResult) { area ->
-         value.any{ it == disabledArea.value }
-      }
+      enabledArea != null
+      enabledArea.enabled
    }
 }

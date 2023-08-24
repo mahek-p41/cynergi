@@ -71,7 +71,6 @@ class VendorPaymentTermController @Inject constructor(
       return response
    }
 
-   @Secured("MCFVENDTERMRPT")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["VendorPaymentTermEndpoints"], summary = "Fetch a listing of VendorPaymentTerms", description = "Fetch a paginated listing of VendorPaymentTerms including associated schedule records", operationId = "vendorPaymentTerm-fetchAll")

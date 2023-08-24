@@ -33,7 +33,6 @@ class AccountPayableCashRequirementController @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableCashRequirementController::class.java)
 
-   @Secured("APCASHOUT")
    @Get(uri = "{?filterRequest*}", produces = [MediaType.APPLICATION_JSON])
    @Operation(tags = ["AccountPayableCashRequirementReportEndpoints"], summary = "Fetch an Account Payable Cash Requirement Report", description = "Fetch an Account Payable Cash Requirement Report", operationId = "accountPayableCashRequirementReport-fetchReport")
    @ApiResponses(

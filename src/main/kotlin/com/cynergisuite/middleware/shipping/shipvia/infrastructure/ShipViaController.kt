@@ -68,7 +68,6 @@ class ShipViaController @Inject constructor(
       return response
    }
 
-   @Secured("MCFVIARPT")
    @Throws(PageOutOfBoundsException::class)
    @Get(value = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["ShipViaEndpoints"], summary = "Fetch a listing of Ship Vias", description = "Fetch a paginated listing of Ship Vias", operationId = "shipvia-fetchAll")

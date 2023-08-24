@@ -70,7 +70,6 @@ class RebateController @Inject constructor(
       return response
    }
 
-   @Secured("MCFVENDREBATERPT")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["RebateEndpoints"], summary = "Fetch a listing of Rebates", description = "Fetch a paginated listing of Rebate", operationId = "rebate-fetchAll")

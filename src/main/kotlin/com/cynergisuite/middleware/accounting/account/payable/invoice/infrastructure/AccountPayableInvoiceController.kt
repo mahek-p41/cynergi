@@ -109,7 +109,6 @@ class AccountPayableInvoiceController @Inject constructor(
       return page
    }
 
-   @Secured("APLST")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/list-by-vendor{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(

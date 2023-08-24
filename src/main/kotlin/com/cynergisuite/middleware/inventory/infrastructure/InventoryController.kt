@@ -146,7 +146,6 @@ class InventoryController(
       return inventoryService.fetchByLookupKey(lookupKey, user.myCompany(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(lookupKey)
    }
 
-   @Secured("APINVMNT")
    @Throws(AccessException::class)
    @Get(uri = "/inquiry{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(tags = ["InventoryEndpoints"], summary = "Fetch an Inventory Inquiry", description = "Fetch an Account Payable Inventory Inquiry", operationId = "inventory-inquiry")
