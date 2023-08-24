@@ -28,9 +28,9 @@ sendThem() {
 
   date > $NEW_TRIGGER
   {
-    rsync -avxlz "./$TAR_CLIENT" "root@$WHO:/tmp"
-    rsync -avxlz "./$TAR_MIDDLE" "root@$WHO:/tmp"
-    rsync -avxlz "./$NEW_TRIGGER" "root@$WHO:/tmp"
+    rsync -avxLz "./$TAR_CLIENT" "root@$WHO:/tmp"
+    rsync -avxLz "./$TAR_MIDDLE" "root@$WHO:/tmp"
+    rsync -avxLz "./$NEW_TRIGGER" "root@$WHO:/tmp"
   } >> "$LOGGER.status" 2>&1
   rm -f $TRIGGER $NEW_TRIGGER
 }
