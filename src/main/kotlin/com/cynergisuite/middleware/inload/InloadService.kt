@@ -19,6 +19,7 @@ class InloadService @Inject constructor(
    private val inloadSUMGLDETService: InloadSUMGLDETService,
    private val inloadSUMGLINTVService: InloadSUMGLINTVService,
    private val inloadSUMGLINTAService: InloadSUMGLINTAService,
+   private val inloadINVEOMService: InloadINVEOMService,
 ) {
    private val logger: Logger = LoggerFactory.getLogger(InloadService::class.java)
 
@@ -42,6 +43,12 @@ class InloadService @Inject constructor(
                checkProcessable(inloadSUMGLDETService, path)
                checkProcessable(inloadSUMGLINTVService, path)
                checkProcessable(inloadSUMGLINTAService, path)
+<<<<<<< HEAD
+=======
+               checkProcessable(inloadINVEOMService, path)
+            } else {
+               logger.warn("{} did not exist", path)
+>>>>>>> 1475ab8d (Committing changes for inveom watch script)
             }
          } catch (e: Throwable) {
             logger.error("Error occurred during inloading of {}", path)
