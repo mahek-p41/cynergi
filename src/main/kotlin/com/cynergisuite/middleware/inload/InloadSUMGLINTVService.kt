@@ -15,7 +15,6 @@ import java.nio.file.Path
 import java.time.LocalDate
 import java.util.UUID
 import javax.transaction.Transactional
-import kotlin.io.path.name
 
 @Singleton
 class InloadSUMGLINTVService @Inject constructor(
@@ -54,21 +53,14 @@ class InloadSUMGLINTVService @Inject constructor(
    override fun inload(reader: BufferedReader, path: Path?): Int {
       var rowsLoaded = 0
       val batchId = UUID.randomUUID()
-      val company = companyRepository.findByDataset(extractDataset(path!!.name)!!)!!
-      val dateStorePairs: MutableSet<Pair<LocalDate, Int>> = HashSet()
 
       try {
          CSVParser(reader, CSVFormat.EXCEL.withHeader().withDelimiter('|')).use { parser ->
+            // upsert data for each date-store pair don't delete data from stores not appearing in csv file
             for (record in parser) {
-               dateStorePairs.add(Pair(LocalDate.parse(record["Date"]), record["Store_Number"].toInt()))
                inloadCsv(record, batchId)
                rowsLoaded++
             }
-         }
-
-         val groupedStoresByDate: Map<LocalDate, List<Int>> = dateStorePairs.groupBy({ it.first }) { it.second }
-         groupedStoresByDate.forEach { (date, uploadedStores) ->
-            generalLedgerInterfaceRepository.deleteStagingDataFromObsoleteStores(company.id!!, date, uploadedStores.toList())
          }
       } catch (t: Throwable) {
          logger.error("Error occurred importing CSV", t)

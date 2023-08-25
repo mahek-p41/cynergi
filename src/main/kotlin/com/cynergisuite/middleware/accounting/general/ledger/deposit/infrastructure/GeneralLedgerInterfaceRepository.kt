@@ -127,59 +127,37 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
    }
 
    @Transactional
-   fun upsertStagingAccountEntries(record: CSVRecord, map: Map<String, *>) {
-      logger.debug("Upserting accounting_entries_staging from CSVRecord {}", record)
+   fun insertStagingAccountEntries(record: CSVRecord, map: Map<String, *>) {
+      logger.debug("Inserting accounting_entries_staging from CSVRecord {}", record)
 
-      var stagingAccountID = findStagingAccountID(
-         map["company_id"] as UUID,
-         map["store_number_sfk"] as Int,
-         map["business_date"] as LocalDate,
-         map["account_id"] as UUID
-      )
-      if (stagingAccountID == null) {
-         jdbc.update(
-            """
-               INSERT INTO accounting_entries_staging(
-                  company_id,
-                  verify_id,
-                  store_number_sfk,
-                  business_date,
-                  account_id,
-                  profit_center_id_sfk,
-                  source_id,
-                  journal_entry_amount,
-                  message
-               )
-               VALUES (
-                  :company_id,
-                  :verify_id,
-                  :store_number_sfk,
-                  :business_date,
-                  :account_id,
-                  :profit_center_id_sfk,
-                  :source_id,
-                  :journal_entry_amount,
-                  :message
-               )
-            """.trimIndent(),
-            map
-         )
-      } else {
-         jdbc.update(
-            """
-         UPDATE accounting_entries_staging
-         SET source_id = :source_id,
-             journal_entry_amount = :journal_entry_amount,
-             message = :message
-         WHERE company_id = :company_id
-            AND store_number_sfk = :store_number_sfk
-            AND business_date = :business_date
-            AND account_id = :account_id
-            AND deleted = FALSE
+      jdbc.update(
+         """
+            INSERT INTO accounting_entries_staging(
+               company_id,
+               verify_id,
+               store_number_sfk,
+               business_date,
+               account_id,
+               profit_center_id_sfk,
+               source_id,
+               journal_entry_amount,
+               message
+            )
+            VALUES (
+               :company_id,
+               :verify_id,
+               :store_number_sfk,
+               :business_date,
+               :account_id,
+               :profit_center_id_sfk,
+               :source_id,
+               :journal_entry_amount,
+               :message
+            )
          """.trimIndent(),
-            map
-         )
-      }
+         map
+      )
+
    }
 
    @ReadOnly
@@ -238,26 +216,6 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
       { rs, _ -> rs.getUuid("id") }
    }
 
-   @ReadOnly
-   fun findStagingAccountID(companyId: UUID, storeNumber: Int, businessDate: LocalDate, accountID: UUID): UUID? {
-      return jdbc.findFirstOrNull(
-         """SELECT id
-            FROM accounting_entries_staging
-            WHERE company_id = :comp_id
-              AND store_number_sfk = :storeNumber
-              AND business_date = :date
-              AND account_id = :accountID
-              AND deleted = FALSE""",
-         mapOf<String, Any>(
-            "comp_id" to companyId,
-            "storeNumber" to storeNumber,
-            "date" to businessDate,
-            "accountID" to accountID
-         )
-      )
-      { rs, _ -> rs.getUuid("id") }
-   }
-
    @Transactional
    fun deleteUnmovedStagingAccountEntries(companyId: UUID, date: LocalDate, uploadedStores: List<Int>) {
       logger.debug("Deleting Staging Account Entries that have not been moved and belong to uploaded stores.")
@@ -271,38 +229,6 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
              AND verify_staging.business_date = :date
              AND verify_staging.store_number_sfk IN (<stores>)
              AND verify_staging.moved_to_pending_journal_entries = FALSE
-         """,
-         mapOf("comp_id" to companyId, "date" to date, "stores" to uploadedStores)
-      )
-      logger.info("Row affected {}", rowsAffected)
-   }
-
-   @Transactional
-   fun deleteStagingDataFromObsoleteStores(companyId: UUID, date: LocalDate, uploadedStores: List<Int>) {
-      logger.debug("Deleting Staging Data from obsolete stores.")
-
-      val rowsAffected = jdbc.delete("""
-         DELETE FROM accounting_entries_staging
-         USING verify_staging
-         WHERE accounting_entries_staging.verify_id = verify_staging.id
-             AND verify_staging.company_id = :comp_id
-             AND verify_staging.business_date = :date
-             AND verify_staging.store_number_sfk NOT IN (<stores>)
-             AND verify_staging.moved_to_pending_journal_entries = FALSE;
-
-         DELETE FROM deposits_staging
-         USING verify_staging
-         WHERE deposits_staging.verify_id = verify_staging.id
-             AND verify_staging.company_id = :comp_id
-             AND verify_staging.business_date = :date
-             AND verify_staging.store_number_sfk NOT IN (<stores>)
-             AND verify_staging.moved_to_pending_journal_entries = FALSE;
-
-         DELETE FROM verify_staging
-         WHERE company_id = :comp_id
-             AND business_date = :date
-             AND store_number_sfk NOT IN (<stores>)
-             AND moved_to_pending_journal_entries = FALSE;
          """,
          mapOf("comp_id" to companyId, "date" to date, "stores" to uploadedStores)
       )

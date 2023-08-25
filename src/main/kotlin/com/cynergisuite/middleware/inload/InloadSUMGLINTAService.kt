@@ -51,7 +51,7 @@ class InloadSUMGLINTAService @Inject constructor(
             "journal_entry_amount" to record["JE_Amount"].toBigDecimal(),
             "message" to record["Message"],
          )
-         generalLedgerInterfaceRepository.upsertStagingAccountEntries(record, map)
+         generalLedgerInterfaceRepository.insertStagingAccountEntries(record, map)
       }
    }
 
@@ -72,11 +72,13 @@ class InloadSUMGLINTAService @Inject constructor(
                rowsLoaded++
             }
          }
+         // clean data from accounting_entries_staging for uploaded date-store pairs
          val groupedStoresByDate: Map<LocalDate, List<Int>> = dateStorePairs.groupBy({ it.first }) { it.second }
          groupedStoresByDate.forEach { (date, uploadedStores) ->
             generalLedgerInterfaceRepository.deleteUnmovedStagingAccountEntries(company.id!!, date, uploadedStores.toList())
          }
 
+         // insert new data for accounting_entries_staging
          csvRecords.forEach {
             inloadCsv(it, batchId)
          }
