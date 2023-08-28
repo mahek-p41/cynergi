@@ -58,6 +58,7 @@ class APDatesSelectedOutsideGLDatesSet(fromAP: LocalDate, thruAP: LocalDate, fro
 class APDatesSelectedOutsideGLDatesSelected(fromAP: LocalDate, thruAP: LocalDate, fromGL: LocalDate, thruGL: LocalDate) : Cynergi("cynergi.validation.ap.outside.of.gl.window", arrayOf(fromAP, thruAP, fromGL, thruGL))
 class DatesSelectedMustBeWithinFinancialCalendar(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.dates.not.in.financial.calendar", arrayOf(from, thru))
 class DatesMustBeWithinCurrentOrNextFiscalYear(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.dates.not.in.current.or.next.fiscal.year", arrayOf(from, thru))
+class DateMustBeAfterPreviousFiscalYear(date: LocalDate) : Cynergi("cynergi.validation.date.after.previous.fiscal.year", arrayOf(date))
 class SourceCodeDoesNotExist(value: String) : Cynergi("cynergi.validation.source.code.does.not.exist", arrayOf(value))
 class NoGLDatesSet : Cynergi("cynergi.validation.gl.must.be.open.to.open.ap.range", emptyArray())
 class InvalidCompany(company: CompanyEntity) : Cynergi("cynergi.validation.invalid.company", arrayOf(company.datasetCode))

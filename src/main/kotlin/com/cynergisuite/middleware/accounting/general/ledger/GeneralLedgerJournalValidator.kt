@@ -9,6 +9,7 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.localization.BalanceMustBeZero
+import com.cynergisuite.middleware.localization.DateMustBeAfterPreviousFiscalYear
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import jakarta.inject.Inject
@@ -49,7 +50,7 @@ class GeneralLedgerJournalValidator @Inject constructor(
       val account = dto.account?.id?.let { accountRepository.findOne(it, company) }
       val profitCenter = dto.profitCenter?.id?.let { storeRepository.findOne(it, company) }
       val source = dto.source?.id?.let { generalLedgerSourceCodeRepository.findOne(it, company) }
-      val cal = financialCalendarService.fetchByDate(company, dto.date!!)
+      val wholeCal = financialCalendarService.fetchFiscalYears(company)
 
       doValidation { errors ->
          // non-nullable validations
@@ -62,9 +63,10 @@ class GeneralLedgerJournalValidator @Inject constructor(
             errors.add(ValidationError("source.id", NotFound(dto.source!!.id!!)))
          }
 
-         if (cal == null ) {
-            errors.add(ValidationError("FinancialCalendar", NotFound(dto.date!!)))
+         if (dto.date!! < wholeCal[1].end) {
+            errors.add(ValidationError("entryDate", DateMustBeAfterPreviousFiscalYear(dto.date!!)))
          }
+
       }
 
       return GeneralLedgerJournalEntity(
