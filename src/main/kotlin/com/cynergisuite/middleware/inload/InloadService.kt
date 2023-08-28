@@ -43,12 +43,7 @@ class InloadService @Inject constructor(
                checkProcessable(inloadSUMGLDETService, path)
                checkProcessable(inloadSUMGLINTVService, path)
                checkProcessable(inloadSUMGLINTAService, path)
-<<<<<<< HEAD
-=======
                checkProcessable(inloadINVEOMService, path)
-            } else {
-               logger.warn("{} did not exist", path)
->>>>>>> 1475ab8d (Committing changes for inveom watch script)
             }
          } catch (e: Throwable) {
             logger.error("Error occurred during inloading of {}", path)
