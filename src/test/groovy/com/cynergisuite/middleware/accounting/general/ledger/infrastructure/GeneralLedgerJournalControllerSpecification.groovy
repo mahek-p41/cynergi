@@ -5,6 +5,7 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarCompleteDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarEntity
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
@@ -196,15 +197,15 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final company = companyFactoryService.forDatasetCode('coravt')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
-      final calendar = financialCalendarDataLoaderService.singleDTO()
-      calendar.generalLedgerOpen = true
-      final calEnt = new FinancialCalendarEntity(calendar, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
-      financialCalendarRepository.insert(calEnt, company)
+      final beginDate = LocalDate.parse("2021-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
+      def calendar = post("/accounting/financial-calendar/complete", financialCalendarDTO)
+
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glJournalDTO = dataLoaderService.singleDTO(
          new AccountDTO(acct),
          new StoreDTO(store),
-         calendar.periodFrom,
+         beginDate.plusYears(2),
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
 
@@ -236,15 +237,14 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final company = companyFactoryService.forDatasetCode('coravt')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
-      final calendar = financialCalendarDataLoaderService.singleDTO()
-      calendar.generalLedgerOpen = true
-      final calEnt = new FinancialCalendarEntity(calendar, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
-      financialCalendarRepository.insert(calEnt, company)
+      final beginDate = LocalDate.parse("2021-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
+      def calendar = post("/accounting/financial-calendar/complete", financialCalendarDTO)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glJournalDTO = dataLoaderService.singleDTO(
          new AccountDTO(acct),
          new StoreDTO(store),
-         calendar.periodFrom,
+         beginDate.plusYears(2),
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
       glJournalDTO.message = null
@@ -312,16 +312,15 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final company = companyFactoryService.forDatasetCode('coravt')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
-      final calendar = financialCalendarDataLoaderService.singleDTO()
-      calendar.generalLedgerOpen = true
-      final calEnt = new FinancialCalendarEntity(calendar, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
-      financialCalendarRepository.insert(calEnt, company)
+      final beginDate = LocalDate.parse("2021-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
+      def calendar = post("/accounting/financial-calendar/complete", financialCalendarDTO)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final existingGLJournal = dataLoaderService.single(company, acct, store, LocalDate.now(), glSourceCode)
       final updatedGLJournal = dataLoaderService.singleDTO(
          new AccountDTO(acct),
          new StoreDTO(store),
-         calendar.periodFrom,
+         beginDate.plusYears(2),
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
       updatedGLJournal.id = existingGLJournal.id
@@ -354,16 +353,15 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final company = companyFactoryService.forDatasetCode('coravt')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
-      final calendar = financialCalendarDataLoaderService.singleDTO()
-      calendar.generalLedgerOpen = true
-      final calEnt = new FinancialCalendarEntity(calendar, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
-      financialCalendarRepository.insert(calEnt, company)
+      final beginDate = LocalDate.parse("2021-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
+      def calendar = post("/accounting/financial-calendar/complete", financialCalendarDTO)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final existingGLJournal = dataLoaderService.single(company, acct, store, LocalDate.now(), glSourceCode)
       final updatedGLJournal = dataLoaderService.singleDTO(
          new AccountDTO(acct),
          new StoreDTO(store),
-         calendar.periodFrom,
+         beginDate.plusYears(2),
          new GeneralLedgerSourceCodeDTO(glSourceCode)
       )
       updatedGLJournal.id = existingGLJournal.id
@@ -434,10 +432,9 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       final company = companyFactoryService.forDatasetCode('coravt')
       final acct = accountDataLoaderService.single(company)
       final store = storeFactoryService.store(3, company)
-      final calendar = financialCalendarDataLoaderService.singleDTO()
-      calendar.generalLedgerOpen = true
-      final calEnt = new FinancialCalendarEntity(calendar, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" })
-      financialCalendarRepository.insert(calEnt, company)
+      final beginDate = LocalDate.parse("2021-11-09")
+      final financialCalendarDTO = new FinancialCalendarCompleteDTO([periodFrom: beginDate])
+      post("/accounting/financial-calendar/complete", financialCalendarDTO)
       final glSourceCode = generalLedgerSourceCodeDataLoaderService.single(company)
       final glSrcA = generalLedgerSourceCodeDataLoaderService.singleDTO()
       final glSrcB = generalLedgerSourceCodeDataLoaderService.singleDTO()
@@ -453,23 +450,23 @@ class GeneralLedgerJournalControllerSpecification extends ControllerSpecificatio
       def glsrcBEnt = glSrcRepo.insert(new GeneralLedgerSourceCodeEntity(glSrcB), company)
       def glsrcCEnt = glSrcRepo.insert(new GeneralLedgerSourceCodeEntity(glSrcC), company)
 
-      final glJournals = dataLoaderService.streamDTO(6, acct, store, calendar.periodFrom, glSourceCode).toList()
+      final glJournals = dataLoaderService.streamDTO(6, acct, store, beginDate.plusYears(2), glSourceCode).toList()
 
       glJournals[0].source = new GeneralLedgerSourceCodeDTO(glsrcAEnt)
       glJournals[1].source = new GeneralLedgerSourceCodeDTO(glsrcBEnt)
       glJournals[2].source = new GeneralLedgerSourceCodeDTO(glsrcCEnt)
       glJournals[3].source = new GeneralLedgerSourceCodeDTO(glsrcCEnt)
       glJournals[4].source = new GeneralLedgerSourceCodeDTO(glsrcCEnt)
-      glJournals[4].date = calendar.periodFrom.plusDays(8)
+      glJournals[4].date = beginDate.plusYears(2).plusDays(8)
       glJournals[5].source = new GeneralLedgerSourceCodeDTO(glsrcCEnt)
-      glJournals[5].date = calendar.periodFrom.plusDays(9)
+      glJournals[5].date = beginDate.plusYears(2).plusDays(9)
 
       glJournals.eachWithIndex { glJournal, index ->
          post("$path", glJournal)
       }
 
-      def frmPmtDt = calendar.periodFrom
-      def thruPmtDt = calendar.periodFrom.plusDays(7)
+      def frmPmtDt = beginDate.plusYears(2)
+      def thruPmtDt = beginDate.plusYears(2)plusDays(7)
 
       def filterRequest = new GeneralLedgerJournalFilterRequest([sortBy: "id", sortDirection: "ASC"])
       switch (criteria) {
