@@ -126,7 +126,7 @@ class StagingDepositController @Inject constructor(
       value = [
          ApiResponse(
             responseCode = "200",
-            content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = Page::class))]
+            content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = AccountingDetailWrapper::class))]
          ),
          ApiResponse(
             responseCode = "204",
