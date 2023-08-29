@@ -232,7 +232,7 @@ class StagingDepositRepository @Inject constructor(
             JOIN account acct ON aes.account_id = acct.id AND acct.deleted = FALSE
             JOIN general_ledger_source_codes source ON aes.source_id = source.id AND source.deleted = FALSE
          WHERE aes.company_id = :comp_id AND verify_id = :verify_id AND aes.deleted = false
-         ORDER BY business_date DESC
+         ORDER BY acct.number, deposit_type_id
                """.trimIndent(), params
       ) { rs, _, elements ->
          do {
