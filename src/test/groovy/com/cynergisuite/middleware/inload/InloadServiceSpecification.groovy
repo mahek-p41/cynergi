@@ -97,6 +97,7 @@ class InloadServiceSpecification extends ControllerSpecificationBase {
       }
    }
 
+
    void "test InloadSUMGLINTVService & InloadSUMGLINTAService"() {
       given: "test InloadSUMGLINTVService"
       def tstds1 = companies.find { it.datasetCode == "coravt"}

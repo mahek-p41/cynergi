@@ -19,6 +19,7 @@ class InloadService @Inject constructor(
    private val inloadSUMGLDETService: InloadSUMGLDETService,
    private val inloadSUMGLINTVService: InloadSUMGLINTVService,
    private val inloadSUMGLINTAService: InloadSUMGLINTAService,
+   private val inloadINVEOMService: InloadINVEOMService,
 ) {
    private val logger: Logger = LoggerFactory.getLogger(InloadService::class.java)
 
@@ -42,6 +43,7 @@ class InloadService @Inject constructor(
                checkProcessable(inloadSUMGLDETService, path)
                checkProcessable(inloadSUMGLINTVService, path)
                checkProcessable(inloadSUMGLINTAService, path)
+               checkProcessable(inloadINVEOMService, path)
             }
          } catch (e: Throwable) {
             logger.error("Error occurred during inloading of {}", path)
