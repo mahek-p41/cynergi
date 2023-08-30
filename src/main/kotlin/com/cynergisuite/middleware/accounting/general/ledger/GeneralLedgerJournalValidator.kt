@@ -63,7 +63,7 @@ class GeneralLedgerJournalValidator @Inject constructor(
             errors.add(ValidationError("source.id", NotFound(dto.source!!.id!!)))
          }
 
-         if (dto.date!! < wholeCal[1].end) {
+         if (dto.date!! <= wholeCal[1].end) {
             errors.add(ValidationError("entryDate", DateMustBeAfterPreviousFiscalYear(dto.date!!)))
          }
 
