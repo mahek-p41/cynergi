@@ -61,7 +61,7 @@ data class AccountPayablePaymentDTO(
    constructor(entity: AccountPayablePaymentEntity) :
       this(
          id = entity.id,
-         bank = SimpleIdentifiableDTO(entity.bank),
+         bank = SimpleIdentifiableDTO(entity.bank.id!!, entity.bank.number, entity.bank.name),
          vendor = VendorDTO(entity.vendor),
          status = AccountPayablePaymentStatusTypeDTO(entity.status),
          type = AccountPayablePaymentTypeTypeDTO(entity.type),

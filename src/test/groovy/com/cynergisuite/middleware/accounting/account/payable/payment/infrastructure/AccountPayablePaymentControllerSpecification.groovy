@@ -992,7 +992,6 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
       def poShipVia = shipViaList[2]
       def poPmtTerm = vendorPaymentTermList[2]
       def poVendorSubEmp = employeeList[2]
-      def poCustAcct = accountFactoryService.single(company)
       def purchaseOrderIn = poDataLoaderService.single(company, vendors[0], poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
       def employeeIn = employeeList[3]
 
@@ -1046,7 +1045,9 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
       pageOneResult.elements.eachWithIndex { result, index ->
          with(result) {
             with(bank) {
+               id == firstPageAccount[index].bank.id
                number == firstPageAccount[index].bank.number
+               name == firstPageAccount[index].bank.name
             }
             with(vendor) {
                name == firstPageAccount[index].vendor.name
@@ -1071,7 +1072,9 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
       pageTwoResult.elements.eachWithIndex { result, index ->
          with(result) {
             with(bank) {
+               id == firstPageAccount[index].bank.id
                number == firstPageAccount[index].bank.number
+               name == firstPageAccount[index].bank.name
             }
             with(vendor) {
                name == secondPageAccount[index].vendor.name
@@ -1096,7 +1099,9 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
       pageLastResult.elements.eachWithIndex { result, index ->
          with(result) {
             with(bank) {
+               id == firstPageAccount[index].bank.id
                number == firstPageAccount[index].bank.number
+               name == firstPageAccount[index].bank.name
             }
             with(vendor) {
                name == lastPageAccount[index].vendor.name
