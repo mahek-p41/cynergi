@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.inload
 
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.infrastructure.GeneralLedgerInterfaceRepository
+import com.cynergisuite.middleware.accounting.general.ledger.deposit.infrastructure.StagingDepositTypeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.infrastructure.GeneralLedgerSourceCodeRepository
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.error.NotFoundException
@@ -26,6 +27,7 @@ class InloadSUMGLINTAService @Inject constructor(
    private val accountRepository: AccountRepository,
    private val sourceCodeRepository: GeneralLedgerSourceCodeRepository,
    private val generalLedgerInterfaceRepository: GeneralLedgerInterfaceRepository,
+   private val stagingDepositTypeRepository: StagingDepositTypeRepository,
 ) : CsvInloaderBase(FileSystems.getDefault().getPathMatcher("glob:SUMGLINTA_*.COMPLETE")) {
 
    private val logger: Logger = LoggerFactory.getLogger(InloadSUMGLINTAService::class.java)
@@ -37,6 +39,7 @@ class InloadSUMGLINTAService @Inject constructor(
       val account = accountRepository.findByNumber(record["Account_Number"].toLong(), company)!!
       val source = sourceCodeRepository.findOne(record["Source_Code"], company)!!
       val verifyId = generalLedgerInterfaceRepository.fetchVerifyId(company.id, record["Store"].toInt(), LocalDate.parse(record["JE_Date"])) ?: throw NotFoundException("Unable to find corresponding verify ID")
+      val depositType = stagingDepositTypeRepository.findOne(value = record["Deposit_Type"])
       val movedToPendingJEs = generalLedgerInterfaceRepository.movedToPendingJournalEntries(company.id!!, record["Store"].toInt(), LocalDate.parse(record["JE_Date"]))
 
       if (!movedToPendingJEs) {
@@ -49,6 +52,7 @@ class InloadSUMGLINTAService @Inject constructor(
             "profit_center_id_sfk" to record["Profit_Center_Number"].toInt(),
             "source_id" to source.id,
             "journal_entry_amount" to record["JE_Amount"].toBigDecimal(),
+            "deposit_type_id" to depositType?.id,
             "message" to record["Message"],
          )
          generalLedgerInterfaceRepository.insertStagingAccountEntries(record, map)

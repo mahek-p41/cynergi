@@ -141,6 +141,7 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
                profit_center_id_sfk,
                source_id,
                journal_entry_amount,
+               deposit_type_id,
                message
             )
             VALUES (
@@ -152,6 +153,7 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
                :profit_center_id_sfk,
                :source_id,
                :journal_entry_amount,
+               :deposit_type_id,
                :message
             )
          """.trimIndent(),

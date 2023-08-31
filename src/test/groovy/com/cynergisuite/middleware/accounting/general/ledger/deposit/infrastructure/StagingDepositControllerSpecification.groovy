@@ -50,9 +50,9 @@ class StagingDepositControllerSpecification extends ControllerSpecificationBase 
 
       def format2 = CSVFormat.DEFAULT
          .builder()
-         .setHeader(*['Data_Set_ID', 'Store', 'Account_Number', 'Profit_Center_Number', 'JE_Date', 'Source_Code', 'JE_Amount', 'Message'])
+         .setHeader(*['Data_Set_ID', 'Store', 'Account_Number', 'Profit_Center_Number', 'JE_Date', 'Source_Code', 'JE_Amount', 'Deposit_Type' , 'Message'])
          .build()
-      def csvData2 = 'coravt,1,2,1,2020-03-31,MEC,-5697.59,'
+      def csvData2 = 'coravt,1,2,1,2020-03-31,MEC,-5697.59,DEP_1,'
       def parser2 = CSVParser.parse(csvData2, format2)
       def record2 = parser2.getRecords().get(0)
       inloadSUMGLINTVService.inloadCsv(record, UUID.randomUUID())
@@ -91,9 +91,9 @@ class StagingDepositControllerSpecification extends ControllerSpecificationBase 
 
       def format2 = CSVFormat.DEFAULT
          .builder()
-         .setHeader(*['Data_Set_ID', 'Store', 'Account_Number', 'Profit_Center_Number', 'JE_Date', 'Source_Code', 'JE_Amount', 'Message'])
+         .setHeader(*['Data_Set_ID', 'Store', 'Account_Number', 'Profit_Center_Number', 'JE_Date', 'Source_Code', 'JE_Amount', 'Deposit_Type' , 'Message'])
          .build()
-      def csvData2 = 'coravt,1,2,1,2020-03-31,MEC,-5697.59,'
+      def csvData2 = 'coravt,1,2,1,2020-03-31,MEC,-5697.59,DEP_2,'
       def parser2 = CSVParser.parse(csvData2, format2)
       def record2 = parser2.getRecords().get(0)
       inloadSUMGLINTVService.inloadCsv(record, UUID.randomUUID())
@@ -190,11 +190,11 @@ class StagingDepositControllerSpecification extends ControllerSpecificationBase 
       notThrown(Exception)
       def format2 = CSVFormat.DEFAULT
          .builder()
-         .setHeader(*['Data_Set_ID', 'Store', 'Account_Number', 'Profit_Center_Number', 'JE_Date', 'Source_Code', 'JE_Amount', 'Message'])
+         .setHeader(*['Data_Set_ID', 'Store', 'Account_Number', 'Profit_Center_Number', 'JE_Date', 'Source_Code', 'JE_Amount', 'Deposit_Type', 'Message'])
          .build()
       def csvData2 = """
-         coravt,1,2,1,2020-03-31,MEC,-5697.59,
-         coravt,1,2,2,2020-03-31,MEC,-9999.66,
+         coravt,1,2,1,2020-03-31,MEC,-5697.59,DEP_1,
+         coravt,1,2,2,2020-03-31,MEC,-9999.66,,
          """
       def parser2 = CSVParser.parse(csvData2, format2)
       def records2 = parser2.getRecords()
