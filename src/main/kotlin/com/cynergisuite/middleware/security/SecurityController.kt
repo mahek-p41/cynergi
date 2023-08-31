@@ -30,7 +30,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.validation.Valid
 
-@Secured(SecurityRule.IS_AUTHENTICATED)
+@Secured(SecurityRule.IS_AUTHENTICATED, "MCFADMIN")
 @Controller("/api/security")
 class SecurityController @Inject constructor(
    private val userService: UserService,
@@ -257,7 +257,5 @@ class SecurityController @Inject constructor(
       val response = securityService.assignAccessPointsToSecurityGroups(id, accessPoints)
 
       logger.debug("Requested Update Access Points to a Security Group {} resulted in {}", response)
-
-
    }
 }
