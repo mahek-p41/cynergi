@@ -23,7 +23,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileWriter
-import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
 
@@ -82,31 +81,42 @@ class StagingDepositService @Inject constructor(
       } else throw NotFoundException("No Accounting Entries to Post To General Ledger Journal")
    }
 
-   fun postByMonth(company: CompanyEntity, idList: List<UUID>, lastDayOfMonth: LocalDate, isAdmin: Boolean){
+   fun postByMonth(company: CompanyEntity, idList: List<UUID>, lastDayOfMonth: LocalDate, isAdmin: Boolean) {
       val accountEntryList = stagingDepositRepository.findByStagingIds(company, idList, isAdmin)
 
-      //combine all accountEntries into one glJournal
-      if (accountEntryList.isNotEmpty()) {
-         val account = accountRepository.findOne(accountEntryList[0].accountId, company)
-         val store = storeRepository.findOne(accountEntryList[0].profitCenterNumber, company)
-         val source = sourceCodeRepository.findOne(accountEntryList[0].sourceId, company)
-         val glJournal = GeneralLedgerJournalDTO(
-            id = null,
-            account = AccountDTO(account!!),
-            profitCenter = StoreDTO(store!!),
-            date = lastDayOfMonth,
-            source = GeneralLedgerSourceCodeDTO(source!!),
-            amount = accountEntryList.fold(BigDecimal.ZERO) { acc, item -> acc + item.credit + item.debit},
-            message = accountEntryList[0].message
-         )
-         generalLedgerJournalService.create(glJournal, company)
+      if (accountEntryList.isEmpty()) {
+         throw NotFoundException("No Accounting Entries to Post To General Ledger Journal")
+      }
+
+      val glJournals = accountEntryList.groupBy { it.accountId to it.profitCenterNumber }
+         .map { (accountStorePair, entries) ->
+            val (accountId, profitCenterNumber) = accountStorePair
+            val sum = entries.sumOf { it.credit.add(it.debit) }
+
+            val account = accountRepository.findOne(accountId, company)
+            val store = storeRepository.findOne(profitCenterNumber, company)
+            val source = sourceCodeRepository.findOne(entries[0].sourceId, company)
+
+            GeneralLedgerJournalDTO(
+               id = null,
+               account = AccountDTO(account!!),
+               profitCenter = StoreDTO(store!!),
+               date = lastDayOfMonth,
+               source = GeneralLedgerSourceCodeDTO(source!!),
+               amount = sum,
+               message = entries[0].message
+            )
+         }
+
+      glJournals.forEach {
+         generalLedgerJournalService.create(it, company)
          stagingDepositRepository.updateMovedPendingJE(company, idList)
          if (processUpdateIsamForSummary) {
             val entityList = stagingDepositRepository.findByListId(company, idList)
             val dtoList = entityList.map { StagingDepositDTO(it) }
             summaryToISAM(dtoList, company)
          }
-      } else throw NotFoundException("No Accounting Entries to Post To General Ledger Journal")
+      }
    }
 
    fun summaryToISAM(dtos: List<StagingDepositDTO>, company: CompanyEntity) {

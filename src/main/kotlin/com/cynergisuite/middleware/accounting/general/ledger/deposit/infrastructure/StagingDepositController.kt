@@ -169,7 +169,7 @@ class StagingDepositController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ){
-      logger.info("Fetching staging deposits {}", dto)
+      logger.info("Move Accounting Details Staging to Pending Journal Entries by day {}", dto)
 
       val user = userService.fetchUser(authentication)
       stagingDepositService.postByDate(user.myCompany(), dto, user.isCynergiAdmin())
@@ -193,7 +193,7 @@ class StagingDepositController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
-      logger.info("Fetching staging deposits {}", pageRequest)
+      logger.info("Move Accounting Details Staging to Pending Journal Entries by day with criteria {}", pageRequest)
 
       val user = userService.fetchUser(authentication)
 
@@ -223,7 +223,7 @@ class StagingDepositController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
-      logger.info("Fetching staging deposits {}", dto)
+      logger.info("Move Accounting Details Staging to Pending Journal Entries by month {}", dto)
 
       val user = userService.fetchUser(authentication)
       val date = LocalDate.parse(lastDayOfMonth, DateTimeFormatter.ISO_LOCAL_DATE)
@@ -250,7 +250,7 @@ class StagingDepositController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
-      logger.info("Fetching staging deposits {}", pageRequest)
+      logger.info("Move Accounting Details Staging to Pending Journal Entries by month with criteria {}", pageRequest)
       val date = LocalDate.parse(lastDayOfMonth, DateTimeFormatter.ISO_LOCAL_DATE)
       val user = userService.fetchUser(authentication)
       val page = stagingDepositService.fetchAll(user.myCompany(), pageRequest)
