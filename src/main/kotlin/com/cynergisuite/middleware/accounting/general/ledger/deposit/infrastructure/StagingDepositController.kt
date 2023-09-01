@@ -199,7 +199,7 @@ class StagingDepositController @Inject constructor(
 
       val page = stagingDepositService.fetchAll(user.myCompany(), pageRequest)
       val idList = page.elements.map { it.id }.toList()
-      if(page.elements.isNotEmpty()) {
+      if (page.elements.isNotEmpty()) {
          stagingDepositService.postByDate(user.myCompany(), idList, user.isCynergiAdmin())
       } else throw NotFoundException("No elements found to post to GL")
    }
@@ -253,7 +253,7 @@ class StagingDepositController @Inject constructor(
       logger.info("Move Accounting Details Staging to Pending Journal Entries by month with criteria {}", pageRequest)
       val date = LocalDate.parse(lastDayOfMonth, DateTimeFormatter.ISO_LOCAL_DATE)
       val user = userService.fetchUser(authentication)
-      val page = stagingDepositService.fetchAll(user.myCompany(), pageRequest)
+      val page = stagingDepositService.fetchAll(user.myCompany(), pageRequest, user.isCynergiAdmin())
       val idList = page.elements.map { it.id }.toList()
 
       if(page.elements.isNotEmpty()) {
