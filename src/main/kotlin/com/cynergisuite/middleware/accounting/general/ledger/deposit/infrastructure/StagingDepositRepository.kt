@@ -281,6 +281,7 @@ class StagingDepositRepository @Inject constructor(
                 JOIN general_ledger_source_codes source ON aes.source_id = source.id AND source.deleted = FALSE
                 JOIN verify_staging vs on aes.verify_id = vs.id
             $whereClause
+            ORDER BY acct.number, aes.profit_center_id_sfk
          """.trimIndent(),
          params
       ){ rs, _ ->
