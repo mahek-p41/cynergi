@@ -253,7 +253,7 @@ class StagingDepositController @Inject constructor(
       logger.info("Move Accounting Details Staging to Pending Journal Entries by month with criteria {}", pageRequest)
       val date = LocalDate.parse(lastDayOfMonth, DateTimeFormatter.ISO_LOCAL_DATE)
       val user = userService.fetchUser(authentication)
-      val page = stagingDepositService.fetchAll(user.myCompany(), pageRequest, user.isCynergiAdmin())
+      val page = stagingDepositService.fetchAll(user.myCompany(), pageRequest)
       val idList = page.elements.map { it.id }.toList()
 
       if(page.elements.isNotEmpty()) {

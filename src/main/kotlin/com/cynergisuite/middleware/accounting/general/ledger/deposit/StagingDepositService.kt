@@ -38,8 +38,8 @@ class StagingDepositService @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(StagingDepositService::class.java)
 
-   fun fetchAll(company: CompanyEntity, pageRequest: StagingDepositPageRequest, isAdmin: Boolean? = null): Page<StagingDepositDTO> {
-      val found = stagingDepositRepository.findAll(company, pageRequest, isAdmin)
+   fun fetchAll(company: CompanyEntity, pageRequest: StagingDepositPageRequest): Page<StagingDepositDTO> {
+      val found = stagingDepositRepository.findAll(company, pageRequest)
 
       return found.toPage { entity: StagingDepositEntity ->
          StagingDepositDTO(entity)
