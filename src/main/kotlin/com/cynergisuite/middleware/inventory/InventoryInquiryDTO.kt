@@ -35,13 +35,19 @@ data class InventoryInquiryDTO(
    @field:Schema(name = "description", description = "Describes the referenced inventory item")
    var description: String? = null,
 
-   @field:Schema(name = "currentLoc", description = "Current location that the referenced inventory item is stored at")
-   var currentLoc: Int? = null,
-
    @field:Schema(name = "invoiceExpensedDate", description = "Invoice expensed date")
    var invoiceExpensedDate: LocalDate? = null,
 
    @field:Schema(name = "altId", description = "Alternate Identifier.  One possible value for lookupKey")
-   var altId: String? = null
+   var altId: String? = null,
 
-)
+   @field:Schema(name = "currentLoc", description = "Current location that the referenced inventory item is stored at")
+   var currentLoc: String? = null
+
+) {
+   init {
+      if (invoiceExpensedDate != null) {
+         currentLoc = "$currentLoc Expensed"
+      }
+   }
+}

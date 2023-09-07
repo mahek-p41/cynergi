@@ -359,7 +359,7 @@ class InventoryRepository(
 
    @ReadOnly
    fun fetchInquiry(company: CompanyEntity, filterRequest: InventoryInquiryFilterRequest): RepositoryPage<InventoryInquiryDTO, PageRequest> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder("WHERE comp.id = :comp_id ")
       val sortBy = StringBuilder("ORDER BY ")
 
@@ -380,12 +380,12 @@ class InventoryRepository(
 
       if (filterRequest.poNbr != null) {
          params["poNbr"] = filterRequest.poNbr
-         whereClause.append(" AND inv.inv_purchase_order_number >= :poNbr ")
+         whereClause.append(" AND inv.inv_purchase_order_number = :poNbr ")
       }
 
       if (filterRequest.invoiceNbr != null) {
          params["invoiceNbr"] = filterRequest.invoiceNbr
-         whereClause.append(" AND inv.invoice_number >= :invoiceNbr ")
+         whereClause.append(" AND inv.invoice_number = :invoiceNbr ")
       }
 
       if (filterRequest.receivedDate != null) {
@@ -436,6 +436,8 @@ class InventoryRepository(
                JOIN company comp ON inv.dataset = comp.dataset_code AND comp.deleted = FALSE
             $whereClause
             $sortBy
+            LIMIT :limit
+            OFFSET :offset
          """.trimIndent(),
          params,
          filterRequest
@@ -516,7 +518,7 @@ class InventoryRepository(
          poNbr = rs.getString("purchase_order_number"),
          invoiceNbr = rs.getString("invoice_number"),
          description = rs.getString("description"),
-         currentLoc = rs.getInt("current_location"),
+         currentLoc = rs.getInt("current_location").toString(),
          invoiceExpensedDate = rs.getLocalDateOrNull("invoice_expensed_date"),
          altId = rs.getString("alt_id")
       )
