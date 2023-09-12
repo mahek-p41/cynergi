@@ -509,6 +509,12 @@ class InventoryRepository(
    }
 
    fun mapInquiry(rs: ResultSet): InventoryInquiryDTO {
+      val currentLoc = rs.getInt("current_location")
+      val invoiceExpensedDate = rs.getLocalDateOrNull("invoice_expensed_date")
+      val currentLocExpensed =
+         if (invoiceExpensedDate != null) {
+            "$currentLoc Expensed"
+         } else currentLoc.toString()
       return InventoryInquiryDTO(
          modelNumber = rs.getString("model_number"),
          serialNumber = rs.getString("serial_number"),
@@ -518,9 +524,10 @@ class InventoryRepository(
          poNbr = rs.getString("purchase_order_number"),
          invoiceNbr = rs.getString("invoice_number"),
          description = rs.getString("description"),
-         currentLoc = rs.getInt("current_location").toString(),
-         invoiceExpensedDate = rs.getLocalDateOrNull("invoice_expensed_date"),
-         altId = rs.getString("alt_id")
+         currentLoc = currentLoc,
+         invoiceExpensedDate = invoiceExpensedDate,
+         altId = rs.getString("alt_id"),
+         currentLocExpensed = currentLocExpensed
       )
    }
 }
