@@ -6,7 +6,6 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import java.math.BigDecimal
 import java.time.LocalDate
 
-/*
 data class Vendor1099Entity(
    val vendorName: String, // 30 max
    val vendorNumber: Int?,
@@ -40,4 +39,3 @@ data class Vendor1099Entity(
       )
 
 }
-*/

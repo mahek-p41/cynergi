@@ -1,7 +1,10 @@
 package com.cynergisuite.middleware.vendor
 
+import com.cynergisuite.domain.GeneralLedgerJournalReportFilterRequest
 import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.Vendor1099FilterRequest
 import com.cynergisuite.middleware.accounting.account.AccountService
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingReportTemplate
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorPageRequest
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
@@ -76,6 +79,14 @@ class VendorService @Inject constructor(
       if (processUpdateIsamVendor) {
          vendorToISAM("D", deleletedVendor!!, company)
       }
+   }
+
+   fun fetch1099Report(company: CompanyEntity, filterRequest: Vendor1099FilterRequest): List<Vendor1099DTO> {
+      //val found = vendorRepository.fetch1099Report(company, filterRequest)
+
+      //return Vendor1099DTO(found)
+      //return found
+      return vendorRepository.fetch1099Report(company, filterRequest)
    }
 
    fun vendorToISAM(task: String, vendor: VendorEntity, company: CompanyEntity) {

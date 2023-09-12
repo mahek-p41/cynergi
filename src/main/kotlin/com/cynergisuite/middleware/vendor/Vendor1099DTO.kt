@@ -15,7 +15,6 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
-/*
 @Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "Vendor1099DTO", title = "An entity containing vendor 1099 information", description = "An entity containing vendor 1099 information.")
@@ -88,4 +87,3 @@ data class Vendor1099DTO(
       )
 
 }
-*/
