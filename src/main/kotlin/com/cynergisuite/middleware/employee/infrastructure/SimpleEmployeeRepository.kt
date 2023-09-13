@@ -257,11 +257,12 @@ class SimpleEmployeeRepository @Inject constructor(
       departmentColumnPrefix: String = "dept_",
       storeColumnPrefix: String = "store_"
    ): EmployeeEntity {
+      val company = companyRepository.mapRow(rs, companyColumnPrefix)
       return EmployeeEntity(
          id = rs.getLong("${columnPrefix}id"),
          type = rs.getString("${columnPrefix}type"),
          number = rs.getInt("${columnPrefix}number"),
-         company = companyRepository.mapRow(rs, companyColumnPrefix),
+         company = company,
          lastName = rs.getString("${columnPrefix}last_name"),
          firstNameMi = rs.getString("${columnPrefix}first_name_mi"), // FIXME fix query so that it isn't trimming stuff to null when employee is managed by PostgreSQL
          passCode = rs.getString("${columnPrefix}pass_code"),
@@ -274,7 +275,7 @@ class SimpleEmployeeRepository @Inject constructor(
         // cynergiSystemAdmin = rs.getBoolean("${columnPrefix}cynergi_system_admin"),
          alternativeStoreIndicator = rs.getString("${columnPrefix}alternative_store_indicator"),
          alternativeArea = rs.getLong("${columnPrefix}alternative_area"),
-         securityGroups = securityGroupRepository.findAll(rs.getLong("${columnPrefix}id"))
+         securityGroups = securityGroupRepository.findAll(rs.getLong("${columnPrefix}id"), company.id!!)
 
       )
    }
@@ -317,7 +318,7 @@ class SimpleEmployeeRepository @Inject constructor(
          store = store,
          alternativeStoreIndicator = rs.getString("alternative_store_indicator"),
          alternativeArea = rs.getLong("alternative_area"),
-         securityGroups =  securityGroupRepository.findAll(rs.getLong("id"))
+         securityGroups =  securityGroupRepository.findAll(rs.getLong("id"), company.id!!)
 
    )
 }

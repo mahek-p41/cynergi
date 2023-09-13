@@ -283,7 +283,7 @@ class EmployeeRepository @Inject constructor(
       storeColumnPrefix: String = "store_"
    ): EmployeeEntity {
       val company = companyRepository.mapRow(rs, companyColumnPrefix, companyAddressColumnPrefix)
-      val securityGroups = securityGroupRepository.findAll(rs.getLong("${columnPrefix}id"))
+      val securityGroups = securityGroupRepository.findAll(rs.getLong("${columnPrefix}id"), company.id!!)
       return EmployeeEntity(
          id = rs.getLong("${columnPrefix}id"),
          type = rs.getString("${columnPrefix}type"),

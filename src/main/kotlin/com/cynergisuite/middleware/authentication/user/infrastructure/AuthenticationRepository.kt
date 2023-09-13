@@ -177,8 +177,16 @@ abstract class AuthenticationRepository @Inject constructor(
            LEFT OUTER JOIN system_stores_fimvw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND au.store_number = assignedLoc.number
            LEFT OUTER JOIN system_stores_fimvw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number  = :storeNumber
            JOIN system_stores_fimvw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
-           LEFT OUTER JOIN employee_to_security_group empsecgrp on empsecgrp.employee_id_sfk = au.id
-           LEFT OUTER JOIN security_group secgrp on secgrp.id = empsecgrp.security_group_id and secgrp.deleted = FALSE
+           LEFT OUTER JOIN (
+             select esg.employee_id_sfk, sg.id as security_group_id,
+             sg.value as security_group_value,
+             sg.description as security_group_description
+           from employee_to_security_group esg
+           join security_group sg on esg.security_group_id = sg.id
+           join company c on sg.company_id = c.id
+           where c.dataset_code = :dataset
+           ) filteredSecurityGroups on au.id = filteredSecurityGroups.employee_id_sfk
+           LEFT OUTER JOIN security_group secgrp on filteredSecurityGroups.security_group_id = secgrp.id and secgrp.deleted = FALSE
            LEFT JOIN security_group_to_security_access_point sgsap ON sgsap.security_group_id = secgrp.id
 		     LEFT JOIN security_access_point_type_domain sapd ON sgsap.security_access_point_id = sapd.id
       WHERE comp.dataset_code = :dataset
@@ -371,8 +379,16 @@ abstract class AuthenticationRepository @Inject constructor(
            LEFT OUTER JOIN system_stores_fimvw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND au.store_number = assignedLoc.number
            LEFT OUTER JOIN system_stores_fimvw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number IS NULL
            JOIN system_stores_fimvw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
-           LEFT OUTER JOIN employee_to_security_group empsecgrp on empsecgrp.employee_id_sfk = au.id
-           LEFT OUTER JOIN security_group secgrp on secgrp.id = empsecgrp.security_group_id and secgrp.deleted = FALSE
+           LEFT OUTER JOIN (
+             select esg.employee_id_sfk, sg.id as security_group_id,
+             sg.value as security_group_value,
+             sg.description as security_group_description
+           from employee_to_security_group esg
+           join security_group sg on esg.security_group_id = sg.id
+           join company c on sg.company_id = c.id
+           where c.dataset_code = :dataset
+           ) filteredSecurityGroups on au.id = filteredSecurityGroups.employee_id_sfk
+           LEFT OUTER JOIN security_group secgrp on filteredSecurityGroups.security_group_id = secgrp.id and secgrp.deleted = FALSE
            LEFT JOIN security_group_to_security_access_point sgsap ON sgsap.security_group_id = secgrp.id
 		     LEFT JOIN security_access_point_type_domain sapd ON sgsap.security_access_point_id = sapd.id
       WHERE comp.dataset_code = :dataset
@@ -408,7 +424,7 @@ abstract class AuthenticationRepository @Inject constructor(
       val company = companyRepository.findOne(companyId) ?: throw Exception("Unable to find company")
       val employee = employeeRepository.findOne(employeeId, employeeType, company) ?: throw Exception("Unable to find employee")
       val location = locationRepository.findOne(storeNumber, company) ?: throw Exception("Unable to find store from authentication")
-      val securityGroups = securityGroupRepository.findAll(employeeId)
+      val securityGroups = securityGroupRepository.findAll(employeeId, company.id!!)
       val department = employee.department
 
       return AuthenticatedEmployee(

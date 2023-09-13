@@ -34,6 +34,7 @@ class SecurityGroupRepository @Inject constructor(
             empSecGrp.employee_id_sfk										             AS secgrp_emp_id
          FROM security_group secgrp
             JOIN employee_to_security_group empSecGrp ON secgrp.id = empSecGrp.security_group_id AND empSecGrp.deleted = FALSE
+            JOIN company comp on secgrp.company_id = comp.id
       """
     }
 
@@ -57,8 +58,8 @@ class SecurityGroupRepository @Inject constructor(
     }
 
    @ReadOnly
-   fun findAll(id: Long): List<SecurityGroup> =
-      jdbc.query("${selectBaseQuery()} WHERE empSecGrp.employee_id_sfk = :id AND secgrp.deleted = FALSE", mapOf("id" to id)) { rs, _ -> mapRow(rs, "secgrp_") }
+   fun findAll(employeeId: Long, companyId: UUID): List<SecurityGroup> =
+      jdbc.query("${selectBaseQuery()} WHERE comp.id = :comp_id AND empSecGrp.employee_id_sfk = :id AND secgrp.deleted = FALSE", mapOf("id" to employeeId, "comp_id" to companyId)) { rs, _ -> mapRow(rs, "secgrp_") }
 
    @Transactional
    fun insert(securityGroup: SecurityGroup): SecurityGroup? {
