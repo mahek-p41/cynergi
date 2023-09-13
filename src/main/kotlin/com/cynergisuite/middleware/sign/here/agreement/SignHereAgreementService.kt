@@ -106,10 +106,8 @@ class SignHereAgreementService @Inject constructor(
       val signHereLogin = signHereClient.login(signHereToken)
       logger.info("cancelAssociated -> Logged into sign here please service")
 
-      val cancelledRecordsCount = signHereClient.cancelAssociated("Bearer ${signHereLogin.accessToken}", signatureRequestedId)
+      signHereClient.cancelAssociated("Bearer ${signHereLogin.accessToken}", signatureRequestedId)
 
       logger.info("cancelAssociated -> successfully cancelled associated")
-
-      return cancelledRecordsCount
    }
 }

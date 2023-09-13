@@ -99,7 +99,7 @@ class SignHereAgreementProxyController @Inject constructor(
       return signHereAgreementService.retrieveDocument(user.myLocation(), user.myCompany(), documentId, httpRequest)
    }
 
-   @Delete("/document/cancel/{signatureRequestedId}", processes = [MediaType.APPLICATION_PDF])
+   @Delete("/document/cancel/{signatureRequestedId}")
    fun cancelAssociated(
       @Parameter(description = "Primary Key to cancel the Agreement associated records", `in` = PATH) @QueryValue("signatureRequestedId")
       signatureRequestedId: UUID,
@@ -108,6 +108,6 @@ class SignHereAgreementProxyController @Inject constructor(
    ) {
       val user = userService.fetchUser(authentication) // grab the store user
 
-      return signHereAgreementService.cancelAssociated(user.myLocation(), user.myCompany(), signatureRequestedId)
+      signHereAgreementService.cancelAssociated(user.myLocation(), user.myCompany(), signatureRequestedId)
    }
 }
