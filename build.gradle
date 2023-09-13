@@ -120,6 +120,7 @@ mainClassName = "com.cynergisuite.middleware.Application"
 run.classpath += configurations.developmentOnly
 run.jvmArgs("-noverify", "-XX:TieredStopAtLevel=1", "-Dcom.sun.management.jmxremote", "-Dmicronaut.environments=local")
 
+boolean verboseMode = System.getenv().containsKey("VERBOSE_MODE")
 test {
    useJUnitPlatform()
    maxHeapSize = "4096m"
@@ -127,6 +128,9 @@ test {
       maxRetries = 4
       maxFailures = 20
       failOnPassedAfterRetry = true
+   }
+   if (verboseMode) {
+      testLogging.showStandardStreams = true
    }
 }
 

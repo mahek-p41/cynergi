@@ -121,6 +121,7 @@ jobs:
             ${DEBUG_MODE}
             set -o errexit -o pipefail -o noclobber -o nounset
             export JAVA_OPTS='-Xms2048m -Xmx2048m -Xgcpolicy:gencon'
+            [[ '$DEBUG_MODE' != '' ]] && export VERBOSE_MODE=1
 
             ./gradlew --no-daemon --stacktrace clean buildApiDocs 2>&1 1>/dev/null
             ./gradlew --no-daemon test jacocoTestReport
