@@ -12,6 +12,7 @@ plugins {
    id "org.flywaydb.flyway" version "${flywayVersion}"
    id "org.openapi.generator" version "4.3.0"
    id "org.jmailen.kotlinter" version "3.4.0"
+   id "org.gradle.test-retry" version "1.5.4"
 }
 
 version "${releaseVersion}"
@@ -122,6 +123,11 @@ run.jvmArgs("-noverify", "-XX:TieredStopAtLevel=1", "-Dcom.sun.management.jmxrem
 test {
    useJUnitPlatform()
    maxHeapSize = "4096m"
+   retry {
+      maxRetries = 4
+      maxFailures = 20
+      failOnPassedAfterRetry = true
+   }
 }
 
 jacoco {
