@@ -13,6 +13,7 @@ import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
 import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
@@ -96,5 +97,17 @@ class SignHereAgreementProxyController @Inject constructor(
       val user = userService.fetchUser(authentication) // grab the store user
 
       return signHereAgreementService.retrieveDocument(user.myLocation(), user.myCompany(), documentId, httpRequest)
+   }
+
+   @Delete("/document/cancel/{signatureRequestedId}", processes = [MediaType.APPLICATION_PDF])
+   fun cancelAssociated(
+      @Parameter(description = "Primary Key to cancel the Agreement associated records", `in` = PATH) @QueryValue("signatureRequestedId")
+      signatureRequestedId: UUID,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>,
+   ) {
+      val user = userService.fetchUser(authentication) // grab the store user
+
+      return signHereAgreementService.cancelAssociated(user.myLocation(), user.myCompany(), signatureRequestedId)
    }
 }

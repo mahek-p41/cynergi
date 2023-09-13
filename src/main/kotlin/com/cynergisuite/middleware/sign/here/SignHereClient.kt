@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.sign.here.associated.SignHereAssociatedPage
 import io.micronaut.cache.annotation.Cacheable
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Header
 import io.micronaut.http.annotation.PathVariable
@@ -38,4 +39,10 @@ interface SignHereClient {
       @PathVariable("signatureRequestedId") signatureRequestedId: UUID,
       @QueryValue("pageRequest") pageRequest: StandardPageRequest,
    ): SignHereAssociatedPage
+
+   @Delete("document/{signatureRequestedId}", processes = [APPLICATION_JSON])
+   fun cancelAssociated(
+      @Header("Authorization") token: String,
+      @PathVariable("signatureRequestedId") signatureRequestedId: UUID,
+   )
 }

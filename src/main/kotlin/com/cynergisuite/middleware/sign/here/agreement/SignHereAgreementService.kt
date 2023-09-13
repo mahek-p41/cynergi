@@ -95,4 +95,21 @@ class SignHereAgreementService @Inject constructor(
 
       return result
    }
+
+   @Retryable(attempts = "3")
+   fun cancelAssociated(location: Location, company: CompanyEntity, signatureRequestedId: UUID) {
+      logger.info("cancelAssociated -> Looking up token for company/location {}/{}", company.id, location.myNumber())
+      val token = signHereTokenRepository.findOneByStoreNumber(location.myNumber(), company) ?: throw ValidationException(ValidationError(localizationCode = SignHerePleaseNotEnabled(location, company)))
+
+      logger.info("cancelAssociated -> Logging into sign here please service")
+      val signHereToken = SignHereTokenDto(token)
+      val signHereLogin = signHereClient.login(signHereToken)
+      logger.info("cancelAssociated -> Logged into sign here please service")
+
+      val cancelledRecordsCount = signHereClient.cancelAssociated("Bearer ${signHereLogin.accessToken}", signatureRequestedId)
+
+      logger.info("cancelAssociated -> successfully cancelled associated")
+
+      return cancelledRecordsCount
+   }
 }
