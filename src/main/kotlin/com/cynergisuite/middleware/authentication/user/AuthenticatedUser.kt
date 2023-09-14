@@ -14,10 +14,12 @@ data class AuthenticatedUser(
    val location: Location,
    val alternativeStoreIndicator: String,
    val alternativeArea: Long,
-   val cynergiSystemAdmin: Boolean
+ //  val cynergiSystemAdmin: Boolean,
+   val securityGroups: List<String>,
+
 ) : User, ServerAuthentication(
    number.toString(),
-   mutableListOf(), // TODO don't add roles here, since there will be a ton of them.  Instead override https://micronaut-projects.github.io/micronaut-security/latest/api/io/micronaut/security/token/DefaultRolesFinder.html
+   securityGroups,
    mutableMapOf<String, Any>(
       "id" to id.toString(),
       "tp" to type,
@@ -37,7 +39,8 @@ data class AuthenticatedUser(
          location = employee.myLocation(),
          alternativeStoreIndicator = employee.alternativeStoreIndicator,
          alternativeArea = employee.alternativeArea,
-         cynergiSystemAdmin = employee.cynergiSystemAdmin
+     //    cynergiSystemAdmin = employee.cynergiSystemAdmin,
+         securityGroups = employee.mySecurityTypes()
       )
 
    constructor(employee: AuthenticatedEmployee, overrideStore: Location) :
@@ -50,7 +53,8 @@ data class AuthenticatedUser(
          location = overrideStore,
          alternativeStoreIndicator = employee.alternativeStoreIndicator,
          alternativeArea = employee.alternativeArea,
-         cynergiSystemAdmin = employee.cynergiSystemAdmin
+     //    cynergiSystemAdmin = employee.cynergiSystemAdmin,
+         securityGroups = employee.mySecurityTypes()
       )
 
    override fun myId(): Long = id
@@ -61,5 +65,11 @@ data class AuthenticatedUser(
    override fun myDepartment(): Department? = department
    override fun myAlternativeStoreIndicator(): String = alternativeStoreIndicator
    override fun myAlternativeArea(): Long = alternativeArea
-   override fun isCynergiAdmin(): Boolean = cynergiSystemAdmin
+   override fun isCynergiAdmin(): Boolean = securityGroups.any{it == "admin"}
+   override fun mySecurityTypes(): List<String> = securityGroups
+   override fun getRoles(): List<String> {
+      return securityGroups
+   }
+
+
 }

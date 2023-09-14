@@ -14,4 +14,5 @@ interface User {
    fun myAlternativeStoreIndicator(): String
    fun myAlternativeArea(): Long
    fun isCynergiAdmin(): Boolean
+   fun mySecurityTypes(): List<String>
 }

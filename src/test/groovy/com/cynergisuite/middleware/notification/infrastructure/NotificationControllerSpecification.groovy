@@ -16,8 +16,8 @@ import com.cynergisuite.middleware.notification.NotificationsResponseValueObject
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
+
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.stream.Collectors
@@ -83,6 +83,7 @@ class NotificationControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       exception.response.getBody(ErrorDTO).orElse(null)?.message == "0 was unable to be found"
+      exception.response.getBody(ErrorDTO).orElse(null)?.code == 'system.not.found'
    }
 
    void "fetch all by sending employee and company through the admin path" () {

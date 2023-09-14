@@ -19,7 +19,7 @@ class WowLostCustomerJobSpecification extends ServiceSpecificationBase {
 
    void "upload lost customer" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final wowSchedules = wowTestDataLoaderService.enableWow(tstds1)
       final scheduleEntity = wowSchedules.find { it.title == "Wow Lost Customer Last 9 Months" }
       final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)
@@ -33,6 +33,6 @@ class WowLostCustomerJobSpecification extends ServiceSpecificationBase {
       notThrown(Exception)
       result.failureReason() == null
       result.scheduleName() == "Wow Lost Customer Last 9 Months"
-      result.rowCount() == 1
+      result.rowCount() == 6293
    }
 }

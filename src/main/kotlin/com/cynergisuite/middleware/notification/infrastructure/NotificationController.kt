@@ -22,7 +22,6 @@ import io.micronaut.http.annotation.QueryValue
 import io.micronaut.http.annotation.Status
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule.IS_ANONYMOUS
-import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn.HEADER
@@ -38,9 +37,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.validation.Valid
 
-@Validated
+// TODO make company a first class part of this controller by defining it here, and remove the plural form
 @Secured(IS_ANONYMOUS)
-@Controller("/api/notifications") // TODO make company a first class part of this controller by defining it here, and remove the plural form
+@Controller("/api/notifications")
 class NotificationController @Inject constructor(
    private val notificationService: NotificationService,
    private val notificationValidator: NotificationValidator
@@ -89,13 +88,23 @@ class NotificationController @Inject constructor(
    ): NotificationsResponseValueObject { // FIXME do away with this wrapper for the list of notifications, and make pageable
       logger.trace("Fetching All Notifications by company: {}, authId: {}, type: {}", companyId, authId, type)
 
-      val response = when (type.toUpperCase()) {
+      val response = when (type.uppercase()) {
          "A" -> notificationService.fetchAllByCompanyWrapped(companyId = companyId, type = type)
 
-         else -> notificationService.fetchAllByRecipientWrapped(companyId = companyId, sendingEmployee = authId, type = type)
+         else -> notificationService.fetchAllByRecipientWrapped(
+            companyId = companyId,
+            sendingEmployee = authId,
+            type = type
+         )
       }
 
-      logger.debug("Fetching All Notifications by company: {}, authId: {}, type: {} resulted in {}", companyId, authId, type, response)
+      logger.debug(
+         "Fetching All Notifications by company: {}, authId: {}, type: {} resulted in {}",
+         companyId,
+         authId,
+         type,
+         response
+      )
 
       return response
    }

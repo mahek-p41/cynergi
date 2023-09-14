@@ -1,25 +1,30 @@
 package com.cynergisuite.middleware.division
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.employee.EmployeeEntity
+import io.micronaut.core.annotation.Introspected
 import org.apache.commons.lang3.builder.CompareToBuilder
 import java.util.UUID
 
+@Introspected
 data class DivisionEntity(
    val id: UUID? = null,
    val company: CompanyEntity,
    val number: Long? = null,
    val name: String,
+   val divisionalManager: EmployeeEntity? = null,
    val description: String?,
 ) : Identifiable, Comparable<DivisionEntity> {
-   constructor(id: UUID? = null, dto: DivisionDTO, company: CompanyEntity) :
-      this(
-         id = id,
-         number = dto.number,
-         name = dto.name!!,
-         description = dto.description,
-         company = company,
-      )
+   constructor(id: UUID? = null, dto: DivisionDTO, company: CompanyEntity, divisionalManager: EmployeeEntity?) : this(
+      id = id,
+      number = dto.number,
+      name = dto.name!!,
+      description = dto.description,
+      company = company,
+      divisionalManager = divisionalManager,
+   )
 
    override fun compareTo(other: DivisionEntity): Int =
       CompareToBuilder()
@@ -27,6 +32,7 @@ data class DivisionEntity(
          .append(this.name, other.name)
          .append(this.description, other.description)
          .append(this.company, other.company)
+         .append(this.divisionalManager, other.divisionalManager)
          .toComparison()
 
    fun toValueObject(): DivisionDTO {
@@ -35,6 +41,7 @@ data class DivisionEntity(
          number = this.number,
          name = this.name,
          description = this.description,
+         divisionalManager = this.divisionalManager?.let { SimpleLegacyIdentifiableDTO(it) },
       )
    }
 

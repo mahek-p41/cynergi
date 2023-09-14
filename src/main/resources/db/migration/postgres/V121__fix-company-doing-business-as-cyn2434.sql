@@ -1,0 +1,2 @@
+ALTER TABLE company
+DROP CONSTRAINT company_doing_business_as_check;

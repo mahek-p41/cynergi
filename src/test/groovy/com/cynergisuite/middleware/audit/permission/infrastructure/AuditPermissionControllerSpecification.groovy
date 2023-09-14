@@ -10,10 +10,8 @@ import com.cynergisuite.middleware.audit.permission.AuditPermissionTypeTestDataL
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
 import spock.lang.Ignore
-
 
 import static io.micronaut.http.HttpStatus.FORBIDDEN
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -52,7 +50,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
 
    void "fetch one by ID" () {
       given:
-      def company = companyFactoryService.forDatasetCode("tstds1")
+      def company = companyFactoryService.forDatasetCode("coravt")
       def department = departmentFactoryService.random(company)
       def permissionType = AuditPermissionTypeTestDataLoader.findByValue("audit-fetchOne")
       def permission = auditPermissionFactoryService.single(department, permissionType, company)
@@ -68,7 +66,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
    void "fetch one by ID that doesn't exist" () {
       given:
       final nonExistentId = UUID.randomUUID()
-      def company = companyFactoryService.forDatasetCode("tstds1")
+      def company = companyFactoryService.forDatasetCode("coravt")
       def department = departmentFactoryService.random(company)
       def permissionType = AuditPermissionTypeTestDataLoader.findByValue("audit-fetchOne")
       def permission = auditPermissionFactoryService.single(department, permissionType, company)
@@ -79,15 +77,17 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == NOT_FOUND
-      exception.response.bodyAsJson().message == "$nonExistentId was unable to be found"
+      final response = exception.response.bodyAsJson()
+      response.message == "$nonExistentId was unable to be found"
+      response.code == 'system.not.found'
    }
 
    void "fetch all permissions" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final assistantManager = departmentFactoryService.department('AM', company)
-      final accountRep = departmentFactoryService.department('AR', company)
-      final deliveryDriver = departmentFactoryService.department('DE', company)
+      final accountRep = departmentFactoryService.department('AC', company)
+      final deliveryDriver = departmentFactoryService.department('TT', company)
       final auditApprover = AuditPermissionTypeTestDataLoader.findByValue('audit-approver')
       final auditPermissionManager = AuditPermissionTypeTestDataLoader.findByValue('audit-permission-manager')
       final assistantManagerAuditApprover = auditPermissionFactoryService.single(assistantManager, auditApprover, company)
@@ -127,10 +127,10 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
 
    void "fetch all permissions of a certain type" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final assistantManager = departmentFactoryService.department('AM', company)
-      final accountRep = departmentFactoryService.department('AR', company)
-      final deliveryDriver = departmentFactoryService.department('DE', company)
+      final accountRep = departmentFactoryService.department('AC', company)
+      final deliveryDriver = departmentFactoryService.department('TT', company)
       final auditApprover = AuditPermissionTypeTestDataLoader.findByValue('audit-approver')
       final auditPermissionManager = AuditPermissionTypeTestDataLoader.findByValue('audit-permission-manager')
       final assistantManagerAuditApprover = auditPermissionFactoryService.single(assistantManager, auditApprover, company)
@@ -159,10 +159,10 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
 
    void "check association of audit-permission-manager allows access and denies access to user with only audit-approver" () {
       given:
-      final company = companyFactoryService.forDatasetCode("tstds1")
+      final company = companyFactoryService.forDatasetCode("coravt")
       final store = storeFactoryService.random(company)
       final assistantManager = departmentFactoryService.department('AM', company)
-      final deliveryDriver = departmentFactoryService.department('DE', company)
+      final deliveryDriver = departmentFactoryService.department('TT', company)
       final auditApprover = AuditPermissionTypeTestDataLoader.findByValue('audit-approver')
       final assistantManagerAuditApprover = auditPermissionFactoryService.single(assistantManager, auditApprover, company)
       final assistantManagerEmployee = employeeFactoryService.singleAuthenticated(company, store, assistantManager)
@@ -189,9 +189,9 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
 
    void "associate audit-approver with Sales Associate" () {
       given:
-      final company = companyFactoryService.forDatasetCode("tstds1")
+      final company = companyFactoryService.forDatasetCode("coravt")
       final store = storeFactoryService.random(company)
-      final salesAssociateDepartment = departmentFactoryService.department("SA", company)
+      final salesAssociateDepartment = departmentFactoryService.department("SL", company)
       final deliveryDriverDepartment = departmentFactoryService.department("DE", company)
       final salesAssociate = employeeFactoryService.singleAuthenticated(company, store, salesAssociateDepartment)
       final deliveryDriver = employeeFactoryService.singleAuthenticated(company, store, deliveryDriverDepartment)
@@ -230,9 +230,9 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
    @Ignore // FIXME works locally, but fails when run on jenkins, don't know why
    void "delete association of audit-approver with Sales Associate" () {
       given:
-      final company = companyFactoryService.forDatasetCode("tstds1")
+      final company = companyFactoryService.forDatasetCode("coravt")
       final store = storeFactoryService.random(company)
-      final salesAssociateDepartment = departmentFactoryService.department("SA", company)
+      final salesAssociateDepartment = departmentFactoryService.department("SL", company)
       final deliveryDriverDepartment = departmentFactoryService.department("DE", company)
       final salesAssociate = employeeFactoryService.singleAuthenticated(company, store, salesAssociateDepartment)
       final salesAssociateLogin = loginEmployee(salesAssociate)
@@ -269,7 +269,7 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
    void "delete one by ID that doesn't exist" () {
       given:
       final nonExistentId = UUID.randomUUID()
-      final company = companyFactoryService.forDatasetCode("tstds1")
+      final company = companyFactoryService.forDatasetCode("coravt")
       final department = departmentFactoryService.random(company)
       final permissionType = AuditPermissionTypeTestDataLoader.findByValue("audit-approver")
       final permission = auditPermissionFactoryService.single(department, permissionType, company)
@@ -280,6 +280,50 @@ class AuditPermissionControllerSpecification extends ControllerSpecificationBase
       then:
       final exception = thrown(HttpClientResponseException)
       exception.status == NOT_FOUND
-      exception.response.bodyAsJson().message == "$nonExistentId was unable to be found"
+      final response = exception.response.bodyAsJson()
+      response.message == "$nonExistentId was unable to be found"
+      response.code == 'system.not.found'
+   }
+
+   void "recreate deleted audit permission" () {
+      given:
+      final company = companyFactoryService.forDatasetCode("coravt")
+      final salesAssociateDepartment = departmentFactoryService.department("SL", company)
+      final permissionType = AuditPermissionTypeTestDataLoader.findByValue("audit-approver")
+      final permission = new AuditPermissionCreateDTO(permissionType, salesAssociateDepartment)
+
+      when: // create an audit permission
+      def response1 = post("/audit/permission", permission)
+
+      then:
+      notThrown(Exception)
+      response1.id != null
+      response1.type.id == permissionType.id
+      response1.type.value == permissionType.value
+      response1.department.id == salesAssociateDepartment.id
+      response1.department.code == salesAssociateDepartment.code
+
+      when: // delete audit permission
+      delete("/audit/permission/$response1.id")
+
+      then: "audit permission of user's company is deleted"
+      notThrown(HttpClientResponseException)
+
+      when: // recreate audit permission
+      def response2 = post("/audit/permission", permission)
+
+      then:
+      notThrown(Exception)
+      response1.id != null
+      response1.type.id == permissionType.id
+      response1.type.value == permissionType.value
+      response1.department.id == salesAssociateDepartment.id
+      response1.department.code == salesAssociateDepartment.code
+
+      when: // delete audit permission again
+      delete("/audit/permission/$response2.id")
+
+      then: "audit permission of user's company is deleted"
+      notThrown(HttpClientResponseException)
    }
 }

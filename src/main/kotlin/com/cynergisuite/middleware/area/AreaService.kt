@@ -2,12 +2,16 @@ package com.cynergisuite.middleware.area
 
 import com.cynergisuite.middleware.area.infrastructure.AreaRepository
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.localization.LocalizationService
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.Locale
 
 @Singleton
 class AreaService @Inject constructor(
    private val areaRepository: AreaRepository,
+   private val localizationService: LocalizationService,
+   private val validator: AreaValidator
 ) {
    fun enableFor(company: CompanyEntity, areaType: AreaType): AreaEntity? {
       return when (areaType) {
@@ -24,4 +28,29 @@ class AreaService @Inject constructor(
 
    fun isEnabledFor(company: CompanyEntity, areaType: AreaType): Boolean =
       areaRepository.existsByCompanyAndAreaType(company, areaType.toAreaTypeEntity())
+
+   fun fetchAllVisibleWithMenusAndAreas(company: CompanyEntity, locale: Locale): List<AreaDTO> {
+      val areas = areaRepository.findAllVisibleByCompany(company).map {
+         transformEntity(it, locale)
+      }
+
+      return areas
+   }
+
+   fun enableArea(company: CompanyEntity, areaTypeId: Int) {
+      validator.validateAreaTypeId(company, areaTypeId)
+      areaRepository.enable(company, areaTypeId)
+   }
+
+   fun disableArea(company: CompanyEntity, areaType: AreaTypeEntity) {
+      validator.validateAreaTypeId(company, areaType.id)
+      areaRepository.deleteByCompanyAndAreaType(company, areaType)
+   }
+
+   private fun transformEntity(area: AreaEntity, locale: Locale): AreaDTO =
+      AreaDTO(
+         area = area,
+         localizedDescription = localizationService.localize(area.areaType.localizationCode, locale),
+         // menus = convertMenus(area.areaType.menus, locale)
+      )
 }

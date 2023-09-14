@@ -1,9 +1,8 @@
 package com.cynergisuite.middleware.audit.status.infrastructure
 
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-import spock.lang.Specification
-
 import jakarta.inject.Inject
+import spock.lang.Specification
 
 @MicronautTest(transactional = false)
 class AuditStatusRepositorySpecification extends Specification {

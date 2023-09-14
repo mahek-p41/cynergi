@@ -26,9 +26,9 @@ class SignHereTokenControllerSpecification extends ServiceSpecificationBase {
 
    void "fetch one AWS token by store number" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
-      final dataset = 'tstds1'
+      final dataset = 'coravt'
       final signHereToken = signHereTokenTestDataLoaderService.single(company, store, "wrXnbCWTUrxojPBGMMSakODI9BilnWVlvovUneTOCTybz5nG8678211k")
 
       when:
@@ -45,9 +45,9 @@ class SignHereTokenControllerSpecification extends ServiceSpecificationBase {
 
    void "fetch one AWS token by invalid store number" () {
       given: 'store number 1 is assigned to a region of company tstds1'
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
-      final dataset = 'tstds1'
+      final dataset = 'coravt'
       final signHereToken = signHereTokenTestDataLoaderService.single(company, store, "wrXnbCWTUrxojPBGMMSakODI9BilnWVlvovUneTOCTybz5nG8678211k")
 
       when:
@@ -59,7 +59,7 @@ class SignHereTokenControllerSpecification extends ServiceSpecificationBase {
       then:
       final exception = thrown(HttpClientResponseException)
       final body = exception.response.bodyAsJson()
-      body.message == "tstds1 -> 55 was unable to be found"
+      body.message == "coravt -> 55 was unable to be found"
    }
 
    void "fetch one token by id not found" () {
@@ -79,7 +79,7 @@ class SignHereTokenControllerSpecification extends ServiceSpecificationBase {
 
    void "update a token" () {
       given: 'store number 1 is assigned to a region of company tstds1'
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
       final signHereToken = signHereTokenTestDataLoaderService.single(company, store, "wrXnbCWTUrxojPBGMMSakODI9BilnWVlvovUneTOCTybz5nG8678211k")
       final SLN = new SimpleLegacyNumberDTO(store.number)
@@ -100,7 +100,7 @@ class SignHereTokenControllerSpecification extends ServiceSpecificationBase {
 
    void "try an update using too short a token" () {
       given: 'store number 1 is assigned to a region of company tstds1'
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
       final signHereToken = signHereTokenTestDataLoaderService.single(company, store, "wrXnbCWTUrxojPBGMMSakODI9BilnWVlvovUneTOCTybz5nG8678211k")
       final SLN = new SimpleLegacyNumberDTO(store.number)
@@ -125,7 +125,7 @@ class SignHereTokenControllerSpecification extends ServiceSpecificationBase {
 
    void "try an update using too long a token" () {
       given: 'store number 1 is assigned to a region of company tstds1'
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
       final signHereToken = signHereTokenTestDataLoaderService.single(company, store, "wrXnbCWTUrxojPBGMMSakODI9BilnWVlvovUneTOCTybz5nG8678211k")
       final SLN = new SimpleLegacyNumberDTO(store.number)

@@ -57,16 +57,30 @@ class AuditPermissionRepository @Inject constructor(
             comp.client_id             AS comp_client_id,
             comp.dataset_code          AS comp_dataset_code,
             comp.federal_id_number     AS comp_federal_id_number,
+            comp.address_id            AS address_id,
+            comp.address_name          AS address_name,
+            comp.address_address1      AS address_address1,
+            comp.address_address2      AS address_address2,
+            comp.address_city          AS address_city,
+            comp.address_state         AS address_state,
+            comp.address_postal_code   AS address_postal_code,
+            comp.address_latitude      AS address_latitude,
+            comp.address_longitude     AS address_longitude,
+            comp.address_country       AS address_country,
+            comp.address_county        AS address_county,
+            comp.address_phone         AS address_phone,
+            comp.address_fax           AS address_fax,
             dept.id                    AS dept_id,
             dept.code                  AS dept_code,
             dept.description           AS dept_description,
             dept.dataset               AS dept_dataset
          FROM audit_permission ap
-              JOIN (${companyRepository.companyBaseQuery()}) comp ON ap.company_id = comp.id
+              JOIN (${companyRepository.companyBaseQuery()}) comp ON ap.company_id = comp.id AND comp.deleted = FALSE
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
               JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
          WHERE ap.id = :ap_id
-               AND comp.id = :comp_id""",
+               AND comp.id = :comp_id
+               AND ap.deleted = FALSE""",
          mapOf("ap_id" to id, "comp_id" to company.id)
       ) { rs, _ ->
          processFindRow(rs, company)
@@ -100,16 +114,29 @@ class AuditPermissionRepository @Inject constructor(
             comp.client_id                AS comp_client_id,
             comp.dataset_code             AS comp_dataset_code,
             comp.federal_id_number        AS comp_federal_id_number,
+            comp.address_id               AS comp_address_id,
+            comp.address_name             AS address_name,
+            comp.address_address1         AS address_address1,
+            comp.address_address2         AS address_address2,
+            comp.address_city             AS address_city,
+            comp.address_state            AS address_state,
+            comp.address_postal_code      AS address_postal_code,
+            comp.address_latitude         AS address_latitude,
+            comp.address_longitude        AS address_longitude,
+            comp.address_country          AS address_country,
+            comp.address_county           AS address_county,
+            comp.address_phone            AS address_phone,
+            comp.address_fax              AS address_fax,
             dept.id                       AS dept_id,
             dept.code                     AS dept_code,
             dept.description              AS dept_description,
             dept.dataset                  AS dept_dataset,
             count(*) OVER() as total_elements
          FROM audit_permission ap
-              JOIN (${companyRepository.companyBaseQuery()}) comp ON ap.company_id = comp.id
+              JOIN (${companyRepository.companyBaseQuery()}) comp ON ap.company_id = comp.id AND comp.deleted = FALSE
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
               JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
-         WHERE comp.id = :comp_id
+         WHERE comp.id = :comp_id AND ap.deleted = FALSE
          ORDER BY ap_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset""",
          mapOf(
@@ -155,16 +182,29 @@ class AuditPermissionRepository @Inject constructor(
             comp.client_id                AS comp_client_id,
             comp.dataset_code             AS comp_dataset_code,
             comp.federal_id_number        AS comp_federal_id_number,
+            comp.address_id               AS comp_address_id,
+            comp.address_name             AS address_name,
+            comp.address_address1         AS address_address1,
+            comp.address_address2         AS address_address2,
+            comp.address_city             AS address_city,
+            comp.address_state            AS address_state,
+            comp.address_postal_code      AS address_postal_code,
+            comp.address_latitude         AS address_latitude,
+            comp.address_longitude        AS address_longitude,
+            comp.address_country          AS address_country,
+            comp.address_county           AS address_county,
+            comp.address_phone            AS address_phone,
+            comp.address_fax              AS address_fax,
             dept.id                       AS dept_id,
             dept.code                     AS dept_code,
             dept.description              AS dept_description,
             dept.dataset                  AS dept_dataset,
             count(*) OVER() as total_elements
          FROM audit_permission ap
-            JOIN (${companyRepository.companyBaseQuery()}) comp ON ap.company_id = comp.id
+            JOIN (${companyRepository.companyBaseQuery()}) comp ON ap.company_id = comp.id AND comp.deleted = FALSE
             JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
             JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
-         WHERE comp.id = :comp_id AND ap.type_id = :typeId
+         WHERE comp.id = :comp_id AND ap.type_id = :typeId AND ap.deleted = FALSE
          ORDER BY ap_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset""",
          mapOf(
@@ -200,11 +240,12 @@ class AuditPermissionRepository @Inject constructor(
             dept.description        AS dept_description,
             dept.dataset            AS dept_dataset
          FROM audit_permission ap
-              JOIN company comp ON ap.company_id = comp.id
+              JOIN company comp ON ap.company_id = comp.id AND comp.deleted = FALSE
               JOIN audit_permission_type_domain aptd ON ap.type_id = aptd.id
               JOIN fastinfo_prod_import.department_vw dept ON ap.department = dept.code AND comp.dataset_code = dept.dataset
          WHERE aptd.value = :asset
-               AND comp.id = :comp_id""",
+               AND comp.id = :comp_id
+               AND ap.deleted = FALSE""",
          mapOf("asset" to asset, "comp_id" to company.id)
       ) { rs, _ ->
          val dept = departmentRepository.mapRow(rs, company, "dept_")
@@ -327,8 +368,9 @@ class AuditPermissionRepository @Inject constructor(
       return if (existingPermission != null) {
          jdbc.deleteReturning(
             """
-            DELETE FROM audit_permission
-            WHERE id = :id
+            UPDATE audit_permission
+            SET deleted = TRUE
+            WHERE id = :id AND deleted = FALSE
             RETURNING
                *""",
             mapOf("id" to id)

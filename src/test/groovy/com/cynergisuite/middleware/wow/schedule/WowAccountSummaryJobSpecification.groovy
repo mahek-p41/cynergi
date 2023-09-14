@@ -20,7 +20,7 @@ class WowAccountSummaryJobSpecification extends ServiceSpecificationBase{
 
    void "upload account summary" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final Schedules = wowTestDataLoaderService.enableWow(tstds1)
       final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)
       final wowAccountSummarySchedule = Schedules.find { it.title == "Wow Account Summary"}

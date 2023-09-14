@@ -3,9 +3,11 @@ package com.cynergisuite.middleware.audit.exception.note
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
+import io.micronaut.core.annotation.Introspected
 import java.time.OffsetDateTime
 import java.util.UUID
 
+@Introspected
 data class AuditExceptionNote(
    val id: UUID? = null,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),

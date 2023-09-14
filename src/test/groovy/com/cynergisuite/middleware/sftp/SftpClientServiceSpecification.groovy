@@ -3,10 +3,10 @@ package com.cynergisuite.middleware.sftp
 import com.cynergisuite.middleware.ssh.SftpClientService
 import io.micronaut.context.annotation.Value
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import jakarta.inject.Inject
 import spock.lang.Specification
 import spock.lang.TempDir
 
-import jakarta.inject.Inject
 import java.nio.file.Path
 
 @MicronautTest

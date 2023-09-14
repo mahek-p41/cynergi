@@ -17,28 +17,19 @@ import java.util.zip.ZipFile
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.FilenameUtils
 
-static boolean isCst143() {
-   try {
-      return (InetAddress.getLocalHost().getHostName() == "cst143")
-   } catch(Throwable e) {
-      return false
-   }
-}
-
 def migrate(Path dir, String dbUrl, String username, String password, boolean forceClean = false) {
-   final isCst143 = isCst143()
 
    final flyway = Flyway
       .configure()
       .locations("filesystem:$dir")
-      .cleanDisabled(!isCst143)
-      .cleanOnValidationError(isCst143)
+      .cleanDisabled(!forceClean)
+      .cleanOnValidationError(false)
       .table("flyway_schema_history")
       .initSql("SELECT 1")
       .dataSource(dbUrl, username, password)
       .load()
 
-   if (forceClean && isCst143) {
+   if (forceClean) {
       println "Cleaning db"
       flyway.clean()
    }
@@ -72,8 +63,10 @@ if (options != null && !options.h) {
 
       if (Files.exists(migrationLocation)) {
          if (Files.isDirectory(migrationLocation)) {
+            println "Migrating Flyway scripts."
             migrate(migrationLocation, "jdbc:postgresql://${options.H}:${options.P}/${options.d}", options.u, options.p, options.c)
          } else if (jarPathMatch.matches(migrationLocation)) {
+            println "Migrating Flyway scripts using flywaytemp folder."
             final migrationJar = new ZipFile(migrationLocation.toFile())
             final flywayTemp = Files.createTempDirectory("flywaytemp")
 

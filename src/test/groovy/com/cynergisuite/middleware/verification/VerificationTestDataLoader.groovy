@@ -8,13 +8,14 @@ import com.cynergisuite.middleware.verfication.infrastructure.VerificationReposi
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Inject
+import jakarta.inject.Singleton
+
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.stream.Collectors
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 
 @CompileStatic
 class VerificationTestDataLoader {

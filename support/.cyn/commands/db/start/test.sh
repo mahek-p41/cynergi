@@ -7,7 +7,7 @@ if [ -z `docker-compose ps -q cynergitestdb` ] || [ -z `docker ps -q --no-trunc 
   docker rm cynergitestdb >> /tmp/cynergi-dev.log 2>&1
   docker-compose build --force-rm cynergibasedb >> /tmp/cynergi-dev.log 2>&1
   docker-compose build --force-rm cynergitestdb >> /tmp/cynergi-dev.log 2>&1
-  docker-compose up -d --no-deps cynergitestdb
+  docker-compose up -d --no-deps cynergitestdb  >> /tmp/cynergi-dev.log 2>&1
 
   exit $?
 else
