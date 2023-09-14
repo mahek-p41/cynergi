@@ -37,12 +37,12 @@ jobs:
             releaseEnvironment=RELEASE
             ;;
          "staging")
-            micronautEnv=cstdevelop
+            micronautEnv=cst
             releaseEnvironment=STAGING
             ;;
          #"develop")
          *)
-            micronautEnv=cstdevelop
+            micronautEnv=cst
             releaseEnvironment=DEVELOP
             ;;
          esac

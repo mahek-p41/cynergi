@@ -30,16 +30,11 @@ object Application {
          false
       }
 
-      if ((mnEnvironment == "prod" || mnEnvironment == "cstdevelop") && !systemProps.containsKey("logback.configurationFile")) {
+      if ((mnEnvironment == "prod") && !systemProps.containsKey("logback.configurationFile")) {
          System.setProperty("logback.configurationFile", "logback-prod.xml")
       }
 
-
-      if (isCst) {
-         if (mnEnvironment != "cstdevelop") {
-            System.setProperty("micronaut.environments", "cst")
-         }
-
+      if (isCst || mnEnvironment == "cst") {
          System.setProperty("logback.configurationFile", "logback-cst.xml")
       }
 
