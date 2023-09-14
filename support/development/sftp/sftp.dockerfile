@@ -6,13 +6,12 @@ ARG GROUP_ID=1001
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update && \
-apt-get upgrade -y && \
-apt-get install openssh-server -y supervisor && \
-mkdir -p /var/run/sshd && \
-groupadd --system --gid ${GROUP_ID} sftpuser && \
-useradd --system --create-home --gid ${GROUP_ID} sftpuser && \
-echo "sftpuser:password" | chpasswd && \
-sed -ri "s/#LogLevel INFO/LogLevel DEBUG/g" /etc/ssh/sshd_config
+    apt-get install -y openssh-server supervisor && \
+    mkdir -p /var/run/sshd && \
+    groupadd --non-unique --system --gid ${GROUP_ID} sftpuser && \
+    useradd --non-unique --uid ${USER_ID} --system --gid ${GROUP_ID} --shell /bin/bash --create-home sftpuser && \
+    echo "sftpuser:password" | chpasswd && \
+    sed -ri "s/#LogLevel INFO/LogLevel DEBUG/g" /etc/ssh/sshd_config
 
 EXPOSE 22
 VOLUME [ "/home/sftpuser" ]

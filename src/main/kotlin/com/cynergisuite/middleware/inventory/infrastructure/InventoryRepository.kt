@@ -240,21 +240,21 @@ class InventoryRepository(
          "offset" to pageRequest.offset()
       )
 
-      var statusFilterString = ""
-      if (statuses.isNotEmpty()) {
-         statusFilterString = buildStatusFilterString(statuses)
-      }
       if (!pageRequest.locationType.isNullOrBlank()) {
          params["location_type"] = pageRequest.locationType!!
       }
 
-      val sql = """
+      val statusFilterString = statuses.takeIf { it.isNotEmpty() }
+         ?.let { buildStatusAndLocationTypeFilterString(it, params) }
+         .orEmpty()
+
+      val sql =
+         """
       WITH paged AS (
          $selectBase
          WHERE i.primary_location = :location
                AND comp.id = :comp_id
                AND $statusFilterString
-               ${if (params.containsKey("location_type")) "AND iltd.value = :location_type" else ""}
       )
       SELECT
          p.*,
@@ -335,7 +335,7 @@ class InventoryRepository(
          p.*,
          count(*) OVER() as total_elements
       FROM paged AS p
-      ORDER BY ${pageRequest.sortBy()} ${pageRequest.sortDirection()}
+      ORDER BY CASE WHEN status = 'D' THEN 1 ELSE 0 END,${pageRequest.sortBy()} ${pageRequest.sortDirection()}
       LIMIT :limit
          OFFSET :offset
          """.trimIndent()
@@ -486,15 +486,16 @@ class InventoryRepository(
       )
    }
 
-   private fun buildStatusFilterString(statuses: List<String>): String {
+   private fun buildStatusAndLocationTypeFilterString(statuses: List<String>, params: MutableMap<String, Any?>): String {
+      //location_type filter is applied to status (N,R) only
       val str = StringBuilder(" ( ")
       var isFirstCondition = true
       if (statuses.contains("N")) {
-         str.append(" (i.status = 'N' AND i.location = :location) ")
+         str.append(" (i.status = 'N' AND i.location = :location) ${if (params.containsKey("location_type")) "AND iltd.value = :location_type" else ""} ")
          isFirstCondition = false
       }
       if (statuses.contains("R")) {
-         str.append(" ${if(!isFirstCondition) "OR" else ""} (i.status = 'R' AND i.location = :location) ")
+         str.append(" ${if(!isFirstCondition) "OR" else ""} (i.status = 'R' AND i.location = :location) ${if (params.containsKey("location_type")) "AND iltd.value = :location_type" else ""} ")
          isFirstCondition = false
       }
       if (statuses.contains("D")) {

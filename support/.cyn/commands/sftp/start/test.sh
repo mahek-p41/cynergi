@@ -6,7 +6,7 @@ pushd ../development > /dev/null
 if [ -z `docker-compose ps -q sftptest` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q sftptest)` ]; then
   echo "Starting sftp test server"
   docker rm -f sftptest >> /dev/null 2>&1
-  docker-compose build --force-rm --quiet sftptest
+  docker-compose build --force-rm sftptest
   mkdir -p sftp/sftpuser
   docker-compose up -d --no-deps sftptest
   exit $?
