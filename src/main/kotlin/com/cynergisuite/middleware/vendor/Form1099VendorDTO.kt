@@ -9,6 +9,7 @@ import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
@@ -18,7 +19,10 @@ import javax.validation.constraints.Size
 @Introspected
 @JsonInclude(NON_NULL)
 @Schema(name = "Vendor1099DTO", title = "An entity containing vendor 1099 information", description = "An entity containing vendor 1099 information.")
-data class Vendor1099DTO(
+data class Form1099VendorDTO(
+
+   @field:Schema(name = "id", minimum = "1", required = false, description = "Vendor ID")
+   var id: UUID? = null,
 
    @field:NotNull
    @field:NotBlank
@@ -71,8 +75,9 @@ data class Vendor1099DTO(
 
 ) : Identifiable {
 
-   constructor(entity: Vendor1099Entity) :
+   constructor(entity: Form1099VendorEntity) :
       this (
+         id = entity.id,
          vendorName = entity.vendorName,
          vendorNumber = entity.vendorNumber,
          vendorAddress = entity.vendorAddress?.let { AddressDTO(it) },
@@ -86,4 +91,5 @@ data class Vendor1099DTO(
          isActive = entity.isActive
       )
 
+   override fun myId(): UUID? = id
 }

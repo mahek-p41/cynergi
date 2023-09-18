@@ -1,10 +1,7 @@
 package com.cynergisuite.middleware.vendor
 
-import com.cynergisuite.domain.GeneralLedgerJournalReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.Vendor1099FilterRequest
-import com.cynergisuite.middleware.accounting.account.AccountService
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingReportTemplate
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorPageRequest
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
@@ -81,7 +78,7 @@ class VendorService @Inject constructor(
       }
    }
 
-   fun fetch1099Report(company: CompanyEntity, filterRequest: Vendor1099FilterRequest): List<Vendor1099DTO> {
+   fun fetch1099Report(company: CompanyEntity, filterRequest: Vendor1099FilterRequest): List<Form1099VendorDTO> {
       //val found = vendorRepository.fetch1099Report(company, filterRequest)
 
       //return Vendor1099DTO(found)
