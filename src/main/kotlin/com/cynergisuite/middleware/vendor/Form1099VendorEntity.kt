@@ -5,8 +5,10 @@ import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.company.CompanyEntity
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 
-data class Vendor1099Entity(
+data class Form1099VendorEntity(
+   val id: UUID? = null,
    val vendorName: String, // 30 max
    val vendorNumber: Int?,
    val vendorAddress: AddressEntity?,
@@ -22,8 +24,9 @@ data class Vendor1099Entity(
 ) : Identifiable {
 
 
-   constructor(dto: Vendor1099DTO, company: CompanyEntity) :
+   constructor(dto: Form1099VendorDTO, company: CompanyEntity) :
       this(
+         id = dto.id,
          vendorName = dto.vendorName!!,
          vendorNumber = dto.vendorNumber!!,
          vendorAddress = dto.vendorAddress?.let { AddressEntity(it) },
@@ -38,4 +41,5 @@ data class Vendor1099Entity(
          isActive = dto.isActive
       )
 
+   override fun myId(): UUID? = id
 }

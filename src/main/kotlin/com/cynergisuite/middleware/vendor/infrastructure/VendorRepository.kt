@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.vendor.infrastructure
 
-import com.cynergisuite.domain.GeneralLedgerJournalReportFilterRequest
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
@@ -29,7 +28,7 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodType
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardType
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
-import com.cynergisuite.middleware.vendor.Vendor1099DTO
+import com.cynergisuite.middleware.vendor.Form1099VendorDTO
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
@@ -685,10 +684,11 @@ class VendorRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun fetch1099Report(company: CompanyEntity, filterRequest: Vendor1099FilterRequest) : List<Vendor1099DTO> {
+   fun fetch1099Report(company: CompanyEntity, filterRequest: Vendor1099FilterRequest) : List<Form1099VendorDTO> {
       val glJournals = mutableListOf<GeneralLedgerJournalEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
-      val whereClause = StringBuilder("WHERE comp.company_id = :comp_id AND vend.vendor_1099 = 'Y' AND apInvoice.status_id NOT IN (1, 2, 4)")
+      //See about changing the below to use values for where clause limitations as opposed to id#
+      val whereClause = StringBuilder("WHERE comp.company_id = :comp_id AND vend.vendor_1099 = 'Y' AND apInvoice.status_id NOT IN (1, 2, 4) AND pmt.account_payable_payment_status != 2")
       val orderBy = StringBuilder("ORDER BY ")
 
       if (filterRequest.form1099Type != null) {
