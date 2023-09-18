@@ -1,11 +1,9 @@
 package com.cynergisuite.middleware.agreement.signing
 
-import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleLegacyNumberDTO
-import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.company.CompanyDTO
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
-import java.util.UUID
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -15,12 +13,12 @@ import javax.validation.constraints.Size
 data class AgreementSigningDTO(
 
    @field:Schema(name = "id", description = "System generated ID for the associated agreement signing record")
-   var id: UUID? = null,
+   var id: String? = null,
 
    @field:NotNull
    @field:NotBlank
    @field:Schema(name = "company", description = "The associated company for this agreement")
-   var company: CompanyEntity? = null,
+   var company: CompanyDTO? = null,
 
    @field:Schema(name = "store", required = false, description = "Store the agreement is associated with")
    var store: SimpleLegacyNumberDTO? = null,
@@ -44,22 +42,20 @@ data class AgreementSigningDTO(
 
    @field:NotNull
    @field:Schema(name = "externalSignatureId", description = "Sign Here Please external UUID")
-   var externalSignatureId: UUID? = null
+   var externalSignatureId: String? = null
 
-) : Identifiable {
+) {
 
    constructor(entity: AgreementSigningEntity) :
       this (
-         id = entity.id,
-         company = entity.company,
+         id = entity.id?.toString(),
+         company = CompanyDTO(entity.company),
          store = SimpleLegacyNumberDTO(entity.store.number),
          primaryCustomerNumber = entity.primaryCustomerNumber,
          secondaryCustomerNumber = entity.secondaryCustomerNumber,
          agreementNumber = entity.agreementNumber,
          agreementType = entity.agreementType,
          statusId = entity.statusId,
-         externalSignatureId = entity.externalSignatureId,
+         externalSignatureId = entity.externalSignatureId.toString(),
       )
-
-   override fun myId(): UUID? = id
 }

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.CompareToBuilder
-import java.util.UUID
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
@@ -16,7 +15,7 @@ import javax.validation.constraints.Size
 data class CompanyDTO(
 
    @field:Schema(name = "id", minimum = "1", required = false, nullable = true, description = "System generated ID")
-   var id: UUID? = null,
+   var id: String? = null,
 
    @field:NotNull
    @field:Schema(name = "name", required = false, nullable = false, description = "Human readable name for a company")
@@ -48,7 +47,7 @@ data class CompanyDTO(
 
    constructor(company: CompanyEntity) :
       this(
-         id = company.id,
+         id = company.id?.toString(),
          name = company.name,
          doingBusinessAs = company.doingBusinessAs,
          clientCode = company.clientCode,

@@ -37,7 +37,7 @@ class VerificationAutoRepository(
    }
 
    fun exists(id: Long): Boolean {
-      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_auto WHERE id = :id)", mapOf("id" to id), Boolean::class.java)!!
+      val exists = jdbc.queryForObject("SELECT EXISTS(SELECT id FROM verification_auto WHERE id = :id)", mapOf("id" to id), Boolean::class.java)
 
       logger.trace("Checking if VerificationAuto: {} exists resulted in {}", id, exists)
 

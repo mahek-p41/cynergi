@@ -27,6 +27,7 @@ import org.apache.hc.client5.http.classic.methods.HttpGet
 import org.apache.hc.client5.http.classic.methods.HttpPost
 import org.apache.hc.client5.http.classic.methods.HttpPut
 import org.apache.hc.core5.http.io.entity.StringEntity
+import com.cynergisuite.middleware.sign.here.SignatoryFinder
 
 @Option(names = ["-H", "--host"], description = "host and protocol to call")
 @Field String hostIn = null
@@ -95,258 +96,266 @@ if (!helpRequested) {
             final rtoAgreementNumber = Integer.valueOf(csvData["rtoAgreementNumber"].trim())
             final clubAgreementNumber = Integer.valueOf(csvData["clubAgreementNumber"].trim())
             final otherAgreementNumber = Integer.valueOf(csvData["otherAgreementNumber"].trim())
-            final signatories = StringUtils.split(csvData["signatories"].trim(), ',').collect {it.trim()}
 
             final expirationDate = (csvData["retentionDate"].toString().trim())
             final formatter = DateTimeFormatter.ofPattern("M/d/yy", Locale.ENGLISH);
-            final retentionDate = LocalDate.parse(expirationDate, formatter);
+            final retentionDate = LocalDate.parse(expirationDate, formatter)
 
-            final jsonSlurper = new JsonSlurper()
+            if (!signaturePdf.exists() || !signaturePdf.isFile()) {
+               final signatories = SignatoryFinder.reduceSignatoriesBasedOnProvidedPdf(signaturePdf, StringUtils.split(csvData["signatories"].trim(), ',').collect {it.trim()} )
 
-            try (final client = HttpClients.createDefault()) {
-               final storeTokenCall = new HttpGet("http://localhost:${cynmidPort}/sign/here/token/store/${storeNumber}/dataset/${dataset}")
-               final storeTokenResponse = client.execute(storeTokenCall)
+               if (!signatories.isEmpty()) {
+                  final jsonSlurper = new JsonSlurper()
 
-               if (storeTokenResponse.getCode() == 200) {
-                  final storeTokenSlurp = jsonSlurper.parse(storeTokenResponse.entity.content)
-                  final company = storeTokenSlurp.company
-                  final companyUUID = UUID.fromString(company.id)
-                  final currentCompany = new CompanyEntity(companyUUID, company.name, null, company.clientCode, company.clientId, company.datasetCode, company.federalIdNumber)
-                  final storeToken = storeTokenSlurp.token
+                  try (final client = HttpClients.createDefault()) {
+                     final storeTokenCall = new HttpGet("http://localhost:${cynmidPort}/sign/here/token/store/${storeNumber}/dataset/${dataset}")
+                     final storeTokenResponse = client.execute(storeTokenCall)
 
-                  storeTokenResponse.close()
+                     if (storeTokenResponse.getCode() == 200) {
+                        final storeTokenSlurp = jsonSlurper.parse(storeTokenResponse.entity.content)
+                        final company = storeTokenSlurp.company
+                        final companyUUID = UUID.fromString(company.id)
+                        final currentCompany = new CompanyEntity(companyUUID, company.name, null, company.clientCode, company.clientId, company.datasetCode, company.federalIdNumber)
+                        final storeToken = storeTokenSlurp.token
 
-                  if (!signaturePdf.exists() || !signaturePdf.isFile()) {
-                     logger.info "${signaturePdf} did not exist or is not a file"
-                  } else {
-                     final tokenRequest = new JsonBuilder([token: storeToken])
-                     final tokenLoginRequest = new HttpPost(URI.create("${host}/api/login/token"))
-                     tokenLoginRequest.setHeader("Content-Type", "application/json")
-                     tokenLoginRequest.setEntity(new StringEntity(tokenRequest.toString()))
+                        storeTokenResponse.close()
 
-                     final accessToken = client.execute(tokenLoginRequest).withCloseable { tokenLoginResponse ->
-                        if (tokenLoginResponse.code == 200) {
-                           return jsonSlurper.parse(tokenLoginResponse.entity.content).access_token
+                        final tokenRequest = new JsonBuilder([token: storeToken])
+                        final tokenLoginRequest = new HttpPost(URI.create("${host}/api/login/token"))
+                        tokenLoginRequest.setHeader("Content-Type", "application/json")
+                        tokenLoginRequest.setEntity(new StringEntity(tokenRequest.toString()))
+
+                        final accessToken = client.execute(tokenLoginRequest).withCloseable { tokenLoginResponse ->
+                           if (tokenLoginResponse.code == 200) {
+                              return jsonSlurper.parse(tokenLoginResponse.entity.content).access_token
+                           } else {
+                              logger.info "Unable to login to sign here system with access token. ${tokenLoginResponse.reasonPhrase} ${EntityUtils.toString(tokenLoginResponse.entity)}"
+                              return null
+                           }
+                        }
+
+                        if (accessToken != null) {
+                           final signers = "signer=" + signatories.toList().withIndex().collect { element, index -> "${element}[${index + 1}]" }.join("&signer=")
+
+                           //The below Post is hitting DocumentController from high-touch-sign
+                           final uploadDocumentRequest = new HttpPost("${host}/api/document/${name}/${reason}/${location}/${contactInfo}/${retentionDate}?${signers}")
+
+                           final pdfBody = new FileBody(signaturePdf, ContentType.APPLICATION_PDF, signaturePdf.name)
+                           final requestEntity = MultipartEntityBuilder.create().addPart("file", pdfBody).build()
+
+                           def agreementType = 'R'
+                           switch (reason) {
+                              case "RTO Agreement":
+                                 agreementType = 'R'
+                                 break
+                              case "Club Agreement":
+                                 agreementType = 'C'
+                                 break
+                              case "Changed Agreement":
+                                 agreementType = 'R'
+                                 break
+                              case "Other Agreement":
+                                 agreementType = 'F'
+                                 break
+                              case "Loaner Agreement":
+                                 agreementType = 'L'
+                                 break
+                              default:
+                                 agreementType = 'R'
+                                 break
+                           }
+
+                           uploadDocumentRequest.setHeader("Authorization", "Bearer ${accessToken}")
+                           uploadDocumentRequest.setHeader("X-Sig-Meta-Type", "agreement")
+                           uploadDocumentRequest.setHeader("X-Sig-Meta-Store", storeNumber.toString())
+                           uploadDocumentRequest.setHeader("X-Sig-Meta-Dataset", dataset)
+                           uploadDocumentRequest.setHeader("X-Sig-Meta-Name", name)
+                           uploadDocumentRequest.setHeader("X-Sig-Meta-Agreement-No", rtoAgreementNumber.toString())
+                           uploadDocumentRequest.setHeader("X-Sig-Meta-Customer-No", primaryCustomerNumber.toString())
+                           uploadDocumentRequest.setHeader("X-Sig-Meta-Agreement-Type", agreementType)
+                           uploadDocumentRequest.setEntity(requestEntity)
+                           final uploadResponse = client.execute(uploadDocumentRequest)
+                           final uploadResponseCode = uploadResponse.getCode()
+                           //will get back json:
+                           //requestedDocumentId UUID The id for the root of the whole transaction
+                           //nextSignatureUri
+
+
+                           if (uploadResponseCode >= 200 && uploadResponseCode < 400) {
+                              final awsResponse = UUID.fromString(jsonSlurper.parse(uploadResponse.entity.content).requestedDocumentId)
+
+                              if (rtoAgreementNumber != 0) {
+                                 //This is where we check then insert/update the agreement_signing table for rto.
+                                 final storeDTO = new SimpleLegacyNumberDTO(storeNumber)
+                                 final checkExisting = new HttpGet("http://localhost:${cynmidPort}/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${rtoAgreementNumber}")
+                                 final existingRtoAgreement = client.execute(checkExisting)
+                                 final existingRtoAgreementResponseCode = existingRtoAgreement.getCode()
+
+                                 if (existingRtoAgreementResponseCode == 404) {
+                                    //Insert the record
+                                    final agreementToUpsert = new AgreementSigningDTO(null, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, rtoAgreementNumber, agreementType, 1, awsResponse)
+                                    final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
+                                    final createRtoAgreement = new HttpPost("http://localhost:${cynmidPort}/agreement/signing/dataset/${dataset}")
+                                    createRtoAgreement.setHeader("Content-Type", "application/json")
+                                    createRtoAgreement.setEntity(new StringEntity(agreementToUpsertJson))
+
+                                    final createResponse = client.execute(createRtoAgreement)
+                                    final responseCode = createResponse.getCode()
+
+                                    if (responseCode >= 200 && responseCode < 400) {
+                                       logger.info "Successfully created rto agreement"
+                                    } else {
+                                       logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(createResponse.getEntity())}"
+                                       System.exit(-2)
+                                    }
+                                 } else if (existingRtoAgreementResponseCode == 200) {
+                                    //Update the record
+                                    final existingRtoAgreementJson = jsonSlurper.parse(existingRtoAgreement.entity.content)
+                                    final existingRtoAgreementId = existingRtoAgreementJson.id
+                                    final existingRtoAgreementUUID = UUID.fromString(existingRtoAgreementId)
+                                    final agreementToUpsert = new AgreementSigningDTO(existingRtoAgreementUUID, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, rtoAgreementNumber, agreementType, 1, awsResponse)
+                                    final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
+                                    final updateRtoAgreement = new HttpPut("http://localhost:${cynmidPort}/agreement/signing/${existingRtoAgreementUUID}/dataset/${dataset}")
+                                    updateRtoAgreement.setHeader("Content-Type", "application/json")
+                                    updateRtoAgreement.setEntity(new StringEntity(agreementToUpsertJson))
+
+                                    final updateResponse = client.execute(updateRtoAgreement)
+                                    final responseCode = updateResponse.getCode()
+
+                                    if (responseCode >= 200 && responseCode < 400) {
+                                       logger.info "Successfully updated rto agreement"
+                                    } else {
+                                       logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
+                                       System.exit(-3)
+                                    }
+                                 } else {
+                                    logger.info "Unhandled response from server $existingRtoAgreementResponseCode"
+                                    System.exit(-4)
+                                 }
+                              }
+
+                              if (clubAgreementNumber != 0) {
+                                 //This is where we check then insert/update the agreement_signing table for club.
+                                 final storeDTO = new SimpleLegacyNumberDTO(storeNumber)
+                                 final checkExisting = new HttpGet("http://localhost:${cynmidPort}/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${clubAgreementNumber}")
+                                 final existingClubAgreement = client.execute(checkExisting)
+                                 final existingClubAgreementResponseCode = existingClubAgreement.getCode()
+
+                                 if (existingClubAgreementResponseCode == 404) {
+                                    //Insert the record
+                                    final agreementToUpsert = new AgreementSigningDTO(null, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, clubAgreementNumber, agreementType, 1, awsResponse)
+                                    final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
+                                    final createClubAgreement = new HttpPost("http://localhost:${cynmidPort}/agreement/signing/dataset/${dataset}")
+                                    createClubAgreement.setHeader("Content-Type", "application/json")
+                                    createClubAgreement.setEntity(new StringEntity(agreementToUpsertJson))
+
+                                    final createResponse = client.execute(createClubAgreement)
+                                    final responseCode = createResponse.getCode()
+
+                                    if (responseCode >= 200 && responseCode < 400) {
+                                       logger.info "Successfully created club agreement"
+                                    } else {
+                                       logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(createResponse.getEntity())}"
+                                       System.exit(-5)
+                                    }
+                                 } else if (existingClubAgreementResponseCode == 200) {
+                                    //Update the record
+                                    final existingClubAgreementJson = jsonSlurper.parse(existingClubAgreement.entity.content)
+                                    final existingClubAgreementId = existingClubAgreementJson.id
+                                    final existingClubAgreementUUID = UUID.fromString(existingClubAgreementId)
+                                    final agreementToUpsert = new AgreementSigningDTO(existingClubAgreementUUID, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, clubAgreementNumber, agreementType, 1, awsResponse)
+                                    final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
+                                    final updateClubAgreement = new HttpPut("http://localhost:${cynmidPort}/agreement/signing/${existingClubAgreementUUID}/dataset/${dataset}")
+                                    updateClubAgreement.setHeader("Content-Type", "application/json")
+                                    updateClubAgreement.setEntity(new StringEntity(agreementToUpsertJson))
+
+                                    final updateResponse = client.execute(updateClubAgreement)
+                                    final responseCode = updateResponse.getCode()
+
+                                    if (responseCode >= 200 && responseCode < 400) {
+                                       logger.info "Successfully updated club agreement"
+                                    } else {
+                                       logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
+                                       System.exit(-6)
+                                    }
+                                 } else {
+                                    logger.info "Unhandled response from server $existingRtoAgreementResponseCode"
+                                    System.exit(-7)
+                                 }
+                              }
+
+                              if (otherAgreementNumber != 0) {
+                                 //This is where we check then insert/update the agreement_signing table for other.
+                                 final storeDTO = new SimpleLegacyNumberDTO(storeNumber)
+                                 final checkExisting = new HttpGet("http://localhost:${cynmidPort}/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${otherAgreementNumber}")
+                                 final existingOtherAgreement = client.execute(checkExisting)
+                                 final existingOtherAgreementResponseCode = existingOtherAgreement.getCode()
+
+                                 if (existingOtherAgreementResponseCode == 404) {
+                                    //Insert the record
+                                    final agreementToUpsert = new AgreementSigningDTO(null, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, otherAgreementNumber, agreementType, 1, awsResponse)
+                                    final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
+                                    final createOtherAgreement = new HttpPost("http://localhost:${cynmidPort}/agreement/signing/dataset/${dataset}")
+                                    createOtherAgreement.setHeader("Content-Type", "application/json")
+                                    createOtherAgreement.setEntity(new StringEntity(agreementToUpsertJson))
+
+                                    final createResponse = client.execute(createOtherAgreement)
+                                    final responseCode = createResponse.getCode()
+
+                                    if (responseCode >= 200 && responseCode < 400) {
+                                       logger.info "Successfully created other agreement"
+                                    } else {
+                                       logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(createResponse.getEntity())}"
+                                       System.exit(-8)
+                                    }
+                                 } else if (existingOtherAgreementResponseCode == 200) {
+                                    //Update the record
+                                    final existingOtherAgreementJson = jsonSlurper.parse(existingOtherAgreement.entity.content)
+                                    final existingOtherAgreementId = existingOtherAgreementJson.id
+                                    final existingOtherAgreementUUID = UUID.fromString(existingOtherAgreementId)
+                                    final agreementToUpsert = new AgreementSigningDTO(existingOtherAgreementUUID, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, otherAgreementNumber, agreementType, 1, awsResponse)
+                                    final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
+                                    final updateOtherAgreement = new HttpPut("http://localhost:${cynmidPort}/agreement/signing/${existingOtherAgreementUUID}/dataset/${dataset}")
+                                    updateOtherAgreement.setHeader("Content-Type", "application/json")
+                                    updateOtherAgreement.setEntity(new StringEntity(agreementToUpsertJson))
+
+                                    final updateResponse = client.execute(updateOtherAgreement)
+                                    final responseCode = updateResponse.getCode()
+
+                                    if (responseCode >= 200 && responseCode < 400) {
+                                       logger.info "Successfully updated other agreement"
+                                    } else {
+                                       logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
+                                       System.exit(-9)
+                                    }
+                                 } else {
+                                    logger.info "Unhandled response from server $existingRtoAgreementResponseCode"
+                                    System.exit(-10)
+                                 }
+                              }
+
+                           } else {
+                              logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
+                              System.exit(-11)
+                           }
+
+                           uploadResponse.close()
                         } else {
-                           logger.info "Unable to login to sign here system with access token. ${tokenLoginResponse.reasonPhrase} ${EntityUtils.toString(tokenLoginResponse.entity)}"
-                           return null
+                           logger.info "Invalid token provided for uploading"
+                           System.exit(-12)
                         }
-                     }
-
-                     if (accessToken != null) {
-                        final signers = "signer=" + signatories.toList().withIndex().collect { element, index -> "${element}[${index + 1}]" }.join("&signer=")
-
-                        //The below Post is hitting DocumentController from high-touch-sign
-                        final uploadDocumentRequest = new HttpPost("${host}/api/document/${name}/${reason}/${location}/${contactInfo}/${retentionDate}?${signers}")
-
-                        final pdfBody = new FileBody(signaturePdf, ContentType.APPLICATION_PDF, signaturePdf.name)
-                        final requestEntity = MultipartEntityBuilder.create().addPart("file", pdfBody).build()
-
-                        def agreementType = 'R'
-                        switch (reason) {
-                           case "RTO Agreement":
-                              agreementType = 'R'
-                              break
-                           case "Club Agreement":
-                              agreementType = 'C'
-                              break
-                           case "Changed Agreement":
-                              agreementType = 'R'
-                              break
-                           case "Other Agreement":
-                              agreementType = 'F'
-                              break
-                           case "Loaner Agreement":
-                              agreementType = 'L'
-                              break
-                           default:
-                              agreementType = 'R'
-                              break
-                        }
-
-                        uploadDocumentRequest.setHeader("Authorization", "Bearer ${accessToken}")
-                        uploadDocumentRequest.setHeader("X-Sig-Meta-Type", "agreement")
-                        uploadDocumentRequest.setHeader("X-Sig-Meta-Store", storeNumber.toString())
-                        uploadDocumentRequest.setHeader("X-Sig-Meta-Dataset", dataset)
-                        uploadDocumentRequest.setHeader("X-Sig-Meta-Name", name)
-                        uploadDocumentRequest.setHeader("X-Sig-Meta-Agreement-No", rtoAgreementNumber.toString())
-                        uploadDocumentRequest.setHeader("X-Sig-Meta-Customer-No", primaryCustomerNumber.toString())
-                        uploadDocumentRequest.setHeader("X-Sig-Meta-Agreement-Type", agreementType)
-                        uploadDocumentRequest.setEntity(requestEntity)
-                        final uploadResponse = client.execute(uploadDocumentRequest)
-                        final uploadResponseCode = uploadResponse.getCode()
-                        //will get back json:
-                        //requestedDocumentId UUID The id for the root of the whole transaction
-                        //nextSignatureUri
-
-
-                        if (uploadResponseCode >= 200 && uploadResponseCode < 400) {
-                           final awsResponse = UUID.fromString(jsonSlurper.parse(uploadResponse.entity.content).requestedDocumentId)
-
-                           if (rtoAgreementNumber != 0) {
-                              //This is where we check then insert/update the agreement_signing table for rto.
-                              final storeDTO = new SimpleLegacyNumberDTO(storeNumber)
-                              final checkExisting = new HttpGet("http://localhost:${cynmidPort}/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${rtoAgreementNumber}")
-                              final existingRtoAgreement = client.execute(checkExisting)
-                              final existingRtoAgreementResponseCode = existingRtoAgreement.getCode()
-
-                              if (existingRtoAgreementResponseCode == 404) {
-                                 //Insert the record
-                                 final agreementToUpsert = new AgreementSigningDTO(null, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, rtoAgreementNumber, agreementType, 1, awsResponse)
-                                 final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
-                                 final createRtoAgreement = new HttpPost("http://localhost:${cynmidPort}/agreement/signing/dataset/${dataset}")
-                                 createRtoAgreement.setHeader("Content-Type", "application/json")
-                                 createRtoAgreement.setEntity(new StringEntity(agreementToUpsertJson))
-
-                                 final createResponse = client.execute(createRtoAgreement)
-                                 final responseCode = createResponse.getCode()
-
-                                 if (responseCode >= 200 && responseCode < 400) {
-                                    logger.info "Successfully created rto agreement"
-                                 } else {
-                                    logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(createResponse.getEntity())}"
-                                    System.exit(-2)
-                                 }
-                              } else if (existingRtoAgreementResponseCode == 200) {
-                                 //Update the record
-                                 final existingRtoAgreementJson = jsonSlurper.parse(existingRtoAgreement.entity.content)
-                                 final existingRtoAgreementId = existingRtoAgreementJson.id
-                                 final existingRtoAgreementUUID = UUID.fromString(existingRtoAgreementId)
-                                 final agreementToUpsert = new AgreementSigningDTO(existingRtoAgreementUUID, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, rtoAgreementNumber, agreementType, 1, awsResponse)
-                                 final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
-                                 final updateRtoAgreement = new HttpPut("http://localhost:${cynmidPort}/agreement/signing/${existingRtoAgreementUUID}/dataset/${dataset}")
-                                 updateRtoAgreement.setHeader("Content-Type", "application/json")
-                                 updateRtoAgreement.setEntity(new StringEntity(agreementToUpsertJson))
-
-                                 final updateResponse = client.execute(updateRtoAgreement)
-                                 final responseCode = updateResponse.getCode()
-
-                                 if (responseCode >= 200 && responseCode < 400) {
-                                    logger.info "Successfully updated rto agreement"
-                                 } else {
-                                    logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
-                                    System.exit(-3)
-                                 }
-                              } else {
-                                 logger.info "Unhandled response from server $existingRtoAgreementResponseCode"
-                                 System.exit(-4)
-                              }
-                           }
-
-                           if (clubAgreementNumber != 0) {
-                              //This is where we check then insert/update the agreement_signing table for club.
-                              final storeDTO = new SimpleLegacyNumberDTO(storeNumber)
-                              final checkExisting = new HttpGet("http://localhost:${cynmidPort}/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${clubAgreementNumber}")
-                              final existingClubAgreement = client.execute(checkExisting)
-                              final existingClubAgreementResponseCode = existingClubAgreement.getCode()
-
-                              if (existingClubAgreementResponseCode == 404) {
-                                 //Insert the record
-                                 final agreementToUpsert = new AgreementSigningDTO(null, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, clubAgreementNumber, agreementType, 1, awsResponse)
-                                 final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
-                                 final createClubAgreement = new HttpPost("http://localhost:${cynmidPort}/agreement/signing/dataset/${dataset}")
-                                 createClubAgreement.setHeader("Content-Type", "application/json")
-                                 createClubAgreement.setEntity(new StringEntity(agreementToUpsertJson))
-
-                                 final createResponse = client.execute(createClubAgreement)
-                                 final responseCode = createResponse.getCode()
-
-                                 if (responseCode >= 200 && responseCode < 400) {
-                                    logger.info "Successfully created club agreement"
-                                 } else {
-                                    logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(createResponse.getEntity())}"
-                                    System.exit(-5)
-                                 }
-                              } else if (existingClubAgreementResponseCode == 200) {
-                                 //Update the record
-                                 final existingClubAgreementJson = jsonSlurper.parse(existingClubAgreement.entity.content)
-                                 final existingClubAgreementId = existingClubAgreementJson.id
-                                 final existingClubAgreementUUID = UUID.fromString(existingClubAgreementId)
-                                 final agreementToUpsert = new AgreementSigningDTO(existingClubAgreementUUID, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, clubAgreementNumber, agreementType, 1, awsResponse)
-                                 final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
-                                 final updateClubAgreement = new HttpPut("http://localhost:${cynmidPort}/agreement/signing/${existingClubAgreementUUID}/dataset/${dataset}")
-                                 updateClubAgreement.setHeader("Content-Type", "application/json")
-                                 updateClubAgreement.setEntity(new StringEntity(agreementToUpsertJson))
-
-                                 final updateResponse = client.execute(updateClubAgreement)
-                                 final responseCode = updateResponse.getCode()
-
-                                 if (responseCode >= 200 && responseCode < 400) {
-                                    logger.info "Successfully updated club agreement"
-                                 } else {
-                                    logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
-                                    System.exit(-6)
-                                 }
-                              } else {
-                                 logger.info "Unhandled response from server $existingRtoAgreementResponseCode"
-                                 System.exit(-7)
-                              }
-                           }
-
-                           if (otherAgreementNumber != 0) {
-                              //This is where we check then insert/update the agreement_signing table for other.
-                              final storeDTO = new SimpleLegacyNumberDTO(storeNumber)
-                              final checkExisting = new HttpGet("http://localhost:${cynmidPort}/agreement/signing/upsertPrep/${dataset}/${primaryCustomerNumber}/${otherAgreementNumber}")
-                              final existingOtherAgreement = client.execute(checkExisting)
-                              final existingOtherAgreementResponseCode = existingOtherAgreement.getCode()
-
-                              if (existingOtherAgreementResponseCode == 404) {
-                                 //Insert the record
-                                 final agreementToUpsert = new AgreementSigningDTO(null, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, otherAgreementNumber, agreementType, 1, awsResponse)
-                                 final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
-                                 final createOtherAgreement = new HttpPost("http://localhost:${cynmidPort}/agreement/signing/dataset/${dataset}")
-                                 createOtherAgreement.setHeader("Content-Type", "application/json")
-                                 createOtherAgreement.setEntity(new StringEntity(agreementToUpsertJson))
-
-                                 final createResponse = client.execute(createOtherAgreement)
-                                 final responseCode = createResponse.getCode()
-
-                                 if (responseCode >= 200 && responseCode < 400) {
-                                    logger.info "Successfully created other agreement"
-                                 } else {
-                                    logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(createResponse.getEntity())}"
-                                    System.exit(-8)
-                                 }
-                              } else if (existingOtherAgreementResponseCode == 200) {
-                                 //Update the record
-                                 final existingOtherAgreementJson = jsonSlurper.parse(existingOtherAgreement.entity.content)
-                                 final existingOtherAgreementId = existingOtherAgreementJson.id
-                                 final existingOtherAgreementUUID = UUID.fromString(existingOtherAgreementId)
-                                 final agreementToUpsert = new AgreementSigningDTO(existingOtherAgreementUUID, currentCompany, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, otherAgreementNumber, agreementType, 1, awsResponse)
-                                 final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
-                                 final updateOtherAgreement = new HttpPut("http://localhost:${cynmidPort}/agreement/signing/${existingOtherAgreementUUID}/dataset/${dataset}")
-                                 updateOtherAgreement.setHeader("Content-Type", "application/json")
-                                 updateOtherAgreement.setEntity(new StringEntity(agreementToUpsertJson))
-
-                                 final updateResponse = client.execute(updateOtherAgreement)
-                                 final responseCode = updateResponse.getCode()
-
-                                 if (responseCode >= 200 && responseCode < 400) {
-                                    logger.info "Successfully updated other agreement"
-                                 } else {
-                                    logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
-                                    System.exit(-9)
-                                 }
-                              } else {
-                                 logger.info "Unhandled response from server $existingRtoAgreementResponseCode"
-                                 System.exit(-10)
-                              }
-                           }
-
-                        } else {
-                           logger.info "${uploadResponse.getCode()} -> ${EntityUtils.toString(uploadResponse.getEntity())}"
-                           System.exit(-11)
-                        }
-
-                        uploadResponse.close()
                      } else {
-                        logger.info "Invalid token provided for uploading"
-                        System.exit(-12)
+                        logger.error "DataSet: {} StoreNumber: {} unable to be loaded, status: ", dataset, storeNumber, storeTokenResponse.getCode()
+                        System.exit(-15)
                      }
                   }
                } else {
-                  logger.error "DataSet: {} StoreNumber: {} unable to be loaded, status: ", dataset, storeNumber, storeTokenResponse.getCode()
+                  logger.error "No signatories available after double checking requested signatories with {}", signaturePdf
+                  System.exit(-16)
                }
+            } else {
+               logger.info "${signaturePdf} did not exist or is not a file"
+               System.exit(-14)
             }
          }
       }
