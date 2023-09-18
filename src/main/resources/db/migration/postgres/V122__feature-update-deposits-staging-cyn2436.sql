@@ -1,3 +1,6 @@
+ALTER TABLE deposits_staging
+ADD COLUMN deposit_account_id UUID NOT NULL;
+
 INSERT INTO deposits_staging_deposit_type_domain(id, value, description, localization_code)
 VALUES (8, 'DEP_8', 'ACH Chargebacks', 'ach.chargebacks'),
        (9, 'DEP_9', 'ICC Chargebacks', 'icc.chargebacks'),
