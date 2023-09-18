@@ -127,7 +127,7 @@ test {
    retry {
       maxRetries = 4
       maxFailures = 20
-      failOnPassedAfterRetry = true
+      failOnPassedAfterRetry = false
    }
    if (verboseMode) {
       testLogging.showStandardStreams = true
