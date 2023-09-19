@@ -83,7 +83,7 @@ class SecurityController @Inject constructor(
       logger.info("Fetching all Security Groups by company")
 
       val user = userService.fetchUser(authentication)
-      val response = securityService.findByEmployee(user.myId())
+      val response = securityService.findByEmployee(user.myId(), user.myCompany())
 
       logger.debug("Fetching all Security Groups by {} resulted in {}", user.myId(), response)
 
@@ -225,7 +225,7 @@ class SecurityController @Inject constructor(
       logger.info("Requested Update Employee to Security Group {}")
 
       val user = userService.fetchUser(authentication)
-      val response = securityService.addEmployeeToSecurityGroup(employeeId, securityGroupId)
+      val response = securityService.addEmployeeToSecurityGroup(employeeId, securityGroupId, user.myCompany())
 
       logger.debug("Requested Update Employee to Security Group {} resulted in {}", response)
 

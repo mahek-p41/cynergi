@@ -13,8 +13,8 @@ class SecurityService @Inject constructor(
    private val securityGroupRepository: SecurityGroupRepository
 ) {
 
-   fun findByEmployee(id: Long): List<SecurityGroupDTO> {
-      val securityGroupList = securityGroupRepository.findAllByEmployee(id)
+   fun findByEmployee(id: Long, company: CompanyEntity): List<SecurityGroupDTO> {
+      val securityGroupList = securityGroupRepository.findAll(id, company.id!!)
 
       return securityGroupList.map {
          SecurityGroupDTO(it)
@@ -39,9 +39,9 @@ class SecurityService @Inject constructor(
       return SecurityGroupDTO(securityGroupRepository.update(SecurityGroup(dto)))
    }
 
-   fun addEmployeeToSecurityGroup(employeeId: Long, securityGroupId: UUID): List<SecurityGroupDTO> {
+   fun addEmployeeToSecurityGroup(employeeId: Long, securityGroupId: UUID, company: CompanyEntity): List<SecurityGroupDTO> {
       securityGroupRepository.assignEmployeeToSecurityGroup(employeeId, securityGroupId)
-      return findByEmployee(employeeId)
+      return findByEmployee(employeeId, company)
    }
 
    fun assignAccessPointsToSecurityGroups(securityGroupId: UUID, accessPointList: List<Int>) {
