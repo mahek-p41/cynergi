@@ -7,6 +7,7 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.update
@@ -22,6 +23,7 @@ import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
+import java.time.LocalDate
 import java.util.UUID
 import javax.transaction.Transactional
 
@@ -403,6 +405,22 @@ class StagingDepositRepository @Inject constructor(
             WHERE id IN (<ids>)
          """.trimIndent(),
          mapOf("ids" to dto)
+      )
+   }
+
+   fun countPendingVerifyStagingEntriesForCurrentFiscalYear(company: CompanyEntity, from: LocalDate, thru: LocalDate): Int {
+      return jdbc.queryForObject(
+         """
+            SELECT COUNT(*)
+            FROM verify_staging vs
+               JOIN company comp ON vs.company_id = comp.id AND comp.deleted = FALSE
+            WHERE vs.company_id = :comp_id
+                  AND vs.business_date BETWEEN :from AND :thru
+                  AND vs.deleted = FALSE
+                  AND vs.moved_to_pending_journal_entries = FALSE
+         """,
+         mapOf("comp_id" to company.id, "from" to from, "thru" to thru),
+         Int::class.java
       )
    }
 
