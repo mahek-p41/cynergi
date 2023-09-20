@@ -84,6 +84,7 @@ class VendorService @Inject constructor(
 
       var dataset = company.datasetCode
 
+      var accountNumber: String
       var payToNumber: String
       var freightOnboardType: String = ""
       var freightCalcMethodType: String = ""
@@ -104,6 +105,12 @@ class VendorService @Inject constructor(
       var allowDropshipToCust: String
       var autoSubmitPO: String
       var vendorGroup: String
+
+      if (vendor.accountNumber != null) {
+         accountNumber = vendor.accountNumber!!.toString()
+      } else {
+         accountNumber = ""
+      }
 
       if (vendor.returnPolicy!!) {
          returnPolicy = "Y"
@@ -295,8 +302,8 @@ class VendorService @Inject constructor(
          data = listOf(
             task,
             vendor.number.toString(),
-            vendor.name!!,
-            vendor.accountNumber!!,
+            vendor.name,
+            accountNumber,
             payToNumber,
             freightOnboardType,
             vendor.paymentTerm.description, //Will use this description to look up the correct record in the ISAM
