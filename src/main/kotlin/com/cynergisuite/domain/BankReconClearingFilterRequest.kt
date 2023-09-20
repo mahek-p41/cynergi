@@ -25,7 +25,7 @@ class BankReconClearingFilterRequest(
    var status: String? = null,
 
    @field:Schema(name = "bankType", description = "Bank Reconciliation Type Value")
-   var bankType: String? = null,
+   var bankReconciliationType: String? = null,
 
    @field:Schema(name = "fromTransactionDate", description = "From Date for Transaction")
    var fromTransactionDate: LocalDate? = null,
@@ -59,7 +59,7 @@ class BankReconClearingFilterRequest(
                .appendSuper(super.equals(other))
                .append(this.bank, other.bank)
                .append(this.status, other.status)
-               .append(this.bankType, other.bankType)
+               .append(this.bankReconciliationType, other.bankReconciliationType)
                .append(this.fromTransactionDate, other.fromTransactionDate)
                .append(this.thruTransactionDate, other.thruTransactionDate)
                .append(this.beginDocNum, other.beginDocNum)
@@ -77,7 +77,7 @@ class BankReconClearingFilterRequest(
             .appendSuper(super.hashCode())
             .append(this.bank)
             .append(this.status)
-            .append(this.bankType)
+            .append(this.bankReconciliationType)
             .append(this.fromTransactionDate)
             .append(this.thruTransactionDate)
             .append(this.beginDocNum)
@@ -95,7 +95,7 @@ class BankReconClearingFilterRequest(
             sortDirection = sortDirection,
             bank = this.bank,
             status = this.status,
-            bankType = this.bankType,
+            bankReconciliationType = this.bankReconciliationType,
             fromTransactionDate = this.fromTransactionDate,
             thruTransactionDate = this.thruTransactionDate,
             beginDocNum = this.beginDocNum,
@@ -109,7 +109,7 @@ class BankReconClearingFilterRequest(
          listOf(
             "bank" to bank,
             "status" to status,
-            "bankType" to bankType,
+            "bankReconciliationType" to bankReconciliationType,
             "fromTransactionDate" to fromTransactionDate,
             "thruTransactionDate" to thruTransactionDate,
             "beginDocNum" to beginDocNum,
