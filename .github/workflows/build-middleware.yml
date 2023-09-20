@@ -2,8 +2,6 @@ name: Cynergi Middleware CI
 on:
    workflow_dispatch:
    push:
-env:
-   DEBUG_MODE: ${{ vars.ACTIONS_STEP_DEBUG == 'true' && 'set -x' || '' }}
 jobs:
    build:
       name: Build, Run Tests, Store Artifacts
@@ -28,10 +26,12 @@ jobs:
         id: setBuildVars
         env:
          SOURCE_TARGET_MAP: ${{ vars.SOURCE_TARGET_MAP }}
+         DEBUG_FLAG: ${{ (runner.debug == '1' || vars.ACTIONS_STEP_DEBUG == 'true') && 'true' || 'false' }}
         run: ${{ github.workspace }}/.github/workflows/scripts/set-build-variables.py
 
       - name: Validate branch name
         env:
+         DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
          BRANCH_NAME: ${{ steps.setBuildVars.outputs.branchName }}
         run: |
          ${DEBUG_MODE}
@@ -42,6 +42,7 @@ jobs:
 
       - name: Setup Docker
         env:
+         DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
          NETWORK_ID: ${{ steps.setBuildVars.outputs.networkId }}
         run: |
          ${DEBUG_MODE}
@@ -50,6 +51,7 @@ jobs:
 
       - name: Test
         env:
+         DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
          BRANCH_NAME: ${{ steps.setBuildVars.outputs.branchName }}
          JENKINS_UID: ${{ steps.setBuildVars.outputs.jenkinsUid }}
          JENKINS_GID: ${{ steps.setBuildVars.outputs.jenkinsGid }}
@@ -102,6 +104,7 @@ jobs:
         id: buildDeployArtifact
         if: ${{ (success() || failure()) && steps.setBuildVars.outputs.releaseEnvironment != '' }}
         env:
+         DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
          BRANCH_NAME: ${{ steps.setBuildVars.outputs.branchName }}
          JENKINS_UID: ${{ steps.setBuildVars.outputs.jenkinsUid }}
          JENKINS_GID: ${{ steps.setBuildVars.outputs.jenkinsGid }}
@@ -133,6 +136,8 @@ jobs:
         id: prepareBuildReports
         if: ${{ success() || failure() }}
         continue-on-error: true
+        env:
+         DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
         run: |
          ${DEBUG_MODE}
          reportsPath="${GITHUB_WORKSPACE}/build/reports"
@@ -166,6 +171,7 @@ jobs:
       continue-on-error: true
       steps:
          - env:
+            DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
             GITHUB_TOKEN: ${{ secrets.READONLY_HTI_PAT }}
            run: |
             ${DEBUG_MODE}
