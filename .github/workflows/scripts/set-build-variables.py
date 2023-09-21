@@ -67,6 +67,12 @@ jenkinsGid = str(os.getgid())
 outVars.append(f"jenkinsGid={jenkinsGid}")
 debugLog(outVars[-1])
 
+# Check the latest commit message for a fast-fail flag
+commitMessage = os.environ["COMMIT_MESSAGE"]
+fastfail = "true" if "[fastfail]" in commitMessage else "false"
+outVars.append(f"fastfail={fastfail}")
+debugLog(outVars[-1])
+
 # Output the results
 outputFilePath = os.environ["GITHUB_OUTPUT"]
 with open(outputFilePath, "a") as outputFile:
