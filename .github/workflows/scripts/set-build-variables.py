@@ -5,8 +5,12 @@ import json
 import uuid
 from typing import Dict
 
+# A list of key-value pairs separated by newlines
+outVars = ""
+
 # Only use the name after the last / in the ref
 branchName = os.environ["GITHUB_REF_NAME"].rsplit("/", 1)[-1]
+outVars += f"\nbranchName={branchName}"
 
 #expecting something like this: {"default":{"micronautEnv":"","releaseEnvironment":"","deployTarget":[]},"master":{"micronautEnv":"prod","releaseEnvironment":"RELEASE","deployTarget":[]},"staging":{"micronautEnv":"cstdevelop","releaseEnvironment":"STAGING","deployTarget":["cst145"]},"develop":{"micronautEnv":"cstdevelop","releaseEnvironment":"DEVELOP","deployTarget":["cst143","cst144"]}}
 jsonInput = os.environ["SOURCE_TARGET_MAP"]
@@ -21,6 +25,11 @@ for key in requiredKeys:
   if key not in branchData:
     raise ValueError(f"Required key '{key}' is missing in '{branchName}' branchData")
 
+for key, value in branchData.items():
+  if isinstance(value, list):
+    value = " ".join(value) # Join array elements with spaces
+  outVars += f"\n{key}={value}"
+
 # Read releaseVersion from gradle.properties
 with open("gradle.properties", "r") as gpFile:
   lines = gpFile.readlines()
@@ -31,25 +40,18 @@ with open("gradle.properties", "r") as gpFile:
       break
 if releaseVersion == "":
   raise ValueError(f"Required key '{releaseVersion}' is missing in file gradle.properties")
+outVars += f"\nreleaseVersion={releaseVersion}"
 
-network_id = str(uuid.uuid4())
-jenkins_uid = str(os.getuid())
-jenkins_gid = str(os.getgid())
+networkId = str(uuid.uuid4())
+outVars += f"\nnetworkId={networkId}"
 
-outVars = f"""
-releaseVersion={releaseVersion}
-networkId={network_id}
-jenkinsUid={jenkins_uid}
-jenkinsGid={jenkins_gid}
-branchName={branchName}
-"""
-for key, value in branchData.items():
-  if isinstance(value, list):
-    value = " ".join(value) # Join array elements with spaces
-  outVars += f"\n{key}={value}"
+jenkinsUid = str(os.getuid())
+outVars += f"\njenkinsUid={jenkinsUid}"
 
+jenkinsGid = str(os.getgid())
+outVars += f"\njenkinsGid={jenkinsGid}"
+
+# Output the results
 output_file_path = os.environ["GITHUB_OUTPUT"]
 with open(output_file_path, "a") as output_file:
   output_file.write(outVars)
-
-print(outVars.replace("\n", "\n::debug::"))
