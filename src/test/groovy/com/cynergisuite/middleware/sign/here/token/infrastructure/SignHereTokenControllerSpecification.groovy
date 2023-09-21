@@ -83,7 +83,7 @@ class SignHereTokenControllerSpecification extends ServiceSpecificationBase {
       final store = storeFactoryService.random(company)
       final signHereToken = signHereTokenTestDataLoaderService.single(company, store, "wrXnbCWTUrxojPBGMMSakODI9BilnWVlvovUneTOCTybz5nG8678211k")
       final SLN = new SimpleLegacyNumberDTO(store.number)
-      final newDTO = new SignHereTokenDTO(signHereToken.id, new CompanyDTO(company), SLN, "111111111111111111111111111111111")
+      final newDTO = new SignHereTokenDTO(signHereToken.id.toString(), new CompanyDTO(company), SLN, "111111111111111111111111111111111")
 
       when:
       def result = tokenClient.toBlocking().exchange(PUT("/${signHereToken.id}", newDTO),
@@ -93,8 +93,8 @@ class SignHereTokenControllerSpecification extends ServiceSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      final extraDTO = new SignHereTokenDTO(signHereToken.id, new CompanyDTO(company), SLN, "111111111111111111111111111111111")
-      result.company.id == extraDTO.company.id
+      final extraDTO = new SignHereTokenDTO(signHereToken.id.toString(), new CompanyDTO(company), SLN, "111111111111111111111111111111111")
+      result.company.id.toString() == extraDTO.company.id
       result.token == extraDTO.token
    }
 
@@ -106,7 +106,7 @@ class SignHereTokenControllerSpecification extends ServiceSpecificationBase {
       final SLN = new SimpleLegacyNumberDTO(store.number)
       final messageArray = []
       messageArray[0] = "Size of provided value 12345678901234567890123456789 is invalid"
-      final newDTO = new SignHereTokenDTO(signHereToken.id, new CompanyDTO(company), SLN, "12345678901234567890123456789")
+      final newDTO = new SignHereTokenDTO(signHereToken.id.toString(), new CompanyDTO(company), SLN, "12345678901234567890123456789")
 
       when:
       def result = tokenClient.toBlocking().exchange(PUT("/${signHereToken.id}", newDTO),
@@ -131,7 +131,7 @@ class SignHereTokenControllerSpecification extends ServiceSpecificationBase {
       final SLN = new SimpleLegacyNumberDTO(store.number)
       final messageArray = []
       messageArray[0] = "Size of provided value 123456789012345678901234567890123456789012345678901234567890X is invalid"
-      final newDTO = new SignHereTokenDTO(signHereToken.id, new CompanyDTO(company), SLN, "123456789012345678901234567890123456789012345678901234567890X")
+      final newDTO = new SignHereTokenDTO(signHereToken.id.toString(), new CompanyDTO(company), SLN, "123456789012345678901234567890123456789012345678901234567890X")
 
       when:
       def result = tokenClient.toBlocking().exchange(PUT("/${signHereToken.id}", newDTO),
