@@ -101,7 +101,7 @@ if (!helpRequested) {
             final formatter = DateTimeFormatter.ofPattern("M/d/yy", Locale.ENGLISH);
             final retentionDate = LocalDate.parse(expirationDate, formatter)
 
-            if (!signaturePdf.exists() || !signaturePdf.isFile()) {
+            if (signaturePdf.exists() && signaturePdf.isFile()) {
                final signatories = SignatoryFinder.reduceSignatoriesBasedOnProvidedPdf(signaturePdf, StringUtils.split(csvData["signatories"].trim(), ',').collect {it.trim()} )
 
                if (!signatories.isEmpty()) {
