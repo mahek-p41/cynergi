@@ -24,7 +24,7 @@ class BankReconClearingFilterRequest(
    @field:Schema(name = "status", description = "Bank Reconciliation Status")
    var status: String? = null,
 
-   @field:Schema(name = "bankType", description = "Bank Reconciliation Type Value")
+   @field:Schema(name = "bankReconciliationType", description = "Bank Reconciliation Type Value")
    var bankReconciliationType: String? = null,
 
    @field:Schema(name = "fromTransactionDate", description = "From Date for Transaction")
