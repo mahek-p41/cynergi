@@ -5,7 +5,6 @@ import com.cynergisuite.middleware.authentication.user.SecurityGroup
 import com.cynergisuite.middleware.authentication.user.SecurityType
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.employee.EmployeeEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -61,8 +60,13 @@ class SecurityGroupRepository @Inject constructor(
    fun findAll(employeeId: Long, companyId: UUID): List<SecurityGroup> =
       jdbc.query("${selectBaseQuery()} WHERE comp.id = :comp_id AND empSecGrp.employee_id_sfk = :id AND secgrp.deleted = FALSE", mapOf("id" to employeeId, "comp_id" to companyId)) { rs, _ -> mapRow(rs, "secgrp_") }
 
+
+   @ReadOnly
+   fun findByCompany(id: UUID): List<SecurityGroup> =
+      jdbc.query("${selectBaseQuery()} WHERE secgrp.company_id = :id AND secgrp.deleted = FALSE", mapOf("id" to id)) {rs, _ -> mapRow(rs, "secgrp_") }
+
    @Transactional
-   fun insert(securityGroup: SecurityGroup): SecurityGroup? {
+   fun insert(securityGroup: SecurityGroup): SecurityGroup {
      logger.debug("Inserting securityGroup {}", securityGroup)
 
      return jdbc.insertReturning(
@@ -79,6 +83,31 @@ class SecurityGroupRepository @Inject constructor(
      ) { rs, _ ->
          mapRow(rs)
      }
+   }
+
+   @Transactional
+   fun update(securityGroup: SecurityGroup): SecurityGroup {
+
+      return jdbc.updateReturning(
+         """
+            UPDATE security_group
+            SET
+                value = :value,
+                description = :description,
+                company_id = :company_id
+            WHERE id = :id
+            RETURNING
+            *
+         """.trimIndent(),
+         mapOf(
+            "id" to securityGroup.id,
+            "value" to securityGroup.value,
+            "description" to securityGroup.description,
+            "company_id" to securityGroup.company.id
+         )
+      ) { rs, _ ->
+         mapRow(rs)
+      }
    }
 
    @ReadOnly
@@ -98,7 +127,7 @@ class SecurityGroupRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findAllTypes(id: UUID): List<SecurityType> {
+   fun findAllTypesBySecurityGroup(id: UUID): List<SecurityType> {
       val query =
          """
             SELECT
@@ -121,33 +150,67 @@ class SecurityGroupRepository @Inject constructor(
       }
    }
 
-      @Transactional
-   fun assignEmployeeToSecurityGroup(employee: EmployeeEntity, securityGroup: SecurityGroup) {
-      logger.trace("Assigning Employee {} to Security Group {}", employee, securityGroup)
-     jdbc.update(
+   @ReadOnly
+   fun findAllSecurityAccessPointTypes(company: CompanyEntity): List<SecurityType> {
+      val query =
          """
-      INSERT INTO employee_to_security_group (employee_id_sfk, security_group_id)
-      VALUES(:employee_id, :security_group_id)
-      """.trimIndent(),
+            SELECT
+            sap.id                                                             AS sap_id,
+            sap.value                                                          AS sap_value,
+            sap.description                                                    AS sap_description,
+            sap.localization_code                                              AS sap_localization_code,
+            sap.area_id                                                        AS sap_area_id
+         FROM security_access_point_type_domain sap
+         """.trimIndent()
+      return jdbc.query(
+         query
+      )
+      { rs, _ ->
+         mapSecurityTypes(rs, "sap_")
+      }
+   }
+
+      @Transactional
+   fun assignEmployeeToSecurityGroup(employeeId: Long, securityGroupId: UUID) {
+      logger.trace("Assigning Employee {} to Security Group {}", employeeId, securityGroupId)
+      jdbc.update(
+         """
+            INSERT INTO employee_to_security_group (employee_id_sfk, security_group_id)
+            VALUES(:employee_id, :security_group_id)
+         """.trimIndent(),
          mapOf(
-             "employee_id" to employee.id,
-             "security_group_id" to securityGroup.id
+             "employee_id" to employeeId,
+             "security_group_id" to securityGroupId
          )
-     )
+      )
    }
 
    @Transactional
-   fun assignAccessPointsToSecurityGroups(securityGroup: SecurityGroup) {
-      logger.trace("Assigning Access points to Security Groups {}",  securityGroup)
+   fun assignAccessPointsToSecurityGroups(securityGroupId: UUID, accessPointIds: List<Int>){
+      logger.trace("Assigning Access points to Security Groups {}",  securityGroupId)
+      jdbc.update(
+         """
+            DELETE FROM security_group_to_security_access_point
+            WHERE security_group_id = :security_id
+            AND security_access_point_id NOT IN (<access_point_ids>)
+         """.trimIndent(),
+         mapOf(
+            "security_id" to securityGroupId,
+            "access_point_ids" to accessPointIds
+         )
+      )
       jdbc.update(
          """
             INSERT INTO security_group_to_security_access_point (security_group_id, security_access_point_id)
-            SELECT :security_id, sap.id
-            FROM security_access_point_type_domain sap
+            SELECT :security_id, access_point_id
+            FROM unnest(:access_point_ids) AS access_point_id
+            ON CONFLICT (security_group_id, security_access_point_id) DO NOTHING
          """.trimIndent(),
-         mapOf("security_id" to securityGroup.id)
+         mapOf(
+            "security_id" to securityGroupId,
+            "access_point_ids" to accessPointIds.toTypedArray()
+         )
       )
-
    }
 
    fun mapRow(
@@ -159,7 +222,7 @@ class SecurityGroupRepository @Inject constructor(
          id = rs.getUuid("${columnPrefix}id"),
          value = rs.getString("${columnPrefix}value"),
          description = rs.getString("${columnPrefix}description"),
-         types = findAllTypes(rs.getUuid("${columnPrefix}id")),
+         types = findAllTypesBySecurityGroup(rs.getUuid("${columnPrefix}id")),
          company = company!!
      )
    }
