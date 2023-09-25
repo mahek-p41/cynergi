@@ -3,9 +3,13 @@ package com.cynergisuite.middleware.accounting.general.ledger.summary
 import com.cynergisuite.domain.GeneralLedgerProfitCenterTrialBalanceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.TrialBalanceWorksheetFilterRequest
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
+import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
+import com.cynergisuite.middleware.accounting.financial.calendar.type.infrastructure.OverallPeriodTypeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.inquiry.GeneralLedgerNetChangeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository
@@ -29,6 +33,7 @@ class GeneralLedgerSummaryService @Inject constructor(
    private val generalLedgerDetailRepository: GeneralLedgerDetailRepository,
    private val generalLedgerSummaryRepository: GeneralLedgerSummaryRepository,
    private val generalLedgerSummaryValidator: GeneralLedgerSummaryValidator,
+   private val overallPeriodTypeRepository: OverallPeriodTypeRepository
 ) {
    fun fetchOne(id: UUID, company: CompanyEntity): GeneralLedgerSummaryDTO? {
       return generalLedgerSummaryRepository.findOne(id, company)?.let { transformEntity(it) }
@@ -331,6 +336,17 @@ class GeneralLedgerSummaryService @Inject constructor(
    }
 
    fun recalculateGLBalance(company: CompanyEntity) {
+      val summaryPairs = generalLedgerSummaryRepository.findMissingSummaries(company)
+      summaryPairs?.forEach { pair ->
+         val overallPeriods = overallPeriodTypeRepository.findAll()
+         val acct = SimpleIdentifiableDTO(pair.first.id)
+         val store = SimpleLegacyIdentifiableDTO(pair.second.myId())
+         repeat(4) {
+            val dto = GeneralLedgerSummaryDTO(account = acct, profitCenter = store, overallPeriod = OverallPeriodTypeDTO(overallPeriods[it]))
+            create(dto, company)
+         }
+      }
+
       generalLedgerSummaryRepository.resetGLBalance(company)
       generalLedgerSummaryRepository.recalculateGLBalance(company)
       generalLedgerSummaryRepository.recalculateCapitalAccounts(company)
