@@ -36,16 +36,20 @@ class InloadSUMGLINTVService @Inject constructor(
          "verify_successful" to record["Verify_Successful"].toBoolean(),
          "error_amount" to record["Error_Amount"].toBigDecimal(),
          "moved_to_pending_journal_entries" to false,
-         "DEP_1" to record["Dep_Cash_Amt"].toBigDecimal(),
-         "DEP_2" to record["Dep_For_Oth_Str_Amt"].toBigDecimal(),
-         "DEP_3" to record["Dep_From_Oth_Str_Amt"].toBigDecimal(),
-         "DEP_4" to record["Dep_CC_In_Str_Amt"].toBigDecimal(),
-         "DEP_5" to record["Dep_ACH_OLP_Amt"].toBigDecimal(),
-         "DEP_6" to record["Dep_CC_OLP_Amt"].toBigDecimal(),
-         "DEP_7" to record["Dep_Debit_Card_Amt"].toBigDecimal(),
+         "DEP_1" to Pair(record["Dep_Cash_Amt"].toBigDecimal(), record["Dep_Cash_GL_Acct_Nbr"].toLong()),
+         "DEP_2" to Pair(record["Dep_For_Oth_Str_Amt"].toBigDecimal(), record["Dep_For_Oth_Str_GL_Acct_Nbr"].toLong()),
+         "DEP_3" to Pair(record["Dep_From_Oth_Str_Amt"].toBigDecimal(), record["Dep_From_Oth_Str_GL_Acct_Nbr"].toLong()),
+         "DEP_4" to Pair(record["Dep_CC_In_Str_Amt"].toBigDecimal(), record["Dep_CC_In_Str_GL_Acct_Nbr"].toLong()),
+         "DEP_5" to Pair(record["Dep_ACH_OLP_Amt"].toBigDecimal(), record["Dep_ACH_OLP_GL_Acct_Nbr"].toLong()),
+         "DEP_6" to Pair(record["Dep_CC_OLP_Amt"].toBigDecimal(), record["Dep_CC_OLP_GL_Acct_Nbr"].toLong()),
+         "DEP_7" to Pair(record["Dep_Debit_Card_Amt"].toBigDecimal(), record["Dep_Debit_Card_GL_Acct_Nbr"].toLong()),
+         "DEP_8" to Pair(record["ACH_Chargeback_Amt"].toBigDecimal(), record["ACH_Chargeback_GL_Acct_Nbr"].toLong()),
+         "DEP_9" to Pair(record["ICC_Chargeback_Amt"].toBigDecimal(), record["ICC_Chargeback_GL_Acct_Nbr"].toLong()),
+         "DEP_10" to Pair(record["NSF_Return_Check_Amt"].toBigDecimal(), record["NSF_Return_Check_GL_Acct_Nbr"].toLong()),
+         "DEP_11" to Pair(record["AR_Bad_Check_Amt"].toBigDecimal(), record["AR_Bad_Check_GL_Acct_Nbr"].toLong()),
          "message" to null
       )
-      generalLedgerInterfaceRepository.upsert(record, map)
+      generalLedgerInterfaceRepository.upsert(record, map, company)
 
    }
 
