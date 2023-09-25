@@ -12,8 +12,8 @@ def debugLog(message: str):
 outVars = []
 
 # Read the DEBUG_FLAG environment variable and set debugMode accordingly
-debugFlag = os.environ.get("DEBUG_FLAG")
-debugMode = "true" if debugFlag in ["true", "1"] else "false"
+debugFlag = os.environ.get("DEBUG_FLAG", "false")
+debugMode = "true" if debugFlag == "true" else "false"
 outVars.append(f"debugMode={debugMode}")
 debugLog(outVars[-1])
 
@@ -67,9 +67,11 @@ jenkinsGid = str(os.getgid())
 outVars.append(f"jenkinsGid={jenkinsGid}")
 debugLog(outVars[-1])
 
-# Check the latest commit message for a fast-fail flag
-commitMessage = os.environ["COMMIT_MESSAGE"]
-fastfail = "true" if "[fastfail]" in commitMessage else "false"
+# Check for a fast-fail flag either from the environment variable or from the latest commit message
+fastfail = os.environ.get("FASTFAIL_FLAG", "false")
+if fastfail != "true":
+  commitMessage = os.environ["COMMIT_MESSAGE"]
+  fastfail = "true" if "[fastfail]" in commitMessage else "false"
 outVars.append(f"fastfail={fastfail}")
 debugLog(outVars[-1])
 

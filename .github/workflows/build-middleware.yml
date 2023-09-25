@@ -1,6 +1,17 @@
 name: Cynergi Middleware CI
 on:
    workflow_dispatch:
+      inputs:
+         fastfail:
+            description: Fast-fail Gradle tests (disables retry plugin)
+            required: false
+            type: boolean
+            default: false
+         debugLogs:
+            description: Verbose debug logging
+            required: false
+            type: boolean
+            default: false
    push:
 jobs:
    build:
@@ -27,7 +38,8 @@ jobs:
         env:
          SOURCE_TARGET_MAP: ${{ vars.SOURCE_TARGET_MAP }}
          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-         DEBUG_FLAG: ${{ (runner.debug == '1' || vars.ACTIONS_STEP_DEBUG == 'true') && 'true' || 'false' }}
+         FASTFAIL_FLAG: ${{ inputs.fastfail == true && 'true' || 'false' }}
+         DEBUG_FLAG: ${{ (inputs.debugLogs == true || runner.debug == '1' || vars.ACTIONS_STEP_DEBUG == 'true') && 'true' || 'false' }}
         run: ${{ github.workspace }}/.github/workflows/scripts/set-build-variables.py
 
       - name: Validate branch name
