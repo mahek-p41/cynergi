@@ -8,9 +8,14 @@ import java.nio.file.Files
 
 private val signerFieldRegex = Regex("^Signer(?<signer>\\d+)(?<fieldType>Signature|Initial|Initials|RadioInitial|RadioInitials)(?<fieldIndex>\\d+)(?:Group(?<groupNumber>\\d+))?\$")
 
+data class Signatory(
+   val value: String,
+   val index: Int,
+)
+
 object SignatoryFinder {
 
-   @JvmStatic fun reduceSignatoriesBasedOnProvidedPdf(pdf: File, signatories: List<String>): List<String> {
+   @JvmStatic fun reduceSignatoriesBasedOnProvidedPdf(pdf: File, signatories: List<String>): List<Signatory> {
       val signatoryIndexes = Files.newInputStream(pdf.toPath()).use { pdfStream ->
          PdfReader(pdfStream).use { pdfReader ->
             pdfReader.acroFields.allFields.asSequence()
@@ -26,8 +31,10 @@ object SignatoryFinder {
       }
 
       return signatories.asSequence()
-         .filterIndexed { index, _ ->
-            signatoryIndexes.contains(index)
+         .mapIndexed {index, value -> Signatory(value, index + 1) }
+         .filter { value ->
+            signatoryIndexes.contains(value.index)
          }.toList()
    }
 }
+
