@@ -1,6 +1,8 @@
 package com.cynergisuite.middleware.vendor
 
 import com.cynergisuite.domain.Identifiable
+import com.cynergisuite.middleware.accounting.account.payable.cashflow.CashFlowBalanceDTO
+import com.cynergisuite.middleware.accounting.account.payable.cashflow.CashFlowReportInvoiceDetailEntity
 import com.cynergisuite.middleware.address.AddressDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT
@@ -50,11 +52,6 @@ data class Form1099VendorDTO(
    @field:Schema(name = "form1099Field", description = "Field Number")
    var form1099Field: Int? = null,
 
-   @field:NotNull
-   @field:Size(max = 20)
-   @field:Schema(description = "Account payable invoice", maxLength = 20)
-   var invoice: String? = null,
-
    @field:Schema(description = "Account payable payment payment date", required = false)
    var apPaymentPaymentDate: LocalDate? = null,
 
@@ -71,7 +68,14 @@ data class Form1099VendorDTO(
    var distributionAmount: BigDecimal? = null,
 
    @field:Schema(name = "Active vendor indicator", required = false, description = "Active vendor indicator")
-   var isActive: Boolean = true
+   var isActive: Boolean = true,
+
+   @field:NotNull
+   @field:Schema(description = "Invoices")
+   var invoices: MutableSet<CashFlowReportInvoiceDetailEntity>? = LinkedHashSet(),
+
+   @field:Schema(description = "1099 Field totals for the vendor")
+   var vendorTotals: Form1099TotalsDTO? = null
 
 ) : Identifiable {
 
@@ -84,11 +88,12 @@ data class Form1099VendorDTO(
          companyAddress = entity.companyAddress?.let { AddressDTO(it) },
          federalIdNumber = entity.federalIdNumber,
          form1099Field = entity.form1099Field,
-         invoice = entity.invoice,
          apPaymentPaymentDate = entity.apPaymentPaymentDate,
          accountName = entity.accountName,
          accountNumber = entity.accountNumber,
-         isActive = entity.isActive
+         isActive = entity.isActive,
+         invoices = entity.invoices,
+         vendorTotals = Form1099TotalsDTO(entity.vendorTotals)
       )
 
    override fun myId(): UUID? = id

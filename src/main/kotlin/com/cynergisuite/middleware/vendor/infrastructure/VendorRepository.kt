@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.vendor.infrastructure
 
+import com.cynergisuite.domain.CashFlowFilterRequest
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
@@ -7,6 +8,8 @@ import com.cynergisuite.domain.Vendor1099FilterRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
+import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.insertReturning
@@ -17,6 +20,13 @@ import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.accounting.account.payable.cashflow.AccountPayableCashFlowDTO
+import com.cynergisuite.middleware.accounting.account.payable.cashflow.AccountPayableCashFlowEntity
+import com.cynergisuite.middleware.accounting.account.payable.cashflow.CashFlowBalanceEntity
+import com.cynergisuite.middleware.accounting.account.payable.cashflow.CashFlowReportInvoiceDetailEntity
+import com.cynergisuite.middleware.accounting.account.payable.cashflow.CashFlowVendorEntity
+import com.cynergisuite.middleware.accounting.account.payable.cashout.CashRequirementBalanceEnum
+import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalEntity
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingReportDetailsTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerReportSortEnum
@@ -28,7 +38,11 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodType
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardType
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
+import com.cynergisuite.middleware.vendor.Form1099ReportDTO
+import com.cynergisuite.middleware.vendor.Form1099ReportInvoiceDetailEntity
+import com.cynergisuite.middleware.vendor.Form1099TotalsDTO
 import com.cynergisuite.middleware.vendor.Form1099VendorDTO
+import com.cynergisuite.middleware.vendor.Form1099VendorEntity
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
@@ -36,11 +50,14 @@ import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
 import java.sql.ResultSet
+import java.time.LocalDate
 import java.util.UUID
 import javax.transaction.Transactional
 
@@ -49,7 +66,8 @@ class VendorRepository @Inject constructor(
    private val addressRepository: AddressRepository,
    private val companyRepository: CompanyRepository,
    private val jdbc: Jdbi,
-   private val vendorGroupRepository: VendorGroupRepository
+   private val statusRepository: AccountPayableInvoiceStatusTypeRepository,
+   private val vendorGroupRepository: VendorGroupRepository,
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorRepository::class.java)
    fun baseSelectQuery() =
@@ -184,6 +202,7 @@ class VendorRepository @Inject constructor(
          SELECT
             apInvoice.id                                                AS 1099_apInvoice_id,
             apInvoice.company_id                                        AS 1099_apInvoice_company_id,
+            apInvoice.vendor_id                                         AS 1099_apInvoice_vendor_id,
             apInvoice.invoice                                           AS 1099_apInvoice_invoice,
             apInvoice.invoice_date                                      AS 1099_apInvoice_invoice_date,
             apInvoice.invoice_amount                                    AS 1099_apInvoice_invoice_amount,
@@ -212,6 +231,8 @@ class VendorRepository @Inject constructor(
             vend.v_name                                                 AS 1099_vendor_name,
             vend.v_account_number                                       AS 1099_vendor_account_number,
             vend.v_pay_to_id                                            AS 1099_vendor_pay_to_id,
+            vend.v_federal_id_number                                    AS 1099_vendor_federal_id_number,
+            vend.v_active                                               AS 1099_vendor_active,
 
             vend.v_address_id                                           AS 1099_vendor_address_id,
             vend.v_address_name                                         AS 1099_vendor_address_name,
@@ -244,10 +265,10 @@ class VendorRepository @Inject constructor(
 	         vgrp.id							                                 AS 1099_vgrp_id,
 	         vgrp.value							                              AS 1099_vgrp_value,
 
-            pmt.payment_number                                          AS apPayment_number,
-            pmt.payment_date                                            AS apPayment_payment_date,
-            pmtDetail.id                                                AS apPayment_detail_id,
-            pmtDetail.amount                                            AS apPayment_detail_amount,
+            pmt.payment_number                                          AS 1099_apPayment_number,
+            pmt.payment_date                                            AS 1099_apPayment_payment_date,
+            pmtDetail.id                                                AS 1099_apPayment_detail_id,
+            pmtDetail.amount                                            AS 1099_apPayment_detail_amount,
 
 	         invDist.distribution_amount					                  AS 1099_invdist_distribution_amount,
 
@@ -684,12 +705,14 @@ class VendorRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun fetch1099Report(company: CompanyEntity, filterRequest: Vendor1099FilterRequest) : List<Form1099VendorDTO> {
-      val glJournals = mutableListOf<GeneralLedgerJournalEntity>()
+   fun fetch1099Report(company: CompanyEntity, filterRequest: Vendor1099FilterRequest) : Form1099ReportDTO {
+      val vendors = mutableListOf <Form1099VendorEntity> ()
+      var currentVendor: Form1099VendorEntity? = null
+      val cashflowTotals = Form1099TotalsDTO()
+
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
-      //See about changing the below to use values for where clause limitations as opposed to id#
       val whereClause = StringBuilder("WHERE comp.company_id = :comp_id AND vend.vendor_1099 = 'Y' AND apInvoice.status_id NOT IN (1, 2, 4) AND pmt.account_payable_payment_status != 2")
-      val orderBy = StringBuilder("ORDER BY ")
+
 
       if (filterRequest.form1099Type != null) {
          if (filterRequest.form1099Type == "M") {
@@ -716,59 +739,152 @@ class VendorRepository @Inject constructor(
          whereClause.append(" AND pmt.payment_date ")
             .append(buildFilterString(filterRequest.beginningPaymentDate != null, filterRequest.endingPaymentDate != null, "beginningPaymentDate", "endingPaymentDate"))
       }
-
-      //Can't use the excludeBelow filter until we have totals!
-
+      whereClause.append(')')
       jdbc.query(
          """
-            ${select1099ReportBaseQuery()}
-            $whereClause
-            $orderBy
-         """.trimIndent(),
+                  ${select1099ReportBaseQuery()}
+                  $whereClause
+                  ORDER BY vend.v_name, vend.v_id, naturalsort(apInvoice.invoice), apInvoice.invoice_date ${filterRequest.sortDirection()}
+               """.trimIndent(),
          params,
-      ) { rs, _ ->
+      ) {
+         rs, elements ->
          do {
-            glJournals.add(mapRow(rs, company, "vend???_"))
+            val tempVendor = if (currentVendor ?.vendorNumber != rs.getIntOrNull("apInvoiceDetail_vendor_number")){
+               val localVendor = map1099Vendor(rs, "1099_")
+               vendors.add(localVendor)
+               currentVendor = localVendor
+
+               localVendor
+            } else{
+               currentVendor !!
+            }
+
+            var invoiceFlag = false
+            mapRowInvoiceDetail(rs, "apInvoiceDetail_").let {
+               if (it.invoiceStatus.id == 2) {
+                  tempVendor.invoices ?.add(it)
+                  invoiceFlag = true
+               }
+
+               if (invoiceFlag) {
+                  //sorts out discount taken / discount lost
+                  if (it.invoiceDiscountAmount!! > BigDecimal.ZERO) {
+                     if (it.invoiceDiscountDate!! > LocalDate.now()) {
+                        it.discountAmount = it.invoiceDiscountAmount!!.times(it.invoiceDiscountPercent!!)
+                        it.balance = it.invoiceAmount - it.invoicePaidAmount - it.discountAmount!!
+                        tempVendor.vendorTotals.discountTaken = tempVendor.vendorTotals.discountTaken.plus(it.discountAmount!!)
+                        cashflowTotals.discountTaken = cashflowTotals.discountTaken.plus(it.discountAmount!!)
+                     } else {
+                        it.lostAmount = it.invoiceDiscountAmount!!.times(it.invoiceDiscountPercent!!)
+                        it.balance = it.invoiceAmount - it.invoicePaidAmount
+                        tempVendor.vendorTotals.discountLost = tempVendor.vendorTotals.discountLost.plus(it.lostAmount!!)
+                        cashflowTotals.discountLost = cashflowTotals.discountLost.plus(it.lostAmount!!)
+                     }
+                     cashflowTotals.discountDate = it.invoiceDiscountDate
+                     tempVendor.vendorTotals.discountDate = it.invoiceDiscountDate
+                  }
+
+                  when (it.balanceDisplay) {
+                     CashRequirementBalanceEnum.ONE -> {
+                        tempVendor.vendorTotals.dateOneAmount =
+                           tempVendor.vendorTotals.dateOneAmount.plus(it.balance)
+
+                        cashflowTotals.dateOneAmount =
+                           cashflowTotals.dateOneAmount.plus(it.balance)
+                     }
+                     CashRequirementBalanceEnum.TWO -> {
+                        tempVendor.vendorTotals.dateTwoAmount =
+                           tempVendor.vendorTotals.dateTwoAmount.plus(it.balance)
+                        cashflowTotals.dateTwoAmount =
+                           cashflowTotals.dateTwoAmount.plus(it.balance)
+                     }
+                     CashRequirementBalanceEnum.THREE -> {
+                        tempVendor.vendorTotals.dateThreeAmount =
+                           tempVendor.vendorTotals.dateThreeAmount.plus(it.balance)
+                        cashflowTotals.dateThreeAmount =
+                           cashflowTotals.dateThreeAmount.plus(it.balance)
+                     }
+                     CashRequirementBalanceEnum.FOUR -> {
+                        tempVendor.vendorTotals.dateFourAmount =
+                           tempVendor.vendorTotals.dateFourAmount.plus(it.balance)
+                        cashflowTotals.dateFourAmount =
+                           cashflowTotals.dateFourAmount.plus(it.balance)
+                     }
+                     CashRequirementBalanceEnum.FIVE -> {
+                        tempVendor.vendorTotals.dateFiveAmount =
+                           tempVendor.vendorTotals.dateFiveAmount.plus(it.balance)
+                        cashflowTotals.dateFiveAmount =
+                           cashflowTotals.dateFiveAmount.plus(it.balance)
+                     }
+
+                     else -> {}
+                  }
+               }
+            }
          } while (rs.next())
-      }
 
-      val template = mutableListOf<GeneralLedgerPendingReportDetailsTemplate>()
-      val sortedEntities = mutableListOf<GeneralLedgerJournalEntity>()
-      if (glJournals.isNotEmpty()) {
-         if (filterRequest.sortOption == GeneralLedgerReportSortEnum.ACCOUNT) {
-            var currentAccountID = glJournals[0].account.id
-            glJournals.forEach {
-               if (currentAccountID == it.account.id ) {
-                  sortedEntities.add(it)
-               } else {
-                  currentAccountID = it.account.id
-                  template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
-                  sortedEntities.removeAll(sortedEntities)
-                  sortedEntities.add(it)
-               }
-            }
-         }
-
-         if (filterRequest.sortOption == GeneralLedgerReportSortEnum.LOCATION) {
-            var currentLocation = glJournals[0].profitCenter.myNumber()
-            glJournals.forEach {
-               if (currentLocation == it.profitCenter.myNumber() ) {
-                  sortedEntities.add(it)
-               } else {
-                  currentLocation = it.profitCenter.myNumber()
-                  template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
-                  sortedEntities.removeAll(sortedEntities)
-                  sortedEntities.add(it)
-               }
-            }
-         }
-         //add any remaining sorted entities after loop
-         if (sortedEntities.isNotEmpty()) {
-            template.add(GeneralLedgerPendingReportDetailsTemplate(sortedEntities))
+         vendors.removeIf {
+            it.invoices ?.size == 0
          }
       }
 
-      return template
+      val entity = AccountPayableCashFlowEntity(vendors, cashflowTotals)
+      if (!filterRequest.details!!) {
+         entity.vendors!!.map { it.invoices = null }
+      }
+      return Form1099ReportDTO(entity)
+   }
+
+   private fun mapRowInvoiceDetail(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): Form1099ReportInvoiceDetailEntity {
+      val invoiceAmount = rs.getBigDecimal("${columnPrefix}apInvoice_invoice_amount")
+      val invoicePaidAmount = rs.getBigDecimal("${columnPrefix}apInvoice_paid_amount")
+      val invoiceDiscountTaken = rs.getBigDecimal("${columnPrefix}apInvoice_discount_taken")
+      val invoiceDiscountDate = rs.getLocalDateOrNull("${columnPrefix}apInvoice_discount_date")
+      val invoiceDiscountPercent = rs.getBigDecimal("${columnPrefix}apInvoice_discount_percent")
+      val balance = invoiceAmount - invoicePaidAmount
+
+      return Form1099ReportInvoiceDetailEntity(
+         invoiceCompanyId = rs.getUuid("${columnPrefix}apInvoice_company_id"),
+         invoiceVendorId = rs.getUuid("${columnPrefix}apInvoice_vendor_id"),
+         invoice = rs.getString("${columnPrefix}apInvoice_invoice"),
+         invoiceDate = rs.getLocalDate("${columnPrefix}apInvoice_invoice_date"),
+         invoiceAmount = invoiceAmount,
+         invoiceDiscountAmount = rs.getBigDecimal("${columnPrefix}apInvoice_discount_amount"),
+         invoiceExpenseDate = rs.getLocalDate("${columnPrefix}apInvoice_expense_date"),
+         invoicePaidAmount = invoicePaidAmount,
+         invoiceDiscountTaken = invoiceDiscountTaken,
+         invoiceDiscountPercent = invoiceDiscountPercent,
+         invoiceDiscountDate = invoiceDiscountDate,
+         //invoiceStatus = statusRepository.mapRow(rs, "${columnPrefix}apInvoice_status_"),
+         invoiceDueDate = rs.getLocalDate("${columnPrefix}apInvoice_due_date"),
+         discountAmount = null,
+         lostAmount = null,
+         balance = balance,
+         fieldNumber = rs.getInt("${columnPrefix}account_form_1099_field"))
+      )
+   }
+
+   private fun mapBalanceDisplay(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): CashRequirementBalanceEnum {
+
+      return CashRequirementBalanceEnum.valueOf(rs.getString("${columnPrefix}balance_display"))
+   }
+
+   private fun map1099Vendor(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): Form1099VendorEntity {
+      return Form1099VendorEntity(
+         id = rs.getUuid("${columnPrefix}vendor_company_id"),
+         vendorName = rs.getString("${columnPrefix}vendor_name"),
+         vendorNumber = rs.getInt("${columnPrefix}vendor_number"),
+         vendorAddress = addressRepository.mapAddressOrNull(rs, "${columnPrefix}1099_vendor_address_"),
+         companyAddress = addressRepository.mapAddressOrNull(rs, "${columnPrefix}1099_comp_address_"),
+         federalIdNumber = rs.getString("${columnPrefix}vendor_federal_id_number"),
+         form1099Field = rs.getInt("${columnPrefix}account_id"),
+         apPaymentPaymentDate = rs.getLocalDate("${columnPrefix}apPayment_payment_date"),
+         accountName = rs.getString("${columnPrefix}account_name"),
+         accountNumber = rs.getString("${columnPrefix}account_number"),
+         distributionAmount = rs.getBigDecimal("${columnPrefix}invdist_distribution_amount"),
+         isActive = rs.getBoolean("${columnPrefix}vendor_active"),
+      )
    }
 
    fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String? = "v_"): VendorEntity {
