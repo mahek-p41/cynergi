@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.security
 
 import com.cynergisuite.middleware.authentication.user.SecurityGroupDTO
+import com.cynergisuite.middleware.authentication.user.SecurityType
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.employee.EmployeeService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
@@ -66,7 +67,7 @@ class SecurityController @Inject constructor(
    }
 
    @Throws(NotFoundException::class)
-   @Get(value = "/employee", produces = [MediaType.APPLICATION_JSON])
+   @Get(value = "/employee/{id:[0-9a-fA-F\\-]+}", produces = [MediaType.APPLICATION_JSON])
    @Operation(tags = ["SecurityGroupEndpoints"], summary = "Fetch a list of Security Groups By Employee", description = "Fetch a list of Security Groups By Employee", operationId = "securityGroup-fetchAllByEmployee")
    @ApiResponses(
       value = [
@@ -77,15 +78,42 @@ class SecurityController @Inject constructor(
       ]
    )
    fun fetchAllByEmployee(
+      @Parameter(name = "id", `in` = ParameterIn.PATH, description = "The id for the Employee to be queried") @QueryValue("id")
+      id: Long,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): List<SecurityGroupDTO> {
-      logger.info("Fetching all Security Groups by company")
+      logger.info("Fetching all Security Groups by employee")
 
       val user = userService.fetchUser(authentication)
-      val response = securityService.findByEmployee(user.myId(), user.myCompany())
+      val response = securityService.findByEmployee(id, user.myCompany())
 
-      logger.debug("Fetching all Security Groups by {} resulted in {}", user.myId(), response)
+      logger.debug("Fetching all Security Groups by employee id = {} resulted in {}", id, response)
+
+      return response
+   }
+
+   @Throws(NotFoundException::class)
+   @Get(value = "/access-points", produces = [MediaType.APPLICATION_JSON])
+   @Operation(tags = ["SecurityGroupEndpoints"], summary = "Fetch a list of Security Access Points By Company", description = "Fetch a list of Security Groups By Company", operationId = "securityGroup-fetchAllAccessPoints")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = SecurityType::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Security Groups were unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchAllAccessPoints(
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): List<SecurityType> {
+      logger.info("Fetching all Security Access Points by company")
+
+      val user = userService.fetchUser(authentication)
+      val response = securityService.findAllSecurityTypes(user.myCompany())
+
+      logger.debug("Fetching all Security Access Points by {} resulted in {}", user.myCompany(), response)
 
       return response
    }

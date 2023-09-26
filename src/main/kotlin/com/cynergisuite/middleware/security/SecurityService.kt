@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.security
 
 import com.cynergisuite.middleware.authentication.user.SecurityGroup
 import com.cynergisuite.middleware.authentication.user.SecurityGroupDTO
+import com.cynergisuite.middleware.authentication.user.SecurityType
 import com.cynergisuite.middleware.authentication.user.infrastructure.SecurityGroupRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
@@ -27,6 +28,10 @@ class SecurityService @Inject constructor(
       return securityGroupList.map {
          SecurityGroupDTO(it)
       }
+   }
+
+   fun findAllSecurityTypes(company: CompanyEntity): List<SecurityType> {
+      return securityGroupRepository.findAllSecurityAccessPointTypes(company)
    }
 
    fun create(dto: SecurityGroupDTO, company: CompanyEntity): SecurityGroupDTO {
