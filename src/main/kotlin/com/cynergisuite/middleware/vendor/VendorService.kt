@@ -78,11 +78,14 @@ class VendorService @Inject constructor(
       }
    }
 
-   fun fetch1099Report(company: CompanyEntity, filterRequest: Vendor1099FilterRequest): List<Form1099VendorDTO> {
-      //val found = vendorRepository.fetch1099Report(company, filterRequest)
+   fun fetch1099Report(company: CompanyEntity, filterRequest: Vendor1099FilterRequest): Form1099ReportDTO {
+      return vendorRepository.fetch1099Report(company, filterRequest)
+      //As part of CYN-1956, the below functionality will be added
+      //val reportData = vendorRepository.fetch1099Report(company, filterRequest)
+      //return create1099Report(reportData)
+   }
 
-      //return Vendor1099DTO(found)
-      //return found
+   fun fetch1099Form(company: CompanyEntity, filterRequest: Vendor1099FilterRequest): Form1099ReportDTO {
       return vendorRepository.fetch1099Report(company, filterRequest)
    }
 
