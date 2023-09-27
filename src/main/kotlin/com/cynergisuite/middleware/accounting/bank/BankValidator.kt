@@ -6,6 +6,7 @@ import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
+import com.cynergisuite.middleware.localization.AccountInUse
 import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -47,7 +48,14 @@ class BankValidator @Inject constructor(
          if (existingBank == null && existingBankByNumber != null) errors.add(ValidationError("number", Duplicate(bankDTO.number!!)))
          if (existingBank != null && existingBankByNumber != null && existingBankByNumber.id != existingBank.id) errors.add(ValidationError("number", Duplicate(bankDTO.number!!)))
          generalProfitCenter ?: errors.add(ValidationError("generalLedgerProfitCenter.id", NotFound(bankDTO.generalLedgerProfitCenter!!.id!!)))
-         generalLedgerAccount ?: errors.add(ValidationError("generalLedgerAccount.id", NotFound(bankDTO.generalLedgerAccount!!.id!!)))
+         if (generalLedgerAccount == null) {
+            errors.add(ValidationError("generalLedgerAccount.id", NotFound(bankDTO.generalLedgerAccount!!.id!!)))
+         } else if (existingBank == null && generalLedgerAccount.bankId != null) {
+            errors.add(ValidationError("generalLedgerAccount.id", AccountInUse()))
+         } else if (existingBank != null && existingBank.generalLedgerAccount.id != generalLedgerAccount.id && generalLedgerAccount.bankId != null) {
+            errors.add(ValidationError("generalLedgerAccount.id", AccountInUse()))
+         }
+
       }
 
       return BankEntity(
