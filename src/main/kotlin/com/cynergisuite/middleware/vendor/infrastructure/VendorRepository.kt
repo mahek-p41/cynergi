@@ -39,8 +39,10 @@ import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMetho
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardType
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
 import com.cynergisuite.middleware.vendor.Form1099ReportDTO
+import com.cynergisuite.middleware.vendor.Form1099ReportEntity
 import com.cynergisuite.middleware.vendor.Form1099ReportInvoiceDetailEntity
 import com.cynergisuite.middleware.vendor.Form1099TotalsDTO
+import com.cynergisuite.middleware.vendor.Form1099TotalsEntity
 import com.cynergisuite.middleware.vendor.Form1099VendorDTO
 import com.cynergisuite.middleware.vendor.Form1099VendorEntity
 import com.cynergisuite.middleware.vendor.VendorEntity
@@ -708,11 +710,11 @@ class VendorRepository @Inject constructor(
    fun fetch1099Report(company: CompanyEntity, filterRequest: Vendor1099FilterRequest) : Form1099ReportDTO {
       val vendors = mutableListOf <Form1099VendorEntity> ()
       var currentVendor: Form1099VendorEntity? = null
-      val cashflowTotals = Form1099TotalsDTO()
+      var companyName = company.name
+      val form1099Totals = Form1099TotalsEntity()
 
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder("WHERE comp.company_id = :comp_id AND vend.vendor_1099 = 'Y' AND apInvoice.status_id NOT IN (1, 2, 4) AND pmt.account_payable_payment_status != 2")
-
 
       if (filterRequest.form1099Type != null) {
          if (filterRequest.form1099Type == "M") {
@@ -762,77 +764,133 @@ class VendorRepository @Inject constructor(
 
             var invoiceFlag = false
             mapRowInvoiceDetail(rs, "apInvoiceDetail_").let {
-               if (it.invoiceStatus.id == 2) {
+               //if (it.invoiceStatus.id == 2) {
                   tempVendor.invoices ?.add(it)
                   invoiceFlag = true
-               }
+               //}
 
                if (invoiceFlag) {
-                  //sorts out discount taken / discount lost
-                  if (it.invoiceDiscountAmount!! > BigDecimal.ZERO) {
-                     if (it.invoiceDiscountDate!! > LocalDate.now()) {
-                        it.discountAmount = it.invoiceDiscountAmount!!.times(it.invoiceDiscountPercent!!)
-                        it.balance = it.invoiceAmount - it.invoicePaidAmount - it.discountAmount!!
-                        tempVendor.vendorTotals.discountTaken = tempVendor.vendorTotals.discountTaken.plus(it.discountAmount!!)
-                        cashflowTotals.discountTaken = cashflowTotals.discountTaken.plus(it.discountAmount!!)
-                     } else {
-                        it.lostAmount = it.invoiceDiscountAmount!!.times(it.invoiceDiscountPercent!!)
-                        it.balance = it.invoiceAmount - it.invoicePaidAmount
-                        tempVendor.vendorTotals.discountLost = tempVendor.vendorTotals.discountLost.plus(it.lostAmount!!)
-                        cashflowTotals.discountLost = cashflowTotals.discountLost.plus(it.lostAmount!!)
-                     }
-                     cashflowTotals.discountDate = it.invoiceDiscountDate
-                     tempVendor.vendorTotals.discountDate = it.invoiceDiscountDate
+                  //We need to add 1099_invdist_distribution_amount to (1099_apInvoice_discount_taken * -1)
+                     form1099Totals.grandTotal = form1099Totals.grandTotal.plus(it.distributionAmount)
+                     form1099Totals.grandTotal = form1099Totals.grandTotal.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
                   }
 
-                  when (it.balanceDisplay) {
-                     CashRequirementBalanceEnum.ONE -> {
-                        tempVendor.vendorTotals.dateOneAmount =
-                           tempVendor.vendorTotals.dateOneAmount.plus(it.balance)
-
-                        cashflowTotals.dateOneAmount =
-                           cashflowTotals.dateOneAmount.plus(it.balance)
+                  when (it.fieldNumber) {
+                     1 -> {
+                        tempVendor.vendorTotals.ten99Field1 =
+                           tempVendor.vendorTotals.ten99Field1.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field1 =
+                           tempVendor.vendorTotals.ten99Field1.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
                      }
-                     CashRequirementBalanceEnum.TWO -> {
-                        tempVendor.vendorTotals.dateTwoAmount =
-                           tempVendor.vendorTotals.dateTwoAmount.plus(it.balance)
-                        cashflowTotals.dateTwoAmount =
-                           cashflowTotals.dateTwoAmount.plus(it.balance)
+                     2 -> {
+                        tempVendor.vendorTotals.ten99Field2 =
+                           tempVendor.vendorTotals.ten99Field2.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field2 =
+                           tempVendor.vendorTotals.ten99Field2.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
                      }
-                     CashRequirementBalanceEnum.THREE -> {
-                        tempVendor.vendorTotals.dateThreeAmount =
-                           tempVendor.vendorTotals.dateThreeAmount.plus(it.balance)
-                        cashflowTotals.dateThreeAmount =
-                           cashflowTotals.dateThreeAmount.plus(it.balance)
+                     3 -> {
+                        tempVendor.vendorTotals.ten99Field3 =
+                           tempVendor.vendorTotals.ten99Field3.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field3 =
+                           tempVendor.vendorTotals.ten99Field3.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
                      }
-                     CashRequirementBalanceEnum.FOUR -> {
-                        tempVendor.vendorTotals.dateFourAmount =
-                           tempVendor.vendorTotals.dateFourAmount.plus(it.balance)
-                        cashflowTotals.dateFourAmount =
-                           cashflowTotals.dateFourAmount.plus(it.balance)
+                     4 -> {
+                        tempVendor.vendorTotals.ten99Field4 =
+                           tempVendor.vendorTotals.ten99Field4.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field4 =
+                           tempVendor.vendorTotals.ten99Field4.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
                      }
-                     CashRequirementBalanceEnum.FIVE -> {
-                        tempVendor.vendorTotals.dateFiveAmount =
-                           tempVendor.vendorTotals.dateFiveAmount.plus(it.balance)
-                        cashflowTotals.dateFiveAmount =
-                           cashflowTotals.dateFiveAmount.plus(it.balance)
+                     5 -> {
+                        tempVendor.vendorTotals.ten99Field5 =
+                           tempVendor.vendorTotals.ten99Field5.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field5 =
+                           tempVendor.vendorTotals.ten99Field5.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     6 -> {
+                        tempVendor.vendorTotals.ten99Field6 =
+                           tempVendor.vendorTotals.ten99Field6.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field6 =
+                           tempVendor.vendorTotals.ten99Field6.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     7 -> {
+                        tempVendor.vendorTotals.ten99Field7 =
+                           tempVendor.vendorTotals.ten99Field7 .plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field7  =
+                           tempVendor.vendorTotals.ten99Field7.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     8 -> {
+                        tempVendor.vendorTotals.ten99Field8 =
+                           tempVendor.vendorTotals.ten99Field8.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field8 =
+                           tempVendor.vendorTotals.ten99Field8.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     9 -> {
+                        tempVendor.vendorTotals.ten99Field9 =
+                           tempVendor.vendorTotals.ten99Field9.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field9 =
+                           tempVendor.vendorTotals.ten99Field9.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     10 -> {
+                        tempVendor.vendorTotals.ten99Field10 =
+                           tempVendor.vendorTotals.ten99Field10.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field10 =
+                           tempVendor.vendorTotals.ten99Field10.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     11 -> {
+                        tempVendor.vendorTotals.ten99Field11 =
+                           tempVendor.vendorTotals.ten99Field11.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field11 =
+                           tempVendor.vendorTotals.ten99Field11.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     12 -> {
+                        tempVendor.vendorTotals.ten99Field12 =
+                           tempVendor.vendorTotals.ten99Field12.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field12 =
+                           tempVendor.vendorTotals.ten99Field12.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     13 -> {
+                        tempVendor.vendorTotals.ten99Field13 =
+                           tempVendor.vendorTotals.ten99Field13.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field13 =
+                           tempVendor.vendorTotals.ten99Field13.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     14 -> {
+                        tempVendor.vendorTotals.ten99Field14 =
+                           tempVendor.vendorTotals.ten99Field14.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field14 =
+                           tempVendor.vendorTotals.ten99Field14.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     15 -> {
+                        tempVendor.vendorTotals.ten99Field15 =
+                           tempVendor.vendorTotals.ten99Field15.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field15 =
+                           tempVendor.vendorTotals.ten99Field15.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     16 -> {
+                        tempVendor.vendorTotals.ten99Field16 =
+                           tempVendor.vendorTotals.ten99Field16.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field16 =
+                           tempVendor.vendorTotals.ten99Field16.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     17 -> {
+                        tempVendor.vendorTotals.ten99Field17 =
+                           tempVendor.vendorTotals.ten99Field17.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field17 =
+                           tempVendor.vendorTotals.ten99Field17.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
                      }
 
                      else -> {}
                   }
                }
-            }
          } while (rs.next())
 
          vendors.removeIf {
-            it.invoices ?.size == 0
+            it.vendorTotals.grandTotal < filterRequest.excludeBelow
          }
       }
 
-      val entity = AccountPayableCashFlowEntity(vendors, cashflowTotals)
-      if (!filterRequest.details!!) {
-         entity.vendors!!.map { it.invoices = null }
-      }
+      val entity = Form1099ReportEntity(companyName, vendors, form1099Totals)
+
       return Form1099ReportDTO(entity)
    }
 
@@ -851,17 +909,17 @@ class VendorRepository @Inject constructor(
          invoiceDate = rs.getLocalDate("${columnPrefix}apInvoice_invoice_date"),
          invoiceAmount = invoiceAmount,
          invoiceDiscountAmount = rs.getBigDecimal("${columnPrefix}apInvoice_discount_amount"),
+         invoiceDiscountDate = invoiceDiscountDate,
          invoiceExpenseDate = rs.getLocalDate("${columnPrefix}apInvoice_expense_date"),
          invoicePaidAmount = invoicePaidAmount,
          invoiceDiscountTaken = invoiceDiscountTaken,
          invoiceDiscountPercent = invoiceDiscountPercent,
-         invoiceDiscountDate = invoiceDiscountDate,
-         //invoiceStatus = statusRepository.mapRow(rs, "${columnPrefix}apInvoice_status_"),
          invoiceDueDate = rs.getLocalDate("${columnPrefix}apInvoice_due_date"),
          discountAmount = null,
          lostAmount = null,
          balance = balance,
-         fieldNumber = rs.getInt("${columnPrefix}account_form_1099_field"))
+         fieldNumber = rs.getInt("${columnPrefix}account_form_1099_field"),
+         distributionAmount = rs.getBigDecimal("${columnPrefix}invdist_distribution_amount"),
       )
    }
 

@@ -19,6 +19,6 @@ data class Form1099VendorEntity(
    val accountNumber: String?,
    val distributionAmount: BigDecimal? = null,
    val isActive: Boolean = true,
-   val invoices: MutableSet<CashFlowReportInvoiceDetailEntity>? = LinkedHashSet(),
+   val invoices: MutableSet<Form1099ReportInvoiceDetailEntity>? = LinkedHashSet(),
    var vendorTotals: Form1099TotalsEntity = Form1099TotalsEntity()
 )

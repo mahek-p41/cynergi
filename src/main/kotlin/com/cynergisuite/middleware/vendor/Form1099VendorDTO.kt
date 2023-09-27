@@ -72,7 +72,7 @@ data class Form1099VendorDTO(
 
    @field:NotNull
    @field:Schema(description = "Invoices")
-   var invoices: MutableSet<CashFlowReportInvoiceDetailEntity>? = LinkedHashSet(),
+   var invoices: MutableSet<Form1099ReportInvoiceDetailEntity>? = LinkedHashSet(),
 
    @field:Schema(description = "1099 Field totals for the vendor")
    var vendorTotals: Form1099TotalsDTO? = null

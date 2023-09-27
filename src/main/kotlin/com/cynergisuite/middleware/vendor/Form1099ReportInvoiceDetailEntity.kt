@@ -18,10 +18,10 @@ data class Form1099ReportInvoiceDetailEntity (
    var invoicePaidAmount: BigDecimal,
    var invoiceDiscountTaken: BigDecimal,
    var invoiceDiscountPercent: BigDecimal?,
-   //var invoiceStatus: AccountPayableInvoiceStatusType,
    val invoiceDueDate: LocalDate,
    var discountAmount: BigDecimal?,
    var lostAmount: BigDecimal?,
    var balance: BigDecimal,
-   var fieldNumber: Int
+   var fieldNumber: Int,
+   var distributionAmount: BigDecimal
 )
