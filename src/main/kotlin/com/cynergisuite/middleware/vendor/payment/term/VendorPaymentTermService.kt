@@ -79,6 +79,8 @@ class VendorPaymentTermService @Inject constructor(
       var fileWriter: FileWriter? = null
       var csvPrinter: CSVPrinter? = null
       var discountMonth: String
+      var discountDays: String
+      var discountPercent: String
       var due_month_1: Int = 0
       var due_days_1: Int = 0
       var due_percent_1: BigDecimal = BigDecimal.ZERO
@@ -111,37 +113,37 @@ class VendorPaymentTermService @Inject constructor(
       for ((index, scheduleRecord) in vendterm.scheduleRecords.withIndex()) {
          when (index)
          {
-            1 -> {
+            0 -> {
                if (scheduleRecord.dueMonth != null) due_month_1 = scheduleRecord.dueMonth
                due_days_1 = scheduleRecord.dueDays
                due_percent_1 = scheduleRecord.duePercent
                schedule_order_number_1 = scheduleRecord.scheduleOrderNumber
             }
-            2 -> {
+            1 -> {
                if (scheduleRecord.dueMonth != null) due_month_2 = scheduleRecord.dueMonth
                due_days_2 = scheduleRecord.dueDays
                due_percent_2 = scheduleRecord.duePercent
                schedule_order_number_2 = scheduleRecord.scheduleOrderNumber
             }
-            3 -> {
+            2 -> {
                if (scheduleRecord.dueMonth != null) due_month_3 = scheduleRecord.dueMonth
                due_days_3 = scheduleRecord.dueDays
                due_percent_3 = scheduleRecord.duePercent
                schedule_order_number_3 = scheduleRecord.scheduleOrderNumber
             }
-            4 -> {
+            3 -> {
                if (scheduleRecord.dueMonth != null) due_month_4 = scheduleRecord.dueMonth
                due_days_4 = scheduleRecord.dueDays
                due_percent_4 = scheduleRecord.duePercent
                schedule_order_number_4 = scheduleRecord.scheduleOrderNumber
             }
-            5 -> {
+            4 -> {
                if (scheduleRecord.dueMonth != null) due_month_5 = scheduleRecord.dueMonth
                due_days_5 = scheduleRecord.dueDays
                due_percent_5 = scheduleRecord.duePercent
                schedule_order_number_5 = scheduleRecord.scheduleOrderNumber
             }
-            6 -> {
+            5 -> {
                   if (scheduleRecord.dueMonth != null) due_month_6 = scheduleRecord.dueMonth
                   due_days_6 = scheduleRecord.dueDays
                   due_percent_6 = scheduleRecord.duePercent
@@ -154,6 +156,18 @@ class VendorPaymentTermService @Inject constructor(
          discountMonth = vendterm.discountMonth.toString()
       } else {
          discountMonth = "0"
+      }
+
+      if (vendterm.discountDays != null) {
+         discountDays = vendterm.discountDays.toString()
+      } else {
+         discountDays = "0"
+      }
+
+      if (vendterm.discountPercent != null) {
+         discountPercent = vendterm.discountPercent.toString()
+      } else {
+         discountPercent = "0"
       }
 
       try {
@@ -229,8 +243,8 @@ class VendorPaymentTermService @Inject constructor(
             beginningDescription!!,
             vendterm.description,
             discountMonth,
-            vendterm.discountDays.toString(),
-            vendterm.discountPercent.toString(),
+            discountDays,
+            discountPercent,
             due_month_1.toString(),
             due_days_1.toString(),
             due_percent_1.toString(),
