@@ -15,10 +15,22 @@ data class SimpleIdentifiableDTO(
 
 ) : Identifiable {
 
+   @field:Schema(name = "number", description = "Number as an optional property provided where needed", required = false)
+   var number: Long? = null
+
+   @field:Schema(name = "name", description = "Name as an optional property provided where needed", required = false)
+   var name: String? = null
+
    constructor(identifiable: Identifiable) :
       this(
          id = identifiable.myId()
       )
+
+   constructor(id: UUID, number: Long?, name: String?) :
+      this(id) {
+      this.number = number
+      this.name = name
+   }
 
    override fun myId(): UUID? = id
 

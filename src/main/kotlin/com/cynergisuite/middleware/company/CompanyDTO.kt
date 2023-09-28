@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.company
 
+import com.cynergisuite.middleware.address.AddressDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.micronaut.core.annotation.Introspected
@@ -44,6 +45,9 @@ data class CompanyDTO(
    @field:Schema(name = "federalTaxNumber", required = true, nullable = false, description = "Federal taxpayer identification number")
    var federalTaxNumber: String? = null,
 
+   @field:Schema(name = "address", required = false, nullable = true, description = "Address")
+   var address: AddressDTO? = null
+
 ) : Comparable<CompanyDTO> {
 
    constructor(company: CompanyEntity) :
@@ -55,6 +59,7 @@ data class CompanyDTO(
          clientId = company.clientId,
          datasetCode = company.datasetCode,
          federalTaxNumber = company.federalIdNumber,
+         address = company.address?.let { AddressDTO(it) }
       )
 
    override fun compareTo(other: CompanyDTO): Int =
@@ -66,5 +71,6 @@ data class CompanyDTO(
          .append(this.name, other.name)
          .append(this.doingBusinessAs, other.doingBusinessAs)
          .append(this.federalTaxNumber, other.federalTaxNumber)
+         .append(this.address, other.address)
          .toComparison()
 }

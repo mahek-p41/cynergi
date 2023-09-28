@@ -1,19 +1,23 @@
 package com.cynergisuite.middleware.inventory.infrastructure
 
+import com.cynergisuite.domain.InventoryInquiryFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getBigDecimalOrNull
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.audit.status.InProgress
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.inventory.InventoryEntity
+import com.cynergisuite.middleware.inventory.InventoryInquiryDTO
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
 import com.cynergisuite.middleware.location.infrastructure.LocationRepository
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -36,53 +40,67 @@ class InventoryRepository(
    private val selectBase =
       """
       SELECT
-         i.id AS id,
-         i.serial_number AS serial_number,
-         i.lookup_key AS lookup_key,
-         i.lookup_key_type AS lookup_key_type,
-         i.barcode AS barcode,
-         i.alt_id AS alt_id,
-         i.brand AS brand,
-         i.model_number AS model_number,
-         i.product_code AS product_code,
-         i.description AS description,
-         i.received_date AS received_date,
-         i.original_cost AS original_cost,
-         i.actual_cost AS actual_cost,
-         i.model_category AS model_category,
-         i.times_rented AS times_rented,
-         i.total_revenue AS total_revenue,
-         i.remaining_value AS remaining_value,
-         i.sell_price AS sell_price,
-         i.assigned_value AS assigned_value,
-         i.idle_days AS idle_days,
-         i.condition AS condition,
-         i.returned_date AS returned_date,
-         i.status AS status,
-         i.dataset AS dataset,
-         comp.id AS comp_id,
-         comp.time_created AS comp_time_created,
-         comp.time_updated AS comp_time_updated,
-         comp.name AS comp_name,
-         comp.doing_business_as AS comp_doing_business_as,
-         comp.client_code AS comp_client_code,
-         comp.client_id AS comp_client_id,
-         comp.dataset_code AS comp_dataset_code,
-         comp.federal_id_number AS comp_federal_id_number,
-         primaryStore.id AS primary_store_id,
-         primaryStore.number AS primary_store_number,
-         primaryStore.name AS primary_store_name,
-         primaryStore.dataset AS primary_store_dataset,
-         currentStore.id AS current_store_id,
-         currentStore.number AS current_store_number,
-         currentStore.name AS current_store_name,
-         currentStore.dataset AS current_store_dataset,
-         iltd.id AS location_type_id,
-         iltd.value AS location_type_value,
-         iltd.description AS location_type_description,
-         iltd.localization_code AS location_type_localization_code
+         i.id                          AS id,
+         i.serial_number               AS serial_number,
+         i.lookup_key                  AS lookup_key,
+         i.lookup_key_type             AS lookup_key_type,
+         i.barcode                     AS barcode,
+         i.alt_id                      AS alt_id,
+         i.brand                       AS brand,
+         i.model_number                AS model_number,
+         i.product_code                AS product_code,
+         i.description                 AS description,
+         i.received_date               AS received_date,
+         i.original_cost               AS original_cost,
+         i.actual_cost                 AS actual_cost,
+         i.model_category              AS model_category,
+         i.times_rented                AS times_rented,
+         i.total_revenue               AS total_revenue,
+         i.remaining_value             AS remaining_value,
+         i.sell_price                  AS sell_price,
+         i.assigned_value              AS assigned_value,
+         i.idle_days                   AS idle_days,
+         i.condition                   AS condition,
+         i.returned_date               AS returned_date,
+         i.status                      AS status,
+         i.dataset                     AS dataset,
+         comp.id                       AS comp_id,
+         comp.time_created             AS comp_time_created,
+         comp.time_updated             AS comp_time_updated,
+         comp.name                     AS comp_name,
+         comp.doing_business_as        AS comp_doing_business_as,
+         comp.client_code              AS comp_client_code,
+         comp.client_id                AS comp_client_id,
+         comp.dataset_code             AS comp_dataset_code,
+         comp.federal_id_number        AS comp_federal_id_number,
+         compAddress.id                AS comp_address_id,
+         compAddress.name              AS comp_address_name,
+         compAddress.address1          AS comp_address_address1,
+         compAddress.address2          AS comp_address_address2,
+         compAddress.city              AS comp_address_city,
+         compAddress.state             AS comp_address_state,
+         compAddress.postal_code       AS comp_address_postal_code,
+         compAddress.latitude          AS comp_address_latitude,
+         compAddress.longitude         AS comp_address_longitude,
+         compAddress.country           AS comp_address_country,
+         compAddress.county            AS comp_address_county,
+         compAddress.phone             AS comp_address_phone,
+         compAddress.fax               AS comp_address_fax,
+         primaryStore.id               AS primary_store_id,
+         primaryStore.number           AS primary_store_number,
+         primaryStore.name             AS primary_store_name,
+         primaryStore.dataset          AS primary_store_dataset,
+         currentStore.id               AS current_store_id,
+         currentStore.number           AS current_store_number,
+         currentStore.name             AS current_store_name,
+         currentStore.dataset          AS current_store_dataset,
+         iltd.id                       AS location_type_id,
+         iltd.value                    AS location_type_value,
+         iltd.description              AS location_type_description,
+         iltd.localization_code        AS location_type_localization_code
       FROM company comp
            JOIN fastinfo_prod_import.inventory_vw i ON comp.dataset_code = i.dataset
+           LEFT JOIN address AS compAddress ON comp.address_id = compAddress.id AND compAddress.deleted = FALSE
            JOIN system_stores_fimvw primaryStore ON comp.dataset_code = primaryStore.dataset AND i.primary_location = primaryStore.number
            LEFT OUTER JOIN system_stores_fimvw currentStore ON comp.dataset_code = currentStore.dataset AND i.location = currentStore.number
            JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
@@ -245,7 +263,7 @@ class InventoryRepository(
       ORDER BY ${pageRequest.sortBy} ${pageRequest.sortDirection}
       LIMIT :limit
          OFFSET :offset
-         """.trimIndent()
+      """.trimIndent()
 
       logger.debug("Querying Inventory {} {} {}", pageRequest, params, sql)
 
@@ -339,8 +357,99 @@ class InventoryRepository(
       )
    }
 
+   @ReadOnly
+   fun fetchInquiry(company: CompanyEntity, filterRequest: InventoryInquiryFilterRequest): RepositoryPage<InventoryInquiryDTO, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
+      val whereClause = StringBuilder("WHERE comp.id = :comp_id ")
+      val sortBy = StringBuilder("ORDER BY ")
+
+      if (filterRequest.recvLoc != null) {
+         params["recvLoc"] = filterRequest.recvLoc
+         whereClause.append(" AND inv.primary_location = :recvLoc ")
+      }
+
+      if (filterRequest.serialNbr != null) {
+         params["serialNbr"] = filterRequest.serialNbr
+         whereClause.append(" AND inv.serial_number >= :serialNbr ")
+      }
+
+      if (filterRequest.modelNbr != null) {
+         params["modelNbr"] = filterRequest.modelNbr
+         whereClause.append(" AND inv.model_number >= :modelNbr ")
+      }
+
+      if (filterRequest.poNbr != null) {
+         params["poNbr"] = filterRequest.poNbr
+         whereClause.append(" AND inv.inv_purchase_order_number = :poNbr ")
+      }
+
+      if (filterRequest.invoiceNbr != null) {
+         params["invoiceNbr"] = filterRequest.invoiceNbr
+         whereClause.append(" AND inv.invoice_number = :invoiceNbr ")
+      }
+
+      if (filterRequest.receivedDate != null) {
+         params["receivedDate"] = filterRequest.receivedDate
+         whereClause.append(" AND inv.received_date >= :receivedDate ")
+      }
+
+      if (filterRequest.beginAltId != null && filterRequest.endAltId != null) {
+         params["beginAltId"] = filterRequest.beginAltId
+         params["endAltId"] = filterRequest.endAltId
+         whereClause.append(" AND inv.alt_id BETWEEN :beginAltId AND :endAltId ")
+      }
+
+      if (filterRequest.receivedDate != null) {
+         sortBy.append("inv.received_date, inv.inv_purchase_order_number, inv.serial_number")
+      } else if (filterRequest.poNbr != null) {
+         sortBy.append("inv.inv_purchase_order_number, inv.received_date, inv.invoice_number, inv.model_number, inv.serial_number")
+      } else if (filterRequest.invoiceNbr != null) {
+         sortBy.append("inv.invoice_number, inv.model_number, inv.serial_number")
+      } else if (filterRequest.modelNbr != null) {
+         sortBy.append("inv.model_number, inv.serial_number")
+      } else if (filterRequest.recvLoc != null) {
+         sortBy.append("inv.primary_location, inv.serial_number")
+      } else if (filterRequest.serialNbr != null) {
+         sortBy.append("inv.serial_number")
+      } else if (filterRequest.beginAltId != null && filterRequest.endAltId != null) {
+         sortBy.append("inv.alt_id")
+      } else {
+         sortBy.append("inv.inv_purchase_order_number, inv.invoice_number, inv.model_number, inv.serial_number")
+      }
+
+      return jdbc.queryPaged(
+         """
+            SELECT
+               inv.model_number                 AS model_number,
+               inv.serial_number                AS serial_number,
+               inv.actual_cost                  AS landed_cost,
+               inv.status                       AS status,
+               inv.received_date                AS received_date,
+               inv.inv_purchase_order_number    AS purchase_order_number,
+               inv.invoice_number               AS invoice_number,
+               inv.description                  AS description,
+               inv.location                     AS current_location,
+               inv.inv_invoice_expensed_date    AS invoice_expensed_date,
+               inv.alt_id                       AS alt_id,
+               count(*) OVER() AS total_elements
+            FROM fastinfo_prod_import.inventory_vw inv
+               JOIN company comp ON inv.dataset = comp.dataset_code AND comp.deleted = FALSE
+            $whereClause
+            $sortBy
+            LIMIT :limit
+            OFFSET :offset
+         """.trimIndent(),
+         params,
+         filterRequest
+      ) { rs, elements ->
+         do {
+            elements.add(mapInquiry(rs))
+         } while (rs.next())
+      }
+   }
+
    fun mapRow(rs: ResultSet): InventoryEntity {
-      val company = companyRepository.mapRow(rs, "comp_")
+      val company = companyRepository.mapRow(rs, columnPrefix = "comp_", addressPrefix = "comp_address_")
 
       return InventoryEntity(
          id = rs.getLong("id"),
@@ -398,5 +507,28 @@ class InventoryRepository(
       }
       str.append(" ) ")
       return str.toString()
+   }
+
+   fun mapInquiry(rs: ResultSet): InventoryInquiryDTO {
+      val currentLoc = rs.getInt("current_location")
+      val invoiceExpensedDate = rs.getLocalDateOrNull("invoice_expensed_date")
+      val currentLocExpensed =
+         if (invoiceExpensedDate != null) {
+            "$currentLoc Expensed"
+         } else currentLoc.toString()
+      return InventoryInquiryDTO(
+         modelNumber = rs.getString("model_number"),
+         serialNumber = rs.getString("serial_number"),
+         landedCost = rs.getBigDecimalOrNull("landed_cost"),
+         status = rs.getString("status"),
+         receivedDate = rs.getLocalDateOrNull("received_date"),
+         poNbr = rs.getString("purchase_order_number"),
+         invoiceNbr = rs.getString("invoice_number"),
+         description = rs.getString("description"),
+         currentLoc = currentLoc,
+         invoiceExpensedDate = invoiceExpensedDate,
+         altId = rs.getString("alt_id"),
+         currentLocExpensed = currentLocExpensed
+      )
    }
 }

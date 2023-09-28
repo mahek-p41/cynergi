@@ -3,10 +3,10 @@ package com.cynergisuite.middleware.notification
 import com.cynergisuite.middleware.notification.infrastructure.NotificationTypeDomainRepository
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-import org.apache.commons.lang3.RandomUtils
-import java.util.stream.Stream
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+
+import java.util.stream.Stream
 
 class NotificationTypeDomainTestDataLoader {
    private static final List<NotificationType> typeDomainValues = [

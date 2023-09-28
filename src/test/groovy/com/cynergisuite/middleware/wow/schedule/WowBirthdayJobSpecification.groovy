@@ -20,7 +20,7 @@ class WowBirthdayJobSpecification extends ServiceSpecificationBase {
 
    void "upload wow birthdays" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final wowSchedules = wowTestDataLoaderService.enableWow(tstds1)
       final scheduleEntity = wowSchedules.find { it.title == "Wow Birthdays" }
       final novemberFirst = OffsetDateTime.of(2021, 11, 1, 0, 0, 0, 0, UTC)

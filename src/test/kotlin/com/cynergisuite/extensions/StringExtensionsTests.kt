@@ -98,4 +98,32 @@ class StringExtensionsTests {
 
       assertThat(str.truncate(10)).isNull()
    }
+
+   @Test
+   fun `is a number 11 point 21`() {
+      val str = "11.21"
+
+      assertThat(str.isNumber()).isTrue()
+   }
+
+   @Test
+   fun `no decimal but all digits`() {
+      val str = "1121"
+
+      assertThat(str.isNumber()).isTrue()
+   }
+
+   @Test
+   fun `null is not a number`() {
+      val str: String? = null
+
+      assertThat(str.isNumber()).isFalse()
+   }
+
+   @Test
+   fun `has letters and digits when checking if string is number`() {
+      val str = "asdf1234.56"
+
+      assertThat(str.isNumber()).isFalse()
+   }
 }

@@ -48,6 +48,9 @@ class ScheduleRepository @Inject constructor(
 
       jdbc.query(
          """
+         WITH company AS (
+            ${companyRepository.companyBaseQuery()}
+         )
          SELECT
             sched.id                    AS sched_id,
             sched.time_created          AS sched_time_created,
@@ -80,12 +83,25 @@ class ScheduleRepository @Inject constructor(
             comp.client_code            AS comp_client_code,
             comp.client_id              AS comp_client_id,
             comp.dataset_code           AS comp_dataset_code,
-            comp.federal_id_number      AS comp_federal_id_number
+            comp.federal_id_number      AS comp_federal_id_number,
+            comp.address_id             AS address_id,
+            comp.address_name           AS address_name,
+            comp.address_address1       AS address_address1,
+            comp.address_address2       AS address_address2,
+            comp.address_city           AS address_city,
+            comp.address_state          AS address_state,
+            comp.address_postal_code    AS address_postal_code,
+            comp.address_latitude       AS address_latitude,
+            comp.address_longitude      AS address_longitude,
+            comp.address_country        AS address_country,
+            comp.address_county         AS address_county,
+            comp.address_phone          AS address_phone,
+            comp.address_fax            AS address_fax
          FROM schedule sched
               JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
               JOIN schedule_command_type_domain sctd ON sched.command_id = sctd.id
               LEFT OUTER JOIN schedule_arg sa ON sched.id = sa.schedule_id
-              JOIN company comp ON sched.company_id = comp.id
+              JOIN company comp ON sched.company_id = comp.id AND comp.deleted = FALSE
          WHERE sched.id = :id
          """.trimIndent(),
          mapOf("id" to id, "scheduleArgKey" to scheduleArgKey)
@@ -143,6 +159,9 @@ class ScheduleRepository @Inject constructor(
       val sql =
          """
          WITH schedules AS (
+            WITH company AS (
+               ${companyRepository.companyBaseQuery()}
+            )
             SELECT
                sched.id                                                        AS sched_id,
                sched.time_created                                              AS sched_time_created,
@@ -168,11 +187,24 @@ class ScheduleRepository @Inject constructor(
                comp.client_id                                                  AS comp_client_id,
                comp.dataset_code                                               AS comp_dataset_code,
                comp.federal_id_number                                          AS comp_federal_id_number,
+               comp.address_id                                                 AS address_id,
+               comp.address_name                                               AS address_name,
+               comp.address_address1                                           AS address_address1,
+               comp.address_address2                                           AS address_address2,
+               comp.address_city                                               AS address_city,
+               comp.address_state                                              AS address_state,
+               comp.address_postal_code                                        AS address_postal_code,
+               comp.address_latitude                                           AS address_latitude,
+               comp.address_longitude                                          AS address_longitude,
+               comp.address_country                                            AS address_country,
+               comp.address_county                                             AS address_county,
+               comp.address_phone                                              AS address_phone,
+               comp.address_fax                                                AS address_fax,
                (SELECT count(id) FROM schedule $whereClause) AS total_elements
             FROM schedule sched
                JOIN schedule_type_domain schedType ON sched.type_id = schedType.id
                JOIN schedule_command_type_domain sctd ON sched.command_id = sctd.id
-               JOIN company comp ON sched.company_id = comp.id
+               JOIN company comp ON sched.company_id = comp.id AND comp.deleted = FALSE
             $whereClause
             ORDER BY sched_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
                LIMIT :limit

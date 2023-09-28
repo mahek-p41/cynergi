@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.inventory.infrastructure
 
+import com.cynergisuite.domain.InventoryInquiryFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.authentication.AccessException
@@ -7,6 +8,7 @@ import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.inventory.InventoryDTO
+import com.cynergisuite.middleware.inventory.InventoryInquiryDTO
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.json.view.Full
 import com.cynergisuite.middleware.json.view.InventoryApp
@@ -142,5 +144,35 @@ class InventoryController(
       val user = userService.fetchUser(authentication)
 
       return inventoryService.fetchByLookupKey(lookupKey, user.myCompany(), httpRequest.findLocaleWithDefault()) ?: throw NotFoundException(lookupKey)
+   }
+
+   @Throws(AccessException::class)
+   @Get(uri = "/inquiry{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["InventoryEndpoints"], summary = "Fetch an Inventory Inquiry", description = "Fetch an Account Payable Inventory Inquiry", operationId = "inventory-inquiry")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "403", description = "If authentication fails"),
+         ApiResponse(responseCode = "204", description = "The the result is empty"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun inquiry(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false) @QueryValue("filterRequest") @Valid
+      filterRequest: InventoryInquiryFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Page<InventoryInquiryDTO> {
+      logger.info("Fetching Account Payable Inventory Inquiry {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+
+      val page = inventoryService.inquiry(user.myCompany(), filterRequest)
+
+      if (page.elements.isEmpty()) {
+         throw PageOutOfBoundsException(filterRequest)
+      } else {
+         return page
+      }
    }
 }

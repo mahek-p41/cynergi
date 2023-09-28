@@ -9,7 +9,6 @@ import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
 
 import static io.micronaut.http.HttpRequest.GET
@@ -23,7 +22,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all audit detail scan areas v1" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
       def department = departmentFactoryService.random(storeThree.myCompany())
@@ -60,7 +59,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all audit detail scan areas v2" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
       def department = departmentFactoryService.random(storeThree.myCompany())
@@ -110,7 +109,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
 
    void "create a valid scan area" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final storeThree = storeFactoryService.store(3, company)
       final area = new AuditScanAreaDTO([name: 'Custom Area', store: new StoreDTO(storeThree)])
 
@@ -132,7 +131,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
 
    void "create an invalid scan area without name" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final storeThree = storeFactoryService.store(3, company)
       final area = new AuditScanAreaDTO([store: new StoreDTO(storeThree)])
 
@@ -167,7 +166,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
 
    void "update a valid scan area" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
       def department = departmentFactoryService.random(storeThree.myCompany())
@@ -196,7 +195,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
 
    void "update an invalid scan area without name" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
       def department = departmentFactoryService.random(storeThree.myCompany())
@@ -222,7 +221,7 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
 
    void "update an invalid scan area without store" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
       def department = departmentFactoryService.random(storeThree.myCompany())

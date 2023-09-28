@@ -19,5 +19,5 @@ data class AreaEntity(
    val areaType: AreaTypeEntity,
 
    @Relation(ONE_TO_ONE)
-   val company: CompanyEntity,
+   val company: CompanyEntity?,
 )

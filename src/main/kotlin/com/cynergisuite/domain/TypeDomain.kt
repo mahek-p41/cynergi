@@ -52,6 +52,7 @@ abstract class TypeDomain {
    final override fun hashCode(): Int {
       return myHashCode()
    }
+
    final override fun equals(other: Any?): Boolean {
       return if (other != null && other is TypeDomain) {
          myEquality(other)

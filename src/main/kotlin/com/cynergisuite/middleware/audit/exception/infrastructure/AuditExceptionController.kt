@@ -4,11 +4,11 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.exception.AuditExceptionCreateDTO
+import com.cynergisuite.middleware.audit.exception.AuditExceptionDTO
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.AuditExceptionService
-import com.cynergisuite.middleware.audit.exception.AuditExceptionUpdateValueObject
+import com.cynergisuite.middleware.audit.exception.AuditExceptionUpdateDTO
 import com.cynergisuite.middleware.audit.exception.AuditExceptionValidator
-import com.cynergisuite.middleware.audit.exception.AuditExceptionValueObject
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -52,7 +52,7 @@ class AuditExceptionController @Inject constructor(
    @Operation(tags = ["AuditExceptionEndpoints"], summary = "Fetch a single AuditException", description = "Fetch a single AuditException by it's system generated primary key", operationId = "auditException-fetchOne")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditExceptionValueObject::class))]),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditExceptionDTO::class))]),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "404", description = "The requested AuditException was unable to be found"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
@@ -62,7 +62,7 @@ class AuditExceptionController @Inject constructor(
       @QueryValue("id") id: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): AuditExceptionValueObject {
+   ): AuditExceptionDTO {
       logger.info("Fetching AuditException by {}", id)
 
       val user = userService.fetchUser(authentication)
@@ -89,7 +89,7 @@ class AuditExceptionController @Inject constructor(
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
       @Valid pageRequest: StandardPageRequest,
       authentication: Authentication
-   ): Page<AuditExceptionValueObject> {
+   ): Page<AuditExceptionDTO> {
       logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
 
       val user = userService.fetchUser(authentication)
@@ -107,7 +107,7 @@ class AuditExceptionController @Inject constructor(
    @Operation(tags = ["AuditExceptionEndpoints"], summary = "Create a single AuditException", description = "Create a single AuditException. The logged in Employee is used for the scannedBy property", operationId = "auditException-create")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditExceptionValueObject::class))]),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditExceptionDTO::class))]),
          ApiResponse(responseCode = "400", description = "If the request body is invalid"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "404", description = "The parent Audit was unable to be found or the scanArea was unknown"),
@@ -119,7 +119,7 @@ class AuditExceptionController @Inject constructor(
       @Valid @Body
       vo: AuditExceptionCreateDTO,
       authentication: Authentication
-   ): AuditExceptionValueObject {
+   ): AuditExceptionDTO {
       logger.info("Requested Create AuditException {}", vo)
 
       val user = userService.fetchUser(authentication)
@@ -136,7 +136,7 @@ class AuditExceptionController @Inject constructor(
    @Operation(tags = ["AuditExceptionEndpoints"], summary = "Update a single AuditException", description = "Update a single AuditException where the update is the addition of a note", operationId = "auditException-update")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditExceptionValueObject::class))]),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AuditExceptionDTO::class))]),
          ApiResponse(responseCode = "400", description = "If request body is invalid"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "404", description = "The requested parent Audit or AuditException was unable to be found"),
@@ -146,9 +146,9 @@ class AuditExceptionController @Inject constructor(
    fun update(
       @Parameter(name = "auditId", `in` = PATH, description = "The audit that is the parent of the exception being updated") @QueryValue("auditId") auditId: UUID,
       @Valid @Body
-      vo: AuditExceptionUpdateValueObject,
+      vo: AuditExceptionUpdateDTO,
       authentication: Authentication
-   ): AuditExceptionValueObject {
+   ): AuditExceptionDTO {
       logger.info("Requested Update AuditException {}", vo)
 
       val user = userService.fetchUser(authentication)
@@ -160,7 +160,7 @@ class AuditExceptionController @Inject constructor(
       return transformEntity(response)
    }
 
-   private fun transformEntity(auditException: AuditExceptionEntity): AuditExceptionValueObject {
-      return AuditExceptionValueObject(auditException, auditException.scanArea?.let { AuditScanAreaDTO(it) })
+   private fun transformEntity(auditException: AuditExceptionEntity): AuditExceptionDTO {
+      return AuditExceptionDTO(auditException, auditException.scanArea?.let { AuditScanAreaDTO(it) })
    }
 }

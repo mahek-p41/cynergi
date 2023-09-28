@@ -19,7 +19,7 @@ class WowFinalPaymentJobSpecification extends ServiceSpecificationBase {
 
    void "upload final payments" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final wowSchedules = wowTestDataLoaderService.enableWow(tstds1)
       final scheduleEntity = wowSchedules.find { it.title == "Wow Final Payments" }
       final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)

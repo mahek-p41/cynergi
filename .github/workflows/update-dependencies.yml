@@ -1,0 +1,19 @@
+name: Snapshot Dependencies
+permissions:
+   contents: write
+on:
+   workflow_dispatch:
+   push:
+      branches: develop
+      paths:
+         - build.gradle
+         - settings.gradle
+jobs:
+   snapshot-dependencies:
+      runs-on: ubuntu-latest
+      steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Gradle Dependency Submission
+        uses: mikepenz/gradle-dependency-submission@v0.9.0

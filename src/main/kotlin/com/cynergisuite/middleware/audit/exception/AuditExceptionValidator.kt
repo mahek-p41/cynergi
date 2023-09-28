@@ -103,7 +103,7 @@ class AuditExceptionValidator @Inject constructor (
    }
 
    @Throws(ValidationException::class, NotFoundException::class)
-   fun validateUpdate(auditId: UUID, auditExceptionUpdate: AuditExceptionUpdateValueObject, enteredBy: User): AuditExceptionEntity {
+   fun validateUpdate(auditId: UUID, auditExceptionUpdate: AuditExceptionUpdateDTO, enteredBy: User): AuditExceptionEntity {
       doValidation { errors ->
          doSharedValidation(auditId)
 
