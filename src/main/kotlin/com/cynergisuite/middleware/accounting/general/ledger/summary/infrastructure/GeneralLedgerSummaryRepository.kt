@@ -10,10 +10,12 @@ import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.type.infrastructure.OverallPeriodTypeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryEntity
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
@@ -526,6 +528,29 @@ class GeneralLedgerSummaryRepository @Inject constructor(
       return affectedRows
    }
 
+   @ReadOnly
+   fun findMissingSummaries(company: CompanyEntity): List<Pair<AccountEntity, Store>>? {
+      logger.debug("Check detail summary {}", company)
+      val toCreate = mutableListOf<Pair<AccountEntity, Store>>()
+
+      jdbc.query(
+         """
+         SELECT DISTINCT detail.account_id, detail.profit_center_id_sfk
+         FROM general_ledger_detail AS detail
+         LEFT JOIN general_ledger_summary summary
+         ON detail.account_id = summary.account_id AND detail.profit_center_id_sfk = summary.profit_center_id_sfk
+         WHERE detail.company_id = :comp_id
+            AND summary.account_id IS NULL AND summary.profit_center_id_sfk IS NULL
+         """.trimIndent(),
+         mapOf("comp_id" to company.id)
+      ) { rs, _ ->
+         do {
+            toCreate.add(mapMissingPair(rs, company))
+         } while (rs.next())
+      }
+      return toCreate
+   }
+
    @Transactional
    fun resetGLBalance(company: CompanyEntity) {
 
@@ -792,10 +817,18 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          closingBalance = rs.getBigDecimal("${columnPrefix}closing_balance")
       )
    }
+
+   private fun mapMissingPair(rs: ResultSet, company: CompanyEntity): Pair<AccountEntity, Store> {
+      return Pair(
+         accountRepository.findOne(rs.getUuid("account_id"), company)!!,
+         storeRepository.findOne(rs.getInt("profit_center_id_sfk"), company)!!
+      )
+   }
    private fun buildFilterString(begin: Boolean, end: Boolean, beginningParam: String, endingParam: String): String {
       return if (begin && end) " BETWEEN :$beginningParam AND :$endingParam "
       else if (begin) " >= :$beginningParam "
       else " <= :$endingParam "
    }
+
 
 }
