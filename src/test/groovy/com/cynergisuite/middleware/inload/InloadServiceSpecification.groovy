@@ -115,13 +115,9 @@ class InloadServiceSpecification extends ControllerSpecificationBase {
                       'AR_Bad_Check_Amt', 'AR_Bad_Check_GL_Acct_Nbr', 'ICC_Chargeback_Amt', 'ICC_Chargeback_GL_Acct_Nbr',
                       'ACH_Chargeback_Amt', 'ACH_Chargeback_GL_Acct_Nbr'])
          .build()
-      def csvData = 'coravt,1,2020-03-31,true,000000000.00,' +
-         '000001050.28,1,001016,2,' +
-         '151.35,1,3058.63,2,' +
-         '0.00,1,548.74,2,' +
-         '-151.35,1,4657.65,2,' +
-         '0.00,1,3.00,2,' +
-         '4.00,1'
+      def csvData = """
+         coravt,1,2020-03-31,true,000000000.00,000001050.28,1,001016,2,151.35,1,3058.63,2,10.00,1,548.74,2,-151.35,1,4657.65,2,46.00,1,3.00,2,4.00,1
+         """
       def parser = CSVParser.parse(csvData, format)
       def record = parser.getRecords().get(0)
 
@@ -162,10 +158,14 @@ class InloadServiceSpecification extends ControllerSpecificationBase {
             deposit2PmtForOtherStores == 1016
             deposit3PmtFromOtherStores == 151.35
             deposit4CCInStr == 3058.63
-            deposit5ACHOLP == 0
+            deposit5ACHOLP == 10
             deposit6CCOLP == 548.74
             deposit7DebitCard == -151.35
-            depositTotal == 5673.65
+            deposit8ACHChargeback == 4
+            deposit9ICCChargeback == 3
+            deposit10NSFReturnCheck == 4657.65
+            deposit11ARBadCheck == 46
+            depositTotal == 10394.30
          }
       }
    }
