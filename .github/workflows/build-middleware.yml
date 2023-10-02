@@ -1,9 +1,18 @@
 name: Cynergi Middleware CI
 on:
    workflow_dispatch:
+      inputs:
+         fastfail:
+            description: Fast-fail Gradle tests (disables retry plugin)
+            required: false
+            type: boolean
+            default: false
+         debugLogs:
+            description: Verbose debug logging
+            required: false
+            type: boolean
+            default: false
    push:
-env:
-   DEBUG_MODE: ${{ vars.ACTIONS_STEP_DEBUG == 'true' && 'set -x' || '' }}
 jobs:
    build:
       name: Build, Run Tests, Store Artifacts
@@ -28,10 +37,14 @@ jobs:
         id: setBuildVars
         env:
          SOURCE_TARGET_MAP: ${{ vars.SOURCE_TARGET_MAP }}
+         COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+         FASTFAIL_FLAG: ${{ inputs.fastfail == true && 'true' || 'false' }}
+         DEBUG_FLAG: ${{ (inputs.debugLogs == true || runner.debug == '1' || vars.ACTIONS_STEP_DEBUG == 'true') && 'true' || 'false' }}
         run: ${{ github.workspace }}/.github/workflows/scripts/set-build-variables.py
 
       - name: Validate branch name
         env:
+         DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
          BRANCH_NAME: ${{ steps.setBuildVars.outputs.branchName }}
         run: |
          ${DEBUG_MODE}
@@ -42,6 +55,7 @@ jobs:
 
       - name: Setup Docker
         env:
+         DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
          NETWORK_ID: ${{ steps.setBuildVars.outputs.networkId }}
         run: |
          ${DEBUG_MODE}
@@ -50,10 +64,12 @@ jobs:
 
       - name: Test
         env:
+         DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
          BRANCH_NAME: ${{ steps.setBuildVars.outputs.branchName }}
          JENKINS_UID: ${{ steps.setBuildVars.outputs.jenkinsUid }}
          JENKINS_GID: ${{ steps.setBuildVars.outputs.jenkinsGid }}
          NETWORK_ID: ${{ steps.setBuildVars.outputs.networkId }}
+         FASTFAIL: ${{ steps.setBuildVars.outputs.fastfail == 'true' && '--fail-fast' || '' }}
         run: |
          ${DEBUG_MODE}
          echo "::group::docker build cynergibasedb"
@@ -94,7 +110,7 @@ jobs:
             [[ '$DEBUG_MODE' != '' ]] && export VERBOSE_MODE=1
 
             ./gradlew --no-daemon --stacktrace clean buildApiDocs 2>&1 1>/dev/null
-            ./gradlew --no-daemon test jacocoTestReport
+            ./gradlew --no-daemon test ${FASTFAIL} jacocoTestReport
          "
          echo "::endgroup::"
 
@@ -102,6 +118,7 @@ jobs:
         id: buildDeployArtifact
         if: ${{ (success() || failure()) && steps.setBuildVars.outputs.releaseEnvironment != '' }}
         env:
+         DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
          BRANCH_NAME: ${{ steps.setBuildVars.outputs.branchName }}
          JENKINS_UID: ${{ steps.setBuildVars.outputs.jenkinsUid }}
          JENKINS_GID: ${{ steps.setBuildVars.outputs.jenkinsGid }}
@@ -133,6 +150,8 @@ jobs:
         id: prepareBuildReports
         if: ${{ success() || failure() }}
         continue-on-error: true
+        env:
+         DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
         run: |
          ${DEBUG_MODE}
          reportsPath="${GITHUB_WORKSPACE}/build/reports"
@@ -166,6 +185,7 @@ jobs:
       continue-on-error: true
       steps:
          - env:
+            DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
             GITHUB_TOKEN: ${{ secrets.READONLY_HTI_PAT }}
            run: |
             ${DEBUG_MODE}
