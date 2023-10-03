@@ -13,6 +13,10 @@ class EmployeeService @Inject constructor(
    private val employeeRepository: EmployeeRepository
 ) {
 
+   fun fetchOne(id: Long, company: CompanyEntity): EmployeeEntity {
+      return employeeRepository.findOne(id, company)!!
+
+   }
    fun fetchAll(pageRequest: EmployeePageRequest, company: CompanyEntity): Page<EmployeeValueObject> {
       val employees = employeeRepository.findAll(pageRequest, company)
 

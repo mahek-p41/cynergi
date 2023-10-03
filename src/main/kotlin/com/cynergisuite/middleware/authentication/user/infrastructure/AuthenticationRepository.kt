@@ -424,7 +424,7 @@ abstract class AuthenticationRepository @Inject constructor(
       val company = companyRepository.findOne(companyId) ?: throw Exception("Unable to find company")
       val employee = employeeRepository.findOne(employeeId, employeeType, company) ?: throw Exception("Unable to find employee")
       val location = locationRepository.findOne(storeNumber, company) ?: throw Exception("Unable to find store from authentication")
-      val securityGroups = securityGroupRepository.findAll(employeeId, company.id!!)
+      val securityGroups = securityGroupRepository.findByEmployee(employeeId, company.id!!)
       val department = employee.department
 
       return AuthenticatedEmployee(

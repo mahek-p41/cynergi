@@ -133,6 +133,7 @@ class EmployeeRepository @Inject constructor(
          where.append(and).append(" $fieldToSearch <-> :search_query < 0.9 ")
          sortBy = " $fieldToSearch <-> :search_query "
       }
+      where.append(and).append(" emp_alternative_store_indicator = 'A' ")
 
       val pagedQuery = StringBuilder("${employeeBaseQuery()} $where ")
 
@@ -316,7 +317,7 @@ class EmployeeRepository @Inject constructor(
       storeColumnPrefix: String = "store_"
    ): EmployeeEntity {
       val company = companyRepository.mapRow(rs, companyColumnPrefix, companyAddressColumnPrefix)
-      val securityGroups = securityGroupRepository.findAll(rs.getLong("${columnPrefix}id"), company.id!!)
+      val securityGroups = securityGroupRepository.findByEmployee(rs.getLong("${columnPrefix}id"), company.id!!)
       return EmployeeEntity(
          id = rs.getLong("${columnPrefix}id"),
          type = rs.getString("${columnPrefix}type"),
