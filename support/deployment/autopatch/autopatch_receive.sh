@@ -44,6 +44,7 @@ LOGGER=/tmp/autoBuild2.log; chmod 666 $LOGGER
 TRIGGER=/tmp/autoBuild.trigger
 TAR_CLIENT="/tmp/cynergi-client-current.tar.xz"
 TAR_MIDDLE="/tmp/cynergi-middleware-current.tar.xz"
+JAR_MIDDLE="/opt/cyn/v01/cynmid/cynergi-middleware.jar"
 
 if [ -f $TRIGGER ]
 then
@@ -65,6 +66,7 @@ then
 
     initctl status cynergi-client >> $MAIL_BODY
     initctl status cynergi-middleware >> $MAIL_BODY
+    unzip -p "$JAR_MIDDLE" META-INF/MANIFEST.MF >> "$MAIL_BODY"
     sendEmail "Continuous build finished for $NOTIFY"
     rm -f $MAIL_BODY
   fi
