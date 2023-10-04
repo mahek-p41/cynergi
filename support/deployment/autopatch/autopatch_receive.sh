@@ -38,7 +38,7 @@ install_this_system() {
   fi
 }
 sendEmail() {
-  sh /opt/cyn/v01/SCRIPTS/ht.cyn_email.sh -s "$*" -to montem@hightouchinc.com,garym@hightouchinc.com,vun@hightouchinc.com,grantg@hightouchinc.com -fb $MAIL_BODY
+  sh /opt/cyn/v01/SCRIPTS/ht.cyn_email.sh -s "$*" -to '7217b804.hightouchinc.com@amer.teams.ms' -fb $MAIL_BODY
 }
 LOGGER=/tmp/autoBuild2.log; chmod 666 $LOGGER
 TRIGGER=/tmp/autoBuild.trigger
