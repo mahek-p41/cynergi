@@ -106,109 +106,160 @@ class VendorService @Inject constructor(
       var autoSubmitPO: String
       var vendorGroup: String
 
+      var normalDays: String = ""
+      var minimumAmount: String = ""
+      var freeShipAmount: String = ""
+      var bumpPercent: String = ""
+      var number: String = ""
+
+      var minimumQuantity: String = ""
+      var freeShipQuantity: String = ""
+
+      if (vendor.number != null) {
+         number = vendor.number.toString()
+      } else {
+         number = ""
+      }
+
+      if (vendor.minimumQuantity != null) {
+         minimumQuantity = vendor.minimumQuantity.toString()
+      } else {
+         minimumQuantity = ""
+      }
+
+      if (vendor.freeShipQuantity != null) {
+         freeShipQuantity = vendor.freeShipQuantity.toString()
+      } else {
+         freeShipQuantity = ""
+      }
+
+      if (vendor.normalDays != null) {
+         normalDays = vendor.normalDays.toString()
+      } else {
+         normalDays = ""
+      }
+
+      if (vendor.minimumAmount != null) {
+         minimumAmount = vendor.minimumAmount.toString()
+      } else {
+         minimumAmount = ""
+      }
+
+      if (vendor.freeShipAmount != null) {
+         freeShipAmount = vendor.freeShipAmount.toString()
+      } else {
+         freeShipAmount = ""
+      }
+
+      if (vendor.bumpPercent != null) {
+         bumpPercent = vendor.bumpPercent.toString()
+      } else {
+         bumpPercent = ""
+      }
+
       if (vendor.accountNumber != null) {
-         accountNumber = vendor.accountNumber!!.toString()
+         accountNumber = vendor.accountNumber.toString()
       } else {
          accountNumber = ""
       }
 
-      if (vendor.returnPolicy!!) {
+      if (vendor.returnPolicy) {
          returnPolicy = "Y"
       } else {
          returnPolicy = "N"
       }
 
-      if (vendor.vendor1099!!) {
+      if (vendor.vendor1099) {
          vendor1099 = "Y"
       } else {
          vendor1099 = "N"
       }
 
       if (vendor.federalIdNumber != null) {
-         FIN = vendor.federalIdNumber!!
+         FIN = vendor.federalIdNumber
       } else {
          FIN = ""
       }
 
       if (vendor.salesRepresentativeName != null) {
-         salesRepName = vendor.salesRepresentativeName!!
+         salesRepName = vendor.salesRepresentativeName
       } else {
          salesRepName = ""
       }
 
       if (vendor.salesRepresentativeFax != null) {
-         salesRepFax = vendor.salesRepresentativeFax!!
+         salesRepFax = vendor.salesRepresentativeFax
       } else {
          salesRepFax = ""
       }
 
-      if (vendor.separateCheck!!) {
+      if (vendor.separateCheck) {
          separateCheck = "Y"
       } else {
          separateCheck = "N"
       }
 
       if (vendor.freightPercent != null) {
-         freightPct = vendor.freightPercent!!.toString()
+         freightPct = vendor.freightPercent.toString()
       } else {
          freightPct = "0"
       }
 
       if (vendor.freightAmount != null) {
-         freightAmt = vendor.freightAmount!!.toString()
+         freightAmt = vendor.freightAmount.toString()
       } else {
          freightAmt = "0"
       }
 
-      if (vendor.chargeInventoryTax1!!) {
+      if (vendor.chargeInventoryTax1) {
          chgInvTax1 = "Y"
       } else {
          chgInvTax1 = "N"
       }
 
-      if (vendor.chargeInventoryTax2!!) {
+      if (vendor.chargeInventoryTax2) {
          chgInvTax2 = "Y"
       } else {
          chgInvTax2 = "N"
       }
 
-      if (vendor.chargeInventoryTax3!!) {
+      if (vendor.chargeInventoryTax3) {
          chgInvTax3 = "Y"
       } else {
          chgInvTax3 = "N"
       }
 
-      if (vendor.chargeInventoryTax4!!) {
+      if (vendor.chargeInventoryTax4) {
          chgInvTax4 = "Y"
       } else {
          chgInvTax4 = "N"
       }
 
-      if (vendor.federalIdNumberVerification!!) {
+      if (vendor.federalIdNumberVerification) {
          FINVerify = "Y"
       } else {
          FINVerify = "N"
       }
 
       if (vendor.purchaseOrderSubmitEmailAddress != null) {
-         POSubmitEmail = vendor.purchaseOrderSubmitEmailAddress!!
+         POSubmitEmail = vendor.purchaseOrderSubmitEmailAddress
       } else {
          POSubmitEmail = ""
       }
 
-      if (vendor.allowDropShipToCustomer!!) {
+      if (vendor.allowDropShipToCustomer) {
          allowDropshipToCust = "Y"
       } else {
          allowDropshipToCust = "N"
       }
 
-      if (vendor.autoSubmitPurchaseOrder!!) {
+      if (vendor.autoSubmitPurchaseOrder) {
          autoSubmitPO = "Y"
       } else {
          autoSubmitPO = "N"
       }
 
-      freightOnboardType = vendor.freightOnboardType!!.value!!
+      freightOnboardType = vendor.freightOnboardType.value
 
       freightCalcMethodType = vendor.freightCalcMethodType.value
 
@@ -301,26 +352,26 @@ class VendorService @Inject constructor(
 
          data = listOf(
             task,
-            vendor.number.toString(),
+            number,
             vendor.name,
             accountNumber,
             payToNumber,
             freightOnboardType,
             vendor.paymentTerm.description, //Will use this description to look up the correct record in the ISAM
-            vendor.normalDays.toString(),
+            normalDays,
             returnPolicy,
             vendor.shipVia.description, //Will use this description to look up the correct record in the ISAM
             vendorGroup, //10 char here, but 8 in ISAM. May see issues.
-            vendor.minimumQuantity.toString(),
-            vendor.minimumAmount.toString(),
-            vendor.freeShipQuantity.toString(),
-            vendor.freeShipAmount.toString(),
+            minimumQuantity,
+            minimumAmount,
+            freeShipQuantity,
+            freeShipAmount,
             vendor1099,
             FIN,
             salesRepName,
             salesRepFax,
             separateCheck,
-            vendor.bumpPercent.toString(),
+            bumpPercent,
             freightCalcMethodType,
             freightPct,
             freightAmt,
