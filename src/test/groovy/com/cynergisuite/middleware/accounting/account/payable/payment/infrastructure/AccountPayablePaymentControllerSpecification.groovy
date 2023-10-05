@@ -1037,8 +1037,8 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       then:
       pageOneResult.requested.with { new AccountPayableListPaymentsFilterRequest(it) } == pageOne
-      pageOneResult.totalElements == 75
-      pageOneResult.totalPages == 15
+      pageOneResult.totalElements == 15
+      pageOneResult.totalPages == 3
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements.size() == 5
@@ -1064,8 +1064,8 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       then:
       pageTwoResult.requested.with { new AccountPayableListPaymentsFilterRequest(it) } == pageTwo
-      pageTwoResult.totalElements == 50
-      pageTwoResult.totalPages == 10
+      pageTwoResult.totalElements == 10
+      pageTwoResult.totalPages == 2
       pageTwoResult.first == true
       pageTwoResult.last == false
       pageTwoResult.elements.size() == 5
@@ -1091,10 +1091,10 @@ class AccountPayablePaymentControllerSpecification extends ControllerSpecificati
 
       then:
       pageLastResult.requested.with { new AccountPayableListPaymentsFilterRequest(it) } == pageLast
-      pageLastResult.totalElements == 25
-      pageLastResult.totalPages == 5
+      pageLastResult.totalElements == 5
+      pageLastResult.totalPages == 1
       pageLastResult.first == true
-      pageLastResult.last == false
+      pageLastResult.last == true
       pageLastResult.elements.size() == 5
       pageLastResult.elements.eachWithIndex { result, index ->
          with(result) {
