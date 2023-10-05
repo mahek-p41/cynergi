@@ -64,9 +64,12 @@ then
   then
     openssl genrsa -out /opt/cyn/v01/cynmid/jwt.pem 2048 1>/dev/null 2>/dev/null
 
-    initctl status cynergi-client >> $MAIL_BODY
-    initctl status cynergi-middleware >> $MAIL_BODY
-    unzip -p "$JAR_MIDDLE" META-INF/MANIFEST.MF >> "$MAIL_BODY"
+    {
+      initctl status cynergi-client
+      cat /opt/cyn/v01/cynmid/buildlog || echo "WARNING: File '/opt/cyn/v01/cynmid/buildlog' not found"
+      initctl status cynergi-middleware
+      unzip -p "$JAR_MIDDLE" META-INF/MANIFEST.MF || echo "WARNING: Failed to extract 'META-INF/MANIFEST.MF' from '$JAR_MIDDLE'"
+    } >> $MAIL_BODY
     sendEmail "Continuous build finished for $NOTIFY"
     rm -f $MAIL_BODY
   fi
