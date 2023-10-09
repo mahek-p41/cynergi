@@ -1,0 +1,91 @@
+name: Validate Branch Name
+run-name: 'Validating branch name: ${{ github.head_ref || github.ref_name }}'
+on:
+  create:
+  pull_request:
+    types: [opened, synchronize, reopened]
+env:
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  BASH_EXPORT_OVERRIDE: |
+    # override the export builtin
+    function export() {
+      builtin export "${@?}"
+      [[ "$1" =~ ^- ]] && return 0
+      if [[ "$1" =~ = ]]; then
+        echo "$1" >> "$GITHUB_ENV"
+      else
+        echo "$1=${!1}" >> "$GITHUB_ENV"
+      fi
+    }
+    export -f export
+jobs:
+  checkBranchName:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          show-progress: false
+
+      - name: Validate branch name
+        id: validate
+        run: |
+          #!/usr/bin/env bash
+          ${{ env.BASH_EXPORT_OVERRIDE }}
+
+          DEBUG_FLAG='false'
+          if [[ '${{ (runner.debug == '1' || vars.ACTIONS_STEP_DEBUG == 'true') && 'true' || 'false' }}' == 'true' ]]; then
+            DEBUG_FLAG='true'
+            set -x
+          fi
+          export DEBUG_FLAG
+
+          source ${{ github.workspace }}/.github/workflows/scripts/validate-branch-name
+          [[ "$VALID_BRANCH_NAME" != "true" ]] && exit 1
+          export NEW_BASE_BRANCH_NAME="base-branch-here"
+
+          randDelim=$(base64 <<<"$SRANDOM")
+          {
+            echo "SUMMARY_HEADER<<$randDelim"
+            echo "## :tada: Base branch prefix detected: \`${BASE_BRANCH_NAME}\` :tada:"
+            echo ""
+            echo "$randDelim"
+          } >> "$GITHUB_ENV"
+
+      - name: Detect base branch candidate
+        id: baseBranch
+        if: ${{ failure() }}
+        run: |
+          #!/usr/bin/env bash
+          ${{ env.BASH_EXPORT_OVERRIDE }}
+
+          source ${{ github.workspace }}/.github/workflows/scripts/detect-base-branch
+          export NEW_BASE_BRANCH_NAME="${BASE_BRANCH_NAME}"
+
+          randDelim=$(base64 <<<"$SRANDOM")
+          {
+            echo "SUMMARY_HEADER<<$randDelim"
+            echo "## :warning: Branch Name Validation Failed: \`$BRANCH_NAME\` :warning:"
+            echo ""
+            echo "Your branch name, \`$BRANCH_NAME\`, does not have a prefix. It looks like this branch may have been created from the \`$BASE_BRANCH_NAME\` branch."
+            echo ""
+            echo "$randDelim"
+          } >> "$GITHUB_ENV"
+
+      - name: Summarize validation results
+        if: ${{ success() || failure() }}
+        run: |
+          #!/usr/bin/env bash
+
+          {
+            echo "${SUMMARY_HEADER}"
+            echo "Cynergi E2E tests will be triggered and will attempt to use the \`${BRANCH_NAME}\` branch of \`cynergi-client\` and the \`${BASE_BRANCH_NAME}\` branches of the \`cynergi-e2e\` and \`cynergi-middleware\` repos."
+            echo ""
+            echo "If this is not the correct combination of branches, you should rename your branch with the correct prefix to ensure E2E tests are run with compatible versions of the other repos. To rename your branch both locally and remotely, you can run the following commands from a bash prompt (replacing \`${NEW_BASE_BRANCH_NAME}\` as needed):"
+            echo "\`\`\`bash"
+            echo "# git switch ${BRANCH_NAME}"
+            echo "# git branch --move ${BRANCH_NAME} ${BRANCH_FOLDER}${NEW_BASE_BRANCH_NAME}.${BRANCH_CORE_NAME}"
+            echo "# git push --set-upstream origin ${BRANCH_FOLDER}${NEW_BASE_BRANCH_NAME}.${BRANCH_CORE_NAME}"
+            echo "# git push --delete origin ${BRANCH_NAME}"
+            echo "\`\`\`"
+          } >> "$GITHUB_STEP_SUMMARY"
