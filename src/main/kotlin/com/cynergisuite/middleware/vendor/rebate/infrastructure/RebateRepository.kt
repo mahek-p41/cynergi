@@ -176,7 +176,7 @@ class RebateRepository @Inject constructor(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY r_${page.snakeSortBy()} ${page.sortDirection()}
+            ORDER BY r_description ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
          params,
