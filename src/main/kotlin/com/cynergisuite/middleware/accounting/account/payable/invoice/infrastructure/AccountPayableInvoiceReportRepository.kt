@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastru
 
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.extensions.getBigDecimalOrNull
+import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
@@ -85,7 +86,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
             JOIN account_payable_invoice_status_type_domain invStatus   ON invStatus.id = apInvoice.status_id
             JOIN vendor                                                 ON apInvoice.vendor_id = vendor.id AND vendor.deleted = FALSE
             LEFT JOIN vendor_group vgrp                                 ON vgrp.id = vendor.vendor_group_id AND vgrp.deleted = FALSE
-            JOIN purchase_order_header poHeader                         ON poHeader.id = apInvoice.purchase_order_id AND poHeader.deleted = FALSE
+            LEFT JOIN purchase_order_header poHeader                    ON poHeader.id = apInvoice.purchase_order_id AND poHeader.deleted = FALSE
             LEFT JOIN account_payable_payment_detail pmtDetail          ON apInvoice.id = pmtDetail.account_payable_invoice_id
             LEFT JOIN account_payable_payment pmt                       ON pmtDetail.payment_number_id = pmt.id
             LEFT JOIN account_payable_payment_type_type_domain pmtType  ON pmt.account_payable_payment_type_id = pmtType.id
@@ -185,8 +186,9 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          params["useTax"] = filterRequest.useTax
          whereClause.append(" AND apInvoice.use_tax_indicator = :useTax ")
       }
-      var ordering = " ORDER BY poHeader.number ${filterRequest.sortDirection()}, apInvoice.id, pmt.id, pmtDetail.id "
+      val ordering = " ORDER BY poHeader.number ${filterRequest.sortDirection()}, apInvoice.id, pmt.id, pmtDetail.id "
 
+      // todo add apControl.purchase_order_number_required_indicator_type_id in (1, 3) if necessary
       jdbc.query(
          """
             ${selectBaseQuery()}
@@ -213,7 +215,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
             tempInvoice?.distDetails?.add(mapDistDetail(rs))
             tempInvoice?.inventories?.add(mapInventory(rs))
 
-            val tempPO = if (currentPO?.poHeaderNumber != rs.getInt("poHeader_number")) {
+            val tempPO = if (currentPO?.poHeaderNumber != rs.getIntOrNull("poHeader_number")) {
                val localPO = mapPO(rs)
                purchaseOrders.add(localPO)
                currentPO = localPO
@@ -356,7 +358,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
       rs: ResultSet,
    ): AccountPayableInvoiceReportPoWrapper {
       return AccountPayableInvoiceReportPoWrapper(
-         poHeaderNumber = rs.getInt("poHeader_number"),
+         poHeaderNumber = rs.getIntOrNull("poHeader_number"),
       )
    }
 
