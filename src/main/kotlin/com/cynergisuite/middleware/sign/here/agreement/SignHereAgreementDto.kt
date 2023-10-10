@@ -28,6 +28,8 @@ data class SignHereAgreementDto(
    val timeCreated: OffsetDateTime,
 
    @field:Schema(name = "customerName", required = false, nullable = true, description = "Customer name")
-   val customerName: String? = null
+   val customerName: String? = null,
 
+   @field:Schema(name = "status", required = false, nullable = true, description = "System status of agreement")
+   val status: String? = null,
 )

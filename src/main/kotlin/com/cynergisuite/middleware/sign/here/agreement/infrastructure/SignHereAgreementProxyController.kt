@@ -52,7 +52,8 @@ class SignHereAgreementProxyController @Inject constructor(
                customerNumber = doc.meta["Customer-No"]?.toString() ?: agreementSigningRepository.findCustomerNumberFromSignatureId(doc.id!!),
                agreementType = doc.meta["Agreement-Type"]?.toString() ?: agreementSigningRepository.findAgreementTypeFromSignatureId(doc.id!!),
                timeCreated = doc.timeCreated!!,
-               customerName = doc.signingDetail?.name
+               customerName = doc.signingDetail?.name,
+               status = doc.status?.value
             )
          }
       } else {

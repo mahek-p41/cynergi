@@ -5,6 +5,7 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.sign.here.DocumentPageRequest
+import com.cynergisuite.middleware.sign.here.agreement.DocumentSignatureStatus
 import com.cynergisuite.middleware.sign.here.associated.AssociatedDetailDto
 import com.cynergisuite.middleware.sign.here.agreement.DocumentSignatureRequestDto
 import com.cynergisuite.middleware.sign.here.agreement.DocumentSignatureSigningDetailDto
@@ -70,7 +71,8 @@ class SignHereAgreementProxyControllerSpecification extends ControllerSpecificat
                   'Agreement-No': '987654321',
                   'Customer-No': '123456789',
                   'Agreement-Type': 'R'
-               ]
+               ],
+               new DocumentSignatureStatus("CERTIFIED", "Document Certified")
             ),
          ], new DocumentPageRequest(), 1, 1, true, true)
       )
