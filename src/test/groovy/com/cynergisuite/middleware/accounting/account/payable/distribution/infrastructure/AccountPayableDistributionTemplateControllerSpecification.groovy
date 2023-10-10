@@ -58,7 +58,7 @@ class AccountPayableDistributionTemplateControllerSpecification extends Controll
    void "fetch all" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final apDistributions = dataLoaderService.stream(12,company).toList()
+      final apDistributions = dataLoaderService.stream(12,company).sorted { o1, o2 -> o1.name <=> o2.name }.toList()
       def pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       def pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       def pageLast = new StandardPageRequest(3, 5, "id", "ASC")

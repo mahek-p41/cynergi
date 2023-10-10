@@ -117,7 +117,7 @@ class VendorGroupRepository @Inject constructor(
          """
          ${baseSelectQuery()}
          WHERE comp.id = :comp_id AND vgrp.deleted = FALSE
-         ORDER BY vgrp.${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
+         ORDER BY vgrp.description ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(

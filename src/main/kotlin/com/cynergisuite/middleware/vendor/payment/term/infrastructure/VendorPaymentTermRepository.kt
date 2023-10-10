@@ -155,7 +155,7 @@ class VendorPaymentTermRepository @Inject constructor(
             FROM vendor_payment_term vpt
                JOIN company comp ON vpt.company_id = comp.id AND comp.deleted = FALSE
             WHERE comp.id = :comp_id AND vpt.deleted = false
-            ORDER BY vpt_${page.snakeSortBy()} ${page.sortDirection()}
+            ORDER BY vpt_description ${page.sortDirection()}
             LIMIT :limit OFFSET :offset
          )
          SELECT
@@ -170,7 +170,7 @@ class VendorPaymentTermRepository @Inject constructor(
             vpts.schedule_order_number AS vpts_schedule_order_number
          FROM paged AS p
             LEFT OUTER JOIN vendor_payment_term_schedule vpts ON p.vpt_id = vpts.vendor_payment_term_id AND vpts.deleted = FALSE
-         ORDER BY vpt_${page.snakeSortBy()}, vpts.id ${page.sortDirection()}
+         ORDER BY vpt_description, vpts.id ${page.sortDirection()}
       """
 
       logger.debug("find all vendor payment terms {}/{}", sql, params)
