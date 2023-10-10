@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.deposit.infrastructure
 
 import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.StagingDepositFilterRequest
 import com.cynergisuite.domain.StagingStatusFilterRequest
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.AccountingDetailWrapper
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositDTO
@@ -189,17 +190,17 @@ class StagingDepositController @Inject constructor(
    fun dayCriteria(
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false)
       @Valid @QueryValue("pageRequest")
-      pageRequest: StagingDepositPageRequest,
+      filterRequest: StagingDepositFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
-      logger.info("Move Accounting Details Staging to Pending Journal Entries by day with criteria {}", pageRequest)
+      logger.info("Move Accounting Details Staging to Pending Journal Entries by day with criteria {}", filterRequest)
 
       val user = userService.fetchUser(authentication)
 
-      val page = stagingDepositService.fetchAll(user.myCompany(), pageRequest)
-      val idList = page.elements.map { it.id }.toList()
-      if (page.elements.isNotEmpty()) {
+      val filteredList = stagingDepositService.fetchAll(user.myCompany(), filterRequest)
+      val idList = filteredList.map { it.id }.toList()
+      if (filteredList.isNotEmpty()) {
          stagingDepositService.postByDate(user.myCompany(), idList, user.isCynergiAdmin())
       } else throw NotFoundException("No elements found to post to GL")
    }
@@ -244,19 +245,19 @@ class StagingDepositController @Inject constructor(
    fun monthCriteria(
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false)
       @Valid @QueryValue("pageRequest")
-      pageRequest: StagingDepositPageRequest,
+      filterRequest: StagingDepositFilterRequest,
       @QueryValue
       lastDayOfMonth: String,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
-      logger.info("Move Accounting Details Staging to Pending Journal Entries by month with criteria {}", pageRequest)
+      logger.info("Move Accounting Details Staging to Pending Journal Entries by month with criteria {}", filterRequest)
       val date = LocalDate.parse(lastDayOfMonth, DateTimeFormatter.ISO_LOCAL_DATE)
       val user = userService.fetchUser(authentication)
-      val page = stagingDepositService.fetchAll(user.myCompany(), pageRequest)
-      val idList = page.elements.map { it.id }.toList()
+      val filteredList = stagingDepositService.fetchAll(user.myCompany(), filterRequest)
+      val idList = filteredList.map { it.id }.toList()
 
-      if(page.elements.isNotEmpty()) {
+      if(filteredList.isNotEmpty()) {
          stagingDepositService.postByMonth(user.myCompany(), idList, date, user.isCynergiAdmin())
       } else throw NotFoundException("No elements found to post to GL")
    }
