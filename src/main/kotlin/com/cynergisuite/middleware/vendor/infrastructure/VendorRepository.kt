@@ -764,10 +764,8 @@ class VendorRepository @Inject constructor(
 
             var invoiceFlag = false
             mapRowInvoiceDetail(rs, "apInvoiceDetail_").let {
-               //if (it.invoiceStatus.id == 2) {
-                  tempVendor.invoices ?.add(it)
-                  invoiceFlag = true
-               //}
+               tempVendor.invoices?.add(it)
+               invoiceFlag = true
 
                if (invoiceFlag) {
                   //We need to add 1099_invdist_distribution_amount to (1099_apInvoice_discount_taken * -1)

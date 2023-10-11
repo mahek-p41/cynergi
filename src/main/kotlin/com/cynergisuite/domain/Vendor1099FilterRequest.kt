@@ -23,7 +23,7 @@ class Vendor1099FilterRequest(
 
    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
    @field:NotNull
-   @field:Schema(name = "form1099Type", description = "The beginning vendor account number", required = true)
+   @field:Schema(name = "form1099Type", description = "The form 1099 type", required = true)
    var form1099Type: String? = null,
 
    @JsonInclude(JsonInclude.Include.NON_DEFAULT)

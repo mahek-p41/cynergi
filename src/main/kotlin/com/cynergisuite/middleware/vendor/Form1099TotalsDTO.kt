@@ -10,52 +10,52 @@ data class Form1099TotalsDTO(
    @field:Schema(description = "1099 Field 1")
    var ten99Field1: BigDecimal = BigDecimal.ZERO,
 
-   @field:Schema(description = "1099 Field ")
+   @field:Schema(description = "1099 Field 2")
    var ten99Field2: BigDecimal = BigDecimal.ZERO,
 
-   @field:Schema(description = "1099 Field ")
+   @field:Schema(description = "1099 Field 3")
    var ten99Field3: BigDecimal = BigDecimal.ZERO,
 
-   @field:Schema(description = "1099 Field ")
+   @field:Schema(description = "1099 Field 4")
    var ten99Field4: BigDecimal = BigDecimal.ZERO,
 
-   @field:Schema(description = "1099 Field ")
+   @field:Schema(description = "1099 Field 5")
    var ten99Field5: BigDecimal = BigDecimal.ZERO,
 
-   @field:Schema(description = "1099 Field ")
+   @field:Schema(description = "1099 Field 6")
    var ten99Field6: BigDecimal = BigDecimal.ZERO,
 
-   @field:Schema(description = "1099 Field ")
+   @field:Schema(description = "1099 Field 7")
    var ten99Field7: BigDecimal = BigDecimal.ZERO,
 
-   @field:Schema(description = "1099 Field ")
+   @field:Schema(description = "1099 Field 8")
    var ten99Field8: BigDecimal = BigDecimal.ZERO,
 
-   @field:Schema(description = "1099 Field ")
+   @field:Schema(description = "1099 Field 9")
    var ten99Field9: BigDecimal = BigDecimal.ZERO,
 
-   @field:Schema(description = "1099 Field ")
+   @field:Schema(description = "1099 Field 10")
    var ten99Field10: BigDecimal = BigDecimal.ZERO,
 
-   @field:Schema(description = "1099 Field ")
+   @field:Schema(description = "1099 Field 11")
    var ten99Field11: BigDecimal = BigDecimal.ZERO,
 
-   @field:Schema(description = "1099 Field ")
+   @field:Schema(description = "1099 Field 12")
    var ten99Field12: BigDecimal = BigDecimal.ZERO,
 
-   @field:Schema(description = "1099 Field ")
+   @field:Schema(description = "1099 Field 13")
    var ten99Field13: BigDecimal = BigDecimal.ZERO,
 
-   @field:Schema(description = "1099 Field ")
+   @field:Schema(description = "1099 Field 14")
    var ten99Field14: BigDecimal = BigDecimal.ZERO,
 
-   @field:Schema(description = "1099 Field ")
+   @field:Schema(description = "1099 Field 15")
    var ten99Field15: BigDecimal = BigDecimal.ZERO,
 
-   @field:Schema(description = "1099 Field ")
+   @field:Schema(description = "1099 Field 16")
    var ten99Field16: BigDecimal = BigDecimal.ZERO,
 
-   @field:Schema(description = "1099 Field ")
+   @field:Schema(description = "1099 Field 17")
    var ten99Field17: BigDecimal = BigDecimal.ZERO,
 
    @field:Schema(description = "Grand Total")
