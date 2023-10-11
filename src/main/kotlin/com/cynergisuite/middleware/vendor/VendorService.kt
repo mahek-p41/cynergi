@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.vendor
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.middleware.accounting.account.AccountService
+import com.cynergisuite.domain.Vendor1099FilterRequest
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorPageRequest
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
@@ -76,6 +76,17 @@ class VendorService @Inject constructor(
       if (processUpdateIsamVendor) {
          vendorToISAM("D", deleletedVendor!!, company)
       }
+   }
+
+   fun fetch1099Report(company: CompanyEntity, filterRequest: Vendor1099FilterRequest): Form1099ReportDTO {
+      return vendorRepository.fetch1099Report(company, filterRequest)
+      //As part of CYN-1956, the below functionality will be added
+      //val reportData = vendorRepository.fetch1099Report(company, filterRequest)
+      //return create1099Report(reportData)
+   }
+
+   fun fetch1099Form(company: CompanyEntity, filterRequest: Vendor1099FilterRequest): Form1099ReportDTO {
+      return vendorRepository.fetch1099Report(company, filterRequest)
    }
 
    fun vendorToISAM(task: String, vendor: VendorEntity, company: CompanyEntity) {
