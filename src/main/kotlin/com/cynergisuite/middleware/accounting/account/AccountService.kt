@@ -31,7 +31,8 @@ class AccountService @Inject constructor(
    private val accountValidator: AccountValidator,
    private val bankRepository: BankRepository,
    private val localizationService: LocalizationService,
-   @Value("\${cynergi.process.update.isam.account}") private val processUpdateIsamAccount: Boolean
+   @Value("\${cynergi.process.update.isam.account}") private val processUpdateIsamAccount: Boolean,
+   @Value("\${cynergi.process.update.isam.script.directory}") private val scriptDirectory: String
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountService::class.java)
 
@@ -152,7 +153,7 @@ class AccountService @Inject constructor(
             fileWriter.close()
             csvPrinter!!.close()
             val processExecutor: ProcessExecutor = ProcessExecutor()
-               .command("/bin/bash", "/usr/bin/ht.updt_isam_account.sh", fileName.canonicalPath, dataset)
+               .command("/bin/bash", "$scriptDirectory/ht.updt_isam_account.sh", fileName.canonicalPath, dataset)
                .exitValueNormal()
                .timeout(5, TimeUnit.SECONDS)
                .readOutput(true)
