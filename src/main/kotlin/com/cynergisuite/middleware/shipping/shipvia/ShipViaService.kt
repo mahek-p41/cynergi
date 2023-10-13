@@ -23,7 +23,8 @@ import java.util.concurrent.TimeUnit
 class ShipViaService @Inject constructor(
    private val shipViaRepository: ShipViaRepository,
    private val shipViaValidator: ShipViaValidator,
-   @Value("\${cynergi.process.update.isam.shipvia}") private val processUpdateIsamShipVia: Boolean
+   @Value("\${cynergi.process.update.isam.shipvia}") private val processUpdateIsamShipVia: Boolean,
+   @Value("\${cynergi.process.update.isam.script.directory}") private val scriptDirectory: String
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountService::class.java)
 
@@ -102,7 +103,7 @@ class ShipViaService @Inject constructor(
             fileWriter.close()
             csvPrinter!!.close()
             val processExecutor: ProcessExecutor = ProcessExecutor()
-               .command("/bin/bash", "/usr/bin/ht.updt_isam_shipvia.sh", fileName.canonicalPath, dataset)
+               .command("/bin/bash", "$scriptDirectory/ht.updt_isam_shipvia.sh", fileName.canonicalPath, dataset)
                .exitValueNormal()
                .timeout(5, TimeUnit.SECONDS)
                .readOutput(true)

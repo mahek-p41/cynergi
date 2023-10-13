@@ -30,7 +30,8 @@ class PurchaseOrderControlService @Inject constructor(
    private val purchaseOrderControlValidator: PurchaseOrderControlValidator,
    private val purchaseOrderControlRepository: PurchaseOrderControlRepository,
    private val employeeService: EmployeeService,
-   @Value("\${cynergi.process.update.isam.poctl}") private val processUpdateIsamPoCtl: Boolean
+   @Value("\${cynergi.process.update.isam.poctl}") private val processUpdateIsamPoCtl: Boolean,
+   @Value("\${cynergi.process.update.isam.script.directory}") private val scriptDirectory: String
 ) {
    private val logger: Logger = LoggerFactory.getLogger(PurchaseOrderControlService::class.java)
 
@@ -237,7 +238,7 @@ class PurchaseOrderControlService @Inject constructor(
             fileWriter.close()
             csvPrinter!!.close()
             val processExecutor: ProcessExecutor = ProcessExecutor()
-               .command("/bin/bash", "/usr/bin/ht.updt_isam_poctl.sh", fileName.canonicalPath, dataset)
+               .command("/bin/bash", "$scriptDirectory/ht.updt_isam_poctl.sh", fileName.canonicalPath, dataset)
                .exitValueNormal()
                .timeout(5, TimeUnit.SECONDS)
                .readOutput(true)
