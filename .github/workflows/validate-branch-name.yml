@@ -42,7 +42,7 @@ jobs:
 
           source ${{ github.workspace }}/.github/workflows/scripts/validate-branch-name
           [[ "$VALID_BRANCH_NAME" != "true" ]] && exit 1
-          export NEW_BASE_BRANCH_NAME="base-branch-here"
+          export POSSIBLE_BASE_BRANCH_NAME="base-branch-here"
 
           randDelim=$(base64 <<<"$SRANDOM")
           {
@@ -60,7 +60,6 @@ jobs:
           ${{ env.BASH_EXPORT_OVERRIDE }}
 
           source ${{ github.workspace }}/.github/workflows/scripts/detect-base-branch
-          export NEW_BASE_BRANCH_NAME="${BASE_BRANCH_NAME}"
 
           randDelim=$(base64 <<<"$SRANDOM")
           {
@@ -79,13 +78,13 @@ jobs:
 
           {
             echo "${SUMMARY_HEADER}"
-            echo "Cynergi E2E tests will be triggered and will attempt to use the \`${BRANCH_NAME}\` branch of \`cynergi-client\` and the \`${BASE_BRANCH_NAME}\` branches of the \`cynergi-e2e\` and \`cynergi-middleware\` repos."
+            echo "Cynergi E2E tests will be triggered and will attempt to use the \`${BRANCH_NAME}\` branch of \`cynergi-middleware\` and the \`${BASE_BRANCH_NAME}\` branches of the \`cynergi-e2e\` and \`cynergi-client\` repos."
             echo ""
-            echo "If this is not the correct combination of branches, you should rename your branch with the correct prefix to ensure E2E tests are run with compatible versions of the other repos. To rename your branch both locally and remotely, you can run the following commands from a bash prompt (replacing \`${NEW_BASE_BRANCH_NAME}\` as needed):"
+            echo "If this is not the correct combination of branches, you should rename your branch with the correct prefix to ensure E2E tests are run with compatible versions of the other repos. To rename your branch both locally and remotely, you can run the following commands from a bash prompt (replacing \`${POSSIBLE_BASE_BRANCH_NAME}\` as needed):"
             echo "\`\`\`bash"
             echo "# git switch ${BRANCH_NAME}"
-            echo "# git branch --move ${BRANCH_NAME} ${BRANCH_FOLDER}${NEW_BASE_BRANCH_NAME}.${BRANCH_CORE_NAME}"
-            echo "# git push --set-upstream origin ${BRANCH_FOLDER}${NEW_BASE_BRANCH_NAME}.${BRANCH_CORE_NAME}"
+            echo "# git branch --move ${BRANCH_NAME} ${BRANCH_FOLDER}${POSSIBLE_BASE_BRANCH_NAME}.${BRANCH_CORE_NAME}"
+            echo "# git push --set-upstream origin ${BRANCH_FOLDER}${POSSIBLE_BASE_BRANCH_NAME}.${BRANCH_CORE_NAME}"
             echo "# git push --delete origin ${BRANCH_NAME}"
             echo "\`\`\`"
           } >> "$GITHUB_STEP_SUMMARY"
