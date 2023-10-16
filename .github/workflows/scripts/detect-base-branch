@@ -6,7 +6,7 @@
 mapfile -t baseBranchesArray < <(git branch --list | sed 's/^\*\? *//')
 
 # find the closest ancestor (comparing commit distances) of the current branch from the list of local base branches
-BASE_BRANCH_NAME=develop
+POSSIBLE_BASE_BRANCH_NAME=develop
 shortestDistance=999999999
 for branch in "${baseBranchesArray[@]}"; do
   [[ "$BRANCH_NAME" == "$branch" ]] && continue
@@ -15,8 +15,8 @@ for branch in "${baseBranchesArray[@]}"; do
 
   if [[ $baseBranchShaDistance -lt $shortestDistance ]]; then
     shortestDistance=$baseBranchShaDistance
-    BASE_BRANCH_NAME=$branch
+    POSSIBLE_BASE_BRANCH_NAME=$branch
   fi
 done
 
-export BASE_BRANCH_NAME
+export POSSIBLE_BASE_BRANCH_NAME
