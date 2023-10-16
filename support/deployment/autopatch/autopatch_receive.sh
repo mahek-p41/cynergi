@@ -66,7 +66,7 @@ then
 
     {
       initctl status cynergi-client
-      cat /opt/cyn/v01/cynmid/buildlog || echo "WARNING: File '/opt/cyn/v01/cynmid/buildlog' not found"
+      cat /opt/cyn/v01/cynclient/buildlog || echo "WARNING: File '/opt/cyn/v01/cynclient/buildlog' not found"
       initctl status cynergi-middleware
       unzip -p "$JAR_MIDDLE" META-INF/MANIFEST.MF || echo "WARNING: Failed to extract 'META-INF/MANIFEST.MF' from '$JAR_MIDDLE'"
     } >> $MAIL_BODY
