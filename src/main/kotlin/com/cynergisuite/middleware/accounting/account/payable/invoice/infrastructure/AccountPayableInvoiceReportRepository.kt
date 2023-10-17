@@ -95,7 +95,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
             JOIN account                                                ON invDist.distribution_account_id = account.id AND account.deleted = FALSE
             LEFT JOIN account_payable_control apControl                 ON invDist.distribution_account_id = apControl.general_ledger_inventory_account_id
             JOIN company comp                                           ON apInvoice.company_id = comp.id AND comp.deleted = FALSE
-            JOIN fastinfo_prod_import.inventory_vw inv ON
+            LEFT JOIN fastinfo_prod_import.inventory_vw inv ON
                   comp.dataset_code = inv.dataset
                   AND inv.invoice_number = apInvoice.invoice
                   AND CASE
