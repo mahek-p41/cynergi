@@ -19,6 +19,7 @@ import org.apache.commons.csv.CSVPrinter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.zeroturnaround.exec.ProcessExecutor
+import java.math.RoundingMode
 
 
 @Singleton
@@ -165,7 +166,7 @@ class VendorPaymentTermService @Inject constructor(
       }
 
       if (vendterm.discountPercent != null) {
-         discountPercent = vendterm.discountPercent.toString()
+         discountPercent = vendterm.discountPercent.setScale(2, RoundingMode.HALF_UP ).multiply(BigDecimal("100")).toString()
       } else {
          discountPercent = "0"
       }
