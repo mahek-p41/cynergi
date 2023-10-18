@@ -188,7 +188,6 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
       }
       val ordering = " ORDER BY poHeader.number ${filterRequest.sortDirection()}, apInvoice.id, pmt.id, pmtDetail.id "
 
-      // todo add apControl.purchase_order_number_required_indicator_type_id in (1, 3) if necessary
       jdbc.query(
          """
             ${selectBaseQuery()}
@@ -243,15 +242,23 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          }
          purchaseOrders.sortWith(compareByInvoice)
       } else if (filterRequest.snakeSortBy() == "vendor.number") {
-         val compareByVendorNumber = compareBy<AccountPayableInvoiceReportPoWrapper> {
-            it.invoices.first()!!.vendorNumber
+         purchaseOrders.sortWith(compareBy { it.invoices.first()!!.vendorNumber })
+
+         purchaseOrders.forEach { it ->
+            it.invoices.sortWith(
+               compareBy<AccountPayableInvoiceReportDTO?> { it?.vendorNumber }
+                  .thenBy { it?.invoice }
+            )
          }
-         purchaseOrders.sortWith(compareByVendorNumber)
       } else if (filterRequest.snakeSortBy() == "vendor.name") {
-         val compareByVendorName = compareBy<AccountPayableInvoiceReportPoWrapper> {
-            it.invoices.first()!!.vendorName
+         purchaseOrders.sortWith(compareBy { it.invoices.first()!!.vendorName })
+
+         purchaseOrders.forEach { it ->
+            it.invoices.sortWith(
+               compareBy<AccountPayableInvoiceReportDTO?> { it?.vendorName }
+                  .thenBy { it?.invoice }
+            )
          }
-         purchaseOrders.sortWith(compareByVendorName)
       }
 
       if (filterRequest.sortDirection() == "DESC") purchaseOrders.reverse()
