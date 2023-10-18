@@ -14,7 +14,7 @@ data class AccountPayableInvoiceReportPoWrapper(
    var poHeaderNumber: Int? = null,
 
    @field:Schema(description = "Listing of Invoices")
-   var invoices: MutableSet<AccountPayableInvoiceReportDTO?> = mutableSetOf(),
+   var invoices: MutableList<AccountPayableInvoiceReportDTO?> = mutableListOf(),
 
    ) {
 
