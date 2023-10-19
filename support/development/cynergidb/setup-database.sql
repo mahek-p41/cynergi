@@ -346,6 +346,61 @@ DECLARE
    sqlToExec VARCHAR;
    unionAll VARCHAR;
 BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW prodcmst_vw AS
+                 SELECT *
+                 FROM (';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'prodcmst_vw') THEN
+      DROP VIEW prodcmst_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+            prodcmst.id                              AS id,
+            prodcmst.prodcmst_class_code             AS class_code,
+            prodcmst.prodcmst_class_desc             AS class_desc,
+            prodcmst.prodcmst_sl_bk_start_date       AS sl_bk_start_date,
+            prodcmst.prodcmst_sl_bk_end_date         AS sl_bk_end_date,
+            prodcmst.prodcmst_if_bk_start_date       AS if_bk_start_date,
+            prodcmst.prodcmst_if_bk_end_date         AS if_bk_end_date,
+            prodcmst.prodcmst_macrs_bk_start_date    AS macrs_bk_start_date,
+            prodcmst.prodcmst_macrs_bk_end_date      AS macrs_bk_end_date,
+            prodcmst.prodcmst_macrs_tax_start_date   AS macrs_tax_start_date,
+            prodcmst.prodcmst_macrs_tax_end_date     AS macrs_tax_end_date,
+            prodcmst.prodcmst_rent_sw                AS rent_sw,
+            prodcmst.prodcmst_transition_into_sw     AS transition_into_sw,
+            prodcmst.prodcmst_transition_out_of_sw   AS transition_out_of_sw,
+            prodcmst.prodcmst_cash_sale_sw           AS cash_sale_sw,
+            prodcmst.prodcmst_allow_depr_sw          AS allow_depr_sw,
+            prodcmst.prodcmst_allow_sl_life_sw       AS allow_sl_life_sw,
+            prodcmst.created_at AT TIME ZONE ''UTC'' AS created_at,
+            prodcmst.updated_at AT TIME ZONE ''UTC'' AS updated_at,
+            prodcmst.ht_etl_source_operation         AS ht_etl_source_operation,
+            prodcmst.ht_etl_processing_stage         AS ht_etl_processing_stage,
+            prodcmst.ht_etl_z_timestamp              AS ht_etl_z_timestamp,
+            prodcmst.ht_etl_checksum                 AS ht_etl_checksum
+         FROM ' || r.schema_name || '.level1_prodcmsts prodcmst
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || ' ) prodcmst ORDER BY id DESC';
+
+   EXECUTE sqlToExec;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
    sqlToExec := 'CREATE OR REPLACE VIEW furncol_vw AS';
    unionAll := '';
 
@@ -2697,6 +2752,32 @@ CREATE FOREIGN TABLE fastinfo_prod_import.operator_vw (
     file_maintenance_security INTEGER,
     bank_reconciliation_security INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'operator_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.prodcmst_vw (
+    id BIGINT,
+    class_code VARCHAR,
+    class_desc VARCHAR,
+    sl_bk_start_date DATE,
+    sl_bk_end_date DATE,
+    if_bk_start_date DATE,
+    if_bk_end_date DATE,
+    macrs_bk_start_date DATE,
+    macrs_bk_end_date DATE,
+    macrs_tax_start_date DATE,
+    macrs_tax_end_date DATE,
+    rent_sw VARCHAR,
+    transition_into_sw VARCHAR,
+    transition_out_of_sw VARCHAR,
+    cash_sale_sw VARCHAR,
+    allow_depr_sw VARCHAR,
+    allow_sl_life_sw VARCHAR,
+    created_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ,
+    ht_etl_source_operation VARCHAR,
+    ht_etl_processing_stage INTEGER,
+    ht_etl_z_timestamp TIMESTAMPTZ,
+    ht_etl_checksum VARCHAR
+) SERVER fastinfo OPTIONS (TABLE_NAME 'prodcmst_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.furncol_vw (
     id BIGINT,
