@@ -153,19 +153,19 @@ class VendorService @Inject constructor(
       }
 
       if (vendor.minimumAmount != null) {
-         minimumAmount = vendor.minimumAmount.setScale(2, RoundingMode.HALF_UP ).multiply(BigDecimal("100")).toString()
+         minimumAmount = vendor.minimumAmount.setScale(2, RoundingMode.HALF_UP ).toString()
       } else {
          minimumAmount = ""
       }
 
       if (vendor.freeShipAmount != null) {
-         freeShipAmount = vendor.freeShipAmount.setScale(2, RoundingMode.HALF_UP ).multiply(BigDecimal("100")).toString()
+         freeShipAmount = vendor.freeShipAmount.setScale(2, RoundingMode.HALF_UP ).toString()
       } else {
          freeShipAmount = ""
       }
 
       if (vendor.bumpPercent != null) {
-         bumpPercent = vendor.bumpPercent.setScale(4, RoundingMode.HALF_UP ).multiply(BigDecimal("100")).toString()
+         bumpPercent = vendor.bumpPercent.setScale(4, RoundingMode.HALF_UP ).toString()
       } else {
          bumpPercent = ""
       }
@@ -213,13 +213,13 @@ class VendorService @Inject constructor(
       }
 
       if (vendor.freightPercent != null) {
-         freightPct = vendor.freightPercent.setScale(3, RoundingMode.HALF_UP ).multiply(BigDecimal("100")).toString()
+         freightPct = vendor.freightPercent.setScale(3, RoundingMode.HALF_UP ).toString()
       } else {
          freightPct = "0"
       }
 
       if (vendor.freightAmount != null) {
-         freightAmt = vendor.freightAmount.setScale(2, RoundingMode.HALF_UP ).multiply(BigDecimal("100")).toString()
+         freightAmt = vendor.freightAmount.setScale(2, RoundingMode.HALF_UP ).toString()
       } else {
          freightAmt = "0"
       }

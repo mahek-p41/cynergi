@@ -166,7 +166,7 @@ class VendorPaymentTermService @Inject constructor(
       }
 
       if (vendterm.discountPercent != null) {
-         discountPercent = vendterm.discountPercent.setScale(2, RoundingMode.HALF_UP ).multiply(BigDecimal("100")).toString()
+         discountPercent = vendterm.discountPercent.setScale(2, RoundingMode.HALF_UP ).toString()
       } else {
          discountPercent = "0"
       }
