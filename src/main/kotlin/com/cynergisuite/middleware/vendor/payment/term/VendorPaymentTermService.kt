@@ -81,7 +81,7 @@ class VendorPaymentTermService @Inject constructor(
       var csvPrinter: CSVPrinter? = null
       val discountMonth: String = if (vendterm.discountMonth != null) { vendterm.discountMonth.toString() } else { "0" }
       val discountDays: String = if (vendterm.discountDays != null) { vendterm.discountDays.toString() } else { "0" }
-      val discountPercent: String = if (vendterm.discountPercent != null) { vendterm.discountPercent.setScale(2, RoundingMode.HALF_UP ).multiply(BigDecimal("100")).toString() } else { "0" }
+      val discountPercent: String = if (vendterm.discountPercent != null) { vendterm.discountPercent.setScale(2, RoundingMode.HALF_UP ).toString() } else { "0" }
       var due_month_1: Int = 0
       var due_days_1: Int = 0
       var due_percent_1: BigDecimal = BigDecimal.ZERO
