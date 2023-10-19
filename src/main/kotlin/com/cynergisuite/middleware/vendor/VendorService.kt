@@ -18,6 +18,8 @@ import org.apache.commons.csv.CSVPrinter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.zeroturnaround.exec.ProcessExecutor
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Singleton
 class VendorService @Inject constructor(
@@ -151,19 +153,19 @@ class VendorService @Inject constructor(
       }
 
       if (vendor.minimumAmount != null) {
-         minimumAmount = vendor.minimumAmount.toString()
+         minimumAmount = vendor.minimumAmount.setScale(2, RoundingMode.HALF_UP ).toString()
       } else {
          minimumAmount = ""
       }
 
       if (vendor.freeShipAmount != null) {
-         freeShipAmount = vendor.freeShipAmount.toString()
+         freeShipAmount = vendor.freeShipAmount.setScale(2, RoundingMode.HALF_UP ).toString()
       } else {
          freeShipAmount = ""
       }
 
       if (vendor.bumpPercent != null) {
-         bumpPercent = vendor.bumpPercent.toString()
+         bumpPercent = vendor.bumpPercent.setScale(4, RoundingMode.HALF_UP ).toString()
       } else {
          bumpPercent = ""
       }
@@ -211,13 +213,13 @@ class VendorService @Inject constructor(
       }
 
       if (vendor.freightPercent != null) {
-         freightPct = vendor.freightPercent.toString()
+         freightPct = vendor.freightPercent.setScale(3, RoundingMode.HALF_UP ).toString()
       } else {
          freightPct = "0"
       }
 
       if (vendor.freightAmount != null) {
-         freightAmt = vendor.freightAmount.toString()
+         freightAmt = vendor.freightAmount.setScale(2, RoundingMode.HALF_UP ).toString()
       } else {
          freightAmt = "0"
       }
