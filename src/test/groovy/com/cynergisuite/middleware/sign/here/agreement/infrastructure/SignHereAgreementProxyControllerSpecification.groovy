@@ -22,6 +22,8 @@ import io.micronaut.http.HttpStatus
 import io.micronaut.security.token.jwt.render.BearerAccessRefreshToken
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
+import spock.lang.Shared
+
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -31,17 +33,21 @@ class SignHereAgreementProxyControllerSpecification extends ControllerSpecificat
    @Inject SignHereTokenTestDataLoaderService signHereTokenTestDataLoaderService
    @Inject ObjectMapper objectMapper
 
-   WireMockServer wireMockServer
+   @Shared WireMockServer wireMockServer
 
-   void setup() {
+   void setupSpec() {
       final options = new WireMockConfiguration()
-      options.port(signHerePleasePort)
+      options.port(10905)
       options.bindAddress("localhost")
       this.wireMockServer = new WireMockServer(options)
       this.wireMockServer.start()
    }
 
    void cleanup() {
+      this.wireMockServer.resetAll()
+   }
+
+   void cleanupSpec() {
       this.wireMockServer.stop()
    }
 

@@ -16,6 +16,7 @@ import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.server.types.files.StreamedFile
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
@@ -94,7 +95,7 @@ class SignHereAgreementProxyController @Inject constructor(
       documentId: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>,
-   ): Publisher<MutableHttpResponse<*>> {
+   ): StreamedFile {
       val user = userService.fetchUser(authentication) // grab the store user
 
       return signHereAgreementService.retrieveDocument(user.myLocation(), user.myCompany(), documentId, httpRequest)
