@@ -25,7 +25,8 @@ import java.math.RoundingMode
 class VendorService @Inject constructor(
    private val vendorRepository: VendorRepository,
    private val vendorValidator: VendorValidator,
-   @Value("\${cynergi.process.update.isam.vendor}") private val processUpdateIsamVendor: Boolean
+   @Value("\${cynergi.process.update.isam.vendor}") private val processUpdateIsamVendor: Boolean,
+   @Value("\${cynergi.process.update.isam.script.directory}") private val scriptDirectory: String
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorService::class.java)
 
@@ -407,7 +408,7 @@ class VendorService @Inject constructor(
             fileWriter.close()
             csvPrinter!!.close()
             val processExecutor: ProcessExecutor = ProcessExecutor()
-               .command("/bin/bash", "/usr/bin/ht.updt_isam_vendor.sh", fileName.canonicalPath, dataset)
+               .command("/bin/bash", "$scriptDirectory/ht.updt_isam_vendor.sh", fileName.canonicalPath, dataset)
                .exitValueNormal()
                .timeout(5, TimeUnit.SECONDS)
                .readOutput(true)
