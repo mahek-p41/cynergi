@@ -370,12 +370,12 @@ class InventoryRepository(
 
       if (filterRequest.serialNbr != null) {
          params["serialNbr"] = filterRequest.serialNbr
-         whereClause.append(" AND inv.serial_number >= :serialNbr ")
+         whereClause.append(" AND inv.serial_number = :serialNbr ")
       }
 
       if (filterRequest.modelNbr != null) {
          params["modelNbr"] = filterRequest.modelNbr
-         whereClause.append(" AND inv.model_number >= :modelNbr ")
+         whereClause.append(" AND inv.model_number = :modelNbr ")
       }
 
       if (filterRequest.poNbr != null) {
@@ -390,7 +390,7 @@ class InventoryRepository(
 
       if (filterRequest.receivedDate != null) {
          params["receivedDate"] = filterRequest.receivedDate
-         whereClause.append(" AND inv.received_date >= :receivedDate ")
+         whereClause.append(" AND inv.received_date = :receivedDate ")
       }
 
       if (filterRequest.beginAltId != null && filterRequest.endAltId != null) {

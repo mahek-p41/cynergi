@@ -426,7 +426,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
       where:
       criteria                         || elements
-      'Search by serial number'        || 201
+      'Search by serial number'        || 1
       'Search by po number'            || 4
       'Search by alt id'               || 271
    }
