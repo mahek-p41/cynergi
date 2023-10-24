@@ -13,7 +13,7 @@ Create a symlink to this script in a cron directory with the name of the CST mac
 ln -vs /home/jenkins/SCRIPTS/autopatch_send.sh /etc/cron.qhourly/autopatch_cst144
 # '/etc/cron.qhourly/autopatch_cst144' -> '/home/jenkins/SCRIPTS/autopatch_send.sh'
 ```
-**The name is important**: "autopatch_" prefixing a target. The above example will cause the script to target `cst144` for auto-patching. All CST machines which have been configured and are recognized by the Gold Box (i.e. address is in the `/etc/hosts` file) are valid targets. `autopatch_develop` targets `cst143` and `autopatch_staging` targets `cst145`; these special targets must be used if the deploy script is uploading the tarballs to the `DEVELOP` and `STAGING` directories, respectively, under the `/home/jenkins/ELIMINATION/` path. Otherwise, the other targets will look for tarballs under a self-named directory under the `/home/jenkins/ELIMINATION/` path (e.g. `/home/jenkins/ELIMINATION/cst144/`).
+**The name is important**: "autopatch_" prefixing a target. The above example will cause the script to target `cst144` for auto-patching. All CST machines which have been configured and are recognized by the Gold Box (i.e. address is in the `/etc/hosts` file) are valid targets. `autopatch_develop` targets `cst143` and `autopatch_staging` targets `cst145`; these special targets are deprecated and will be removed. Otherwise, the other targets will look for tarballs (or symlinks pointing to tarballs in different directories, e.g. `cynergi-client-current.tar.xz -> ../DEVELOP/cynergi-client-current.tar.xz`) under a self-named directory under the `ELIMINATION` path (e.g. `/home/jenkins/ELIMINATION/cst144/`).
 
 ### `autopatch_receive.sh`
 

@@ -1,0 +1,4 @@
+ALTER TABLE vendor_payment_term_schedule DROP CONSTRAINT vendor_payment_term_schedule_vendor_payment_term_id_schedule_key;
+
+CREATE UNIQUE INDEX vendor_payment_term_schedule_unique_idx ON vendor_payment_term_schedule USING btree (vendor_payment_term_id, schedule_order_number)
+WHERE deleted = false;

@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.inventory
 
+import com.cynergisuite.domain.InventoryInquiryFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
@@ -28,6 +29,12 @@ class InventoryService(
 
    fun fetchByLookupKey(lookupKey: String, company: CompanyEntity, locale: Locale): InventoryDTO? {
       return inventoryRepository.findByLookupKey(lookupKey, company)?.let { map(it, locale) }
+   }
+
+   fun inquiry(company: CompanyEntity, filterRequest: InventoryInquiryFilterRequest): Page<InventoryInquiryDTO> {
+      val found = inventoryRepository.fetchInquiry(company, filterRequest)
+
+      return found.toPage { dto: InventoryInquiryDTO -> dto }
    }
 
    private fun map(inventory: InventoryEntity, locale: Locale): InventoryDTO =

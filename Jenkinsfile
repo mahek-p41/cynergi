@@ -20,8 +20,13 @@ pipeline {
       stage('Setup Docker') {
          steps {
             script {
-               sh 'docker network create ${networkId}'
-               sh 'mkdir -p gradleCache gradleWrapper'
+                if (env.BRANCH_NAME.length() > 50) {
+                    currentBuild.result = 'ABORTED'
+                    error("Branch name is too long: ${env.BRANCH_NAME} (${env.BRANCH_NAME.length()} characters). Maximum length is 50 characters.")
+                } else {
+                    sh 'docker network create ${networkId}'
+                    sh 'mkdir -p gradleCache gradleWrapper'
+                }
             }
          }
       }
@@ -32,7 +37,7 @@ pipeline {
          steps {
             script {
                def cynergibasedb = docker.build("cynergibasedb:${env.BRANCH_NAME}", "-f ./support/development/cynergibasedb/cynergibasedb.dockerfile ./support/development/cynergibasedb")
-               def cynergitestdb = docker.build("cynergitestdb:${env.BRANCH_NAME}", "-f ./support/development/cynergitestdb/cynergitestdb.dockerfile --build-arg DB_IMAGE=cynergibasedb:${env.BRANCH_NAME} ./support/development/cynergitestdb")
+               def cynergitestdb = docker.build("cynergitestdb:${env.BRANCH_NAME}", "-f ./support/development/cynergitestdb/cynergitestdb.dockerfile --build-arg LOG_STATEMENT=all --build-arg DB_IMAGE=cynergibasedb:${env.BRANCH_NAME} ./support/development/cynergitestdb")
                def sftpTestServer = docker.build("cynergitestsftp:${env.BRANCH_NAME}", "-f ./support/development/sftp/sftp.dockerfile --build-arg USER_ID=$jenkinsUid --build-arg GROUP_ID=$jenkinsGid ./support/development/sftp")
                def cynmid = docker.build("middleware:${env.BRANCH_NAME}", "-f ./support/deployment/cynmid/cynmid.dockerfile --build-arg USER_ID=$jenkinsUid --build-arg GROUP_ID=$jenkinsGid ./support/deployment/cynmid")
 
@@ -63,16 +68,6 @@ pipeline {
                       }
                   }
                }
-            }
-         }
-      }
-
-      stage('Setup environment') {
-         when { branch 'develop'; }
-
-         steps {
-            script {
-               micronautEnv = 'cstdevelop'
             }
          }
       }
@@ -145,6 +140,9 @@ pipeline {
 
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep all\\.jar | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.DEVELOP-${releaseVersion}.jar
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.DEVELOP-${releaseVersion}.tar.xz
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW scp -oStrictHostKeyChecking=no -oHostKeyAlgorithms=+ssh-rsa ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17:/home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-${releaseVersion}.tar.xz
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no -oHostKeyAlgorithms=+ssh-rsa $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'ln -f /home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-${releaseVersion}.tar.xz /home/jenkins/ELIMINATION/DEVELOP/cynergi-middleware-current.tar.xz'"
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no -oHostKeyAlgorithms=+ssh-rsa $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'touch /home/jenkins/ELIMINATION/DEVELOP/build.trigger'"
                '''
             }
          }
@@ -176,6 +174,9 @@ pipeline {
 
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep all\\.jar | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.STAGING-${releaseVersion}.jar
                curl -vf -u$NEXUS_JENKINS_CREDENTIALS_USR:$NEXUS_JENKINS_CREDENTIALS_PSW --upload-file ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) http://172.28.1.6/nexus/repository/CYNERGI-SNAPSHOT/cynergi-middleware.STAGING-${releaseVersion}.tar.xz
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW scp -oStrictHostKeyChecking=no -oHostKeyAlgorithms=+ssh-rsa ./build/libs/$(ls -lrt build/libs | grep tar.xz | awk '{print $9}' | head -n 1) $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17:/home/jenkins/ELIMINATION/STAGING/cynergi-middleware-${releaseVersion}.tar.xz
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no -oHostKeyAlgorithms=+ssh-rsa $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'ln -f /home/jenkins/ELIMINATION/STAGING/cynergi-middleware-${releaseVersion}.tar.xz /home/jenkins/ELIMINATION/STAGING/cynergi-middleware-current.tar.xz'"
+               sshpass -p $CYNERGI_DEPLOY_JENKINS_PSW ssh -oStrictHostKeyChecking=no -oHostKeyAlgorithms=+ssh-rsa $CYNERGI_DEPLOY_JENKINS_USR@172.19.10.17 bash -c "'touch /home/jenkins/ELIMINATION/STAGING/build.trigger'"
                '''
             }
          }
@@ -233,6 +234,13 @@ pipeline {
       always {
          script {
             sh "docker network rm ${networkId}"
+            //Emails passed with function call will receive notifications on all merges,
+            //or manualy builds of develop/master/staging.
+            emailNotifications('')
+            if (env.BRANCH_NAME == "develop" && currentBuild.currentResult == 'SUCCESS' ){
+               echo "Starting Cypress E2E test suite."
+               build wait: false, job:'../cynergi-e2e/master'
+            }
          }
 /*          dir('./build/reports/tests/test') {
             sh "rm -rf /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/test-results"
@@ -245,12 +253,33 @@ pipeline {
             sh "cp -r * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/code-coverage"
          }
          junit 'build/test-results *//** /* *//*.xml'
-
-         dir('./build/reports/openapi') {
+dir('./build/reports/openapi') {
             sh "rm -rf /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/api-docs"
             sh "mkdir -p /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/api-docs"
             sh "cp -r * /usr/share/nginx/html/reports/cynergi-middleware/${env.BRANCH_NAME}/api-docs"
          } */
       }
+   }
+}
+
+def emailNotifications(names){
+   def toMailRecipients = "${names}"
+   def jobName = currentBuild.fullDisplayName
+
+   if (env.BRANCH_NAME == "develop" || env.BRANCH_NAME == "master" || env.BRANCH_NAME == "staging"){
+      echo "Sending email to ${toMailRecipients}, requester and culprits."
+      emailext body: '''${SCRIPT, template="groovy-html.template"}''',
+      subject: "[Jenkins] ${jobName}",
+      to: "${toMailRecipients}",
+      recipientProviders: [[$class: 'CulpritsRecipientProvider'],[$class: 'RequesterRecipientProvider']]
+   } else {
+      //Getting email address from top commit on branch.
+      //Workaround for empty changelist of first build of new branch.
+      def useremail = sh(script: 'git log -1 --format="%ae"', returnStdout: true).trim()
+      echo "Sending email to ${useremail}, and requester."
+      emailext body: '''${SCRIPT, template="groovy-html.template"}''',
+      subject: "[Jenkins] ${jobName}",
+      to: "${useremail}",
+      recipientProviders: [[$class: 'DevelopersRecipientProvider'],[$class: 'RequesterRecipientProvider']]
    }
 }

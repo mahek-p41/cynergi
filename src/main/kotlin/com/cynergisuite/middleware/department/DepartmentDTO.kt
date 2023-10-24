@@ -1,11 +1,13 @@
 package com.cynergisuite.middleware.department
 
 import com.cynergisuite.domain.LegacyIdentifiable
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 import javax.validation.constraints.Size
 
+@Introspected
 @Schema(name = "Department", title = "A Cynergi Department", description = "A department within a company")
 data class DepartmentDTO(
 

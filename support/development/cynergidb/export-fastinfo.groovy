@@ -40,7 +40,7 @@ if (options != null && !options.h) {
    final schemas = new ArrayList<String>()
 
    sql.eachRow("""
-   SELECT schema_name FROM information_schema.schemata WHERE schema_name IN ('corrto', 'coravt', 'corron', 'corfar')
+   SELECT schema_name FROM information_schema.schemata WHERE schema_name IN ('corrto', 'coravt', 'corron', 'corfar', 'cortst')
 """) { rs ->
       final schemaName = rs.getString("schema_name")
 
@@ -53,9 +53,12 @@ if (options != null && !options.h) {
       tables.add("${schemaName}.level2_manufacturers")
       tables.add("${schemaName}.level2_location_types")
       tables.add("${schemaName}.level2_locations")
+      tables.add("${schemaName}.level2_vendors")
+      tables.add("${schemaName}.level2_customers")
       tables.add("${schemaName}.level2_agreements")
       tables.add("${schemaName}.level2_agreement_versions")
-      tables.add("${schemaName}.level2_customers")
+      tables.add("${schemaName}.level1_operators")
+      tables.add("${schemaName}.level1_furn_cols")
 
       schemas.add("CREATE SCHEMA IF NOT EXISTS ${schemaName};\n")
    }

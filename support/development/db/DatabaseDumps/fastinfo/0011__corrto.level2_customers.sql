@@ -1,0 +1,165 @@
+SET statement_timeout = 0; 
+SET lock_timeout = 0; 
+SET idle_in_transaction_session_timeout = 0; 
+SET client_encoding = 'UTF8'; 
+SET standard_conforming_strings = on; 
+SELECT pg_catalog.set_config('search_path', '', false); 
+SET check_function_bodies = false; 
+SET xmloption = content; 
+SET client_min_messages = warning; 
+SET row_security = off; 
+SET default_tablespace = ''; 
+SET default_table_access_method = heap; 
+CREATE TABLE corrto.level2_customers ( 
+    id bigint NOT NULL, 
+    cust_acct_nbr bigint, 
+    cust_last_name character varying(15), 
+    cust_first_name_mi character varying(15), 
+    created_at timestamp without time zone, 
+    updated_at timestamp without time zone, 
+    row_creator_id bigint, 
+    default_store_id bigint, 
+    cust_ssan bigint, 
+    cust_address character varying(25), 
+    cust_drivers_license character varying(20), 
+    cust_city character varying(15), 
+    cust_state character varying(2), 
+    cust_zip_code integer, 
+    cust_home_phone bigint, 
+    cust_fax_phone bigint, 
+    cust_work_phone bigint, 
+    cust_default_ticket_type character varying(1), 
+    cust_default_salesman_nbr integer, 
+    cust_last_changed_date date, 
+    cust_retail_price_level character varying(1), 
+    cust_map_coordinates character varying(7), 
+    cust_payment_terms bigint, 
+    cust_bill_to bigint, 
+    cust_nca_bonus_bucks integer, 
+    cust_fax_nbr bigint, 
+    cust_rto_receivable_amt numeric(11,2), 
+    cust_cell_optin character varying(1), 
+    cust_cell_pin integer, 
+    cust_address_2 character varying(25), 
+    cust_zip_4 integer, 
+    cust_taxable character varying(1), 
+    cust_tax_number character varying(20), 
+    cust_tax_codes_1 integer, 
+    cust_tax_codes_2 integer, 
+    cust_tax_codes_3 integer, 
+    cust_tax_codes_4 integer, 
+    cust_tax_codes_5 integer, 
+    cust_last_payment integer, 
+    cust_last_aged integer, 
+    cust_discount_grace integer, 
+    cust_service_charge numeric(11,1), 
+    cust_service_charge_grace integer, 
+    cust_invoice_copies integer, 
+    cust_credit_limit integer, 
+    cust_total_due numeric(11,2), 
+    cust_current_due numeric(11,2), 
+    cust_age_1 numeric(11,2), 
+    cust_due_1_to_30 numeric(11,2), 
+    cust_age_2 numeric(11,2), 
+    cust_due_31_to_60 numeric(11,2), 
+    cust_age_3 numeric(11,2), 
+    cust_due_61_to_90 numeric(11,2), 
+    cust_age_4 numeric(11,2), 
+    cust_due_over_90 numeric(11,2), 
+    cust_total_open numeric(11,2), 
+    cust_unapplied_cash numeric(11,2), 
+    cust_bal_method character varying(1), 
+    cust_message bigint, 
+    cust_company_indr character varying(1), 
+    cust_price_code integer, 
+    cust_rental_type character varying(1), 
+    cust_cell_phone bigint, 
+    cust_pager_phone bigint, 
+    cust_birth_date date, 
+    cust_status_flag character varying(2), 
+    cust_complex character varying(8), 
+    cust_contact_name character varying(30), 
+    cust_email_address character varying(40), 
+    cust_discount_percent numeric(11,2), 
+    cust_default_payment_form integer, 
+    cust_retail_charge_customer character varying(1), 
+    cust_cc_bank_acct character varying(25), 
+    cust_cc_mnth_expire integer, 
+    cust_cc_year_expire integer, 
+    cust_cc_bank_type character varying(2), 
+    cust_default_acct_mgr integer, 
+    cust_default_po_nbr character varying(15), 
+    cust_curr_reward_rating integer, 
+    cust_curr_reward_qual_date date, 
+    cust_prev_reward_rating integer, 
+    cust_prev_reward_qual_date date, 
+    cust_total_nbr_pmts integer, 
+    cust_total_nbr_on_time_pmts integer, 
+    cust_total_amt_pmts bigint, 
+    cust_total_amt_on_time_pmts bigint, 
+    cust_best_time_to_call character varying(20), 
+    cust_rwrd_update_date date, 
+    cust_rwrd_update_hour integer, 
+    cust_rwrd_update_minute integer, 
+    cust_rwrd_update_second integer, 
+    cust_on_time_last_chg_amt integer, 
+    cust_own_rent character varying(1), 
+    cust_own_rent_date date, 
+    cust_miles_from_store integer, 
+    cust_educational_background integer, 
+    cust_marital_status character varying(1), 
+    cust_gender character varying(1), 
+    cust_race character varying(1), 
+    cust_referral_code character varying(2), 
+    cust_referral_name character varying(25), 
+    cust_bankruptcy character varying(1), 
+    cust_rented_from_other_company character varying(1), 
+    cust_work_phone_extension character varying(6), 
+    cust_online_ind character varying(1), 
+    cust_online_src character varying(1), 
+    cust_online_pmt_cnt integer, 
+    cust_online_date date, 
+    cust_nbr_bills_paid_monthly integer, 
+    cust_bank_name integer, 
+    cust_bank_branch_location character varying(30), 
+    cust_bank_acct_number character varying(25), 
+    cust_bank_acct_type character varying(1), 
+    cust_marketing_opt_out character varying(1), 
+    cust_date_added date, 
+    cust_zip_pc character varying(6), 
+    cust_country_code character varying(3), 
+    cust_first_nation_resident character varying(1), 
+    cust_first_nation_card_nbr bigint, 
+    cust_first_nation_band_nbr integer, 
+    cust_first_nation_band_name character varying(50), 
+    cust_referral_acct_nbr bigint, 
+    cust_referral_date date, 
+    cust_cell_phone_carrier character varying(25), 
+    cust_new_info_req_ind character varying(1), 
+    cust_last_date_data_verified date, 
+    cust_opt_in_marketing_calls character varying(1), 
+    cust_opt_out_pmt_reminder_call character varying(1), 
+    cust_dflt_taxgrp_nbr integer, 
+    cust_allow_online_pmt character varying(1), 
+    cust_str_recur_pmt_override character varying(1), 
+    cust_recur_pmt_switch character varying(1), 
+    cust_olp_pass character varying(15), 
+    ht_etl_schema character varying(10) DEFAULT 'public'::character varying NOT NULL 
+); 
+ALTER TABLE corrto.level2_customers OWNER TO fastinfo_dba; 
+CREATE SEQUENCE corrto.level2_customers_id_seq 
+    START WITH 1 
+    INCREMENT BY 1 
+    NO MINVALUE 
+    NO MAXVALUE 
+    CACHE 1; 
+ALTER TABLE corrto.level2_customers_id_seq OWNER TO fastinfo_dba; 
+ALTER SEQUENCE corrto.level2_customers_id_seq OWNED BY corrto.level2_customers.id; 
+ALTER TABLE ONLY corrto.level2_customers ALTER COLUMN id SET DEFAULT nextval('corrto.level2_customers_id_seq'::regclass); 
+ALTER TABLE ONLY corrto.level2_customers 
+    ADD CONSTRAINT level2_customers_pkey PRIMARY KEY (id); 
+CREATE UNIQUE INDEX index_level2_customers_on_cust_acct_nbr ON corrto.level2_customers USING btree (cust_acct_nbr); 
+CREATE INDEX index_level2_customers_on_cust_first_name_mi ON corrto.level2_customers USING btree (cust_first_name_mi); 
+CREATE INDEX index_level2_customers_on_cust_last_name ON corrto.level2_customers USING btree (cust_last_name); 
+CREATE INDEX index_level2_customers_on_default_store_id ON corrto.level2_customers USING btree (default_store_id); 
+CREATE INDEX index_level2_customers_on_row_creator_id ON corrto.level2_customers USING btree (row_creator_id); 

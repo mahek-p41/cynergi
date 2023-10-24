@@ -1,0 +1,3 @@
+id,time_created,time_updated,number,name,manager_number,description,division_id,effective_date,ending_date,deleted
+9a3fec8a-05d9-11ec-9944-005056bb008a,2021-08-25 19:21:09.556549,2021-08-25 19:21:09.556549,1,REGION 1,,,9a3fcf0c-05d9-11ec-9943-005056bb008a,2021-08-25,,false
+9a40599a-05d9-11ec-9946-005056bb008a,2021-08-25 19:21:09.559341,2021-08-25 19:21:09.559341,1,REGION 1,,,9a405274-05d9-11ec-9945-005056bb008a,2021-08-25,,false

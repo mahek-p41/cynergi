@@ -84,6 +84,10 @@ ORDER BY level, table_name
 
       if (!tableName.endsWith("_type_domain") && !tableName.startsWith("flyway")) {
          tables.add(tableName)
+
+         if (tableName == 'company') { // fudge tables that hang off company that aren't being found by the export for some reason
+            tables.add('vendor')
+         }
       }
    }
 

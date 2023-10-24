@@ -8,7 +8,12 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.softDelete
+import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.address.AddressEntity
+import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.store.Store
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
@@ -23,6 +28,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class CompanyRepository @Inject constructor(
+   private val addressRepository: AddressRepository,
    private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(CompanyRepository::class.java)
@@ -38,8 +44,23 @@ class CompanyRepository @Inject constructor(
          comp.client_code         AS client_code,
          comp.client_id           AS client_id,
          comp.dataset_code        AS dataset_code,
-         comp.federal_id_number   AS federal_id_number
+         comp.federal_id_number   AS federal_id_number,
+         comp.deleted             AS deleted,
+         address.id               AS address_id,
+         address.name             AS address_name,
+         address.address1         AS address_address1,
+         address.address2         AS address_address2,
+         address.city             AS address_city,
+         address.state            AS address_state,
+         address.postal_code      AS address_postal_code,
+         address.latitude         AS address_latitude,
+         address.longitude        AS address_longitude,
+         address.country          AS address_country,
+         address.county           AS address_county,
+         address.phone            AS address_phone,
+         address.fax              AS address_fax
       FROM company comp
+         LEFT JOIN address ON comp.address_id = address.id AND address.deleted = FALSE
    """
 
    @ReadOnly
@@ -57,17 +78,32 @@ class CompanyRepository @Inject constructor(
            comp.client_code         AS client_code,
            comp.client_id           AS client_id,
            comp.dataset_code        AS dataset_code,
-           comp.federal_id_number  AS federal_id_number
+           comp.federal_id_number   AS federal_id_number,
+           comp.deleted             As deleted,
+           address.id               AS address_id,
+           address.name             AS address_name,
+           address.address1         AS address_address1,
+           address.address2         AS address_address2,
+           address.city             AS address_city,
+           address.state            AS address_state,
+           address.postal_code      AS address_postal_code,
+           address.latitude         AS address_latitude,
+           address.longitude        AS address_longitude,
+           address.country          AS address_country,
+           address.county           AS address_county,
+           address.phone            AS address_phone,
+           address.fax              AS address_fax
          FROM company comp
-              JOIN system_stores_fimvw s
-                ON comp.dataset_code = s.dataset
+            JOIN system_stores_fimvw s
+               ON comp.dataset_code = s.dataset
+            LEFT JOIN address ON comp.address_id = address.id AND address.deleted = FALSE
          WHERE s.id = :store_id
                AND s.dataset = :dataset
          """,
          mapOf(
             "store_id" to store.myId(),
             "dataset" to store.myCompany().datasetCode
-         ),
+         )
       ) { rs, _ -> mapRow(rs) }
 
       logger.debug("Searching for company by store id {} resulted in {}", store.myId(), found)
@@ -78,7 +114,7 @@ class CompanyRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID): CompanyEntity? {
       val found =
-         jdbc.findFirstOrNull("${companyBaseQuery()} WHERE comp.id = :id", mapOf("id" to id)) { rs, _ -> mapRow(rs) }
+         jdbc.findFirstOrNull("${companyBaseQuery()} WHERE comp.id = :id AND comp.deleted = FALSE", mapOf("id" to id)) { rs, _ -> mapRow(rs) }
 
       logger.trace("Searching for Company: {} resulted in {}", id, found)
 
@@ -107,7 +143,7 @@ class CompanyRepository @Inject constructor(
          SELECT
             p.*,
             count(*) OVER() as total_elements
-         FROM (${companyBaseQuery()}) AS p
+         FROM (${companyBaseQuery()} WHERE comp.deleted = FALSE) AS p
          ORDER BY ${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT ${pageRequest.size()}
             OFFSET ${pageRequest.offset()}
@@ -146,7 +182,7 @@ class CompanyRepository @Inject constructor(
       if (id == null) return false
 
       val exists = jdbc.queryForObject(
-         "SELECT EXISTS(SELECT id FROM company WHERE id = :id)",
+         "SELECT EXISTS(SELECT id FROM company WHERE id = :id AND company.deleted = FALSE)",
          mapOf("id" to id),
          Boolean::class.java
       )
@@ -169,9 +205,9 @@ class CompanyRepository @Inject constructor(
       }
 
       if (clientId != null) {
-         query.append(and).append(" client_id = :clientId ")
+         query.append(and).append(" client_id = :clientId AND deleted = FALSE ")
       } else if (datasetCode != null) {
-         query.append(and).append(" dataset_code = :datasetCode ")
+         query.append(and).append(" dataset_code = :datasetCode AND deleted = FALSE ")
       }
 
       query.append(")")
@@ -189,10 +225,16 @@ class CompanyRepository @Inject constructor(
    fun insert(company: CompanyEntity): CompanyEntity {
       logger.debug("Inserting company {}", company)
 
+      val addressCreated = if (company.address != null) {
+         addressRepository.save(company.address)
+      } else {
+         null
+      }
+
       return jdbc.insertReturning(
          """
-         INSERT INTO company(name, doing_business_as, client_code, client_id, dataset_code, federal_id_number)
-         VALUES (:name, :doing_business_as, :client_code, :client_id, :dataset_code, :federal_id_number)
+         INSERT INTO company(name, doing_business_as, client_code, client_id, dataset_code, federal_id_number, address_id)
+         VALUES (:name, :doing_business_as, :client_code, :client_id, :dataset_code, :federal_id_number, :address_id)
          RETURNING
             *
          """,
@@ -203,11 +245,79 @@ class CompanyRepository @Inject constructor(
             "client_id" to company.clientId,
             "dataset_code" to company.datasetCode,
             "federal_id_number" to company.federalIdNumber,
+            "address_id" to addressCreated?.id
          )
-      ) { rs, _ -> mapRow(rs) }
+      ) { rs, _ -> mapRow(rs, addressCreated) }
    }
 
-   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY): CompanyEntity =
+   @Transactional
+   fun update(existing: CompanyEntity, toUpdate: CompanyEntity): CompanyEntity {
+      logger.debug("Updating company {}", toUpdate)
+      var addressToDelete: AddressEntity? = null
+
+      val companyAddress = if (existing.address?.id != null && toUpdate.address == null) {
+         addressToDelete = existing.address
+
+         null
+      } else if (toUpdate.address != null) {
+         addressRepository.upsert(toUpdate.address)
+      } else {
+         null
+      }
+
+      val updatedCompany = jdbc.updateReturning(
+         """
+         UPDATE company
+         SET
+            name = :name,
+            doing_business_as = :doing_business_as,
+            client_code = :client_code,
+            client_id = :client_id,
+            dataset_code = :dataset_code,
+            federal_id_number = :federal_id_number,
+            address_id = :address_id
+         WHERE id = :id
+         RETURNING
+            *
+         """.trimIndent(),
+         mapOf(
+            "id" to toUpdate.id,
+            "name" to toUpdate.name,
+            "doing_business_as" to toUpdate.doingBusinessAs,
+            "client_code" to toUpdate.clientCode,
+            "client_id" to toUpdate.clientId,
+            "dataset_code" to toUpdate.datasetCode,
+            "federal_id_number" to toUpdate.federalIdNumber,
+            "address_id" to companyAddress?.id
+         )
+      ) { rs, _ ->
+         mapRow(rs, companyAddress)
+      }
+
+      addressToDelete?.let { addressRepository.deleteById(it.id!!) } // delete address if it exists, done this way because it avoids the race condition compilation error
+
+      return updatedCompany
+   }
+
+   @Transactional
+   fun delete(id: UUID) {
+      logger.debug("Deleting Company with id={}", id)
+
+      val rowsAffected = jdbc.softDelete(
+         """
+            UPDATE company
+            SET deleted = TRUE
+            WHERE id = :id AND deleted = FALSE
+         """,
+         mapOf("id" to id),
+         "company"
+      )
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(id)
+   }
+
+   fun mapRow(rs: ResultSet, columnPrefix: String = EMPTY, addressPrefix: String = "address_"): CompanyEntity =
       CompanyEntity(
          id = rs.getUuid("${columnPrefix}id"),
          name = rs.getString("${columnPrefix}name"),
@@ -215,6 +325,19 @@ class CompanyRepository @Inject constructor(
          clientCode = rs.getString("${columnPrefix}client_code"),
          clientId = rs.getInt("${columnPrefix}client_id"),
          datasetCode = rs.getString("${columnPrefix}dataset_code"),
-         federalIdNumber = rs.getString("${columnPrefix}federal_id_number")
+         federalIdNumber = rs.getString("${columnPrefix}federal_id_number"),
+         address = addressRepository.mapAddressOrNull(rs, addressPrefix)
+      )
+
+   fun mapRow(rs: ResultSet, address: AddressEntity?, columnPrefix: String = EMPTY): CompanyEntity =
+      CompanyEntity(
+         id = rs.getUuid("${columnPrefix}id"),
+         name = rs.getString("${columnPrefix}name"),
+         doingBusinessAs = rs.getString("${columnPrefix}doing_business_as"),
+         clientCode = rs.getString("${columnPrefix}client_code"),
+         clientId = rs.getInt("${columnPrefix}client_id"),
+         datasetCode = rs.getString("${columnPrefix}dataset_code"),
+         federalIdNumber = rs.getString("${columnPrefix}federal_id_number"),
+         address = address
       )
 }

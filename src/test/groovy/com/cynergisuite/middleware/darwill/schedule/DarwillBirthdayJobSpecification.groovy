@@ -2,12 +2,10 @@ package com.cynergisuite.middleware.darwill.schedule
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.darwill.DarwillTestDataLoaderService
-import com.cynergisuite.middleware.darwill.schedule.DarwillBirthdayJob
-import com.cynergisuite.middleware.schedule.ScheduleTestDataLoaderService
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
-import java.time.OffsetDateTime
 
+import java.time.OffsetDateTime
 
 import static java.time.ZoneOffset.UTC
 
@@ -16,11 +14,10 @@ class DarwillBirthdayJobSpecification extends ServiceSpecificationBase {
 
    @Inject DarwillBirthdayJob darwillBirthdayService
    @Inject DarwillTestDataLoaderService darwillTestDataLoaderService
-   @Inject ScheduleTestDataLoaderService scheduleTestDataLoaderService
 
    void "upload birthdays" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final darwillSchedules = darwillTestDataLoaderService.enableDarwill(tstds1)
       final scheduleEntity = darwillSchedules.find { it.title == "Darwill Birthdays" }
       final novemberFirst = OffsetDateTime.of(2021, 11, 1, 0, 0, 0, 0, UTC)
@@ -32,6 +29,6 @@ class DarwillBirthdayJobSpecification extends ServiceSpecificationBase {
       notThrown(Exception)
       result.failureReason() == null
       result.scheduleName() == "Darwill Birthdays"
-      result.rowCount() == 165
+      result.rowCount() == 109
    }
 }

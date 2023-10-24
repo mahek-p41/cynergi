@@ -1,4 +1,0 @@
-"id","time_created","time_updated","title","description","schedule","command_id","type_id","enabled","company_id"
-"80866d4c-85a5-11ea-b595-005056bb008d","2020-04-23 21:00:46.061323","2020-05-08 22:01:20.323947","Weekly Inventory Audit","Complete a weekly audit at the store.","MONDAY","1","1","true","5652e5c4-703c-11ea-a569-005056bb008d"
-"b87b789c-9ac6-11ea-9dbf-005056bb008d","2020-05-20 18:21:27.752338","2020-05-20 18:21:47.449062","STORE 1","Store 1 audit for wednesday.","WEDNESDAY","1","1","true","5652e5c4-703c-11ea-a569-005056bb008d"
-"684be4a6-b0c4-11ea-90e2-005056bb008d","2020-06-17 18:00:19.810445","2020-06-17 18:00:19.810446","Store 7","Thursday audit in store 7.","THURSDAY","1","1","false","5652e5c4-703c-11ea-a569-005056bb008d"

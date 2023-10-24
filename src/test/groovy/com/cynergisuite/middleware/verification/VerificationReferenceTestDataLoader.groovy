@@ -6,11 +6,11 @@ import com.cynergisuite.middleware.verfication.infrastructure.VerificationRefere
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 
 import java.time.OffsetDateTime
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import jakarta.inject.Singleton
 
 @CompileStatic
 class VerificationReferenceTestDataLoader {

@@ -1,0 +1,143 @@
+@startuml hoa_middleware_build_process_current
+title Current CI/CD Process
+hide footbox
+skinparam SequenceLifeLineBorderColor<< VPN >> Red
+
+participant NetExtender<< VPN >> #OrangeRed
+box "internal network" #WhiteSmoke
+participant Jenkins_Runner #LightGreen
+participant GoldBox #Gold
+end box
+
+Jenkins_Runner -> Jenkins_Runner: Build artifacts
+Jenkins_Runner -> GoldBox: Upload tarball
+
+@enduml hoa_middleware_build_process_current
+
+'############################################
+
+@startuml hoa_middleware_build_process_option_1_fortinetvpn
+title Option 1: via FortiNet VPN
+hide footbox
+skinparam SequenceLifeLineBorderColor<< VPN >> Red
+
+participant GitHub_Runner #LightGreen
+participant Fortinet<< VPN >> #Orange
+participant NetExtender<< VPN >> #OrangeRed
+box "internal network" #WhiteSmoke
+participant GoldBox #Gold
+end box
+
+GitHub_Runner -> GitHub_Runner: Build artifacts
+GitHub_Runner --> Fortinet: Connect to VPN
+activate Fortinet
+activate NetExtender
+GitHub_Runner -> GoldBox: Upload tarball
+
+@enduml hoa_middleware_build_process_option_1_fortinetvpn
+
+'############################################
+
+@startuml hoa_middleware_build_process_option_2_tailscalevpn
+title Option 2: via TailScale VPN
+hide footbox
+skinparam SequenceLifeLineBorderColor<< VPN >> Red
+
+participant GitHub_Runner #LightGreen
+participant TailScale<< VPN >> #Orange
+participant NetExtender<< VPN >> #OrangeRed
+box "internal network" #WhiteSmoke
+participant SSH_Bastion
+participant GoldBox #Gold
+end box
+
+SSH_Bastion --> TailScale: ""tailscale up""
+GitHub_Runner -> GitHub_Runner: Build artifacts
+GitHub_Runner --> TailScale: ""tailscale up""
+activate TailScale
+activate NetExtender
+GitHub_Runner -> GoldBox: Upload tarball
+GitHub_Runner --> SSH_Bastion: Upload tarball
+SSH_Bastion --> GoldBox: Upload tarball
+
+@enduml hoa_middleware_build_process_option_2_tailscalevpn
+
+'############################################
+
+@startuml hoa_middleware_build_process_option_3_manual
+title Option 3: via manual upload
+hide footbox
+skinparam SequenceLifeLineBorderColor<< VPN >> Red
+
+participant GitHub_Runner #LightGreen
+participant NetExtender<< VPN >> #OrangeRed
+box "internal network" #WhiteSmoke
+participant HighTouch_Laptop
+participant GoldBox #Gold
+end box
+
+GitHub_Runner -> GitHub_Runner: Build artifacts
+GitHub_Runner <-- HighTouch_Laptop: Download tarball
+activate NetExtender
+GitHub_Runner -> HighTouch_Laptop: Download tarball
+HighTouch_Laptop -> GoldBox: Upload tarball
+
+@enduml hoa_middleware_build_process_option_3_manual
+
+'############################################
+
+@startuml flowchart_hoa_middleware_build_process
+
+<style>
+activityDiagram {
+    .test {
+        BackgroundColor Yellow
+    }
+    .deploy {
+        BackgroundColor Gold
+    }
+    diamond {
+        BackgroundColor GoldenRod
+    }
+}
+</style>
+
+title Build Flow: cynergi-middleware
+
+|Cloud Runner|
+start
+
+partition init {
+    :Calculate env-based variables;
+}
+
+partition build {
+    :Check out code;
+    :Set up JDK 11;
+    :Setup build variables;
+    :Validate branch name;
+    :Setup Docker;
+
+    << test >>:Run tests;
+    << test >>:Publish test report;
+    if (BRANCH_NAME in [master, staging, develop]) then (true)
+        << deploy >>:Build deploy artifact;
+        << deploy >>:Store artifacts;
+    else (false)
+    endif
+    << test >>:Prepare build reports;
+    << test >>:Store reports;
+
+}
+
+|Self-hosted Runner|
+partition deploy {
+    << deploy >>:Download tarball artifact;
+    << deploy >>:Deploy tarball to GoldBox;
+}
+
+stop
+
+@enduml
+
+'############################################

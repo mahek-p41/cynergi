@@ -19,7 +19,7 @@ class WowActiveInventoryJobSpecification extends ServiceSpecificationBase {
 
    void "upload active inventory" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final schedules = wowTestDataLoaderService.enableWow(tstds1)
       final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)
       final wowActiveInventorySchedule = schedules.find { it.title == "Wow Active Inventory" }

@@ -1,5 +1,4 @@
 name: Cynergi Middleware CI
-run-name: Building the cynergi-middleware repo
 on:
    workflow_dispatch:
    push:
@@ -13,6 +12,7 @@ jobs:
          branchName: ${{ steps.setBuildVars.outputs.branchName }}
          micronautEnv: ${{ steps.setBuildVars.outputs.micronautEnv }}
          releaseEnvironment: ${{ steps.setBuildVars.outputs.releaseEnvironment }}
+         deployTargets: ${{ steps.setBuildVars.outputs.deployTargets }}
          tarball: ${{ steps.buildDeployArtifact.outputs.deployFile }}
       steps:
       - name: Check out code
@@ -26,58 +26,13 @@ jobs:
 
       - name: Set build variables
         id: setBuildVars
-        run: |
-         ${DEBUG_MODE}
-         #only use the name after the last / in the ref
-         branchName=${GITHUB_REF_NAME##*/}
-
-         case "$branchName" in
-         "master")
-            micronautEnv=prod
-            releaseEnvironment=RELEASE
-            ;;
-         "staging")
-            micronautEnv=cstdevelop
-            releaseEnvironment=cst145
-            ;;
-         "pre-staging")
-            micronautEnv=cstdevelop
-            releaseEnvironment=cst144
-            ;;
-         "esig-staging")
-            micronautEnv=cstdevelop
-            releaseEnvironment=cst145
-            ;;
-         #"develop")
-         *)
-            micronautEnv=cstdevelop
-            releaseEnvironment=cst143
-            ;;
-         esac
-
-         #we'll pull the releaseVersion from here
-         source ./gradle.properties
-
-         envVars="
-         RELEASE_VERSION="$releaseVersion"
-         NETWORK_ID=$(uuidgen)
-         JENKINS_UID=$(id --user)
-         JENKINS_GID=$(id --group)
-         BRANCH_NAME=$branchName
-         MICRONAUT_ENV=$micronautEnv
-         "
-         echo "$envVars" >> "$GITHUB_ENV"
-         echo "$envVars" | sed 's/^/::debug::/'
-
-         outVars="
-         branchName=$branchName
-         micronautEnv=$micronautEnv
-         releaseEnvironment=$releaseEnvironment
-         "
-         echo "$outVars" >> "$GITHUB_OUTPUT"
-         echo "$outVars" | sed 's/^/::debug::/'
+        env:
+         SOURCE_TARGET_MAP: ${{ vars.SOURCE_TARGET_MAP }}
+        run: ${{ github.workspace }}/.github/workflows/scripts/set-build-variables.py
 
       - name: Validate branch name
+        env:
+         BRANCH_NAME: ${{ steps.setBuildVars.outputs.branchName }}
         run: |
          ${DEBUG_MODE}
          if [ ${#BRANCH_NAME} -gt 50 ]; then
@@ -86,12 +41,19 @@ jobs:
          fi
 
       - name: Setup Docker
+        env:
+         NETWORK_ID: ${{ steps.setBuildVars.outputs.networkId }}
         run: |
          ${DEBUG_MODE}
          docker network create "$NETWORK_ID"
          mkdir -p gradleCache gradleWrapper
 
       - name: Test
+        env:
+         BRANCH_NAME: ${{ steps.setBuildVars.outputs.branchName }}
+         JENKINS_UID: ${{ steps.setBuildVars.outputs.jenkinsUid }}
+         JENKINS_GID: ${{ steps.setBuildVars.outputs.jenkinsGid }}
+         NETWORK_ID: ${{ steps.setBuildVars.outputs.networkId }}
         run: |
          ${DEBUG_MODE}
          echo "::group::docker build cynergibasedb"
@@ -129,15 +91,22 @@ jobs:
             ${DEBUG_MODE}
             set -o errexit -o pipefail -o noclobber -o nounset
             export JAVA_OPTS='-Xms2048m -Xmx2048m -Xgcpolicy:gencon'
+            [[ '$DEBUG_MODE' != '' ]] && export VERBOSE_MODE=1
 
             ./gradlew --no-daemon --stacktrace clean buildApiDocs 2>&1 1>/dev/null
-            ./gradlew --no-daemon test --fail-fast jacocoTestReport
+            ./gradlew --no-daemon test jacocoTestReport
          "
          echo "::endgroup::"
 
       - name: Build deploy artifact
         id: buildDeployArtifact
-        if: ${{ (success() || failure()) && contains('master staging develop pre-staging esig-staging', steps.setBuildVars.outputs.branchName) }}
+        if: ${{ (success() || failure()) && steps.setBuildVars.outputs.releaseEnvironment != '' }}
+        env:
+         BRANCH_NAME: ${{ steps.setBuildVars.outputs.branchName }}
+         JENKINS_UID: ${{ steps.setBuildVars.outputs.jenkinsUid }}
+         JENKINS_GID: ${{ steps.setBuildVars.outputs.jenkinsGid }}
+         RELEASE_VERSION: ${{ steps.setBuildVars.outputs.releaseVersion  }}
+         MICRONAUT_ENV: ${{ steps.setBuildVars.outputs.micronautEnv  }}
         run: |
          ${DEBUG_MODE}
          echo "::group::docker build middlewaretar"
@@ -204,11 +173,12 @@ jobs:
 
    deploy:
       needs: build
-      name: Deploy to ${{ needs.build.outputs.releaseEnvironment }} patch
-      if: ${{ contains('master staging develop pre-staging esig-staging', needs.build.outputs.branchName) }}
+      name: Deploy tarball to Gold Box
+      if: ${{ needs.build.outputs.releaseEnvironment != '' }}
       uses: ./.github/workflows/deploy-tarball.yml
       with:
          tarball: ${{ needs.build.outputs.tarball }}
          targetDeployable: 'cynergi-middleware-current.tar.xz'
          releaseEnvironment: ${{ needs.build.outputs.releaseEnvironment }}
+         deployTargets: ${{ needs.build.outputs.deployTargets }}
       secrets: inherit

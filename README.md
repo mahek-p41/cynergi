@@ -43,12 +43,6 @@ including a sub-command are unique the `cyn` command will know what script to ex
 ### Local Database
 To start the local database `cyn db start dev`
 
-The Local database runs Postgres 9.3 via docker with 2 databases.  One is the **cynergidb** which is intended to survive
-restarts of the cynergi-middleware application.  The other is the **cynergidevelopdb** and is intended to be refreshed by the
-cynergi-middleware everytime it restarts.  This is as close to running production as can be achieved.  The databases
-require fastinfo dumps from a CST or production machine to operate.
-
-
 #### cynergidb
 Local semi-persistent PostgreSQL database hosted by docker.  States of the database can be
 captured via the pg_dump command.
@@ -60,16 +54,6 @@ captured via the pg_dump command.
    5. password: password
 2. Connecting to the database via psql
    1. `cyn db psql dev cynergidb`
-
-#### cynergidevelopdb
-1. Connection Information
-   1. port: 6432
-   2. host: localhost
-   3. database: cynergidevelopdb
-   4. user: postgres
-   5. password: password
-2. Connecting to the database via psql
-   1. `cyn db psql dev cynergidevelopdb`
 
 #### Dumps
 1. cynergidb.dump
@@ -100,33 +84,23 @@ To start the local database `cyn db start test`
    1. `cyn db psql test`
 
 ## To run the application from Intellij
-1. Make sure the database is running via `cyn db start dev`
-2. Open up the `com.hightouchinc.cynergi.middleware.Application` class.
-   1. Expand the src/main/kotlin source folder then navigate through the packages until you get to the `Application`
-      class.
-3. Once you have found the Application class in the "Project" explorer pane on the left side of the screen right click
-   on the `Application` element and choose the "create 'com.hightouchinc.cyn..." selection
-4. Inside the "Create Run/Debug Configuration: 'com.hightouchinc.cynergi.middleware.Application'" window make sure
-   the following is correct or configured this way
-   1. `Main class:` com.hightouchinc.cynergi.middleware.Application
-   2. `VM options:` -Dmicronaut.environments=local
-   3. You might want to give it a `Name:` like cynergi-middleware (local) at the top of the window
-5. Once the runner has been created you can click the green arrow that points right to run the application or
+1. Make sure the middleware(DB & SFTP servers) is running via `cyn mid dev start`
+2. Select `Middleware Development - cynergidb` from Run Configuration dropdown
+3. Click the green arrow that points right to run the application or
    the green bug looking thing to run in debug.  (The third option is to run in code coverage mode)
+4. To stop the application click the Red rectangle (Stop) button.
+5. To stop the middleware
+   1. `cyn stop`
 
 ## To run from Command Line
 Note: This option is useful if you just want to run the application but aren't interested in doing any coding.
 
-1. Make sure the database is running via `cyn db start dev`
-   1. Just leave this running in a separate terminal window
-2. Change directory to the root of the *cynergi-middleware* project using a bash prompt (IE Git Bash on Windows)
-   1. Will want to do this in a new terminal window separate from where the *cynergi-dev-middleware.sh* script is being run
-3. For local mode execute from the terminal
-   1. `./gradlew clean shadowJar && java -Dmicronaut.environments=local -jar ./build/libs/cynergi-middleware*-all.jar`
-4. For develop mode execute from the terminal
-   1. `./gradlew clean shadowJar && java -Dmicronaut.environments=develop -jar ./build/libs/cynergi-middleware*-all.jar`
-4. To stop the application use `ctrl+c` AKA press the CTRL key at the same time you press the C key.
-
+1. Make sure the middleware(DB & SFTP servers) is running via `cyn mid dev start`
+2. Rebuild and start the application
+   1. `./gradlew clean shadowJar && java -Dmicronaut.environments=development -jar ./build/libs/cynergi-middleware.jar`
+3. To stop the application use `ctrl+c` AKA press the CTRL key at the same time you press the C key.
+4. To stop the middleware
+   1. `cyn stop`
 
 ## Project Description
 
@@ -183,9 +157,7 @@ API is actually fulfilling that contract.
      open with a browser.
 2. Run migrations against the cynergidb database
    * `./gradlew flywayMigrateCynergiDb`
-3. Run migrations against the cynergidevelopdb database
-   * `./gradlew flywayMigrateCynergiDevelopDb`
-2. Run migrations against the cynergitestdb database
+3. Run migrations against the cynergitestdb database
    * `./gradlew flywayMigrateCynergiTestDb`
 
 ## Local management

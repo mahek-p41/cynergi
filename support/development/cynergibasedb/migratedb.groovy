@@ -17,33 +17,17 @@ import java.util.zip.ZipFile
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.FilenameUtils
 
-static boolean isCst143() {
-   try {
-      return (InetAddress.getLocalHost().getHostName() == "cst143")
-   } catch(Throwable e) {
-      return false
-   }
-}
-
-def migrate(Path dir, String dbUrl, String username, String password, boolean forceClean = false) {
-   final isCst143 = isCst143()
+def migrate(Path dir, String dbUrl, String username, String password) {
 
    final flyway = Flyway
       .configure()
       .locations("filesystem:$dir")
-      .cleanDisabled(!isCst143)
-      .cleanOnValidationError(isCst143)
       .table("flyway_schema_history")
       .initSql("SELECT 1")
       .dataSource(dbUrl, username, password)
       .load()
 
-   if (forceClean && isCst143) {
-      println "Cleaning db"
-      flyway.clean()
-   }
-
-   flyway.migrate()
+  flyway.migrate()
 }
 
 // https://relentlesscoding.com/posts/how-to-use-groovys-clibuilder/
@@ -57,7 +41,6 @@ cli.with {
    d(longOpt: 'database', defaultValue: 'cynergidb', args: 1, 'database to migrate')
    H(longOpt: 'host', args: 1, defaultValue: 'localhost', 'Host database is running on')
    m(longOpt: 'migrations', args: 1, defaultValue: '/opt/cyn/v01/cynmid/cynergi-middleware.jar', 'location of migration files')
-   c(longOpt: 'force-clean', 'Reset the database back to zero')
    h(longOpt: 'help', 'this help message')
 }
 
@@ -72,8 +55,10 @@ if (options != null && !options.h) {
 
       if (Files.exists(migrationLocation)) {
          if (Files.isDirectory(migrationLocation)) {
-            migrate(migrationLocation, "jdbc:postgresql://${options.H}:${options.P}/${options.d}", options.u, options.p, options.c)
+            println "Migrating Flyway scripts."
+            migrate(migrationLocation, "jdbc:postgresql://${options.H}:${options.P}/${options.d}", options.u, options.p)
          } else if (jarPathMatch.matches(migrationLocation)) {
+            println "Migrating Flyway scripts using flywaytemp folder."
             final migrationJar = new ZipFile(migrationLocation.toFile())
             final flywayTemp = Files.createTempDirectory("flywaytemp")
 
@@ -85,7 +70,7 @@ if (options != null && !options.h) {
                }
             }
 
-            migrate(flywayTemp, "jdbc:postgresql://${options.H}:${options.P}/${options.d}", options.u, options.p, options.c)
+            migrate(flywayTemp, "jdbc:postgresql://${options.H}:${options.P}/${options.d}", options.u, options.p)
             flywayTemp.toFile().deleteDir()
          } else {
             exitCode = 2

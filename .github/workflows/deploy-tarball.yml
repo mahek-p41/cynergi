@@ -11,7 +11,11 @@ on:
             required: true
             type: string
          releaseEnvironment:
-            description: Which environment should the build be deployed to? (e.g. DEVELOP, STAGING, cst143, cst144)
+            description: DEVELOP, STAGING, or RELEASE
+            required: true
+            type: string
+         deployTargets:
+            description: A space-separated list of internal servers this deployment should be sent to. (e.g. "cst143 cst144") Leave empty to upload the tarball but not trigger full deployment.
             required: false
             type: string
 env:
@@ -19,32 +23,37 @@ env:
 jobs:
    deploy:
       runs-on: self-hosted
+      env:
+       TARBALL: ${{ inputs.tarball }}
+       TARGET: ${{ inputs.targetDeployable }}
+       TRIGGER: build.trigger
+       GOLDBOX_SSH_OPTIONS: ${{ vars.GOLDBOX_SSH_OPTIONS }}
+       GOLDBOX_SSH_USER_HOST: '${{ secrets.CYNERGI_DEPLOY_JENKINS_USR }}@${{ secrets.GOLDBOX_IP_ADDRESS }}'
+       GOLDBOX_SSH_PASSWORD: ${{ secrets.CYNERGI_DEPLOY_JENKINS_PSW }}
+       DEPLOY_ROOT_PATH: '/home/jenkins/ELIMINATION'
+       RELEASE_ENVIRONMENT: ${{ inputs.releaseEnvironment }}
+       DEPLOY_TARGETS: ${{ inputs.deployTargets }}
       steps:
+         - uses: actions/checkout@v3
+
          - uses: actions/download-artifact@v3
            with:
             name: ${{ inputs.tarball }}
 
-         - env:
-            TARBALL: ${{ inputs.tarball }}
-            TARGET: ${{ inputs.targetDeployable }}
-            TRIGGER: build.trigger
-            GOLDBOX_SSH_OPTIONS: ${{ vars.GOLDBOX_SSH_OPTIONS }}
-            GOLDBOX_SSH_USER_HOST: '${{ secrets.CYNERGI_DEPLOY_JENKINS_USR }}@${{ secrets.GOLDBOX_IP_ADDRESS }}'
-            GOLDBOX_SSH_PASSWORD: ${{ secrets.CYNERGI_DEPLOY_JENKINS_PSW }}
-            RELEASE_ENVIRONMENT: ${{ inputs.releaseEnvironment != '' && inputs.releaseEnvironment || 'DEVELOP' }}
+         - name: Upload tarball to Gold Box
            run: |
-            ${DEBUG_MODE}
-
             sshpass -p "$GOLDBOX_SSH_PASSWORD" \
-               scp ${GOLDBOX_SSH_OPTIONS} ${TARBALL} ${GOLDBOX_SSH_USER_HOST}:/home/jenkins/ELIMINATION/${RELEASE_ENVIRONMENT}/${TARBALL}
-            scode=$?
-            [[ $scode -gt 0 ]] && echo "scp command failed. Make sure the path /home/jenkins/ELIMINATION/${RELEASE_ENVIRONMENT}/ exists and is writable on the target." && exit $scode
-
-            sshpass -p "$GOLDBOX_SSH_PASSWORD" ssh ${GOLDBOX_SSH_OPTIONS} $GOLDBOX_SSH_USER_HOST "
-               ${DEBUG_MODE}
+               scp ${GOLDBOX_SSH_OPTIONS} ${TARBALL} ${GOLDBOX_SSH_USER_HOST}:${DEPLOY_ROOT_PATH}/${RELEASE_ENVIRONMENT}/${TARBALL}
+            sshpass -p "$GOLDBOX_SSH_PASSWORD" \
+               ssh ${GOLDBOX_SSH_OPTIONS} $GOLDBOX_SSH_USER_HOST \
+               "${DEBUG_MODE}
                set -o errexit -o pipefail -o noclobber -o nounset
+               cd ${DEPLOY_ROOT_PATH}/${RELEASE_ENVIRONMENT}
+               ln -vf $TARBALL $TARGET"
 
-               cd /home/jenkins/ELIMINATION/${RELEASE_ENVIRONMENT}/
-               ln -vf ${TARBALL} ${TARGET}
-               touch ${TRIGGER}
-            "
+         - name: Trigger autopatch
+           if: ${{ env.DEPLOY_TARGETS != '' }}
+           run: |
+            sshpass -p "$GOLDBOX_SSH_PASSWORD" \
+               ssh ${GOLDBOX_SSH_OPTIONS} $GOLDBOX_SSH_USER_HOST "$(target='$target' envsubst <${{ github.workspace }}/.github/workflows/scripts/trigger-autopatch.sh)"
+            # notice the variable set before envsubst; this is to avoid breaking the only variable set within the trigger-autopatch.sh script

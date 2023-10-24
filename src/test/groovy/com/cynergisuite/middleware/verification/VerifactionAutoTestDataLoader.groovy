@@ -6,13 +6,13 @@ import com.cynergisuite.middleware.verfication.infrastructure.VerificationAutoRe
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.util.concurrent.TimeUnit
 import java.util.stream.IntStream
 import java.util.stream.Stream
-import jakarta.inject.Singleton
 
 @CompileStatic
 class VerificationAutoTestDataLoader {
@@ -42,16 +42,16 @@ class VerificationAutoTestDataLoader {
             phone.cellPhone(),
             bool.bool(),
             bool.bool(),
-            date.past(28, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+            date.past(28, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate(),
             name.fullName(),
-            date.future(28, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+            date.future(28, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate(),
             lorem.characters(3, 50),
             lorem.characters(3, 10),
             num.randomDouble(2, 100, 1100).toBigDecimal(),
             lorem.characters(1, 50),
             bool.bool(),
             bool.bool(),
-            date.past(90, TimeUnit.DAYS).toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+            date.past(90, TimeUnit.DAYS).toInstant().atZone(ZoneId.of("-05:00")).toLocalDate(),
             lorem.characters(1, 50),
             verification
          )
