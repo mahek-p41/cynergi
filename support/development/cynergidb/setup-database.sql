@@ -346,13 +346,13 @@ DECLARE
    sqlToExec VARCHAR;
    unionAll VARCHAR;
 BEGIN
-   sqlToExec := 'CREATE OR REPLACE VIEW prodcmst_vw AS
+   sqlToExec := 'CREATE OR REPLACE VIEW product_class_master_file_vw AS
                  SELECT *
                  FROM (';
    unionAll := '';
 
-   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'prodcmst_vw') THEN
-      DROP VIEW prodcmst_vw CASCADE;
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'product_class_master_file_vw') THEN
+      DROP VIEW product_class_master_file_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
@@ -361,29 +361,26 @@ BEGIN
       || ' '
       || unionAll || '
          SELECT
-            prodcmst.id                              AS id,
-            prodcmst.prodcmst_class_code             AS class_code,
-            prodcmst.prodcmst_class_desc             AS class_desc,
-            prodcmst.prodcmst_sl_bk_start_date       AS sl_bk_start_date,
-            prodcmst.prodcmst_sl_bk_end_date         AS sl_bk_end_date,
-            prodcmst.prodcmst_if_bk_start_date       AS if_bk_start_date,
-            prodcmst.prodcmst_if_bk_end_date         AS if_bk_end_date,
-            prodcmst.prodcmst_macrs_bk_start_date    AS macrs_bk_start_date,
-            prodcmst.prodcmst_macrs_bk_end_date      AS macrs_bk_end_date,
-            prodcmst.prodcmst_macrs_tax_start_date   AS macrs_tax_start_date,
-            prodcmst.prodcmst_macrs_tax_end_date     AS macrs_tax_end_date,
-            prodcmst.prodcmst_rent_sw                AS rent_sw,
-            prodcmst.prodcmst_transition_into_sw     AS transition_into_sw,
-            prodcmst.prodcmst_transition_out_of_sw   AS transition_out_of_sw,
-            prodcmst.prodcmst_cash_sale_sw           AS cash_sale_sw,
-            prodcmst.prodcmst_allow_depr_sw          AS allow_depr_sw,
-            prodcmst.prodcmst_allow_sl_life_sw       AS allow_sl_life_sw,
-            prodcmst.created_at AT TIME ZONE ''UTC'' AS created_at,
-            prodcmst.updated_at AT TIME ZONE ''UTC'' AS updated_at,
-            prodcmst.ht_etl_source_operation         AS ht_etl_source_operation,
-            prodcmst.ht_etl_processing_stage         AS ht_etl_processing_stage,
-            prodcmst.ht_etl_z_timestamp              AS ht_etl_z_timestamp,
-            prodcmst.ht_etl_checksum                 AS ht_etl_checksum
+            prodcmst.id                                                                   AS id,
+            prodcmst.prodcmst_dataset                                                     AS dataset,
+            prodcmst.prodcmst_class_code                                                  AS class_code,
+            prodcmst.prodcmst_class_description                                           AS class_description,
+            prodcmst.prodcmst_straight_line_book_depreciation_start_date                  AS straight_line_book_depreciation_start_date,
+            prodcmst.prodcmst_straight_line_book_depreciation_end_date                    AS straight_line_book_depreciation_end_date,
+            prodcmst.prodcmst_income_forecasting_book_depreciation_start_date             AS income_forecasting_book_depreciation_start_date,
+            prodcmst.prodcmst_income_forecasting_book_depreciation_end_date               AS income_forecasting_book_depreciation_end_date,
+            prodcmst.prodcmst_macrs_book_start_date                                       AS macrs_book_start_date,
+            prodcmst.prodcmst_macrs_book_end_date                                         AS macrs_book_end_date,
+            prodcmst.prodcmst_macrs_tax_start_date                                        AS macrs_tax_start_date,
+            prodcmst.prodcmst_macrs_tax_end_date                                          AS macrs_tax_end_date,
+            prodcmst.prodcmst_rent_switch                                                 AS rent_switch,
+            prodcmst.prodcmst_transition_into_switch                                      AS transition_into_switch,
+            prodcmst.prodcmst_transition_out_of_switch                                    AS transition_out_of_switch,
+            prodcmst.prodcmst_cash_sale_switch                                            AS cash_sale_switch,
+            prodcmst.prodcmst_allow_depreciation_switch                                   AS allow_depreciation_switch,
+            prodcmst.prodcmst_allow_straight_line_life_switch                             AS allow_straight_line_life_switch,
+            prodcmst.time_created AT TIME ZONE ''UTC''                                    AS time_created,
+            prodcmst.time_updated AT TIME ZONE ''UTC''                                    AS time_updated
          FROM ' || r.schema_name || '.level1_prodcmsts prodcmst
          ';
 
@@ -2753,31 +2750,28 @@ CREATE FOREIGN TABLE fastinfo_prod_import.operator_vw (
     bank_reconciliation_security INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'operator_vw', SCHEMA_NAME 'public');
 
-CREATE FOREIGN TABLE fastinfo_prod_import.prodcmst_vw (
+CREATE FOREIGN TABLE fastinfo_prod_import.product_class_master_file_vw (
     id BIGINT,
+    dataset VARCHAR,
     class_code VARCHAR,
-    class_desc VARCHAR,
-    sl_bk_start_date DATE,
-    sl_bk_end_date DATE,
-    if_bk_start_date DATE,
-    if_bk_end_date DATE,
-    macrs_bk_start_date DATE,
-    macrs_bk_end_date DATE,
+    class_description VARCHAR,
+    straight_line_book_depreciation_start_date DATE,
+    straight_line_book_depreciation_end_date DATE,
+    income_forecasting_book_depreciation_start_date DATE,
+    income_forecasting_book_depreciation_end_date DATE,
+    macrs_book_start_date DATE,
+    macrs_book_end_date DATE,
     macrs_tax_start_date DATE,
     macrs_tax_end_date DATE,
-    rent_sw VARCHAR,
-    transition_into_sw VARCHAR,
-    transition_out_of_sw VARCHAR,
-    cash_sale_sw VARCHAR,
-    allow_depr_sw VARCHAR,
-    allow_sl_life_sw VARCHAR,
-    created_at TIMESTAMPTZ,
-    updated_at TIMESTAMPTZ,
-    ht_etl_source_operation VARCHAR,
-    ht_etl_processing_stage INTEGER,
-    ht_etl_z_timestamp TIMESTAMPTZ,
-    ht_etl_checksum VARCHAR
-) SERVER fastinfo OPTIONS (TABLE_NAME 'prodcmst_vw', SCHEMA_NAME 'public');
+    rent_switch VARCHAR,
+    transition_into_switch VARCHAR,
+    transition_out_of_switch VARCHAR,
+    cash_sale_switch VARCHAR,
+    allow_depreciation_switch VARCHAR,
+    allow_straight_line_life_switch VARCHAR,
+    time_created TIMESTAMPTZ,
+    time_updated TIMESTAMPTZ
+) SERVER fastinfo OPTIONS (TABLE_NAME 'product_class_master_file_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.furncol_vw (
     id BIGINT,

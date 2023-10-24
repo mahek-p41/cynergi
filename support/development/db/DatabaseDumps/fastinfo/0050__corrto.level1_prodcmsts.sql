@@ -12,28 +12,25 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 CREATE TABLE corrto.level1_prodcmsts (
     id bigint NOT NULL,
+    prodcmst_dataset character varying(15),
     prodcmst_class_code character varying(1),
-    prodcmst_class_desc character varying(15),
-    prodcmst_sl_bk_start_date date,
-    prodcmst_sl_bk_end_date date,
-    prodcmst_if_bk_start_date date,
-    prodcmst_if_bk_end_date date,
-    prodcmst_macrs_bk_start_date date,
-    prodcmst_macrs_bk_end_date date,
+    prodcmst_class_description character varying(15),
+    prodcmst_straight_line_book_depreciation_start_date date,
+    prodcmst_straight_line_book_depreciation_end_date date,
+    prodcmst_income_forecasting_book_depreciation_start_date date,
+    prodcmst_income_forecasting_book_depreciation_end_date date,
+    prodcmst_macrs_book_start_date date,
+    prodcmst_macrs_book_end_date date,
     prodcmst_macrs_tax_start_date date,
     prodcmst_macrs_tax_end_date date,
-    prodcmst_rent_sw character varying(1),
-    prodcmst_transition_into_sw character varying(1),
-    prodcmst_transition_out_of_sw character varying(1),
-    prodcmst_cash_sale_sw character varying(1),
-    prodcmst_allow_depr_sw character varying(1),
-    prodcmst_allow_sl_life_sw character varying(1),
-    created_at timestamp without time zone,
-    updated_at timestamp without time zone,
-    ht_etl_source_operation character varying(1) DEFAULT 'L'::character varying NOT NULL,
-    ht_etl_processing_stage integer DEFAULT 10 NOT NULL,
-    ht_etl_z_timestamp timestamp without time zone,
-    ht_etl_checksum character varying(32)
+    prodcmst_rent_switch character varying(1),
+    prodcmst_transition_into_switch character varying(1),
+    prodcmst_transition_out_of_switch character varying(1),
+    prodcmst_cash_sale_switch character varying(1),
+    prodcmst_allow_depreciation_switch character varying(1),
+    prodcmst_allow_straight_line_life_switch character varying(1),
+    time_created timestamp without time zone,
+    time_updated timestamp without time zone
 );
 ALTER TABLE corrto.level1_prodcmsts OWNER TO fastinfo_dba;
 CREATE SEQUENCE corrto.level1_prodcmsts_id_seq
@@ -47,4 +44,3 @@ ALTER SEQUENCE corrto.level1_prodcmsts_id_seq OWNED BY corrto.level1_prodcmsts.i
 ALTER TABLE ONLY corrto.level1_prodcmsts ALTER COLUMN id SET DEFAULT nextval('corrto.level1_prodcmsts_id_seq'::regclass);
 ALTER TABLE ONLY corrto.level1_prodcmsts
     ADD CONSTRAINT level1_prodcmsts_pkey PRIMARY KEY (id);
-CREATE INDEX index_level1_prodcmsts_on_ht_etl_processing_stage ON corrto.level1_prodcmsts USING btree (ht_etl_processing_stage) WHERE (ht_etl_processing_stage < 10);
