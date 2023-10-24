@@ -11,7 +11,6 @@ SET row_security = off;
 SET default_tablespace = '';
 SET default_table_access_method = heap;
 CREATE TABLE coravt.level1_prodcmsts (
-    id bigint NOT NULL,
     prodcmst_dataset character varying(15),
     prodcmst_class_code character varying(1),
     prodcmst_class_description character varying(15),
@@ -33,14 +32,3 @@ CREATE TABLE coravt.level1_prodcmsts (
     time_updated timestamp without time zone
 );
 ALTER TABLE coravt.level1_prodcmsts OWNER TO fastinfo_dba;
-CREATE SEQUENCE coravt.level1_prodcmsts_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-ALTER TABLE coravt.level1_prodcmsts_id_seq OWNER TO fastinfo_dba;
-ALTER SEQUENCE coravt.level1_prodcmsts_id_seq OWNED BY coravt.level1_prodcmsts.id;
-ALTER TABLE ONLY coravt.level1_prodcmsts ALTER COLUMN id SET DEFAULT nextval('coravt.level1_prodcmsts_id_seq'::regclass);
-ALTER TABLE ONLY coravt.level1_prodcmsts
-    ADD CONSTRAINT level1_prodcmsts_pkey PRIMARY KEY (id);

@@ -361,7 +361,6 @@ BEGIN
       || ' '
       || unionAll || '
          SELECT
-            prodcmst.id                                                                   AS id,
             prodcmst.prodcmst_dataset                                                     AS dataset,
             prodcmst.prodcmst_class_code                                                  AS class_code,
             prodcmst.prodcmst_class_description                                           AS class_description,
@@ -386,7 +385,7 @@ BEGIN
 
       unionAll := ' UNION ALL ';
    END LOOP;
-   sqlToExec := sqlToExec || ' ) prodcmst ORDER BY id DESC';
+   sqlToExec := sqlToExec || ' ) prodcmst';
 
    EXECUTE sqlToExec;
 END $$;
@@ -2751,7 +2750,6 @@ CREATE FOREIGN TABLE fastinfo_prod_import.operator_vw (
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'operator_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.product_class_master_file_vw (
-    id BIGINT,
     dataset VARCHAR,
     class_code VARCHAR,
     class_description VARCHAR,
