@@ -12,10 +12,12 @@ import com.cynergisuite.middleware.sign.here.SignHereClient
 import com.cynergisuite.middleware.sign.here.SignHereTokenDto
 import com.cynergisuite.middleware.sign.here.associated.SignHereAssociatedPage
 import com.cynergisuite.middleware.sign.here.token.infrastructure.SignHereTokenRepository
+import com.cynergisuite.middleware.threading.CynergiExecutor
 import io.micronaut.context.annotation.Value
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.client.ProxyHttpClient
+import io.micronaut.http.server.types.files.StreamedFile
 import io.micronaut.retry.annotation.Retryable
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -28,10 +30,7 @@ import java.util.UUID
 class SignHereAgreementService @Inject constructor(
    private val signHereClient: SignHereClient,
    private val signHereTokenRepository: SignHereTokenRepository,
-   private val signHereProxyClient: ProxyHttpClient,
-   @Value("\${sign.here.please.scheme}") val signHereScheme: String,
-   @Value("\${sign.here.please.host}") val signHereHost: String,
-   @Value("\${sign.here.please.port}") val signHerePort: Int,
+   private val executor: CynergiExecutor,
 ) {
    private val logger = LoggerFactory.getLogger(SignHereAgreementService::class.java)
 
@@ -70,7 +69,7 @@ class SignHereAgreementService @Inject constructor(
    }
 
    @Retryable(attempts = "3")
-   fun retrieveDocument(location: Location, company: CompanyEntity, documentId: UUID, httpRequest: HttpRequest<*>): Publisher<MutableHttpResponse<*>> {
+   fun retrieveDocument(location: Location, company: CompanyEntity, documentId: UUID, httpRequest: HttpRequest<*>): StreamedFile {
       logger.info("retrieveDocument -> Looking up token for company/location {}/{}", company.id, location.myNumber())
       val token = signHereTokenRepository.findOneByStoreNumber(location.myNumber(), company) ?: throw ValidationException(ValidationError(localizationCode = SignHerePleaseNotEnabled(location, company)))
 
@@ -79,21 +78,9 @@ class SignHereAgreementService @Inject constructor(
       val signHereLogin = signHereClient.login(signHereToken)
       logger.info("retrieveDocument -> Logged into sign here please service")
 
-      val result = signHereProxyClient.proxy(
-         httpRequest.mutate()
-            .headers { headers -> headers.remove("Authorization") }
-            .bearerAuth(signHereLogin.accessToken)
-            .withUri {
-               scheme(signHereScheme)
-               host(signHereHost)
-               port(signHerePort)
-               replacePath(StringUtils.remove(httpRequest.path, "/sign/here/agreement"))
-            }
-      )
-
-      logger.info("retrieveDocument -> successfully loaded document")
-
-      return result
+      return executor.pipeBlockingOutputToStreamedFile("application/pdf") { outputStream ->
+         signHereClient.retrieveDocument("Bearer ${signHereLogin.accessToken}", documentId, outputStream)
+      }
    }
 
    @Retryable(attempts = "3")

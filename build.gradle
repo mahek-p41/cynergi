@@ -60,7 +60,7 @@ dependencies {
    runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
    // end micronaut launch dependencies
 
-   // document-upload.groovy additional dependencies
+   // esig additional dependencies
    implementation('org.slf4j:jul-to-slf4j:1.7.36')
    implementation("org.slf4j:log4j-over-slf4j:1.7.36")
    implementation('org.slf4j:jcl-over-slf4j:1.7.36')
@@ -70,7 +70,7 @@ dependencies {
    implementation('info.picocli:picocli-groovy:4.7.3')
    implementation("org.codehaus.groovy:groovy:${groovyVersion}")
    implementation("org.codehaus.groovy:groovy-json:${groovyVersion}")
-   // document-upload.groovy additional dependencies
+   // esig additional dependencies
 
    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
    implementation('io.projectreactor.kotlin:reactor-kotlin-extensions:1.2.2')
@@ -136,11 +136,13 @@ tasks {
    compileKotlin {
       kotlinOptions {
          jvmTarget = "11"
+         freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
       }
    }
    compileTestKotlin {
       kotlinOptions {
          jvmTarget = "11"
+         freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
       }
    }
 }
