@@ -4,8 +4,10 @@ import com.cynergisuite.domain.*
 import com.cynergisuite.middleware.accounting.account.VendorBalanceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewService
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableDistDetailReportDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryPaymentDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceListByVendorDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceService
@@ -359,5 +361,59 @@ class AccountPayableInvoiceController @Inject constructor(
       val user = userService.fetchUser(authentication)
 
       return accountPayableInvoiceService.vendorBalance(user.myCompany(), filterRequest)
+   }
+
+   @Throws(NotFoundException::class)
+   @Get(value = "/payments/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Fetch an AP Invoice Payments", description = "Fetch an AP Invoice Payments", operationId = "accountPayableInvoice-fetchInvoicePayments")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableInvoiceInquiryPaymentDTO::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Account Payable Invoice was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchInvoicePayments(
+      @QueryValue("id")
+      id: UUID,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): List<AccountPayableInvoiceInquiryPaymentDTO> {
+      logger.info("Fetching Account Payable Invoice Payments by {}", id)
+
+      val user = userService.fetchUser(authentication)
+      val response = accountPayableInvoiceService.fetchInvoicePayments(id, user.myCompany()) ?: throw NotFoundException(id)
+
+      logger.debug("Fetching Account Payable Invoice Payments by {} resulted in {}", id, response)
+
+      return response
+   }
+
+   @Throws(NotFoundException::class)
+   @Get(value = "/gl-distributions/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Fetch an AP Invoice GL Distributions", description = "Fetch an AP Invoice GL Distributions", operationId = "accountPayableInvoice-fetchGLDistributions")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableDistDetailReportDTO::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Account Payable Invoice was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchGLDistributions(
+      @QueryValue("id")
+      id: UUID,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): List<AccountPayableDistDetailReportDTO> {
+      logger.info("Fetching GL Distributions by {}", id)
+
+      val user = userService.fetchUser(authentication)
+      val response = accountPayableInvoiceService.fetchGLDistributions(id, user.myCompany()) ?: throw NotFoundException(id)
+
+      logger.debug("Fetching GL Distributions by {} resulted in {}", id, response)
+
+      return response
    }
 }
