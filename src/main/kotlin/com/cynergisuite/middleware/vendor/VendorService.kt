@@ -129,6 +129,55 @@ class VendorService @Inject constructor(
       val minimumQuantity: String = if (vendor.minimumQuantity != null) { vendor.minimumQuantity.toString() } else { "" }
       val freeShipQuantity: String = if (vendor.freeShipQuantity != null) { vendor.freeShipQuantity.toString() } else { "" }
 
+      var addressName: String
+      var addressAddress1: String
+      var addressAddress2: String
+      var addressCity: String
+      var addressState: String
+      var addressZip: String
+      var addressPhone: String
+      var addressFax: String
+
+      if (vendor.address != null) {
+
+         addressName = vendor.address.name
+
+         addressAddress1 = vendor.address.address1
+
+         if (vendor.address.address2 != null) {
+            addressAddress2 = vendor.address.address2
+         } else {
+            addressAddress2 = ""
+         }
+
+         addressCity = vendor.address.city
+
+         addressState = vendor.address.state
+
+         addressZip = vendor.address.postalCode
+
+         if (vendor.address.phone != null) {
+            addressPhone = vendor.address.phone
+         } else {
+            addressPhone = ""
+         }
+
+         if (vendor.address.fax != null) {
+            addressFax = vendor.address.fax
+         } else {
+            addressFax = ""
+         }
+      } else {
+         addressName = ""
+         addressAddress1 = ""
+         addressAddress2 = ""
+         addressCity = ""
+         addressState = ""
+         addressZip = ""
+         addressPhone = ""
+         addressFax = ""
+      }
+
       if (vendor.payTo != null) {
          val payToVendor = vendorRepository.findOne(vendor.payTo.myId()!!, company)
          payToNumber = payToVendor!!.number.toString()
@@ -173,6 +222,14 @@ class VendorService @Inject constructor(
             "PO_submit_email",
             "allow_dropship",
             "auto_submit_PO",
+            "addressName",
+            "addressAddress1",
+            "addressAddress2",
+            "addressCity",
+            "addressState",
+            "addressZip",
+            "addressPhone",
+            "addressFax",
             "dummy_field"))
 
          var data = listOf(
@@ -208,6 +265,14 @@ class VendorService @Inject constructor(
             "PO_submit_email",
             "allow_dropship",
             "auto_submit_PO",
+            "addressName",
+            "addressAddress1",
+            "addressAddress2",
+            "addressCity",
+            "addressState",
+            "addressZip",
+            "addressPhone",
+            "addressFax",
             "dummy_field")
 
          data = listOf(
@@ -243,6 +308,14 @@ class VendorService @Inject constructor(
             POSubmitEmail,
             allowDropshipToCust,
             autoSubmitPO,
+            addressName,
+            addressAddress1,
+            addressAddress2,
+            addressCity,
+            addressState,
+            addressZip,
+            addressPhone,
+            addressFax,
             "1")
          csvPrinter.printRecord(data)
 
