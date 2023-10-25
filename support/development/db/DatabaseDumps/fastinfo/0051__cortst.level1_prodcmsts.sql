@@ -11,7 +11,6 @@ SET row_security = off;
 SET default_tablespace = '';
 SET default_table_access_method = heap;
 CREATE TABLE cortst.level1_prodcmsts (
-    prodcmst_dataset character varying(15),
     prodcmst_class_code character varying(1),
     prodcmst_class_description character varying(15),
     prodcmst_straight_line_book_depreciation_start_date date,
