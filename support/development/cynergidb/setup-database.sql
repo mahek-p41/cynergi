@@ -361,7 +361,7 @@ BEGIN
       || ' '
       || unionAll || '
          SELECT
-            prodcmst.prodcmst_dataset                                                     AS dataset,
+            ''' || r.schema_name || '''::text                                             AS dataset,
             prodcmst.prodcmst_class_code                                                  AS class_code,
             prodcmst.prodcmst_class_description                                           AS class_description,
             prodcmst.prodcmst_straight_line_book_depreciation_start_date                  AS straight_line_book_depreciation_start_date,
