@@ -12,22 +12,22 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 CREATE TABLE coravt.level1_prodcmsts (
     prodcmst_class_code character varying(1),
-    prodcmst_class_description character varying(15),
-    prodcmst_straight_line_book_depreciation_start_date date,
-    prodcmst_straight_line_book_depreciation_end_date date,
-    prodcmst_income_forecasting_book_depreciation_start_date date,
-    prodcmst_income_forecasting_book_depreciation_end_date date,
-    prodcmst_macrs_book_start_date date,
-    prodcmst_macrs_book_end_date date,
+    prodcmst_class_desc character varying(15),
+    prodcmst_sl_bk_start_date date,
+    prodcmst_sl_bk_end_date date,
+    prodcmst_if_bk_start_date date,
+    prodcmst_if_bk_end_date date,
+    prodcmst_macrs_bk_start_date date,
+    prodcmst_macrs_bk_end_date date,
     prodcmst_macrs_tax_start_date date,
     prodcmst_macrs_tax_end_date date,
-    prodcmst_rent_switch character varying(1),
-    prodcmst_transition_into_switch character varying(1),
-    prodcmst_transition_out_of_switch character varying(1),
-    prodcmst_cash_sale_switch character varying(1),
-    prodcmst_allow_depreciation_switch character varying(1),
-    prodcmst_allow_straight_line_life_switch character varying(1),
-    time_created timestamp without time zone,
-    time_updated timestamp without time zone
+    prodcmst_rent_sw character varying(1),
+    prodcmst_transition_into_sw character varying(1),
+    prodcmst_transition_out_of_sw character varying(1),
+    prodcmst_cash_sale_sw character varying(1),
+    prodcmst_allow_depr_sw character varying(1),
+    prodcmst_allow_sl_life_sw character varying(1),
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
 );
 ALTER TABLE coravt.level1_prodcmsts OWNER TO fastinfo_dba;
