@@ -44,7 +44,7 @@ class AuditScanAreaRepository @Inject constructor(
             store.number AS store_number,
             store.name AS store_name
          FROM audit_scan_area area
-            JOIN company comp ON area.company_id = comp.id
+            JOIN company comp ON area.company_id = comp.id AND comp.deleted = FALSE
             JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND area.store_number_sfk = store.number
       """
    }
@@ -85,7 +85,7 @@ class AuditScanAreaRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): AuditScanAreaEntity? =
       jdbc.findFirstOrNull(
-         "${selectBaseQuery()} WHERE area.id = :id",
+         "${selectBaseQuery()} WHERE area.id = :id AND comp.deleted = FALSE",
          mapOf("id" to id)
       ) { rs, _ -> mapRow(rs, company) }
 

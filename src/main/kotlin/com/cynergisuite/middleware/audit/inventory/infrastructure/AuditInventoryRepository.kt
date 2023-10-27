@@ -26,7 +26,7 @@ class AuditInventoryRepository @Inject constructor(
          (audit_id, dataset, serial_number, lookup_key, lookup_key_type, barcode, alt_id, brand, model_number, product_code, description, received_date, original_cost, actual_cost, model_category, times_rented, total_revenue, remaining_value, sell_price, assigned_value, idle_days, condition, returned_date, location, status, primary_location, location_type)
          SELECT :audit_id, dataset, serial_number, lookup_key, lookup_key_type, barcode, alt_id, brand, model_number, product_code, description, received_date, original_cost, actual_cost, model_category, times_rented, total_revenue, remaining_value, sell_price, assigned_value, idle_days, condition, returned_date, location, status, primary_location, location_type
          FROM fastinfo_prod_import.inventory_vw i
-            JOIN company comp ON i.dataset = comp.dataset_code
+            JOIN company comp ON i.dataset = comp.dataset_code AND comp.deleted = FALSE
          WHERE i.primary_location = :store_number
                AND comp.id = :company_id
                AND ((i.status = 'D' OR (i.status in ('N', 'R') AND i.location = :store_number))

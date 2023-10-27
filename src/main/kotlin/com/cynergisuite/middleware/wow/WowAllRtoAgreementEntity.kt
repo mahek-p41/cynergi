@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.wow
 
 import com.cynergisuite.middleware.company.CompanyEntity
-import java.math.BigInteger
 import java.time.LocalDate
 
 class WowAllRtoAgreementEntity(
@@ -14,16 +13,16 @@ class WowAllRtoAgreementEntity(
    val agreementNumber: String,
    val dateRented: LocalDate?,
    val dueDate: LocalDate?,
-   val percentOwnership: String,
+   val percentOwnership: String?,
    val product: String?,
-   val terms: String,
+   val terms: String?,
    val nextPaymentAmount: String,
    val address1: String?,
    val address2: String?,
    val city: String?,
    val state: String?,
    val zip: String?,
-   val paymentsRemaining: String,
+   val paymentsRemaining: String?,
    val projectedPayoutDate: LocalDate?,
    val weeksRemaining: Int,
    val monthsRemaining: Int,

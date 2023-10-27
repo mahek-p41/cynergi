@@ -40,7 +40,7 @@ abstract class ControllerSpecificationBase extends ServiceSpecificationBase {
 
    void setup() {
       this.client = httpClient.toBlocking()
-      this.tstds1 = companyFactoryService.forDatasetCode('tstds1')
+      this.tstds1 = companyFactoryService.forDatasetCode('coravt')
       this.store1Tstds1 = userStoreRepository.findOne(1, tstds1)
       this.store3Tstds1 = userStoreRepository.findOne(3, tstds1)
 

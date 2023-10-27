@@ -13,7 +13,7 @@ class WowAccountSummaryEntity(
    val agreementNumber: String,
    val dateRented: LocalDate?,
    val dueDate: LocalDate?,
-   val percentOwnership: String,
+   val percentOwnership: String? = null,
    val product: String?,
    val terms: String,
    val nextPaymentAmount: String,

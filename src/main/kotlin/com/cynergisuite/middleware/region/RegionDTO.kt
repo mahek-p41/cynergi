@@ -3,12 +3,14 @@ package com.cynergisuite.middleware.region
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.division.DivisionDTO
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.UUID
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
 
+@Introspected
 @Schema(name = "Region", title = "Region", description = "A region of a division.")
 data class RegionDTO(
 

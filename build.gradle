@@ -12,10 +12,15 @@ plugins {
    id "org.flywaydb.flyway" version "${flywayVersion}"
    id "org.openapi.generator" version "4.3.0"
    id "org.jmailen.kotlinter" version "3.4.0"
+   id "org.gradle.test-retry" version "1.5.4"
 }
 
 version "${releaseVersion}"
 group "com.cynergisuite"
+// https://docs.gradle.org/current/userguide/writing_build_scripts.html#sec:standard_project_properties
+project.buildDir = "${projectDir}/build"
+// https://docs.gradle.org/current/userguide/java_testing.html#communicating_test_results_to_CI_servers_and_other_tools_via_xml_files
+project.testResultsDirName = "${buildDir}/test-results"
 
 repositories {
    mavenCentral()
@@ -89,6 +94,9 @@ dependencies {
    implementation('com.google.guava:guava:31.1-jre') { transitive = false }
    implementation('com.github.librepdf:openpdf:1.3.30')
    implementation('org.eclipse.collections:eclipse-collections:11.1.0')
+   implementation("com.opencsv:opencsv:3.7")
+
+   implementation("org.zeroturnaround:zt-exec:1.12")
 
    testImplementation("io.micronaut.flyway:micronaut-flyway")
    testImplementation "io.micronaut.test:micronaut-test-junit5"
@@ -112,9 +120,18 @@ mainClassName = "com.cynergisuite.middleware.Application"
 run.classpath += configurations.developmentOnly
 run.jvmArgs("-noverify", "-XX:TieredStopAtLevel=1", "-Dcom.sun.management.jmxremote", "-Dmicronaut.environments=local")
 
+boolean verboseMode = System.getenv().containsKey("VERBOSE_MODE")
 test {
    useJUnitPlatform()
    maxHeapSize = "4096m"
+   retry {
+      maxRetries = 4
+      maxFailures = 20
+      failOnPassedAfterRetry = false
+   }
+   if (verboseMode) {
+      testLogging.showStandardStreams = true
+   }
 }
 
 jacoco {

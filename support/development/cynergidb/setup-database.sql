@@ -172,8 +172,8 @@ BEGIN
             inventory.inv_serial_nbr_key                                                                                             AS barcode,
             inventory.inv_alt_id                                                                                                     AS alt_id,
             manufacturer.manufile_manu_name                                                                                          AS brand,
-            inventory.inv_model_nbr_manufacturer                                                                                     AS model_number,
-            LEFT(inventory.inv_model_nbr_manufacturer, 1) || ''-'' || inventory.inv_desc                                             AS product_code,
+            model.itemfile_nbr                                                                                                             AS model_number,
+            Left(model.itemfile_nbr,2)                                                                                                     AS product_code,
             inventory.inv_desc                                                                                                       AS description,
             inventory.inv_date_received                                                                                              AS received_date,
             inventory.inv_original_cost                                                                                              AS original_cost,
@@ -186,6 +186,9 @@ BEGIN
             inventory.inv_assigned_value                                                                                             AS assigned_value,
             inventory.inv_nbr_idle_days                                                                                              AS idle_days,
             inventory.inv_condition                                                                                                  AS condition,
+            inventory.inv_invoice_nbr                                                                                                AS invoice_number,
+            inventory.inv_invoice_expensed_date                                                                                      AS inv_invoice_expensed_date,
+            inventory.inv_po_nbr                                                                                                     AS inv_purchase_order_number,
             inventory.inventory_status_id                                                                                            AS status_id,
             inventory.model_id                                                                                                       AS model_id,
             CASE
@@ -207,6 +210,205 @@ BEGIN
 
       unionAll := ' UNION ALL ';
    END LOOP;
+
+   EXECUTE sqlToExec;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW itemfile_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'itemfile_vw') THEN
+      DROP VIEW itemfile_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+            itemfile.id                              AS id,
+            ''' || r.schema_name || '''::text        AS dataset,
+            itemfile.created_at AT TIME ZONE ''UTC'' AS time_created,
+            itemfile.updated_at AT TIME ZONE ''UTC'' AS time_updated,
+            itemfile.itemfile_nbr                    AS number,
+            itemfile.itemfile_desc_1                 AS description_1,
+            itemfile.itemfile_desc_2                 AS description_2,
+            itemfile.itemfile_discontinued_indr      AS discontinued_indicator,
+            vendors.vend_number                      AS vendor_number
+         FROM ' || r.schema_name || '.level2_models itemfile
+              JOIN ' || r.schema_name || '.level2_vendors vendors ON itemfile.vendor_id = vendors.id
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY number';
+
+   EXECUTE sqlToExec;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW customer_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'customer_vw') THEN
+      DROP VIEW customer_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+            customer.id                              AS id,
+            ''' || r.schema_name || '''::text        AS dataset,
+            customer.created_at AT TIME ZONE ''UTC'' AS time_created,
+            customer.updated_at AT TIME ZONE ''UTC'' AS time_updated,
+            customer.cust_acct_nbr                   AS number,
+            customer.cust_first_name_mi              AS first_name_mi,
+            customer.cust_last_name                  AS last_name
+         FROM ' || r.schema_name || '.level2_customers customer
+         WHERE cust_first_name_mi IS NOT NULL
+               AND cust_last_name IS NOT NULL
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY number';
+
+   EXECUTE sqlToExec;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW operator_vw AS
+                 SELECT *
+                 FROM (';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'operator_vw') THEN
+      DROP VIEW operator_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT DISTINCT ON (operator_name)
+            operator.id                              AS id,
+            ''' || r.schema_name || '''::text        AS dataset,
+            operator.created_at AT TIME ZONE ''UTC'' AS time_created,
+            operator.updated_at AT TIME ZONE ''UTC'' AS time_updated,
+            operator.operator_name                   AS name,
+            CAST(operator_name AS INTEGER)           AS number,
+            operator.operator_security_2             AS account_payable_security,
+            operator.operator_security_4             AS purchase_order_security,
+            operator.operator_security_5             AS general_ledger_security,
+            operator.operator_security_10            AS system_administration_security,
+            operator.operator_security_11            AS file_maintenance_security,
+            operator.operator_security_16            AS bank_reconciliation_security
+         FROM ' || r.schema_name || '.level1_operators operator
+         INNER JOIN ' || r.schema_name || '.level2_employees employee ON CAST(operator.operator_name AS INTEGER) = employee.emp_nbr
+         WHERE operator_type = ''O'' AND isnumeric(operator.operator_name)
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || ' ) operator ORDER BY name, id DESC';
+
+   EXECUTE sqlToExec;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW furncol_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'furncol_vw') THEN
+      DROP VIEW furncol_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+            furncol.id                               AS id,
+            ''' || r.schema_name || '''::text        AS dataset,
+            furncol.created_at AT TIME ZONE ''UTC''  AS time_created,
+            furncol.updated_at AT TIME ZONE ''UTC''  AS time_updated,
+            furncol.furn_col_code                    AS number,
+            furncol.furn_col_description             AS description
+         FROM ' || r.schema_name || '.level1_furn_cols furncol
+         WHERE furn_col_rec_type = ''1''
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY number';
+
+   EXECUTE sqlToExec;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW furnfab_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'furnfab_vw') THEN
+      DROP VIEW furncol_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+            furnfab.id                               AS id,
+            ''' || r.schema_name || '''::text        AS dataset,
+            furnfab.created_at AT TIME ZONE ''UTC''  AS time_created,
+            furnfab.updated_at AT TIME ZONE ''UTC''  AS time_updated,
+            furnfab.furn_fab_code                    AS number,
+            furnfab.furn_fab_description             AS description
+         FROM ' || r.schema_name || '.level1_furn_cols furnfab
+         WHERE furn_col_rec_type = ''2''
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY number';
 
    EXECUTE sqlToExec;
 END $$;
@@ -2380,6 +2582,8 @@ END $$;
 -- Begin cynergidb setup
 \c cynergidb
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
 CREATE EXTENSION IF NOT EXISTS postgres_fdw;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE SCHEMA IF NOT EXISTS fastinfo_prod_import;
@@ -2447,12 +2651,70 @@ CREATE FOREIGN TABLE fastinfo_prod_import.inventory_vw (
     assigned_value NUMERIC,
     idle_days INTEGER,
     condition VARCHAR,
+    invoice_number VARCHAR,
+    inv_invoice_expensed_date DATE,
+    inv_purchase_order_number VARCHAR,
     returned_date DATE,
     location INTEGER,
     status VARCHAR,
     primary_location INTEGER,
     location_type INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'inventory_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.itemfile_vw (
+   id BIGINT,
+   dataset VARCHAR,
+   time_created TIMESTAMPTZ,
+   time_updated TIMESTAMPTZ,
+   number VARCHAR,
+   description_1 VARCHAR,
+   description_2 VARCHAR,
+   discontinued_indr VARCHAR,
+   vendor_number INTEGER
+) SERVER fastinfo OPTIONS (TABLE_NAME 'itemfile_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.customer_vw (
+   id BIGINT,
+   dataset VARCHAR,
+   time_created TIMESTAMPTZ,
+   time_updated TIMESTAMPTZ,
+   number integer,
+   first_name_mi VARCHAR,
+   last_name VARCHAR
+) SERVER fastinfo OPTIONS (TABLE_NAME 'customer_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.operator_vw (
+    id BIGINT,
+    dataset VARCHAR,
+    time_created TIMESTAMPTZ,
+    time_updated TIMESTAMPTZ,
+    name VARCHAR,
+    number INTEGER,
+    account_payable_security INTEGER,
+    purchase_order_security INTEGER,
+    general_ledger_security INTEGER,
+    system_administration_security INTEGER,
+    file_maintenance_security INTEGER,
+    bank_reconciliation_security INTEGER
+) SERVER fastinfo OPTIONS (TABLE_NAME 'operator_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.furncol_vw (
+    id BIGINT,
+    dataset VARCHAR,
+    time_created TIMESTAMPTZ,
+    time_updated TIMESTAMPTZ,
+    number INTEGER,
+    description VARCHAR
+) SERVER fastinfo OPTIONS (TABLE_NAME 'furncol_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.furnfab_vw (
+    id BIGINT,
+    dataset VARCHAR,
+    time_created TIMESTAMPTZ,
+    time_updated TIMESTAMPTZ,
+    number INTEGER,
+    description VARCHAR
+) SERVER fastinfo OPTIONS (TABLE_NAME 'furnfab_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.location_vw (
     id BIGINT,

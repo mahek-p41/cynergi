@@ -1,11 +1,14 @@
 package com.cynergisuite.middleware.store.infrastructure
 
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.isNumber
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.update
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -50,6 +53,19 @@ class StoreRepository @Inject constructor(
             comp.client_id                AS comp_client_id,
             comp.dataset_code             AS comp_dataset_code,
             comp.federal_id_number        AS comp_federal_id_number,
+            address.id                    AS address_id,
+            address.name                  AS address_name,
+            address.address1              AS address_address1,
+            address.address2              AS address_address2,
+            address.city                  AS address_city,
+            address.state                 AS address_state,
+            address.postal_code           AS address_postal_code,
+            address.latitude              AS address_latitude,
+            address.longitude             AS address_longitude,
+            address.country               AS address_country,
+            address.county                AS address_county,
+            address.phone                 AS address_phone,
+            address.fax                   AS address_fax,
             region.id                     AS reg_id,
             region.number                 AS reg_number,
             region.division_id            AS reg_division_id,
@@ -60,10 +76,11 @@ class StoreRepository @Inject constructor(
             division.name                 AS div_name,
             division.description          AS div_description
          FROM system_stores_fimvw store
-              JOIN company comp ON comp.dataset_code = store.dataset
-              LEFT OUTER JOIN region_to_store r2s ON r2s.store_number = store.number
-              LEFT OUTER JOIN region ON r2s.region_id = region.id
-              LEFT OUTER JOIN division ON region.division_id = division.id
+              JOIN company comp ON comp.dataset_code = store.dataset AND comp.deleted = FALSE
+              LEFT JOIN address ON comp.address_id = address.id AND address.deleted = FALSE
+              LEFT OUTER JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = :comp_id
+              LEFT OUTER JOIN region ON r2s.region_id = region.id AND region.deleted = FALSE
+              LEFT OUTER JOIN division ON region.division_id = division.id AND division.deleted = FALSE
       """
    }
 
@@ -77,7 +94,7 @@ class StoreRepository @Inject constructor(
       (r2s.region_id IS null
          OR r2s.region_id NOT IN (
                SELECT region.id
-               FROM region JOIN division ON region.division_id = division.id
+               FROM region JOIN division ON region.division_id = division.id AND division.deleted = FALSE
                WHERE division.company_id <> :comp_id
             ))
    """
@@ -90,6 +107,7 @@ class StoreRepository @Inject constructor(
          ${selectBaseQuery()}
          WHERE store.id = :id
                AND comp.id = :comp_id
+               AND comp.deleted = FALSE
                AND $subQuery
       """.trimMargin()
 
@@ -106,7 +124,7 @@ class StoreRepository @Inject constructor(
    fun findOne(number: Int, company: CompanyEntity): StoreEntity? {
       val params = mutableMapOf("number" to number, "comp_id" to company.id)
       val query =
-         """${selectBaseQuery()} WHERE store.number = :number AND comp.id = :comp_id
+         """${selectBaseQuery()} WHERE store.number = :number AND comp.id = :comp_id AND comp.deleted = FALSE
                                                 AND $subQuery
       """.trimMargin()
 
@@ -125,7 +143,7 @@ class StoreRepository @Inject constructor(
       val params = mutableMapOf("comp_id" to company.id, "limit" to pageRequest.size(), "offset" to pageRequest.offset())
       var totalElements: Long? = null
       val elements = mutableListOf<StoreEntity>()
-      val pagedQuery = StringBuilder("${selectBaseQuery()} WHERE comp.id = :comp_id AND $subQuery")
+      val pagedQuery = StringBuilder("${selectBaseQuery()} WHERE comp.id = :comp_id AND comp.deleted = FALSE AND $subQuery")
 
       when (user.myAlternativeStoreIndicator()) {
          // with value 'A' return all stores
@@ -174,15 +192,73 @@ class StoreRepository @Inject constructor(
    }
 
    @ReadOnly
+   fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<StoreEntity, PageRequest> {
+      val searchQuery = page.query?.trim()
+      val where = StringBuilder(" WHERE comp.id = :comp_id AND comp.deleted = FALSE")
+      val sortBy = StringBuilder("")
+      if (!searchQuery.isNullOrEmpty()) {
+         val splitSearchQuery = searchQuery.split(" - ")
+         val searchQueryBeginsWith = "$searchQuery%"
+
+         where.append(" AND (")
+         sortBy.append("ORDER BY ")
+         if (searchQuery.isNumber()) {
+            if (page.fuzzy!!) {
+               where.append("store.number::text LIKE \'$searchQueryBeginsWith\' OR ")
+               sortBy.append("store.number::text <-> :search_query, store.number::text ASC, ")
+               sortBy.append("store.name <-> :search_query, store.name ASC")
+            } else {
+               where.append("store.number = $searchQuery OR ")
+               sortBy.append("store.name ASC")
+            }
+            where.append("store.name ILIKE \'$searchQueryBeginsWith\')")
+         } else if (splitSearchQuery.first().isNumber()) {
+            val nameBeginsWith = "${splitSearchQuery.drop(1).joinToString(" - ")}%"
+            where.append("store.number = ${splitSearchQuery.first()} AND store.name ILIKE \'$nameBeginsWith\')")
+            sortBy.append("store.name ASC")
+         } else {
+            where.append("store.name ILIKE \'$searchQueryBeginsWith\')")
+            sortBy.append("store.name ASC")
+         }
+      }
+
+      return jdbc.queryPaged(
+         """
+         WITH paged AS (
+            ${selectBaseQuery()}
+            $where
+            $sortBy
+         )
+         SELECT
+            p.*,
+            count(*) OVER() as total_elements
+         FROM paged AS p
+         LIMIT :limit OFFSET :offset
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "limit" to page.size(),
+            "offset" to page.offset(),
+            "search_query" to searchQuery
+         ),
+         page
+      ) { rs, elements ->
+         do {
+            elements.add(mapRowWithRegion(rs, company, "store_"))
+         } while (rs.next())
+      }
+   }
+
+   @ReadOnly
    override fun exists(id: Long, company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
          """
          SELECT count(store.id) > 0
          FROM system_stores_fimvw store
-            JOIN company comp ON comp.dataset_code = store.dataset
-            LEFT JOIN region_to_store r2s ON r2s.store_number = store.number
-            LEFT JOIN region ON  r2s.region_id = region.id
-			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id
+            JOIN company comp ON comp.dataset_code = store.dataset AND comp.deleted = FALSE
+            LEFT JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = comp.id
+            LEFT JOIN region ON  r2s.region_id = region.id AND region.deleted = FALSE
+			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id AND division.deleted = FALSE
          WHERE store.id = :store_id
                AND $subQuery
       """.trimIndent(),
@@ -205,10 +281,10 @@ class StoreRepository @Inject constructor(
          """
          SELECT count(store.id) > 0
          FROM system_stores_fimvw store
-            JOIN company comp ON comp.dataset_code = store.dataset
-            LEFT JOIN region_to_store r2s ON r2s.store_number = store.number
-            LEFT JOIN region ON  r2s.region_id = region.id
-			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id
+            JOIN company comp ON comp.dataset_code = store.dataset AND comp.deleted = FALSE
+            LEFT JOIN region_to_store r2s ON r2s.store_number = store.number AND r2s.company_id = comp.id
+            LEFT JOIN region ON  r2s.region_id = region.id AND region.deleted = FALSE
+			   LEFT JOIN division ON division.company_id = comp.id AND region.division_id = division.id AND division.deleted = FALSE
          WHERE store.number = :store_number
                   AND comp.id = :comp_id
                   AND $subQuery
@@ -230,12 +306,13 @@ class StoreRepository @Inject constructor(
 
       jdbc.update(
          """
-         INSERT INTO region_to_store (region_id, store_number)
-         VALUES (:region_id, :store_number)
+         INSERT INTO region_to_store (region_id, store_number, company_id)
+         VALUES (:region_id, :store_number, :company_id)
          """.trimIndent(),
          mapOf(
             "region_id" to region.id,
             "store_number" to store.myNumber(),
+            "company_id" to companyId,
          )
       )
 
@@ -253,9 +330,9 @@ class StoreRepository @Inject constructor(
 
    fun mapRowWithRegion(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): StoreEntity =
       StoreEntity(
-         id = rs.getLong("${columnPrefix}id"),
-         number = rs.getInt("${columnPrefix}number"),
-         name = rs.getString("${columnPrefix}name"),
+         id = rs.getLong("id"),
+         number = rs.getInt("number"),
+         name = rs.getString("name"),
          region = regionRepository.mapRowOrNull(rs, company, "reg_"),
          company = company,
       )

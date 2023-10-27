@@ -9,10 +9,10 @@ import com.cynergisuite.middleware.employee.EmployeeTestDataLoader
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-import org.apache.commons.lang3.RandomUtils
-
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import org.apache.commons.lang3.RandomUtils
+
 import java.time.OffsetDateTime
 import java.util.stream.IntStream
 import java.util.stream.Stream

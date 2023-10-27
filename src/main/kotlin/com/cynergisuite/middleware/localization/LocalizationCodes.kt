@@ -1,10 +1,14 @@
 package com.cynergisuite.middleware.localization
 
+import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.location.Location
+import com.cynergisuite.middleware.store.StoreEntity
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.apache.commons.lang3.builder.ToStringBuilder
+import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.UUID
 
@@ -36,16 +40,42 @@ class Max : Validation("javax.validation.constraints.Max.message", emptyArray())
 class Pattern : Validation("javax.validation.constraints.Pattern.message", emptyArray())
 
 abstract class Cynergi(code: String, arguments: Array<Any?>) : LocalizationCodeImpl(code, arguments)
-class Duplicate(duplicateValue: Any?) : Cynergi("cynergi.validation.duplicate", if (duplicateValue != null) arrayOf(duplicateValue ?: EMPTY) else arrayOf(EMPTY))
+class Duplicate(duplicateValue: Any?) : Cynergi("cynergi.validation.duplicate", if (duplicateValue != null) arrayOf(duplicateValue) else arrayOf(EMPTY))
 class NotUpdatable(notUpdatableValue: Any?) : Cynergi("cynergi.validation.not.updatable", arrayOf(notUpdatableValue))
+class MustBe(notNullProperty: String) : Cynergi("cynergi.validation.must.be", arrayOf(notNullProperty))
+class MustBeInRangeOf(value: Any?) : Cynergi("cynergi.validation.must.be.in.range.of", arrayOf(value))
 class EndDateBeforeStart(endDate: String, startDate: String) : Cynergi("cynergi.validation.end.date.before.start", arrayOf(endDate, startDate))
 class NotificationRecipientsRequiredAll(notificationType: String) : Cynergi("cynergi.validation.notification.recipients.not.required", arrayOf(notificationType))
 class NotificationRecipientsRequired(notificationType: String?) : Cynergi("cynergi.validation.notification.recipients.required", arrayOf(notificationType))
 class ConversionError(valueOne: String, valueTwo: Any?) : Cynergi("cynergi.validation.conversion.error", arrayOf(valueOne, valueTwo))
 class ThruDateIsBeforeFrom(from: OffsetDateTime, thru: OffsetDateTime) : Cynergi("cynergi.validation.thru.before.from", arrayOf(from, thru))
+class CalendarThruDateIsBeforeFrom(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.calendar.thru.before.from", arrayOf(from, thru))
+class CalendarDatesSpanMoreThanTwoYears(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.dates.span.more.than.two.years", arrayOf(from, thru))
+class PendingJEsFoundForCurrentFiscalYear(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.pending.jes.found.for.current.year", arrayOf(from, thru))
+class PendingReversalsFoundForCurrentFiscalYear(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.unposted.reversals.found.for.current.year", arrayOf(from, thru))
+class GLDatesSelectedOutsideAPDatesSet(fromGL: LocalDate, thruGL: LocalDate, fromAP: LocalDate, thruAP: LocalDate) : Cynergi("cynergi.validation.gl.not.encompassing.ap.window", arrayOf(fromGL, thruGL, fromAP, thruAP))
+class APDatesSelectedOutsideGLDatesSet(fromAP: LocalDate, thruAP: LocalDate, fromGL: LocalDate, thruGL: LocalDate) : Cynergi("cynergi.validation.ap.outside.of.gl.window", arrayOf(fromAP, thruAP, fromGL, thruGL))
+class APDatesSelectedOutsideGLDatesSelected(fromAP: LocalDate, thruAP: LocalDate, fromGL: LocalDate, thruGL: LocalDate) : Cynergi("cynergi.validation.ap.outside.of.gl.window", arrayOf(fromAP, thruAP, fromGL, thruGL))
+class DatesSelectedMustBeWithinFinancialCalendar(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.dates.not.in.financial.calendar", arrayOf(from, thru))
+class DatesMustBeWithinCurrentOrNextFiscalYear(from: LocalDate, thru: LocalDate) : Cynergi("cynergi.validation.dates.not.in.current.or.next.fiscal.year", arrayOf(from, thru))
+class DateMustBeAfterPreviousFiscalYear(date: LocalDate) : Cynergi("cynergi.validation.date.after.previous.fiscal.year", arrayOf(date))
+class SourceCodeDoesNotExist(value: String) : Cynergi("cynergi.validation.source.code.does.not.exist", arrayOf(value))
+class NoGLDatesSet : Cynergi("cynergi.validation.gl.must.be.open.to.open.ap.range", emptyArray())
 class InvalidCompany(company: CompanyEntity) : Cynergi("cynergi.validation.invalid.company", arrayOf(company.datasetCode))
-class MustMatchPathVariable(value: Any?) : Cynergi("cynergi.validation.must.match.path.variable", arrayOf(value))
-
+class ConfigAlreadyExist(value: Any?) : Cynergi("cynergi.validation.config.exists", arrayOf(value))
+class AddressNeedsUpdated : Cynergi("cynergi.validation.address.needs.updated", emptyArray())
+class InvalidPayToVendor(id: UUID?) : Cynergi("cynergi.validation.invalid.pay.to.vendor", arrayOf(id))
+class SelectPercentOrPerUnit(percent: BigDecimal?, amountPerUnit: BigDecimal?) : Cynergi("cynergi.validation.select.percent.or.per.unit", arrayOf(percent, amountPerUnit))
+class AccountIsRequired(account: AccountEntity?) : Cynergi("cynergi.validation.account.is.required", arrayOf(account))
+class PercentTotalGreaterThan100(percent: BigDecimal) : Cynergi("cynergi.validation.percent.total.greater.than.100", arrayOf(percent))
+class BalanceMustBeZero(balance: BigDecimal) : Cynergi("cynergi.validation.balance.must.be.zero", arrayOf(balance))
+class GLNotOpen(date: LocalDate) : Cynergi("cynergi.validation.gl.not.open", arrayOf(date))
+class GLNotInBalance() : Cynergi("cynergi.validation.gl.not.in.balance", emptyArray())
+class GeneralLedgerRecordsBlockFinCalCreation(generalLedgerDetailExists: Boolean, generalLedgerSummaryExists: Boolean) : Cynergi("cynergi.validation.general.ledger.records.block.fincal.creation", arrayOf(generalLedgerDetailExists, generalLedgerSummaryExists))
+class ProfitCenterMustMatchBankProfitCenter(profitCenter: StoreEntity) : Cynergi("cynergi.validation.profit.center.must.match.bank.profit.center", arrayOf(profitCenter))
+class DatesMustBeInSameFiscalYear(startDate: LocalDate, endDate: LocalDate) : Cynergi("cynergi.validation.dates.must.be.in.same.fiscal.year", arrayOf(startDate, endDate))
+class ClearedDateMustNotBeFutureDate(date: LocalDate) : Cynergi("cynergi.validation.cleared.date.must.not.be.future.date", arrayOf(date))
+class ClearedDateNotPriorTransactionDate(date: LocalDate) : Cynergi("cynergi.validation.cleared.date.not.prior.transaction.date", arrayOf(date))
 class AuditStatusNotFound(auditStatus: String) : Cynergi("cynergi.audit.status.not.found", arrayOf(auditStatus))
 class AuditUnableToChangeStatusFromTo(auditId: UUID, toStatus: String, fromStatus: String) : Cynergi("cynergi.audit.unable.to.change.status.from.to", arrayOf(auditId, toStatus, fromStatus))
 class AuditMustBeInProgressDetails(auditId: UUID) : Cynergi("cynergi.audit.must.be.in.progress.details", arrayOf(auditId))
@@ -58,7 +88,10 @@ class AuditUpdateRequiresApprovedOrNote() : Cynergi("cynergi.audit.update.requir
 class AuditExceptionHasNotBeenApproved(auditExceptionId: UUID) : Cynergi("cynergi.audit.exception.has.been.approved.no.new.notes.allowed", arrayOf(auditExceptionId))
 class AuditDueToday(auditNumber: Int) : Cynergi("cynergi.audit.due.today", arrayOf(auditNumber))
 class AuditPastDue(auditNumber: Int) : Cynergi("cynergi.audit.past.due", arrayOf(auditNumber))
+class CheckInUse(): Cynergi("cynergi.validation.check.in.use", emptyArray())
+class AccountInUse(): Cynergi("cynergi.validation.account.in.use.by.another.bank", emptyArray())
 
+class VendorPaymentTermDuePercentDoesNotAddUp(percent: String) : Cynergi("vendor.payment.term.does.not.add.up", arrayOf(percent))
 class DataConstraintIntegrityViolation : Cynergi("cynergi.data.constraint.violated", emptyArray())
 
 abstract class SystemCode(code: String, arguments: Array<Any?>) : LocalizationCodeImpl(code, arguments)
@@ -66,6 +99,7 @@ class NotFound(unfindable: Any) : SystemCode("system.not.found", arrayOf(unfinda
    constructor(user: User) : this(user.myEmployeeNumber())
 }
 class InternalError : SystemCode("system.internal.error", emptyArray())
+class DataAccessError : SystemCode("system.data.access.exception", emptyArray())
 class RouteError(routeArgument: String) : SystemCode("system.route.error", arrayOf(routeArgument))
 class RouteHeaderError(headerName: String) : SystemCode("system.route.header.error", arrayOf(headerName))
 class NotImplemented(pathNotImplemented: String) : SystemCode("system.not.implemented", arrayOf(pathNotImplemented))

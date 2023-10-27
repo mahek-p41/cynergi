@@ -34,7 +34,7 @@ class DepartmentRepository @Inject constructor(
             dept.description AS d_description,
             dept.dataset AS d_dataset
          FROM fastinfo_prod_import.department_vw dept
-         JOIN company comp ON comp.dataset_code = dept.dataset
+         JOIN company comp ON comp.dataset_code = dept.dataset AND comp.deleted = FALSE
          WHERE dept.id = :id
                AND comp.id = :comp_id
          """.trimIndent(),
@@ -58,7 +58,7 @@ class DepartmentRepository @Inject constructor(
             dept.description AS d_description,
             dept.dataset AS d_dataset
          FROM fastinfo_prod_import.department_vw dept
-         JOIN company comp ON comp.dataset_code = dept.dataset
+         JOIN company comp ON comp.dataset_code = dept.dataset AND comp.deleted = FALSE
          WHERE dept.code = :code
                AND comp.id = :comp_id
          """.trimIndent(),
@@ -87,7 +87,7 @@ class DepartmentRepository @Inject constructor(
             dept.dataset AS d_dataset,
             (SELECT count(*) FROM fastinfo_prod_import.department_vw WHERE dataset = :dataset) AS total_elements
          FROM fastinfo_prod_import.department_vw dept
-         JOIN company comp ON comp.dataset_code = dept.dataset
+         JOIN company comp ON comp.dataset_code = dept.dataset AND comp.deleted = FALSE
          WHERE comp.id = :comp_id
          ORDER BY d_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
@@ -119,7 +119,7 @@ class DepartmentRepository @Inject constructor(
          """
          SELECT count(dept.id) > 0
          FROM fastinfo_prod_import.department_vw dept
-              JOIN company comp ON dept.dataset = comp.dataset_code
+              JOIN company comp ON dept.dataset = comp.dataset_code AND comp.deleted = FALSE
          WHERE dept.id = :dept_id AND comp.id = :comp_id
          """.trimIndent(),
          mapOf("dept_id" to id, "comp_id" to company.id),

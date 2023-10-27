@@ -4,7 +4,6 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.location.infrastructure.LocationRepository
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 

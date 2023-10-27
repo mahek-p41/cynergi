@@ -19,7 +19,7 @@ class WowFuturePayoutJobSpecification extends ServiceSpecificationBase {
 
    void "upload future payout customer" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final wowSchedules = wowTestDataLoaderService.enableWow(tstds1)
       final scheduleEntity = wowSchedules.find { it.title == "Wow Future Payouts Next 30 Days" }
       final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)
@@ -33,6 +33,6 @@ class WowFuturePayoutJobSpecification extends ServiceSpecificationBase {
       notThrown(Exception)
       result.failureReason() == null
       result.scheduleName() == "Wow Future Payouts Next 30 Days"
-      result.rowCount() == 1
+      result.rowCount() == 80
    }
 }

@@ -38,10 +38,24 @@ class LocationRepository @Inject constructor(
             comp.client_code              AS comp_client_code,
             comp.client_id                AS comp_client_id,
             comp.dataset_code             AS comp_dataset_code,
-            comp.federal_id_number        AS comp_federal_id_number
+            comp.federal_id_number        AS comp_federal_id_number,
+            address.id                    AS address_id,
+            address.name                  AS address_name,
+            address.address1              AS address_address1,
+            address.address2              AS address_address2,
+            address.city                  AS address_city,
+            address.state                 AS address_state,
+            address.postal_code           AS address_postal_code,
+            address.latitude              AS address_latitude,
+            address.longitude             AS address_longitude,
+            address.country               AS address_country,
+            address.county                AS address_county,
+            address.phone                 AS address_phone,
+            address.fax                   AS address_fax
          FROM fastinfo_prod_import.location_vw location
-              JOIN company comp ON comp.dataset_code = location.dataset
-      """.trimIndent()
+              JOIN company comp ON comp.dataset_code = location.dataset AND comp.deleted = FALSE
+              LEFT JOIN address ON comp.address_id = address.id AND address.deleted = FALSE
+      """
    }
 
    @ReadOnly
@@ -126,7 +140,7 @@ class LocationRepository @Inject constructor(
          """
             SELECT count(location.id) > 0
             FROM fastinfo_prod_import.location_vw location
-               JOIN company comp ON comp.dataset_code = location.dataset
+               JOIN company comp ON comp.dataset_code = location.dataset AND comp.deleted = FALSE
             WHERE location.id = :location_id
          """.trimIndent(),
          mapOf("location_id" to id, "comp_id" to company.id),
@@ -144,7 +158,7 @@ class LocationRepository @Inject constructor(
          """
             SELECT count(location.id) > 0
             FROM fastinfo_prod_import.location_vw location
-               JOIN company comp ON comp.dataset_code = location.dataset
+               JOIN company comp ON comp.dataset_code = location.dataset AND comp.deleted = FALSE
             WHERE location.number = :location_number
                AND comp.id = :comp_id
          """.trimIndent(),
