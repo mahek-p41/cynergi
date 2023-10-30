@@ -15,8 +15,8 @@ data class VendorGroupDTO(
    var id: UUID? = null,
 
    @field:NotNull
-   @field:Size(min = 2, max = 10)
-   @field:Schema(name = "value", minimum = "2", maximum = "10", description = "Describes the vendor group")
+   @field:Size(min = 1, max = 10)
+   @field:Schema(name = "value", minimum = "1", maximum = "10", description = "Describes the vendor group")
    var value: String? = null,
 
    @field:NotNull

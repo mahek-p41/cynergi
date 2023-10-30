@@ -19,13 +19,15 @@ import org.apache.commons.csv.CSVPrinter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.zeroturnaround.exec.ProcessExecutor
+import java.math.RoundingMode
 
 
 @Singleton
 class VendorPaymentTermService @Inject constructor(
    private val vendorPaymentTermRepository: VendorPaymentTermRepository,
    private val vendorPaymentTermValidator: VendorPaymentTermValidator,
-   @Value("\${cynergi.process.update.isam.vendterm}") private val processUpdateIsamVendterm: Boolean
+   @Value("\${cynergi.process.update.isam.vendterm}") private val processUpdateIsamVendterm: Boolean,
+   @Value("\${cynergi.process.update.isam.script.directory}") private val scriptDirectory: String
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountService::class.java)
 
@@ -262,7 +264,7 @@ class VendorPaymentTermService @Inject constructor(
             fileWriter.close()
             csvPrinter!!.close()
             val processExecutor: ProcessExecutor = ProcessExecutor()
-               .command("/bin/bash", "/usr/bin/ht.updt_isam_vendterm.sh", fileName.canonicalPath, dataset)
+               .command("/bin/bash", "$scriptDirectory/ht.updt_isam_vendterm.sh", fileName.canonicalPath, dataset)
                .exitValueNormal()
                .timeout(5, TimeUnit.SECONDS)
                .readOutput(true)

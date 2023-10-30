@@ -22,6 +22,7 @@ import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
+import java.util.UUID
 import javax.transaction.Transactional
 
 @Singleton
@@ -162,6 +163,38 @@ class EmployeeRepository @Inject constructor(
          elements = elements,
          totalElements = totalElements ?: 0
       )
+   }
+
+
+   @ReadOnly
+   fun findEmployeesBySecurityGroup(securityGroupId: UUID, company: CompanyEntity): List<EmployeeEntity> {
+      val params = mapOf("securityGroupId" to securityGroupId, "compId" to company.id)
+      val query =
+         """
+            ${employeeBaseQuery()} emp
+            JOIN employee_to_security_group etsg on emp.emp_id = etsg.employee_id_sfk
+            WHERE etsg.security_group_id = :securityGroupId and comp_id = :compId
+         """.trimIndent()
+      return jdbc.query(
+         query,
+         params
+      ){ rs, _ -> mapRow(rs) }
+   }
+
+   @ReadOnly
+   fun findEmployeesByAccessPoint(accessPointId: Int, company: CompanyEntity): List<EmployeeEntity> {
+      val params = mapOf("accessPointId" to accessPointId, "compId" to company.id)
+      val query =
+         """
+            ${employeeBaseQuery()} emp
+            JOIN employee_to_security_group etsg on emp.emp_id = etsg.employee_id_sfk
+            JOIN security_group_to_security_access_point sgtsap on etsg.security_group_id = sgtsap.security_group_id
+            WHERE sgtsap.security_access_point_id = :accessPointId and comp_id = :compId
+         """.trimIndent()
+      return jdbc.query(
+         query,
+         params
+      ){ rs, _ -> mapRow(rs) }
    }
 
    @ReadOnly
