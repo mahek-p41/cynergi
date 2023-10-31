@@ -364,7 +364,7 @@ class AccountPayableInvoiceController @Inject constructor(
    }
 
    @Throws(NotFoundException::class)
-   @Get(value = "/payments/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}/payment", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Fetch an AP Invoice Payments", description = "Fetch an AP Invoice Payments", operationId = "accountPayableInvoice-fetchInvoicePayments")
    @ApiResponses(
       value = [
@@ -376,22 +376,22 @@ class AccountPayableInvoiceController @Inject constructor(
    )
    fun fetchInvoicePayments(
       @QueryValue("id")
-      id: UUID,
+      invoiceId: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): List<AccountPayableInvoiceInquiryPaymentDTO> {
-      logger.info("Fetching Account Payable Invoice Payments by {}", id)
+      logger.info("Fetching Account Payable Invoice Payments by {}", invoiceId)
 
       val user = userService.fetchUser(authentication)
-      val response = accountPayableInvoiceService.fetchInvoicePayments(id, user.myCompany()) ?: throw NotFoundException(id)
+      val response = accountPayableInvoiceService.fetchInvoicePayments(invoiceId, user.myCompany()) ?: throw NotFoundException(invoiceId)
 
-      logger.debug("Fetching Account Payable Invoice Payments by {} resulted in {}", id, response)
+      logger.debug("Fetching Account Payable Invoice Payments by {} resulted in {}", invoiceId, response)
 
       return response
    }
 
    @Throws(NotFoundException::class)
-   @Get(value = "/gl-distributions/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}/gl-distribution/", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Fetch an AP Invoice GL Distributions", description = "Fetch an AP Invoice GL Distributions", operationId = "accountPayableInvoice-fetchGLDistributions")
    @ApiResponses(
       value = [
@@ -403,16 +403,16 @@ class AccountPayableInvoiceController @Inject constructor(
    )
    fun fetchGLDistributions(
       @QueryValue("id")
-      id: UUID,
+      invoiceId: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): List<AccountPayableDistDetailReportDTO> {
-      logger.info("Fetching GL Distributions by {}", id)
+      logger.info("Fetching GL Distributions by {}", invoiceId)
 
       val user = userService.fetchUser(authentication)
-      val response = accountPayableInvoiceService.fetchGLDistributions(id, user.myCompany()) ?: throw NotFoundException(id)
+      val response = accountPayableInvoiceService.fetchGLDistributions(invoiceId, user.myCompany()) ?: throw NotFoundException(invoiceId)
 
-      logger.debug("Fetching GL Distributions by {} resulted in {}", id, response)
+      logger.debug("Fetching GL Distributions by {} resulted in {}", invoiceId, response)
 
       return response
    }
