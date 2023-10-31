@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.deposit.infrastructure
 
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.StagingDepositFilterRequest
 import com.cynergisuite.domain.StagingStatusFilterRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.getLocalDate
@@ -120,6 +121,99 @@ class StagingDepositRepository @Inject constructor(
       , filterRequest
       )
       { rs, elements ->
+         do {
+            elements.add(mapRow(rs))
+         }  while (rs.next())
+      }
+   }
+
+   @ReadOnly
+   fun findAll(
+      company: CompanyEntity,
+      filterRequest: StagingDepositFilterRequest
+   ): List<StagingDepositEntity> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "movedToJe" to filterRequest.movedToJe)
+      val whereClause = StringBuilder(" WHERE vs.deleted = false AND vs.company_id = :comp_id AND dep.value IN ('DEP_1', 'DEP_2', 'DEP_3', 'DEP_4', 'DEP_5', 'DEP_6', 'DEP_7', 'DEP_8', 'DEP_9', 'DEP_10', 'DEP_11')  AND vs.moved_to_pending_journal_entries = :movedToJe ")
+
+      if (filterRequest.verifiedSuccessful != null) {
+         params["verifiedSuccessful"] = filterRequest.verifiedSuccessful
+         whereClause.append(" AND vs.verify_successful = :verifiedSuccessful")
+      }
+
+      if (filterRequest.from != null || filterRequest.thru != null) {
+         params["from"] = filterRequest.from
+         params["thru"] = filterRequest.thru
+         whereClause.append(" AND vs.business_date")
+            .append(
+               buildFilterString(
+                  filterRequest.from != null,
+                  filterRequest.thru != null,
+                  "from",
+                  "thru"
+               )
+            )
+      }
+
+      if (filterRequest.beginStore != null || filterRequest.endStore != null) {
+         params["beginStore"] = filterRequest.beginStore
+         params["endStore"] = filterRequest.endStore
+         whereClause.append(" AND vs.store_number_sfk")
+            .append(
+               buildFilterString(
+                  filterRequest.beginStore != null,
+                  filterRequest.endStore != null,
+                  "beginStore",
+                  "endStore"
+               )
+            )
+      }
+
+      return jdbc.queryFullList(
+         """
+         SELECT
+             vs.id,
+             vs.verify_successful,
+             vs.business_date,
+             vs.moved_to_pending_journal_entries,
+             vs.store_number_sfk,
+             sv.name AS store_name,
+             vs.error_amount,
+             SUM(CASE WHEN dep.value = 'DEP_1' THEN ds.deposit_amount ELSE 0 END)   AS deposit_1,
+             SUM(CASE WHEN dep.value = 'DEP_2' THEN ds.deposit_amount ELSE 0 END)   AS deposit_2,
+             SUM(CASE WHEN dep.value = 'DEP_3' THEN ds.deposit_amount ELSE 0 END)   AS deposit_3,
+             SUM(CASE WHEN dep.value = 'DEP_4' THEN ds.deposit_amount ELSE 0 END)   AS deposit_4,
+             SUM(CASE WHEN dep.value = 'DEP_5' THEN ds.deposit_amount ELSE 0 END)   AS deposit_5,
+             SUM(CASE WHEN dep.value = 'DEP_6' THEN ds.deposit_amount ELSE 0 END)   AS deposit_6,
+             SUM(CASE WHEN dep.value = 'DEP_7' THEN ds.deposit_amount ELSE 0 END)   AS deposit_7,
+             SUM(CASE WHEN dep.value = 'DEP_8' THEN ds.deposit_amount ELSE 0 END)   AS deposit_8,
+             SUM(CASE WHEN dep.value = 'DEP_9' THEN ds.deposit_amount ELSE 0 END)   AS deposit_9,
+             SUM(CASE WHEN dep.value = 'DEP_10' THEN ds.deposit_amount ELSE 0 END)   AS deposit_10,
+             SUM(CASE WHEN dep.value = 'DEP_11' THEN ds.deposit_amount ELSE 0 END)   AS deposit_11,
+             SUM(ds.deposit_amount)                                                 AS deposit_total,
+             count(*) OVER()                                                        AS total_elements
+         FROM
+             verify_staging vs
+             JOIN deposits_staging ds ON vs.company_id = ds.company_id AND vs.id = ds.verify_id
+             JOIN company comp ON vs.company_id = comp.id AND comp.deleted = FALSE
+             JOIN fastinfo_prod_import.store_vw sv
+                    ON sv.dataset = comp.dataset_code
+                       AND sv.number = vs.store_number_sfk
+             JOIN deposits_staging_deposit_type_domain dep ON ds.deposit_type_id = dep.id
+         $whereClause
+         GROUP BY
+             vs.id,
+             vs.verify_successful,
+             vs.business_date,
+             vs.moved_to_pending_journal_entries,
+             vs.store_number_sfk,
+             sv.name,
+             vs.error_amount
+         ORDER BY vs.verify_successful, vs.business_date DESC, vs.store_number_sfk
+               """.trimIndent()
+         , params
+         ,
+      )
+      { rs, _, elements ->
          do {
             elements.add(mapRow(rs))
          }  while (rs.next())

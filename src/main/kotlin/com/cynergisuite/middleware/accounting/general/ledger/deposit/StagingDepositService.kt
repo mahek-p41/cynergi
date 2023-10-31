@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.deposit
 
 import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.StagingDepositFilterRequest
 import com.cynergisuite.domain.StagingStatusFilterRequest
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
@@ -42,6 +43,14 @@ class StagingDepositService @Inject constructor(
       val found = stagingDepositRepository.findAll(company, pageRequest)
 
       return found.toPage { entity: StagingDepositEntity ->
+         StagingDepositDTO(entity)
+      }
+   }
+
+   fun fetchAll(company: CompanyEntity, filterRequest: StagingDepositFilterRequest): List<StagingDepositDTO> {
+      val found = stagingDepositRepository.findAll(company, filterRequest)
+
+      return found.map { entity: StagingDepositEntity ->
          StagingDepositDTO(entity)
       }
    }

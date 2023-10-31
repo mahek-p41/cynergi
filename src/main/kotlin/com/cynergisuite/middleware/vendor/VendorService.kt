@@ -96,38 +96,38 @@ class VendorService @Inject constructor(
       var fileWriter: FileWriter? = null
       var csvPrinter: CSVPrinter? = null
 
-      var dataset = company.datasetCode
+      val dataset = company.datasetCode
 
-      var accountNumber: String
-      var payToNumber: String
-      var freightOnboardType: String = ""
-      var freightCalcMethodType: String = ""
-      var returnPolicy: String
-      var vendor1099: String
-      var FIN: String
-      var salesRepName: String
-      var salesRepFax: String
-      var separateCheck: String
-      var freightPct: String
-      var freightAmt: String
-      var chgInvTax1: String
-      var chgInvTax2: String
-      var chgInvTax3: String
-      var chgInvTax4: String
-      var FINVerify: String
-      var POSubmitEmail: String
-      var allowDropshipToCust: String
-      var autoSubmitPO: String
-      var vendorGroup: String
+      val accountNumber: String = if (vendor.accountNumber != null) { vendor.accountNumber.toString() } else { "" }
+      val payToNumber: String
+      val freightOnboardType: String = vendor.freightOnboardType.value
+      val freightCalcMethodType: String = vendor.freightCalcMethodType.value
+      val returnPolicy: String = if (vendor.returnPolicy) { "Y" } else { "N" }
+      val vendor1099: String = if (vendor.vendor1099) { "Y" } else { "N" }
+      val FIN: String = if (vendor.federalIdNumber != null) { vendor.federalIdNumber } else { "" }
+      val salesRepName: String = if (vendor.salesRepresentativeName != null) { vendor.salesRepresentativeName } else { "" }
+      val salesRepFax: String = if (vendor.salesRepresentativeFax != null) { vendor.salesRepresentativeFax } else { "" }
+      val separateCheck: String = if (vendor.separateCheck) { "Y" } else { "N" }
+      val freightPct: String = if (vendor.freightPercent != null) { vendor.freightPercent.toString() } else { "0" }
+      val freightAmt: String = if (vendor.freightAmount != null) { vendor.freightAmount.toString() } else { "0" }
+      val chgInvTax1: String = if (vendor.chargeInventoryTax1) { "Y" } else { "N" }
+      val chgInvTax2: String = if (vendor.chargeInventoryTax2) { "Y" } else { "N" }
+      val chgInvTax3: String = if (vendor.chargeInventoryTax3) { "Y" } else { "N" }
+      val chgInvTax4: String = if (vendor.chargeInventoryTax4) { "Y" } else { "N" }
+      val FINVerify: String = if (vendor.federalIdNumberVerification) { "Y" } else { "N" }
+      val POSubmitEmail: String = if (vendor.purchaseOrderSubmitEmailAddress != null) { vendor.purchaseOrderSubmitEmailAddress } else { "" }
+      val allowDropshipToCust: String = if (vendor.allowDropShipToCustomer) { "Y" } else { "N" }
+      val autoSubmitPO: String = if (vendor.autoSubmitPurchaseOrder) { "Y" } else { "N" }
+      val vendorGroup: String = if (vendor.vendorGroup != null) { vendor.vendorGroup.value } else { "" }
 
-      var normalDays: String = ""
-      var minimumAmount: String = ""
-      var freeShipAmount: String = ""
-      var bumpPercent: String = ""
-      var number: String = ""
+      val normalDays: String = if (vendor.normalDays != null) { vendor.normalDays.toString() } else { "" }
+      val minimumAmount: String = if (vendor.minimumAmount != null) { vendor.minimumAmount.toString() } else { "" }
+      val freeShipAmount: String = if (vendor.freeShipAmount != null) { vendor.freeShipAmount.toString() } else { "" }
+      val bumpPercent: String = if (vendor.bumpPercent != null) { vendor.bumpPercent.toString() } else { "" }
+      val number: String = if (vendor.number != null) { vendor.number.toString() } else { "" }
 
-      var minimumQuantity: String = ""
-      var freeShipQuantity: String = ""
+      val minimumQuantity: String = if (vendor.minimumQuantity != null) { vendor.minimumQuantity.toString() } else { "" }
+      val freeShipQuantity: String = if (vendor.freeShipQuantity != null) { vendor.freeShipQuantity.toString() } else { "" }
 
       var addressName: String
       var addressAddress1: String
@@ -178,165 +178,11 @@ class VendorService @Inject constructor(
          addressFax = ""
       }
 
-      if (vendor.number != null) {
-         number = vendor.number.toString()
-      } else {
-         number = ""
-      }
-
-      if (vendor.minimumQuantity != null) {
-         minimumQuantity = vendor.minimumQuantity.toString()
-      } else {
-         minimumQuantity = ""
-      }
-
-      if (vendor.freeShipQuantity != null) {
-         freeShipQuantity = vendor.freeShipQuantity.toString()
-      } else {
-         freeShipQuantity = ""
-      }
-
-      if (vendor.normalDays != null) {
-         normalDays = vendor.normalDays.toString()
-      } else {
-         normalDays = ""
-      }
-
-      if (vendor.minimumAmount != null) {
-         minimumAmount = vendor.minimumAmount.setScale(2, RoundingMode.HALF_UP ).toString()
-      } else {
-         minimumAmount = ""
-      }
-
-      if (vendor.freeShipAmount != null) {
-         freeShipAmount = vendor.freeShipAmount.setScale(2, RoundingMode.HALF_UP ).toString()
-      } else {
-         freeShipAmount = ""
-      }
-
-      if (vendor.bumpPercent != null) {
-         bumpPercent = vendor.bumpPercent.setScale(4, RoundingMode.HALF_UP ).toString()
-      } else {
-         bumpPercent = ""
-      }
-
-      if (vendor.accountNumber != null) {
-         accountNumber = vendor.accountNumber.toString()
-      } else {
-         accountNumber = ""
-      }
-
-      if (vendor.returnPolicy) {
-         returnPolicy = "Y"
-      } else {
-         returnPolicy = "N"
-      }
-
-      if (vendor.vendor1099) {
-         vendor1099 = "Y"
-      } else {
-         vendor1099 = "N"
-      }
-
-      if (vendor.federalIdNumber != null) {
-         FIN = vendor.federalIdNumber
-      } else {
-         FIN = ""
-      }
-
-      if (vendor.salesRepresentativeName != null) {
-         salesRepName = vendor.salesRepresentativeName
-      } else {
-         salesRepName = ""
-      }
-
-      if (vendor.salesRepresentativeFax != null) {
-         salesRepFax = vendor.salesRepresentativeFax
-      } else {
-         salesRepFax = ""
-      }
-
-      if (vendor.separateCheck) {
-         separateCheck = "Y"
-      } else {
-         separateCheck = "N"
-      }
-
-      if (vendor.freightPercent != null) {
-         freightPct = vendor.freightPercent.setScale(3, RoundingMode.HALF_UP ).toString()
-      } else {
-         freightPct = "0"
-      }
-
-      if (vendor.freightAmount != null) {
-         freightAmt = vendor.freightAmount.setScale(2, RoundingMode.HALF_UP ).toString()
-      } else {
-         freightAmt = "0"
-      }
-
-      if (vendor.chargeInventoryTax1) {
-         chgInvTax1 = "Y"
-      } else {
-         chgInvTax1 = "N"
-      }
-
-      if (vendor.chargeInventoryTax2) {
-         chgInvTax2 = "Y"
-      } else {
-         chgInvTax2 = "N"
-      }
-
-      if (vendor.chargeInventoryTax3) {
-         chgInvTax3 = "Y"
-      } else {
-         chgInvTax3 = "N"
-      }
-
-      if (vendor.chargeInventoryTax4) {
-         chgInvTax4 = "Y"
-      } else {
-         chgInvTax4 = "N"
-      }
-
-      if (vendor.federalIdNumberVerification) {
-         FINVerify = "Y"
-      } else {
-         FINVerify = "N"
-      }
-
-      if (vendor.purchaseOrderSubmitEmailAddress != null) {
-         POSubmitEmail = vendor.purchaseOrderSubmitEmailAddress
-      } else {
-         POSubmitEmail = ""
-      }
-
-      if (vendor.allowDropShipToCustomer) {
-         allowDropshipToCust = "Y"
-      } else {
-         allowDropshipToCust = "N"
-      }
-
-      if (vendor.autoSubmitPurchaseOrder) {
-         autoSubmitPO = "Y"
-      } else {
-         autoSubmitPO = "N"
-      }
-
-      freightOnboardType = vendor.freightOnboardType.value
-
-      freightCalcMethodType = vendor.freightCalcMethodType.value
-
       if (vendor.payTo != null) {
-         var payToVendor = vendorRepository.findOne(vendor.payTo.myId()!!, company)
+         val payToVendor = vendorRepository.findOne(vendor.payTo.myId()!!, company)
          payToNumber = payToVendor!!.number.toString()
       } else {
          payToNumber = ""
-      }
-
-      if (vendor.vendorGroup != null) {
-         vendorGroup = vendor.vendorGroup.value
-      } else {
-         vendorGroup = ""
       }
 
       val fileName = File.createTempFile("mrvendor", ".csv")

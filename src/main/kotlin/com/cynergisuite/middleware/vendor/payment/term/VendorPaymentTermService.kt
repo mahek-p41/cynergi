@@ -80,9 +80,9 @@ class VendorPaymentTermService @Inject constructor(
    fun vendtermToISAM(task: String, vendterm: VendorPaymentTermEntity, company: CompanyEntity, beginningDescription: String? = " ") {
       var fileWriter: FileWriter? = null
       var csvPrinter: CSVPrinter? = null
-      var discountMonth: String
-      var discountDays: String
-      var discountPercent: String
+      val discountMonth: String = if (vendterm.discountMonth != null) { vendterm.discountMonth.toString() } else { "0" }
+      val discountDays: String = if (vendterm.discountDays != null) { vendterm.discountDays.toString() } else { "0" }
+      val discountPercent: String = if (vendterm.discountPercent != null) { vendterm.discountPercent.toString() } else { "0" }
       var due_month_1: Int = 0
       var due_days_1: Int = 0
       var due_percent_1: BigDecimal = BigDecimal.ZERO
@@ -108,7 +108,7 @@ class VendorPaymentTermService @Inject constructor(
       var due_percent_6: BigDecimal = BigDecimal.ZERO
       var schedule_order_number_6: Int = 0
 
-      var dataset = company.datasetCode
+      val dataset = company.datasetCode
 
       val fileName = File.createTempFile("mrvterms", ".csv")
 
@@ -146,30 +146,12 @@ class VendorPaymentTermService @Inject constructor(
                schedule_order_number_5 = scheduleRecord.scheduleOrderNumber
             }
             5 -> {
-                  if (scheduleRecord.dueMonth != null) due_month_6 = scheduleRecord.dueMonth
-                  due_days_6 = scheduleRecord.dueDays
-                  due_percent_6 = scheduleRecord.duePercent
-                  schedule_order_number_6 = scheduleRecord.scheduleOrderNumber
+               if (scheduleRecord.dueMonth != null) due_month_6 = scheduleRecord.dueMonth
+               due_days_6 = scheduleRecord.dueDays
+               due_percent_6 = scheduleRecord.duePercent
+               schedule_order_number_6 = scheduleRecord.scheduleOrderNumber
             }
          }
-      }
-
-      if (vendterm.discountMonth != null) {
-         discountMonth = vendterm.discountMonth.toString()
-      } else {
-         discountMonth = "0"
-      }
-
-      if (vendterm.discountDays != null) {
-         discountDays = vendterm.discountDays.toString()
-      } else {
-         discountDays = "0"
-      }
-
-      if (vendterm.discountPercent != null) {
-         discountPercent = vendterm.discountPercent.setScale(2, RoundingMode.HALF_UP ).toString()
-      } else {
-         discountPercent = "0"
       }
 
       try {
