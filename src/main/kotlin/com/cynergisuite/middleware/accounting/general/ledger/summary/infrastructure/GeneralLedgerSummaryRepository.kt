@@ -38,7 +38,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerSummaryRepository::class.java)
 
-   private fun selectBaseQuery(): String {
+   fun selectBaseQuery(): String {
       return """
          WITH account AS (
             ${accountRepository.selectBaseQuery()}
@@ -772,7 +772,7 @@ class GeneralLedgerSummaryRepository @Inject constructor(
    }
 
 
-   private fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): GeneralLedgerSummaryEntity {
+   fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): GeneralLedgerSummaryEntity {
       return GeneralLedgerSummaryEntity(
          id = rs.getUuid("${columnPrefix}id"),
          account = accountRepository.mapRow(rs, company, "${columnPrefix}acct_"),
