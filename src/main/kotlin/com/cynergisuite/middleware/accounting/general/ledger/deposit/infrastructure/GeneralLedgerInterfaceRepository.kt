@@ -88,46 +88,51 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
             map["deposit_type_id"] = it.id
             val pair = map[it.value] as Pair<*, *>
             map["deposit_amount"] = pair.first
-            val account = accountRepository.findByNumber(pair.second as Long, company)!!
-            map["deposit_account_id"] = account.id
+            val accountNumber = pair.second as Long
+            if (accountNumber != 0L) {
+               val account = accountRepository.findByNumber(accountNumber, company)!!
+               map["deposit_account_id"] = account.id
 
-            val depositID = findDepositID(verifyID!!, it.id)
+               val depositID = findDepositID(verifyID!!, it.id)
 
-            if (depositID == null) {
-               jdbc.update(
-                  """
-                  INSERT INTO deposits_staging (
-                      company_id,
-                      verify_id,
-                      store_number_sfk,
-                      business_date,
-                      deposit_type_id,
-                      deposit_amount,
-                      deposit_account_id
+               if (depositID == null) {
+                  jdbc.update(
+                     """
+                        INSERT INTO deposits_staging (
+                            company_id,
+                            verify_id,
+                            store_number_sfk,
+                            business_date,
+                            deposit_type_id,
+                            deposit_amount,
+                            deposit_account_id
+                        )
+                        VALUES (
+                           :company_id,
+                           :verify_id,
+                           :store_number_sfk,
+                           :business_date,
+                           :deposit_type_id,
+                           :deposit_amount,
+                           :deposit_account_id
+                        )
+                     """.trimIndent(),
+                     map
                   )
-                  VALUES (
-                     :company_id,
-                     :verify_id,
-                     :store_number_sfk,
-                     :business_date,
-                     :deposit_type_id,
-                     :deposit_amount,
-                     :deposit_account_id
-                     )
-               """.trimIndent(),
-                  map
-               )
+               } else {
+                  jdbc.update(
+                     """
+                        UPDATE deposits_staging
+                        SET deposit_amount = :deposit_amount
+                        WHERE verify_id = :verify_id
+                           AND deposit_type_id = :deposit_type_id
+                           AND deleted = FALSE
+                     """.trimIndent(),
+                     map
+                  )
+               }
             } else {
-               jdbc.update(
-                  """
-                  UPDATE deposits_staging
-                  SET deposit_amount = :deposit_amount
-                  WHERE verify_id = :verify_id
-                     AND deposit_type_id = :deposit_type_id
-                     AND deleted = FALSE
-               """.trimIndent(),
-                  map
-               )
+               logger.info("Zero account number values are not populated and will be skipped.")
             }
          }
       }
