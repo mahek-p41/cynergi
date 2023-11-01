@@ -1,3 +1,54 @@
+-- setup a simple view for getting employees that can be authenticated against
+DO $$
+DECLARE
+    sqlToExec VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW authenticated_user_vw AS SELECT * FROM (';
+
+   IF EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'employee_vw' AND table_schema = 'fastinfo_prod_import') THEN
+      sqlToExec := sqlToExec || '
+         SELECT
+            1                               AS from_priority,
+            emp.id                          AS id,
+            ''sysz''                        AS type,
+            emp.number                      AS number,
+            emp.active                      AS active,
+            false                           AS cynergi_system_admin,
+            emp.department                  AS department,
+            emp.pass_code                   AS pass_code,
+            emp.alternative_store_indicator AS alternative_store_indicator,
+            emp.alternative_area            AS alternative_area,
+            emp.store_number                AS store_number,
+            comp.id                         AS company_id
+         FROM company comp
+           JOIN fastinfo_prod_import.employee_vw emp ON comp.dataset_code = emp.dataset
+         UNION
+   ';
+   END IF;
+
+   sqlToExec := sqlToExec || '
+      SELECT
+         2                               AS from_priority,
+         emp.id                          AS id,
+         ''eli''                         AS type,
+         emp.number                      AS number,
+         emp.active                      AS active,
+         emp.cynergi_system_admin        AS cynergi_system_admin,
+         emp.department                  AS department,
+         emp.pass_code                   AS pass_code,
+         emp.alternative_store_indicator AS alternative_store_indicator,
+         emp.alternative_area            AS alternative_area,
+         emp.store_number                AS store_number,
+         emp.company_id                  AS company_id
+      FROM company comp
+         JOIN employee emp ON comp.id = emp.company_id
+      WHERE active = true
+      ORDER BY from_priority, id
+   ) AS users ';
+
+   EXECUTE sqlToExec;
+END $$;
+
 -- setup view for querying employees
 DO $$
 DECLARE
@@ -29,6 +80,19 @@ BEGIN
             comp.client_id                  AS comp_client_id,
             comp.dataset_code               AS comp_dataset_code,
             comp.federal_id_number          AS comp_federal_id_number,
+            address.id                      AS address_id,
+            address.name                    AS address_name,
+            address.address1                AS address_address1,
+            address.address2                AS address_address2,
+            address.city                    AS address_city,
+            address.state                   AS address_state,
+            address.postal_code             AS address_postal_code,
+            address.latitude                AS address_latitude,
+            address.longitude               AS address_longitude,
+            address.country                 AS address_country,
+            address.county                  AS address_county,
+            address.phone                   AS address_phone,
+            address.fax                     AS address_fax,
             dept.id                         AS dept_id,
             dept.code                       AS dept_code,
             dept.description                AS dept_description,
@@ -37,6 +101,7 @@ BEGIN
             store.name                      AS store_name
          FROM fastinfo_prod_import.employee_vw emp
             JOIN company comp ON emp.dataset = comp.dataset_code
+            LEFT JOIN address ON comp.address_id = address.id
             LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
             LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
         UNION';
@@ -65,6 +130,19 @@ BEGIN
          comp.client_id                  AS comp_client_id,
          comp.dataset_code               AS comp_dataset_code,
          comp.federal_id_number          AS comp_federal_id_number,
+         address.id                      AS address_id,
+         address.name                    AS address_name,
+         address.address1                AS address_address1,
+         address.address2                AS address_address2,
+         address.city                    AS address_city,
+         address.state                   AS address_state,
+         address.postal_code             AS address_postal_code,
+         address.latitude                AS address_latitude,
+         address.longitude               AS address_longitude,
+         address.country                 AS address_country,
+         address.county                  AS address_county,
+         address.phone                   AS address_phone,
+         address.fax                     AS address_fax,
          dept.id                         AS dept_id,
          dept.code                       AS dept_code,
          dept.description                AS dept_description,
@@ -73,11 +151,28 @@ BEGIN
          store.name                      AS store_name
       FROM employee emp
            JOIN company comp ON emp.company_id = comp.id
+           LEFT JOIN address ON comp.address_id = address.id
            LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND emp.department = dept.code
            LEFT OUTER JOIN fastinfo_prod_import.store_vw store ON comp.dataset_code = store.dataset AND emp.store_number = store.number
       ) AS inner_employees
       ORDER BY from_priority
   ) AS system_employees';
+
+   EXECUTE sqlToExec;
+END $$;
+
+-- setup view for bank reconciliation and vendor relationship
+DO $$
+DECLARE
+    sqlToExec VARCHAR;
+BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW bank_recon_vendor_vw (bank_recon_id, vendor_id, vendor_name) AS with bankRecon';
+   sqlToExec := sqlToExec || '
+   AS (SELECT *, CAST( CASE WHEN SPLIT_PART(bankRecon.description, ''A/P VND# '', 2) = '''' THEN ''0'' ELSE SPLIT_PART(bankRecon.description, ''A/P VND# '', 2) END
+   AS BIGINT) from bank_reconciliation bankRecon)
+   SELECT bankRecon.id, vendor.id, vendor.name from bankRecon
+   Join vendor on vendor.number = split_part and vendor.company_id = bankRecon.company_id
+   where split_part > 0';
 
    EXECUTE sqlToExec;
 END $$;
@@ -171,53 +266,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- setup a simple view for getting employees that can be authenticated against
-DO $$
-DECLARE
-    sqlToExec VARCHAR;
-BEGIN
-   sqlToExec := 'CREATE OR REPLACE VIEW authenticated_user_vw AS SELECT * FROM (';
-
-   IF EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'employee_vw' AND table_schema = 'fastinfo_prod_import') THEN
-      sqlToExec := sqlToExec || '
-         SELECT
-            1                                   AS from_priority,
-            emp.emp_id                          AS id,
-            ''sysz''                            AS type,
-            emp.emp_number                      AS number,
-            emp.emp_active                      AS active,
-            false                               AS cynergi_system_admin,
-            emp.emp_department                  AS department,
-            emp.emp_pass_code                   AS pass_code,
-            emp.emp_alternative_store_indicator AS alternative_store_indicator,
-            emp.emp_alternative_area            AS alternative_area,
-            emp.store_number                    AS store_number,
-            comp.id                             AS company_id
-         FROM company comp
-           JOIN system_employees_fimvw emp ON comp.dataset_code = emp.comp_dataset_code
-         UNION
-   ';
-   END IF;
-
-   sqlToExec := sqlToExec || '
-      SELECT
-         2                               AS from_priority,
-         emp.id                          AS id,
-         ''eli''                         AS type,
-         emp.number                      AS number,
-         emp.active                      AS active,
-         emp.cynergi_system_admin        AS cynergi_system_admin,
-         emp.department                  AS department,
-         emp.pass_code                   AS pass_code,
-         emp.alternative_store_indicator AS alternative_store_indicator,
-         emp.alternative_area            AS alternative_area,
-         emp.store_number                AS store_number,
-         emp.company_id                  AS company_id
-      FROM company comp
-         JOIN employee emp ON comp.id = emp.company_id
-      WHERE active = true
-      ORDER BY from_priority, id
-   ) AS users ';
-
-   EXECUTE sqlToExec;
-END $$;
+CREATE OR REPLACE FUNCTION naturalsort(text)
+    returns bytea language sql immutable strict as $f$
+    select string_agg(convert_to(coalesce(r[2], length(length(r[1])::text) || length(r[1])::text || r[1]), 'SQL_ASCII'),'\x00')
+    from regexp_matches($1, '0*([0-9]+)|([^0-9]+)', 'g') r;
+    $f$;

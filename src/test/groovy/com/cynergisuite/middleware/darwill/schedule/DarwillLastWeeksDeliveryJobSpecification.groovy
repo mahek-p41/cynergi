@@ -2,12 +2,10 @@ package com.cynergisuite.middleware.darwill.schedule
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.darwill.DarwillTestDataLoaderService
-import com.cynergisuite.middleware.darwill.schedule.DarwillLastWeeksDeliveryJob
-import com.cynergisuite.middleware.schedule.ScheduleTestDataLoaderService
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
-import java.time.OffsetDateTime
 
+import java.time.OffsetDateTime
 
 import static java.time.ZoneOffset.UTC
 
@@ -16,11 +14,10 @@ class DarwillLastWeeksDeliveryJobSpecification extends ServiceSpecificationBase 
 
    @Inject DarwillLastWeeksDeliveryJob darwillLastWeeksDeliveryService
    @Inject DarwillTestDataLoaderService darwillTestDataLoaderService
-   @Inject ScheduleTestDataLoaderService scheduleTestDataLoaderService
 
    void "upload last weeks deliveries" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final darwillSchedules = darwillTestDataLoaderService.enableDarwill(tstds1)
       final scheduleEntity = darwillSchedules.find { it.title == "Darwill Last Weeks Deliveries" }
       final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)
@@ -32,6 +29,6 @@ class DarwillLastWeeksDeliveryJobSpecification extends ServiceSpecificationBase 
       notThrown(Exception)
       result.failureReason() == null
       result.scheduleName() == "Darwill Last Weeks Deliveries"
-      result.rowCount() == 5
+      result.rowCount() == 1
    }
 }

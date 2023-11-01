@@ -1,14 +1,15 @@
 package com.cynergisuite.middleware.authentication.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
+import com.cynergisuite.middleware.address.AddressTestDataLoaderService
 import com.cynergisuite.middleware.authentication.LoginCredentials
+import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
-
 
 import static io.micronaut.http.HttpRequest.GET
 import static io.micronaut.http.HttpRequest.HEAD
@@ -20,10 +21,12 @@ import static io.micronaut.http.HttpStatus.UNAUTHORIZED
 @MicronautTest(transactional = false)
 class SystemLoginControllerSpecification extends ServiceSpecificationBase {
    @Inject @Client("/api") HttpClient httpClient
+   @Inject AddressTestDataLoaderService addressTestDataLoaderService
+   @Inject CompanyRepository companyRepository
 
    void "login successful with user who doesn't have department" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.single(store)
 
@@ -74,7 +77,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login with user who has department assigned" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
@@ -126,7 +129,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login failure due to invalid store" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(store.myCompany())
       final validEmployee = employeeFactoryService.single(store, department)
@@ -148,7 +151,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login failure due to missing dataset" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(store.myCompany())
       final validEmployee = employeeFactoryService.single(store, department)
@@ -172,14 +175,14 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login with user who isn't authorized for tstds2" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final storeOneTstds1 = storeFactoryService.store(3, company)
       final user = employeeFactoryService.single(storeOneTstds1)
 
       when:
       httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials(user.number.toString(), user.passCode, user.store.myNumber(), 'tstds2')),
+            POST("/login", new LoginCredentials(user.number.toString(), user.passCode, user.store.myNumber(), 'corrto')),
             Argument.of(String),
             Argument.of(String)
          )
@@ -193,15 +196,15 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login as high touch uber user with dataset tstds1" () {
       given:
-      final tstds1 = companyFactoryService.forDatasetCode('tstds1')
-      final tstds2 = companyFactoryService.forDatasetCode('tstds2')
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      final tstds2 = companyFactoryService.forDatasetCode('corrto')
       final htUberUserTstds1 = employeeFactoryService.singleSuperUser(998, tstds1, 'admin', null, 'word')
       final htUberUserTstds2 = employeeFactoryService.singleSuperUser(998, tstds2, 'admin', null, 'word')
 
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login",new LoginCredentials('998', 'word', null, 'tstds1')),
+            POST("/login",new LoginCredentials('998', 'word', null, 'coravt')),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -245,7 +248,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login with superfluous URL parameters" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.store(3, company)
       final department = departmentFactoryService.random(store.myCompany())
       final employee = employeeFactoryService.single(store, department)
@@ -297,8 +300,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login with user that has an assigned store, but doesn't provide one"() {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final department = departmentFactoryService.department('SA', company)
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final department = departmentFactoryService.department('SL', company)
       final store = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(store, department)
 
@@ -319,8 +322,8 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login with user doesn't have a store assigned, but chooses one" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final department = departmentFactoryService.department('RM', company)
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final department = departmentFactoryService.department('HO', company)
       final store = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.single(department)
 
@@ -401,7 +404,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
 
    void "login with user who has a different store than they chose, but also has the alternative store indicator set to A" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final userAssignedStore = storeFactoryService.store(3, company)
       final otherStore = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.single(userAssignedStore, "A")
@@ -455,7 +458,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials("106", "password", 3, "tstds1")),
+            POST("/login", new LoginCredentials("103", "12312345", 1, "corrto")),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -469,7 +472,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials("106", "passwo", 3, "tstds1")),
+            POST("/login", new LoginCredentials("103", "123123", 1, "corrto")),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -483,7 +486,26 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials("105", "pass", 1, "tstds1")),
+            POST("/login", new LoginCredentials("111", "0808", 1, "corrto")),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      authResponse.access_token != null
+   }
+
+   void "login with sysz user who provides pass_code with exact pass_code of 4 and an address" () {
+      given:
+      final address = addressTestDataLoaderService.single()
+      final company = companyFactoryService.forDatasetCode('coravt')
+
+      when:
+      companyRepository.update(company, company.copyMeWithNewAddress(address))
+      def authResponse = httpClient.toBlocking()
+         .exchange(
+            POST("/login", new LoginCredentials("111", "0808", 1, "corrto")),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -497,7 +519,7 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       when:
       httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials("106", "pass", 3, "tstds1")),
+            POST("/login", new LoginCredentials("106", "pass", 3, "coravt")),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -506,5 +528,26 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
       final e = thrown(HttpClientResponseException)
       e.response.bodyAsJson().message == 'Access denied for 106 credentials do not match'
       e.status == UNAUTHORIZED
+   }
+
+   void "login with high touch uber user to a company with an address" () {
+      given:
+      final address = addressTestDataLoaderService.single()
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final htUberUser = employeeFactoryService.singleSuperUser(998, company, 'admin', null, 'word')
+
+      when:
+      companyRepository.update(company, company.copyMeWithNewAddress(address))
+
+      def authResponse = httpClient.toBlocking()
+         .exchange(
+            POST("/login",new LoginCredentials('998', 'word', null, company.datasetCode)),
+            Argument.of(String),
+            Argument.of(String)
+         ).bodyAsJson()
+
+      then:
+      notThrown(HttpClientResponseException)
+      authResponse.access_token != null
    }
 }

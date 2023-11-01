@@ -6,9 +6,11 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaEntity
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.inventory.InventoryEntity
+import io.micronaut.core.annotation.Introspected
 import java.time.OffsetDateTime
 import java.util.UUID
 
+@Introspected
 data class AuditExceptionEntity(
    val id: UUID? = null,
    val timeCreated: OffsetDateTime = OffsetDateTime.now(),

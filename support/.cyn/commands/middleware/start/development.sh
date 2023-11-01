@@ -8,7 +8,7 @@ cd ../development
 if [ -z `docker-compose ps -q cynmid` ] || [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q cynmid)` ]; then
   docker rm -f cynmid >> /tmp/cynergi-dev.log 2>&1
   docker-compose build --force-rm cynmid >> /tmp/cynergi-dev.log 2>&1
-  docker-compose up --no-build -d --no-deps cynmid
+  docker-compose up --no-deps -d cynmid
 
   exit $?
 else

@@ -135,9 +135,23 @@ class AuditRepository @Inject constructor(
          comp.client_code                                              AS comp_client_code,
          comp.client_id                                                AS comp_client_id,
          comp.dataset_code                                             AS comp_dataset_code,
-         comp.federal_id_number                                        AS comp_federal_id_number
+         comp.federal_id_number                                        AS comp_federal_id_number,
+         compAddress.id                                                AS comp_address_id,
+         compAddress.name                                              AS comp_address_name,
+         compAddress.address1                                          AS comp_address_address1,
+         compAddress.address2                                          AS comp_address_address2,
+         compAddress.city                                              AS comp_address_city,
+         compAddress.state                                             AS comp_address_state,
+         compAddress.postal_code                                       AS comp_address_postal_code,
+         compAddress.latitude                                          AS comp_address_latitude,
+         compAddress.longitude                                         AS comp_address_longitude,
+         compAddress.country                                           AS comp_address_country,
+         compAddress.county                                            AS comp_address_county,
+         compAddress.phone                                             AS comp_address_phone,
+         compAddress.fax                                               AS comp_address_fax
       FROM audit a
-           JOIN company comp ON a.company_id = comp.id
+           JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
+           LEFT OUTER JOIN address compAddress ON comp.address_id = compAddress.id
            JOIN audit_action auditAction ON a.id = auditAction.audit_id
            JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
            JOIN system_employees_fimvw auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
@@ -189,16 +203,16 @@ class AuditRepository @Inject constructor(
                 FROM audit a
                     JOIN status s ON s.audit_id = a.id
                     JOIN maxStatus ms ON s.id = ms.current_status_id
-                    JOIN company comp ON a.company_id = comp.id
-                    JOIN division div ON comp.id = div.company_id
-                    JOIN region reg ON div.id = reg.division_id
+                    JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
+                    JOIN division div ON comp.id = div.company_id AND div.deleted = FALSE
+                    JOIN region reg ON div.id = reg.division_id AND reg.deleted = FALSE
                 $whereClause) AS total_elements
             FROM audit a
                  JOIN status s ON s.audit_id = a.id
                  JOIN maxStatus ms ON s.id = ms.current_status_id
-                 JOIN company comp ON a.company_id = comp.id
-                 JOIN division div ON comp.id = div.company_id
-                 JOIN region reg ON div.id = reg.division_id
+                 JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
+                 JOIN division div ON comp.id = div.company_id AND div.deleted = FALSE
+                 JOIN region reg ON div.id = reg.division_id AND reg.deleted = FALSE
             $whereClause
          )
          SELECT
@@ -266,18 +280,46 @@ class AuditRepository @Inject constructor(
             comp.client_id                                      AS comp_client_id,
             comp.dataset_code                                   AS comp_dataset_code,
             comp.federal_id_number                              AS comp_federal_id_number,
+            compAddress.id                                      AS comp_address_id,
+            compAddress.address1                                AS comp_address_address1,
+            compAddress.address2                                AS comp_address_address2,
+            compAddress.city                                    AS comp_address_city,
+            compAddress.state                                   AS comp_address_state,
+            compAddress.postal_code                             AS comp_address_postal_code,
+            compAddress.latitude                                AS comp_address_latitude,
+            compAddress.longitude                               AS comp_address_longitude,
+            compAddress.country                                 AS comp_address_country,
+            compAddress.county                                  AS comp_address_county,
+            compAddress.phone                                   AS comp_address_phone,
+            compAddress.fax                                     AS comp_address_fax,
             total_elements                                      AS total_elements
          FROM audits a
-              JOIN company comp ON a.company_id = comp.id
-              JOIN division div ON comp.id = div.company_id
-              JOIN region reg ON div.id = reg.division_id
-              JOIN region_to_store regionStores ON reg.id = regionStores.region_id
-              JOIN system_stores_fimvw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
+              JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
+              LEFT OUTER JOIN address compAddress ON comp.address_id = compAddress.id
               JOIN audit_action auditAction ON a.id = auditAction.audit_id
               JOIN audit_status_type_domain astd ON auditAction.status_id = astd.id
               JOIN system_employees_fimvw auditActionEmployee ON comp.id = auditActionEmployee.comp_id AND auditAction.changed_by = auditActionEmployee.emp_number
+              JOIN system_stores_fimvw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
+              LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
+              LEFT JOIN region reg ON reg.id = rts.region_id AND reg.deleted = FALSE
+              LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id AND div.deleted = FALSE
          ORDER BY a.id
       """
+
+   /**
+    * The sub-query added to make sure we get unassigned store
+    * but won't get the store of region belong to another company
+    * which have the same store number
+    **/
+   private val subQuery =
+      """
+                           (rts.region_id IS null
+                              OR rts.region_id NOT IN (
+                                    SELECT region.id
+                                    FROM region JOIN division ON region.division_id = division.id AND division.deleted = FALSE
+                                    WHERE division.company_id <> :comp_id AND region.deleted = FALSE
+                                 ))
+   """
 
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): AuditEntity? {
@@ -384,6 +426,8 @@ class AuditRepository @Inject constructor(
          whereClause.append(" AND current_status IN (<current_status>) ")
       }
 
+      whereClause.append(" AND $subQuery ")
+
       val sortBy = when (pageRequest.sortBy) {
          "lastupdated" -> "a_last_updated"
          "store" -> "auditStore_number"
@@ -393,7 +437,9 @@ class AuditRepository @Inject constructor(
 
       val sql =
          """
-         WITH status AS (
+         WITH company AS (
+            ${companyRepository.companyBaseQuery()}
+         ), status AS (
             SELECT
                csastd.value   AS current_status,
                csaa.audit_id  AS audit_id,
@@ -490,18 +536,30 @@ class AuditRepository @Inject constructor(
             comp.client_id                                      AS comp_client_id,
             comp.dataset_code                                   AS comp_dataset_code,
             comp.federal_id_number                              AS comp_federal_id_number,
-            count(*) OVER()                                     AS total_elements
+            comp.address_id                                     AS comp_address_id,
+            comp.address_name                                   AS comp_address_name,
+            comp.address_address1                               AS comp_address_address1,
+            comp.address_address2                               AS comp_address_address2,
+            comp.address_city                                   AS comp_address_city,
+            comp.address_state                                  AS comp_address_state,
+            comp.address_postal_code                            AS comp_address_postal_code,
+            comp.address_latitude                               AS comp_address_latitude,
+            comp.address_longitude                              AS comp_address_longitude,
+            comp.address_country                                AS comp_address_country,
+            comp.address_county                                 AS comp_address_county,
+            comp.address_phone                                  AS comp_address_phone,
+            comp.address_fax                                    AS comp_address_fax,
+            count(*) OVER() AS total_elements
          FROM audit a
-              JOIN company comp ON a.company_id = comp.id
-              JOIN division div ON comp.id = div.company_id
-              JOIN region reg ON div.id = reg.division_id
-              JOIN region_to_store rts ON reg.id = rts.region_id
+              JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
               JOIN system_stores_fimvw auditStore
-                   ON rts.store_number = auditStore.number
-                      AND comp.dataset_code = auditStore.dataset
+                   ON comp.dataset_code = auditStore.dataset
                       AND a.store_number = auditStore.number
               JOIN status s ON s.audit_id = a.id
               JOIN max_status ms ON s.action_id = ms.action_id AND a.id = ms.audit_id
+              LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
+                             LEFT JOIN region reg ON reg.id = rts.region_id AND reg.deleted = FALSE
+                             LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id AND div.deleted = FALSE
          $whereClause
          ORDER BY ${sortBy} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
@@ -566,6 +624,8 @@ class AuditRepository @Inject constructor(
          whereClause.append(" AND current_status IN (<statuses>) ")
       }
 
+      whereClause.append(" AND $subQuery ")
+
       val sql =
          """
          WITH status AS (
@@ -599,13 +659,13 @@ class AuditRepository @Inject constructor(
             status.current_status_color AS current_status_color,
             count(*) AS current_status_count
          FROM audit a
-            JOIN company comp ON a.company_id = comp.id
-            JOIN division div ON comp.id = div.company_id
-            JOIN region reg ON div.id = reg.division_id
-            JOIN region_to_store regionStores ON reg.id = regionStores.region_id
-            JOIN system_stores_fimvw auditStore ON comp.dataset_code = auditStore.dataset AND regionStores.store_number = auditStore.number AND a.store_number = auditStore.number
+            JOIN company comp ON a.company_id = comp.id AND comp.deleted = FALSE
+            JOIN system_stores_fimvw auditStore ON comp.dataset_code = auditStore.dataset AND a.store_number = auditStore.number
             JOIN status status ON status.audit_id = a.id
             JOIN maxStatus ms ON status.id = ms.current_status_id
+            LEFT JOIN region_to_store rts ON rts.store_number = auditStore.number AND rts.company_id = a.company_id
+            LEFT JOIN region reg ON reg.id = rts.region_id AND reg.deleted = FALSE
+            LEFT JOIN division div ON comp.id = div.company_id AND reg.division_id = div.id AND div.deleted = FALSE
          $whereClause
          GROUP BY status.current_status,
                   status.current_status_description,
@@ -759,7 +819,7 @@ class AuditRepository @Inject constructor(
          id = rs.getLong("auditStore_id"),
          number = rs.getInt("auditStore_number"),
          name = rs.getString("auditStore_name"),
-         company = companyRepository.mapRow(rs, "comp_"),
+         company = companyRepository.mapRow(rs, "comp_", "comp_address_"),
       )
    }
 
@@ -779,7 +839,8 @@ class AuditRepository @Inject constructor(
          columnPrefix = "auditActionEmployee_",
          companyColumnPrefix = "comp_",
          departmentColumnPrefix = "auditActionEmployeeDept_",
-         storeColumnPrefix = "auditStore_"
+         storeColumnPrefix = "auditStore_",
+         companyAddressColumnPrefix = "comp_address_"
       )
    }
 

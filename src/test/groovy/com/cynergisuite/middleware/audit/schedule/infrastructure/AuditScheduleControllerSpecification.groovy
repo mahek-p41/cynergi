@@ -12,7 +12,6 @@ import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.infrastructure.ScheduleRepository
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
@@ -29,7 +28,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one"() {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
       final employee = employeeFactoryService.singleUser(store)
       final auditSchedule = auditScheduleFactoryService.single(FRIDAY, [store], employee, company)
@@ -50,7 +49,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch one two stores"() {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.singleUser(storeOne)
@@ -72,7 +71,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all"() {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
       final emp = employeeFactoryService.singleUser(store)
       final List<ScheduleEntity> auditSchedules = auditScheduleFactoryService.stream(10, FRIDAY, [store], emp, company).toList()
@@ -146,7 +145,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch all with multiple stores" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
       final emp = employeeFactoryService.singleUser(storeOne)
@@ -190,7 +189,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "create audit schedule"() {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
 
       when:
@@ -209,7 +208,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "create disabled audit schedule" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
 
       when:
@@ -237,6 +236,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       response.size() == 1
       response[0].path == "store[0].id"
       response[0].message == "42 was unable to be found"
+      response[0].code == 'system.not.found'
    }
 
    void "create audit schedule with no stores" () {
@@ -254,7 +254,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "update audit schedule add store" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.singleUser(storeOne)
@@ -299,7 +299,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "update audit schedule change from enabled to disabled" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.singleUser(storeOne)
       final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], employee, company)
@@ -340,7 +340,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "update audit schedule remove store" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.singleUser(storeOne)
@@ -395,7 +395,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "update audit schedule without id" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
 
       when:
@@ -412,12 +412,12 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch audit schedule with 998 user and multiple permissions" () {
       setup:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final auditApprover = AuditPermissionTypeTestDataLoader.findByValue('audit-approver')
       final pageOne = new StandardPageRequest(1, 100, "id", "ASC")
       departmentFactoryService.department('SM', company).with { auditPermissionRepository.insert(new AuditPermissionEntity(null, auditApprover, it)) }
       departmentFactoryService.department('AM', company).with { auditPermissionRepository.insert(new AuditPermissionEntity(null, auditApprover, it)) }
-      departmentFactoryService.department('AR', company).with { auditPermissionRepository.insert(new AuditPermissionEntity(null, auditApprover, it)) }
+      departmentFactoryService.department('SL', company).with { auditPermissionRepository.insert(new AuditPermissionEntity(null, auditApprover, it)) }
 
       when:
       get("/audit/schedule${pageOne}")

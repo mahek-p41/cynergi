@@ -45,7 +45,7 @@ class AuditPermissionTypeRepository(
          "SELECT EXISTS(SELECT id FROM audit_permission_type_domain WHERE id = :id)",
          mapOf("id" to id),
          Boolean::class.java
-      )!!
+      )
 
       logger.trace("Checking if AuditPermissionType: {} exists resulted in {}", id, exists)
 

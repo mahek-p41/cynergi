@@ -4,6 +4,7 @@ import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.extensions.isDigits
 import com.cynergisuite.middleware.authentication.AccessException
 import com.cynergisuite.middleware.error.ErrorDTO
+import com.cynergisuite.middleware.error.NoContentException
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.OperationNotPermittedException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
@@ -58,6 +59,11 @@ class ErrorHandlerController @Inject constructor(
    private val localizationService: LocalizationService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ErrorHandlerController::class.java)
+
+   companion object {
+      const val SOFT_DELETE_ERROR = "The deleted row is still referenced from another table"
+      const val DUPLICATE_ERROR_BEGINNING = "org.postgresql.util.PSQLException: ERROR: duplicate key value violates unique constraint"
+   }
 
    @Error(global = true, exception = JsonParseException::class)
    fun jsonParseExceptionHandler(httpRequest: HttpRequest<*>, exception: JsonParseException): HttpResponse<ErrorDTO> {
@@ -180,6 +186,13 @@ class ErrorHandlerController @Inject constructor(
       return noContent()
    }
 
+   @Error(global = true, exception = NoContentException::class)
+   fun noContentExceptionHandler(exception: NoContentException): HttpResponse<ErrorDTO> {
+      logger.warn("No content to be found {}", exception.toString())
+
+      return noContent()
+   }
+
    @Error(global = true, exception = NotFoundException::class)
    fun notFoundExceptionHandler(httpRequest: HttpRequest<*>, notFoundException: NotFoundException): HttpResponse<ErrorDTO> {
       logger.warn("Not Found Error {}", notFoundException.message)
@@ -212,7 +225,10 @@ class ErrorHandlerController @Inject constructor(
       val message = dataIntegrityViolationException.localizedMessage
       val errorPayload = localizationService.localizeError(localizationCode = DataConstraintIntegrityViolation(), locale = locale)
 
-      return if (message.startsWith("org.postgresql.util.PSQLException: ERROR: update or delete")) {
+      return if (message.startsWith("org.postgresql.util.PSQLException: ERROR: update or delete") ||
+         message.equals(Companion.SOFT_DELETE_ERROR) ||
+         message.contains(DUPLICATE_ERROR_BEGINNING)
+      ) {
          return HttpResponse.status<ErrorDTO>(CONFLICT).body(errorPayload)
       } else {
          badRequest(errorPayload)

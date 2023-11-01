@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.agreement.signing.infrastructure
 
 import com.cynergisuite.domain.SimpleLegacyNumberDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.domain.infrastructure.ServiceSpecificationBase
 import com.cynergisuite.middleware.agreement.signing.AgreementSigningDTO
 import com.cynergisuite.middleware.agreement.signing.AgreementSigningTestDataLoaderService
 import com.cynergisuite.middleware.company.CompanyDTO
@@ -29,9 +28,9 @@ class AgreementSigningControllerSpecification extends ControllerSpecificationBas
 
    void "fetch one agreement signing record by id" () {
       given: 'store number 1 is assigned to a region of company tstds1'
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
-      final dataset = 'tstds1'
+      final dataset = 'coravt'
       final agreementSigning = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, UUID.randomUUID())
 
       when:
@@ -50,9 +49,9 @@ class AgreementSigningControllerSpecification extends ControllerSpecificationBas
 
    void "Upsert Prep with existing agreement record" () {
       given: 'store number 1 is assigned to a region of company tstds1'
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
-      final dataset = 'tstds1'
+      final dataset = 'coravt'
       final agreementSigning = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, UUID.randomUUID())
 
       when:
@@ -72,9 +71,9 @@ class AgreementSigningControllerSpecification extends ControllerSpecificationBas
 
    void "Upsert Prep without existing agreement record" () {
       given: 'store number 1 is assigned to a region of company tstds1'
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
-      final dataset = 'tstds1'
+      final dataset = 'coravt'
 
       when:
       def result = signingClient.toBlocking().exchange(GET("/upsertPrep/${dataset}/123456/654321/R"),
@@ -91,8 +90,8 @@ class AgreementSigningControllerSpecification extends ControllerSpecificationBas
 
    void "fetch three agreement_signing records for customer# 123456" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final dataset = 'tstds1'
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final dataset = 'coravt'
       final store = storeFactoryService.random(company)
       final agreementSigning1 = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, UUID.randomUUID())
       final agreementSigning2 = agreementSigningService.single(company, store, 123456, 111111, 876543, "R", 1, UUID.randomUUID())
@@ -128,7 +127,7 @@ class AgreementSigningControllerSpecification extends ControllerSpecificationBas
 
    void "fetch three agreement_signing records for customer# 123456 authenticated" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
       final agreementSigning1 = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, UUID.randomUUID())
       final agreementSigning2 = agreementSigningService.single(company, store, 123456, 111111, 876543, "R", 1, UUID.randomUUID())
@@ -155,8 +154,8 @@ class AgreementSigningControllerSpecification extends ControllerSpecificationBas
 
    void "fetch agreement_signing records for made up/missing customer# 999999" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final dataset = 'tstds1'
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final dataset = 'coravt'
       final store = storeFactoryService.random(company)
       final agreementSigning1 = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, UUID.randomUUID())
       final agreementSigning2 = agreementSigningService.single(company, store, 123456, 111111, 876543, "R", 1, UUID.randomUUID())
@@ -178,8 +177,8 @@ class AgreementSigningControllerSpecification extends ControllerSpecificationBas
 
    void "fetch agreement_signing records for store# 1" () {
       given:
-      final company = companyFactoryService.forDatasetCode('tstds1')
-      final dataset = 'tstds1'
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final dataset = 'coravt'
       final store1 = storeFactoryService.store(1, company)
       final store3 = storeFactoryService.store(3, company)
       final agreementSigning1 = agreementSigningService.single(company, store1 as StoreEntity, 123456, 111111, 654321, "R", 1, UUID.randomUUID())
@@ -216,8 +215,8 @@ class AgreementSigningControllerSpecification extends ControllerSpecificationBas
 
    void "update an agreement signing record" () {
       given: 'store number 1 is assigned to a region of company tstds1'
-      final companyEntity = companyFactoryService.forDatasetCode('tstds1')
-      final dataset = 'tstds1'
+      final companyEntity = companyFactoryService.forDatasetCode('coravt')
+      final dataset = 'coravt'
       final store = storeFactoryService.random(companyEntity)
       final company = new CompanyDTO(companyEntity)
       final SLN = new SimpleLegacyNumberDTO(store.number)
@@ -240,9 +239,9 @@ class AgreementSigningControllerSpecification extends ControllerSpecificationBas
 
    void "fetch list of agreements for a single customer" () {
       given: 'store number 1 is assigned to a region of company tstds1'
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
-      final dataset = 'tstds1'
+      final dataset = 'coravt'
       final customerNumber = 123456
       final agreement1 = agreementSigningService.single(company, store, 123456, 111111, 654322, "R", 1, UUID.randomUUID())
       final agreement2 = agreementSigningService.single(company, store, 123456, 111111, 654323, "R", 1, UUID.randomUUID())
@@ -265,9 +264,9 @@ class AgreementSigningControllerSpecification extends ControllerSpecificationBas
 
    void "fetch list of agreements for a single customer that does not exist" () {
       given: 'store number 1 is assigned to a region of company tstds1'
-      final company = companyFactoryService.forDatasetCode('tstds1')
+      final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
-      final dataset = 'tstds1'
+      final dataset = 'coravt'
       final customerNumber = 222222
       final agreement1 = agreementSigningService.single(company, store, 123456, 111111, 654322, "R", 1, UUID.randomUUID())
       final agreement2 = agreementSigningService.single(company, store, 123456, 111111, 654323, "R", 1, UUID.randomUUID())

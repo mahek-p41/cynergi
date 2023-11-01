@@ -4,10 +4,11 @@ import com.cynergisuite.middleware.notification.infrastructure.NotificationRecip
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-import java.util.stream.IntStream
-import java.util.stream.Stream
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+
+import java.util.stream.IntStream
+import java.util.stream.Stream
 
 @CompileStatic
 class NotificationRecipientTestDataLoader {

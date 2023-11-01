@@ -11,3 +11,4 @@ BEGIN
 END $$;
 
 DROP VIEW IF EXISTS system_employees_vw;
+DROP VIEW IF EXISTS bank_recon_vendor_vw;

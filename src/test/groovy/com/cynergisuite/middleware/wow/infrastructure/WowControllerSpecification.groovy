@@ -24,7 +24,7 @@ class WowControllerSpecification extends ServiceSpecificationBase {
 
    void "enable wow for a company" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
 
       when:
       def result = client.toBlocking().exchange(POST("/wow", new SftpClientCredentialsDto(tstds1.id, "username", "password", "host", 12345)))
@@ -37,7 +37,7 @@ class WowControllerSpecification extends ServiceSpecificationBase {
 
    void "enable with a null company" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
 
       when:
       client.toBlocking().exchange(POST("/wow", new SftpClientCredentialsDto(null, "username", "password", "host", 12345)), Argument.of(String), Argument.of(String))
@@ -54,7 +54,7 @@ class WowControllerSpecification extends ServiceSpecificationBase {
 
    void "disable wow for a company" () {
       given:
-      final tstds1 = companies.find { it.datasetCode == "tstds1"}
+      final tstds1 = companies.find { it.datasetCode == "coravt"}
       final schedules = wowTestDataLoaderService.enableWow(tstds1)
 
       when:

@@ -12,6 +12,8 @@ import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
 import io.micronaut.data.annotation.Relation
 import io.micronaut.data.annotation.Relation.Kind.ONE_TO_ONE
+import io.micronaut.data.annotation.Relation.Kind.ONE_TO_MANY
+
 
 @MappedEntity("authenticated_user_vw")
 data class AuthenticatedEmployee(
@@ -37,10 +39,15 @@ data class AuthenticatedEmployee(
    @Relation(ONE_TO_ONE)
    val fallbackLocation: LocationEntity,
 
+   @Relation(ONE_TO_MANY)
+   val securityGroups: List<SecurityGroup>,
+
    val passCode: String,
-   val cynergiSystemAdmin: Boolean,
+ //  val cynergiSystemAdmin: Boolean,
    val alternativeStoreIndicator: String,
    val alternativeArea: Long
+
+
 ) : User {
 
    constructor(user: AuthenticatedEmployee, passCodeOverride: String) :
@@ -54,9 +61,10 @@ data class AuthenticatedEmployee(
          chosenLocation = user.chosenLocation,
          fallbackLocation = user.fallbackLocation,
          passCode = passCodeOverride,
-         cynergiSystemAdmin = user.cynergiSystemAdmin,
+     //    cynergiSystemAdmin = user.cynergiSystemAdmin,
          alternativeStoreIndicator = user.alternativeStoreIndicator,
-         alternativeArea = user.alternativeArea
+         alternativeArea = user.alternativeArea,
+         securityGroups = user.securityGroups
       )
 
    constructor(employeeId: Long, employee: EmployeeEntity, store: Store) :
@@ -70,18 +78,24 @@ data class AuthenticatedEmployee(
          chosenLocation = null, // since we are copying a row from the db for this, we don't have a chosenLocation
          fallbackLocation = LocationEntity(store),
          passCode = employee.passCode,
-         cynergiSystemAdmin = employee.cynergiSystemAdmin,
+      //   cynergiSystemAdmin = employee.cynergiSystemAdmin,
          alternativeStoreIndicator = employee.alternativeStoreIndicator,
-         alternativeArea = employee.alternativeArea
+         alternativeArea = employee.alternativeArea,
+         securityGroups = employee.securityGroups
       )
 
    override fun myId(): Long = id
    override fun myCompany(): CompanyEntity = company
    override fun myDepartment(): Department? = department
-   override fun myLocation(): Location = chosenLocation ?: assignedLocation ?: fallbackLocation!!
+   override fun myLocation(): Location = chosenLocation ?: assignedLocation ?: fallbackLocation
    override fun myEmployeeType(): String = type
    override fun myEmployeeNumber(): Int = number
    override fun myAlternativeStoreIndicator(): String = alternativeStoreIndicator
    override fun myAlternativeArea(): Long = alternativeArea
-   override fun isCynergiAdmin(): Boolean = cynergiSystemAdmin
+   override fun isCynergiAdmin(): Boolean = securityGroups.any{it.value == "HTADMIN"}
+   override fun mySecurityTypes(): List<String> = securityGroups.flatMap { outer ->
+      outer.types.map { inner ->
+         inner.value
+      }.distinctBy{ it }
+   }
 }

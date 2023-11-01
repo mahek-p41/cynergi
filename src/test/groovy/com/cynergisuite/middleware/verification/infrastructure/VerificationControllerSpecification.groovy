@@ -3,21 +3,21 @@ package com.cynergisuite.middleware.verification.infrastructure
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.error.ErrorDTO
 import com.cynergisuite.middleware.verfication.Verification
-import com.cynergisuite.middleware.verification.VerificationTestDataLoaderService
 import com.cynergisuite.middleware.verfication.VerificationReference
-import com.cynergisuite.middleware.verification.VerificationReferenceTestDataLoaderService
-import com.cynergisuite.middleware.verification.VerificationReferenceTestDataLoader
-import com.cynergisuite.middleware.verification.VerificationTestDataLoader
 import com.cynergisuite.middleware.verfication.VerificationValueObject
 import com.cynergisuite.middleware.verfication.infrastructure.VerificationReferenceRepository
+import com.cynergisuite.middleware.verification.VerificationReferenceTestDataLoader
+import com.cynergisuite.middleware.verification.VerificationReferenceTestDataLoaderService
+import com.cynergisuite.middleware.verification.VerificationTestDataLoader
+import com.cynergisuite.middleware.verification.VerificationTestDataLoaderService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.javafaker.Faker
 import groovy.json.JsonSlurper
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-
 import jakarta.inject.Inject
+
 import java.util.stream.Collectors
 
 import static com.cynergisuite.domain.infrastructure.SpecificationHelpers.allPropertiesFullAndNotEmpty
@@ -60,6 +60,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       exception.response.getBody(ErrorDTO).orElse(null)?.message == "0 was unable to be found"
+      exception.response.getBody(ErrorDTO).orElse(null)?.code == 'system.not.found'
    }
 
    void "fetch one verification by customer account" () {
@@ -84,6 +85,7 @@ class VerificationControllerSpecification extends ControllerSpecificationBase {
       final HttpClientResponseException exception = thrown(HttpClientResponseException)
       exception.response.status == NOT_FOUND
       exception.response.getBody(ErrorDTO).orElse(null)?.message == "-1 was unable to be found"
+      exception.response.getBody(ErrorDTO).orElse(null)?.code == 'system.not.found'
    }
 
    void "post verification successfully" () {

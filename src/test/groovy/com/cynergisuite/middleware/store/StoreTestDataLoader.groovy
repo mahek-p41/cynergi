@@ -7,10 +7,10 @@ import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
-import kotlin.Pair
-
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import kotlin.Pair
+
 import java.util.stream.Stream
 
 import static java.util.stream.Collectors.toList
@@ -78,9 +78,21 @@ class StoreTestDataLoader {
       return stores.find { it.company.datasetCode == company.datasetCode && it.number == number }
    }
 
-   static Stream<Store> stores(CompanyEntity company) {
+   static List<Store> stores(CompanyEntity company) {
+      return stores.findAll { it.company.datasetCode == company.datasetCode } as List<Store>
+   }
+
+   static List<Store> storesDevelop(CompanyEntity company) {
       return stores.stream()
-         .filter {it.company.datasetCode == company.datasetCode }
+         .map { store ->
+            switch (store.company.datasetCode) {
+               case CompanyFactory.tstds1().datasetCode: return store.copyWithNewCompany(CompanyFactory.corrto())
+               case CompanyFactory.tstds2().datasetCode:  return store.copyWithNewCompany(CompanyFactory.corptp())
+               default: return store
+            }
+         }
+         .filter { it.company.datasetCode == company.datasetCode }
+         .collect(toList())
    }
 }
 
@@ -115,7 +127,7 @@ class StoreTestDataLoaderService {
    }
 
    Stream<Pair<RegionEntity, Location>> companyStoresToRegion(RegionEntity region, Long limit) {
-      return StoreTestDataLoader.stores(region.division.company)
+      return StoreTestDataLoader.stores(region.division.company).stream()
          .limit(limit)
          .map { storeRepository.assignToRegion(it, region, region.division.company.id) }
    }
