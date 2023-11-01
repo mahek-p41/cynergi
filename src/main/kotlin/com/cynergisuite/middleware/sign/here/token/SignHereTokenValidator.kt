@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.sign.here.token
 
 import com.cynergisuite.domain.ValidatorBase
+import com.cynergisuite.extensions.toUuid
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
@@ -32,7 +33,7 @@ class SignHereTokenValidator @Inject constructor(
       }
 
       return SignHereTokenEntity(
-         id = dto.id,
+         id = dto.id?.toUuid(),
          company = company,
          store = storeRepository.findOne(number = dto.store!!.number!!, company = company)!!,
          token = dto.token!!,
@@ -46,7 +47,7 @@ class SignHereTokenValidator @Inject constructor(
       doValidation { errors ->
          val id = dto.id!!
 
-         val existingAgreement = signHereTokenRepository.findOne(id, company)
+         val existingAgreement = signHereTokenRepository.findOne(id.toUuid()!!, company)
 
          if (existingAgreement == null) {
             errors.add(ValidationError("id", NotFound(id)))
@@ -54,7 +55,7 @@ class SignHereTokenValidator @Inject constructor(
       }
 
       return SignHereTokenEntity(
-         id = dto.id,
+         id = dto.id?.toUuid(),
          company = company,
          store = storeRepository.findOne(number = dto.store!!.number!!, company = company)!!,
          token = dto.token!!,

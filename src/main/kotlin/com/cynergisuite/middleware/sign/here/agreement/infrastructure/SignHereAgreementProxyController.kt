@@ -13,8 +13,10 @@ import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
 import io.micronaut.http.MutableHttpResponse
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.server.types.files.StreamedFile
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
@@ -51,7 +53,8 @@ class SignHereAgreementProxyController @Inject constructor(
                customerNumber = doc.meta["Customer-No"]?.toString() ?: agreementSigningRepository.findCustomerNumberFromSignatureId(doc.id!!),
                agreementType = doc.meta["Agreement-Type"]?.toString() ?: agreementSigningRepository.findAgreementTypeFromSignatureId(doc.id!!),
                timeCreated = doc.timeCreated!!,
-               customerName = doc.signingDetail?.name
+               customerName = doc.signingDetail?.name,
+               status = doc.status?.value
             )
          }
       } else {
@@ -92,9 +95,21 @@ class SignHereAgreementProxyController @Inject constructor(
       documentId: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>,
-   ): Publisher<MutableHttpResponse<*>> {
+   ): StreamedFile {
       val user = userService.fetchUser(authentication) // grab the store user
 
       return signHereAgreementService.retrieveDocument(user.myLocation(), user.myCompany(), documentId, httpRequest)
+   }
+
+   @Delete("/document/cancel/{signatureRequestedId}")
+   fun cancelAssociated(
+      @Parameter(description = "Primary Key to cancel the Agreement associated records", `in` = PATH) @QueryValue("signatureRequestedId")
+      signatureRequestedId: UUID,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>,
+   ) {
+      val user = userService.fetchUser(authentication) // grab the store user
+
+      signHereAgreementService.cancelAssociated(user.myLocation(), user.myCompany(), signatureRequestedId)
    }
 }

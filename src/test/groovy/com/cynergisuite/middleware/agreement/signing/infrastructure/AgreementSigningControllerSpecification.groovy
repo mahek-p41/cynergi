@@ -4,6 +4,7 @@ import com.cynergisuite.domain.SimpleLegacyNumberDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.agreement.signing.AgreementSigningDTO
 import com.cynergisuite.middleware.agreement.signing.AgreementSigningTestDataLoaderService
+import com.cynergisuite.middleware.company.CompanyDTO
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.StoreTestDataLoaderService
 import io.micronaut.core.type.Argument
@@ -214,13 +215,14 @@ class AgreementSigningControllerSpecification extends ControllerSpecificationBas
 
    void "update an agreement signing record" () {
       given: 'store number 1 is assigned to a region of company tstds1'
-      final company = companyFactoryService.forDatasetCode('coravt')
+      final companyEntity = companyFactoryService.forDatasetCode('coravt')
       final dataset = 'coravt'
-      final store = storeFactoryService.random(company)
+      final store = storeFactoryService.random(companyEntity)
+      final company = new CompanyDTO(companyEntity)
       final SLN = new SimpleLegacyNumberDTO(store.number)
       final externalId = UUID.randomUUID()
-      final agreementSigning = agreementSigningService.single(company, store, 123456, 111111, 654321, "R", 1, externalId)
-      final newDTO = new AgreementSigningDTO(agreementSigning.id, company, SLN, 123456, 111111, 654321, "R", 1, externalId)
+      final agreementSigning = agreementSigningService.single(companyEntity, store, 123456, 111111, 654321, "R", 1, externalId)
+      final newDTO = new AgreementSigningDTO(agreementSigning.id.toString(), company, SLN, 123456, 111111, 654321, "R", 1, externalId.toString())
 
       when:
       def result = signingClient.toBlocking().exchange(PUT("/${agreementSigning.id}/dataset/${dataset}", newDTO),
@@ -230,7 +232,7 @@ class AgreementSigningControllerSpecification extends ControllerSpecificationBas
 
       then:
       notThrown(HttpClientResponseException)
-      final extraDTO = new AgreementSigningDTO(agreementSigning.id, company, SLN, 123456, 111111, 654321, "R", 1, externalId)
+      final extraDTO = new AgreementSigningDTO(agreementSigning.id.toString(), company, SLN, 123456, 111111, 654321, "R", 1, externalId.toString())
       result.agreementType == extraDTO.agreementType
       result.externalSignatureId == extraDTO.externalSignatureId.toString()
    }
