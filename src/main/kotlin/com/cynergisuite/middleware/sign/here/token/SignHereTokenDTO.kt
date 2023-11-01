@@ -1,11 +1,9 @@
 package com.cynergisuite.middleware.sign.here.token
 
-import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleLegacyNumberDTO
 import com.cynergisuite.middleware.company.CompanyDTO
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
-import java.util.UUID
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -15,7 +13,7 @@ import javax.validation.constraints.Size
 data class SignHereTokenDTO(
 
    @field:Schema(name = "id", description = "System generated ID for the associated token")
-   var id: UUID? = null,
+   var id: String? = null,
 
    @field:NotNull
    @field:NotBlank
@@ -28,15 +26,13 @@ data class SignHereTokenDTO(
    @field:Size(min = 30, max = 60)
    @field:Schema(name = "token", description = "AWS access token")
    var token: String? = null
-) : Identifiable {
+) {
 
    constructor(entity: SignHereTokenEntity) :
       this (
-         id = entity.id,
+         id = entity.id.toString(),
          company = CompanyDTO(entity.company),
          store = SimpleLegacyNumberDTO(entity.store.number),
          token = entity.token,
       )
-
-   override fun myId(): UUID? = id
 }

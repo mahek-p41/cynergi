@@ -5,6 +5,7 @@ import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.sign.here.DocumentPageRequest
+import com.cynergisuite.middleware.sign.here.agreement.DocumentSignatureStatus
 import com.cynergisuite.middleware.sign.here.associated.AssociatedDetailDto
 import com.cynergisuite.middleware.sign.here.agreement.DocumentSignatureRequestDto
 import com.cynergisuite.middleware.sign.here.agreement.DocumentSignatureSigningDetailDto
@@ -21,6 +22,8 @@ import io.micronaut.http.HttpStatus
 import io.micronaut.security.token.jwt.render.BearerAccessRefreshToken
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
+import spock.lang.Shared
+
 import java.time.LocalDate
 import java.time.OffsetDateTime
 
@@ -30,17 +33,21 @@ class SignHereAgreementProxyControllerSpecification extends ControllerSpecificat
    @Inject SignHereTokenTestDataLoaderService signHereTokenTestDataLoaderService
    @Inject ObjectMapper objectMapper
 
-   WireMockServer wireMockServer
+   @Shared WireMockServer wireMockServer
 
-   void setup() {
+   void setupSpec() {
       final options = new WireMockConfiguration()
-      options.port(signHerePleasePort)
+      options.port(10905)
       options.bindAddress("localhost")
       this.wireMockServer = new WireMockServer(options)
       this.wireMockServer.start()
    }
 
    void cleanup() {
+      this.wireMockServer.resetAll()
+   }
+
+   void cleanupSpec() {
       this.wireMockServer.stop()
    }
 
@@ -70,7 +77,8 @@ class SignHereAgreementProxyControllerSpecification extends ControllerSpecificat
                   'Agreement-No': '987654321',
                   'Customer-No': '123456789',
                   'Agreement-Type': 'R'
-               ]
+               ],
+               new DocumentSignatureStatus("CERTIFIED", "Document Certified")
             ),
          ], new DocumentPageRequest(), 1, 1, true, true)
       )

@@ -9,6 +9,13 @@ import java.util.UUID
 
 @Introspected
 @JsonInclude(NON_NULL)
+data class DocumentSignatureStatus(
+   var value: String? = null,
+   var description: String? = null,
+)
+
+@Introspected
+@JsonInclude(NON_NULL)
 data class DocumentSignatureRequestDto(
    var id: UUID? = null,
    var timeCreated: OffsetDateTime? = null,
@@ -16,6 +23,7 @@ data class DocumentSignatureRequestDto(
    var requestedSignatures: List<String> = emptyList(),
    var expiration: LocalDate? = null,
    var meta: HashMap<*, *> = HashMap<String, Any>(),
+   var status: DocumentSignatureStatus? = null,
 )
 
 @Introspected

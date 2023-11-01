@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.agreement.signing
 
 import com.cynergisuite.domain.ValidatorBase
+import com.cynergisuite.extensions.toUuid
 import com.cynergisuite.middleware.agreement.signing.infrastructure.AgreementSigningRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.ValidationError
@@ -32,15 +33,15 @@ class AgreementSigningValidator @Inject constructor(
       }
 
       return AgreementSigningEntity(
-         id = dto.id,
-         company = dto.company!!,
+         id = dto.id?.toUuid(),
+         company = company,
          store = storeRepository.findOne(number = dto.store!!.number!!, company = company)!!,
          primaryCustomerNumber = dto.primaryCustomerNumber!!,
          secondaryCustomerNumber = dto.secondaryCustomerNumber!!,
          agreementNumber = dto.agreementNumber!!,
          agreementType = dto.agreementType!!,
          statusId = dto.statusId!!,
-         externalSignatureId = dto.externalSignatureId!!,
+         externalSignatureId = dto.externalSignatureId!!.toUuid()!!,
       )
    }
 
@@ -52,7 +53,7 @@ class AgreementSigningValidator @Inject constructor(
          val id = dto.id!!
          // TODO Do we need an agmt signing status service?
 
-         val existingAgreement = agreementSigningRepository.findOne(id, company)
+         val existingAgreement = agreementSigningRepository.findOne(id.toUuid()!!, company)
 
          if (existingAgreement == null) {
             errors.add(ValidationError("id", NotFound(id)))
@@ -60,15 +61,15 @@ class AgreementSigningValidator @Inject constructor(
       }
 
       return AgreementSigningEntity(
-         id = dto.id,
-         company = dto.company!!,
+         id = dto.id?.toUuid(),
+         company = company,
          store = storeRepository.findOne(number = dto.store!!.number!!, company = company)!!,
          primaryCustomerNumber = dto.primaryCustomerNumber!!,
          secondaryCustomerNumber = dto.secondaryCustomerNumber!!,
          agreementNumber = dto.agreementNumber!!,
          agreementType = dto.agreementType!!,
          statusId = dto.statusId!!,
-         externalSignatureId = dto.externalSignatureId!!,
+         externalSignatureId = dto.externalSignatureId!!.toUuid()!!,
       )
    }
 }

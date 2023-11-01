@@ -630,7 +630,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(Exception)
       with(result) {
-         id == company.id
+         id.toString() == company.id
          name == "Test update name"
       }
    }
@@ -648,7 +648,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(Exception)
       with(result) {
-         it.id == company.id
+         it.id.toString() == company.id
          it.address == null
       }
       addressRepository.findById(addressId).orElse(null) == null
@@ -667,7 +667,7 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(Exception)
       with(result) {
-         it.id == company.id
+         it.id.toString() == company.id
          it.address.id == addressId
          it.address.name == "Test update name"
       }

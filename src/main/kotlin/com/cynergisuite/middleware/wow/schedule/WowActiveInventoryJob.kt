@@ -46,7 +46,7 @@ class WowActiveInventoryJob @Inject constructor(
                activeInventory.sku,
                activeInventory.itemName ?: EMPTY,
                activeInventory.itemDescription ?: EMPTY,
-               activeInventory.totalQuantity ?: EMPTY
+               activeInventory.totalQuantity
             )
          }
 
