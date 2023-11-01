@@ -89,7 +89,7 @@ class AuditScheduleController @Inject constructor(
       pageRequest: AuditPageRequest,
       authentication: Authentication
    ): Page<AuditScheduleDTO> {
-      logger.info("Fetching all audit schedules {} {}", pageRequest)
+      logger.info("Fetching all audit schedules {}", pageRequest)
 
       val user = userService.fetchUser(authentication)
       val page = auditScheduleService.fetchAll(pageRequest, user.myCompany())

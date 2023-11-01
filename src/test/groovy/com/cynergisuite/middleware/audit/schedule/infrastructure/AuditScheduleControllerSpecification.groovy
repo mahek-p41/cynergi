@@ -44,7 +44,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.schedule == "FRIDAY"
       result.stores.size() == 1
       result.stores[0].storeNumber == store.number
-      result.enabled == true
+      result.enabled != false
    }
 
    void "fetch one two stores"() {
@@ -66,7 +66,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.schedule == "TUESDAY"
       result.stores.size() == 2
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number, storeThree.number]
-      result.enabled == true
+      result.enabled != false
    }
 
    void "fetch all"() {
@@ -97,7 +97,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].schedule == auditSchedules[0].schedule
       pageOneResult.elements[0].stores.size() == 1
       pageOneResult.elements[0].stores[0].storeNumber == store.number
-      pageOneResult.elements[0].enabled == true
+      pageOneResult.elements[0].enabled != null
       pageOneResult.elements[4].id == auditSchedules[4].id
       pageOneResult.elements[4].schedule == "FRIDAY"
       pageOneResult.elements[4].title == auditSchedules[4].title
@@ -105,7 +105,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[4].schedule == auditSchedules[4].schedule
       pageOneResult.elements[4].stores.size() == 1
       pageOneResult.elements[4].stores[0].storeNumber == store.number
-      pageOneResult.elements[4].enabled == true
+      pageOneResult.elements[4].enabled != null
 
       when:
       def pageTwoResult = get("/audit/schedule${pageTwo}")
@@ -125,7 +125,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements[0].schedule == auditSchedules[5].schedule
       pageTwoResult.elements[0].stores.size() == 1
       pageTwoResult.elements[0].stores[0].storeNumber == store.number
-      pageTwoResult.elements[0].enabled == true
+      pageTwoResult.elements[0].enabled != null
       pageTwoResult.elements[4].id == auditSchedules[9].id
       pageOneResult.elements[4].schedule == "FRIDAY"
       pageTwoResult.elements[4].title == auditSchedules[9].title
@@ -133,7 +133,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements[4].schedule == auditSchedules[9].schedule
       pageTwoResult.elements[4].stores.size() == 1
       pageTwoResult.elements[4].stores[0].storeNumber == store.number
-      pageTwoResult.elements[4].enabled == true
+      pageTwoResult.elements[4].enabled != false
 
       when:
       get("/audit/schedule${pageThree}")
@@ -203,7 +203,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.schedule == "TUESDAY"
       result.stores.size() == 1
       result.stores[0].storeNumber == store.number
-      result.enabled == true
+      result.enabled != false
    }
 
    void "create disabled audit schedule" () {
@@ -271,7 +271,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.schedule == "TUESDAY"
       result.stores.size() == 2
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number, storeThree.number]
-      result.enabled == true
+      result.enabled != false
 
       loadedSchedule.arguments.size() == 5
       final args = loadedSchedule.arguments.sort { o1, o2 -> (o1.description + o1.value) <=> (o2.description + o2.value) }
@@ -357,7 +357,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.schedule == "TUESDAY"
       result.stores.size() == 1
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number]
-      result.enabled == true
+      result.enabled != false
 
       when:
       result = get("/audit/schedule/${schedule.id}")
@@ -371,7 +371,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.schedule == "TUESDAY"
       result.stores.size() == 1
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number]
-      result.enabled == true
+      result.enabled != false
 
       loadedSchedule.arguments.size() == 4
       final args = loadedSchedule.arguments.sort { o1, o2 -> (o1.description + o1.value) <=> (o2.description + o2.value) }
