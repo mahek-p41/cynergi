@@ -391,7 +391,7 @@ class AccountPayableInvoiceController @Inject constructor(
    }
 
    @Throws(NotFoundException::class)
-   @Get(value = "/{id:[0-9a-fA-F\\-]+}/gl-distribution/", produces = [APPLICATION_JSON])
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}/gl-distribution", produces = [APPLICATION_JSON])
    @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Fetch an AP Invoice GL Distributions", description = "Fetch an AP Invoice GL Distributions", operationId = "accountPayableInvoice-fetchGLDistributions")
    @ApiResponses(
       value = [
