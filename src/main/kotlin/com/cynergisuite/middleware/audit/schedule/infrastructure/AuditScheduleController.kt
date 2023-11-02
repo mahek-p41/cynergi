@@ -16,6 +16,7 @@ import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
@@ -158,5 +159,29 @@ class AuditScheduleController @Inject constructor(
       logger.debug("Requested update of audit schedule {} resulted in {}", auditSchedule, response)
 
       return response
+   }
+
+   @Delete(uri = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
+   @AccessControl("audit-approver", accessControlProvider = AuditAccessControlProvider::class)
+   @Operation(tags = ["AuditScheduleEndpoints"], summary = "Delete a single Audit Schedule", description = "Delete a single Audit Schedule by its system generated primary key", operationId = "auditSchedule-update")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the Audit Schedule was able to be deleted"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Audit Schedule was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun delete(
+      @Parameter(description = "Audit Schedule ID", `in` = PATH) @QueryValue("id")
+      id: UUID,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ) {
+      logger.debug("User {} requested Audit Schedule Deletion by ID {}", authentication, id)
+
+      val user = userService.fetchUser(authentication)
+
+      return auditScheduleService.delete(id, user.myCompany())
    }
 }

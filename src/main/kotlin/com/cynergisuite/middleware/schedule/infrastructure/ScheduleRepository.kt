@@ -9,6 +9,7 @@ import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.infrastructure.ScheduleArgumentRepository
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
@@ -374,6 +375,23 @@ class ScheduleRepository @Inject constructor(
             "command_ids" to commandTypes.map { it.id }
          )
       )
+   }
+
+   @Transactional
+   fun delete(id: UUID, company: CompanyEntity) {
+      logger.debug("Deleting Audit Schedule with id={}", id)
+
+      val deletedRows = jdbc.update(
+         """
+         DELETE FROM schedule
+         WHERE company_id = :company_id
+            AND id = :id
+         """,
+         mapOf("id" to id, "company_id" to company.id)
+      )
+      logger.info("Deleted rows {}", deletedRows)
+
+      if (deletedRows == 0) throw NotFoundException(id)
    }
 
    private fun mapRow(rs: ResultSet, entity: ScheduleEntity): ScheduleEntity =

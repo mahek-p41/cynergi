@@ -15,6 +15,7 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
+import static io.micronaut.http.HttpStatus.NOT_FOUND
 import static io.micronaut.http.HttpStatus.NO_CONTENT
 import static java.time.DayOfWeek.FRIDAY
 import static java.time.DayOfWeek.MONDAY
@@ -44,7 +45,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.schedule == "FRIDAY"
       result.stores.size() == 1
       result.stores[0].storeNumber == store.number
-      result.enabled != false
+      result.enabled != null
    }
 
    void "fetch one two stores"() {
@@ -66,7 +67,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       result.schedule == "TUESDAY"
       result.stores.size() == 2
       result.stores.collect { it.storeNumber }.sort() == [storeOne.number, storeThree.number]
-      result.enabled != false
+      result.enabled != null
    }
 
    void "fetch all"() {
@@ -133,7 +134,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements[4].schedule == auditSchedules[9].schedule
       pageTwoResult.elements[4].stores.size() == 1
       pageTwoResult.elements[4].stores[0].storeNumber == store.number
-      pageTwoResult.elements[4].enabled != false
+      pageTwoResult.elements[4].enabled != null
 
       when:
       get("/audit/schedule${pageThree}")
@@ -426,4 +427,31 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.status == NO_CONTENT
    }
+
+   void "delete audit schedule" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final storeOne = storeFactoryService.store(1, company)
+      final storeThree = storeFactoryService.store(3, company)
+      final employee = employeeFactoryService.singleUser(storeOne)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne, storeThree], employee, company)
+
+      when:
+      delete("/audit/schedule/$schedule.id")
+
+      then:
+      notThrown(HttpClientResponseException)
+
+      when:
+      get("/audit/schedule/$schedule.id")
+
+      then:
+      final exception = thrown(HttpClientResponseException)
+      exception.response.status == NOT_FOUND
+      def response = exception.response.bodyAsJson()
+      response.message == "$schedule.id was unable to be found"
+      response.code == "system.not.found"
+
+   }
+
 }
