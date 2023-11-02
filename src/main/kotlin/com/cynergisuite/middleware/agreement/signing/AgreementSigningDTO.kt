@@ -4,6 +4,7 @@ import com.cynergisuite.domain.SimpleLegacyNumberDTO
 import com.cynergisuite.middleware.company.CompanyDTO
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
+import java.util.UUID
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -17,8 +18,8 @@ data class AgreementSigningDTO(
 
    @field:NotNull
    @field:NotBlank
-   @field:Schema(name = "company", description = "The associated company for this agreement")
-   var company: CompanyDTO? = null,
+   @field:Schema(name = "company", description = "The associated company UUID for this agreement")
+   var company: UUID? = null,
 
    @field:Schema(name = "store", required = false, description = "Store the agreement is associated with")
    var store: SimpleLegacyNumberDTO? = null,
@@ -49,7 +50,7 @@ data class AgreementSigningDTO(
    constructor(entity: AgreementSigningEntity) :
       this (
          id = entity.id?.toString(),
-         company = CompanyDTO(entity.company),
+         company = entity.company.id,
          store = SimpleLegacyNumberDTO(entity.store.number),
          primaryCustomerNumber = entity.primaryCustomerNumber,
          secondaryCustomerNumber = entity.secondaryCustomerNumber,
