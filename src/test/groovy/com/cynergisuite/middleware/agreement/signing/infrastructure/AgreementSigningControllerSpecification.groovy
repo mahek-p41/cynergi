@@ -222,7 +222,7 @@ class AgreementSigningControllerSpecification extends ControllerSpecificationBas
       final SLN = new SimpleLegacyNumberDTO(store.number)
       final externalId = UUID.randomUUID()
       final agreementSigning = agreementSigningService.single(companyEntity, store, 123456, 111111, 654321, "R", 1, externalId)
-      final newDTO = new AgreementSigningDTO(agreementSigning.id.toString(), companyEntity.id, SLN, 123456, 111111, 654321, "R", 1, externalId.toString())
+      final newDTO = new AgreementSigningDTO(agreementSigning.id.toString(), SLN, 123456, 111111, 654321, "R", 1, externalId.toString())
 
       when:
       def result = signingClient.toBlocking().exchange(PUT("/${agreementSigning.id}/dataset/${dataset}", newDTO),
@@ -232,7 +232,7 @@ class AgreementSigningControllerSpecification extends ControllerSpecificationBas
 
       then:
       notThrown(HttpClientResponseException)
-      final extraDTO = new AgreementSigningDTO(agreementSigning.id.toString(), companyEntity.id, SLN, 123456, 111111, 654321, "R", 1, externalId.toString())
+      final extraDTO = new AgreementSigningDTO(agreementSigning.id.toString(), SLN, 123456, 111111, 654321, "R", 1, externalId.toString())
       result.agreementType == extraDTO.agreementType
       result.externalSignatureId == extraDTO.externalSignatureId.toString()
    }

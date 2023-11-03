@@ -16,11 +16,6 @@ data class AgreementSigningDTO(
    @field:Schema(name = "id", description = "System generated ID for the associated agreement signing record")
    var id: String? = null,
 
-   @field:NotNull
-   @field:NotBlank
-   @field:Schema(name = "company", description = "The associated company UUID for this agreement")
-   var company: UUID? = null,
-
    @field:Schema(name = "store", required = false, description = "Store the agreement is associated with")
    var store: SimpleLegacyNumberDTO? = null,
 
@@ -50,7 +45,6 @@ data class AgreementSigningDTO(
    constructor(entity: AgreementSigningEntity) :
       this (
          id = entity.id?.toString(),
-         company = entity.company.id,
          store = SimpleLegacyNumberDTO(entity.store.number),
          primaryCustomerNumber = entity.primaryCustomerNumber,
          secondaryCustomerNumber = entity.secondaryCustomerNumber,
