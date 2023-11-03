@@ -12,5 +12,7 @@ class WowFinalPaymentEntity(
    val email: String?,
    val agreementNumber: String,
    val product: String?,
-   val payoutDate: LocalDate?
+   val payoutDate: LocalDate?,
+   val cellPhoneNumber: String?,
+   val homePhoneNumber: String?
 )
