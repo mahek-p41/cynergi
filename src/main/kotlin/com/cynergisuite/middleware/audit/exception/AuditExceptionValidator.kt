@@ -98,7 +98,13 @@ class AuditExceptionValidator @Inject constructor (
 
          AuditExceptionEntity(auditId, inventory, scanArea, employeeUser, exceptionCode)
       } else {
-         AuditExceptionEntity(auditId, barcode!!, scanArea, employeeUser, exceptionCode)
+         val inventory = inventoryRepository.findByLookupKey(barcode!!, enteredBy.myCompany())
+
+         return if (inventory != null) {
+            AuditExceptionEntity(auditId, inventory, scanArea, employeeUser, exceptionCode)
+         } else {
+            AuditExceptionEntity(auditId, barcode, scanArea, employeeUser, exceptionCode)
+         }
       }
    }
 
