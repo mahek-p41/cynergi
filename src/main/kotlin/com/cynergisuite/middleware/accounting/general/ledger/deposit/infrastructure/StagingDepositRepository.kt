@@ -37,7 +37,7 @@ class StagingDepositRepository @Inject constructor(
       filterRequest: StagingDepositPageRequest
    ): RepositoryPage<StagingDepositEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "movedToJe" to filterRequest.movedToJe, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
-      val whereClause = StringBuilder(" WHERE vs.deleted = false AND vs.company_id = :comp_id AND dep.value IN ('DEP_1', 'DEP_2', 'DEP_3', 'DEP_4', 'DEP_5', 'DEP_6', 'DEP_7', 'DEP_8', 'DEP_9', 'DEP_10', 'DEP_11')  AND vs.moved_to_pending_journal_entries = :movedToJe ")
+      val whereClause = StringBuilder(" WHERE vs.deleted = false AND vs.company_id = :comp_id AND dep.value IN ('DEP_1', 'DEP_2', 'DEP_3', 'DEP_4', 'DEP_5', 'DEP_6', 'DEP_7')  AND vs.moved_to_pending_journal_entries = :movedToJe ")
 
       if (filterRequest.verifiedSuccessful != null) {
          params["verifiedSuccessful"] = filterRequest.verifiedSuccessful
@@ -89,10 +89,6 @@ class StagingDepositRepository @Inject constructor(
              SUM(CASE WHEN dep.value = 'DEP_5' THEN ds.deposit_amount ELSE 0 END)   AS deposit_5,
              SUM(CASE WHEN dep.value = 'DEP_6' THEN ds.deposit_amount ELSE 0 END)   AS deposit_6,
              SUM(CASE WHEN dep.value = 'DEP_7' THEN ds.deposit_amount ELSE 0 END)   AS deposit_7,
-             SUM(CASE WHEN dep.value = 'DEP_8' THEN ds.deposit_amount ELSE 0 END)   AS deposit_8,
-             SUM(CASE WHEN dep.value = 'DEP_9' THEN ds.deposit_amount ELSE 0 END)   AS deposit_9,
-             SUM(CASE WHEN dep.value = 'DEP_10' THEN ds.deposit_amount ELSE 0 END)   AS deposit_10,
-             SUM(CASE WHEN dep.value = 'DEP_11' THEN ds.deposit_amount ELSE 0 END)   AS deposit_11,
              SUM(ds.deposit_amount)                                                 AS deposit_total,
              count(*) OVER()                                                        AS total_elements
          FROM
@@ -277,10 +273,6 @@ class StagingDepositRepository @Inject constructor(
              SUM(CASE WHEN dep.value = 'DEP_5' THEN ds.deposit_amount ELSE 0 END)   AS deposit_5,
              SUM(CASE WHEN dep.value = 'DEP_6' THEN ds.deposit_amount ELSE 0 END)   AS deposit_6,
              SUM(CASE WHEN dep.value = 'DEP_7' THEN ds.deposit_amount ELSE 0 END)   AS deposit_7,
-             SUM(CASE WHEN dep.value = 'DEP_8' THEN ds.deposit_amount ELSE 0 END)   AS deposit_8,
-             SUM(CASE WHEN dep.value = 'DEP_9' THEN ds.deposit_amount ELSE 0 END)   AS deposit_9,
-             SUM(CASE WHEN dep.value = 'DEP_10' THEN ds.deposit_amount ELSE 0 END)   AS deposit_10,
-             SUM(CASE WHEN dep.value = 'DEP_11' THEN ds.deposit_amount ELSE 0 END)   AS deposit_11,
              SUM(ds.deposit_amount)                                                 AS deposit_total,
              count(*) OVER()                                                        AS total_elements
          FROM
@@ -430,10 +422,6 @@ class StagingDepositRepository @Inject constructor(
          deposit5ACHOLP = rs.getBigDecimal("deposit_5"),
          deposit6CCOLP = rs.getBigDecimal("deposit_6"),
          deposit7DebitCard = rs.getBigDecimal("deposit_7"),
-         deposit8ACHChargeback = rs.getBigDecimal("deposit_8"),
-         deposit9ICCChargeback = rs.getBigDecimal("deposit_9"),
-         deposit10NSFReturnCheck = rs.getBigDecimal("deposit_10"),
-         deposit11ARBadCheck = rs.getBigDecimal("deposit_11"),
          depositTotal = rs.getBigDecimal("deposit_total")
       )
 

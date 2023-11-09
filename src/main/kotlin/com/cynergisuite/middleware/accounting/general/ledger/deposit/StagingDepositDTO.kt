@@ -26,10 +26,6 @@ data class StagingDepositDTO(
    var deposit5ACHOLP: BigDecimal? = null,
    var deposit6CCOLP: BigDecimal? = null,
    var deposit7DebitCard: BigDecimal? = null,
-   var deposit8ACHChargeback: BigDecimal? = null,
-   var deposit9ICCChargeback: BigDecimal? = null,
-   var deposit10NSFReturnCheck: BigDecimal? = null,
-   var deposit11ARBadCheck: BigDecimal? = null,
    var depositTotal: BigDecimal? = null
 ) {
    constructor(entity: StagingDepositEntity) : this(
@@ -47,10 +43,6 @@ data class StagingDepositDTO(
       deposit5ACHOLP = entity.deposit5ACHOLP,
       deposit6CCOLP = entity.deposit6CCOLP,
       deposit7DebitCard = entity.deposit7DebitCard,
-      deposit8ACHChargeback = entity.deposit8ACHChargeback,
-      deposit9ICCChargeback = entity.deposit9ICCChargeback,
-      deposit10NSFReturnCheck = entity.deposit10NSFReturnCheck,
-      deposit11ARBadCheck = entity.deposit11ARBadCheck,
       depositTotal = entity.depositTotal
    )
 }
