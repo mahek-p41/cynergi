@@ -7,7 +7,6 @@ import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.query
-import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.update
@@ -23,7 +22,6 @@ import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
-import java.time.LocalDate
 import java.util.UUID
 import javax.transaction.Transactional
 
@@ -39,7 +37,7 @@ class StagingDepositRepository @Inject constructor(
       filterRequest: StagingDepositPageRequest
    ): RepositoryPage<StagingDepositEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "movedToJe" to filterRequest.movedToJe, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
-      val whereClause = StringBuilder(" WHERE vs.deleted = false AND vs.company_id = :comp_id AND dep.value IN ('DEP_1', 'DEP_2', 'DEP_3', 'DEP_4', 'DEP_5', 'DEP_6', 'DEP_7', 'DEP_8', 'DEP_9', 'DEP_10', 'DEP_11')  AND vs.moved_to_pending_journal_entries = :movedToJe ")
+      val whereClause = StringBuilder(" WHERE vs.deleted = false AND vs.company_id = :comp_id AND dep.value IN ('DEP_1', 'DEP_2', 'DEP_3', 'DEP_4', 'DEP_5', 'DEP_6', 'DEP_7')  AND vs.moved_to_pending_journal_entries = :movedToJe ")
 
       if (filterRequest.verifiedSuccessful != null) {
          params["verifiedSuccessful"] = filterRequest.verifiedSuccessful
@@ -91,10 +89,6 @@ class StagingDepositRepository @Inject constructor(
              SUM(CASE WHEN dep.value = 'DEP_5' THEN ds.deposit_amount ELSE 0 END)   AS deposit_5,
              SUM(CASE WHEN dep.value = 'DEP_6' THEN ds.deposit_amount ELSE 0 END)   AS deposit_6,
              SUM(CASE WHEN dep.value = 'DEP_7' THEN ds.deposit_amount ELSE 0 END)   AS deposit_7,
-             SUM(CASE WHEN dep.value = 'DEP_8' THEN ds.deposit_amount ELSE 0 END)   AS deposit_8,
-             SUM(CASE WHEN dep.value = 'DEP_9' THEN ds.deposit_amount ELSE 0 END)   AS deposit_9,
-             SUM(CASE WHEN dep.value = 'DEP_10' THEN ds.deposit_amount ELSE 0 END)   AS deposit_10,
-             SUM(CASE WHEN dep.value = 'DEP_11' THEN ds.deposit_amount ELSE 0 END)   AS deposit_11,
              SUM(ds.deposit_amount)                                                 AS deposit_total,
              count(*) OVER()                                                        AS total_elements
          FROM
@@ -279,10 +273,6 @@ class StagingDepositRepository @Inject constructor(
              SUM(CASE WHEN dep.value = 'DEP_5' THEN ds.deposit_amount ELSE 0 END)   AS deposit_5,
              SUM(CASE WHEN dep.value = 'DEP_6' THEN ds.deposit_amount ELSE 0 END)   AS deposit_6,
              SUM(CASE WHEN dep.value = 'DEP_7' THEN ds.deposit_amount ELSE 0 END)   AS deposit_7,
-             SUM(CASE WHEN dep.value = 'DEP_8' THEN ds.deposit_amount ELSE 0 END)   AS deposit_8,
-             SUM(CASE WHEN dep.value = 'DEP_9' THEN ds.deposit_amount ELSE 0 END)   AS deposit_9,
-             SUM(CASE WHEN dep.value = 'DEP_10' THEN ds.deposit_amount ELSE 0 END)   AS deposit_10,
-             SUM(CASE WHEN dep.value = 'DEP_11' THEN ds.deposit_amount ELSE 0 END)   AS deposit_11,
              SUM(ds.deposit_amount)                                                 AS deposit_total,
              count(*) OVER()                                                        AS total_elements
          FROM
@@ -416,22 +406,6 @@ class StagingDepositRepository @Inject constructor(
       )
    }
 
-   fun countPendingVerifyStagingEntriesForCurrentFiscalYear(company: CompanyEntity, from: LocalDate, thru: LocalDate): Int {
-      return jdbc.queryForObject(
-         """
-            SELECT COUNT(*)
-            FROM verify_staging vs
-               JOIN company comp ON vs.company_id = comp.id AND comp.deleted = FALSE
-            WHERE vs.company_id = :comp_id
-                  AND vs.business_date BETWEEN :from AND :thru
-                  AND vs.deleted = FALSE
-                  AND vs.moved_to_pending_journal_entries = FALSE
-         """,
-         mapOf("comp_id" to company.id, "from" to from, "thru" to thru),
-         Int::class.java
-      )
-   }
-
    fun mapRow(rs: ResultSet): StagingDepositEntity =
       StagingDepositEntity(
          id = rs.getUuid("id"),
@@ -448,10 +422,6 @@ class StagingDepositRepository @Inject constructor(
          deposit5ACHOLP = rs.getBigDecimal("deposit_5"),
          deposit6CCOLP = rs.getBigDecimal("deposit_6"),
          deposit7DebitCard = rs.getBigDecimal("deposit_7"),
-         deposit8ACHChargeback = rs.getBigDecimal("deposit_8"),
-         deposit9ICCChargeback = rs.getBigDecimal("deposit_9"),
-         deposit10NSFReturnCheck = rs.getBigDecimal("deposit_10"),
-         deposit11ARBadCheck = rs.getBigDecimal("deposit_11"),
          depositTotal = rs.getBigDecimal("deposit_total")
       )
 

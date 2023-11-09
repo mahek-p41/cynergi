@@ -108,16 +108,10 @@ class InloadServiceSpecification extends ControllerSpecificationBase {
       def format = CSVFormat.DEFAULT
          .builder()
          .setHeader(*['Data_Set_ID', 'Store_Number', 'Date', 'Verify_Successful', 'Error_Amount',
-                      'Dep_Cash_Amt', 'Dep_Cash_GL_Acct_Nbr', 'Dep_For_Oth_Str_Amt', 'Dep_For_Oth_Str_GL_Acct_Nbr',
-                      'Dep_From_Oth_Str_Amt', 'Dep_From_Oth_Str_GL_Acct_Nbr', 'Dep_CC_In_Str_Amt', 'Dep_CC_In_Str_GL_Acct_Nbr',
-                      'Dep_ACH_OLP_Amt', 'Dep_ACH_OLP_GL_Acct_Nbr', 'Dep_CC_OLP_Amt', 'Dep_CC_OLP_GL_Acct_Nbr',
-                      'Dep_Debit_Card_Amt', 'Dep_Debit_Card_GL_Acct_Nbr', 'NSF_Return_Check_Amt', 'NSF_Return_Check_GL_Acct_Nbr',
-                      'AR_Bad_Check_Amt', 'AR_Bad_Check_GL_Acct_Nbr', 'ICC_Chargeback_Amt', 'ICC_Chargeback_GL_Acct_Nbr',
-                      'ACH_Chargeback_Amt', 'ACH_Chargeback_GL_Acct_Nbr'])
+                      'Dep_Cash_Amt', 'Dep_For_Oth_Str_Amt', 'Dep_From_Oth_Str_Amt', 'Dep_CC_In_Str_Amt',
+                      'Dep_ACH_OLP_Amt', 'Dep_CC_OLP_Amt', 'Dep_Debit_Card_Amt'])
          .build()
-      def csvData = """
-         coravt,1,2020-03-31,true,000000000.00,000001050.28,1,001016,2,151.35,1,3058.63,2,10.00,1,548.74,2,-151.35,1,4657.65,2,46.00,1,3.00,2,4.00,1
-         """
+      def csvData = 'coravt,1,2020-03-31,true,000000000.00,000001050.28,000000000.00,000000151.35,000003058.63,000000000.00,000000548.74,-000000151.35,'
       def parser = CSVParser.parse(csvData, format)
       def record = parser.getRecords().get(0)
 
@@ -155,17 +149,13 @@ class InloadServiceSpecification extends ControllerSpecificationBase {
             storeName == "HOUMA"
             errorAmount == 0
             deposit1Cash == 1050.28
-            deposit2PmtForOtherStores == 1016
+            deposit2PmtForOtherStores == 0
             deposit3PmtFromOtherStores == 151.35
             deposit4CCInStr == 3058.63
-            deposit5ACHOLP == 10
+            deposit5ACHOLP == 0
             deposit6CCOLP == 548.74
             deposit7DebitCard == -151.35
-            deposit8ACHChargeback == 4
-            deposit9ICCChargeback == 3
-            deposit10NSFReturnCheck == 4657.65
-            deposit11ARBadCheck == 46
-            depositTotal == 10394.30
+            depositTotal == 4657.65
          }
       }
    }

@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.accounting.general.ledger.end.year.infrastructure
 
-
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
@@ -17,13 +16,10 @@ import com.cynergisuite.middleware.accounting.general.ledger.end.year.EndYearPro
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDataLoaderService
 import com.cynergisuite.middleware.accounting.general.ledger.journal.entry.GeneralLedgerJournalEntryDetailDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.reversal.GeneralLedgerReversalDataLoaderService
-import com.cynergisuite.middleware.inload.InloadSUMGLINTVService
 import com.cynergisuite.middleware.store.StoreDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
-import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVParser
 
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
@@ -39,7 +35,6 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
    @Inject GeneralLedgerSourceCodeDataLoaderService generalLedgerSourceCodeDataLoaderService
    @Inject GeneralLedgerJournalEntryDataLoaderService generalLedgerJournalEntryDataLoaderService
    @Inject GeneralLedgerReversalDataLoaderService generalLedgerReversalDataLoaderService
-   @Inject InloadSUMGLINTVService inloadSUMGLINTVService
 
    void "end current year with no pending journal entries" () {
       given:
@@ -120,7 +115,7 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
       response.size() == 2
-      response[0].message == "Pending Journal Entries found for General Ledger fiscal year to be closed. All Pending Journal Entries for this date range (${beginDate.plusYears(2)} -> ${beginDate.plusYears(3).minusDays(1)}) must be posted before the General Ledger fiscal year can be closed."
+      response[0].message == "Pending Journal Entries found for General Ledger fiscal year to be closed. All pending journal entries for this date range (${beginDate.plusYears(2)} -> ${beginDate.plusYears(3).minusDays(1)}) must be posted before the General Ledger fiscal year can be closed."
       response[0].code == 'cynergi.validation.pending.jes.found.for.current.year'
       response[1].message == 'GL is NOT in Balance'
       response[1].code == 'cynergi.validation.gl.not.in.balance'
@@ -141,30 +136,6 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
       final dateRanges = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).minusMonths(2), LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).plusMonths(2), LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).minusMonths(1), LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).plusMonths(1))
       generalLedgerReversalDataLoaderService.single(company, glSourceCode, LocalDate.now())
 
-      generalLedgerSourceCodeDataLoaderService.stream(1, company, "MEC").toList()
-
-      def format = CSVFormat.DEFAULT
-         .builder()
-         .setHeader(*['Data_Set_ID', 'Store_Number', 'Date', 'Verify_Successful', 'Error_Amount',
-                      'Dep_Cash_Amt', 'Dep_Cash_GL_Acct_Nbr', 'Dep_For_Oth_Str_Amt', 'Dep_For_Oth_Str_GL_Acct_Nbr',
-                      'Dep_From_Oth_Str_Amt', 'Dep_From_Oth_Str_GL_Acct_Nbr', 'Dep_CC_In_Str_Amt', 'Dep_CC_In_Str_GL_Acct_Nbr',
-                      'Dep_ACH_OLP_Amt', 'Dep_ACH_OLP_GL_Acct_Nbr', 'Dep_CC_OLP_Amt', 'Dep_CC_OLP_GL_Acct_Nbr',
-                      'Dep_Debit_Card_Amt', 'Dep_Debit_Card_GL_Acct_Nbr', 'NSF_Return_Check_Amt', 'NSF_Return_Check_GL_Acct_Nbr',
-                      'AR_Bad_Check_Amt', 'AR_Bad_Check_GL_Acct_Nbr', 'ICC_Chargeback_Amt', 'ICC_Chargeback_GL_Acct_Nbr',
-                      'ACH_Chargeback_Amt', 'ACH_Chargeback_GL_Acct_Nbr'])
-         .build()
-      def csvData = """
-         coravt,1,${LocalDate.now().toString()},true,000000000.00,000001050.28,1,001016,1,151.35,1,3058.63,1,10.00,1,548.74,1,-151.35,1,4657.65,1,46.00,1,3.00,1,4.00,1
-         """
-      def parser = CSVParser.parse(csvData, format)
-      def record = parser.getRecords().get(0)
-
-      when:
-      inloadSUMGLINTVService.inloadCsv(record, UUID.randomUUID())
-
-      then:
-      notThrown(Exception)
-
       when:
       post("/accounting/financial-calendar/complete", financialCalendarDTO)
 
@@ -184,18 +155,16 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
       def exception = thrown(HttpClientResponseException)
       exception.response.status() == BAD_REQUEST
       def response = exception.response.bodyAsJson()
-      response.size() == 5
-      response[0].message == "Pending Journal Entries found for General Ledger fiscal year to be closed. All Pending Journal Entries for this date range (${beginDate.plusYears(2)} -> ${beginDate.plusYears(3).minusDays(1)}) must be posted before the General Ledger fiscal year can be closed."
+      response.size() == 4
+      response[0].message == "Pending Journal Entries found for General Ledger fiscal year to be closed. All pending journal entries for this date range (${beginDate.plusYears(2)} -> ${beginDate.plusYears(3).minusDays(1)}) must be posted before the General Ledger fiscal year can be closed."
       response[0].code == 'cynergi.validation.pending.jes.found.for.current.year'
       response[1].message == "Reversal Journal Entries found for General Ledger fiscal year to be closed. All Reversal Journal Entries for this date range must be posted before the General Ledger fiscal year can be closed."
       response[1].code == 'cynergi.validation.unposted.reversals.found.for.current.year'
-      response[2].message == "SUMGLINT Staging Entries found for General Ledger fiscal year to be closed. All SUMGLINT Staging  entries for this date range must be moved to Pending Journal Entries and must be posted before the General Ledger fiscal year can be closed."
-      response[2].code == 'cynergi.validation.unposted.verify.stagings.found.for.current.year'
-      response[3].message == 'Must be capital account'
-      response[3].code == 'cynergi.validation.must.be'
-      response[3].path == 'account'
-      response[4].message == 'GL is NOT in Balance'
-      response[4].code == 'cynergi.validation.gl.not.in.balance'
+      response[2].message == 'Must be capital account'
+      response[2].code == 'cynergi.validation.must.be'
+      response[2].path == 'account'
+      response[3].message == 'GL is NOT in Balance'
+      response[3].code == 'cynergi.validation.gl.not.in.balance'
    }
 
 }
