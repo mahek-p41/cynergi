@@ -38,12 +38,13 @@ install_this_system() {
   fi
 }
 sendEmail() {
-  sh /opt/cyn/v01/SCRIPTS/ht.cyn_email.sh -s "$*" -to montem@hightouchinc.com,garym@hightouchinc.com,vun@hightouchinc.com,grantg@hightouchinc.com -fb $MAIL_BODY
+  sh /opt/cyn/v01/SCRIPTS/ht.cyn_email.sh -s "$*" -to '7217b804.hightouchinc.com@amer.teams.ms' -fb $MAIL_BODY
 }
 LOGGER=/tmp/autoBuild2.log; chmod 666 $LOGGER
 TRIGGER=/tmp/autoBuild.trigger
 TAR_CLIENT="/tmp/cynergi-client-current.tar.xz"
 TAR_MIDDLE="/tmp/cynergi-middleware-current.tar.xz"
+JAR_MIDDLE="/opt/cyn/v01/cynmid/cynergi-middleware.jar"
 
 if [ -f $TRIGGER ]
 then
@@ -63,8 +64,12 @@ then
   then
     openssl genrsa -out /opt/cyn/v01/cynmid/jwt.pem 2048 1>/dev/null 2>/dev/null
 
-    initctl status cynergi-client >> $MAIL_BODY
-    initctl status cynergi-middleware >> $MAIL_BODY
+    {
+      initctl status cynergi-client
+      cat /opt/cyn/v01/cynclient/buildlog || echo "WARNING: File '/opt/cyn/v01/cynclient/buildlog' not found"
+      initctl status cynergi-middleware
+      unzip -p "$JAR_MIDDLE" META-INF/MANIFEST.MF || echo "WARNING: Failed to extract 'META-INF/MANIFEST.MF' from '$JAR_MIDDLE'"
+    } >> $MAIL_BODY
     sendEmail "Continuous build finished for $NOTIFY"
     rm -f $MAIL_BODY
   fi

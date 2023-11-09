@@ -762,7 +762,7 @@ class AccountPayablePaymentRepository @Inject constructor(
       logger.trace("Listing Account Payable Payments by bank {} pmt {} type {} and date {}", filterRequest.beginBank, filterRequest.beginPmt, filterRequest.type, filterRequest.frmPmtDt)
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder(" WHERE apPayment.company_id = :comp_id ")
-      val sortBy = StringBuilder("ORDER BY bnk.bank_number ASC")
+      val sortBy = StringBuilder("ORDER BY bnk.bank_number")
 
       if (filterRequest.beginBank != null) {
          params["beginningBank"] = filterRequest.beginBank
@@ -777,19 +777,184 @@ class AccountPayablePaymentRepository @Inject constructor(
       if (filterRequest.frmPmtDt != null) {
          params["fromDate"] = filterRequest.frmPmtDt
          whereClause.append(""" AND apPayment.payment_date >= :fromDate """)
-         sortBy.append(", apPayment.payment_date ASC")
+         sortBy.append(", apPayment.payment_date")
       }
 
       if (filterRequest.beginPmt != null) {
          params["beginningPayment"] = filterRequest.beginPmt
          whereClause.append(""" AND apPayment.payment_number >= :beginningPayment """)
-         sortBy.append(", apPayment.payment_number ASC")
+         sortBy.append(", apPayment.payment_number")
       }
 
       return jdbc.queryPaged(
          """
          WITH paged AS (
-            ${selectBaseQuery()}
+            WITH bnk AS (
+               ${bankRepository.selectBaseQuery()}
+            ),
+            vend AS (
+               ${vendorRepository.baseSelectQuery()}
+            )
+            SELECT
+               apPayment.id                                              AS apPayment_id,
+               apPayment.company_id                                      AS apPayment_company_id,
+               bnk.bank_id                                               AS apPayment_bank_id,
+               bnk.bank_name                                             AS apPayment_bank_name,
+               bnk.bank_number                                           AS apPayment_bank_number,
+               bnk.bank_comp_id                                          AS apPayment_bank_comp_id,
+               bnk.bank_account_id                                       AS apPayment_bank_account_id,
+               bnk.bank_account_number                                   AS apPayment_bank_account_number,
+               bnk.bank_account_name                                     AS apPayment_bank_account_name,
+               bnk.bank_account_form_1099_field                          AS apPayment_bank_account_form_1099_field,
+               bnk.bank_account_corporate_account_indicator              AS apPayment_bank_account_corporate_account_indicator,
+               bnk.bank_account_comp_id                                  AS apPayment_bank_account_comp_id,
+               bnk.bank_account_type_id                                  AS apPayment_bank_account_type_id,
+               bnk.bank_account_type_value                               AS apPayment_bank_account_type_value,
+               bnk.bank_account_type_description                         AS apPayment_bank_account_type_description,
+               bnk.bank_account_type_localization_code                   AS apPayment_bank_account_type_localization_code,
+               bnk.bank_account_balance_type_id                          AS apPayment_bank_account_balance_type_id,
+               bnk.bank_account_balance_type_value                       AS apPayment_bank_account_balance_type_value,
+               bnk.bank_account_balance_type_description                 AS apPayment_bank_account_balance_type_description,
+               bnk.bank_account_balance_type_localization_code           AS apPayment_bank_account_balance_type_localization_code,
+               bnk.bank_account_status_id                                AS apPayment_bank_account_status_id,
+               bnk.bank_account_status_value                             AS apPayment_bank_account_status_value,
+               bnk.bank_account_status_description                       AS apPayment_bank_account_status_description,
+               bnk.bank_account_status_localization_code                 AS apPayment_bank_account_status_localization_code,
+               bnk.bank_account_vendor_1099_type_id                      AS apPayment_bank_account_vendor_1099_type_id,
+               bnk.bank_account_vendor_1099_type_value                   AS apPayment_bank_account_vendor_1099_type_value,
+               bnk.bank_account_vendor_1099_type_description             AS apPayment_bank_account_vendor_1099_type_description,
+               bnk.bank_account_vendor_1099_type_localization_code       AS apPayment_bank_account_vendor_1099_type_localization_code,
+               bnk.bank_id                                               AS apPayment_bank_account_bank_id,
+               bnk.bank_glProfitCenter_id                                AS apPayment_bank_glProfitCenter_id,
+               bnk.bank_glProfitCenter_number                            AS apPayment_bank_glProfitCenter_number,
+               bnk.bank_glProfitCenter_name                              AS apPayment_bank_glProfitCenter_name,
+               bnk.bank_glProfitCenter_dataset                           AS apPayment_bank_glProfitCenter_dataset,
+               vend.v_id                                                 AS apPayment_vendor_id,
+               vend.v_company_id                                         AS apPayment_vendor_company_id,
+               vend.v_number                                             AS apPayment_vendor_number,
+               vend.v_name                                               AS apPayment_vendor_name,
+               vend.v_address_id                                         AS apPayment_vendor_address_id,
+               vend.v_account_number                                     AS apPayment_vendor_account_number,
+               vend.v_pay_to_id                                          AS apPayment_vendor_pay_to_id,
+               vend.v_freight_on_board_type_id                           AS apPayment_vendor_freight_on_board_type_id,
+               vend.v_vendor_payment_term_id                             AS apPayment_vendor_vendor_payment_term_id,
+               vend.v_normal_days                                        AS apPayment_vendor_normal_days,
+               vend.v_return_policy                                      AS apPayment_vendor_return_policy,
+               vend.v_ship_via_id                                        AS apPayment_vendor_ship_via_id,
+               vend.v_vendor_group_id                                    AS apPayment_vendor_vendor_group_id,
+               vend.v_minimum_quantity                                   AS apPayment_vendor_minimum_quantity,
+               vend.v_minimum_amount                                     AS apPayment_vendor_minimum_amount,
+               vend.v_free_ship_quantity                                 AS apPayment_vendor_free_ship_quantity,
+               vend.v_free_ship_amount                                   AS apPayment_vendor_free_ship_amount,
+               vend.v_vendor_1099                                        AS apPayment_vendor_vendor_1099,
+               vend.v_federal_id_number                                  AS apPayment_vendor_federal_id_number,
+               vend.v_sales_representative_name                          AS apPayment_vendor_sales_representative_name,
+               vend.v_sales_representative_fax                           AS apPayment_vendor_sales_representative_fax,
+               vend.v_separate_check                                     AS apPayment_vendor_separate_check,
+               vend.v_bump_percent                                       AS apPayment_vendor_bump_percent,
+               vend.v_freight_calc_method_type_id                        AS apPayment_vendor_freight_calc_method_type_id,
+               vend.v_freight_percent                                    AS apPayment_vendor_freight_percent,
+               vend.v_freight_amount                                     AS apPayment_vendor_freight_amount,
+               vend.v_charge_inventory_tax_1                             AS apPayment_vendor_charge_inventory_tax_1,
+               vend.v_charge_inventory_tax_2                             AS apPayment_vendor_charge_inventory_tax_2,
+               vend.v_charge_inventory_tax_3                             AS apPayment_vendor_charge_inventory_tax_3,
+               vend.v_charge_inventory_tax_4                             AS apPayment_vendor_charge_inventory_tax_4,
+               vend.v_federal_id_number_verification                     AS apPayment_vendor_federal_id_number_verification,
+               vend.v_email_address                                      AS apPayment_vendor_email_address,
+               vend.v_purchase_order_submit_email                        AS apPayment_vendor_purchase_order_submit_email,
+               vend.v_allow_drop_ship_to_customer                        AS apPayment_vendor_allow_drop_ship_to_customer,
+               vend.v_auto_submit_purchase_order                         AS apPayment_vendor_auto_submit_purchase_order,
+               vend.v_note                                               AS apPayment_vendor_note,
+               vend.v_phone_number                                       AS apPayment_vendor_phone_number,
+               vend.v_deleted                                            AS apPayment_vendor_deleted,
+               vend.v_active                                             AS apPayment_vendor_active,
+               vend.v_comp_id                                            AS apPayment_vendor_comp_id,
+               vend.v_comp_time_created                                  AS apPayment_vendor_comp_time_created,
+               vend.v_comp_time_updated                                  AS apPayment_vendor_comp_time_updated,
+               vend.v_comp_name                                          AS apPayment_vendor_comp_name,
+               vend.v_comp_doing_business_as                             AS apPayment_vendor_comp_doing_business_as,
+               vend.v_comp_client_code                                   AS apPayment_vendor_comp_client_code,
+               vend.v_comp_client_id                                     AS apPayment_vendor_comp_client_id,
+               vend.v_comp_dataset_code                                  AS apPayment_vendor_comp_dataset_code,
+               vend.v_comp_federal_id_number                             AS apPayment_vendor_comp_federal_id_number,
+               vend.v_comp_address_id                                    AS apPayment_vendor_comp_address_id,
+               vend.v_comp_address_name                                  AS apPayment_vendor_comp_address_name,
+               vend.v_comp_address_address1                              AS apPayment_vendor_comp_address_address1,
+               vend.v_comp_address_address2                              AS apPayment_vendor_comp_address_address2,
+               vend.v_comp_address_city                                  AS apPayment_vendor_comp_address_city,
+               vend.v_comp_address_state                                 AS apPayment_vendor_comp_address_state,
+               vend.v_comp_address_postal_code                           AS apPayment_vendor_comp_address_postal_code,
+               vend.v_comp_address_latitude                              AS apPayment_vendor_comp_address_latitude,
+               vend.v_comp_address_longitude                             AS apPayment_vendor_comp_address_longitude,
+               vend.v_comp_address_country                               AS apPayment_vendor_comp_address_country,
+               vend.v_comp_address_county                                AS apPayment_vendor_comp_address_county,
+               vend.v_comp_address_phone                                 AS apPayment_vendor_comp_address_phone,
+               vend.v_comp_address_fax                                   AS apPayment_vendor_comp_address_fax,
+               vend.v_onboard_id                                         AS apPayment_vendor_onboard_id,
+               vend.v_onboard_value                                      AS apPayment_vendor_onboard_value,
+               vend.v_onboard_description                                AS apPayment_vendor_onboard_description,
+               vend.v_onboard_localization_code                          AS apPayment_vendor_onboard_localization_code,
+               vend.v_method_id                                          AS apPayment_vendor_method_id,
+               vend.v_method_value                                       AS apPayment_vendor_method_value,
+               vend.v_method_description                                 AS apPayment_vendor_method_description,
+               vend.v_method_localization_code                           AS apPayment_vendor_method_localization_code,
+               vend.v_address_id                                         AS apPayment_vendor_address_id,
+               vend.v_address_time_created                               AS apPayment_vendor_address_time_created,
+               vend.v_address_time_updated                               AS apPayment_vendor_address_time_updated,
+               vend.v_address_number                                     AS apPayment_vendor_address_number,
+               vend.v_address_name                                       AS apPayment_vendor_address_name,
+               vend.v_address_address1                                   AS apPayment_vendor_address_address1,
+               vend.v_address_address2                                   AS apPayment_vendor_address_address2,
+               vend.v_address_city                                       AS apPayment_vendor_address_city,
+               vend.v_address_state                                      AS apPayment_vendor_address_state,
+               vend.v_address_postal_code                                AS apPayment_vendor_address_postal_code,
+               vend.v_address_latitude                                   AS apPayment_vendor_address_latitude,
+               vend.v_address_longitude                                  AS apPayment_vendor_address_longitude,
+               vend.v_address_country                                    AS apPayment_vendor_address_country,
+               vend.v_address_county                                     AS apPayment_vendor_address_county,
+               vend.v_address_phone                                      AS apPayment_vendor_address_phone,
+               vend.v_address_fax                                        AS apPayment_vendor_address_fax,
+               vend.v_vpt_id                                             AS apPayment_vendor_vpt_id,
+               vend.v_vpt_time_created                                   AS apPayment_vendor_vpt_time_created,
+               vend.v_vpt_time_updated                                   AS apPayment_vendor_vpt_time_updated,
+               vend.v_vpt_company_id                                     AS apPayment_vendor_vpt_company_id,
+               vend.v_vpt_description                                    AS apPayment_vendor_vpt_description,
+               vend.v_vpt_number                                         AS apPayment_vendor_vpt_number,
+               vend.v_vpt_number_of_payments                             AS apPayment_vendor_vpt_number_of_payments,
+               vend.v_vpt_discount_month                                 AS apPayment_vendor_vpt_discount_month,
+               vend.v_vpt_discount_days                                  AS apPayment_vendor_vpt_discount_days,
+               vend.v_vpt_discount_percent                               AS apPayment_vendor_vpt_discount_percent,
+               vend.v_shipVia_id                                         AS apPayment_vendor_shipVia_id,
+               vend.v_shipVia_time_created                               AS apPayment_vendor_shipVia_time_created,
+               vend.v_shipVia_time_updated                               AS apPayment_vendor_shipVia_time_updated,
+               vend.v_shipVia_description                                AS apPayment_vendor_shipVia_description,
+               vend.v_shipVia_number                                     AS apPayment_vendor_shipVia_number,
+               vend.v_vgrp_id                                            AS apPayment_vendor_vgrp_id,
+               vend.v_vgrp_time_created                                  AS apPayment_vendor_vgrp_time_created,
+               vend.v_vgrp_time_updated                                  AS apPayment_vendor_vgrp_time_updated,
+               vend.v_vgrp_company_id                                    AS apPayment_vendor_vgrp_company_id,
+               vend.v_vgrp_value                                         AS apPayment_vendor_vgrp_value,
+               vend.v_vgrp_description                                   AS apPayment_vendor_vgrp_description,
+               status.id                                                 AS apPayment_status_id,
+               status.value                                              AS apPayment_status_value,
+               status.description                                        AS apPayment_status_description,
+               status.localization_code                                  AS apPayment_status_localization_code,
+               type.id                                                   AS apPayment_type_id,
+               type.value                                                AS apPayment_type_value,
+               type.description                                          AS apPayment_type_description,
+               type.localization_code                                    AS apPayment_type_localization_code,
+               apPayment.payment_number                                  AS apPayment_payment_number,
+               apPayment.payment_date                                    AS apPayment_payment_date,
+               apPayment.date_cleared                                    AS apPayment_date_cleared,
+               apPayment.date_voided                                     AS apPayment_date_voided,
+               apPayment.amount                                                                          AS apPayment_amount,
+               count(*) OVER() AS total_elements
+            FROM account_payable_payment apPayment
+               JOIN bnk ON apPayment.bank_id = bnk.bank_id
+               JOIN vend ON apPayment.vendor_id = vend.v_id AND vend.v_deleted = FALSE
+               JOIN account_payable_payment_status_type_domain status ON apPayment.account_payable_payment_status_id = status.id
+               JOIN account_payable_payment_type_type_domain type ON apPayment.account_payable_payment_type_id = type.id
+               JOIN account ON account.id = bnk.bank_account_id AND account.deleted = FALSE
             $whereClause
             $sortBy
          )

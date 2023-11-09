@@ -1,11 +1,14 @@
 package com.cynergisuite.middleware.vendor.infrastructure
 
 import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.Vendor1099FilterRequest
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.middleware.vendor.Form1099ReportDTO
+import com.cynergisuite.middleware.vendor.Form1099VendorDTO
 import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorService
 import io.micronaut.http.HttpRequest
@@ -208,5 +211,57 @@ class VendorController @Inject constructor(
       val user = userService.fetchUser(authentication)
 
       return vendorService.delete(id, user.myCompany())
+   }
+
+   //@Secured("")
+   @Throws(NotFoundException::class)
+   @Get(uri = "1099report{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["VendorEndpoints"], summary = "Fetch vendor 1099 reports", description = "Fetch vendor 1099 reports", operationId = "vendor-fetch1099Report")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Form1099VendorDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Vendor was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchReport(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: Vendor1099FilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Form1099ReportDTO {
+      logger.info("Fetching Vendor 1099 Reports {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+      return vendorService.fetch1099Report(user.myCompany(), filterRequest)
+   }
+
+   //@Secured("")
+   @Throws(NotFoundException::class)
+   @Get(uri = "1099form{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["VendorEndpoints"], summary = "Fetch vendor 1099 forms", description = "Fetch vendor 1099 forms", operationId = "vendor-fetch1099Form")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Form1099VendorDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Vendor was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetch1099Form(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: Vendor1099FilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Form1099ReportDTO {
+      logger.info("Fetching Vendor 1099 forms {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+      return vendorService.fetch1099Report(user.myCompany(), filterRequest)
    }
 }

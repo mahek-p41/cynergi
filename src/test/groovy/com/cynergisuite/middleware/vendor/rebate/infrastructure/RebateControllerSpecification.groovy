@@ -101,9 +101,9 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final vendorList = vendorTestDataLoaderService.stream(4, company, vendorPaymentTerm, shipVia).toList()
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
-      final rebates = rebateTestDataLoaderService.stream(7, company, vendorList, glDebitAcct, glCreditAcct).toList()
-      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
-      final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
+      final rebates = rebateTestDataLoaderService.stream(7, company, vendorList, glDebitAcct, glCreditAcct).sorted { o1, o2 -> o1.description <=> o2.description }.toList()
+      final pageOne = new StandardPageRequest(1, 5, "description", "ASC")
+      final pageTwo = new StandardPageRequest(2, 5, "description", "ASC")
       final firstPageRebate = rebates[0..4]
       final lastPageRebate = rebates[5,6]
       rebates.eachWithIndex{ rebate, _ ->
@@ -205,8 +205,8 @@ class RebateControllerSpecification extends ControllerSpecificationBase {
       final vendorList = vendorTestDataLoaderService.stream(4, company, vendorPaymentTerm, shipVia).toList()
       final glDebitAcct = accountTestDataLoaderService.single(company)
       final glCreditAcct = accountTestDataLoaderService.single(company)
-      final rebates = rebateTestDataLoaderService.stream(7, company, vendorList, glDebitAcct, glCreditAcct).toList()
-      final filterRequest = new RebatePageRequest(['page': 1, 'size': 10, 'sortBy': "id", 'sortDirection': "ASC", 'vendorIds': [vendorList.get(1).myId()]])
+      final rebates = rebateTestDataLoaderService.stream(7, company, vendorList, glDebitAcct, glCreditAcct).sorted { o1, o2 -> o1.description <=> o2.description }.toList()
+      final filterRequest = new RebatePageRequest(['page': 1, 'size': 10, 'sortBy': "description", 'sortDirection': "ASC", 'vendorIds': [vendorList.get(1).myId()]])
       rebates.eachWithIndex{ rebate, _ ->
          rebateTestDataLoaderService.assignVendorsToRebate(rebate, vendorList)
       }
