@@ -221,7 +221,7 @@ class GeneralLedgerReversalRepository @Inject constructor(
       )
    }
 
-   fun countPendingJournalReversalEntriesForCurrentFiscalYear(company: CompanyEntity, from: LocalDate, thru: LocalDate): Int {
+   fun findPendingJournalReversalEntriesForCurrentFiscalYear(company: CompanyEntity, from: LocalDate, thru: LocalDate): Int {
       return jdbc.queryForObject(
          """
             SELECT COUNT(*)

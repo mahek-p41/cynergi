@@ -576,7 +576,7 @@ class GeneralLedgerJournalRepository @Inject constructor(
       else " <= :$endingParam "
    }
 
-   fun countPendingJournalEntriesForCurrentFiscalYear(company: CompanyEntity, from: LocalDate, thru: LocalDate): Int {
+   fun findPendingJournalEntriesForCurrentFiscalYear(company: CompanyEntity, from: LocalDate, thru: LocalDate): Int {
       return jdbc.queryForObject(
       """
             SELECT COUNT(*)
