@@ -85,45 +85,42 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
             map["deposit_type_id"] = it.id
             map["deposit_amount"] = map[it.value]
 
-               val depositID = findDepositID(verifyID!!, it.id)
+            val depositID = findDepositID(verifyID!!, it.id)
 
-               if (depositID == null) {
-                  jdbc.update(
-                     """
-                        INSERT INTO deposits_staging (
-                            company_id,
-                            verify_id,
-                            store_number_sfk,
-                            business_date,
-                            deposit_type_id,
-                            deposit_amount
+            if (depositID == null) {
+               jdbc.update(
+                  """
+                  INSERT INTO deposits_staging (
+                      company_id,
+                      verify_id,
+                      store_number_sfk,
+                      business_date,
+                      deposit_type_id,
+                      deposit_amount
 
-                        )
-                        VALUES (
-                           :company_id,
-                           :verify_id,
-                           :store_number_sfk,
-                           :business_date,
-                           :deposit_type_id,
-                           :deposit_amount
-                        )
-                     """.trimIndent(),
-                     map
                   )
-               } else {
-                  jdbc.update(
-                     """
-                        UPDATE deposits_staging
-                        SET deposit_amount = :deposit_amount
-                        WHERE verify_id = :verify_id
-                           AND deposit_type_id = :deposit_type_id
-                           AND deleted = FALSE
-                     """.trimIndent(),
-                     map
-                  )
-               }
+                  VALUES (
+                     :company_id,
+                     :verify_id,
+                     :store_number_sfk,
+                     :business_date,
+                     :deposit_type_id,
+                     :deposit_amount
+                     )
+               """.trimIndent(),
+                  map
+               )
             } else {
-               logger.info("Zero account number values are not populated and will be skipped.")
+               jdbc.update(
+                  """
+                  UPDATE deposits_staging
+                  SET deposit_amount = :deposit_amount
+                  WHERE verify_id = :verify_id
+                     AND deposit_type_id = :deposit_type_id
+                     AND deleted = FALSE
+               """.trimIndent(),
+                  map
+               )
             }
          }
       }
