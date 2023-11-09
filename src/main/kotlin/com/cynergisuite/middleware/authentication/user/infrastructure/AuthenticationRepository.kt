@@ -182,7 +182,7 @@ abstract class AuthenticationRepository @Inject constructor(
              sg.value as security_group_value,
              sg.description as security_group_description
            from employee_to_security_group esg
-           join security_group sg on esg.security_group_id = sg.id
+           join security_group sg on esg.security_group_id = sg.id AND esg.emp_number = :employeeNumber
            join company c on sg.company_id = c.id
            where c.dataset_code = :dataset
            ) filteredSecurityGroups on au.id = filteredSecurityGroups.employee_id_sfk
@@ -384,7 +384,7 @@ abstract class AuthenticationRepository @Inject constructor(
              sg.value as security_group_value,
              sg.description as security_group_description
            from employee_to_security_group esg
-           join security_group sg on esg.security_group_id = sg.id
+           join security_group sg on esg.security_group_id = sg.id AND esg.emp_number = :employeeNumber
            join company c on sg.company_id = c.id
            where c.dataset_code = :dataset
            ) filteredSecurityGroups on au.id = filteredSecurityGroups.employee_id_sfk
