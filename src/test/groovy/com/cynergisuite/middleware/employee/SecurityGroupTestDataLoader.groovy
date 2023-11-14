@@ -92,7 +92,7 @@ class SecurityGroupTestDataLoaderService {
    }
 
    def assignEmployeeToSecurityGroup(EmployeeEntity employee, SecurityGroup securityGroup) {
-      securityGroupRepository.assignEmployeeToSecurityGroup(employee.id, securityGroup.id)
+      securityGroupRepository.assignEmployeeToSecurityGroup(employee, securityGroup.id)
    }
 
 //   def assignAccessPointsToSecurityGroups(SecurityGroup securityGroup) {

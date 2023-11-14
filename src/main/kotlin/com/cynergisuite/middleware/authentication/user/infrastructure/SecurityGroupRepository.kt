@@ -5,6 +5,7 @@ import com.cynergisuite.middleware.authentication.user.SecurityGroup
 import com.cynergisuite.middleware.authentication.user.SecurityType
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -171,16 +172,17 @@ class SecurityGroupRepository @Inject constructor(
    }
 
       @Transactional
-   fun assignEmployeeToSecurityGroup(employeeId: Long, securityGroupId: UUID) {
-      logger.trace("Assigning Employee {} to Security Group {}", employeeId, securityGroupId)
+   fun assignEmployeeToSecurityGroup(employee: EmployeeEntity, securityGroupId: UUID) {
+      logger.trace("Assigning Employee {} to Security Group {}", employee, securityGroupId)
       jdbc.update(
          """
-            INSERT INTO employee_to_security_group (employee_id_sfk, security_group_id)
-            VALUES(:employee_id, :security_group_id)
+            INSERT INTO employee_to_security_group (employee_id_sfk, security_group_id, deleted, emp_number)
+            VALUES(:employee_id, :security_group_id, false, :employee_number)
          """.trimIndent(),
          mapOf(
-             "employee_id" to employeeId,
-             "security_group_id" to securityGroupId
+             "employee_id" to employee.id,
+             "security_group_id" to securityGroupId,
+             "employee_number" to employee.number
          )
       )
    }
