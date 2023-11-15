@@ -1,0 +1,55 @@
+name: Merge branch `staging` into `develop`
+on:
+  schedule:
+    - cron: '5 5 * * 1' # https://crontab.guru/#5_5_*_*_1
+  workflow_dispatch:
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        show-progress: false
+
+    - name: Prepare Inputs
+      shell: bash
+      run: |
+        ${{ github.workspace }}/.github/workflows/scripts/merge-staging-parse-inputs.py \
+          --baseBranch "develop" \
+          --body "This PR was created automatically by a scheduled workflow. Please review and merge if all checks pass." \
+          --committerName "${{ github.actor }}" \
+          --committerEmail "${{ github.actor }}@users.noreply.github.com" \
+          --debug "${{ (runner.debug == '1' || vars.ACTIONS_STEP_DEBUG == 'true') && 'true' || 'false' }}" \
+          --dryRun "false" \
+          --headBranch "staging" \
+          --labels "${{ vars.PR_LABELS }}" \
+          --repository "${{ github.repository }}" \
+          --reviewers "${{ vars.PR_REVIEWERS }}" \
+          --syncBranch "" \
+          --title "Merge branch \`staging\` into \`develop\`" \
+        >> "${GITHUB_ENV}"
+
+    - name: Create PR
+      env:
+        GH_TOKEN: ${{ github.token }}
+      shell: bash
+      run: |
+        if [[ "${DEBUG_FLAG}" == "true" ]]; then
+          set -x
+          DEBUG_MODE="bash -x"
+        fi
+        git config --global user.name "${COMMITTER_NAME}"
+        git config --global user.email "${COMMITTER_EMAIL}"
+
+        ${DEBUG_MODE} ${GITHUB_WORKSPACE}/.github/workflows/scripts/create-pr.sh \
+          --repo "${REPOSITORY}" \
+          --base "${BASE_BRANCH}" \
+          --head "${HEAD_BRANCH}" \
+          --title "${TITLE}" \
+          --body "${BODY}" \
+          ${DRY_RUN_OPTION} \
+          ${LABELS_OPTION} \
+          ${REVIEWERS_OPTION} \
+          ${SYNC_OPTION}
