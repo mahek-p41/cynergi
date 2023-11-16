@@ -78,7 +78,7 @@ class GeneralLedgerJournalController @Inject constructor(
       val user = userService.fetchUser(authentication)
       val response = generalLedgerJournalService.fetchOne(id, user.myCompany()) ?: throw NotFoundException(id)
 
-      logger.debug("Fetching GeneralLedgerJournal by {} resulted in", id, response)
+      logger.debug("Fetching GeneralLedgerJournal by {} resulted in {}", id, response)
 
       return response
    }
@@ -289,7 +289,7 @@ class GeneralLedgerJournalController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
-      logger.info("Transfer a single General Ledger Journal Entry to create General Ledger Details", dto)
+      logger.info("Transfer a single General Ledger Journal Entry to create General Ledger Details {}", dto)
 
       val user = userService.fetchUser(authentication)
       val locale = httpRequest.findLocaleWithDefault()
@@ -327,10 +327,10 @@ class GeneralLedgerJournalController @Inject constructor(
       return StreamedFile(ByteArrayInputStream(byteArray), MediaType.ALL_TYPE).attach("GL Journal Export.csv")
    }
 
-   @Secured("GLRPTJE")
+   @Secured("GLRPTJE", "GLPOSTJE")
    @Throws(NotFoundException::class)
    @Get(uri = "report{?filterRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a report of pending GeneralLedgerJournals", description = "Fetch a pending report of GeneralLedgerJournals", operationId = "generalLedgerJournal-fetchReport")
+   @Operation(tags = ["GeneralLedgerJournalEndpoints"], summary = "Fetch a report of GeneralLedgerJournals", description = "Fetch a report of GeneralLedgerJournals", operationId = "generalLedgerJournal-fetchPostedReport")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerPendingReportTemplate::class))]),
@@ -346,7 +346,7 @@ class GeneralLedgerJournalController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): GeneralLedgerPendingReportTemplate {
-      logger.info("Fetching all GeneralLedgerJournals {}", filterRequest)
+      logger.info("Fetching a report of GeneralLedgerJournals {}", filterRequest)
 
       val user = userService.fetchUser(authentication)
       return generalLedgerJournalService.fetchReport(user.myCompany(), filterRequest)

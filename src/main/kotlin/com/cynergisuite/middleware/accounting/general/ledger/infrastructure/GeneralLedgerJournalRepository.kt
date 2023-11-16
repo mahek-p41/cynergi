@@ -363,8 +363,8 @@ class GeneralLedgerJournalRepository @Inject constructor(
    @ReadOnly
    fun fetchReport(company: CompanyEntity, filterRequest: GeneralLedgerJournalReportFilterRequest) : List<GeneralLedgerPendingReportDetailsTemplate> {
       val glJournals = mutableListOf<GeneralLedgerJournalEntity>()
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
-      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = false")
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset(), "deleted" to filterRequest.posted)
+      val whereClause = StringBuilder("WHERE glJournal.company_id = :comp_id AND glJournal.deleted = :deleted ")
       val orderBy = StringBuilder("ORDER BY ")
 
       if (filterRequest.beginProfitCenter != null || filterRequest.endProfitCenter != null) {
