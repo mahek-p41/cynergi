@@ -15,7 +15,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch first page without locationType" () {
       given:
-      final tstds1Store1User = userService.fetchUserByAuthentication(1559, '1559', 'coravt', 1)
+      final tstds1Store1User = userService.fetchUserByAuthentication(1082, '1992', 'coravt', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
       final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), inventoryStatus: ["R", "D", "N"]])
 
@@ -64,7 +64,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch first page of inventory-app without locationType" () {
       given:
-      final tstds1Store1User = userService.fetchUserByAuthentication(1559, '1559', 'coravt', 1)
+      final tstds1Store1User = userService.fetchUserByAuthentication(1082, '1992', 'coravt', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
       final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), inventoryStatus: ["R", "D", "N"]])
 
@@ -106,7 +106,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch first page with locationType" () {
       given:
-      final tstds1Store1User = userService.fetchUserByAuthentication(1559, '1559', 'coravt', 1)
+      final tstds1Store1User = userService.fetchUserByAuthentication(1082, '1992', 'coravt', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
       final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", locationType: "STORE", inventoryStatus: ["R", "D", "N"]])
 
@@ -204,7 +204,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch first page of inventory with status of N" () {
       given:
-      final tstds1Store1User = userService.fetchUserByAuthentication(1559, '1559', 'coravt', 1)
+      final tstds1Store1User = userService.fetchUserByAuthentication(1082, '1992', 'coravt', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
       final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), inventoryStatus: ["N"]])
 
@@ -303,7 +303,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch by location type store"() {
       given:
-      final tstds1Store1User = userService.fetchUserByAuthentication(1559, '1559', 'coravt', 1)
+      final tstds1Store1User = userService.fetchUserByAuthentication(1082, '1992', 'coravt', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
       final pageOne = new InventoryPageRequest([page: 1, size: 5, sortBy: "id", sortDirection: "ASC", storeNumber: tstds1Store1User.myLocation().myNumber(), locationType: "STORE", inventoryStatus: ["R", "D", "N"]])
 
@@ -351,7 +351,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
 
    void "fetch by existing lookup key" () {
       when:
-      final tstds1Store1User = userService.fetchUserByAuthentication(1559, '1559', 'coravt', 1)
+      final tstds1Store1User = userService.fetchUserByAuthentication(1082, '1992', 'coravt', 1)
       final tstds1Store1UserLogin = loginEmployee(tstds1Store1User)
       def inventory = get("inventory/lookup?key=00136726", tstds1Store1UserLogin)
 

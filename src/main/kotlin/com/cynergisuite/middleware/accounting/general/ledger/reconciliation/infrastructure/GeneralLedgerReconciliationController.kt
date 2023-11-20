@@ -40,7 +40,7 @@ class GeneralLedgerReconciliationController @Inject constructor(
    @Operation(tags = ["GeneralLedgerReconciliationEndpoints"], summary = "Fetch a GeneralLedgerReconciliationReport", description = "Fetch a  GeneralLedgerReconciliationReport", operationId = "generalLedgerReconciliationReport-fetchReport")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = BankReconciliationDTO::class))]),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = GeneralLedgerReconciliationReportEntity::class))]),
          ApiResponse(responseCode = "404", description = "The requested BankReconciliation was unable to be found"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]

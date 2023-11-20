@@ -192,6 +192,7 @@ abstract class AuthenticationRepository @Inject constructor(
       WHERE comp.dataset_code = :dataset
             AND au.number = :employeeNumber
             AND au.pass_code = convert_passcode(au.type, :passCode, au.pass_code)
+            AND au.active = TRUE
    """,
       nativeQuery = true
    )
@@ -394,6 +395,7 @@ abstract class AuthenticationRepository @Inject constructor(
       WHERE comp.dataset_code = :dataset
             AND au.number = :employeeNumber
             AND au.pass_code = convert_passcode(au.type, :passCode, au.pass_code)
+            AND au.active = TRUE
    """,
       nativeQuery = true
    )
