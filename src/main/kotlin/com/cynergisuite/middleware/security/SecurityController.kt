@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.security
 
+import com.cynergisuite.middleware.authentication.user.SecurityEmployeeDTO
 import com.cynergisuite.middleware.authentication.user.SecurityGroupDTO
 import com.cynergisuite.middleware.authentication.user.SecurityType
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -186,7 +187,7 @@ class SecurityController @Inject constructor(
    )
    fun create(
       @Body @Valid
-      dto: SecurityGroupDTO,
+      dto: SecurityEmployeeDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): SecurityGroupDTO {
@@ -216,7 +217,7 @@ class SecurityController @Inject constructor(
       @Parameter(name = "id", `in` = ParameterIn.PATH, description = "The id for the Security Group being updated") @QueryValue("id")
       id: UUID,
       @Body @Valid
-      dto: SecurityGroupDTO,
+      dto: SecurityEmployeeDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): SecurityGroupDTO {
@@ -246,14 +247,15 @@ class SecurityController @Inject constructor(
       @Parameter(name = "employeeId", `in` = ParameterIn.PATH, description = "The id for the Employee being updated") @QueryValue("employeeId")
       employeeId: Long,
       @Body
-      securityGroupId: UUID,
+      securityGroupId: List<UUID>,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): List<SecurityGroupDTO> {
       logger.info("Requested Update Employee to Security Group {}")
 
       val user = userService.fetchUser(authentication)
-      val response = securityService.addEmployeeToSecurityGroup(employeeId, securityGroupId, user.myCompany())
+      val employee = employeeService.fetchOne(employeeId, user.myCompany())
+      val response = securityService.addEmployeeToSecurityGroup(employee, securityGroupId, user.myCompany())
 
       logger.debug("Requested Update Employee to Security Group {} resulted in {}", response)
 
