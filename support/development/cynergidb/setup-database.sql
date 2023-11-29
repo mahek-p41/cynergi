@@ -474,11 +474,36 @@ BEGIN
             customers.cust_acct_nbr          AS unique_id,
             customers.cust_first_name_mi     AS first_name,
             customers.cust_last_name         AS last_name,
-            customers.cust_address           AS address_1,
-            customers.cust_address_2         AS address_2,
-            customers.cust_city              AS city,
-            customers.cust_state             AS state,
-            customers.cust_zip_pc            AS zip,
+            case
+				when reference.refinfo_cust_mailing_address Is Null
+				then customers.cust_address
+				else reference.refinfo_cust_mailing_address
+				end as address_1,
+            case
+               when reference.refinfo_cust_mailing_address_2 Is Null
+               then customers.cust_address_2
+               else reference.refinfo_cust_mailing_address_2
+               end as address_2,
+            case
+               when reference.refinfo_cust_mailing_city Is Null
+               then customers.cust_city
+               else reference.refinfo_cust_mailing_city
+               end as city,
+            case
+               when reference.refinfo_cust_mailing_state Is Null
+               then customers.cust_state
+               else reference.refinfo_cust_mailing_state
+               end as state,
+            case
+               when reference.refinfo_cust_mailing_zip_pc Is Null
+               then customers.cust_zip_pc
+               else reference.refinfo_cust_mailing_zip_pc
+               end as zip,
+--            customers.cust_address           AS address_1,
+--            customers.cust_address_2         AS address_2,
+--            customers.cust_city              AS city,
+--            customers.cust_state             AS state,
+--            customers.cust_zip_pc            AS zip,
             customers.cust_cell_phone        AS cell_phone_number,
             customers.cust_home_phone        AS home_phone_number,
             customers.cust_email_address     AS email,
@@ -525,6 +550,8 @@ BEGIN
             ' || r.schema_name || '.level2_stores as stores on agreement_versions.store_id = stores.id
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
+            LEFT JOIN
+            ' || r.schema_name || '.level2_refinfos as refereence on reference.customer_id = customers.id
          WHERE
             agreements.agreement_type = ''O'' and agreement_versions.agreement_open_flag = ''Y''
          GROUP BY
@@ -533,7 +560,9 @@ BEGIN
             customers.cust_home_phone,customers.cust_email_address,
             agreements.agreement_number,agreement_versions.agreement_open_flag, agreement_versions.agreement_payment_terms,
             customers.cust_cell_optin,
-            agreement_versions.agreement_recur_pmt_switch,agreement_versions.agreement_esp_amt, agreement_versions.agreement_next_due_date
+            agreement_versions.agreement_recur_pmt_switch,agreement_versions.agreement_esp_amt, agreement_versions.agreement_next_due_date,
+            reference.refinfo_cust_mailing_address,reference.refinfo_cust_mailing_address_2,reference.refinfo_cust_mailing_city, reference.refinfo_cust_mailing_state,
+			   reference.refinfo_cust_mailing_zip_pc
           ';
 
       unionAll := ' UNION ALL ';
@@ -569,11 +598,36 @@ BEGIN
             customers.cust_acct_nbr           AS unique_id,
             customers.cust_first_name_mi      AS first_name,
             customers.cust_last_name          AS last_name,
-            customers.cust_address            AS address_1,
-            customers.cust_address_2          AS address_2,
-            customers.cust_city               AS city,
-            customers.cust_state              AS state,
-            customers.cust_zip_pc             AS zip,
+            case
+            when reference.refinfo_cust_mailing_address Is Null
+            then customers.cust_address
+            else reference.refinfo_cust_mailing_address
+            end as address_1,
+            case
+               when reference.refinfo_cust_mailing_address_2 Is Null
+               then customers.cust_address_2
+               else reference.refinfo_cust_mailing_address_2
+               end as address_2,
+            case
+               when reference.refinfo_cust_mailing_city Is Null
+               then customers.cust_city
+               else reference.refinfo_cust_mailing_city
+               end as city,
+            case
+               when reference.refinfo_cust_mailing_state Is Null
+               then customers.cust_state
+               else reference.refinfo_cust_mailing_state
+               end as state,
+            case
+               when reference.refinfo_cust_mailing_zip_pc Is Null
+               then customers.cust_zip_pc
+               else reference.refinfo_cust_mailing_zip_pc
+               end as zip,
+--            customers.cust_address            AS address_1,
+--            customers.cust_address_2          AS address_2,
+--            customers.cust_city               AS city,
+--            customers.cust_state              AS state,
+--            customers.cust_zip_pc             AS zip,
             customers.cust_cell_phone         AS cell_phone_number,
             customers.cust_home_phone         AS home_phone_number,
             customers.cust_email_address      AS email,
@@ -586,6 +640,8 @@ BEGIN
             ' || r.schema_name || '.level2_stores as stores on agreement_versions.store_id = stores.id
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
+             LEFT JOIN
+            ' || r.schema_name || '.level2_refinfos as refereence on reference.customer_id = customers.id
          WHERE
             agreements.agreement_type = ''O''
             and agreement_versions.agreement_open_flag = ''Y'' and agreement_versions.agreement_next_due_date < current_date
@@ -593,7 +649,9 @@ BEGIN
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
             customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,
             customers.cust_cell_phone,customers.cust_home_phone,customers.cust_email_address,
-            agreements.agreement_number,agreement_versions.agreement_open_flag,agreement_versions.agreement_next_due_date
+            agreements.agreement_number,agreement_versions.agreement_open_flag,agreement_versions.agreement_next_due_date,
+            reference.refinfo_cust_mailing_address,reference.refinfo_cust_mailing_address_2,reference.refinfo_cust_mailing_city, reference.refinfo_cust_mailing_state,
+            reference.refinfo_cust_mailing_zip_pc
          ';
 
       unionAll := ' UNION ALL ';
@@ -630,11 +688,36 @@ BEGIN
             customers.cust_acct_nbr          AS unique_id,
             customers.cust_first_name_mi     AS first_name,
             customers.cust_last_name         AS last_name,
-            customers.cust_address           AS address_1,
-            customers.cust_address_2         AS address_2,
-            customers.cust_city              AS city,
-            customers.cust_state             AS state,
-            customers.cust_zip_pc            AS zip,
+            case
+            when reference.refinfo_cust_mailing_address Is Null
+            then customers.cust_address
+            else reference.refinfo_cust_mailing_address
+            end as address_1,
+            case
+               when reference.refinfo_cust_mailing_address_2 Is Null
+               then customers.cust_address_2
+               else reference.refinfo_cust_mailing_address_2
+               end as address_2,
+            case
+               when reference.refinfo_cust_mailing_city Is Null
+               then customers.cust_city
+               else reference.refinfo_cust_mailing_city
+               end as city,
+            case
+               when reference.refinfo_cust_mailing_state Is Null
+               then customers.cust_state
+               else reference.refinfo_cust_mailing_state
+               end as state,
+            case
+               when reference.refinfo_cust_mailing_zip_pc Is Null
+               then customers.cust_zip_pc
+               else reference.refinfo_cust_mailing_zip_pc
+               end as zip,
+--            customers.cust_address           AS address_1,
+--            customers.cust_address_2         AS address_2,
+--            customers.cust_city              AS city,
+--            customers.cust_state             AS state,
+--            customers.cust_zip_pc            AS zip,
             customers.cust_cell_phone        AS cell_phone_number,
             customers.cust_home_phone        AS home_phone_number,
             customers.cust_email_address     AS email,
@@ -646,13 +729,17 @@ BEGIN
             ' || r.schema_name || '.level2_stores as stores on agreement_versions.store_id = stores.id
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
+            LEFT JOIN
+            ' || r.schema_name || '.level2_refinfos as refereence on reference.customer_id = customers.id
          WHERE
             agreements.agreement_type = ''O''
             and agreement_versions.agreement_open_flag = ''Y''
          GROUP BY
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
             customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,
-            customers.cust_cell_phone,customers.cust_home_phone,customers.cust_email_address, customers.cust_birth_date
+            customers.cust_cell_phone,customers.cust_home_phone,customers.cust_email_address, customers.cust_birth_date,
+            reference.refinfo_cust_mailing_address,reference.refinfo_cust_mailing_address_2,reference.refinfo_cust_mailing_city, reference.refinfo_cust_mailing_state,
+            reference.refinfo_cust_mailing_zip_pc
          ';
 
       unionAll := ' UNION ALL ';
@@ -691,11 +778,36 @@ BEGIN
             customers.cust_acct_nbr           AS unique_id,
             customers.cust_first_name_mi      AS first_name,
             customers.cust_last_name          AS last_name,
-            customers.cust_address            AS address_1,
-            customers.cust_address_2          AS address_2,
-            customers.cust_city               AS city,
-            customers.cust_state              AS state,
-            customers.cust_zip_pc             AS zip,
+            case
+            when reference.refinfo_cust_mailing_address Is Null
+            then customers.cust_address
+            else reference.refinfo_cust_mailing_address
+            end as address_1,
+            case
+               when reference.refinfo_cust_mailing_address_2 Is Null
+               then customers.cust_address_2
+               else reference.refinfo_cust_mailing_address_2
+               end as address_2,
+            case
+               when reference.refinfo_cust_mailing_city Is Null
+               then customers.cust_city
+               else reference.refinfo_cust_mailing_city
+               end as city,
+            case
+               when reference.refinfo_cust_mailing_state Is Null
+               then customers.cust_state
+               else reference.refinfo_cust_mailing_state
+               end as state,
+            case
+               when reference.refinfo_cust_mailing_zip_pc Is Null
+               then customers.cust_zip_pc
+               else reference.refinfo_cust_mailing_zip_pc
+               end as zip,
+--            customers.cust_address            AS address_1,
+--            customers.cust_address_2          AS address_2,
+--            customers.cust_city               AS city,
+--            customers.cust_state              AS state,
+--            customers.cust_zip_pc             AS zip,
             customers.cust_cell_phone         AS cell_phone_number,
             customers.cust_home_phone         AS home_phone_number,
             customers.cust_email_address      AS email,
@@ -713,6 +825,8 @@ BEGIN
             ' || r.schema_name || '.level2_stores as stores on agreement_versions.store_id = stores.id
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
+            LEFT JOIN
+            ' || r.schema_name || '.level2_refinfos as refereence on reference.customer_id = customers.id
          WHERE
             agreements.agreement_type = ''O''
             and agreement_versions.agreement_contract_date
@@ -722,7 +836,9 @@ BEGIN
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
             customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone,
             customers.cust_home_phone,customers.cust_email_address,
-            agreements.agreement_number,agreement_contract_date, agreement_versions.agreement_open_flag)a
+            agreements.agreement_number,agreement_contract_date, agreement_versions.agreement_open_flag,
+            reference.refinfo_cust_mailing_address,reference.refinfo_cust_mailing_address_2,reference.refinfo_cust_mailing_city, reference.refinfo_cust_mailing_state,
+            reference.refinfo_cust_mailing_zip_pc)a
          LEFT JOIN
               (SELECT cust_acct_nbr, count(agreement_contract_date) as agr_count
               FROM ' || r.schema_name || '.level2_agreement_versions as av3
@@ -768,11 +884,36 @@ BEGIN
             customers.cust_acct_nbr          AS unique_id,
             customers.cust_first_name_mi     AS first_name,
             customers.cust_last_name         AS last_name,
-            customers.cust_address           AS address_1,
-            customers.cust_address_2         AS address_2,
-            customers.cust_city              AS city,
-            customers.cust_state             AS state,
-            customers.cust_zip_pc            AS zip,
+            case
+            when reference.refinfo_cust_mailing_address Is Null
+            then customers.cust_address
+            else reference.refinfo_cust_mailing_address
+            end as address_1,
+            case
+               when reference.refinfo_cust_mailing_address_2 Is Null
+               then customers.cust_address_2
+               else reference.refinfo_cust_mailing_address_2
+               end as address_2,
+            case
+               when reference.refinfo_cust_mailing_city Is Null
+               then customers.cust_city
+               else reference.refinfo_cust_mailing_city
+               end as city,
+            case
+               when reference.refinfo_cust_mailing_state Is Null
+               then customers.cust_state
+               else reference.refinfo_cust_mailing_state
+               end as state,
+            case
+               when reference.refinfo_cust_mailing_zip_pc Is Null
+               then customers.cust_zip_pc
+               else reference.refinfo_cust_mailing_zip_pc
+               end as zip,
+--            customers.cust_address           AS address_1,
+--            customers.cust_address_2         AS address_2,
+--            customers.cust_city              AS city,
+--            customers.cust_state             AS state,
+--            customers.cust_zip_pc            AS zip,
             customers.cust_cell_phone        AS cell_phone_number,
             customers.cust_home_phone        AS home_phone_number,
             customers.cust_email_address     AS email,
@@ -787,6 +928,8 @@ BEGIN
             ' || r.schema_name || '.level2_stores as stores on agreement_versions.store_id = stores.id
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
+            LEFT JOIN
+            ' || r.schema_name || '.level2_refinfos as refereence on reference.customer_id = customers.id
          WHERE
             agreements.agreement_type = ''O''
             and agreement_versions.agreement_open_flag <> ''Y''
@@ -798,7 +941,9 @@ BEGIN
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
             customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,
             customers.cust_cell_phone,customers.cust_home_phone,customers.cust_email_address,
-            agreements.agreement_number,agreement_versions.agreement_closed_reason, agreement_closed_date
+            agreements.agreement_number,agreement_versions.agreement_closed_reason, agreement_closed_date,
+            reference.refinfo_cust_mailing_address,reference.refinfo_cust_mailing_address_2,reference.refinfo_cust_mailing_city, reference.refinfo_cust_mailing_state,
+            reference.refinfo_cust_mailing_zip_pc
          ';
 
       unionAll := ' UNION ALL ';
@@ -834,11 +979,36 @@ BEGIN
             customers.cust_acct_nbr         AS unique_id,
             customers.cust_first_name_mi    AS first_name,
             customers.cust_last_name        AS last_name,
-            customers.cust_address          AS address_1,
-            customers.cust_address_2        AS address_2,
-            customers.cust_city             AS city,
-            customers.cust_state            AS state,
-            customers.cust_zip_pc           AS zip,
+            case
+            when reference.refinfo_cust_mailing_address Is Null
+            then customers.cust_address
+            else reference.refinfo_cust_mailing_address
+            end as address_1,
+            case
+               when reference.refinfo_cust_mailing_address_2 Is Null
+               then customers.cust_address_2
+               else reference.refinfo_cust_mailing_address_2
+               end as address_2,
+            case
+               when reference.refinfo_cust_mailing_city Is Null
+               then customers.cust_city
+               else reference.refinfo_cust_mailing_city
+               end as city,
+            case
+               when reference.refinfo_cust_mailing_state Is Null
+               then customers.cust_state
+               else reference.refinfo_cust_mailing_state
+               end as state,
+            case
+               when reference.refinfo_cust_mailing_zip_pc Is Null
+               then customers.cust_zip_pc
+               else reference.refinfo_cust_mailing_zip_pc
+               end as zip,
+--            customers.cust_address          AS address_1,
+--            customers.cust_address_2        AS address_2,
+--            customers.cust_city             AS city,
+--            customers.cust_state            AS state,
+--            customers.cust_zip_pc           AS zip,
             customers.cust_cell_phone       AS cell_phone_number,
             customers.cust_home_phone       AS home_phone_number,
             customers.cust_email_address    AS email,
@@ -864,13 +1034,17 @@ BEGIN
             ' || r.schema_name || '.level2_stores as stores on agreement_versions.store_id = stores.id
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
+            LEFT JOIN
+            ' || r.schema_name || '.level2_refinfos as refereence on reference.customer_id = customers.id
          WHERE
             agreements.agreement_type = ''O''
             and agreement_versions.agreement_open_flag = ''Y''
          GROUP BY
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
             customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,
-            customers.cust_cell_phone,customers.cust_home_phone,customers.cust_email_address, agreements.agreement_number
+            customers.cust_cell_phone,customers.cust_home_phone,customers.cust_email_address, agreements.agreement_number,
+            reference.refinfo_cust_mailing_address,reference.refinfo_cust_mailing_address_2,reference.refinfo_cust_mailing_city, reference.refinfo_cust_mailing_state,
+            reference.refinfo_cust_mailing_zip_pc
          ';
 
       unionAll := ' UNION ALL ';
@@ -908,11 +1082,36 @@ BEGIN
             customers.cust_acct_nbr          AS unique_id,
             customers.cust_first_name_mi     AS first_name,
             customers.cust_last_name         AS last_name,
-            customers.cust_address           AS address_1,
-            customers.cust_address_2         AS address_2,
-            customers.cust_city              AS city,
-            customers.cust_state             AS state,
-            customers.cust_zip_pc            AS zip,
+            case
+            when reference.refinfo_cust_mailing_address Is Null
+            then customers.cust_address
+            else reference.refinfo_cust_mailing_address
+            end as address_1,
+            case
+               when reference.refinfo_cust_mailing_address_2 Is Null
+               then customers.cust_address_2
+               else reference.refinfo_cust_mailing_address_2
+               end as address_2,
+            case
+               when reference.refinfo_cust_mailing_city Is Null
+               then customers.cust_city
+               else reference.refinfo_cust_mailing_city
+               end as city,
+            case
+               when reference.refinfo_cust_mailing_state Is Null
+               then customers.cust_state
+               else reference.refinfo_cust_mailing_state
+               end as state,
+            case
+               when reference.refinfo_cust_mailing_zip_pc Is Null
+               then customers.cust_zip_pc
+               else reference.refinfo_cust_mailing_zip_pc
+               end as zip,
+--            customers.cust_address           AS address_1,
+--            customers.cust_address_2         AS address_2,
+--            customers.cust_city              AS city,
+--            customers.cust_state             AS state,
+--            customers.cust_zip_pc            AS zip,
             customers.cust_cell_phone        AS cell_phone_number,
             customers.cust_home_phone        AS home_phone_number,
             customers.cust_email_address     AS email,
@@ -938,6 +1137,8 @@ BEGIN
             ' || r.schema_name || '.level2_stores as stores on agreement_versions.store_id = stores.id
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
+            LEFT JOIN
+            ' || r.schema_name || '.level2_refinfos as refereence on reference.customer_id = customers.id
          WHERE
             agreements.agreement_type = ''O''
             and agreement_versions.agreement_open_flag <> ''Y''
@@ -956,7 +1157,9 @@ BEGIN
                                  and Trim(LEADING ''0'' FROM CAST(av4.agreement_closed_reason AS TEXT))In(''4'',''6'',''7'',''8'',''9'')))
           GROUP BY stores.loc_tran_loc, agreements.customer_id,customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
                    customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone,customers.cust_home_phone,customers.cust_email_address,
-                   customers.cust_birth_date, agreements.agreement_number, agreement_versions.agreement_closed_date,agreement_versions.agreement_closed_reason)a
+                   customers.cust_birth_date, agreements.agreement_number, agreement_versions.agreement_closed_date,agreement_versions.agreement_closed_reason,
+                   reference.refinfo_cust_mailing_address,reference.refinfo_cust_mailing_address_2,reference.refinfo_cust_mailing_city, reference.refinfo_cust_mailing_state,
+                   reference.refinfo_cust_mailing_zip_pc)a
 
           JOIN
 		       (select cust_acct_nbr, CASE WHEN round(sum((agreement_total_payments - tot_temp)/agreement_total_payments) * 100,2)::NUMERIC = 0 THEN 100
