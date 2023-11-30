@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
 import java.time.LocalDate
+import java.time.OffsetDateTime
 
 @Schema(
    name = "GeneralLedgerJournalFilterRequest",
@@ -48,6 +49,9 @@ class GeneralLedgerJournalReportFilterRequest(
    @field:Schema(name = "posted", description = "Fetch posted journals", defaultValue = "false")
    var posted: Boolean = false,
 
+   @field:Schema(name = "postedTime", description = "Timestamp of journals posted request, required when posted=true")
+   var postedTime: OffsetDateTime? = null,
+
    ) : PageRequestBase<GeneralLedgerJournalReportFilterRequest>(page, size, sortBy, sortDirection) {
 
    @ValidPageSortBy("id")
@@ -67,6 +71,7 @@ class GeneralLedgerJournalReportFilterRequest(
             .append(this.sortOption, other.sortOption)
             .append(this.description, other.description)
             .append(this.posted, other.posted)
+            .append(this.postedTime, other.postedTime)
             .isEquals
       } else {
          false
@@ -85,6 +90,7 @@ class GeneralLedgerJournalReportFilterRequest(
          .append(this.sortOption)
          .append(this.description)
          .append(this.posted)
+         .append(this.postedTime)
          .toHashCode()
 
    override fun myCopyPage(page: Int, size: Int, sortBy: String, sortDirection: String): GeneralLedgerJournalReportFilterRequest =
@@ -102,7 +108,8 @@ class GeneralLedgerJournalReportFilterRequest(
          subtotal = this.subtotal,
          sortOption = this.sortOption,
          description = this.description,
-         posted = this.posted
+         posted = this.posted,
+         postedTime = this.postedTime,
       )
 
    override fun myToStringValues(): List<Pair<String, Any?>> =
@@ -116,6 +123,7 @@ class GeneralLedgerJournalReportFilterRequest(
          "subtotal" to subtotal,
          "sortOption" to sortOption,
          "description" to description,
-         "posted" to posted
+         "posted" to posted,
+         "postedTime" to postedTime,
       )
 }
