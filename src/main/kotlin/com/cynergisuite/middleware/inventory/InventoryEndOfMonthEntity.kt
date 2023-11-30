@@ -1,23 +1,33 @@
 package com.cynergisuite.middleware.inventory
 
-import com.cynergisuite.domain.LegacyIdentifiable
-import com.cynergisuite.middleware.accounting.account.payable.cashflow.CashFlowBalanceEntity
-import com.cynergisuite.middleware.accounting.account.payable.cashflow.CashFlowReportInvoiceDetailEntity
-import com.cynergisuite.middleware.inventory.location.InventoryLocationType
-import com.cynergisuite.middleware.location.Location
-import com.cynergisuite.middleware.store.Store
 import io.micronaut.core.annotation.Introspected
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 
 @Introspected
 data class InventoryEndOfMonthEntity(
-   var accountNumber: Int? = null,
-   var accountName: String? = null,
-   var storeNumber: Int? = null,
-   var deprUnits: BigDecimal? = null,
-   var nonDepr: BigDecimal? = null,
-   var reportTotal: Int? = null,
-   var glBalance: Int? = null,
-   var difference: Int? = null,
+   var id: UUID? = null,
+   var companyId: UUID? = null,
+   var storeNumber: Long? = null,
+   var year: Int? = null,
+   var month: Int? = null,
+   var serialNumber: String? = null,
+   var cost: BigDecimal? = null,
+   var netBookValue: BigDecimal? = null,
+   var bookDepreciation: BigDecimal? = null,
+   var assetAccountId: UUID? = null,
+   var contraAssetAccountId: UUID? = null,
+   var model: String? = null,
+   var alternateId: String? = null,
+   var currentInvIndr: Int? = null,
+   var macrsPreviousFiscalYearEndCost: BigDecimal? = null,
+   var macrsPreviousFiscalYearEndDepr: BigDecimal? = null,
+   var macrsPreviousFiscalYearEndAmtDepr: BigDecimal? = null,
+   var macrsPreviousFiscalYearEndDate: LocalDate? = null,
+   var macrsLatestFiscalYearEndCost: BigDecimal? = null,
+   var macrsLatestFiscalYearEndDepr: BigDecimal? = null,
+   var macrsLatestFiscalYearEndAmtDepr: BigDecimal? = null,
+   var macrsPreviousFiscalYearBonus: BigDecimal? = null,
+   var macrsLatestFiscalYearBonus: BigDecimal? = null,
 )

@@ -138,6 +138,49 @@ COPY fastinfo_prod_import.inventory_vw(
 )
 FROM '/tmp/fastinfo/test-inventory.csv' DELIMITER ',' CSV HEADER;
 
+CREATE TABLE fastinfo_prod_import.product_class_master_file_vw (
+   dataset                                                   VARCHAR(6)                            NOT NULL,
+   class_code                                                VARCHAR(10),
+   class_description                                         VARCHAR(20),
+   straight_line_book_depreciation_start_date                DATE,
+   straight_line_book_depreciation_end_date                  DATE,
+   income_forecasting_book_depreciation_start_date           DATE,
+   income_forecasting_book_depreciation_end_date             DATE,
+   macrs_book_start_date                                     DATE,
+   macrs_book_end_date                                       DATE,
+   macrs_tax_start_date                                      DATE,
+   macrs_tax_end_date                                        DATE,
+   rent_switch                                               VARCHAR(1)                            NOT NULL,
+   transition_into_switch                                    VARCHAR(1)                            NOT NULL,
+   transition_out_of_switch                                  VARCHAR(1)                            NOT NULL,
+   cash_sale_switch                                          VARCHAR(1)                            NOT NULL,
+   allow_depreciation_switch                                 VARCHAR(1)                            NOT NULL,
+   allow_straight_line_life_switch                           VARCHAR(1)                            NOT NULL,
+   time_created  TIMESTAMPTZ                                 DEFAULT clock_timestamp()             NOT NULL,
+   time_updated  TIMESTAMPTZ                                 DEFAULT clock_timestamp()             NOT NULL
+);
+
+COPY fastinfo_prod_import.product_class_master_file_vw(
+   dataset,
+   class_code,
+   class_description,
+   straight_line_book_depreciation_start_date,
+   straight_line_book_depreciation_end_date,
+   income_forecasting_book_depreciation_start_date,
+   income_forecasting_book_depreciation_end_date,
+   macrs_book_start_date,
+   macrs_book_end_date,
+   macrs_tax_start_date,
+   macrs_tax_end_date,
+   rent_switch,
+   transition_into_switch,
+   transition_out_of_switch,
+   cash_sale_switch,
+   allow_depreciation_switch,
+   allow_straight_line_life_switch
+)
+FROM '/tmp/fastinfo/test-product-class-master-file.csv' DELIMITER ',' CSV HEADER;
+
 CREATE FOREIGN TABLE fastinfo_prod_import.location_vw (
    id BIGINT,
    dataset VARCHAR,
