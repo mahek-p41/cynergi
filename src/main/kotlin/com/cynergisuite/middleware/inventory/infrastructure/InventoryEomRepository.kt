@@ -1,44 +1,22 @@
 package com.cynergisuite.middleware.inventory.infrastructure
 
-import com.cynergisuite.domain.GeneralLedgerReconciliationReportFilterRequest
-import com.cynergisuite.domain.InventoryInquiryFilterRequest
-import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
-import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
-import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
-import com.cynergisuite.middleware.accounting.general.ledger.reconciliation.GeneralLedgerReconciliationReportEntity
-import com.cynergisuite.middleware.area.AreaEntity
-import com.cynergisuite.middleware.area.AreaType
-import com.cynergisuite.middleware.area.toAreaTypeEntity
-import com.cynergisuite.middleware.audit.AuditEntity
-import com.cynergisuite.middleware.audit.status.Created
-import com.cynergisuite.middleware.audit.status.InProgress
+import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.inventory.InventoryEntity
-import com.cynergisuite.middleware.inventory.InventoryInquiryDTO
-import com.cynergisuite.middleware.inventory.location.InventoryLocationType
-import com.cynergisuite.middleware.location.infrastructure.LocationRepository
-import com.cynergisuite.middleware.store.infrastructure.StoreRepository
-import io.micronaut.transaction.annotation.ReadOnly
+import com.cynergisuite.middleware.inventory.InventoryEndOfMonthEntity
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
-import java.util.*
-import org.apache.commons.lang3.StringUtils.EMPTY
 import javax.transaction.Transactional
 
 @Singleton
 class InventoryEomRepository @Inject constructor(
    private val jdbc: Jdbi,
-   private val companyRepository: CompanyRepository,
-   private val storeRepository: StoreRepository,
-   private val accountRepository: AccountRepository
   ) : DatasetRequiringRepository {
    private val logger: Logger = LoggerFactory.getLogger(InventoryEomRepository::class.java)
 
@@ -48,7 +26,7 @@ class InventoryEomRepository @Inject constructor(
          i.store_number_sfk                                   AS store_number,
          i.year                                               AS year,
          i.month                                              AS month,
-         i.serial_number                                       AS serial_number,
+         i.serial_number                                      AS serial_number,
          i.cost                                               AS cost,
          i.net_book_value                                     AS net_book_value,
          i.book_depreciation                                  AS book_depreciation,
@@ -104,48 +82,117 @@ class InventoryEomRepository @Inject constructor(
       TODO("Not yet implemented")
    }
 
-//   @ReadOnly
-//   fun fetchReport(filterRequest: GeneralLedgerReconciliationReportFilterRequest, company: CompanyEntity): RepositoryPage<GeneralLedgerReconciliationReportEntity, PageRequest> {
-//      val params = mutableMapOf<String, Any?>("date" to filterRequest.date, "comp_id" to company.id)
-//      val query =
-//         """
-//            WITH paged AS(
-//               ${selectBaseQuery()}
-//               WHERE comp.id = :comp_id
-//            )
-//            SELECT
-//               p.*,
-//               COUNT(*) OVER() AS total_elements
-//               FROM paged as p
-//               ORDER by asset_account_id, store_number
-//               LIMIT ${filterRequest.size()} OFFSET ${filterRequest.offset()}
-//         """
-//      var totalElements: Long? = null
-//      val resultList: MutableList<GeneralLedgerReconciliationReportEntity> = mutableListOf()
-//
-//      jdbc.query(query, params) { rs, _ ->
-//         resultList.add(mapRow(rs, company))
-//         if (totalElements == null) {
-//            totalElements = rs.getLong("total_elements")
-//         }
-//      }
-//
-//      return RepositoryPage(
-//         elements = resultList,
-//         requested = filterRequest,
-//         totalElements = totalElements ?: 0
-//      )
-//   }
-//
-//   private fun mapRow(
-//      rs: ResultSet,
-//      company: CompanyEntity,
-//      columnPrefix: String = EMPTY
-//   ): GeneralLedgerReconciliationReportEntity {
-//      return GeneralLedgerReconciliationReportEntity(
-//         inventory = mutableListOf(),
-//         inventoryTotals = rs.getBigDecimal("${columnPrefix}inventoryTotals")
-//      )
-//   }
+   @Transactional
+   fun insert(entity: InventoryEndOfMonthEntity, company: CompanyEntity): InventoryEndOfMonthEntity {
+      logger.debug("Inserting GeneralLedgerJournal {}", entity)
+
+      return jdbc.insertReturning(
+         """
+         INSERT INTO inventory_end_of_month(
+            company_id,
+            store_number_sfk,
+            year,
+            month,
+            serial_number,
+            cost,
+            net_book_value,
+            book_depreciation,
+            asset_account_id,
+            contra_asset_account_id,
+            model,
+            alternate_id,
+            current_inv_indr,
+            macrs_previous_fiscal_year_end_cost,
+            macrs_previous_fiscal_year_end_depr,
+            macrs_previous_fiscal_year_end_amt_depr,
+            macrs_previous_fiscal_year_end_date,
+            macrs_latest_fiscal_year_end_cost,
+            macrs_latest_fiscal_year_end_depr,
+            macrs_latest_fiscal_year_end_amt_depr,
+            macrs_previous_fiscal_year_bonus,
+            macrs_latest_fiscal_year_bonus
+         ) VALUES (
+            :companyId,
+            :storeNumber,
+            :year,
+            :month,
+            :serialNumber,
+            :cost,
+            :netBookValue,
+            :bookDepreciation,
+            :assetAccountId,
+            :contraAssetAccountId,
+            :model,
+            :alternateId,
+            :currentInvIndr,
+            :macrsPreviousFiscalYearEndCost,
+            :macrsPreviousFiscalYearEndDepr,
+            :macrsPreviousFiscalYearEndAmtDepr,
+            :macrsPreviousFiscalYearEndDate,
+            :macrsLatestFiscalYearEndCost,
+            :macrsLatestFiscalYearEndDepr,
+            :macrsLatestFiscalYearEndAmtDepr,
+            :macrsPreviousFiscalYearBonus,
+            :macrsLatestFiscalYearBonus
+         )
+         RETURNING
+            *
+         """.trimIndent(),
+         mapOf(
+            "companyId" to company.id,
+            "storeNumber" to entity.storeNumber,
+            "year" to entity.year,
+            "month" to entity.month,
+            "serialNumber" to entity.serialNumber,
+            "cost" to entity.cost,
+            "netBookValue" to entity.netBookValue,
+            "bookDepreciation" to entity.bookDepreciation,
+            "assetAccountId" to entity.assetAccountId,
+            "contraAssetAccountId" to entity.contraAssetAccountId,
+            "model" to entity.model,
+            "alternateId" to entity.alternateId,
+            "currentInvIndr" to entity.currentInvIndr,
+            "macrsPreviousFiscalYearEndCost" to entity.macrsPreviousFiscalYearEndCost,
+            "macrsPreviousFiscalYearEndDepr" to entity.macrsPreviousFiscalYearEndDepr,
+            "macrsPreviousFiscalYearEndAmtDepr" to entity.macrsPreviousFiscalYearEndAmtDepr,
+            "macrsPreviousFiscalYearEndDate" to entity.macrsPreviousFiscalYearEndDate,
+            "macrsLatestFiscalYearEndCost" to entity.macrsLatestFiscalYearEndCost,
+            "macrsLatestFiscalYearEndDepr" to entity.macrsLatestFiscalYearEndDepr,
+            "macrsLatestFiscalYearEndAmtDepr" to entity.macrsLatestFiscalYearEndAmtDepr,
+            "macrsPreviousFiscalYearBonus" to entity.macrsPreviousFiscalYearBonus,
+            "macrsLatestFiscalYearBonus" to entity.macrsLatestFiscalYearBonus,
+         )
+      ) { rs, _ -> mapRow(rs) }
+
+   }
+
+   fun mapRow(rs: ResultSet): InventoryEndOfMonthEntity {
+
+      return InventoryEndOfMonthEntity(
+         id = rs.getUuid("id"),
+         companyId = rs.getUuid("company_id"),
+         storeNumber = rs.getLong("store_number_sfk"),
+         year = rs.getInt("year"),
+         month = rs.getInt("month"),
+         serialNumber = rs.getString("serial_number"),
+         cost = rs.getBigDecimal("cost"),
+         netBookValue = rs.getBigDecimal("net_book_value"),
+         bookDepreciation = rs.getBigDecimal("book_depreciation"),
+         assetAccountId = rs.getUuid("asset_account_id"),
+         contraAssetAccountId = rs.getUuid("contra_asset_account_id"),
+         model = rs.getString("model"),
+         alternateId = rs.getString("alternate_id"),
+         currentInvIndr = rs.getInt("current_inv_indr"),
+         macrsPreviousFiscalYearEndCost = rs.getBigDecimal("macrs_previous_fiscal_year_end_cost"),
+         macrsPreviousFiscalYearEndDepr = rs.getBigDecimal("macrs_previous_fiscal_year_end_depr"),
+         macrsPreviousFiscalYearEndAmtDepr = rs.getBigDecimal("macrs_previous_fiscal_year_end_amt_depr"),
+         macrsPreviousFiscalYearEndDate = rs.getLocalDate("macrs_previous_fiscal_year_end_date"),
+         macrsLatestFiscalYearEndCost = rs.getBigDecimal("macrs_latest_fiscal_year_end_cost"),
+         macrsLatestFiscalYearEndDepr = rs.getBigDecimal("macrs_latest_fiscal_year_end_depr"),
+         macrsLatestFiscalYearEndAmtDepr = rs.getBigDecimal("macrs_latest_fiscal_year_end_amt_depr"),
+         macrsPreviousFiscalYearBonus = rs.getBigDecimal("macrs_previous_fiscal_year_bonus"),
+         macrsLatestFiscalYearBonus = rs.getBigDecimal("macrs_latest_fiscal_year_bonus"),
+      )
+   }
 }
 

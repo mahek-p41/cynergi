@@ -1,0 +1,17 @@
+"dataset","class_code","class_description","straight_line_book_depreciation_start_date","straight_line_book_depreciation_end_date","income_forecasting_book_depreciation_start_date","income_forecasting_book_depreciation_end_date","macrs_book_start_date","macrs_book_end_date","macrs_tax_start_date","macrs_tax_end_date","rent_switch","transition_into_switch","transition_out_of_switch","cash_sale_switch","allow_depreciation_switch","allow_straight_line_life_switch","time_created","time_updated"
+corjim,F,Fixed Asset,,,,,,,,,N,N,N,N,Y,Y
+corjim,O,Rent-To-Own,,2079-12-31,,,,,,2079-12-31,Y,Y,Y,Y,Y,Y
+corjim,R,Rent-To-Rent,,2079-12-31,,,,,,2079-12-31,Y,Y,Y,Y,Y,Y
+corjim,S,Sales/Retail,,,,,,,,,Y,N,Y,Y,N,Y
+corrdv,F,Fixed Asset,,2099-12-31,,,,,,,N,N,N,N,Y,Y
+corrdv,O,Rent-To-Own,2020-01-01,2023-01-31,2023-02-01,2099-12-31,,,,2099-12-31,Y,Y,Y,Y,Y,Y
+corrdv,R,Rent-To-Rent,,2099-12-31,,,,,,2099-12-31,Y,Y,Y,Y,Y,Y
+corrdv,S,Sales/Retail,,,,,,,,,Y,N,Y,Y,N,Y
+corrto,F,Fixed Asset,,,,,,,,,N,N,N,N,Y,Y
+corrto,O,Rent-To-Own,,,,2099-12-31,,,,2099-12-31,Y,Y,Y,Y,Y,Y
+corrto,R,Rent-To-Rent,,,,,,,,,Y,Y,Y,Y,Y,Y
+corrto,S,Sales/Retail,,,,,,,,,Y,N,Y,Y,N,Y
+coravt,F,Fixed Asset,,,,,,,,,N,N,N,N,Y,Y
+coravt,O,Rent-To-Own,,2079-12-31,,,,,,2079-12-31,Y,Y,Y,Y,Y,Y
+coravt,R,Rent-To-Rent,,2079-12-31,,,,,,2079-12-31,Y,Y,Y,Y,Y,Y
+coravt,S,Sales/Retail,,,,,,,,,Y,N,Y,Y,N,Y

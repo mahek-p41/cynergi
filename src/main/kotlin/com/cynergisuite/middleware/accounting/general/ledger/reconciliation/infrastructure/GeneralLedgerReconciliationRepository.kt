@@ -9,8 +9,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.reconciliation.Gene
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryEntity
 import com.cynergisuite.middleware.accounting.general.ledger.summary.infrastructure.GeneralLedgerSummaryRepository
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.inventory.InventoryEndOfMonthEntity
-import com.cynergisuite.middleware.inventory.infrastructure.InventoryEomRepository
+import com.cynergisuite.middleware.inventory.InventoryEOMReportEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -24,7 +23,6 @@ import org.slf4j.LoggerFactory
 @Singleton
 class GeneralLedgerReconciliationRepository @Inject constructor(
    private val jdbc: Jdbi,
-   private val inventoryRepository: InventoryEomRepository,
    private val generalLedgerSummary: GeneralLedgerSummaryRepository,
    private val financialCalendarRepository: FinancialCalendarRepository
    ) {
@@ -353,15 +351,15 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
       )
    }
 
-   private fun mapAsset(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): InventoryEndOfMonthEntity {
-      return InventoryEndOfMonthEntity(
+   private fun mapAsset(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): InventoryEOMReportEntity {
+      return InventoryEOMReportEntity(
          deprUnits = rs.getBigDecimal("${columnPrefix}cost"),
          nonDepr = rs.getBigDecimal("${columnPrefix}cost"),
       )
    }
 
-   private fun mapContra(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY):InventoryEndOfMonthEntity {
-      return InventoryEndOfMonthEntity(
+   private fun mapContra(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): InventoryEOMReportEntity {
+      return InventoryEOMReportEntity(
          deprUnits = rs.getBigDecimal("${columnPrefix}book_depreciation"),
          nonDepr = rs.getBigDecimal("${columnPrefix}book_depreciation")
       )
