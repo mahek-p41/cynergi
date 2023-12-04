@@ -109,12 +109,12 @@ class SecurityGroupRepository @Inject constructor(
 
    @Transactional
    fun createNewGroupAndTypes(securityGroupEmployee: SecurityEmployeeDTO): SecurityGroup {
-      val securityGroup = SecurityGroup(securityGroupEmployee.securityGroup!!)
+      val securityGroup = SecurityGroup(securityGroupEmployee.securityGroup)
       val employees = securityGroupEmployee.employees
       try {
-         val accessPoints = securityGroup?.types?.map { it.id }
+         val accessPoints = securityGroup.types.map { it.id }
          val group = insert(securityGroup)
-         assignAccessPointsToSecurityGroups(group.id!!, accessPoints!!)
+         assignAccessPointsToSecurityGroups(group.id!!, accessPoints)
          assignMultipleEmployeesToSingleSecurityGroup(group.id, employees!!)
          val found = findOne(group.id)
          return found ?: throw IllegalStateException("Failed to find the inserted SecurityGroup.")
@@ -216,7 +216,7 @@ class SecurityGroupRepository @Inject constructor(
    @Transactional
    fun assignSingleEmployeeToMultipleSecurityGroups(employee: EmployeeEntity, securityGroupIds: List<UUID>) {
       logger.trace("Assigning Employee {} to Security Group {}", employee, securityGroupIds)
-      if (securityGroupIds.isNullOrEmpty()) {
+      if (securityGroupIds.isEmpty()) {
          jdbc.update(
             """
             DELETE FROM employee_to_security_group
@@ -262,30 +262,70 @@ class SecurityGroupRepository @Inject constructor(
    fun assignMultipleEmployeesToSingleSecurityGroup(securityGroupId: UUID, employees: List<EmployeeValueObject>) {
 
       logger.trace("Assigning Employees {} to Security Group {}", employees, securityGroupId)
-      employees.forEach { employee ->
-         val params = mapOf(
-            "employee_id" to employee.id,
-            "security_group_id" to securityGroupId,
-            "employee_number" to employee.number
-         )
-         jdbc.update(
-            """
-            INSERT INTO employee_to_security_group (employee_id_sfk, security_group_id, emp_number)
-            VALUES (:employee_id, :security_group_id, :employee_number)
-            ON CONFLICT (security_group_id, employee_id_sfk, emp_number) DO NOTHING
-            RETURNING
-            *
-         """.trimIndent(),
-            params
-         )
+      val employeeIdList = employees.map { it.id }
+      val employeeNumberIdPair: List<Pair<Long, Int>> = employees.map { Pair(it.id!!, it.number!!) }
+      if (employeeIdList.isEmpty()) {
+            jdbc.update(
+               """
+               DELETE FROM employee_to_security_group
+               WHERE security_group_id = :security_id
+
+            """.trimIndent(),
+               mapOf(
+                  "security_group_id" to securityGroupId
+               )
+            )
+         } else {
+         if (employeeNumberIdPair.isNotEmpty()) {
+            val subQuery = employeeNumberIdPair.joinToString(" UNION ") {
+               "SELECT :id${it.first} AS employee_id, :number${it.second} AS emp_number"
+            }
+            val params = employeeNumberIdPair.flatMap { (id, number) ->
+               listOf("id${id}" to id, "number${number}" to number)
+            }.toMap()
+
+            jdbc.update(
+               """
+               WITH pairs(employee_id, emp_number) AS (
+                   $subQuery
+               )
+               DELETE FROM employee_to_security_group etsg
+               WHERE etsg.security_group_id = :security_group_id
+               AND NOT EXISTS (
+                   SELECT 1 FROM pairs p
+                   WHERE p.employee_id = etsg.employee_id_sfk
+                   AND p.emp_number = etsg.emp_number
+               )
+               """.trimIndent(),
+               params + mapOf("security_group_id" to securityGroupId)
+            )
+         }
       }
+         employees.forEach { employee ->
+            val params = mapOf(
+               "employee_id" to employee.id,
+               "security_group_id" to securityGroupId,
+               "employee_number" to employee.number
+            )
+            jdbc.update(
+               """
+               INSERT INTO employee_to_security_group (employee_id_sfk, security_group_id, emp_number)
+               VALUES (:employee_id, :security_group_id, :employee_number)
+               ON CONFLICT (security_group_id, employee_id_sfk, emp_number) DO NOTHING
+               RETURNING
+               *
+            """.trimIndent(),
+               params
+            )
+         }
+
    }
 
 
    @Transactional
    fun assignAccessPointsToSecurityGroups(securityGroupId: UUID, accessPointIds: List<Int>) {
       logger.trace("Assigning Access points to Security Groups {}",  securityGroupId)
-      if (accessPointIds.isNullOrEmpty()) {
+      if (accessPointIds.isEmpty()) {
          jdbc.update(
             """
             DELETE FROM security_group_to_security_access_point
