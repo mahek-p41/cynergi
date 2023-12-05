@@ -1186,7 +1186,7 @@ BEGIN
             and agreement_versions.agreement_closed_date = current_date -1
          GROUP BY
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,
-            customers.cust_email_address,agreements.agreement_number,agreement_closed_date, product
+            customers.cust_email_address,agreements.agreement_number,agreement_closed_date, product, customers.cust_cell_phone, customers.cust_home_phone
          ';
 
       unionAll := ' UNION ALL ';
