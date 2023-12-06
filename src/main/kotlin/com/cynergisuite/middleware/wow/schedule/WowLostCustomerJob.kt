@@ -38,7 +38,7 @@ class WowLostCustomerJob @Inject constructor(
       Files.newBufferedWriter(lostCustomerTempPath).use { writer ->
          val lostCustomerCsv = CSVPrinter(writer, CSVFormat.EXCEL)
 
-         lostCustomerCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay", "ActiveAgreement","PaymentTerms","DateClosed","ClosedReason")
+         lostCustomerCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay", "ActiveAgreement","PaymentTerms","DateClosed","ClosedReason","CellNumber","HomeNumber")
 
          wowRepository.findlostCustomer(company).forEach { lostCustomer ->
             lostCustomerCsv.printRecord(
@@ -72,7 +72,9 @@ class WowLostCustomerJob @Inject constructor(
                lostCustomer.actveAgreement ?: EMPTY,
                lostCustomer.paymentTerms ?: EMPTY,
                lostCustomer.dateClosed ?: EMPTY,
-               lostCustomer.closedReason?: EMPTY
+               lostCustomer.closedReason ?: EMPTY,
+               lostCustomer.cellPhoneNumber ?: EMPTY,
+               lostCustomer.homePhoneNumber ?: EMPTY
             )
          }
 

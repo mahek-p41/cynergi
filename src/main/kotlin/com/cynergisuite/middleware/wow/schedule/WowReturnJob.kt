@@ -38,7 +38,7 @@ class WowReturnJob @Inject constructor(
       Files.newBufferedWriter(returnsTempPath).use { writer ->
          val returnsCsv = CSVPrinter(writer, CSVFormat.EXCEL)
 
-         returnsCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay", "ActiveAgreement","PaymentTerms","DateClosed","ClosedReason")
+         returnsCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay", "ActiveAgreement","PaymentTerms","DateClosed","ClosedReason","CellNumber","HomeNumber")
 
          wowRepository.findreturns(company).forEach { returns ->
             returnsCsv.printRecord(
@@ -72,7 +72,9 @@ class WowReturnJob @Inject constructor(
                returns.actveAgreement ?: EMPTY,
                returns.paymentTerms ?: EMPTY,
                returns.dateClosed ?: EMPTY,
-               returns.closedReason?: EMPTY
+               returns.closedReason ?: EMPTY,
+               returns.cellPhoneNumber ?: EMPTY,
+               returns.homePhoneNumber ?: EMPTY
             )
          }
 

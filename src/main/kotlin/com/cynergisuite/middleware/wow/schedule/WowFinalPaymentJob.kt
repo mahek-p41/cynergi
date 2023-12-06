@@ -38,7 +38,7 @@ class WowFinalPaymentJob @Inject constructor(
       Files.newBufferedWriter(finalPaymentTempPath).use { writer ->
          val finalPaymentCsv = CSVPrinter(writer, CSVFormat.EXCEL)
 
-         finalPaymentCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "Product", "PayoutDate")
+         finalPaymentCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "Product", "PayoutDate", "CellNumber","HomeNumber")
 
          wowRepository.findFinalPayment(company).forEach { finalPayment ->
             finalPaymentCsv.printRecord(
@@ -49,7 +49,9 @@ class WowFinalPaymentJob @Inject constructor(
                finalPayment.email ?: EMPTY,
                finalPayment.agreementNumber,
                finalPayment.product ?: EMPTY,
-               finalPayment.payoutDate
+               finalPayment.payoutDate,
+               finalPayment.cellPhoneNumber ?: EMPTY,
+               finalPayment.homePhoneNumber ?: EMPTY
             )
          }
 

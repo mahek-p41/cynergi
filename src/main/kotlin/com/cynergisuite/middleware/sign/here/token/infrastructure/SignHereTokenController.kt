@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.sign.here.token.infrastructure
 
 import com.cynergisuite.domain.Page
+import com.cynergisuite.extensions.toUuid
 import com.cynergisuite.middleware.company.CompanyService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationException
@@ -114,7 +115,7 @@ class SignHereTokenController(
    ): SignHereTokenDTO {
       logger.info("Requested Create Agreement Signing record {}", dto)
 
-      val company = companyService.fetchOne(dto.company!!.id!!)
+      val company = companyService.fetchOne(dto.company!!.id!!.toUuid()!!)
 
       val response = signHereTokenService.create(dto = dto, company = company!!)
 
@@ -143,7 +144,7 @@ class SignHereTokenController(
    ): SignHereTokenDTO {
       logger.info("Requested Audit status change or note  {}", dto)
 
-      val company = companyService.fetchOne(dto.company!!.id!!)
+      val company = companyService.fetchOne(dto.company!!.id!!.toUuid()!!)
 
       val response = signHereTokenService.update(dto, company = company!!)
 

@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.company
 
+import com.cynergisuite.extensions.toUuid
 import com.cynergisuite.middleware.address.AddressEntity
 import io.micronaut.core.annotation.Introspected
 import io.micronaut.data.annotation.GeneratedValue
@@ -45,7 +46,7 @@ data class CompanyEntity(
 
    constructor(companyDTO: CompanyDTO) :
       this (
-         id = companyDTO.id,
+         id = companyDTO.id.toUuid(),
          name = companyDTO.name!!,
          doingBusinessAs = companyDTO.doingBusinessAs,
          clientCode = companyDTO.clientCode!!,

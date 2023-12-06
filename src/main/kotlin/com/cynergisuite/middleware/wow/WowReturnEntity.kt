@@ -36,5 +36,7 @@ class WowReturnEntity(
    val actveAgreement: String?,
    val paymentTerms: String?,
    val dateClosed: LocalDate?,
-   val closedReason: Int?
+   val closedReason: Int?,
+   val cellPhoneNumber: String?,
+   val homePhoneNumber: String?
 )
