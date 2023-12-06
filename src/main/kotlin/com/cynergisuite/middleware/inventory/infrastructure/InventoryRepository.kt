@@ -370,22 +370,22 @@ class InventoryRepository(
 
       if (filterRequest.serialNbr != null) {
          params["serialNbr"] = filterRequest.serialNbr
-         whereClause.append(" AND inv.serial_number = :serialNbr ")
+         whereClause.append(" AND inv.serial_number ILIKE \'${filterRequest.serialNbr!!.trim().uppercase()}%\'")
       }
 
       if (filterRequest.modelNbr != null) {
          params["modelNbr"] = filterRequest.modelNbr
-         whereClause.append(" AND inv.model_number = :modelNbr ")
+         whereClause.append(" AND inv.model_number ILIKE \'${filterRequest.modelNbr!!.trim().uppercase()}%\'")
       }
 
       if (filterRequest.poNbr != null) {
-         params["poNbr"] = filterRequest.poNbr
+         params["poNbr"] = filterRequest.poNbr!!.uppercase()
          whereClause.append(" AND inv.inv_purchase_order_number = :poNbr ")
       }
 
       if (filterRequest.invoiceNbr != null) {
-         params["invoiceNbr"] = filterRequest.invoiceNbr
-         whereClause.append(" AND inv.invoice_number = :invoiceNbr ")
+         params["invoiceNbr"] = filterRequest.invoiceNbr!!.uppercase()
+         whereClause.append(" AND inv.invoice_number ILIKE \'${filterRequest.invoiceNbr!!.trim().uppercase()}%\'")
       }
 
       if (filterRequest.receivedDate != null) {
@@ -394,8 +394,8 @@ class InventoryRepository(
       }
 
       if (filterRequest.beginAltId != null && filterRequest.endAltId != null) {
-         params["beginAltId"] = filterRequest.beginAltId
-         params["endAltId"] = filterRequest.endAltId
+         params["beginAltId"] = filterRequest.beginAltId!!.uppercase()
+         params["endAltId"] = filterRequest.endAltId!!.uppercase()
          whereClause.append(" AND inv.alt_id BETWEEN :beginAltId AND :endAltId ")
       }
 
