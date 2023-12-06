@@ -7,6 +7,7 @@ import com.cynergisuite.middleware.authentication.user.SecurityType
 import com.cynergisuite.middleware.authentication.user.infrastructure.SecurityGroupRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
+import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.util.UUID
@@ -14,11 +15,13 @@ import javax.transaction.Transactional
 
 @Singleton
 class SecurityService @Inject constructor(
-   private val securityGroupRepository: SecurityGroupRepository
+   private val securityGroupRepository: SecurityGroupRepository,
+   private val employeeRepository: EmployeeRepository
 ) {
 
    fun findByEmployee(id: Long, company: CompanyEntity): List<SecurityGroupDTO> {
-      val securityGroupList = securityGroupRepository.findByEmployee(id, company.id!!)
+      val employee = employeeRepository.findOne(id, company)
+      val securityGroupList = securityGroupRepository.findByEmployee(id, employee!!.number, company.id!!,)
 
       return securityGroupList.map {
          SecurityGroupDTO(it)

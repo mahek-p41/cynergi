@@ -523,8 +523,9 @@ class AuditExceptionRepository @Inject constructor(
 
    private fun mapEmployeeNotNull(rs: ResultSet, address: AddressEntity?, columnPrefix: String): EmployeeEntity {
       val employeeId = rs.getLong("${columnPrefix}id")
+      val employeeNumber = rs.getInt("${columnPrefix}number")
       val company = mapCompany(rs, address)
-      val securityGroups = securityGroupRepository.findByEmployee(employeeId, company.id!!)
+      val securityGroups = securityGroupRepository.findByEmployee(employeeId, employeeNumber, company.id!!)
       return EmployeeEntity(
          id = rs.getLong("${columnPrefix}id"),
          type = rs.getString("${columnPrefix}type"),
