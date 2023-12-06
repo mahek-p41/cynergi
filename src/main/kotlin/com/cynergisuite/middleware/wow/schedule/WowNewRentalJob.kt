@@ -38,7 +38,7 @@ class WowNewRentalJob @Inject constructor(
       Files.newBufferedWriter(newRentalsTempPath).use { writer ->
          val newRentalsCsv = CSVPrinter(writer, CSVFormat.EXCEL)
 
-         newRentalsCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay", "ActiveAgreement", "PaymentTerms")
+         newRentalsCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay", "ActiveAgreement", "PaymentTerms","CellNumber","HomeNumber")
 
          wowRepository.findnewRentals(company).forEach { newRentals ->
             newRentalsCsv.printRecord(
@@ -70,7 +70,9 @@ class WowNewRentalJob @Inject constructor(
                newRentals.clubFee ?: EMPTY,
                newRentals.autopay ?: EMPTY,
                newRentals.actveAgreement ?: EMPTY,
-               newRentals.paymentTerms ?: EMPTY
+               newRentals.paymentTerms ?: EMPTY,
+               newRentals.cellPhoneNumber ?: EMPTY,
+               newRentals.homePhoneNumber ?: EMPTY
             )
          }
 

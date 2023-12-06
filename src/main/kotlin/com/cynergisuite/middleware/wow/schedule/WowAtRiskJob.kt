@@ -38,7 +38,7 @@ class WowAtRiskJob @Inject constructor(
       Files.newBufferedWriter(atRiskTempPath).use { writer ->
          val atRiskCsv = CSVPrinter(writer, CSVFormat.EXCEL)
 
-         atRiskCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay", "ActiveAgreement", "PaymentTerms")
+         atRiskCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay", "ActiveAgreement", "PaymentTerms","CellNumber","HomeNumber")
 
          wowRepository.findAtRisk(company).forEach { atRisk ->
             atRiskCsv.printRecord(
@@ -70,7 +70,9 @@ class WowAtRiskJob @Inject constructor(
                atRisk.clubFee ?: EMPTY,
                atRisk.autopay ?: EMPTY,
                atRisk.actveAgreement ?: EMPTY,
-               atRisk.paymentTerms ?: EMPTY
+               atRisk.paymentTerms ?: EMPTY,
+               atRisk.cellPhoneNumber ?: EMPTY,
+               atRisk.homePhoneNumber ?: EMPTY
             )
          }
 

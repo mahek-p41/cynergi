@@ -38,7 +38,7 @@ class WowPayoutJob @Inject constructor(
       Files.newBufferedWriter(payoutsTempPath).use { writer ->
          val payoutsCsv = CSVPrinter(writer, CSVFormat.EXCEL)
 
-         payoutsCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay", "ActiveAgreement","PaymentTerms","DateClosed","ClosedReason")
+         payoutsCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay", "ActiveAgreement","PaymentTerms","DateClosed","ClosedReason", "CellNumber","HomeNumber")
 
          wowRepository.findPayouts(company).forEach { payouts ->
             payoutsCsv.printRecord(
@@ -72,7 +72,9 @@ class WowPayoutJob @Inject constructor(
                payouts.actveAgreement ?: EMPTY,
                payouts.paymentTerms ?: EMPTY,
                payouts.dateClosed ?: EMPTY,
-               payouts.closedReason?: EMPTY
+               payouts.closedReason ?: EMPTY,
+               payouts.cellPhoneNumber ?: EMPTY,
+               payouts.homePhoneNumber ?: EMPTY
             )
          }
 
