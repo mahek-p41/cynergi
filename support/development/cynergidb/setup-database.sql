@@ -1143,8 +1143,9 @@ BEGIN
                            then 1
                           	else
                               CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0))
-                           end)as payments_remaining
-
+                           end)as payments_remaining,
+                      customers.cust_cell_phone        AS cell_phone_number,
+                      customers.cust_home_phone        AS home_phone_number
                     FROM ' || r.schema_name || '.level2_agreements as agreements
                     JOIN
                       ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
@@ -1213,7 +1214,9 @@ BEGIN
             agreements.agreement_number      AS agreement_number,
             models.itemfile_desc_1 AS product,
             agreement_versions.agreement_closed_date
-                                             AS payout_date
+                                             AS payout_date,
+            customers.cust_cell_phone        AS cell_phone_number,
+            customers.cust_home_phone        AS home_phone_number
          FROM ' || r.schema_name || '.level2_agreements as agreements
             JOIN
             ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
@@ -1234,7 +1237,7 @@ BEGIN
             and agreement_versions.agreement_closed_date = current_date -1
          GROUP BY
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,
-            customers.cust_email_address,agreements.agreement_number,agreement_closed_date, product
+            customers.cust_email_address,agreements.agreement_number,agreement_closed_date, product, customers.cust_cell_phone, customers.cust_home_phone
          ';
 
       unionAll := ' UNION ALL ';
@@ -1299,7 +1302,9 @@ BEGIN
                              else 0
                              end)
                        end)AS NUMERIC(11,2))::VARCHAR AS overdue_amount,
-         models.itemfile_desc_1 AS product
+         models.itemfile_desc_1 AS product,
+         customers.cust_cell_phone        AS cell_phone_number,
+         customers.cust_home_phone        AS home_phone_number
          FROM ' || r.schema_name || '.level2_agreements as agreements
             JOIN
             ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
@@ -1357,7 +1362,9 @@ BEGIN
             customers.cust_first_name_mi     AS first_name,
             customers.cust_last_name         AS last_name,
             customers.cust_email_address     AS email,
-            customers.cust_birth_date        AS birth_day
+            customers.cust_birth_date        AS birth_day,
+            customers.cust_cell_phone        AS cell_phone_number,
+            customers.cust_home_phone        AS home_phone_number
          FROM ' || r.schema_name || '.level2_agreements as agreements
             JOIN
             ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
@@ -1514,7 +1521,9 @@ BEGIN
                          			  where ag23.agreement_type = ''F'' and av2.agreement_open_flag = ''Y'' and ag23.customer_id = customers.id) as club_fee,
 
              agreement_versions.agreement_recur_pmt_switch as autopay,
-             agreement_versions.agreement_payment_terms  AS payment_terms
+             agreement_versions.agreement_payment_terms  AS payment_terms,
+             customers.cust_cell_phone        AS cell_phone_number,
+             customers.cust_home_phone        AS home_phone_number
          FROM ' || r.schema_name || '.level2_agreements as agreements
             JOIN
             ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
@@ -1690,7 +1699,9 @@ BEGIN
              agreement_versions.agreement_open_flag as active_agreement,
              agreement_versions.agreement_payment_terms as payment_terms,
              agreement_versions.agreement_closed_date as date_closed,
-             agreement_versions.agreement_closed_reason as closed_reason
+             agreement_versions.agreement_closed_reason as closed_reason,
+             customers.cust_cell_phone        AS cell_phone_number,
+             customers.cust_home_phone        AS home_phone_number
          FROM ' || r.schema_name || '.level2_agreements as agreements
             JOIN
             ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
@@ -1864,7 +1875,9 @@ BEGIN
 
              agreement_versions.agreement_recur_pmt_switch as autopay,
              agreement_versions.agreement_open_flag as active_agreement,
-             agreement_versions.agreement_payment_terms as payment_terms
+             agreement_versions.agreement_payment_terms as payment_terms,
+             customers.cust_cell_phone        AS cell_phone_number,
+             customers.cust_home_phone        AS home_phone_number
          FROM ' || r.schema_name || '.level2_agreements as agreements
             JOIN
             ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
@@ -2041,7 +2054,9 @@ BEGIN
              agreement_versions.agreement_open_flag as active_agreement,
              agreement_versions.agreement_payment_terms as payment_terms,
              agreement_versions.agreement_closed_date as date_closed,
-             agreement_versions.agreement_closed_reason as closed_reason
+             agreement_versions.agreement_closed_reason as closed_reason,
+             customers.cust_cell_phone        AS cell_phone_number,
+             customers.cust_home_phone        AS home_phone_number
          FROM ' || r.schema_name || '.level2_agreements as agreements
             JOIN
             ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
@@ -2219,7 +2234,9 @@ BEGIN
              agreement_versions.agreement_open_flag as active_agreement,
              agreement_versions.agreement_payment_terms as payment_terms,
              agreement_versions.agreement_closed_date as date_closed,
-             agreement_versions.agreement_closed_reason as closed_reason
+             agreement_versions.agreement_closed_reason as closed_reason,
+             customers.cust_cell_phone        AS cell_phone_number,
+             customers.cust_home_phone        AS home_phone_number
          FROM ' || r.schema_name || '.level2_agreements as agreements
             JOIN
             ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
@@ -2402,7 +2419,9 @@ BEGIN
 
              agreement_versions.agreement_recur_pmt_switch as autopay,
              agreement_versions.agreement_open_flag as active_agreement,
-             agreement_versions.agreement_payment_terms as payment_terms
+             agreement_versions.agreement_payment_terms as payment_terms,
+             customers.cust_cell_phone        AS cell_phone_number,
+             customers.cust_home_phone        AS home_phone_number
          FROM ' || r.schema_name || '.level2_agreements as agreements
             JOIN
             ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
@@ -2577,7 +2596,9 @@ BEGIN
 
              agreement_versions.agreement_recur_pmt_switch as autopay,
              agreement_versions.agreement_open_flag as active_agreement,
-             agreement_versions.agreement_payment_terms as payment_terms
+             agreement_versions.agreement_payment_terms as payment_terms,
+             customers.cust_cell_phone        AS cell_phone_number,
+             customers.cust_home_phone        AS home_phone_number
          FROM ' || r.schema_name || '.level2_agreements as agreements
             JOIN
             ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
@@ -2963,7 +2984,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_inactive_customer_vw (
      agreement_number VARCHAR,
      product VARCHAR,
      description VARCHAR,
-     payments_remaining INTEGER
+     payments_remaining INTEGER,
+     cell_phone_number VARCHAR,
+     home_phone_number VARCHAR
   ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_single_agreement_vw', SCHEMA_NAME 'public');
 
  CREATE FOREIGN TABLE fastinfo_prod_import.csv_final_payment_vw (
@@ -2975,7 +2998,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_inactive_customer_vw (
        email VARCHAR,
        agreement_number VARCHAR,
        product VARCHAR,
-       payout_date DATE
+       payout_date DATE,
+       cell_phone_number VARCHAR,
+       home_phone_number VARCHAR
     ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_final_payment_vw', SCHEMA_NAME 'public');
 
 
@@ -2986,7 +3011,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_birthday_customer_v2_vw (
    first_name VARCHAR,
    last_name VARCHAR,
    email VARCHAR,
-   birth_day DATE
+   birth_day DATE,
+   cell_phone_number VARCHAR,
+   home_phone_number VARCHAR
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_birthday_customer_v2_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_v2_vw (
@@ -2999,7 +3026,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_v2_vw (
        agreement_number VARCHAR,
        days_overdue INTEGER,
        overdue_amount NUMERIC,
-       product VARCHAR
+       product VARCHAR,
+       cell_phone_number VARCHAR,
+       home_phone_number VARCHAR
     ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_collection_v2_vw', SCHEMA_NAME 'public');
 
 
@@ -3033,7 +3062,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_v2_vw (
        club_number VARCHAR,
        club_fee NUMERIC,
        autopay VARCHAR,
-       payment_terms VARCHAR
+       payment_terms VARCHAR,
+       cell_phone_number VARCHAR,
+       home_phone_number VARCHAR
   ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_account_summary_vw', SCHEMA_NAME 'public');
 
 
@@ -3070,7 +3101,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_all_rto_agreements_vw (
        active_agreement VARCHAR,
        payment_terms VARCHAR,
        date_closed DATE,
-       closed_reason INTEGER
+       closed_reason INTEGER,
+       cell_phone_number VARCHAR,
+       home_phone_number VARCHAR
   ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_all_rto_agreements_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_new_rentals_vw (
@@ -3104,7 +3137,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_new_rentals_vw (
        club_fee NUMERIC,
        autopay VARCHAR,
        active_agreement VARCHAR,
-       payment_terms VARCHAR
+       payment_terms VARCHAR,
+       cell_phone_number VARCHAR,
+       home_phone_number VARCHAR
   ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_new_rentals_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_returns_vw (
@@ -3140,7 +3175,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_returns_vw (
        active_agreement VARCHAR,
        payment_terms VARCHAR,
        date_closed DATE,
-       closed_reason INTEGER
+       closed_reason INTEGER,
+       cell_phone_number VARCHAR,
+       home_phone_number VARCHAR
   ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_returns_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_lost_customer_vw (
@@ -3176,7 +3213,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_lost_customer_vw (
        active_agreement VARCHAR,
        payment_terms VARCHAR,
        date_closed DATE,
-       closed_reason INTEGER
+       closed_reason INTEGER,
+       cell_phone_number VARCHAR,
+       home_phone_number VARCHAR
   ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_lost_customer_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_payouts_vw (
@@ -3212,7 +3251,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_payouts_vw (
        active_agreement VARCHAR,
        payment_terms VARCHAR,
        date_closed DATE,
-       closed_reason INTEGER
+       closed_reason INTEGER,
+       cell_phone_number VARCHAR,
+       home_phone_number VARCHAR
   ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_payouts_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_at_risk_vw (
@@ -3246,7 +3287,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_at_risk_vw (
        club_fee NUMERIC,
        autopay VARCHAR,
        active_agreement VARCHAR,
-       payment_terms VARCHAR
+       payment_terms VARCHAR,
+       cell_phone_number VARCHAR,
+       home_phone_number VARCHAR
   ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_at_risk_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_payouts_next_30_vw (
@@ -3280,7 +3323,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_payouts_next_30_vw (
        club_fee NUMERIC,
        autopay VARCHAR,
        active_agreement VARCHAR,
-       payment_terms VARCHAR
+       payment_terms VARCHAR,
+       cell_phone_number VARCHAR,
+       home_phone_number VARCHAR
   ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_payouts_next_30_vw', SCHEMA_NAME 'public');
 
 GRANT USAGE ON SCHEMA fastinfo_prod_import TO cynergiuser;

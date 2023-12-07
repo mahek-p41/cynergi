@@ -38,7 +38,7 @@ class WowSingleAgreementJob @Inject constructor(
       Files.newBufferedWriter(singleAgreementTempPath).use { writer ->
          val singleAgreementCsv = CSVPrinter(writer, CSVFormat.EXCEL)
 
-         singleAgreementCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "Product", "Description", "PaymentsRemaining")
+         singleAgreementCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "Product", "Description", "PaymentsRemaining","CellNumber","HomeNumber")
 
          wowRepository.findSingleAgreement(company).forEach { singleAgreement ->
             singleAgreementCsv.printRecord(
@@ -50,7 +50,9 @@ class WowSingleAgreementJob @Inject constructor(
                singleAgreement.agreementNumber,
                singleAgreement.product ?: EMPTY,
                singleAgreement.description ?: EMPTY,
-               singleAgreement.paymentsRemaining
+               singleAgreement.paymentsRemaining,
+               singleAgreement.cellPhoneNumber ?: EMPTY,
+               singleAgreement.homePhoneNumber ?: EMPTY
             )
          }
 

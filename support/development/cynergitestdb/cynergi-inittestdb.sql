@@ -311,7 +311,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_active_inventory_vw (
      agreement_number VARCHAR,
      product VARCHAR,
      description VARCHAR,
-     payments_remaining INTEGER
+     payments_remaining INTEGER,
+     cell_phone_number VARCHAR,
+     home_phone_number VARCHAR
   ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-single-agreement.csv', format 'csv', header 'TRUE');
 
  CREATE FOREIGN TABLE fastinfo_prod_import.csv_final_payment_vw (
@@ -323,7 +325,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_active_inventory_vw (
        email VARCHAR,
        agreement_number VARCHAR,
        product VARCHAR,
-       payout_date DATE
+       payout_date DATE,
+       cell_phone_number VARCHAR,
+       home_phone_number VARCHAR
     ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-final-payment.csv', format 'csv', header 'TRUE');
 
 
@@ -334,7 +338,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_birthday_customer_v2_vw (
    first_name VARCHAR,
    last_name VARCHAR,
    email VARCHAR,
-   birth_day DATE
+   birth_day DATE,
+   cell_phone_number VARCHAR,
+   home_phone_number VARCHAR
 ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-birthday-customer-v2.csv', format 'csv', header 'TRUE');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_v2_vw (
@@ -347,7 +353,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_v2_vw (
        agreement_number VARCHAR,
        days_overdue INTEGER,
        overdue_amount NUMERIC,
-       product VARCHAR
+       product VARCHAR,
+       cell_phone_number VARCHAR,
+       home_phone_number VARCHAR
     ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-collection-v2.csv', format 'csv', header 'TRUE');
 
  CREATE FOREIGN TABLE fastinfo_prod_import.csv_account_summary_vw (
@@ -380,7 +388,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_v2_vw (
        club_number VARCHAR,
        club_fee NUMERIC,
        autopay VARCHAR,
-       payment_terms VARCHAR
+       payment_terms VARCHAR,
+       cell_phone_number VARCHAR,
+       home_phone_number VARCHAR
   ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-account-summary.csv', format 'csv', header 'TRUE');
 
   CREATE FOREIGN TABLE fastinfo_prod_import.csv_all_rto_agreements_vw (
@@ -416,7 +426,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_v2_vw (
          active_agreement CHAR,
          payment_terms VARCHAR,
          date_closed DATE,
-         closed_reason INTEGER
+         closed_reason INTEGER,
+         cell_phone_number VARCHAR,
+         home_phone_number VARCHAR
     ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-all-rto-agreements.csv', format 'csv', header 'TRUE');
 
   CREATE FOREIGN TABLE fastinfo_prod_import.csv_new_rentals_vw (
@@ -450,7 +462,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_v2_vw (
            club_fee NUMERIC,
            autopay VARCHAR,
            active_agreement CHAR,
-           payment_terms VARCHAR
+           payment_terms VARCHAR,
+           cell_phone_number VARCHAR,
+           home_phone_number VARCHAR
  ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-new-rentals.csv', format 'csv', header 'TRUE');
 
  CREATE FOREIGN TABLE fastinfo_prod_import.csv_returns_vw (
@@ -486,7 +500,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_v2_vw (
              active_agreement CHAR,
              payment_terms VARCHAR,
              date_closed DATE,
-             closed_reason INTEGER
+             closed_reason INTEGER,
+             cell_phone_number VARCHAR,
+             home_phone_number VARCHAR
    ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-returns.csv', format 'csv', header 'TRUE');
 
 
@@ -523,7 +539,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_v2_vw (
             active_agreement CHAR,
             payment_terms VARCHAR,
             date_closed DATE,
-            closed_reason INTEGER
+            closed_reason INTEGER,
+            cell_phone_number VARCHAR,
+            home_phone_number VARCHAR
   ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-lost-customer.csv', format 'csv', header 'TRUE');
 
   CREATE FOREIGN TABLE fastinfo_prod_import.csv_payouts_vw (
@@ -559,7 +577,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_v2_vw (
               active_agreement CHAR,
               payment_terms VARCHAR,
               date_closed DATE,
-              closed_reason INTEGER
+              closed_reason INTEGER,
+              cell_phone_number VARCHAR,
+              home_phone_number VARCHAR
     ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-payouts.csv', format 'csv', header 'TRUE');
 
     CREATE FOREIGN TABLE fastinfo_prod_import.csv_at_risk_vw (
@@ -593,7 +613,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_v2_vw (
                   club_fee NUMERIC,
                   autopay VARCHAR,
                   active_agreement CHAR,
-                  payment_terms VARCHAR
+                  payment_terms VARCHAR,
+                  cell_phone_number VARCHAR,
+                  home_phone_number VARCHAR
         ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-at-risk.csv', format 'csv', header 'TRUE');
 
     CREATE FOREIGN TABLE fastinfo_prod_import.csv_payouts_next_30_vw (
@@ -627,7 +649,9 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_collection_v2_vw (
                  club_fee NUMERIC,
                  autopay VARCHAR,
                  active_agreement CHAR,
-                 payment_terms VARCHAR
+                 payment_terms VARCHAR,
+                 cell_phone_number VARCHAR,
+                 home_phone_number VARCHAR
       ) SERVER fastinfo OPTIONS(filename '/tmp/fastinfo/test-csv-payouts-next-30.csv', format 'csv', header 'TRUE');
 
 CREATE TABLE fastinfo_prod_import.itemfile_vw(

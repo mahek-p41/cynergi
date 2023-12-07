@@ -10,5 +10,7 @@ class WowBirthdayEntity(
    val firstName: String?,
    val lastName: String?,
    val email: String?,
-   val birthDay: LocalDate?
+   val birthDay: LocalDate?,
+   val cellPhoneNumber: String?,
+   val homePhoneNumber: String?
 )

@@ -38,7 +38,7 @@ class WowCollectionJob @Inject constructor(
       Files.newBufferedWriter(wowcollectionTempPath).use { writer ->
          val wowcollectionCsv = CSVPrinter(writer, EXCEL)
 
-         wowcollectionCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DaysOverdue", "OverdueAmount", "Product")
+         wowcollectionCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DaysOverdue", "OverdueAmount", "Product", "CellNumber","HomeNumber")
 
          wowRepository.findWowCollections(company).forEach { wowcollection ->
             wowcollectionCsv.printRecord(
@@ -50,7 +50,9 @@ class WowCollectionJob @Inject constructor(
                wowcollection.agreementNumber,
                wowcollection.daysOverdue,
                wowcollection.overdueAmount,
-               wowcollection.product
+               wowcollection.product,
+               wowcollection.cellPhoneNumber,
+               wowcollection.homePhoneNumber
             )
          }
 
