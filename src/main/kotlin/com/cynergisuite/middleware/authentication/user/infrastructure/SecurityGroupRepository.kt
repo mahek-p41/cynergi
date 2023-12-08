@@ -33,7 +33,8 @@ class SecurityGroupRepository @Inject constructor(
             secgrp.value                                                       AS secgrp_value,
             secgrp.description                                                 AS secgrp_description,
             secgrp.company_id                                                  AS secgrp_company_id,
-            empSecGrp.employee_id_sfk										             AS secgrp_emp_id
+            empSecGrp.employee_id_sfk										             AS secgrp_emp_id,
+            empSecGrp.emp_number                                               AS secgrp_emp_number
          FROM security_group secgrp
             LEFT JOIN employee_to_security_group empSecGrp ON secgrp.id = empSecGrp.security_group_id AND empSecGrp.deleted = FALSE
             JOIN company comp on secgrp.company_id = comp.id
@@ -69,8 +70,8 @@ class SecurityGroupRepository @Inject constructor(
     }
 
    @ReadOnly
-   fun findByEmployee(employeeId: Long, companyId: UUID): List<SecurityGroup> =
-      jdbc.query("${selectBaseQuery()} WHERE comp.id = :comp_id AND empSecGrp.employee_id_sfk = :id AND secgrp.deleted = FALSE", mapOf("id" to employeeId, "comp_id" to companyId)) { rs, _ -> mapRow(rs, "secgrp_") }
+   fun findByEmployee(employeeId: Long, employeeNumber: Int, companyId: UUID): List<SecurityGroup> =
+      jdbc.query("${selectBaseQuery()} WHERE comp.id = :comp_id AND empSecGrp.employee_id_sfk = :id AND secgrp.deleted = FALSE and empSecGrp.emp_number = :emp_number", mapOf("id" to employeeId, "emp_number" to employeeNumber, "comp_id" to companyId)) { rs, _ -> mapRow(rs, "secgrp_") }
 
 
    @ReadOnly
