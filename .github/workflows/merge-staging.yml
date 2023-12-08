@@ -12,6 +12,7 @@ jobs:
       with:
         fetch-depth: 0
         show-progress: false
+        token: ${{ secrets.READONLY_HTI_PAT }}
 
     - name: Prepare Inputs
       shell: bash
