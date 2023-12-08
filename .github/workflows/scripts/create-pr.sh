@@ -137,7 +137,7 @@ if [[ -z "${TITLE}" ]]; then
   exit 1
 fi
 if [[ -z "${SYNC_BRANCH}" ]]; then
-  SYNC_BRANCH="sync/merge-${HEAD_BRANCH}-to-${BASE_BRANCH}"
+  SYNC_BRANCH="sync/${BASE_BRANCH}.merge-${HEAD_BRANCH}-to-${BASE_BRANCH}"
 fi
 
 commits=$(git log "origin/${HEAD_BRANCH}" "^origin/${BASE_BRANCH}")
