@@ -19,13 +19,15 @@ import org.apache.commons.csv.CSVPrinter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.zeroturnaround.exec.ProcessExecutor
+import java.math.RoundingMode
 
 
 @Singleton
 class VendorPaymentTermService @Inject constructor(
    private val vendorPaymentTermRepository: VendorPaymentTermRepository,
    private val vendorPaymentTermValidator: VendorPaymentTermValidator,
-   @Value("\${cynergi.process.update.isam.vendterm}") private val processUpdateIsamVendterm: Boolean
+   @Value("\${cynergi.process.update.isam.vendterm}") private val processUpdateIsamVendterm: Boolean,
+   @Value("\${cynergi.process.update.isam.script.directory}") private val scriptDirectory: String
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountService::class.java)
 
@@ -80,7 +82,7 @@ class VendorPaymentTermService @Inject constructor(
       var csvPrinter: CSVPrinter? = null
       val discountMonth: String = if (vendterm.discountMonth != null) { vendterm.discountMonth.toString() } else { "0" }
       val discountDays: String = if (vendterm.discountDays != null) { vendterm.discountDays.toString() } else { "0" }
-      val discountPercent: String = if (vendterm.discountPercent != null) { vendterm.discountPercent.toString() } else { "0" }
+      val discountPercent: String = if (vendterm.discountPercent != null) { vendterm.discountPercent.setScale(2, RoundingMode.HALF_UP ).toString() } else { "0" }
       var due_month_1: Int = 0
       var due_days_1: Int = 0
       var due_percent_1: BigDecimal = BigDecimal.ZERO
@@ -262,7 +264,7 @@ class VendorPaymentTermService @Inject constructor(
             fileWriter.close()
             csvPrinter!!.close()
             val processExecutor: ProcessExecutor = ProcessExecutor()
-               .command("/bin/bash", "/usr/bin/ht.updt_isam_vendterm.sh", fileName.canonicalPath, dataset)
+               .command("/bin/bash", "$scriptDirectory/ht.updt_isam_vendterm.sh", fileName.canonicalPath, dataset)
                .exitValueNormal()
                .timeout(5, TimeUnit.SECONDS)
                .readOutput(true)

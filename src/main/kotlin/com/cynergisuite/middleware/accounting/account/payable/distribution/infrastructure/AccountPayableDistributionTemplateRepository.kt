@@ -73,7 +73,7 @@ class AccountPayableDistributionTemplateRepository @Inject constructor(
             p.*,
             count(*) OVER() as total_elements
          FROM paged AS p
-         ORDER by apDist_${page.snakeSortBy()} ${page.sortDirection()}
+         ORDER by apDist_name ${page.sortDirection()}
          LIMIT :limit OFFSET :offset
          """,
          mapOf(

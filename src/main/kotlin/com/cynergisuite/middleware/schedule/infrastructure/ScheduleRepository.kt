@@ -9,6 +9,7 @@ import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.schedule.ScheduleEntity
 import com.cynergisuite.middleware.schedule.argument.infrastructure.ScheduleArgumentRepository
 import com.cynergisuite.middleware.schedule.command.ScheduleCommandType
@@ -135,14 +136,13 @@ class ScheduleRepository @Inject constructor(
       var totalElement: Long? = null
       val elements = mutableListOf<ScheduleEntity>()
       var currentSchedule: ScheduleEntity? = null
-      var where = "WHERE comp.id = :comp_id AND sched.enabled = :sched_enabled"
+      var where = "WHERE comp.id = :comp_id "
       val whereClause = StringBuilder()
       val params = mutableMapOf<String, Any>(
          "limit" to pageRequest.size(),
          "offset" to pageRequest.offset(),
          "comp_id" to company.id!!,
          "schedule_arg_key" to scheduleArgKey,
-         "sched_enabled" to (pageRequest.enabled ?: true)
       )
 
       if (command != null) {
@@ -154,6 +154,11 @@ class ScheduleRepository @Inject constructor(
       if (type != null) {
          whereClause.append("$where AND schedType.value = :schedType_value")
          params["schedType_value"] = type.value
+      }
+
+      if (pageRequest.enabled != null) {
+         whereClause.append("$where AND sched.enabled = :sched_enabled")
+         params["sched_enabled"] = pageRequest.enabled!!
       }
 
       val sql =
@@ -370,6 +375,23 @@ class ScheduleRepository @Inject constructor(
             "command_ids" to commandTypes.map { it.id }
          )
       )
+   }
+
+   @Transactional
+   fun delete(id: UUID, company: CompanyEntity) {
+      logger.debug("Deleting Audit Schedule with id={}", id)
+
+      val deletedRows = jdbc.update(
+         """
+         DELETE FROM schedule
+         WHERE company_id = :company_id
+            AND id = :id
+         """,
+         mapOf("id" to id, "company_id" to company.id)
+      )
+      logger.info("Deleted rows {}", deletedRows)
+
+      if (deletedRows == 0) throw NotFoundException(id)
    }
 
    private fun mapRow(rs: ResultSet, entity: ScheduleEntity): ScheduleEntity =

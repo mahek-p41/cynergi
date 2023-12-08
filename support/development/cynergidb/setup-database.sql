@@ -346,6 +346,57 @@ DECLARE
    sqlToExec VARCHAR;
    unionAll VARCHAR;
 BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW product_class_master_file_vw AS
+                 SELECT *
+                 FROM (';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'product_class_master_file_vw') THEN
+      DROP VIEW product_class_master_file_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+            ''' || r.schema_name || '''::text                                           AS dataset,
+            prodcmst.prodcmst_class_code                                                AS class_code,
+            prodcmst.prodcmst_class_desc                                                AS class_description,
+            prodcmst.prodcmst_sl_bk_start_date                                          AS straight_line_book_depreciation_start_date,
+            prodcmst.prodcmst_sl_bk_end_date                                            AS straight_line_book_depreciation_end_date,
+            prodcmst.prodcmst_if_bk_start_date                                          AS income_forecasting_book_depreciation_start_date,
+            prodcmst.prodcmst_if_bk_end_date                                            AS income_forecasting_book_depreciation_end_date,
+            prodcmst.prodcmst_macrs_bk_start_date                                       AS macrs_book_start_date,
+            prodcmst.prodcmst_macrs_bk_end_date                                         AS macrs_book_end_date,
+            prodcmst.prodcmst_macrs_tax_start_date                                      AS macrs_tax_start_date,
+            prodcmst.prodcmst_macrs_tax_end_date                                        AS macrs_tax_end_date,
+            prodcmst.prodcmst_rent_sw                                                   AS rent_switch,
+            prodcmst.prodcmst_transition_into_sw                                        AS transition_into_switch,
+            prodcmst.prodcmst_transition_out_of_sw                                      AS transition_out_of_switch,
+            prodcmst.prodcmst_cash_sale_sw                                              AS cash_sale_switch,
+            prodcmst.prodcmst_allow_depr_sw                                             AS allow_depreciation_switch,
+            prodcmst.prodcmst_allow_sl_life_sw                                          AS allow_straight_line_life_switch,
+            prodcmst.created_at AT TIME ZONE ''UTC''                                    AS time_created,
+            prodcmst.updated_at AT TIME ZONE ''UTC''                                    AS time_updated
+         FROM ' || r.schema_name || '.level1_prodcmsts prodcmst
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || ' ) prodcmst';
+
+   EXECUTE sqlToExec;
+END $$;
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
    sqlToExec := 'CREATE OR REPLACE VIEW furncol_vw AS';
    unionAll := '';
 
@@ -2718,6 +2769,28 @@ CREATE FOREIGN TABLE fastinfo_prod_import.operator_vw (
     file_maintenance_security INTEGER,
     bank_reconciliation_security INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'operator_vw', SCHEMA_NAME 'public');
+
+CREATE FOREIGN TABLE fastinfo_prod_import.product_class_master_file_vw (
+    dataset VARCHAR,
+    class_code VARCHAR,
+    class_description VARCHAR,
+    straight_line_book_depreciation_start_date DATE,
+    straight_line_book_depreciation_end_date DATE,
+    income_forecasting_book_depreciation_start_date DATE,
+    income_forecasting_book_depreciation_end_date DATE,
+    macrs_book_start_date DATE,
+    macrs_book_end_date DATE,
+    macrs_tax_start_date DATE,
+    macrs_tax_end_date DATE,
+    rent_switch VARCHAR,
+    transition_into_switch VARCHAR,
+    transition_out_of_switch VARCHAR,
+    cash_sale_switch VARCHAR,
+    allow_depreciation_switch VARCHAR,
+    allow_straight_line_life_switch VARCHAR,
+    time_created TIMESTAMPTZ,
+    time_updated TIMESTAMPTZ
+) SERVER fastinfo OPTIONS (TABLE_NAME 'product_class_master_file_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.furncol_vw (
     id BIGINT,
