@@ -259,16 +259,15 @@ class SecurityGroupRepository @Inject constructor(
    }
 
    @Transactional
-   fun assignMultipleEmployeesToSingleSecurityGroup(securityGroupId: UUID, employees: List<EmployeeValueObject>) {
-
+   fun assignMultipleEmployeesToSingleSecurityGroup(securityGroupId: UUID, employees: List<EmployeeValueObject>?) {
       logger.trace("Assigning Employees {} to Security Group {}", employees, securityGroupId)
-      val employeeIdList = employees.map { it.id }
-      val employeeNumberIdPair: List<Pair<Long, Int>> = employees.map { Pair(it.id!!, it.number!!) }
-      if (employeeIdList.isEmpty()) {
+
+      val employeeNumberIdPair: List<Pair<Long, Int>>? = employees?.map { Pair(it.id!!, it.number!!) }
+      if (employees.isNullOrEmpty()) {
             jdbc.update(
                """
                DELETE FROM employee_to_security_group
-               WHERE security_group_id = :security_id
+               WHERE security_group_id = :security_group_id
 
             """.trimIndent(),
                mapOf(
@@ -276,7 +275,7 @@ class SecurityGroupRepository @Inject constructor(
                )
             )
          } else {
-         if (employeeNumberIdPair.isNotEmpty()) {
+         if (!employeeNumberIdPair.isNullOrEmpty()) {
             val subQuery = employeeNumberIdPair.joinToString(" UNION ") {
                "SELECT :id${it.first} AS employee_id, :number${it.second} AS emp_number"
             }
@@ -299,26 +298,26 @@ class SecurityGroupRepository @Inject constructor(
                """.trimIndent(),
                params + mapOf("security_group_id" to securityGroupId)
             )
-         }
-      }
-         employees.forEach { employee ->
-            val params = mapOf(
-               "employee_id" to employee.id,
-               "security_group_id" to securityGroupId,
-               "employee_number" to employee.number
-            )
-            jdbc.update(
-               """
+
+            employees.forEach { employee ->
+               val employeeParams = mapOf(
+                  "employee_id" to employee.id,
+                  "security_group_id" to securityGroupId,
+                  "employee_number" to employee.number
+               )
+               jdbc.update(
+                  """
                INSERT INTO employee_to_security_group (employee_id_sfk, security_group_id, emp_number)
                VALUES (:employee_id, :security_group_id, :employee_number)
                ON CONFLICT (security_group_id, employee_id_sfk, emp_number) DO NOTHING
                RETURNING
                *
             """.trimIndent(),
-               params
-            )
+                  employeeParams
+               )
+            }
          }
-
+      }
    }
 
 
