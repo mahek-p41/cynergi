@@ -1,3 +1,0 @@
-alter table security_group_to_security_access_point add constraint unique_security_group_access_point
-
-unique (security_group_id, security_access_point_id)

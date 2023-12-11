@@ -479,27 +479,27 @@ class GeneralLedgerSummaryRepository @Inject constructor(
          WHERE company_id = :comp_id
                AND overall_period_id = 1;
 
-         UPDATE public.general_ledger_summary
+         UPDATE general_ledger_summary
          SET overall_period_id = 1
          WHERE company_id = :comp_id
                AND overall_period_id in (2);
 
-         UPDATE public.general_ledger_summary
+         UPDATE general_ledger_summary
          SET overall_period_id = 2
          WHERE company_id = :comp_id
                AND overall_period_id in (3);
 
-         UPDATE public.general_ledger_summary
+         UPDATE general_ledger_summary
          SET overall_period_id = 3
          WHERE company_id = :comp_id
                AND overall_period_id in (4);
 
-         INSERT INTO public.general_ledger_summary(company_id, account_id, profit_center_id_sfk, overall_period_id)
+         INSERT INTO general_ledger_summary(company_id, account_id, profit_center_id_sfk, overall_period_id)
          SELECT company_id,
                 account_id,
                 profit_center_id_sfk,
                 4
-         FROM public.general_ledger_summary
+         FROM general_ledger_summary
          WHERE company_id = :comp_id
                AND overall_period_id = 3;
          """.trimIndent(),

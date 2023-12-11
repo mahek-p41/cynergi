@@ -188,4 +188,8 @@ class AuditScheduleService @Inject constructor(
 
       return AuditScheduleResult(audits, notifications)
    }
+
+   fun delete(id: UUID, myCompany: CompanyEntity) {
+      scheduleRepository.delete(id, myCompany)
+   }
 }

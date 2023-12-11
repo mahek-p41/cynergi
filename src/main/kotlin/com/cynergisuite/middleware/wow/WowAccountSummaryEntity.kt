@@ -32,5 +32,7 @@ class WowAccountSummaryEntity(
    val clubNumber: String?,
    val clubFee: String?,
    val autopay: String?,
-   val paymentTerms: String?
+   val paymentTerms: String?,
+   val cellPhoneNumber: String?,
+   val homePhoneNumber: String?
 )

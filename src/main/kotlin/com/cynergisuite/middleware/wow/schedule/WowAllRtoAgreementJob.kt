@@ -38,7 +38,7 @@ class WowAllRtoAgreementJob @Inject constructor(
       Files.newBufferedWriter(allRtoAgreementsTempPath).use { writer ->
          val allRtoAgreementsCsv = CSVPrinter(writer, CSVFormat.EXCEL)
 
-         allRtoAgreementsCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay", "ActiveAgreement", "PaymentTerms","DateClosed","ClosedReason")
+         allRtoAgreementsCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay", "ActiveAgreement", "PaymentTerms","DateClosed","ClosedReason", "CellNumber","HomeNumber")
 
          wowRepository.findAllRtoAgreements(company).forEach { allRtoAgreements ->
             allRtoAgreementsCsv.printRecord(
@@ -72,7 +72,9 @@ class WowAllRtoAgreementJob @Inject constructor(
                allRtoAgreements.actveAgreement ?: EMPTY,
                allRtoAgreements.paymentTerms ?: EMPTY,
                allRtoAgreements.dateClosed ?: EMPTY,
-               allRtoAgreements.closedReason
+               allRtoAgreements.closedReason,
+               allRtoAgreements.cellPhoneNumber ?: EMPTY,
+               allRtoAgreements.homePhoneNumber ?: EMPTY
             )
          }
 

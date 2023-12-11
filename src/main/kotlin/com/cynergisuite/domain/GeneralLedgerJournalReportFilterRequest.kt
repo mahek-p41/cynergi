@@ -5,11 +5,12 @@ import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
 import java.time.LocalDate
+import java.time.OffsetDateTime
 
 @Schema(
    name = "GeneralLedgerJournalFilterRequest",
    title = "Resulting list for filtering result",
-   description = "Defines the parameters available to for a sortable request. Example ?banks=1,3&status=P",
+   description = "Defines the parameters available to for a sortable request. Example ?banks=1,3&status=P&posted=true",
    allOf = [PageRequestBase::class]
 )
 class GeneralLedgerJournalReportFilterRequest(
@@ -42,9 +43,14 @@ class GeneralLedgerJournalReportFilterRequest(
    @field:Schema(name = "sortOption", description = "Sort option for general ledger journal")
    var sortOption: GeneralLedgerReportSortEnum? = null,
 
-   @field:Schema(name = "description", description = "List discription for general ledger journals")
-   var description: Boolean = false
+   @field:Schema(name = "description", description = "List description for general ledger journals")
+   var description: Boolean = false,
 
+   @field:Schema(name = "posted", description = "Fetch posted journals", defaultValue = "false")
+   var posted: Boolean = false,
+
+   @field:Schema(name = "postedTime", description = "Timestamp of journals posted request, required when posted=true")
+   var postedTime: OffsetDateTime? = null,
 
    ) : PageRequestBase<GeneralLedgerJournalReportFilterRequest>(page, size, sortBy, sortDirection) {
 
@@ -64,6 +70,8 @@ class GeneralLedgerJournalReportFilterRequest(
             .append(this.subtotal, other.subtotal)
             .append(this.sortOption, other.sortOption)
             .append(this.description, other.description)
+            .append(this.posted, other.posted)
+            .append(this.postedTime, other.postedTime)
             .isEquals
       } else {
          false
@@ -81,6 +89,8 @@ class GeneralLedgerJournalReportFilterRequest(
          .append(this.subtotal)
          .append(this.sortOption)
          .append(this.description)
+         .append(this.posted)
+         .append(this.postedTime)
          .toHashCode()
 
    override fun myCopyPage(page: Int, size: Int, sortBy: String, sortDirection: String): GeneralLedgerJournalReportFilterRequest =
@@ -97,7 +107,9 @@ class GeneralLedgerJournalReportFilterRequest(
          thruDate = this.thruDate,
          subtotal = this.subtotal,
          sortOption = this.sortOption,
-         description = this.description
+         description = this.description,
+         posted = this.posted,
+         postedTime = this.postedTime,
       )
 
    override fun myToStringValues(): List<Pair<String, Any?>> =
@@ -110,6 +122,8 @@ class GeneralLedgerJournalReportFilterRequest(
          "thruDate" to thruDate,
          "subtotal" to subtotal,
          "sortOption" to sortOption,
-         "description" to description
+         "description" to description,
+         "posted" to posted,
+         "postedTime" to postedTime,
       )
 }

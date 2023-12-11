@@ -70,7 +70,9 @@ class WowRepository @Inject constructor(
                agreement_number  AS agreementNumber,
                days_overdue      AS daysOverdue,
                overdue_amount    AS overdueAmount,
-               product           AS product
+               product           AS product,
+               cell_phone_number AS cellPhoneNumber,
+               home_phone_number AS homePhoneNumber
             FROM fastinfo_prod_import.csv_collection_v2_vw
                 WHERE dataset = :dataset
             """.trimIndent()
@@ -90,6 +92,8 @@ class WowRepository @Inject constructor(
                daysOverdue = rs.getInt("daysOverdue"),
                overdueAmount = rs.getString("overdueAmount"),
                product = rs.getString("product"),
+               cellPhoneNumber = rs.getString("cellPhoneNumber"),
+               homePhoneNumber = rs.getString("homePhoneNumber")
             )
          }.asSequence()
       }
@@ -109,7 +113,9 @@ class WowRepository @Inject constructor(
                agreement_number  AS agreementNumber,
                product           AS product,
                description       AS description,
-               payments_remaining AS paymentsRemaining
+               payments_remaining AS paymentsRemaining,
+               cell_phone_number AS cellPhoneNumber,
+               home_phone_number AS homePhoneNumber
             FROM fastinfo_prod_import.csv_single_agreement_vw
                WHERE dataset = :dataset
             """.trimIndent()
@@ -128,7 +134,9 @@ class WowRepository @Inject constructor(
                agreementNumber = rs.getString("agreementNumber"),
                product = rs.getString("product"),
                description = rs.getString("description"),
-               paymentsRemaining = rs.getString("paymentsRemaining")
+               paymentsRemaining = rs.getString("paymentsRemaining"),
+               cellPhoneNumber = rs.getString("cellPhoneNumber"),
+               homePhoneNumber = rs.getString("homePhoneNumber")
             )
          }.asSequence()
       }
@@ -147,7 +155,9 @@ class WowRepository @Inject constructor(
                email             AS email,
                agreement_number  AS agreementNumber,
                product           AS product,
-               payout_date       AS payoutDate
+               payout_date       AS payoutDate,
+               cell_phone_number AS cellPhoneNumber,
+               home_phone_number AS homePhoneNumber
             FROM fastinfo_prod_import.csv_final_payment_vw
                WHERE dataset = :dataset
             """.trimIndent()
@@ -165,7 +175,9 @@ class WowRepository @Inject constructor(
                email = rs.getString("email"),
                agreementNumber = rs.getString("agreementNumber"),
                product = rs.getString("product"),
-               payoutDate = rs.getLocalDateOrNull("payoutDate")
+               payoutDate = rs.getLocalDateOrNull("payoutDate"),
+               cellPhoneNumber = rs.getString("cellPhoneNumber"),
+               homePhoneNumber = rs.getString("homePhoneNumber")
             )
          }.asSequence()
       }
@@ -182,7 +194,9 @@ class WowRepository @Inject constructor(
                first_name        AS firstName,
                last_name         AS lastName,
                email             AS email,
-               birth_day         AS birthDay
+               birth_day         AS birthDay,
+               cell_phone_number AS cellPhoneNumber,
+               home_phone_number AS homePhoneNumber
             FROM fastinfo_prod_import.csv_birthday_customer_v2_vw
                WHERE dataset = :dataset
             """.trimIndent()
@@ -198,7 +212,9 @@ class WowRepository @Inject constructor(
                firstName = rs.getString("firstName"),
                lastName = rs.getString("lastName"),
                email = rs.getString("email"),
-               birthDay = rs.getLocalDateOrNull("birthDay")
+               birthDay = rs.getLocalDateOrNull("birthDay"),
+               cellPhoneNumber = rs.getString("cellPhoneNumber"),
+               homePhoneNumber = rs.getString("homePhoneNumber")
             )
          }.asSequence()
       }
@@ -237,7 +253,9 @@ class WowRepository @Inject constructor(
                club_number       AS clubNumber,
                club_fee          AS clubFee,
                autopay           AS autopay,
-               payment_terms     AS paymentTerms
+               payment_terms     AS paymentTerms,
+               cell_phone_number AS cellPhoneNumber,
+               home_phone_number AS homePhoneNumber
             FROM fastinfo_prod_import.csv_account_summary_vw
                WHERE dataset = :dataset
             """.trimIndent()
@@ -276,6 +294,8 @@ class WowRepository @Inject constructor(
                clubFee = rs.getString("clubFee"),
                autopay = rs.getString("autopay"),
                paymentTerms = rs.getString("paymentTerms"),
+               cellPhoneNumber = rs.getString("cellPhoneNumber"),
+               homePhoneNumber = rs.getString("homePhoneNumber")
             )
          }.asSequence()
       }
@@ -316,7 +336,9 @@ class WowRepository @Inject constructor(
                active_agreement  AS activeAgreement,
                payment_terms     AS paymentTerms,
                date_closed       AS dateClosed,
-               closed_reason     AS closedReason
+               closed_reason     AS closedReason,
+               cell_phone_number AS cellPhoneNumber,
+               home_phone_number AS homePhoneNumber
             FROM fastinfo_prod_import.csv_all_rto_agreements_vw
                WHERE dataset = :dataset
             """.trimIndent()
@@ -358,7 +380,9 @@ class WowRepository @Inject constructor(
                actveAgreement = rs.getString("activeAgreement"),
                paymentTerms = rs.getString("paymentTerms"),
                dateClosed = rs.getLocalDateOrNull("dateClosed"),
-               closedReason = rs.getInt("closedReason")
+               closedReason = rs.getInt("closedReason"),
+               cellPhoneNumber = rs.getString("cellPhoneNumber"),
+               homePhoneNumber = rs.getString("homePhoneNumber")
             )
          }.asSequence()
       }
@@ -398,7 +422,9 @@ class WowRepository @Inject constructor(
                club_fee          AS clubFee,
                autopay           AS autopay,
                active_agreement  AS activeAgreement,
-               payment_terms     AS paymentTerms
+               payment_terms     AS paymentTerms,
+               cell_phone_number AS cellPhoneNumber,
+               home_phone_number AS homePhoneNumber
             FROM fastinfo_prod_import.csv_new_rentals_vw
                WHERE dataset = :dataset
             """.trimIndent()
@@ -438,7 +464,9 @@ class WowRepository @Inject constructor(
                clubFee = rs.getString("clubFee"),
                autopay = rs.getString("autopay"),
                actveAgreement = rs.getString("activeAgreement"),
-               paymentTerms = rs.getString("paymentTerms")
+               paymentTerms = rs.getString("paymentTerms"),
+               cellPhoneNumber = rs.getString("cellPhoneNumber"),
+               homePhoneNumber = rs.getString("homePhoneNumber")
             )
          }.asSequence()
       }
@@ -481,7 +509,9 @@ class WowRepository @Inject constructor(
                active_agreement  AS activeAgreement,
                payment_terms     AS paymentTerms,
                date_closed       AS dateClosed,
-               closed_reason     AS closedReason
+               closed_reason     AS closedReason,
+               cell_phone_number AS cellPhoneNumber,
+               home_phone_number AS homePhoneNumber
             FROM fastinfo_prod_import.csv_returns_vw
                WHERE dataset = :dataset
             """.trimIndent()
@@ -523,7 +553,9 @@ class WowRepository @Inject constructor(
                actveAgreement = rs.getString("activeAgreement"),
                paymentTerms = rs.getString("paymentTerms"),
                dateClosed = rs.getLocalDateOrNull("dateClosed"),
-               closedReason = rs.getInt("closedReason")
+               closedReason = rs.getInt("closedReason"),
+               cellPhoneNumber = rs.getString("cellPhoneNumber"),
+               homePhoneNumber = rs.getString("homePhoneNumber")
             )
          }.asSequence()
       }
@@ -565,7 +597,9 @@ class WowRepository @Inject constructor(
                active_agreement  AS activeAgreement,
                payment_terms     AS paymentTerms,
                date_closed       AS dateClosed,
-               closed_reason     AS closedReason
+               closed_reason     AS closedReason,
+               cell_phone_number AS cellPhoneNumber,
+               home_phone_number AS homePhoneNumber
             FROM fastinfo_prod_import.csv_lost_customer_vw
                WHERE dataset = :dataset
             """.trimIndent()
@@ -607,7 +641,9 @@ class WowRepository @Inject constructor(
                actveAgreement = rs.getString("activeAgreement"),
                paymentTerms = rs.getString("paymentTerms"),
                dateClosed = rs.getLocalDateOrNull("dateClosed"),
-               closedReason = rs.getInt("closedReason")
+               closedReason = rs.getInt("closedReason"),
+               cellPhoneNumber = rs.getString("cellPhoneNumber"),
+               homePhoneNumber = rs.getString("homePhoneNumber")
             )
          }.asSequence()
       }
@@ -649,7 +685,9 @@ class WowRepository @Inject constructor(
                active_agreement  AS activeAgreement,
                payment_terms     AS paymentTerms,
                date_closed       AS dateClosed,
-               closed_reason     AS closedReason
+               closed_reason     AS closedReason,
+               cell_phone_number AS cellPhoneNumber,
+               home_phone_number AS homePhoneNumber
             FROM fastinfo_prod_import.csv_payouts_vw
                WHERE dataset = :dataset
             """.trimIndent()
@@ -691,7 +729,9 @@ class WowRepository @Inject constructor(
                actveAgreement = rs.getString("activeAgreement"),
                paymentTerms = rs.getString("paymentTerms"),
                dateClosed = rs.getLocalDateOrNull("dateClosed"),
-               closedReason = rs.getInt("closedReason")
+               closedReason = rs.getInt("closedReason"),
+               cellPhoneNumber = rs.getString("cellPhoneNumber"),
+               homePhoneNumber = rs.getString("homePhoneNumber")
             )
          }.asSequence()
       }
@@ -730,7 +770,9 @@ class WowRepository @Inject constructor(
                club_fee          AS clubFee,
                autopay           AS autopay,
                active_agreement  AS activeAgreement,
-               payment_terms     AS paymentTerms
+               payment_terms     AS paymentTerms,
+               cell_phone_number AS cellPhoneNumber,
+               home_phone_number AS homePhoneNumber
             FROM fastinfo_prod_import.csv_at_risk_vw
                WHERE dataset = :dataset
             """.trimIndent()
@@ -770,7 +812,9 @@ class WowRepository @Inject constructor(
                clubFee = rs.getString("clubFee"),
                autopay = rs.getString("autopay"),
                actveAgreement = rs.getString("activeAgreement"),
-               paymentTerms = rs.getString("paymentTerms")
+               paymentTerms = rs.getString("paymentTerms"),
+               cellPhoneNumber = rs.getString("cellPhoneNumber"),
+               homePhoneNumber = rs.getString("homePhoneNumber")
             )
          }.asSequence()
       }
@@ -809,7 +853,9 @@ class WowRepository @Inject constructor(
                club_fee          AS clubFee,
                autopay           AS autopay,
                active_agreement  AS activeAgreement,
-               payment_terms     AS paymentTerms
+               payment_terms     AS paymentTerms,
+               cell_phone_number AS cellPhoneNumber,
+               home_phone_number AS homePhoneNumber
             FROM fastinfo_prod_import.csv_payouts_next_30_vw
                WHERE dataset = :dataset
             """.trimIndent()
@@ -849,7 +895,9 @@ class WowRepository @Inject constructor(
                clubFee = rs.getString("clubFee"),
                autopay = rs.getString("autopay"),
                actveAgreement = rs.getString("activeAgreement"),
-               paymentTerms = rs.getString("paymentTerms")
+               paymentTerms = rs.getString("paymentTerms"),
+               cellPhoneNumber = rs.getString("cellPhoneNumber"),
+               homePhoneNumber = rs.getString("homePhoneNumber")
             )
          }.asSequence()
       }

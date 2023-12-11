@@ -12,5 +12,7 @@ class WowSingleAgreementEntity(
    val agreementNumber: String,
    val product: String?,
    val description: String?,
-   val paymentsRemaining: String
+   val paymentsRemaining: String,
+   val cellPhoneNumber: String?,
+   val homePhoneNumber: String?
 )

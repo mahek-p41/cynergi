@@ -79,7 +79,7 @@ class AuditScheduleTestDataLoader {
          dayOfWeek.name(),
          ScheduleCommandTypeTestDataLoader.auditSchedule(),
          ScheduleTypeTestDataLoader.daily(),
-         true,
+         new Random().nextBoolean(),
          user.myCompany(),
          arguments
       )

@@ -108,8 +108,8 @@ class VendorService @Inject constructor(
       val salesRepName: String = if (vendor.salesRepresentativeName != null) { vendor.salesRepresentativeName } else { "" }
       val salesRepFax: String = if (vendor.salesRepresentativeFax != null) { vendor.salesRepresentativeFax } else { "" }
       val separateCheck: String = if (vendor.separateCheck) { "Y" } else { "N" }
-      val freightPct: String = if (vendor.freightPercent != null) { vendor.freightPercent.toString() } else { "0" }
-      val freightAmt: String = if (vendor.freightAmount != null) { vendor.freightAmount.toString() } else { "0" }
+      val freightPct: String = if (vendor.freightPercent != null) { vendor.freightPercent.setScale(3, RoundingMode.HALF_UP ).toString() } else { "0" }
+      val freightAmt: String = if (vendor.freightAmount != null) { vendor.freightAmount.setScale(2, RoundingMode.HALF_UP ).toString() } else { "0" }
       val chgInvTax1: String = if (vendor.chargeInventoryTax1) { "Y" } else { "N" }
       val chgInvTax2: String = if (vendor.chargeInventoryTax2) { "Y" } else { "N" }
       val chgInvTax3: String = if (vendor.chargeInventoryTax3) { "Y" } else { "N" }
@@ -121,9 +121,9 @@ class VendorService @Inject constructor(
       val vendorGroup: String = if (vendor.vendorGroup != null) { vendor.vendorGroup.value } else { "" }
 
       val normalDays: String = if (vendor.normalDays != null) { vendor.normalDays.toString() } else { "" }
-      val minimumAmount: String = if (vendor.minimumAmount != null) { vendor.minimumAmount.toString() } else { "" }
-      val freeShipAmount: String = if (vendor.freeShipAmount != null) { vendor.freeShipAmount.toString() } else { "" }
-      val bumpPercent: String = if (vendor.bumpPercent != null) { vendor.bumpPercent.toString() } else { "" }
+      val minimumAmount: String = if (vendor.minimumAmount != null) { vendor.minimumAmount.setScale(2, RoundingMode.HALF_UP ).toString() } else { "" }
+      val freeShipAmount: String = if (vendor.freeShipAmount != null) { vendor.freeShipAmount.setScale(2, RoundingMode.HALF_UP ).toString() } else { "" }
+      val bumpPercent: String = if (vendor.bumpPercent != null) { vendor.bumpPercent.setScale(4, RoundingMode.HALF_UP ).toString() } else { "" }
       val number: String = if (vendor.number != null) { vendor.number.toString() } else { "" }
 
       val minimumQuantity: String = if (vendor.minimumQuantity != null) { vendor.minimumQuantity.toString() } else { "" }

@@ -71,7 +71,7 @@ class UserAuthenticationProvider @Inject constructor(
    private fun credentialsAssociatedWithAdmin(employee: AuthenticatedEmployee, fallbackStore: Location): UserAuthenticatedAsAdmin {
       logger.debug("Employee is system admin")
 
-      return UserAuthenticatedAsAdmin(AuthenticatedUser(employee, employee.assignedLocation ?: fallbackStore))
+      return UserAuthenticatedAsAdmin(AuthenticatedUser(employee, employee.chosenLocation ?: fallbackStore))
    }
 
    private fun credentialsMatched(employeeAssignedStore: Location?, employee: AuthenticatedEmployee): UserAuthenticated {
