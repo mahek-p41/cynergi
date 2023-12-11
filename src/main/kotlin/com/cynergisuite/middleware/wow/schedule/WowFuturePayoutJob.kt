@@ -38,7 +38,7 @@ class WowFuturePayoutJob @Inject constructor(
       Files.newBufferedWriter(wowFuturePayoutsTempPath).use { writer ->
          val wowFuturePayoutCsv = CSVPrinter(writer, CSVFormat.EXCEL)
 
-         wowFuturePayoutCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay", "ActiveAgreement", "PaymentTerms")
+         wowFuturePayoutCsv.printRecord("StoreNumber", "CustomerNumber", "FirstName", "LastName", "Email", "AgreementNumber", "DateRented", "DueDate", "PercentOwnership", "Product","Terms","NextPaymentAmount","Address1", "Address2","City", "State", "Zip", "PaymentsRemaining","ProjectedPayoutDate","WeeksRemaining", "MonthsRemaining", "PastDue", "OverdueAmount","ClubMember","ClubNumber","ClubFee","AutoPay", "ActiveAgreement", "PaymentTerms","CellNumber","HomeNumber")
 
          wowRepository.findWowFuturePayout(company).forEach { wowFuturePayout ->
             wowFuturePayoutCsv.printRecord(
@@ -70,7 +70,9 @@ class WowFuturePayoutJob @Inject constructor(
                wowFuturePayout.clubFee ?: EMPTY,
                wowFuturePayout.autopay ?: EMPTY,
                wowFuturePayout.actveAgreement ?: EMPTY,
-               wowFuturePayout.paymentTerms ?: EMPTY
+               wowFuturePayout.paymentTerms ?: EMPTY,
+               wowFuturePayout.cellPhoneNumber ?: EMPTY,
+               wowFuturePayout.homePhoneNumber ?: EMPTY
             )
          }
 

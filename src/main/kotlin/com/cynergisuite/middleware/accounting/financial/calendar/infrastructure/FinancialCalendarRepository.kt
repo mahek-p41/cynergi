@@ -627,29 +627,31 @@ class FinancialCalendarRepository @Inject constructor(
          WHERE company_id = :comp_id
                AND overall_period_id = 1;
 
-         UPDATE public.financial_calendar
+         UPDATE financial_calendar
          SET overall_period_id = 1
          WHERE company_id = :comp_id
                AND overall_period_id in (2);
 
-         UPDATE public.financial_calendar
-         SET overall_period_id = 2
+         UPDATE financial_calendar
+         SET   overall_period_id = 2,
+               general_ledger_open = false,
+               account_payable_open = false
          WHERE company_id = :comp_id
                AND overall_period_id in (3);
 
-         UPDATE public.financial_calendar
+         UPDATE financial_calendar
          SET overall_period_id = 3
          WHERE company_id = :comp_id
                AND overall_period_id in (4);
 
-         INSERT INTO public.financial_calendar(company_id, overall_period_id, period, period_from, period_to, fiscal_year)
+         INSERT INTO financial_calendar(company_id, overall_period_id, period, period_from, period_to, fiscal_year)
          SELECT company_id,
                 4,
                 period,
                 period_from + interval '1 year',
                 period_to + interval '1 year',
                 fiscal_year + 1
-         FROM public.financial_calendar
+         FROM financial_calendar
          WHERE company_id = :comp_id
                AND overall_period_id = 3;
          """.trimIndent(),

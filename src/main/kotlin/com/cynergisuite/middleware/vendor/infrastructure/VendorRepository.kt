@@ -1,20 +1,35 @@
 package com.cynergisuite.middleware.vendor.infrastructure
 
+import com.cynergisuite.domain.CashFlowFilterRequest
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.Vendor1099FilterRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
+import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.isNumber
+import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.accounting.account.payable.cashflow.AccountPayableCashFlowDTO
+import com.cynergisuite.middleware.accounting.account.payable.cashflow.AccountPayableCashFlowEntity
+import com.cynergisuite.middleware.accounting.account.payable.cashflow.CashFlowBalanceEntity
+import com.cynergisuite.middleware.accounting.account.payable.cashflow.CashFlowReportInvoiceDetailEntity
+import com.cynergisuite.middleware.accounting.account.payable.cashflow.CashFlowVendorEntity
+import com.cynergisuite.middleware.accounting.account.payable.cashout.CashRequirementBalanceEnum
+import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalEntity
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingReportDetailsTemplate
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerReportSortEnum
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -23,6 +38,13 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodType
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardType
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
+import com.cynergisuite.middleware.vendor.Form1099ReportDTO
+import com.cynergisuite.middleware.vendor.Form1099ReportEntity
+import com.cynergisuite.middleware.vendor.Form1099ReportInvoiceDetailEntity
+import com.cynergisuite.middleware.vendor.Form1099TotalsDTO
+import com.cynergisuite.middleware.vendor.Form1099TotalsEntity
+import com.cynergisuite.middleware.vendor.Form1099VendorDTO
+import com.cynergisuite.middleware.vendor.Form1099VendorEntity
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
 import com.cynergisuite.middleware.vendor.group.infrastructure.VendorGroupRepository
@@ -30,11 +52,14 @@ import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
 import java.sql.ResultSet
+import java.time.LocalDate
 import java.util.UUID
 import javax.transaction.Transactional
 
@@ -43,7 +68,8 @@ class VendorRepository @Inject constructor(
    private val addressRepository: AddressRepository,
    private val companyRepository: CompanyRepository,
    private val jdbc: Jdbi,
-   private val vendorGroupRepository: VendorGroupRepository
+   private val statusRepository: AccountPayableInvoiceStatusTypeRepository,
+   private val vendorGroupRepository: VendorGroupRepository,
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorRepository::class.java)
    fun baseSelectQuery() =
@@ -168,6 +194,103 @@ class VendorRepository @Inject constructor(
             JOIN ship_via shipVia                        ON shipVia.id = v.ship_via_id AND shipVia.deleted = FALSE
             LEFT OUTER JOIN address                      ON address.id = v.address_id AND address.deleted = FALSE
             LEFT OUTER JOIN vendor_group vgrp            ON vgrp.id = v.vendor_group_id AND vgrp.deleted = FALSE
+      """
+
+   fun select1099ReportBaseQuery() =
+      """
+         WITH vend AS (
+            ${baseSelectQuery()}
+         )
+         SELECT
+            apInvoice.id                                                AS 1099_apInvoice_id,
+            apInvoice.company_id                                        AS 1099_apInvoice_company_id,
+            apInvoice.vendor_id                                         AS 1099_apInvoice_vendor_id,
+            apInvoice.invoice                                           AS 1099_apInvoice_invoice,
+            apInvoice.invoice_date                                      AS 1099_apInvoice_invoice_date,
+            apInvoice.invoice_amount                                    AS 1099_apInvoice_invoice_amount,
+            apInvoice.discount_amount                                   AS 1099_apInvoice_discount_amount,
+            apInvoice.discount_percent                                  AS 1099_apInvoice_discount_percent,
+            apInvoice.auto_distribution_applied                         AS 1099_apInvoice_auto_distribution_applied,
+            apInvoice.discount_taken                                    AS 1099_apInvoice_discount_taken,
+            apInvoice.entry_date                                        AS 1099_apInvoice_entry_date,
+            apInvoice.expense_date                                      AS 1099_apInvoice_expense_date,
+            apInvoice.discount_date                                     AS 1099_apInvoice_discount_date,
+            apInvoice.employee_number_id_sfk                            AS 1099_apInvoice_employee_number_id_sfk,
+            apInvoice.original_invoice_amount                           AS 1099_apInvoice_original_invoice_amount,
+            apInvoice.message                                           AS 1099_apInvoice_message,
+            apInvoice.multiple_payment_indicator                        AS 1099_apInvoice_multiple_payment_indicator,
+            apInvoice.paid_amount                                       AS 1099_apInvoice_paid_amount,
+            apInvoice.selected_amount                                   AS 1099_apInvoice_selected_amount,
+            apInvoice.due_date                                          AS 1099_apInvoice_due_date,
+            apInvoice.separate_check_indicator                          AS 1099_apInvoice_separate_check_indicator,
+            apInvoice.use_tax_indicator                                 AS 1099_apInvoice_use_tax_indicator,
+            apInvoice.receive_date                                      AS 1099_apInvoice_receive_date,
+            apInvoice.location_id_sfk                                   AS 1099_apInvoice_location_id_sfk,
+
+            vend.v_id                                                   AS 1099_vendor_id,
+            vend.v_company_id                                           AS 1099_vendor_company_id,
+            vend.v_number                                               AS 1099_vendor_number,
+            vend.v_name                                                 AS 1099_vendor_name,
+            vend.v_account_number                                       AS 1099_vendor_account_number,
+            vend.v_pay_to_id                                            AS 1099_vendor_pay_to_id,
+            vend.v_federal_id_number                                    AS 1099_vendor_federal_id_number,
+            vend.v_active                                               AS 1099_vendor_active,
+
+            vend.v_address_id                                           AS 1099_vendor_address_id,
+            vend.v_address_name                                         AS 1099_vendor_address_name,
+            vend.v_address_address1                                     AS 1099_vendor_address_address1,
+            vend.v_address_address2                                     AS 1099_vendor_address_address2,
+            vend.v_address_city                                         AS 1099_vendor_address_city,
+            vend.v_address_state                                        AS 1099_vendor_address_state,
+            vend.v_address_postal_code                                  AS 1099_vendor_address_postal_code,
+            vend.v_address_latitude 					                     AS 1099_vendor_address_latitude,
+            vend.v_address_longitude 					                     AS 1099_vendor_address_longitude,
+            vend.v_address_country					                        AS 1099_vendor_address_country,
+            vend.v_address_county					                        AS 1099_vendor_address_county,
+            vend.v_address_phone					                           AS 1099_vendor_address_phone,
+            vend.v_address_fax						                        AS 1099_vendor_address_fax,
+
+            vend.v_comp_address_id					                        AS 1099_comp_address_id,
+            vend.v_comp_address_name					                     AS 1099_comp_address_name,
+            vend.v_comp_address_address1				                     AS 1099_comp_address_address1,
+            vend.v_comp_address_address2				                     AS 1099_comp_address_address2,
+            vend.v_comp_address_city					                     AS 1099_comp_address_city,
+            vend.v_comp_address_state					                     AS 1099_comp_address_state,
+            vend.v_comp_address_postal_code				                  AS 1099_comp_address_postal_code,
+            vend.v_comp_address_latitude				                     AS 1099_comp_address_latitude,
+            vend.v_comp_address_longitude				                     AS 1099_comp_address_longitude,
+            vend.v_comp_address_country					                  AS 1099_comp_address_country,
+            vend.v_comp_address_county					                     AS 1099_comp_address_county,
+            vend.v_comp_address_phone					                     AS 1099_comp_address_phone,
+            vend.v_comp_address_fax					                        AS 1099_comp_address_fax,
+
+	         vgrp.id							                                 AS 1099_vgrp_id,
+	         vgrp.value							                              AS 1099_vgrp_value,
+
+            pmt.payment_number                                          AS 1099_apPayment_number,
+            pmt.payment_date                                            AS 1099_apPayment_payment_date,
+            pmtDetail.id                                                AS 1099_apPayment_detail_id,
+            pmtDetail.amount                                            AS 1099_apPayment_detail_amount,
+
+	         invDist.distribution_amount					                  AS 1099_invdist_distribution_amount,
+
+            account.id                                     		         AS 1099_account_id,
+            account.number                                 		         AS 1099_account_number,
+            account.name                                   		         AS 1099_account_name,
+            account.form_1099_field                        		         AS 1099_account_form_1099_field,
+            account.corporate_account_indicator            		         AS 1099_account_corporate_account_indicator,
+            account.company_id                             		         AS 1099_account_comp_id,
+            account.deleted                                		         AS 1099_account_deleted,
+         FROM account_payable_invoice apInvoice
+            JOIN company comp                                           ON apInvoice.company_id = comp.id ???AND comp.deleted = FALSE???
+            JOIN vend                                                   ON apInvoice.vendor_id = vend.v_id
+            LEFT OUTER JOIN vendor_group vgrp                           ON vgrp.id = vend.vendor_group_id ???AND vgrp.deleted = FALSE???
+            JOIN account_payable_invoice_type_domain type               ON apInvoice.type_id = type.id
+            JOIN account_payable_invoice_status_type_domain status      ON apInvoice.status_id = status.id
+            LEFT JOIN account_payable_payment_detail pmtDetail          ON apInvoice.id = pmtDetail.account_payable_invoice_id
+            LEFT JOIN account_payable_payment pmt                       ON pmtDetail.payment_number_id = pmt.id
+            JOIN account_payable_invoice_distribution invDist           ON apInvoice.id = invDist.invoice_id
+            JOIN account ON apInvoice.company_id = account.company_id AND invDist.distribution_account = account.id ???AND account.deleted = FALSE???
       """
 
    @ReadOnly
@@ -583,6 +706,243 @@ class VendorRepository @Inject constructor(
       if (rowsAffected == 0) throw NotFoundException(id)
    }
 
+   @ReadOnly
+   fun fetch1099Report(company: CompanyEntity, filterRequest: Vendor1099FilterRequest) : Form1099ReportDTO {
+      val vendors = mutableListOf <Form1099VendorEntity> ()
+      var currentVendor: Form1099VendorEntity? = null
+      var companyName = company.name
+      val form1099Totals = Form1099TotalsEntity()
+
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
+      val whereClause = StringBuilder("WHERE comp.company_id = :comp_id AND vend.vendor_1099 = 'Y' AND apInvoice.status_id NOT IN (1, 2, 4) AND pmt.account_payable_payment_status != 2")
+
+      if (filterRequest.form1099Type != null) {
+         if (filterRequest.form1099Type == "M") {
+            whereClause.append(" AND account.form_1099_field < 100")
+         } else {
+            whereClause.append(" AND account.form_1099_field > 100")
+         }
+      }
+
+      if (filterRequest.beginningAccountNumber != null || filterRequest.endingAccountNumber != null) {
+         params["beginningAccountNumber"] = filterRequest.beginningAccountNumber
+         params["endingAccountNumber"] = filterRequest.endingAccountNumber
+         whereClause.append(" AND account.number ")
+            .append(buildFilterString(filterRequest.beginningAccountNumber != null, filterRequest.endingAccountNumber != null, "beginningAccountNumber", "endingAccountNumber"))
+      }
+
+      if (filterRequest.vendorGroup != null) {
+         whereClause.append(" AND vgrp.value = ${filterRequest.vendorGroup} ")
+      }
+
+      if (filterRequest.beginningPaymentDate != null || filterRequest.endingPaymentDate != null) {
+         params["beginningSource"] = filterRequest.beginningPaymentDate
+         params["endingSource"] = filterRequest.endingPaymentDate
+         whereClause.append(" AND pmt.payment_date ")
+            .append(buildFilterString(filterRequest.beginningPaymentDate != null, filterRequest.endingPaymentDate != null, "beginningPaymentDate", "endingPaymentDate"))
+      }
+      whereClause.append(')')
+      jdbc.query(
+         """
+                  ${select1099ReportBaseQuery()}
+                  $whereClause
+                  ORDER BY vend.v_name, vend.v_id, naturalsort(apInvoice.invoice), apInvoice.invoice_date ${filterRequest.sortDirection()}
+               """.trimIndent(),
+         params,
+      ) {
+         rs, elements ->
+         do {
+            val tempVendor = if (currentVendor ?.vendorNumber != rs.getIntOrNull("apInvoiceDetail_vendor_number")){
+               val localVendor = map1099Vendor(rs, "1099_")
+               vendors.add(localVendor)
+               currentVendor = localVendor
+
+               localVendor
+            } else{
+               currentVendor !!
+            }
+
+            var invoiceFlag = false
+            mapRowInvoiceDetail(rs, "apInvoiceDetail_").let {
+               tempVendor.invoices?.add(it)
+               invoiceFlag = true
+
+               if (invoiceFlag) {
+                  //We need to add 1099_invdist_distribution_amount to (1099_apInvoice_discount_taken * -1)
+                     form1099Totals.grandTotal = form1099Totals.grandTotal.plus(it.distributionAmount)
+                     form1099Totals.grandTotal = form1099Totals.grandTotal.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                  }
+
+                  when (it.fieldNumber) {
+                     1 -> {
+                        tempVendor.vendorTotals.ten99Field1 =
+                           tempVendor.vendorTotals.ten99Field1.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field1 =
+                           tempVendor.vendorTotals.ten99Field1.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     2 -> {
+                        tempVendor.vendorTotals.ten99Field2 =
+                           tempVendor.vendorTotals.ten99Field2.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field2 =
+                           tempVendor.vendorTotals.ten99Field2.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     3 -> {
+                        tempVendor.vendorTotals.ten99Field3 =
+                           tempVendor.vendorTotals.ten99Field3.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field3 =
+                           tempVendor.vendorTotals.ten99Field3.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     4 -> {
+                        tempVendor.vendorTotals.ten99Field4 =
+                           tempVendor.vendorTotals.ten99Field4.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field4 =
+                           tempVendor.vendorTotals.ten99Field4.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     5 -> {
+                        tempVendor.vendorTotals.ten99Field5 =
+                           tempVendor.vendorTotals.ten99Field5.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field5 =
+                           tempVendor.vendorTotals.ten99Field5.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     6 -> {
+                        tempVendor.vendorTotals.ten99Field6 =
+                           tempVendor.vendorTotals.ten99Field6.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field6 =
+                           tempVendor.vendorTotals.ten99Field6.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     7 -> {
+                        tempVendor.vendorTotals.ten99Field7 =
+                           tempVendor.vendorTotals.ten99Field7 .plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field7  =
+                           tempVendor.vendorTotals.ten99Field7.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     8 -> {
+                        tempVendor.vendorTotals.ten99Field8 =
+                           tempVendor.vendorTotals.ten99Field8.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field8 =
+                           tempVendor.vendorTotals.ten99Field8.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     9 -> {
+                        tempVendor.vendorTotals.ten99Field9 =
+                           tempVendor.vendorTotals.ten99Field9.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field9 =
+                           tempVendor.vendorTotals.ten99Field9.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     10 -> {
+                        tempVendor.vendorTotals.ten99Field10 =
+                           tempVendor.vendorTotals.ten99Field10.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field10 =
+                           tempVendor.vendorTotals.ten99Field10.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     11 -> {
+                        tempVendor.vendorTotals.ten99Field11 =
+                           tempVendor.vendorTotals.ten99Field11.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field11 =
+                           tempVendor.vendorTotals.ten99Field11.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     12 -> {
+                        tempVendor.vendorTotals.ten99Field12 =
+                           tempVendor.vendorTotals.ten99Field12.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field12 =
+                           tempVendor.vendorTotals.ten99Field12.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     13 -> {
+                        tempVendor.vendorTotals.ten99Field13 =
+                           tempVendor.vendorTotals.ten99Field13.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field13 =
+                           tempVendor.vendorTotals.ten99Field13.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     14 -> {
+                        tempVendor.vendorTotals.ten99Field14 =
+                           tempVendor.vendorTotals.ten99Field14.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field14 =
+                           tempVendor.vendorTotals.ten99Field14.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     15 -> {
+                        tempVendor.vendorTotals.ten99Field15 =
+                           tempVendor.vendorTotals.ten99Field15.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field15 =
+                           tempVendor.vendorTotals.ten99Field15.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     16 -> {
+                        tempVendor.vendorTotals.ten99Field16 =
+                           tempVendor.vendorTotals.ten99Field16.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field16 =
+                           tempVendor.vendorTotals.ten99Field16.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+                     17 -> {
+                        tempVendor.vendorTotals.ten99Field17 =
+                           tempVendor.vendorTotals.ten99Field17.plus(it.distributionAmount)
+                        tempVendor.vendorTotals.ten99Field17 =
+                           tempVendor.vendorTotals.ten99Field17.add(it.invoiceDiscountTaken.multiply(BigDecimal(-1)))
+                     }
+
+                     else -> {}
+                  }
+               }
+         } while (rs.next())
+
+         vendors.removeIf {
+            it.vendorTotals.grandTotal < filterRequest.excludeBelow
+         }
+      }
+
+      val entity = Form1099ReportEntity(companyName, vendors, form1099Totals)
+
+      return Form1099ReportDTO(entity)
+   }
+
+   private fun mapRowInvoiceDetail(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): Form1099ReportInvoiceDetailEntity {
+      val invoiceAmount = rs.getBigDecimal("${columnPrefix}apInvoice_invoice_amount")
+      val invoicePaidAmount = rs.getBigDecimal("${columnPrefix}apInvoice_paid_amount")
+      val invoiceDiscountTaken = rs.getBigDecimal("${columnPrefix}apInvoice_discount_taken")
+      val invoiceDiscountDate = rs.getLocalDateOrNull("${columnPrefix}apInvoice_discount_date")
+      val invoiceDiscountPercent = rs.getBigDecimal("${columnPrefix}apInvoice_discount_percent")
+      val balance = invoiceAmount - invoicePaidAmount
+
+      return Form1099ReportInvoiceDetailEntity(
+         invoiceCompanyId = rs.getUuid("${columnPrefix}apInvoice_company_id"),
+         invoiceVendorId = rs.getUuid("${columnPrefix}apInvoice_vendor_id"),
+         invoice = rs.getString("${columnPrefix}apInvoice_invoice"),
+         invoiceDate = rs.getLocalDate("${columnPrefix}apInvoice_invoice_date"),
+         invoiceAmount = invoiceAmount,
+         invoiceDiscountAmount = rs.getBigDecimal("${columnPrefix}apInvoice_discount_amount"),
+         invoiceDiscountDate = invoiceDiscountDate,
+         invoiceExpenseDate = rs.getLocalDate("${columnPrefix}apInvoice_expense_date"),
+         invoicePaidAmount = invoicePaidAmount,
+         invoiceDiscountTaken = invoiceDiscountTaken,
+         invoiceDiscountPercent = invoiceDiscountPercent,
+         invoiceDueDate = rs.getLocalDate("${columnPrefix}apInvoice_due_date"),
+         discountAmount = null,
+         lostAmount = null,
+         balance = balance,
+         fieldNumber = rs.getInt("${columnPrefix}account_form_1099_field"),
+         distributionAmount = rs.getBigDecimal("${columnPrefix}invdist_distribution_amount"),
+      )
+   }
+
+   private fun mapBalanceDisplay(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): CashRequirementBalanceEnum {
+
+      return CashRequirementBalanceEnum.valueOf(rs.getString("${columnPrefix}balance_display"))
+   }
+
+   private fun map1099Vendor(rs: ResultSet, columnPrefix: String = StringUtils.EMPTY): Form1099VendorEntity {
+      return Form1099VendorEntity(
+         id = rs.getUuid("${columnPrefix}vendor_company_id"),
+         vendorName = rs.getString("${columnPrefix}vendor_name"),
+         vendorNumber = rs.getInt("${columnPrefix}vendor_number"),
+         vendorAddress = addressRepository.mapAddressOrNull(rs, "${columnPrefix}1099_vendor_address_"),
+         companyAddress = addressRepository.mapAddressOrNull(rs, "${columnPrefix}1099_comp_address_"),
+         federalIdNumber = rs.getString("${columnPrefix}vendor_federal_id_number"),
+         form1099Field = rs.getInt("${columnPrefix}account_id"),
+         apPaymentPaymentDate = rs.getLocalDate("${columnPrefix}apPayment_payment_date"),
+         accountName = rs.getString("${columnPrefix}account_name"),
+         accountNumber = rs.getString("${columnPrefix}account_number"),
+         distributionAmount = rs.getBigDecimal("${columnPrefix}invdist_distribution_amount"),
+         isActive = rs.getBoolean("${columnPrefix}vendor_active"),
+      )
+   }
+
    fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String? = "v_"): VendorEntity {
       val payToId = rs.getUuidOrNull("${columnPrefix}pay_to_id")
 
@@ -726,4 +1086,10 @@ class VendorRepository @Inject constructor(
          number = rs.getInt("${columnPrefix}number"),
          company = company
       )
+
+   private fun buildFilterString(begin: Boolean, end: Boolean, beginningParam: String, endingParam: String): String {
+      return if (begin && end) " BETWEEN :$beginningParam AND :$endingParam "
+      else if (begin) " >= :$beginningParam "
+      else " <= :$endingParam "
+   }
 }

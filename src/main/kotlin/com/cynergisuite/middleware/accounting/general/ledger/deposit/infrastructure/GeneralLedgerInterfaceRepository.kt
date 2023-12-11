@@ -97,6 +97,7 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
                       business_date,
                       deposit_type_id,
                       deposit_amount
+
                   )
                   VALUES (
                      :company_id,

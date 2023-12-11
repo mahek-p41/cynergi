@@ -12,5 +12,7 @@ data class WowCollectionEntity(
    val agreementNumber: String,
    val daysOverdue: Int,
    val overdueAmount: String,
-   val product: String?
+   val product: String?,
+   val cellPhoneNumber: String?,
+   val homePhoneNumber: String?
 )

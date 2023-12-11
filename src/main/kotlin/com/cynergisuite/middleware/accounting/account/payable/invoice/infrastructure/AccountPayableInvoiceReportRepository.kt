@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastru
 
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.extensions.getBigDecimalOrNull
+import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
@@ -85,7 +86,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
             JOIN account_payable_invoice_status_type_domain invStatus   ON invStatus.id = apInvoice.status_id
             JOIN vendor                                                 ON apInvoice.vendor_id = vendor.id AND vendor.deleted = FALSE
             LEFT JOIN vendor_group vgrp                                 ON vgrp.id = vendor.vendor_group_id AND vgrp.deleted = FALSE
-            JOIN purchase_order_header poHeader                         ON poHeader.id = apInvoice.purchase_order_id AND poHeader.deleted = FALSE
+            LEFT JOIN purchase_order_header poHeader                    ON poHeader.id = apInvoice.purchase_order_id AND poHeader.deleted = FALSE
             LEFT JOIN account_payable_payment_detail pmtDetail          ON apInvoice.id = pmtDetail.account_payable_invoice_id
             LEFT JOIN account_payable_payment pmt                       ON pmtDetail.payment_number_id = pmt.id
             LEFT JOIN account_payable_payment_type_type_domain pmtType  ON pmt.account_payable_payment_type_id = pmtType.id
@@ -94,7 +95,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
             JOIN account                                                ON invDist.distribution_account_id = account.id AND account.deleted = FALSE
             LEFT JOIN account_payable_control apControl                 ON invDist.distribution_account_id = apControl.general_ledger_inventory_account_id
             JOIN company comp                                           ON apInvoice.company_id = comp.id AND comp.deleted = FALSE
-            JOIN fastinfo_prod_import.inventory_vw inv ON
+            LEFT JOIN fastinfo_prod_import.inventory_vw inv ON
                   comp.dataset_code = inv.dataset
                   AND inv.invoice_number = apInvoice.invoice
                   AND CASE
@@ -185,7 +186,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          params["useTax"] = filterRequest.useTax
          whereClause.append(" AND apInvoice.use_tax_indicator = :useTax ")
       }
-      var ordering = " ORDER BY poHeader.number ${filterRequest.sortDirection()}, apInvoice.id, pmt.id, pmtDetail.id "
+      val ordering = " ORDER BY poHeader.number ${filterRequest.sortDirection()}, apInvoice.id, pmt.id, pmtDetail.id "
 
       jdbc.query(
          """
@@ -213,7 +214,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
             tempInvoice?.distDetails?.add(mapDistDetail(rs))
             tempInvoice?.inventories?.add(mapInventory(rs))
 
-            val tempPO = if (currentPO?.poHeaderNumber != rs.getInt("poHeader_number")) {
+            val tempPO = if (currentPO?.poHeaderNumber != rs.getIntOrNull("poHeader_number")) {
                val localPO = mapPO(rs)
                purchaseOrders.add(localPO)
                currentPO = localPO
@@ -241,15 +242,23 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          }
          purchaseOrders.sortWith(compareByInvoice)
       } else if (filterRequest.snakeSortBy() == "vendor.number") {
-         val compareByVendorNumber = compareBy<AccountPayableInvoiceReportPoWrapper> {
-            it.invoices.first()!!.vendorNumber
+         purchaseOrders.sortWith(compareBy { it.invoices.first()!!.vendorNumber })
+
+         purchaseOrders.forEach { it ->
+            it.invoices.sortWith(
+               compareBy<AccountPayableInvoiceReportDTO?> { it?.vendorNumber }
+                  .thenBy { it?.invoice }
+            )
          }
-         purchaseOrders.sortWith(compareByVendorNumber)
       } else if (filterRequest.snakeSortBy() == "vendor.name") {
-         val compareByVendorName = compareBy<AccountPayableInvoiceReportPoWrapper> {
-            it.invoices.first()!!.vendorName
+         purchaseOrders.sortWith(compareBy { it.invoices.first()!!.vendorName })
+
+         purchaseOrders.forEach { it ->
+            it.invoices.sortWith(
+               compareBy<AccountPayableInvoiceReportDTO?> { it?.vendorName }
+                  .thenBy { it?.invoice }
+            )
          }
-         purchaseOrders.sortWith(compareByVendorName)
       }
 
       if (filterRequest.sortDirection() == "DESC") purchaseOrders.reverse()
@@ -356,7 +365,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
       rs: ResultSet,
    ): AccountPayableInvoiceReportPoWrapper {
       return AccountPayableInvoiceReportPoWrapper(
-         poHeaderNumber = rs.getInt("poHeader_number"),
+         poHeaderNumber = rs.getIntOrNull("poHeader_number"),
       )
    }
 

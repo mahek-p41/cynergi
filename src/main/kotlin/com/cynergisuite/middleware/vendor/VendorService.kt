@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.vendor
 
 import com.cynergisuite.domain.Page
-import com.cynergisuite.middleware.accounting.account.AccountService
+import com.cynergisuite.domain.Vendor1099FilterRequest
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorPageRequest
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
@@ -18,12 +18,15 @@ import org.apache.commons.csv.CSVPrinter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.zeroturnaround.exec.ProcessExecutor
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Singleton
 class VendorService @Inject constructor(
    private val vendorRepository: VendorRepository,
    private val vendorValidator: VendorValidator,
-   @Value("\${cynergi.process.update.isam.vendor}") private val processUpdateIsamVendor: Boolean
+   @Value("\${cynergi.process.update.isam.vendor}") private val processUpdateIsamVendor: Boolean,
+   @Value("\${cynergi.process.update.isam.script.directory}") private val scriptDirectory: String
 ) {
    private val logger: Logger = LoggerFactory.getLogger(VendorService::class.java)
 
@@ -78,6 +81,17 @@ class VendorService @Inject constructor(
       }
    }
 
+   fun fetch1099Report(company: CompanyEntity, filterRequest: Vendor1099FilterRequest): Form1099ReportDTO {
+      return vendorRepository.fetch1099Report(company, filterRequest)
+      //As part of CYN-1956, the below functionality will be added
+      //val reportData = vendorRepository.fetch1099Report(company, filterRequest)
+      //return create1099Report(reportData)
+   }
+
+   fun fetch1099Form(company: CompanyEntity, filterRequest: Vendor1099FilterRequest): Form1099ReportDTO {
+      return vendorRepository.fetch1099Report(company, filterRequest)
+   }
+
    fun vendorToISAM(task: String, vendor: VendorEntity, company: CompanyEntity) {
       var fileWriter: FileWriter? = null
       var csvPrinter: CSVPrinter? = null
@@ -94,8 +108,8 @@ class VendorService @Inject constructor(
       val salesRepName: String = if (vendor.salesRepresentativeName != null) { vendor.salesRepresentativeName } else { "" }
       val salesRepFax: String = if (vendor.salesRepresentativeFax != null) { vendor.salesRepresentativeFax } else { "" }
       val separateCheck: String = if (vendor.separateCheck) { "Y" } else { "N" }
-      val freightPct: String = if (vendor.freightPercent != null) { vendor.freightPercent.toString() } else { "0" }
-      val freightAmt: String = if (vendor.freightAmount != null) { vendor.freightAmount.toString() } else { "0" }
+      val freightPct: String = if (vendor.freightPercent != null) { vendor.freightPercent.setScale(3, RoundingMode.HALF_UP ).toString() } else { "0" }
+      val freightAmt: String = if (vendor.freightAmount != null) { vendor.freightAmount.setScale(2, RoundingMode.HALF_UP ).toString() } else { "0" }
       val chgInvTax1: String = if (vendor.chargeInventoryTax1) { "Y" } else { "N" }
       val chgInvTax2: String = if (vendor.chargeInventoryTax2) { "Y" } else { "N" }
       val chgInvTax3: String = if (vendor.chargeInventoryTax3) { "Y" } else { "N" }
@@ -107,13 +121,62 @@ class VendorService @Inject constructor(
       val vendorGroup: String = if (vendor.vendorGroup != null) { vendor.vendorGroup.value } else { "" }
 
       val normalDays: String = if (vendor.normalDays != null) { vendor.normalDays.toString() } else { "" }
-      val minimumAmount: String = if (vendor.minimumAmount != null) { vendor.minimumAmount.toString() } else { "" }
-      val freeShipAmount: String = if (vendor.freeShipAmount != null) { vendor.freeShipAmount.toString() } else { "" }
-      val bumpPercent: String = if (vendor.bumpPercent != null) { vendor.bumpPercent.toString() } else { "" }
+      val minimumAmount: String = if (vendor.minimumAmount != null) { vendor.minimumAmount.setScale(2, RoundingMode.HALF_UP ).toString() } else { "" }
+      val freeShipAmount: String = if (vendor.freeShipAmount != null) { vendor.freeShipAmount.setScale(2, RoundingMode.HALF_UP ).toString() } else { "" }
+      val bumpPercent: String = if (vendor.bumpPercent != null) { vendor.bumpPercent.setScale(4, RoundingMode.HALF_UP ).toString() } else { "" }
       val number: String = if (vendor.number != null) { vendor.number.toString() } else { "" }
 
       val minimumQuantity: String = if (vendor.minimumQuantity != null) { vendor.minimumQuantity.toString() } else { "" }
       val freeShipQuantity: String = if (vendor.freeShipQuantity != null) { vendor.freeShipQuantity.toString() } else { "" }
+
+      var addressName: String
+      var addressAddress1: String
+      var addressAddress2: String
+      var addressCity: String
+      var addressState: String
+      var addressZip: String
+      var addressPhone: String
+      var addressFax: String
+
+      if (vendor.address != null) {
+
+         addressName = vendor.address.name
+
+         addressAddress1 = vendor.address.address1
+
+         if (vendor.address.address2 != null) {
+            addressAddress2 = vendor.address.address2
+         } else {
+            addressAddress2 = ""
+         }
+
+         addressCity = vendor.address.city
+
+         addressState = vendor.address.state
+
+         addressZip = vendor.address.postalCode
+
+         if (vendor.address.phone != null) {
+            addressPhone = vendor.address.phone
+         } else {
+            addressPhone = ""
+         }
+
+         if (vendor.address.fax != null) {
+            addressFax = vendor.address.fax
+         } else {
+            addressFax = ""
+         }
+      } else {
+         addressName = ""
+         addressAddress1 = ""
+         addressAddress2 = ""
+         addressCity = ""
+         addressState = ""
+         addressZip = ""
+         addressPhone = ""
+         addressFax = ""
+      }
 
       if (vendor.payTo != null) {
          val payToVendor = vendorRepository.findOne(vendor.payTo.myId()!!, company)
@@ -159,6 +222,14 @@ class VendorService @Inject constructor(
             "PO_submit_email",
             "allow_dropship",
             "auto_submit_PO",
+            "addressName",
+            "addressAddress1",
+            "addressAddress2",
+            "addressCity",
+            "addressState",
+            "addressZip",
+            "addressPhone",
+            "addressFax",
             "dummy_field"))
 
          var data = listOf(
@@ -194,6 +265,14 @@ class VendorService @Inject constructor(
             "PO_submit_email",
             "allow_dropship",
             "auto_submit_PO",
+            "addressName",
+            "addressAddress1",
+            "addressAddress2",
+            "addressCity",
+            "addressState",
+            "addressZip",
+            "addressPhone",
+            "addressFax",
             "dummy_field")
 
          data = listOf(
@@ -229,6 +308,14 @@ class VendorService @Inject constructor(
             POSubmitEmail,
             allowDropshipToCust,
             autoSubmitPO,
+            addressName,
+            addressAddress1,
+            addressAddress2,
+            addressCity,
+            addressState,
+            addressZip,
+            addressPhone,
+            addressFax,
             "1")
          csvPrinter.printRecord(data)
 
@@ -240,7 +327,7 @@ class VendorService @Inject constructor(
             fileWriter.close()
             csvPrinter!!.close()
             val processExecutor: ProcessExecutor = ProcessExecutor()
-               .command("/bin/bash", "/usr/bin/ht.updt_isam_vendor.sh", fileName.canonicalPath, dataset)
+               .command("/bin/bash", "$scriptDirectory/ht.updt_isam_vendor.sh", fileName.canonicalPath, dataset)
                .exitValueNormal()
                .timeout(5, TimeUnit.SECONDS)
                .readOutput(true)

@@ -23,7 +23,7 @@ class SchedulePageRequest(
    @field:Size(min = 3, max = 25)
    var command: String? = null,
 
-   var enabled: Boolean? = true
+   var enabled: Boolean? = null,
 
 ) : PageRequestBase<SchedulePageRequest>(page, size, sortBy, sortDirection) {
 
@@ -49,5 +49,5 @@ class SchedulePageRequest(
       )
 
    protected override fun myToStringValues(): List<Pair<String, Any?>> =
-      listOf("command" to command)
+      listOf("command" to command, "enabled" to enabled)
 }

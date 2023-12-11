@@ -34,8 +34,8 @@ class StagingDepositService @Inject constructor(
    private val storeRepository: StoreRepository,
    private val sourceCodeRepository: GeneralLedgerSourceCodeRepository,
    private val generalLedgerJournalService: GeneralLedgerJournalService,
-   @Value("\${cynergi.process.update.isam.summary}")
-   private val processUpdateIsamForSummary: Boolean,
+   @Value("\${cynergi.process.update.isam.summary}") private val processUpdateIsamForSummary: Boolean,
+   @Value("\${cynergi.process.update.isam.script.directory}") private val scriptDirectory: String
 ) {
    private val logger: Logger = LoggerFactory.getLogger(StagingDepositService::class.java)
 
@@ -149,7 +149,7 @@ class StagingDepositService @Inject constructor(
       } catch (e: Exception) {
          logger.error("Error occurred in creating SUMMARY csv file!", e)
       } finally {
-         executeProcess(fileName, fileWriter, csvPrinter, logger, dataset, "/usr/bin/ht.updt_isam_summary.sh")
+         executeProcess(fileName, fileWriter, csvPrinter, logger, dataset, "$scriptDirectory/ht.updt_isam_summary.sh")
       }
    }
 
