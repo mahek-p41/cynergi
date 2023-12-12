@@ -3457,7 +3457,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_payouts_vw (
        closed_reason INTEGER,
        cell_phone_number VARCHAR,
        home_phone_number VARCHAR
-  ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_payouts_vw', SCHEMA_NAME 'public');
+  ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_payouts_next_30_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_at_risk_vw (
        dataset VARCHAR,
