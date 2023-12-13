@@ -2236,6 +2236,197 @@ DECLARE
    sqlToExec VARCHAR;
    unionAll VARCHAR;
 BEGIN
+   sqlToExec := 'CREATE OR REPLACE VIEW csv_payouts_vw AS';
+   unionAll := '';
+
+   IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_payouts_vw') THEN
+      DROP VIEW IF EXISTS csv_lost_customer_vw CASCADE;
+   END IF;
+
+   FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
+   LOOP
+      sqlToExec := sqlToExec
+      || ' '
+      || unionAll || '
+         SELECT
+           ''' || r.schema_name || '''::text AS dataset,
+            stores.loc_tran_loc              AS store_number,
+            customers.cust_acct_nbr          AS customer_number,
+            customers.cust_first_name_mi     AS first_name,
+            customers.cust_last_name         AS last_name,
+            customers.cust_email_address     AS email,
+            agreements.agreement_number      AS agreement_number,
+            agreement_versions.agreement_contract_date  AS date_rented,
+            agreement_versions.agreement_next_due_date  AS due_date,
+            round(((agreement_versions.agreement_contract_amt - agreement_versions.agreement_contract_balance) /nullif(agreement_versions.agreement_contract_amt,0) * 100),2) AS percent_ownership,
+            models.itemfile_desc_1 AS product,
+            round(agreement_versions.agreement_contract_amt/nullif(agreement_versions.agreement_payment_amt,0),0) AS terms,
+            agreement_versions.agreement_payment_amt  AS next_payment_amount,
+            customers.cust_address           AS address_1,
+            customers.cust_address_2         AS address_2,
+            customers.cust_city              AS city,
+            customers.cust_state             AS state,
+            customers.cust_zip_pc            AS zip,
+
+            (case when agreement_versions.agreement_open_flag = ''Y'' then
+              (case when
+                     CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0)) = 0
+               then 1
+               else
+                     CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0))
+               end)
+            end) as payments_remaining,
+
+             (case when agreement_versions.agreement_open_flag = ''Y'' then
+               (select current_date +
+            				(case
+                              when agreement_versions.agreement_payment_terms = ''M'' then Round(trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2))
+                              when agreement_versions.agreement_payment_terms = ''W'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 4.33))
+                              when agreement_versions.agreement_payment_terms = ''B'' then Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2))
+                              else Round((trunc(1.00 * agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt, 0), 2) / 2))
+                          end ::INTEGER * 30))end) as projected_payout_date,
+
+             min
+             (case when agreement_versions.agreement_open_flag = ''Y'' then
+               (case when
+                      (case
+                          when agreement_versions.agreement_payment_terms = ''M'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0) * 4.33)
+                          when agreement_versions.agreement_payment_terms = ''W'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0))
+                          when agreement_versions.agreement_payment_terms = ''B'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0)/ 2 * 4.33)
+                       else CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0)*2)
+                       end) = 0 then 1
+                else
+                 		 (case
+                          when agreement_versions.agreement_payment_terms = ''M'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0) * 4.33)
+                          when agreement_versions.agreement_payment_terms = ''W'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0))
+                          when agreement_versions.agreement_payment_terms = ''B'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0)/ 2 * 4.33)
+                      else CEIL((agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0)/ 2) * 4.33)
+                      end)
+                end)end) AS weeks_remaining,
+
+            min
+            (case when agreement_versions.agreement_open_flag = ''Y'' then
+              (case when
+                     (case
+                         when agreement_versions.agreement_payment_terms = ''M'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0))
+                         when agreement_versions.agreement_payment_terms = ''W'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0) / 4.33)
+                         when agreement_versions.agreement_payment_terms = ''B'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0) / 2)
+                     else CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0) / 2)
+                     end) = 0 then 1
+               else
+               	    (case
+                          when agreement_versions.agreement_payment_terms = ''M'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0))
+                          when agreement_versions.agreement_payment_terms = ''W'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0) / 4.33)
+                          when agreement_versions.agreement_payment_terms = ''B'' then CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0) / 2)
+                       else CEIL(agreement_versions.agreement_contract_balance/nullif(agreement_versions.agreement_payment_amt,0) / 2)
+                       end)
+               end)end) AS months_remaining,
+
+            (case when agreement_versions.agreement_open_flag = ''Y'' then
+              (case
+               when agreement_versions.agreement_open_flag = ''Y''
+                   and agreement_versions.agreement_next_due_date < current_date
+               then ''Y''
+               else ''N''
+               end) end) AS past_due,
+            (case when agreement_versions.agreement_open_flag = ''Y'' then
+              (case
+              when agreement_versions.agreement_open_flag = ''Y'' and agreement_versions.agreement_next_due_date < current_date
+              then current_date - agreement_versions.agreement_next_due_date
+              else null
+              end)end) AS days_overdue,
+            (case when agreement_versions.agreement_open_flag = ''Y'' then
+              Cast((case when
+   		             (case
+                		      when agreement_versions.agreement_payment_terms = ''M'' and agreement_versions.agreement_open_flag = ''Y''
+                  	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * case when ((current_date - agreement_versions.agreement_next_due_date)) < 30 then 1 else round(trunc(1.00 * ((current_date + 30 - agreement_versions.agreement_next_due_date)/30)),2) end
+                		      when agreement_versions.agreement_payment_terms = ''W'' and agreement_versions.agreement_open_flag = ''Y''
+                   	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 7 - agreement_versions.agreement_next_due_date) / 7),0),2)
+                 	         when agreement_versions.agreement_payment_terms = ''B'' and agreement_versions.agreement_open_flag = ''Y''
+                   	      and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
+                	 	      when agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
+                           and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
+                	 	 else 0
+                		 end) > agreement_versions.agreement_contract_balance
+                 then agreement_versions.agreement_contract_balance
+                 else
+                       (case
+                            when agreement_versions.agreement_payment_terms = ''M'' and agreement_versions.agreement_open_flag = ''Y''
+                            and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * case when ((current_date - agreement_versions.agreement_next_due_date)) < 30 then 1 else CEIL((current_date + 30 - agreement_versions.agreement_next_due_date)/30) end
+                            when agreement_versions.agreement_payment_terms = ''W'' and agreement_versions.agreement_open_flag = ''Y''
+                            and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 7 - agreement_versions.agreement_next_due_date) / 7),0),2)
+                            when agreement_versions.agreement_payment_terms = ''B'' and agreement_versions.agreement_open_flag = ''Y''
+                            and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
+                            when agreement_versions.agreement_payment_terms = ''S'' and agreement_versions.agreement_open_flag = ''Y''
+                            and agreement_versions.agreement_next_due_date < current_date then nullif(agreement_versions.agreement_payment_amt, 0) * round(trunc(1.00 * ((current_date + 14 - agreement_versions.agreement_next_due_date) / 15),0 + 1),2)
+                       else 0
+                       end)
+                 end) AS Numeric(11,2))::VARCHAR end) AS overdue_amount,
+
+             case when (select count(customer_id) from ' || r.schema_name || '.level2_agreements ag join ' || r.schema_name || '.level2_agreement_versions av4 on av4.agreement_id = ag.id where ag.agreement_type = ''F'' and av4.agreement_open_flag = ''Y'' and ag.customer_id = customers.id)> 0 then ''Y'' else ''N'' end as club_member,
+             (select min(agreement_number) from ' || r.schema_name || '.level2_agreements ag2 join ' || r.schema_name || '.level2_agreement_versions av5 on av5.agreement_id = ag2.id where ag2.agreement_type = ''F'' and av5.agreement_open_flag = ''Y'' and ag2.customer_id = customers.id) as club_number,
+             (select coalesce(min(av2.agreement_payment_amt),0) from ' || r.schema_name || '.level2_agreements ag23
+                       	  JOIN ' || r.schema_name || '.level2_agreement_versions av2 on ag23.id = av2.agreement_id
+                        	  where ag23.agreement_type = ''F'' and av2.agreement_open_flag = ''Y'' and ag23.customer_id = customers.id) as club_fee,
+
+             agreement_versions.agreement_recur_pmt_switch as autopay,
+             agreement_versions.agreement_open_flag as active_agreement,
+             agreement_versions.agreement_payment_terms as payment_terms,
+             agreement_versions.agreement_closed_date as date_closed,
+             agreement_versions.agreement_closed_reason as closed_reason,
+             customers.cust_cell_phone        AS cell_phone_number,
+             customers.cust_home_phone        AS home_phone_number
+         FROM ' || r.schema_name || '.level2_agreements as agreements
+            JOIN
+            ' || r.schema_name || '.level2_agreement_versions as agreement_versions on agreements.id = agreement_versions.agreement_id
+            JOIN
+            ' || r.schema_name || '.level2_stores as stores on agreement_versions.store_id = stores.id
+            JOIN
+            ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
+            JOIN
+            ' || r.schema_name || '.level2_agreement_version_inventories as agreement_version_inventories on agreement_versions.id = agreement_version_inventories.agreement_version_id
+           JOIN
+            ' || r.schema_name || '.level2_inventories as inventories on agreement_version_inventories.inventory_id = inventories.id
+            JOIN
+            ' || r.schema_name || '.level2_models as models on inventories.model_id = models.id
+         WHERE
+            agreements.agreement_type = ''O'' and agreement_closed_date >= (current_date - 120) and agreement_closed_reason In(''03'',''04'',''10'') --last 120 days payouts
+            and customers.cust_acct_nbr not in (
+              (select cust_acct_nbr from ' || r.schema_name || '.level2_customers as c2 join ' || r.schema_name || '.level2_agreements as a2 on c2.id = a2.customer_id
+			                  JOIN ' || r.schema_name || '.level2_agreement_versions as av2 on a2.id = av2.agreement_id
+                                 WHERE a2.agreement_type = ''O'' and av2.agreement_open_flag = ''Y''))
+                                       and customers.cust_acct_nbr not in (
+              (select cust_acct_nbr from ' || r.schema_name || '.level2_customers as c4 join ' || r.schema_name || '.level2_agreements as a4 on c4.id = a4.customer_id
+			                  JOIN ' || r.schema_name || '.level2_agreement_versions as av4 on a4.id = av4.agreement_id
+                                 WHERE a4.agreement_type = ''O'' and av4.agreement_open_flag <> ''Y'' and av4.agreement_closed_date > current_date - 274
+                                 and Trim(LEADING ''0'' FROM CAST(av4.agreement_closed_reason AS TEXT))In(''6'',''7'',''8'',''9'')))
+         GROUP BY
+            stores.loc_tran_loc, customers.cust_acct_nbr, customers.id, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
+            customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone,
+            customers.cust_home_phone,customers.cust_email_address,
+            agreements.agreement_number,agreement_versions.agreement_open_flag, agreement_versions.agreement_payment_terms,
+            agreement_versions.agreement_contract_date,	agreement_versions.agreement_next_due_date,
+            agreement_versions.agreement_payment_terms, agreement_versions.agreement_payment_amt,agreement_versions.agreement_contract_amt,
+            agreement_versions.agreement_contract_balance,
+            customers.cust_address,customers.cust_address_2,customers.cust_city,customers.cust_state,customers.cust_zip_pc,product,agreement_versions.agreement_recur_pmt_switch,agreement_versions.agreement_payment_terms,
+            agreement_versions.agreement_closed_date, agreement_versions.agreement_closed_reason
+         ';
+
+      unionAll := ' UNION ALL ';
+   END LOOP;
+   sqlToExec := sqlToExec || 'ORDER BY store_number, customer_number, agreement_number ASC';
+
+   EXECUTE sqlToExec;
+END $$;
+
+
+DO $$
+DECLARE
+   argsDatasets TEXT[] := STRING_TO_ARRAY(CURRENT_SETTING('args.datasets'), ',');
+   r RECORD;
+   sqlToExec VARCHAR;
+   unionAll VARCHAR;
+BEGIN
    sqlToExec := 'CREATE OR REPLACE VIEW csv_at_risk_vw AS';
    unionAll := '';
 
@@ -3181,7 +3372,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.csv_payouts_vw (
        closed_reason INTEGER,
        cell_phone_number VARCHAR,
        home_phone_number VARCHAR
-  ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_payouts_next_30_vw', SCHEMA_NAME 'public');
+  ) SERVER fastinfo OPTIONS (TABLE_NAME 'csv_payouts_vw', SCHEMA_NAME 'public');
 
 CREATE FOREIGN TABLE fastinfo_prod_import.csv_at_risk_vw (
        dataset VARCHAR,
