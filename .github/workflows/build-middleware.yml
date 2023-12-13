@@ -196,6 +196,10 @@ jobs:
    e2eTesting:
       runs-on: ubuntu-latest
       continue-on-error: true
+      permissions:
+         contents: read
+         id-token: write
+         actions: write
       steps:
          - uses: actions/checkout@v4
            with:
@@ -203,6 +207,8 @@ jobs:
             show-progress: false
          - name: Calculate variables
            id: calcVars
+           env:
+            DUMPFILES_ETAGS_JSON: ${{ vars.DUMPFILES_ETAGS_JSON }}
            run: |
             #!/usr/bin/env bash
             ${{ env.BASH_EXPORT_OVERRIDE }}
@@ -217,11 +223,13 @@ jobs:
             BRANCH_NAME='${{ github.ref_name }}'
             source ${{ github.workspace }}/.github/workflows/scripts/validate-branch-name || exit 0 # ignore failed validation, use the results anyway
 
+            echo "ETAGS_JSON=${DUMPFILES_ETAGS_JSON//\"/\\\"}" >> "${GITHUB_ENV}"
+
          - name: Trigger E2E testing
            uses: hightouchinc/dynamic-uses@v1
            with:
             uses: hightouchinc/cynergi-e2e/.github/actions/test-e2e@${{ env.BASE_BRANCH_NAME }}
-            with: '{"e2eBranch": "${{ env.BASE_BRANCH_NAME }}", "token": "${{ secrets.READONLY_HTI_PAT }}", "middlewareBranch": "${{ github.ref_name}}", "middlewareSha": "${{ github.sha }}", "clientBranch": "${{ env.BASE_BRANCH_NAME }}", "teamsNotificationWebhook": "${{ secrets.TEAMS_NOTIFICATION_WEBHOOK }}", "debugMode": "${{ env.DEBUG_FLAG }}"}'
+            with: '{"e2eBranch": "${{ env.BASE_BRANCH_NAME }}", "token": "${{ secrets.READONLY_HTI_PAT }}", "middlewareBranch": "${{ github.ref_name}}", "middlewareSha": "${{ github.sha }}", "clientBranch": "${{ env.BASE_BRANCH_NAME }}", "teamsNotificationWebhook": "${{ secrets.TEAMS_NOTIFICATION_WEBHOOK }}", "dumpfilesEtagsJson": "${{ env.ETAGS_JSON }}", "debugMode": "${{ env.DEBUG_FLAG }}"}'
 
    deploy:
       needs: build

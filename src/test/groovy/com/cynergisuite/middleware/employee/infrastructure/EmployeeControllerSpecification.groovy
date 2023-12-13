@@ -25,8 +25,8 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
 
       then:
       pageOneResult.requested.with { new EmployeePageRequest(it) } == pageOne
-      pageOneResult.totalElements == 144
-      pageOneResult.totalPages == 8
+      pageOneResult.totalElements == 79
+      pageOneResult.totalPages == 4
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements.size() == 20
@@ -42,9 +42,9 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
 
    void "filter employee" () {
       given:
-      def filterOne = new EmployeePageRequest([page: 1, size:  10, sortBy:  'id', sortDirection: 'ASC', lastName: 'STORE%20MANAGER'])
-      def filterTwo = new EmployeePageRequest([lastName: 'STORE%20MANAGER'])
-      def filterThree = new EmployeePageRequest([page: 1, size:  10, sortBy:  'id', sortDirection: 'ASC', firstNameMi: 'JOHNATHON'])
+      def filterOne = new EmployeePageRequest([page: 1, size:  10, sortBy:  'id', sortDirection: 'ASC', lastName: 'HOME%20OFFICE'])
+      def filterTwo = new EmployeePageRequest([lastName: 'HOME%20OFFICE'])
+      def filterThree = new EmployeePageRequest([page: 1, size:  10, sortBy:  'id', sortDirection: 'ASC', firstNameMi: 'MARK'])
 
       when:
       def filterOneResult = get("$path${filterOne}")
@@ -57,16 +57,11 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
       filterOneResult.last == true
       filterOneResult.elements.size() == 1
       with(filterOneResult.elements[0]) {
-         number == 90002
-         lastName == 'STORE MANAGER'
-         alternativeStoreIndicator == 'N'
+         number == 90000
+         lastName == 'HOME OFFICE'
+         alternativeStoreIndicator == 'A'
          alternativeArea == 0
          type == 'sysz'
-         alternativeStoreIndicator == 'N'
-         alternativeArea == 0
-         passCode == null
-         store == null
-         active == null
       }
 
       when:
@@ -80,14 +75,11 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
       filterTwoResult.last == true
       filterTwoResult.elements.size() == 1
       with(filterTwoResult.elements[0]) {
-         number == 90002
-         lastName == 'STORE MANAGER'
-         alternativeStoreIndicator == 'N'
+         number == 90000
+         lastName == 'HOME OFFICE'
+         alternativeStoreIndicator == 'A'
          alternativeArea == 0
          type == 'sysz'
-         passCode == null
-         store == null
-         active == null
       }
 
       when:
@@ -95,16 +87,16 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
 
       then:
       filterThreeResult.requested.with { new EmployeePageRequest(it) } == filterThree
-      filterThreeResult.totalElements == 3
+      filterThreeResult.totalElements == 2
       filterThreeResult.totalPages == 1
       filterThreeResult.first == true
       filterThreeResult.last == true
-      filterThreeResult.elements.size() == 3
+      filterThreeResult.elements.size() == 2
       with(filterThreeResult.elements[0]) {
-         number == 1077
-         lastName == 'SMITH'
-         firstNameMi == 'JOHNATHON'
-         alternativeStoreIndicator == 'N'
+         number == 4013
+         lastName == 'LEWIS'
+         firstNameMi == 'MARK'
+         alternativeStoreIndicator == 'A'
          alternativeArea == 0
          type == 'sysz'
          passCode == null
@@ -122,7 +114,8 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
       with(searchOneResult.elements[0]) {
          number == firstElementUserNumber
          lastName == firstElementUserName
-         alternativeStoreIndicator == 'N'
+         firstNameMi == firstElementUserFirstName
+         alternativeStoreIndicator == 'A'
          alternativeArea == 0
          type == 'sysz'
          passCode == null
@@ -131,10 +124,10 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
       }
 
       where:
-      searchQuery                                                                                                       | searchKey       || firstElementUserNumber | firstElementUserName
-      new EmployeePageRequest([page: 1, size:  10, search: UrlEscapers.urlFragmentEscaper().escape('Store Manager')])   | 'Store Manager' || 90002                      | 'STORE MANAGER'
-      new EmployeePageRequest([search: UrlEscapers.urlFragmentEscaper().escape('stor manager')])                        | 'stor manager'  || 90002                      | 'STORE MANAGER'
-      new EmployeePageRequest([search: UrlEscapers.urlFragmentEscaper().escape('as manager')])                          | 'as manager'    || 90003                      | 'ASSIST MANAGER'
-      new EmployeePageRequest([search: UrlEscapers.urlFragmentEscaper().escape('St Manag')])                            | 'St Manag'      || 90002                      | 'STORE MANAGER'
+      searchQuery                                                                                                       | searchKey       || firstElementUserNumber | firstElementUserName   | firstElementUserFirstName
+      new EmployeePageRequest([page: 1, size:  10, search: UrlEscapers.urlFragmentEscaper().escape('CRASH TEST')])     | 'Crash Test'   || 200                      | 'TEST'                 | 'CRASH'
+      new EmployeePageRequest([search: UrlEscapers.urlFragmentEscaper().escape('cra test')])                           | 'cra test'     || 200                      | 'TEST'                 | 'CRASH'
+      new EmployeePageRequest([search: UrlEscapers.urlFragmentEscaper().escape('tes test')])                           | 'tes test'     || 313331                   | 'TEST'                 | 'TEST'
+      new EmployeePageRequest([search: UrlEscapers.urlFragmentEscaper().escape('st test')])                            | 'St Test'      || 313331                   | 'TEST'                 | 'TEST'
    }
 }

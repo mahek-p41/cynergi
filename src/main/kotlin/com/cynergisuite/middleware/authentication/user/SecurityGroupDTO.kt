@@ -13,7 +13,7 @@ import javax.validation.constraints.NotNull
 @Schema(name = "SecurityGroupDTO", title = "A data transfer object containing security group information", description = "An data transfer object containing security group information.")
 data class SecurityGroupDTO(
 
-    @field:NotNull
+
     @field:Schema(name = "id", required = false, nullable = true, description = "System generated ID")
     var id: UUID? = null,
 

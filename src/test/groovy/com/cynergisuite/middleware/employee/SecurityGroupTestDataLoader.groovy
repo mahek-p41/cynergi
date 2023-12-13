@@ -77,7 +77,9 @@ class SecurityGroupTestDataLoaderService {
    Stream<SecurityGroup> stream(int numberIn = 1, CompanyEntity companyIn, String value = null) {
       return SecurityGroupTestDataLoader.stream(numberIn, companyIn, value)
               .map { securityGroupRepository.insert(it) }.peek {
-               securityGroupRepository.assignAccessPointsToSecurityGroups(it)
+               def accessPoints = securityGroupRepository.findAllSecurityAccessPointTypes(companyIn)
+               def accessPointIds = accessPoints.collect { it.id }
+               securityGroupRepository.assignAccessPointsToSecurityGroups(it.id, accessPointIds)
       }
    }
 
@@ -90,10 +92,6 @@ class SecurityGroupTestDataLoaderService {
    }
 
    def assignEmployeeToSecurityGroup(EmployeeEntity employee, SecurityGroup securityGroup) {
-      securityGroupRepository.assignEmployeeToSecurityGroup(employee, securityGroup)
-   }
-
-   def assignAccessPointsToSecurityGroups(SecurityGroup securityGroup) {
-      securityGroupRepository.assignAccessPointsToSecurityGroups(securityGroup)
+      securityGroupRepository.assignSingleEmployeeToMultipleSecurityGroups(employee, [securityGroup.id])
    }
 }

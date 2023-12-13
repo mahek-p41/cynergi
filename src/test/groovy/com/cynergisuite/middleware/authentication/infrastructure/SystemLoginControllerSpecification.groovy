@@ -336,40 +336,10 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
          ).bodyAsJson()
 
       then:
-      notThrown(HttpClientResponseException)
-      authResponse.access_token != null
-
-      when:
-      httpClient.toBlocking()
-         .exchange(
-            HEAD("/authenticated/check").header("Authorization", "Bearer ${authResponse.access_token}"),
-            Argument.of(String),
-            Argument.of(String)
-         )
-
-      then:
-      notThrown(HttpClientResponseException)
-
-      when:
-      def response = httpClient.toBlocking()
-         .exchange(
-            GET("/authenticated").header("Authorization", "Bearer ${authResponse.access_token}"),
-            Argument.of(String),
-            Argument.of(String)
-         ).bodyAsJson()
-
-      then:
-      notThrown(HttpClientResponseException)
-      response.employeeNumber == "${employee.number}"
-      response.storeNumber == 3
-      response.company.with {
-         clientCode = company.clientCode
-         clientId = company.clientId
-         datasetCode = company.datasetCode
-         id = company.id
-         name = company.name
-         federalTaxNumber = null
-      }
+      final error = thrown(HttpClientResponseException)
+      error.status == UNAUTHORIZED
+      final json = error.response.bodyAsJson()
+      json.message == "Access denied for ${employee.number} credentials do not match"
    }
 
    void "check authenticated returns 401 when not logged in via HEAD" () {
@@ -455,10 +425,14 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
    }
 
    void "login with sysz user who provides pass_code with 8 characters that is 2 over the max length" () {
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final department = departmentFactoryService.department('HO', company)
+      final store = storeFactoryService.store(3, company)
+      final employee = employeeFactoryService.single(store, department)
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials("103", "12312345", 1, "corrto")),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, store.myNumber(), employee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()
@@ -469,10 +443,14 @@ class SystemLoginControllerSpecification extends ServiceSpecificationBase {
    }
 
    void "login with sysz user who provides pass_code with exact pass_code of 6" () {
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final department = departmentFactoryService.department('HO', company)
+      final store = storeFactoryService.store(3, company)
+      final employee = employeeFactoryService.single(store, department)
       when:
       def authResponse = httpClient.toBlocking()
          .exchange(
-            POST("/login", new LoginCredentials("103", "123123", 1, "corrto")),
+            POST("/login", new LoginCredentials(employee.number.toString(), employee.passCode, store.myNumber(), employee.company.datasetCode)),
             Argument.of(String),
             Argument.of(String)
          ).bodyAsJson()

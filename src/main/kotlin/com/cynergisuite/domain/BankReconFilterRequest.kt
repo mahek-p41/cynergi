@@ -1,6 +1,5 @@
 package com.cynergisuite.domain
 
-import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationType
 import io.swagger.v3.oas.annotations.media.Schema
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
@@ -36,8 +35,8 @@ class BankReconFilterRequest(
    @field:Schema(name = "endDocument", description = "End Document Number")
    var endDocument: String? = null,
 
-   @field:Schema(name = "bankType", description = "Bank Reconciliation Type Value")
-   var bankType: String? = null,
+   @field:Schema(name = "bankReconciliationType", description = "Bank Reconciliation Type Value")
+   var bankReconciliationType: String? = null,
 
    @field:Schema(name = "description", description = "Filter full or partial description for bank reconciliation")
    var description: String? = null,
@@ -69,7 +68,7 @@ class BankReconFilterRequest(
             .append(this.thruDate, other.thruDate)
             .append(this.beginDocument, other.beginDocument)
             .append(this.endDocument, other.endDocument)
-            .append(this.bankType , other.bankType)
+            .append(this.bankReconciliationType , other.bankReconciliationType)
             .append(this.description, other.description)
             .append(this.status, other.status)
             .append(this.beginClearDate, other.beginClearDate)
@@ -89,7 +88,7 @@ class BankReconFilterRequest(
          .append(this.thruDate)
          .append(this.beginDocument)
          .append(this.endDocument)
-         .append(this.bankType)
+         .append(this.bankReconciliationType)
          .append(this.description)
          .append(this.status)
          .append(this.beginClearDate)
@@ -109,7 +108,7 @@ class BankReconFilterRequest(
          thruDate = this.thruDate,
          beginDocument = this.beginDocument,
          endDocument = this.endDocument,
-         bankType = this.bankType,
+         bankReconciliationType = this.bankReconciliationType,
          description = this.description,
          status = this.status,
          beginClearDate = this.beginClearDate,
@@ -125,7 +124,7 @@ class BankReconFilterRequest(
          "thruDate" to thruDate,
          "beginDocument" to beginDocument,
          "endDocument" to endDocument,
-         "bankType" to bankType,
+         "bankReconciliationType" to bankReconciliationType,
          "description" to description,
          "status" to status,
          "beginClearDate" to beginClearDate,

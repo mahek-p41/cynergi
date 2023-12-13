@@ -21,5 +21,9 @@ data class StagingDepositEntity(
    val deposit5ACHOLP: BigDecimal,
    val deposit6CCOLP: BigDecimal,
    val deposit7DebitCard: BigDecimal,
+   val deposit8ACHChargeback: BigDecimal?,
+   val deposit9ICCChargeback: BigDecimal?,
+   val deposit10NSFReturnCheck: BigDecimal?,
+   val deposit11ARBadCheck: BigDecimal?,
    val depositTotal: BigDecimal
 )

@@ -199,7 +199,7 @@ class GeneralLedgerJournalController @Inject constructor(
       return generalLedgerJournalService.delete(id, user.myCompany())
    }
 
-   @Secured("GLDELJE")
+   @Secured("GLPURGEJE")
    @Delete(value = "/purge{?filterRequest*}")
    @AccessControl
    @Throws(NotFoundException::class)
