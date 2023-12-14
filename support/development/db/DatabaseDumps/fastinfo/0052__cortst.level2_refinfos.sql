@@ -9,7 +9,7 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 CREATE TABLE IF NOT EXISTS cortst.level2_refinfos
 (
-    id bigint NOT NULL DEFAULT nextval('cortst.level2_refinfos_id_seq'::regclass),
+    id bigint NOT NULL,
     customer_id bigint,
     refinfo_seq_nbr integer,
     refinfo_company_name character varying(30) COLLATE pg_catalog."default",
@@ -42,17 +42,18 @@ CREATE TABLE IF NOT EXISTS cortst.level2_refinfos
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
     row_creator_id bigint,
-    ht_etl_schema character varying(10) COLLATE pg_catalog."default" NOT NULL DEFAULT 'public'::character varying,
+    ht_etl_schema character varying(10) COLLATE pg_catalog."default" NOT NULL DEFAULT 'public'::character varying
 );
-ALTER TABLE cortst.level2_refinfos OWNER TO fastinfo_dba;
+ALTER TABLE cortst.level2_refinfos OWNER TO postgres;
 CREATE SEQUENCE cortst.level2_refinfos_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
-ALTER TABLE cortst.level2_refinfos_id_seq OWNER TO fastinfo_dba;
+ALTER TABLE cortst.level2_refinfos_id_seq OWNER TO postgres;
 ALTER SEQUENCE cortst.level2_refinfos_id_seq OWNED BY cortst.level2_refinfos.id;
 ALTER TABLE ONLY cortst.level2_refinfos ALTER COLUMN id SET DEFAULT nextval('level2_refinfos_id_seq'::regclass);
 ALTER TABLE ONLY cortst.level2_refinfos
-    ADD CONSTRAINT CONSTRAINT level2_refinfos_pkey PRIMARY KEY (id);
+ADD CONSTRAINT level2_refinfos_pkey PRIMARY KEY (id);
+
