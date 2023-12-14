@@ -50,6 +50,14 @@ class AccountPayableInvoiceService @Inject constructor(
       return AccountPayableInvoiceReportTemplate(found)
    }
 
+   fun fetchInvoicePayments(invoiceID: UUID, company: CompanyEntity): List<AccountPayableInvoiceInquiryPaymentDTO>{
+      return accountPayableInvoiceInquiryRepository.fetchInquiryPayments(invoiceID, company)
+   }
+
+   fun fetchGLDistributions(invoiceID: UUID, company: CompanyEntity): List<AccountPayableDistDetailReportDTO> {
+      return accountPayableInvoiceInquiryRepository.fetchInquiryDistributions(invoiceID, company)
+   }
+
    fun export(filterRequest: InvoiceReportFilterRequest, company: CompanyEntity): ByteArray {
       val found = accountPayableInvoiceReportRepository.export(company, filterRequest)
       val stream = ByteArrayOutputStream()

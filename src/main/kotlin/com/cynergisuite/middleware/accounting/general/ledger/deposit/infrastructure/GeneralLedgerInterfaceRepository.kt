@@ -5,7 +5,9 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.general.ledger.deposit.StagingDepositType
+import com.cynergisuite.middleware.company.CompanyEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -21,11 +23,12 @@ import javax.transaction.Transactional
 class GeneralLedgerInterfaceRepository @Inject constructor(
    private val jdbc: Jdbi,
    private val stagingDepositTypeRepository: StagingDepositTypeRepository,
+   private val accountRepository: AccountRepository,
 ) {
    private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerInterfaceRepository::class.java)
 
    @Transactional
-   fun upsert(record: CSVRecord, map: MutableMap<String, Any?>) {
+   fun upsert(record: CSVRecord, map: MutableMap<String, Any?>, company: CompanyEntity) {
       logger.debug("Upserting verify_staging {}", record)
 
       if (!movedToPendingJournalEntries(
@@ -83,44 +86,53 @@ class GeneralLedgerInterfaceRepository @Inject constructor(
 
          stagingDepositTypes.forEach {
             map["deposit_type_id"] = it.id
-            map["deposit_amount"] = map[it.value]
+            val pair = map[it.value] as Pair<*, *>
+            map["deposit_amount"] = pair.first
+            val accountNumber = pair.second as Long
+            if (accountNumber != 0L) {
+               val account = accountRepository.findByNumber(accountNumber, company)!!
+               map["deposit_account_id"] = account.id
 
-            val depositID = findDepositID(verifyID!!, it.id)
+               val depositID = findDepositID(verifyID!!, it.id)
 
-            if (depositID == null) {
-               jdbc.update(
-                  """
-                  INSERT INTO deposits_staging (
-                      company_id,
-                      verify_id,
-                      store_number_sfk,
-                      business_date,
-                      deposit_type_id,
-                      deposit_amount
-
+               if (depositID == null) {
+                  jdbc.update(
+                     """
+                        INSERT INTO deposits_staging (
+                            company_id,
+                            verify_id,
+                            store_number_sfk,
+                            business_date,
+                            deposit_type_id,
+                            deposit_amount,
+                            deposit_account_id
+                        )
+                        VALUES (
+                           :company_id,
+                           :verify_id,
+                           :store_number_sfk,
+                           :business_date,
+                           :deposit_type_id,
+                           :deposit_amount,
+                           :deposit_account_id
+                        )
+                     """.trimIndent(),
+                     map
                   )
-                  VALUES (
-                     :company_id,
-                     :verify_id,
-                     :store_number_sfk,
-                     :business_date,
-                     :deposit_type_id,
-                     :deposit_amount
-                     )
-               """.trimIndent(),
-                  map
-               )
+               } else {
+                  jdbc.update(
+                     """
+                        UPDATE deposits_staging
+                        SET deposit_amount = :deposit_amount
+                        WHERE verify_id = :verify_id
+                           AND deposit_type_id = :deposit_type_id
+                           AND deleted = FALSE
+                     """.trimIndent(),
+                     map
+                  )
+               }
             } else {
-               jdbc.update(
-                  """
-                  UPDATE deposits_staging
-                  SET deposit_amount = :deposit_amount
-                  WHERE verify_id = :verify_id
-                     AND deposit_type_id = :deposit_type_id
-                     AND deleted = FALSE
-               """.trimIndent(),
-                  map
-               )
+               logger.info("Zero account number values are not populated and will be skipped.")
             }
          }
       }

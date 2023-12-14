@@ -53,4 +53,22 @@ data class GeneralLedgerSummaryEntity(
       )
 
    override fun myId(): UUID? = id
+
+   fun getNetActivityForMonth(month: Int): BigDecimal? {
+      return when (month) {
+         1 -> netActivityPeriod1
+         2 -> netActivityPeriod2
+         3 -> netActivityPeriod3
+         4 -> netActivityPeriod4
+         5 -> netActivityPeriod5
+         6 -> netActivityPeriod6
+         7 -> netActivityPeriod7
+         8 -> netActivityPeriod8
+         9 -> netActivityPeriod9
+         10 -> netActivityPeriod10
+         11 -> netActivityPeriod11
+         12 -> netActivityPeriod12
+         else -> null
+      }
+   }
 }

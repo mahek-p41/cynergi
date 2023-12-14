@@ -384,33 +384,33 @@ class InventoryRepository(
 
       if (filterRequest.serialNbr != null) {
          params["serialNbr"] = filterRequest.serialNbr
-         whereClause.append(" AND inv.serial_number >= :serialNbr ")
+         whereClause.append(" AND UPPER(inv.serial_number) LIKE \'${filterRequest.serialNbr!!.trim().uppercase()}%\'")
       }
 
       if (filterRequest.modelNbr != null) {
          params["modelNbr"] = filterRequest.modelNbr
-         whereClause.append(" AND inv.model_number >= :modelNbr ")
+         whereClause.append(" AND UPPER(inv.model_number) LIKE \'${filterRequest.modelNbr!!.trim().uppercase()}%\'")
       }
 
       if (filterRequest.poNbr != null) {
-         params["poNbr"] = filterRequest.poNbr
-         whereClause.append(" AND inv.inv_purchase_order_number = :poNbr ")
+         params["poNbr"] = filterRequest.poNbr!!.uppercase()
+         whereClause.append(" AND UPPER(inv.inv_purchase_order_number) LIKE :poNbr ")
       }
 
       if (filterRequest.invoiceNbr != null) {
          params["invoiceNbr"] = filterRequest.invoiceNbr
-         whereClause.append(" AND inv.invoice_number = :invoiceNbr ")
+         whereClause.append(" AND UPPER(inv.invoice_number) LIKE \'${filterRequest.invoiceNbr!!.trim().uppercase()}%\'")
       }
 
       if (filterRequest.receivedDate != null) {
          params["receivedDate"] = filterRequest.receivedDate
-         whereClause.append(" AND inv.received_date >= :receivedDate ")
+         whereClause.append(" AND inv.received_date = :receivedDate ")
       }
 
       if (filterRequest.beginAltId != null && filterRequest.endAltId != null) {
-         params["beginAltId"] = filterRequest.beginAltId
-         params["endAltId"] = filterRequest.endAltId
-         whereClause.append(" AND inv.alt_id BETWEEN :beginAltId AND :endAltId ")
+         params["beginAltId"] = filterRequest.beginAltId!!.uppercase()
+         params["endAltId"] = filterRequest.endAltId!!.uppercase()
+         whereClause.append(" AND UPPER(inv.alt_id) BETWEEN :beginAltId AND :endAltId ")
       }
 
       if (filterRequest.receivedDate != null) {

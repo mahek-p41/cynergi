@@ -182,7 +182,7 @@ abstract class AuthenticationRepository @Inject constructor(
              sg.value as security_group_value,
              sg.description as security_group_description
            from employee_to_security_group esg
-           join security_group sg on esg.security_group_id = sg.id
+           join security_group sg on esg.security_group_id = sg.id AND esg.emp_number = :employeeNumber
            join company c on sg.company_id = c.id
            where c.dataset_code = :dataset
            ) filteredSecurityGroups on au.id = filteredSecurityGroups.employee_id_sfk
@@ -192,6 +192,7 @@ abstract class AuthenticationRepository @Inject constructor(
       WHERE comp.dataset_code = :dataset
             AND au.number = :employeeNumber
             AND au.pass_code = convert_passcode(au.type, :passCode, au.pass_code)
+            AND au.active = TRUE
    """,
       nativeQuery = true
    )
@@ -382,9 +383,10 @@ abstract class AuthenticationRepository @Inject constructor(
            LEFT OUTER JOIN (
              select esg.employee_id_sfk, sg.id as security_group_id,
              sg.value as security_group_value,
-             sg.description as security_group_description
+             sg.description as security_group_description,
+             esg.emp_number
            from employee_to_security_group esg
-           join security_group sg on esg.security_group_id = sg.id
+           join security_group sg on esg.security_group_id = sg.id AND esg.emp_number = :employeeNumber
            join company c on sg.company_id = c.id
            where c.dataset_code = :dataset
            ) filteredSecurityGroups on au.id = filteredSecurityGroups.employee_id_sfk
@@ -394,6 +396,7 @@ abstract class AuthenticationRepository @Inject constructor(
       WHERE comp.dataset_code = :dataset
             AND au.number = :employeeNumber
             AND au.pass_code = convert_passcode(au.type, :passCode, au.pass_code)
+            AND au.active = TRUE
    """,
       nativeQuery = true
    )
@@ -424,7 +427,7 @@ abstract class AuthenticationRepository @Inject constructor(
       val company = companyRepository.findOne(companyId) ?: throw Exception("Unable to find company")
       val employee = employeeRepository.findOne(employeeId, employeeType, company) ?: throw Exception("Unable to find employee")
       val location = locationRepository.findOne(storeNumber, company) ?: throw Exception("Unable to find store from authentication")
-      val securityGroups = securityGroupRepository.findAll(employeeId, company.id!!)
+      val securityGroups = securityGroupRepository.findByEmployee(employeeId, employeeNumber,  company.id!!)
       val department = employee.department
 
       return AuthenticatedEmployee(

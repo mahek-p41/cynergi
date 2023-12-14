@@ -22,6 +22,7 @@ import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
+import java.util.UUID
 import javax.transaction.Transactional
 
 @Singleton
@@ -61,7 +62,7 @@ class EmployeeRepository @Inject constructor(
          mutableMapOf("comp_id" to company.id, "emp_id" to id)
       ) { rs, _ -> mapRow(rs) }
 
-      logger.trace("Searching for Employee: {} resulted in {}", id, company, found)
+      logger.trace("Searching for Employee: {} resulted in {}", id, found)
 
       return found
    }
@@ -132,6 +133,7 @@ class EmployeeRepository @Inject constructor(
          where.append(and).append(" $fieldToSearch <-> :search_query < 0.9 ")
          sortBy = " $fieldToSearch <-> :search_query "
       }
+      where.append(and).append(" emp_alternative_store_indicator = 'A' ")
 
       val pagedQuery = StringBuilder("${employeeBaseQuery()} $where ")
 
@@ -162,6 +164,38 @@ class EmployeeRepository @Inject constructor(
          elements = elements,
          totalElements = totalElements ?: 0
       )
+   }
+
+
+   @ReadOnly
+   fun findEmployeesBySecurityGroup(securityGroupId: UUID, company: CompanyEntity): List<EmployeeEntity> {
+      val params = mapOf("securityGroupId" to securityGroupId, "compId" to company.id)
+      val query =
+         """
+            ${employeeBaseQuery()} emp
+            JOIN employee_to_security_group etsg on emp.emp_id = etsg.employee_id_sfk and emp.emp_number = etsg.emp_number
+            WHERE etsg.security_group_id = :securityGroupId and comp_id = :compId
+         """.trimIndent()
+      return jdbc.query(
+         query,
+         params
+      ){ rs, _ -> mapRow(rs) }
+   }
+
+   @ReadOnly
+   fun findEmployeesByAccessPoint(accessPointId: Int, company: CompanyEntity): List<EmployeeEntity> {
+      val params = mapOf("accessPointId" to accessPointId, "compId" to company.id)
+      val query =
+         """
+            ${employeeBaseQuery()} emp
+            JOIN employee_to_security_group etsg on emp.emp_id = etsg.employee_id_sfk
+            JOIN security_group_to_security_access_point sgtsap on etsg.security_group_id = sgtsap.security_group_id
+            WHERE sgtsap.security_access_point_id = :accessPointId and comp_id = :compId
+         """.trimIndent()
+      return jdbc.query(
+         query,
+         params
+      ){ rs, _ -> mapRow(rs) }
    }
 
    @ReadOnly
@@ -237,7 +271,7 @@ class EmployeeRepository @Inject constructor(
          Boolean::class.java
       )
 
-      logger.trace("Checking if Employee: {}/{}/{} exists resulted in {}", id, company, exists)
+      logger.trace("Checking if Employee: {}/{} exists resulted in {}", id, company, exists)
 
       return exists
    }
@@ -270,7 +304,7 @@ class EmployeeRepository @Inject constructor(
             "alternative_area" to entity.alternativeArea
          )
       ) { rs, _ ->
-         mapDDLRow(rs, entity.company, entity.department, entity.store, entity.securityGroups!!)
+         mapDDLRow(rs, entity.company, entity.department, entity.store, entity.securityGroups)
       }
    }
 
@@ -283,7 +317,7 @@ class EmployeeRepository @Inject constructor(
       storeColumnPrefix: String = "store_"
    ): EmployeeEntity {
       val company = companyRepository.mapRow(rs, companyColumnPrefix, companyAddressColumnPrefix)
-      val securityGroups = securityGroupRepository.findAll(rs.getLong("${columnPrefix}id"), company.id!!)
+      val securityGroups = securityGroupRepository.findByEmployee(rs.getLong("${columnPrefix}id"), rs.getInt("${columnPrefix}number"), company.id!!,)
       return EmployeeEntity(
          id = rs.getLong("${columnPrefix}id"),
          type = rs.getString("${columnPrefix}type"),
