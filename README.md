@@ -72,7 +72,7 @@ A separate test database is used for integration testing via the Micronaut testi
 do quicker loading and unloading of test data during a test run.  This database does not provide the ability to
 read snapshots of any kind as it is intended to be completely ephemeral.
 
-To start the local database `cyn db start test`
+To start the local database `cyn db start test` or `cyn mid test start`(also start the SFTP server)
 
 1. Connection information
    1. port: 7432
@@ -91,6 +91,7 @@ To start the local database `cyn db start test`
 4. To stop the application click the Red rectangle (Stop) button.
 5. To stop the middleware
    1. `cyn stop`
+6. The maximum heap size needs to be increased in some machines in order to run the whole test suite successfully.
 
 ## To run from Command Line
 Note: This option is useful if you just want to run the application but aren't interested in doing any coding.
@@ -101,6 +102,8 @@ Note: This option is useful if you just want to run the application but aren't i
 3. To stop the application use `ctrl+c` AKA press the CTRL key at the same time you press the C key.
 4. To stop the middleware
    1. `cyn stop`
+5. To clean up unused docker images and volumes
+   1. `docker images -aq -f 'dangling=true' | xargs docker rmi && docker volume ls -q -f 'dangling=true' | xargs docker volume rm`
 
 ## Project Description
 
