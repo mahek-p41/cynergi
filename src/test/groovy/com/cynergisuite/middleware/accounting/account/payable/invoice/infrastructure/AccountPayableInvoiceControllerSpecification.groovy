@@ -623,7 +623,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       switch (criteria) {
          case 'Search by status':
             filterRequest['invStatus'] = 'P'
-            filterRequest['poNbr'] = purchaseOrderIn1.number
+            filterRequest['poNbr'] = purchaseOrderIn2.number
             filterRequest['sortBy'] = 'poHeader.number'
             break
          case 'Search by purchase order number':
@@ -639,7 +639,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
             filterRequest['sortBy'] = 'apInvoice.invoice_date'
             break
          case 'Search by due date':
-            filterRequest['dueDate'] = LocalDate.of(2020, 2, 1)
+            filterRequest['dueDate'] = LocalDate.of(2020, 2, 2)
             filterRequest['sortBy'] = 'apInvoice.due_date'
             break
          case 'Search by invoice amount':
@@ -658,12 +658,12 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       where:
       criteria                            || elements
-      'Search by status'                  || 8
+      'Search by status'                  || 4
       'Search by purchase order number'   || 4
-      'Search by invoice number'          || 10
-      'Search by invoice date'            || 12
-      'Search by due date'                || 16
-      'Search by invoice amount'          || 16
+      'Search by invoice number'          || 5
+      'Search by invoice date'            || 4
+      'Search by due date'                || 4
+      'Search by invoice amount'          || 4
    }
 
    void "create one" () {

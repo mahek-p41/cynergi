@@ -92,27 +92,27 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
 
       if (filterRequest.poNbr != null) {
          params["poNbr"] = filterRequest.poNbr
-         whereClause.append(" AND poHeader.number >= :poNbr ")
+         whereClause.append(" AND poHeader.number = :poNbr ")
       }
 
       if (filterRequest.invNbr != null) {
          params["invNbr"] = filterRequest.invNbr
-         whereClause.append(" AND apInvoice.invoice >= :invNbr ")
+         whereClause.append(" AND apInvoice.invoice = :invNbr ")
       }
 
       if (filterRequest.invDate != null) {
          params["invDate"] = filterRequest.invDate
-         whereClause.append(" AND apInvoice.invoice_date >= :invDate ")
+         whereClause.append(" AND apInvoice.invoice_date = :invDate ")
       }
 
       if (filterRequest.dueDate != null) {
          params["dueDate"] = filterRequest.dueDate
-         whereClause.append(" AND apInvoice.due_date >= :dueDate ")
+         whereClause.append(" AND apInvoice.due_date = :dueDate ")
       }
 
       if (filterRequest.invAmount != null) {
          params["invAmount"] = filterRequest.invAmount
-         whereClause.append(" AND apInvoice.invoice_amount >= :invAmount ")
+         whereClause.append(" AND apInvoice.invoice_amount = :invAmount ")
       }
 
       if (filterRequest.sortBy == "apInvoice.invoice") {
