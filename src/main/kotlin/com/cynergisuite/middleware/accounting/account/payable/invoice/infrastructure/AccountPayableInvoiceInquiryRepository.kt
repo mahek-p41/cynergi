@@ -4,9 +4,11 @@ import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.getBigDecimalOrNull
+import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
@@ -61,11 +63,11 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
             payTo.number                                       AS apInvoice_payTo_number,
             count(*) OVER() AS total_elements
          FROM account_payable_invoice apInvoice
-            JOIN purchase_order_header poHeader                      ON poHeader.id = apInvoice.purchase_order_id AND poHeader.deleted = FALSE
             JOIN account_payable_invoice_type_domain type            ON type.id = apInvoice.type_id
             JOIN account_payable_invoice_status_type_domain status   ON status.id = apInvoice.status_id
             JOIN vendor vend                                         ON apInvoice.vendor_id = vend.id AND vend.deleted = FALSE
             JOIN vendor payTo                                        ON apInvoice.pay_to_id = payTo.id AND payTo.deleted = FALSE
+            LEFT JOIN purchase_order_header poHeader                 ON poHeader.id = apInvoice.purchase_order_id AND poHeader.deleted = FALSE
       """
    }
 
@@ -211,8 +213,8 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
          invDate = rs.getLocalDate("${columnPrefix}invoice_date"),
          type = AccountPayableInvoiceTypeDTO(type),
          separateCheckIndicator = rs.getBoolean("${columnPrefix}separate_check_indicator"),
-         poId = rs.getUuid("${columnPrefix}poHeader_id"),
-         poNbr = rs.getInt("${columnPrefix}poHeader_number"),
+         poId = rs.getUuidOrNull("${columnPrefix}poHeader_id"),
+         poNbr = rs.getIntOrNull("${columnPrefix}poHeader_number"),
          useTaxIndicator = rs.getBoolean("${columnPrefix}use_tax_indicator"),
          dueDate = rs.getLocalDate("${columnPrefix}due_date"),
          expenseDate = rs.getLocalDate("${columnPrefix}expense_date"),
