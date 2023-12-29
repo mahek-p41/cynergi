@@ -103,7 +103,7 @@ class GeneralLedgerDetailValidator @Inject constructor(
 
          //Check that the fiscal year is Current or Next
          val fiscalYear = financialCalendarService.fetchByDate(company, from)
-         if (fiscalYear!!.overallPeriod!!.value != "C" && fiscalYear.overallPeriod!!.value != "N") {
+         if (fiscalYear == null || (fiscalYear.overallPeriod!!.value != "C" && fiscalYear.overallPeriod!!.value != "N")) {
             errors.add(ValidationError("fromDate", DatesMustBeWithinCurrentOrNextFiscalYear(from, thru)))
          }
 

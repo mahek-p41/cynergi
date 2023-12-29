@@ -1091,8 +1091,13 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       then:
       final ex = thrown(HttpClientResponseException)
       def response = ex.response.bodyAsJson()
-      ex.status == NOT_FOUND
-      response.message == "${ LocalDate.now() } was unable to be found"
+      ex.status == BAD_REQUEST
+      response.code[0] == 'cynergi.validation.dates.not.in.financial.calendar'
+      response.message[0] == 'The selected dates must both be within the existing financial calendar'
+      response.path[0] == 'fromDate'
+      response.code[1] == 'cynergi.validation.dates.not.in.current.or.next.fiscal.year'
+      response.message[1] == 'The selected dates must both be within the Current or Next fiscal year'
+      response.path[1] == 'fromDate'
    }
 
    void "Try to get count of general ledger detail to be purged with dates outside the range of the financial calendar"() {
@@ -1115,8 +1120,13 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       then:
       final ex = thrown(HttpClientResponseException)
       def response = ex.response.bodyAsJson()
-      ex.status == NOT_FOUND
-      response.message == "${ LocalDate.now() } was unable to be found"
+      ex.status == BAD_REQUEST
+      response.code[0] == 'cynergi.validation.dates.not.in.financial.calendar'
+      response.message[0] == 'The selected dates must both be within the existing financial calendar'
+      response.path[0] == 'fromDate'
+      response.code[1] == 'cynergi.validation.dates.not.in.current.or.next.fiscal.year'
+      response.message[1] == 'The selected dates must both be within the Current or Next fiscal year'
+      response.path[1] == 'fromDate'
    }
 
    void "Try to delete general ledger detail with dates not in the same fiscal year"() {
