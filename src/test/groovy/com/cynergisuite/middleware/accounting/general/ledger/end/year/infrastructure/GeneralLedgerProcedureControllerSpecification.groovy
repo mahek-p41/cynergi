@@ -154,7 +154,7 @@ class GeneralLedgerProcedureControllerSpecification extends ControllerSpecificat
                       'ACH_Chargeback_Amt', 'ACH_Chargeback_GL_Acct_Nbr'])
          .build()
       def csvData = """
-         coravt,1,${LocalDate.now().toString()},true,000000000.00,000001050.28,1,001016,1,151.35,1,3058.63,1,10.00,1,548.74,1,-151.35,1,4657.65,1,46.00,1,3.00,1,4.00,1
+         coravt,1,${LocalDate.now().toString()},true,000000000.00,000001050.28,${nonCapitalAccount.number},001016,${nonCapitalAccount.number},151.35,${nonCapitalAccount.number},3058.63,${nonCapitalAccount.number},10.00,${nonCapitalAccount.number},548.74,${nonCapitalAccount.number},-151.35,${nonCapitalAccount.number},4657.65,${nonCapitalAccount.number},46.00,${nonCapitalAccount.number},3.00,${nonCapitalAccount.number},4.00,${nonCapitalAccount.number}
          """
       def parser = CSVParser.parse(csvData, format)
       def record = parser.getRecords().get(0)
