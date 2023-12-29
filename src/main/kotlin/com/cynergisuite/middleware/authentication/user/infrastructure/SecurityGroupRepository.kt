@@ -1,6 +1,12 @@
 package com.cynergisuite.middleware.authentication.user.infrastructure
 
-import com.cynergisuite.extensions.*
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.toUuid
+import com.cynergisuite.extensions.update
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.authentication.user.SecurityEmployeeDTO
 import com.cynergisuite.middleware.authentication.user.SecurityGroup
 import com.cynergisuite.middleware.authentication.user.SecurityType
@@ -246,7 +252,6 @@ class SecurityGroupRepository @Inject constructor(
             INSERT INTO employee_to_security_group (employee_id_sfk, security_group_id, emp_number)
             SELECT :employee_id, security_group_id, :employee_number
             FROM unnest(:security_group_ids) AS security_group_id
-            ON CONFLICT (security_group_id, employee_id_sfk, emp_number) DO NOTHING
             RETURNING
             *
          """.trimIndent(),
@@ -310,7 +315,6 @@ class SecurityGroupRepository @Inject constructor(
                   """
                INSERT INTO employee_to_security_group (employee_id_sfk, security_group_id, emp_number)
                VALUES (:employee_id, :security_group_id, :employee_number)
-               ON CONFLICT (security_group_id, employee_id_sfk, emp_number) DO NOTHING
                RETURNING
                *
             """.trimIndent(),
@@ -353,7 +357,6 @@ class SecurityGroupRepository @Inject constructor(
             INSERT INTO security_group_to_security_access_point (security_group_id, security_access_point_id)
             SELECT :security_id, access_point_id
             FROM unnest(:access_point_ids) AS access_point_id
-            ON CONFLICT (security_group_id, security_access_point_id) DO NOTHING
          """.trimIndent(),
             mapOf(
                "security_id" to securityGroupId,
