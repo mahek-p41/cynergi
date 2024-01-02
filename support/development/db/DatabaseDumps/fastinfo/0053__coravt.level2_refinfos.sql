@@ -4,12 +4,12 @@ SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
-SET search_path = cortst, pg_catalog;
+SET search_path = coravt, pg_catalog;
 SET default_tablespace = '';
 SET default_with_oids = false;
 CREATE TABLE IF NOT EXISTS coravt.level2_refinfos
 (
-    id bigint NOT NULL DEFAULT nextval('coravt.level2_refinfos_id_seq'::regclass),
+    id bigint NOT NULL,
     customer_id bigint,
     refinfo_seq_nbr integer,
     refinfo_company_name character varying(30) COLLATE pg_catalog."default",
@@ -42,17 +42,18 @@ CREATE TABLE IF NOT EXISTS coravt.level2_refinfos
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
     row_creator_id bigint,
-    ht_etl_schema character varying(10) COLLATE pg_catalog."default" NOT NULL DEFAULT 'public'::character varying,
+    ht_etl_schema character varying(10) COLLATE pg_catalog."default" NOT NULL DEFAULT 'public'::character varying
 );
-ALTER TABLE coravt.level2_refinfos OWNER TO fastinfo_dba;
+ALTER TABLE coravt.level2_refinfos OWNER TO postgres;
 CREATE SEQUENCE coravt.level2_refinfos_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
-ALTER TABLE coravt.level2_refinfos_id_seq OWNER TO fastinfo_dba;
+ALTER TABLE coravt.level2_refinfos_id_seq OWNER TO postgres;
 ALTER SEQUENCE coravt.level2_refinfos_id_seq OWNED BY coravt.level2_refinfos.id;
 ALTER TABLE ONLY coravt.level2_refinfos ALTER COLUMN id SET DEFAULT nextval('level2_refinfos_id_seq'::regclass);
 ALTER TABLE ONLY coravt.level2_refinfos
-    ADD CONSTRAINT CONSTRAINT level2_refinfos_pkey PRIMARY KEY (id);
+ ADD CONSTRAINT level2_refinfos_pkey PRIMARY KEY (id);
+

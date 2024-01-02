@@ -930,8 +930,8 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       result1 != null
 
       when:
-      def glSummary1 = generalLedgerSummaryDataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(1))
-      def glSummary2 = generalLedgerSummaryDataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(2))
+      def glPreviousYearSummary = generalLedgerSummaryDataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(1))
+      def glCurrentYearSummary = generalLedgerSummaryDataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(2))
       def glDetails = generalLedgerDetailDataLoaderService.single(company, acct, store, glSrcCode)
       def creditAmount = (glDetails.amount < 0) ? glDetails.amount : 0
       def debitAmount = (glDetails.amount > 0) ? glDetails.amount : 0
@@ -941,7 +941,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       notThrown(Exception)
       result2 != null
       with(result2) {
-         beginBalance == glSummary1.beginningBalance
+         beginBalance == glCurrentYearSummary.beginningBalance
          credit == creditAmount
          debit == debitAmount
          netChange == creditAmount + debitAmount
@@ -1050,7 +1050,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
 
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().minusMonths(9), true, false).collect()
 
-      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.now(), LocalDate.now().plusDays(5), glSource2.value)
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-06-01"), LocalDate.parse("2023-06-05"), glSource2.value)
 
       when:
       def toBeDeletedCount = get("$path/purgeCount$toBeDeleted")
@@ -1091,8 +1091,13 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       then:
       final ex = thrown(HttpClientResponseException)
       def response = ex.response.bodyAsJson()
-      ex.status == NOT_FOUND
-      response.message == "${ LocalDate.now() } was unable to be found"
+      ex.status == BAD_REQUEST
+      response.code[0] == 'cynergi.validation.dates.not.in.financial.calendar'
+      response.message[0] == 'The selected dates must both be within the existing financial calendar'
+      response.path[0] == 'fromDate'
+      response.code[1] == 'cynergi.validation.dates.not.in.current.or.next.fiscal.year'
+      response.message[1] == 'The selected dates must both be within the Current or Next fiscal year'
+      response.path[1] == 'fromDate'
    }
 
    void "Try to get count of general ledger detail to be purged with dates outside the range of the financial calendar"() {
@@ -1115,8 +1120,13 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       then:
       final ex = thrown(HttpClientResponseException)
       def response = ex.response.bodyAsJson()
-      ex.status == NOT_FOUND
-      response.message == "${ LocalDate.now() } was unable to be found"
+      ex.status == BAD_REQUEST
+      response.code[0] == 'cynergi.validation.dates.not.in.financial.calendar'
+      response.message[0] == 'The selected dates must both be within the existing financial calendar'
+      response.path[0] == 'fromDate'
+      response.code[1] == 'cynergi.validation.dates.not.in.current.or.next.fiscal.year'
+      response.message[1] == 'The selected dates must both be within the Current or Next fiscal year'
+      response.path[1] == 'fromDate'
    }
 
    void "Try to delete general ledger detail with dates not in the same fiscal year"() {
@@ -1183,7 +1193,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
 
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "P" }, LocalDate.now().minusMonths(9), true, false).collect()
 
-      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.now(), LocalDate.now().plusDays(5), glSource2.value)
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-06-01"), LocalDate.parse("2023-06-05"), glSource2.value)
 
       when:
       delete("$path/purge$toBeDeleted")
@@ -1209,7 +1219,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
 
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "P" }, LocalDate.now().minusMonths(9), true, false).collect()
 
-      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.now(), LocalDate.now().plusDays(5), glSource2.value)
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-06-01"), LocalDate.parse("2023-06-05"), glSource2.value)
 
       when:
       get("$path/purgeCount$toBeDeleted")
@@ -1234,7 +1244,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
 
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().minusMonths(9), true, false).collect()
 
-      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.now(), LocalDate.now().plusDays(5), 'XYZ')
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-06-01"), LocalDate.parse("2023-06-05"), 'XYZ')
 
       when:
       delete("$path/purge$toBeDeleted")
@@ -1258,7 +1268,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
 
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().minusMonths(9), true, false).collect()
 
-      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.now(), LocalDate.now().plusDays(5), 'XYZ')
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-06-01"), LocalDate.parse("2023-06-05"), 'XYZ')
 
       when:
       get("$path/purgeCount$toBeDeleted")

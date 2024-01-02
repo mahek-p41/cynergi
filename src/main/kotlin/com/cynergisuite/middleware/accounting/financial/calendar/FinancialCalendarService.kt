@@ -101,11 +101,7 @@ class FinancialCalendarService @Inject constructor(
       financialCalendarRepository.fetchByDate(company, date)?.let { FinancialCalendarDTO(it) }
 
    fun dateFoundInFinancialCalendar(company: CompanyEntity, date: LocalDate): Boolean {
-      val isDateFound = financialCalendarRepository.dateFoundInFinancialCalendar(company, date)
-
-      financialCalendarValidator.validateDateFoundInFinancialCalendar(isDateFound, date)
-
-      return isDateFound
+      return financialCalendarRepository.dateFoundInFinancialCalendar(company, date)
    }
 
    fun sameFiscalYear(company: CompanyEntity, filterRequest: FinancialCalendarValidateDatesFilterRequest, validationPath: String? = "startingDate"): Boolean {

@@ -33,7 +33,7 @@ class GeneralLedgerReconciliationControllerSpecification extends ControllerSpeci
       final store = storeFactoryService.store(3, company)
       final bank = bankFactoryService.single(company, store, accountList[0] as AccountEntity)
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.of(2023, 01, 01), false, false).collect()
-      final date = LocalDate.now()
+      final date = LocalDate.parse("2023-06-01")
       final inv1 = inventoryEndOfMonthDataLoaderService.stream(1, company, accountList[0] as AccountEntity, accountList[1] as AccountEntity, store, date).collect()
       final inv2 = inventoryEndOfMonthDataLoaderService.stream(1, company, accountList[0] as AccountEntity, accountList[1] as AccountEntity, store, date).collect()
 
