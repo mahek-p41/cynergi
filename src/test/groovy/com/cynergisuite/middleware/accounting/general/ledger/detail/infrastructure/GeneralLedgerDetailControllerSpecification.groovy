@@ -930,8 +930,8 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       result1 != null
 
       when:
-      def glSummary1 = generalLedgerSummaryDataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(1))
-      def glSummary2 = generalLedgerSummaryDataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(2))
+      def glPreviousYearSummary = generalLedgerSummaryDataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(1))
+      def glCurrentYearSummary = generalLedgerSummaryDataLoaderService.single(company, acct, store, OverallPeriodTypeDataLoader.predefined().get(2))
       def glDetails = generalLedgerDetailDataLoaderService.single(company, acct, store, glSrcCode)
       def creditAmount = (glDetails.amount < 0) ? glDetails.amount : 0
       def debitAmount = (glDetails.amount > 0) ? glDetails.amount : 0
@@ -941,7 +941,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       notThrown(Exception)
       result2 != null
       with(result2) {
-         beginBalance == glSummary1.beginningBalance
+         beginBalance == glCurrentYearSummary.beginningBalance
          credit == creditAmount
          debit == debitAmount
          netChange == creditAmount + debitAmount
