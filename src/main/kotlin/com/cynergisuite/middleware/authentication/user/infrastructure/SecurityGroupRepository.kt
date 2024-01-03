@@ -223,45 +223,32 @@ class SecurityGroupRepository @Inject constructor(
    @Transactional
    fun assignSingleEmployeeToMultipleSecurityGroups(employee: EmployeeEntity, securityGroupIds: List<UUID>) {
       logger.trace("Assigning Employee {} to Security Group {}", employee, securityGroupIds)
-      if (securityGroupIds.isEmpty()) {
-         jdbc.update(
-            """
-            DELETE FROM employee_to_security_group
-            WHERE employee_id_sfk = :employee_id AND emp_number = :emp_number
-         """.trimIndent(),
-            mapOf(
-               "employee_id" to employee.id,
-               "emp_number" to employee.number
-            )
+
+      jdbc.update(
+         """
+         DELETE FROM employee_to_security_group
+         WHERE employee_id_sfk = :employee_id AND emp_number = :emp_number
+      """.trimIndent(),
+         mapOf(
+            "employee_id" to employee.id,
+            "emp_number" to employee.number
          )
-      } else {
-         jdbc.update(
-            """
-            DELETE FROM employee_to_security_group
-            WHERE employee_id_sfk = :employee_id AND emp_number = :employee_number
-            AND security_group_id NOT IN (<security_group_ids>)
-         """.trimIndent(),
-            mapOf(
-               "employee_id" to employee.id,
-               "employee_number" to employee.number,
-               "security_group_ids" to securityGroupIds
-            )
+      )
+
+      jdbc.update(
+         """
+         INSERT INTO employee_to_security_group (employee_id_sfk, security_group_id, emp_number)
+         SELECT :employee_id, security_group_id, :employee_number
+         FROM unnest(:security_group_ids) AS security_group_id
+         RETURNING
+         *
+      """.trimIndent(),
+         mapOf(
+            "employee_id" to employee.id,
+            "employee_number" to employee.number,
+            "security_group_ids" to securityGroupIds.toTypedArray()
          )
-         jdbc.update(
-            """
-            INSERT INTO employee_to_security_group (employee_id_sfk, security_group_id, emp_number)
-            SELECT :employee_id, security_group_id, :employee_number
-            FROM unnest(:security_group_ids) AS security_group_id
-            RETURNING
-            *
-         """.trimIndent(),
-            mapOf(
-               "employee_id" to employee.id,
-               "employee_number" to employee.number,
-               "security_group_ids" to securityGroupIds.toTypedArray()
-            )
-         )
-      }
+      )
    }
 
    @Transactional
@@ -270,57 +257,34 @@ class SecurityGroupRepository @Inject constructor(
 
       val employeeNumberIdPair: List<Pair<Long, Int>>? = employees?.map { Pair(it.id!!, it.number!!) }
       if (employees.isNullOrEmpty()) {
-            jdbc.update(
-               """
+         jdbc.update(
+            """
                DELETE FROM employee_to_security_group
                WHERE security_group_id = :security_group_id
-
             """.trimIndent(),
-               mapOf(
-                  "security_group_id" to securityGroupId
-               )
-            )
-         } else {
-         if (!employeeNumberIdPair.isNullOrEmpty()) {
-            val subQuery = employeeNumberIdPair.joinToString(" UNION ") {
-               "SELECT :id${it.first} AS employee_id, :number${it.second} AS emp_number"
-            }
-            val params = employeeNumberIdPair.flatMap { (id, number) ->
-               listOf("id${id}" to id, "number${number}" to number)
-            }.toMap()
-
-            jdbc.update(
-               """
-               WITH pairs(employee_id, emp_number) AS (
-                   $subQuery
-               )
+            mapOf("security_group_id" to securityGroupId)
+         )
+      } else if (!employeeNumberIdPair.isNullOrEmpty()) {
+         jdbc.update(
+            """
                DELETE FROM employee_to_security_group etsg
                WHERE etsg.security_group_id = :security_group_id
-               AND NOT EXISTS (
-                   SELECT 1 FROM pairs p
-                   WHERE p.employee_id = etsg.employee_id_sfk
-                   AND p.emp_number = etsg.emp_number
-               )
-               """.trimIndent(),
-               params + mapOf("security_group_id" to securityGroupId)
-            )
+            """.trimIndent(),
+            mapOf("security_group_id" to securityGroupId)
+         )
 
-            employees.forEach { employee ->
-               val employeeParams = mapOf(
+         employees.forEach { employee ->
+            jdbc.update(
+               """
+                  INSERT INTO employee_to_security_group (employee_id_sfk, security_group_id, emp_number)
+                  VALUES (:employee_id, :security_group_id, :employee_number)
+               """.trimIndent(),
+               mapOf(
                   "employee_id" to employee.id,
                   "security_group_id" to securityGroupId,
                   "employee_number" to employee.number
                )
-               jdbc.update(
-                  """
-               INSERT INTO employee_to_security_group (employee_id_sfk, security_group_id, emp_number)
-               VALUES (:employee_id, :security_group_id, :employee_number)
-               RETURNING
-               *
-            """.trimIndent(),
-                  employeeParams
-               )
-            }
+            )
          }
       }
    }
@@ -329,41 +293,28 @@ class SecurityGroupRepository @Inject constructor(
    @Transactional
    fun assignAccessPointsToSecurityGroups(securityGroupId: UUID, accessPointIds: List<Int>) {
       logger.trace("Assigning Access points to Security Groups {}",  securityGroupId)
-      if (accessPointIds.isEmpty()) {
-         jdbc.update(
-            """
-            DELETE FROM security_group_to_security_access_point
-            WHERE security_group_id = :security_id
-         """.trimIndent(),
-            mapOf(
-               "security_id" to securityGroupId,
-            )
-         )
-      } else {
-         jdbc.update(
-            """
-            DELETE FROM security_group_to_security_access_point
-            WHERE security_group_id = :security_id
-            AND security_access_point_id NOT IN (<access_point_ids>)
-         """.trimIndent(),
-            mapOf(
-               "security_id" to securityGroupId,
-               "access_point_ids" to accessPointIds
-            )
-         )
 
-         jdbc.update(
-            """
-            INSERT INTO security_group_to_security_access_point (security_group_id, security_access_point_id)
-            SELECT :security_id, access_point_id
-            FROM unnest(:access_point_ids) AS access_point_id
-         """.trimIndent(),
-            mapOf(
-               "security_id" to securityGroupId,
-               "access_point_ids" to accessPointIds.toTypedArray()
-            )
+      jdbc.update(
+         """
+         DELETE FROM security_group_to_security_access_point
+         WHERE security_group_id = :security_id
+      """.trimIndent(),
+         mapOf(
+            "security_id" to securityGroupId,
          )
-      }
+      )
+
+      jdbc.update(
+         """
+         INSERT INTO security_group_to_security_access_point (security_group_id, security_access_point_id)
+         SELECT :security_id, access_point_id
+         FROM unnest(:access_point_ids) AS access_point_id
+      """.trimIndent(),
+         mapOf(
+            "security_id" to securityGroupId,
+            "access_point_ids" to accessPointIds.toTypedArray()
+         )
+      )
    }
 
    fun mapRow(
