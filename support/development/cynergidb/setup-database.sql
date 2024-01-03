@@ -526,35 +526,35 @@ BEGIN
             customers.cust_first_name_mi     AS first_name,
             customers.cust_last_name         AS last_name,
             case
-				when coalesce(reference.refinfo_cust_mailing_address,"")  = ""
+				when Trim(BOTH FROM reference.refinfo_cust_mailing_address) ISNULL or
+            				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address))< 1
 				then customers.cust_address
 				else reference.refinfo_cust_mailing_address
 				end as address_1,
             case
-               when coalesce(reference.refinfo_cust_mailing_address_2, "") = ""
-               then customers.cust_address_2
-               else reference.refinfo_cust_mailing_address_2
-               end as address_2,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address_2) ISNULL or
+              				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address_2))< 1
+            then customers.cust_address_2
+            else reference.refinfo_cust_mailing_address_2
+            end as address_2,
             case
-               when coalesce(reference.refinfo_cust_mailing_city,"") = ""
-               then customers.cust_city
-               else reference.refinfo_cust_mailing_city
-               end as city,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_city) ISNULL or
+                        LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_city))< 1
+            then customers.cust_city
+            else reference.refinfo_cust_mailing_city
+            end as city,
             case
-               when coalesce(reference.refinfo_cust_mailing_state, "") = ""
-               then customers.cust_state
-               else reference.refinfo_cust_mailing_state
-               end as state,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_state) ISNULL or
+                			LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_state))< 1
+            then customers.cust_state
+            else reference.refinfo_cust_mailing_state
+            end as state,
             case
-               when coalesce(reference.refinfo_cust_mailing_zip_pc,"") = ""
-               then customers.cust_zip_pc
-               else reference.refinfo_cust_mailing_zip_pc
-               end as zip,
---            customers.cust_address           AS address_1,
---            customers.cust_address_2         AS address_2,
---            customers.cust_city              AS city,
---            customers.cust_state             AS state,
---            customers.cust_zip_pc            AS zip,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_zip_pc) ISNULL or
+              				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_zip_pc))< 1
+            then customers.cust_zip_pc
+            else reference.refinfo_cust_mailing_zip_pc
+            end as zip,
             customers.cust_cell_phone        AS cell_phone_number,
             customers.cust_home_phone        AS home_phone_number,
             customers.cust_email_address     AS email,
@@ -650,35 +650,35 @@ BEGIN
             customers.cust_first_name_mi      AS first_name,
             customers.cust_last_name          AS last_name,
             case
-            when coalesce(reference.refinfo_cust_mailing_address,"")  = ""
+           	when Trim(BOTH FROM reference.refinfo_cust_mailing_address) ISNULL or
+                       				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address))< 1
             then customers.cust_address
             else reference.refinfo_cust_mailing_address
             end as address_1,
             case
-               when coalesce(reference.refinfo_cust_mailing_address_2, "") = ""
-               then customers.cust_address_2
-               else reference.refinfo_cust_mailing_address_2
-               end as address_2,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address_2) ISNULL or
+                    				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address_2))< 1
+            then customers.cust_address_2
+            else reference.refinfo_cust_mailing_address_2
+            end as address_2,
             case
-               when coalesce(reference.refinfo_cust_mailing_city,"") = ""
-               then customers.cust_city
-               else reference.refinfo_cust_mailing_city
-               end as city,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_city) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_city))< 1
+            then customers.cust_city
+            else reference.refinfo_cust_mailing_city
+            end as city,
             case
-               when coalesce(reference.refinfo_cust_mailing_state, "") = ""
-               then customers.cust_state
-               else reference.refinfo_cust_mailing_state
-               end as state,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_state) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_state))< 1
+            then customers.cust_state
+            else reference.refinfo_cust_mailing_state
+            end as state,
             case
-               when coalesce(reference.refinfo_cust_mailing_zip_pc,"") = ""
-               then customers.cust_zip_pc
-               else reference.refinfo_cust_mailing_zip_pc
-               end as zip,
---            customers.cust_address            AS address_1,
---            customers.cust_address_2          AS address_2,
---            customers.cust_city               AS city,
---            customers.cust_state              AS state,
---            customers.cust_zip_pc             AS zip,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_zip_pc) ISNULL or
+                         LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_zip_pc))< 1
+            then customers.cust_zip_pc
+            else reference.refinfo_cust_mailing_zip_pc
+            end as zip,
             customers.cust_cell_phone         AS cell_phone_number,
             customers.cust_home_phone         AS home_phone_number,
             customers.cust_email_address      AS email,
@@ -740,35 +740,35 @@ BEGIN
             customers.cust_first_name_mi     AS first_name,
             customers.cust_last_name         AS last_name,
             case
-            when coalesce(reference.refinfo_cust_mailing_address,"")  = ""
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address) ISNULL or
+                                   				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address))< 1
             then customers.cust_address
             else reference.refinfo_cust_mailing_address
             end as address_1,
             case
-               when coalesce(reference.refinfo_cust_mailing_address_2, "") = ""
-               then customers.cust_address_2
-               else reference.refinfo_cust_mailing_address_2
-               end as address_2,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address_2) ISNULL or
+                              LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address_2))< 1
+            then customers.cust_address_2
+            else reference.refinfo_cust_mailing_address_2
+            end as address_2,
             case
-               when coalesce(reference.refinfo_cust_mailing_city,"") = ""
-               then customers.cust_city
-               else reference.refinfo_cust_mailing_city
-               end as city,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_city) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_city))< 1
+            then customers.cust_city
+            else reference.refinfo_cust_mailing_city
+            end as city,
             case
-               when coalesce(reference.refinfo_cust_mailing_state, "") = ""
-               then customers.cust_state
-               else reference.refinfo_cust_mailing_state
-               end as state,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_state) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_state))< 1
+            then customers.cust_state
+            else reference.refinfo_cust_mailing_state
+            end as state,
             case
-               when coalesce(reference.refinfo_cust_mailing_zip_pc,"") = ""
-               then customers.cust_zip_pc
-               else reference.refinfo_cust_mailing_zip_pc
-               end as zip,
---            customers.cust_address           AS address_1,
---            customers.cust_address_2         AS address_2,
---            customers.cust_city              AS city,
---            customers.cust_state             AS state,
---            customers.cust_zip_pc            AS zip,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_zip_pc) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_zip_pc))< 1
+            then customers.cust_zip_pc
+            else reference.refinfo_cust_mailing_zip_pc
+            end as zip,
             customers.cust_cell_phone        AS cell_phone_number,
             customers.cust_home_phone        AS home_phone_number,
             customers.cust_email_address     AS email,
@@ -830,35 +830,35 @@ BEGIN
             customers.cust_first_name_mi      AS first_name,
             customers.cust_last_name          AS last_name,
             case
-            when coalesce(reference.refinfo_cust_mailing_address,"")  = ""
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address) ISNULL or
+                                             LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address))< 1
             then customers.cust_address
             else reference.refinfo_cust_mailing_address
             end as address_1,
             case
-               when coalesce(reference.refinfo_cust_mailing_address_2, "") = ""
-               then customers.cust_address_2
-               else reference.refinfo_cust_mailing_address_2
-               end as address_2,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address_2) ISNULL or
+                              LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address_2))< 1
+            then customers.cust_address_2
+            else reference.refinfo_cust_mailing_address_2
+            end as address_2,
             case
-               when coalesce(reference.refinfo_cust_mailing_city,"") = ""
-               then customers.cust_city
-               else reference.refinfo_cust_mailing_city
-               end as city,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_city) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_city))< 1
+            then customers.cust_city
+            else reference.refinfo_cust_mailing_city
+            end as city,
             case
-               when coalesce(reference.refinfo_cust_mailing_state, "") = ""
-               then customers.cust_state
-               else reference.refinfo_cust_mailing_state
-               end as state,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_state) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_state))< 1
+            then customers.cust_state
+            else reference.refinfo_cust_mailing_state
+            end as state,
             case
-               when coalesce(reference.refinfo_cust_mailing_zip_pc,"") = ""
-               then customers.cust_zip_pc
-               else reference.refinfo_cust_mailing_zip_pc
-               end as zip,
---            customers.cust_address            AS address_1,
---            customers.cust_address_2          AS address_2,
---            customers.cust_city               AS city,
---            customers.cust_state              AS state,
---            customers.cust_zip_pc             AS zip,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_zip_pc) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_zip_pc))< 1
+            then customers.cust_zip_pc
+            else reference.refinfo_cust_mailing_zip_pc
+            end as zip,
             customers.cust_cell_phone         AS cell_phone_number,
             customers.cust_home_phone         AS home_phone_number,
             customers.cust_email_address      AS email,
@@ -935,36 +935,36 @@ BEGIN
             customers.cust_acct_nbr          AS unique_id,
             customers.cust_first_name_mi     AS first_name,
             customers.cust_last_name         AS last_name,
-            case
-            when coalesce(reference.refinfo_cust_mailing_address,"")  = ""
-            then customers.cust_address
-            else reference.refinfo_cust_mailing_address
-            end as address_1,
-            case
-               when coalesce(reference.refinfo_cust_mailing_address_2, "") = ""
-               then customers.cust_address_2
-               else reference.refinfo_cust_mailing_address_2
-               end as address_2,
-            case
-               when coalesce(reference.refinfo_cust_mailing_city,"") = ""
-               then customers.cust_city
-               else reference.refinfo_cust_mailing_city
-               end as city,
-            case
-               when coalesce(reference.refinfo_cust_mailing_state, "") = ""
-               then customers.cust_state
-               else reference.refinfo_cust_mailing_state
-               end as state,
-            case
-               when coalesce(reference.refinfo_cust_mailing_zip_pc,"") = ""
-               then customers.cust_zip_pc
-               else reference.refinfo_cust_mailing_zip_pc
-               end as zip,
---            customers.cust_address           AS address_1,
---            customers.cust_address_2         AS address_2,
---            customers.cust_city              AS city,
---            customers.cust_state             AS state,
---            customers.cust_zip_pc            AS zip,
+             case
+             when Trim(BOTH FROM reference.refinfo_cust_mailing_address) ISNULL or
+                                    				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address))< 1
+             then customers.cust_address
+             else reference.refinfo_cust_mailing_address
+             end as address_1,
+             case
+             when Trim(BOTH FROM reference.refinfo_cust_mailing_address_2) ISNULL or
+                               LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address_2))< 1
+             then customers.cust_address_2
+             else reference.refinfo_cust_mailing_address_2
+             end as address_2,
+             case
+             when Trim(BOTH FROM reference.refinfo_cust_mailing_city) ISNULL or
+                            LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_city))< 1
+             then customers.cust_city
+             else reference.refinfo_cust_mailing_city
+             end as city,
+             case
+             when Trim(BOTH FROM reference.refinfo_cust_mailing_state) ISNULL or
+                            LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_state))< 1
+             then customers.cust_state
+             else reference.refinfo_cust_mailing_state
+             end as state,
+             case
+             when Trim(BOTH FROM reference.refinfo_cust_mailing_zip_pc) ISNULL or
+                            LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_zip_pc))< 1
+             then customers.cust_zip_pc
+             else reference.refinfo_cust_mailing_zip_pc
+             end as zip,
             customers.cust_cell_phone        AS cell_phone_number,
             customers.cust_home_phone        AS home_phone_number,
             customers.cust_email_address     AS email,
@@ -1031,35 +1031,35 @@ BEGIN
             customers.cust_first_name_mi    AS first_name,
             customers.cust_last_name        AS last_name,
             case
-            when coalesce(reference.refinfo_cust_mailing_address,"")  = ""
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address) ISNULL or
+                                   				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address))< 1
             then customers.cust_address
             else reference.refinfo_cust_mailing_address
             end as address_1,
             case
-               when coalesce(reference.refinfo_cust_mailing_address_2, "") = ""
-               then customers.cust_address_2
-               else reference.refinfo_cust_mailing_address_2
-               end as address_2,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address_2) ISNULL or
+                              LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address_2))< 1
+            then customers.cust_address_2
+            else reference.refinfo_cust_mailing_address_2
+            end as address_2,
             case
-               when coalesce(reference.refinfo_cust_mailing_city,"") = ""
-               then customers.cust_city
-               else reference.refinfo_cust_mailing_city
-               end as city,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_city) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_city))< 1
+            then customers.cust_city
+            else reference.refinfo_cust_mailing_city
+            end as city,
             case
-               when coalesce(reference.refinfo_cust_mailing_state, "") = ""
-               then customers.cust_state
-               else reference.refinfo_cust_mailing_state
-               end as state,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_state) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_state))< 1
+            then customers.cust_state
+            else reference.refinfo_cust_mailing_state
+            end as state,
             case
-               when coalesce(reference.refinfo_cust_mailing_zip_pc,"") = ""
-               then customers.cust_zip_pc
-               else reference.refinfo_cust_mailing_zip_pc
-               end as zip,
---            customers.cust_address          AS address_1,
---            customers.cust_address_2        AS address_2,
---            customers.cust_city             AS city,
---            customers.cust_state            AS state,
---            customers.cust_zip_pc           AS zip,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_zip_pc) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_zip_pc))< 1
+            then customers.cust_zip_pc
+            else reference.refinfo_cust_mailing_zip_pc
+            end as zip,
             customers.cust_cell_phone       AS cell_phone_number,
             customers.cust_home_phone       AS home_phone_number,
             customers.cust_email_address    AS email,
@@ -1134,35 +1134,35 @@ BEGIN
             customers.cust_first_name_mi     AS first_name,
             customers.cust_last_name         AS last_name,
             case
-            when coalesce(reference.refinfo_cust_mailing_address,"")  = ""
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address) ISNULL or
+                                   				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address))< 1
             then customers.cust_address
             else reference.refinfo_cust_mailing_address
             end as address_1,
             case
-               when coalesce(reference.refinfo_cust_mailing_address_2, "") = ""
-               then customers.cust_address_2
-               else reference.refinfo_cust_mailing_address_2
-               end as address_2,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address_2) ISNULL or
+                              LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address_2))< 1
+            then customers.cust_address_2
+            else reference.refinfo_cust_mailing_address_2
+            end as address_2,
             case
-               when coalesce(reference.refinfo_cust_mailing_city,"") = ""
-               then customers.cust_city
-               else reference.refinfo_cust_mailing_city
-               end as city,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_city) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_city))< 1
+            then customers.cust_city
+            else reference.refinfo_cust_mailing_city
+            end as city,
             case
-               when coalesce(reference.refinfo_cust_mailing_state, "") = ""
-               then customers.cust_state
-               else reference.refinfo_cust_mailing_state
-               end as state,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_state) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_state))< 1
+            then customers.cust_state
+            else reference.refinfo_cust_mailing_state
+            end as state,
             case
-               when coalesce(reference.refinfo_cust_mailing_zip_pc,"") = ""
-               then customers.cust_zip_pc
-               else reference.refinfo_cust_mailing_zip_pc
-               end as zip,
---            customers.cust_address           AS address_1,
---            customers.cust_address_2         AS address_2,
---            customers.cust_city              AS city,
---            customers.cust_state             AS state,
---            customers.cust_zip_pc            AS zip,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_zip_pc) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_zip_pc))< 1
+            then customers.cust_zip_pc
+            else reference.refinfo_cust_mailing_zip_pc
+            end as zip,
             customers.cust_cell_phone        AS cell_phone_number,
             customers.cust_home_phone        AS home_phone_number,
             customers.cust_email_address     AS email,
