@@ -111,7 +111,7 @@ class AccountPayableInvoiceService @Inject constructor(
       return transformEntity(accountPayableInvoiceRepository.update(toUpdate, company))
    }
 
-   fun vendorBalance(company: CompanyEntity, filterRequest: AccountPayableVendorBalanceReportFilterRequest): VendorBalanceDTO {
+   fun vendorBalance(company: CompanyEntity, filterRequest: AccountPayableVendorBalanceReportFilterRequest): List<VendorBalanceDTO> {
       return accountPayableInvoiceRepository.vendorBalance(company, filterRequest)
 
    }

@@ -32,7 +32,7 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
       return """
          SELECT
              i.store_number_sfk                                         AS store_number,
-             'Asset'                                                    AS account_type,
+             'Asset'::text                                                    AS account_type,
              summary.glSummary_acct_number								      AS account_number,
              summary.glSummary_acct_name									      AS account_name,
              i.year                                                     AS year,
@@ -165,7 +165,7 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
             contra_inv AS (
             SELECT
              i.store_number_sfk                                         AS store_number,
-             'Contra'                                                   AS account_type,
+             'Contra'::text                                                   AS account_type,
              summary.glSummary_acct_number								      AS account_number,
              summary.glSummary_acct_name									      AS account_name,
              i.year                                                     AS year,

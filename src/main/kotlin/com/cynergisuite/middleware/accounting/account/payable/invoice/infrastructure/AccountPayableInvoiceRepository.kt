@@ -10,9 +10,12 @@ import com.cynergisuite.extensions.getLongOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.VendorBalanceDTO
+import com.cynergisuite.middleware.accounting.account.VendorBalanceEntity
+import com.cynergisuite.middleware.accounting.account.VendorBalanceInvoiceEntity
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceSelectedTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
@@ -25,6 +28,7 @@ import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.math.BigDecimal
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
@@ -618,11 +622,261 @@ class AccountPayableInvoiceRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun vendorBalance(company: CompanyEntity, filterRequest: AccountPayableVendorBalanceReportFilterRequest): VendorBalanceDTO {
+   fun vendorBalance(company: CompanyEntity, filterRequest: AccountPayableVendorBalanceReportFilterRequest): List<VendorBalanceDTO> {
+      val vendors = mutableListOf<VendorBalanceEntity>()
+      var currentVendor: VendorBalanceEntity? = null
+      var runningBalance = BigDecimal.ZERO
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder("WHERE apInvoice.company_id = :comp_id ")
-      //todo placeholder
-      return VendorBalanceDTO()
+      val topWhere = StringBuilder("WHERE inv.apInvoice_company_id = :comp_id AND inv.apInvoice_status_id IN (2,3)")
+      val bottomWhere = StringBuilder("WHERE payment.apPaymentDetail_company_id = :comp_id AND payment.apPayment_status_id = 1")
+      val paymentWhere = StringBuilder("WHERE payment.apPaymentDetail_company_id = :comp_id and payment.apPayment_status_id = 1")
+      val invoiceWhere = StringBuilder("WHERE inv.apInvoice_company_id = :comp_id AND inv.apInvoice_status_id IN (2,3)")
+
+      params["beginVendor"] = filterRequest.beginVendor
+      params["endVendor"] = filterRequest.endVendor
+      topWhere.append(" AND inv.apInvoice_payTo_number")
+         .append(buildFilterString(true, true, "beginVendor", "endVendor")
+      )
+      bottomWhere.append(" AND apPaymentDetail_apInvoice_pay_to_number")
+         .append(buildFilterString(true, true, "beginVendor", "endVendor"))
+      paymentWhere.append(" AND payment.apPaymentDetail_apInvoice_pay_to_number")
+         .append(buildFilterString(true, true, "beginVendor", "endVendor"))
+      invoiceWhere.append(" AND inv.apInvoice_payto_number")
+         .append(buildFilterString(true, true, "beginVendor", "endVendor"))
+      if (filterRequest.fromDate != null && filterRequest.thruDate != null) {
+        params["fromDate"] = filterRequest.fromDate
+        params["thruDate"] = filterRequest.thruDate
+        topWhere.append(" AND inv.apInvoice_expense_date")
+           .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
+        bottomWhere.append(" AND payment.apPayment_payment_date")
+          .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
+        paymentWhere.append(" AND payment.apPayment_payment_date < :fromDate")
+        invoiceWhere.append(" AND inv.apInvoice_expense_date < :fromDate")
+
+
+     }
+
+      jdbc.query(
+         """
+         with company as (
+            SELECT
+               comp.id                                  AS id,
+               comp.deleted                             AS deleted
+            FROM company comp
+            ),
+            vend as (
+               SELECT
+                  v.id                                  AS v_id,
+                  v.company_id                          AS v_company_id,
+                  v.number                              AS v_number,
+                  v.name                                AS v_name,
+                  v.account_number                      AS v_account_number,
+                  v.pay_to_id                           AS v_pay_to_id,
+                  v.deleted                             AS v_deleted,
+                  comp.id                               AS v_comp_id
+               FROM vendor v
+               JOIN company comp                        ON v.company_id = comp.id AND comp.deleted = FALSE
+            ),
+            inv as (
+               SELECT
+                  apInvoice.id                                                AS apInvoice_id,
+                  apInvoice.company_id                                        AS apInvoice_company_id,
+                  apInvoice.invoice                                           AS apInvoice_invoice,
+                  apInvoice.purchase_order_id                                 AS apInvoice_purchase_order_id,
+                  apInvoice.invoice_date                                      AS apInvoice_invoice_date,
+                  apInvoice.invoice_amount                                    AS apInvoice_invoice_amount,
+                  apInvoice.discount_amount                                   AS apInvoice_discount_amount,
+                  apInvoice.discount_percent                                  AS apInvoice_discount_percent,
+                  apInvoice.discount_taken                                    AS apInvoice_discount_taken,
+                  apInvoice.entry_date                                        AS apInvoice_entry_date,
+                  apInvoice.expense_date                                      AS apInvoice_expense_date,
+                  apInvoice.discount_date                                     AS apInvoice_discount_date,
+                  apInvoice.paid_amount                                       AS apInvoice_paid_amount,
+                  apInvoice.selected_amount                                   AS apInvoice_selected_amount,
+                  apInvoice.due_date                                          AS apInvoice_due_date,
+                  apInvoice.receive_date                                      AS apInvoice_receive_date,
+                  vend.v_id                                                   AS apInvoice_vendor_id,
+                  vend.v_company_id                                           AS apInvoice_vendor_company_id,
+                  vend.v_number                                               AS apInvoice_vendor_number,
+                  vend.v_name                                                 AS apInvoice_vendor_name,
+                  vend.v_account_number                                       AS apInvoice_vendor_account_number,
+                  payTo.v_id                                                  AS apInvoice_payTo_id,
+                  payTo.v_company_id                                          AS apInvoice_payTo_company_id,
+                  payTo.v_number                                              AS apInvoice_payTo_number,
+                  payTo.v_name                                                AS apInvoice_payTo_name,
+                  payTo.v_account_number                                      AS apInvoice_payTo_account_number,
+                  status.id                                                   AS apInvoice_status_id,
+                  poHeader.number												         AS apInvoice_purchase_order_number
+               FROM account_payable_invoice apInvoice
+               JOIN company comp                                           ON apInvoice.company_id = comp.id AND comp.deleted = FALSE
+               JOIN vend                                                   ON apInvoice.vendor_id = vend.v_id
+               JOIN vend payTo                                             ON apInvoice.pay_to_id = payTo.v_id
+               JOIN account_payable_invoice_status_type_domain status      ON apInvoice.status_id = status.id
+               LEFT JOIN purchase_order_header poHeader                    ON apInvoice.purchase_order_id = poHeader.id AND poHeader.deleted = FALSE
+         ),
+            paymentDetail as (
+               SELECT
+                  apPaymentDetail.id                                       AS apPaymentDetail_id,
+                  apPaymentDetail.company_id                               AS apPaymentDetail_company_id,
+                  inv.apInvoice_id                                         AS apPaymentDetail_apInvoice_id,
+                  vend.v_id                                                AS apPaymentDetail_vendor_id,
+                  apPaymentDetail.payment_number_id                        AS apPaymentDetail_payment_number_id,
+                  apPaymentDetail.amount                                   AS apPaymentDetail_amount,
+                  apPaymentDetail.discount                                 AS apPaymentDetail_discount,
+                  inv.apInvoice_vendor_number							         AS apPaymentDetail_apInvoice_vendor_name,
+                  inv.apInvoice_invoice                                    AS apPaymentDetail_apInvoice_invoice,
+                  inv.apInvoice_invoice_date                               AS apPaymentDetail_apInvoice_invoice_date,
+                  inv.apInvoice_payTo_number						               AS apPaymentDetail_apInvoice_vendor_pay_to_number,
+                  inv.apInvoice_payTo_name								         AS appaymentdetail_apInvoice_vendor_pay_to_name,
+                  inv.apInvoice_purchase_order_id                          AS apPaymentDetail_apInvoice_purchase_order_id,
+                  inv.apInvoice_purchase_order_number					         AS apPaymentDetail_apInvoice_purchase_order_number,
+                  vend.v_number                                            AS apPaymentDetail_vendor_number,
+                  vend.v_name                                              AS apPaymentDetail_vendor_name
+               FROM account_payable_payment_detail apPaymentDetail
+               JOIN inv ON apPaymentDetail.account_payable_invoice_id = inv.apInvoice_id
+               JOIN vend ON apPaymentDetail.vendor_id = vend.v_id
+            ),
+            payment as (
+               SELECT
+                  apPayment.id                                              AS apPayment_id,
+                  apPayment.company_id                                      AS apPayment_company_id,
+                  vend.v_id                                                 AS apPayment_vendor_id,
+                  vend.v_company_id                                         AS apPayment_vendor_company_id,
+                  vend.v_number                                             AS apPayment_vendor_number,
+                  vend.v_name                                               AS apPayment_vendor_name,
+                  vend.v_account_number                                     AS apPayment_vendor_account_number,
+                  vend.v_pay_to_id                                          AS apPayment_vendor_pay_to_id,
+                  vend.v_comp_id                                            AS apPayment_vendor_comp_id,
+                  vend.v_deleted                                            AS apPayment_vendor_deleted,
+                  status.id                                                 AS apPayment_status_id,
+                  status.value                                              AS apPayment_status_value,
+                  status.description                                        AS apPayment_status_description,
+                  status.localization_code                                  AS apPayment_status_localization_code,
+                  apPayment.payment_number                                  AS apPayment_payment_number,
+                  apPayment.payment_date                                    AS apPayment_payment_date,
+                  apPayment.date_cleared                                    AS apPayment_date_cleared,
+                  apPayment.date_voided                                     AS apPayment_date_voided,
+                  paymentDetail.apPaymentDetail_apInvoice_invoice                                           AS apPaymentDetail_apInvoice_invoice,
+                  paymentDetail.apPaymentDetail_apInvoice_invoice_date                                      AS apPaymentDetail_apInvoice_invoice_date,
+                  apPayment.amount                                                                          AS apPayment_amount,
+                  paymentDetail.apPaymentDetail_apInvoice_vendor_pay_to_number						            AS apPaymentDetail_apInvoice_pay_to_number,
+                  paymentDetail.apPaymentDetail_apInvoice_vendor_pay_to_name  							         AS apPaymentDetail_apInvoice_pay_to_name,
+                  paymentDetail.apPaymentDetail_apInvoice_purchase_order_number                             AS apPaymentDetail_apInvoice_purchase_order_number,
+                  paymentDetail.apPaymentDetail_vendor_id                                                   AS apPaymentDetail_vendor_id,
+                  paymentDetail.apPaymentDetail_vendor_number                                               AS apPaymentDetail_vendor_number,
+                  paymentDetail.apPaymentDetail_vendor_name                                                 AS apPaymentDetail_vendor_name,
+                  paymentDetail.apPaymentDetail_payment_number_id                                           AS apPaymentDetail_payment_number_id,
+                  paymentDetail.apPaymentDetail_amount                                                      AS apPaymentDetail_amount,
+                  paymentDetail.apPaymentDetail_discount                                                    AS apPaymentDetail_discount,
+                  paymentDetail.apPaymentDetail_apInvoice_vendor_name									            AS apPaymentDetail_apInvoice_vendor_name
+               FROM account_payable_payment apPayment
+               JOIN vend ON apPayment.vendor_id = vend.v_id AND vend.v_deleted = FALSE
+               JOIN account_payable_payment_status_type_domain status ON apPayment.account_payable_payment_status_id = status.id
+               LEFT JOIN paymentDetail ON apPayment.id = paymentDetail.apPaymentDetail_payment_number_id
+            ),
+            paymentSum as (
+               SELECT
+                  SUM(apPaymentDetail_amount) as total_payment_detail,
+                  SUM(apPaymentDetail_discount) as total_discount,
+                  apPaymentDetail_apInvoice_pay_to_number,
+                  apPaymentDetail_apInvoice_vendor_name
+               FROM payment
+               WHERE payment.apPayment_company_id = :comp_id and payment.apPayment_status_id = 1 AND payment.apPaymentDetail_apInvoice_pay_to_number BETWEEN :beginVendor AND :endVendor AND payment.apPayment_payment_date < :fromDate
+               GROUP BY apPaymentDetail_apInvoice_pay_to_number, apPaymentDetail_apInvoice_vendor_name
+            ),
+            invoiceSum as (
+               SELECT
+                 SUM(apInvoice_invoice_amount) as invoice_amount,
+                 apInvoice_payTo_number,
+                 apInvoice_vendor_name
+               FROM inv
+               WHERE inv.apInvoice_company_id = :comp_id AND inv.apInvoice_status_id IN (2,3) AND inv.apInvoice_payto_number BETWEEN :beginVendor AND :endVendor AND inv.apInvoice_expense_date < :fromDate
+               GROUP BY inv.apInvoice_payto_number, inv.apInvoice_vendor_name
+            ),
+            beginningBalance as (
+               SELECT
+                  apInvoice_payTo_number,
+                  coalesce(sum(ps.total_payment_detail), 0) as total_payment_amount,
+                  coalesce(sum(ps.total_discount), 0) as total_payment_discount,
+                  coalesce(sum(invSum.invoice_amount), 0) as total_invoice_amount,
+                  coalesce(sum(ps.total_payment_detail),0) + coalesce(sum(ps.total_discount), 0) - coalesce(sum(invSum.invoice_amount), 0) as balance
+               FROM paymentSum ps
+               FULL OUTER JOIN invoiceSum invSum on ps.apPaymentDetail_apInvoice_pay_to_number = invSum.apInvoice_payTo_number
+               GROUP BY apInvoice_payTo_number
+            ),
+            combinedData as (
+               SELECT
+                  apInvoice_vendor_name,
+                  apInvoice_vendor_number,
+                  apInvoice_payTo_number,
+                  apInvoice_payTo_name,
+                  apInvoice_expense_date,
+                  'invoice'::text as action,
+                  apInvoice_invoice,
+                  apInvoice_invoice_date,
+                  apInvoice_purchase_order_number,
+                  apInvoice_invoice_amount
+               FROM inv
+               WHERE inv.apInvoice_company_id = :comp_id AND inv.apInvoice_status_id IN (2,3) AND inv.apInvoice_payTo_number BETWEEN :beginVendor AND :endVendor AND inv.apInvoice_expense_date BETWEEN :fromDate AND :thruDate
+               UNION
+               SELECT
+                  apPaymentDetail_vendor_name,
+                  apPaymentDetail_vendor_number,
+                  apPaymentDetail_apInvoice_pay_to_number,
+                  apPaymentDetail_apInvoice_pay_to_name,
+                  apPayment_payment_date,
+                  'payment'::text as action,
+                  apPaymentDetail_apInvoice_invoice,
+                  apPaymentDetail_apInvoice_invoice_date,
+                  apPaymentDetail_apInvoice_purchase_order_number,
+                  apPaymentDetail_amount
+               FROM payment
+               WHERE payment.apPayment_company_id = :comp_id AND payment.apPayment_status_id = 1 AND apPaymentDetail_apInvoice_pay_to_number BETWEEN :beginVendor AND :endVendor AND payment.apPayment_payment_date BETWEEN :fromDate AND :thruDate
+               ORDER BY apInvoice_vendor_name, apInvoice_expense_date
+            )
+            SELECT
+              combinedData.*,
+              bb.total_payment_amount,
+              bb.total_payment_discount,
+              bb.total_invoice_amount,
+              bb.balance
+            FROM combinedData
+            LEFT JOIN beginningBalance bb ON combinedData.apInvoice_payTo_number = bb.apInvoice_payTo_number
+         """.trimIndent(),
+         params
+      ){ rs, elements ->
+         do {
+            val tempVendor = if (currentVendor?.number != rs.getLongOrNull("apInvoice_payTo_number")) {
+               val localVendor = mapRowVendorBalance(rs)
+               vendors.add(localVendor)
+               currentVendor = localVendor
+               runningBalance = localVendor.balance
+               localVendor
+            } else {
+               currentVendor!!
+            }
+
+            mapVendorBalanceInvoice(rs).let { it ->
+               val vendorBalanceInvoiceEntity = VendorBalanceInvoiceEntity()
+
+               vendorBalanceInvoiceEntity.amount = it.amount
+               if (it.action == "payment") {
+                  vendorBalanceInvoiceEntity.balance = it.amount?.minus(runningBalance)
+               } else {
+                  vendorBalanceInvoiceEntity.balance = it.amount?.plus(runningBalance)
+               }
+               vendorBalanceInvoiceEntity.invoiceNumber = it.invoiceNumber
+               vendorBalanceInvoiceEntity.invoiceDate= it.invoiceDate
+               vendorBalanceInvoiceEntity.poNumber = it.poNumber
+               vendorBalanceInvoiceEntity.action = it.action
+               vendorBalanceInvoiceEntity.expenseDate = it.expenseDate
+               runningBalance = vendorBalanceInvoiceEntity.balance!!
+               tempVendor.invoiceList?.add(vendorBalanceInvoiceEntity)
+            }
+
+         } while (rs.next())
+      }
+      return vendors.map { VendorBalanceDTO(it) }
    }
 
    fun mapRow(
@@ -727,5 +981,31 @@ class AccountPayableInvoiceRepository @Inject constructor(
          poNbr = rs.getInt("purchase_order_number"),
          status = AccountPayableInvoiceStatusTypeDTO(status)
       )
+   }
+
+   private fun mapRowVendorBalance(rs: ResultSet): VendorBalanceEntity {
+      return VendorBalanceEntity(
+         name = rs.getString("apinvoice_vendor_name"),
+         number = rs.getLong("apinvoice_vendor_number"),
+         balance = rs.getBigDecimal("balance")
+      )
+   }
+
+   private fun mapVendorBalanceInvoice(rs: ResultSet): VendorBalanceInvoiceEntity {
+      return VendorBalanceInvoiceEntity(
+         expenseDate = rs.getLocalDate("apinvoice_expense_date"),
+         action = rs.getString("action"),
+         invoiceNumber = rs.getString("apinvoice_invoice"),
+         invoiceDate = rs.getLocalDate("apinvoice_invoice_date"),
+         poNumber = rs.getString("apinvoice_purchase_order_number"),
+         amount = rs.getBigDecimal("apinvoice_invoice_amount"),
+         balance = rs.getBigDecimal("apinvoice_invoice_amount")
+      )
+   }
+
+   private fun buildFilterString(begin: Boolean, end: Boolean, beginningParam: String, endingParam: String): String {
+      return if (begin && end) " BETWEEN :$beginningParam AND :$endingParam"
+      else if (begin) " >= :$beginningParam"
+      else " <= :$endingParam"
    }
 }
