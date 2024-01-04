@@ -86,12 +86,19 @@ class AuditRepository @Inject constructor(
          WHEN $queryAuditCurrentStatus IN ('CREATED', 'IN-PROGRESS')
          THEN
             (
-            SELECT COUNT (*)
-            FROM fastinfo_prod_import.inventory_vw i
-            WHERE i.primary_location = a.store_number
-                  AND (i.status = 'D'
-                        OR (i.status in ('N', 'R') AND i.location = a.store_number))
-                  AND i.dataset = auditStore.dataset
+               SELECT COUNT(*)
+               FROM fastinfo_prod_import.inventory_vw i
+               WHERE
+                  i.primary_location = a.store_number
+                  AND
+                     i.dataset = auditStore.dataset
+                  AND
+                     CASE WHEN comp.include_demo_inventory THEN
+                        (i.status = 'D' OR (i.status IN ('N','R') AND i.location = a.store_number))
+                     ELSE
+                        (i.status IN ('N','R') AND i.location = a.store_number)
+                     END
+
             )
          ELSE
             (
@@ -231,9 +238,14 @@ class AuditRepository @Inject constructor(
                SELECT COUNT (*)
                FROM fastinfo_prod_import.inventory_vw i
                WHERE i.primary_location = a.store_number
-                     AND (i.status = 'D'
-                        OR (i.status in ('N', 'R') AND i.location = a.store_number))
-                     AND i.dataset = auditStore.dataset
+                     AND
+                        i.dataset = auditStore.dataset
+                     AND
+                        CASE WHEN comp.include_demo_inventory THEN
+                           (i.status = 'D' OR (i.status IN ('N','R') AND i.location = a.store_number))
+                        ELSE
+                           (i.status IN ('N','R') AND i.location = a.store_number)
+                        END
                )
             ELSE
                (
@@ -434,7 +446,6 @@ class AuditRepository @Inject constructor(
          "status" -> "a_current_status"
          else -> "a_id"
       }
-
       val sql =
          """
          WITH company AS (
@@ -514,9 +525,14 @@ class AuditRepository @Inject constructor(
                SELECT COUNT (*)
                FROM fastinfo_prod_import.inventory_vw i
                WHERE i.primary_location = a.store_number
-                     AND (i.status = 'D'
-                           OR (i.status in ('N', 'R') AND i.location = a.store_number))
-                     AND i.dataset = auditStore.dataset
+                     AND
+                        i.dataset = auditStore.dataset
+                     AND
+                        CASE WHEN comp.include_demo_inventory THEN
+                           (i.status = 'D' OR (i.status IN ('N','R') AND i.location = a.store_number))
+                        ELSE
+                           (i.status IN ('N','R') AND i.location = a.store_number)
+                        END
                )
             ELSE
                (
@@ -564,6 +580,7 @@ class AuditRepository @Inject constructor(
          ORDER BY ${sortBy} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """.trimIndent()
+
 
       logger.trace("Finding all audits using {}\n{}", params, sql)
 

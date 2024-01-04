@@ -12,6 +12,7 @@ import com.cynergisuite.middleware.audit.detail.AuditDetailValueObject
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
+import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.error.ErrorDTO
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
@@ -20,7 +21,6 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.apache.commons.lang3.RandomUtils
-import spock.lang.Ignore
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -216,14 +216,14 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.audit.id == audit.id
    }
 
-   @Ignore
    void "create audit detail with inventory item with status 'D'" () {
       given:
       final locale = Locale.US
-      final company = companyFactoryService.forDatasetCode('coravt')
+      final company = companyFactoryService.forDatasetCode('corrto')
       final store = storeFactoryService.store(1, company)
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
+      loginEmployee(userService.fetchUserByAuthentication(employee.myNumber(), 'pass', tstds2.datasetCode, null).with { new AuthenticatedEmployee(it, 'pass') })
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.myNumber(), locationType: "STORE", inventoryStatus: ["D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
@@ -271,7 +271,6 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result == null // 304 doesn't return a body
    }
 
-   @Ignore
    void "create duplicate audit detail with inventory item with status 'D'" () {
       given:
       final locale = US

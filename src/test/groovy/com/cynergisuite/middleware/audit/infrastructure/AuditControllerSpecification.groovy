@@ -33,7 +33,6 @@ import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
-import spock.lang.Ignore
 import spock.lang.Unroll
 
 import java.time.OffsetDateTime
@@ -1200,7 +1199,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       completedActions[2].changedBy.number == nineNineEightAuthenticatedEmployee.number
    }
 
-   @Ignore
    void "process audit with inventory item in status 'D' from CREATED to IN-PROGRESS finally to COMPLETED" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')

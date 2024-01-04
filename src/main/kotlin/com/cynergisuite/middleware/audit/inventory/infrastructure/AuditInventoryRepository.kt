@@ -29,8 +29,14 @@ class AuditInventoryRepository @Inject constructor(
             JOIN company comp ON i.dataset = comp.dataset_code AND comp.deleted = FALSE
          WHERE i.primary_location = :store_number
                AND comp.id = :company_id
-               AND ((i.status = 'D' OR (i.status in ('N', 'R') AND i.location = :store_number))
-                     OR i.lookup_key IN (SELECT lookup_key FROM audit_detail WHERE audit_id = :audit_id))
+               AND (
+                  CASE WHEN comp.include_demo_inventory THEN
+                     (i.status = 'D' OR (i.status IN ('N','R') AND i.location = :store_number))
+                  ELSE
+                     (i.status IN ('N','R') AND i.location = :store_number)
+                  END
+                  OR i.lookup_key IN (SELECT lookup_key FROM audit_detail WHERE audit_id = :audit_id)
+                  )
          """.trimIndent(),
          mapOf(
             "audit_id" to entity.id,
