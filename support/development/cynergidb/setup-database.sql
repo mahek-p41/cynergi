@@ -526,35 +526,35 @@ BEGIN
             customers.cust_first_name_mi     AS first_name,
             customers.cust_last_name         AS last_name,
             case
-				when reference.refinfo_cust_mailing_address Is Null
+				when Trim(BOTH FROM reference.refinfo_cust_mailing_address) ISNULL or
+            				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address))< 1
 				then customers.cust_address
 				else reference.refinfo_cust_mailing_address
 				end as address_1,
             case
-               when reference.refinfo_cust_mailing_address_2 Is Null
-               then customers.cust_address_2
-               else reference.refinfo_cust_mailing_address_2
-               end as address_2,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address_2) ISNULL or
+              				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address_2))< 1
+            then customers.cust_address_2
+            else reference.refinfo_cust_mailing_address_2
+            end as address_2,
             case
-               when reference.refinfo_cust_mailing_city Is Null
-               then customers.cust_city
-               else reference.refinfo_cust_mailing_city
-               end as city,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_city) ISNULL or
+                        LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_city))< 1
+            then customers.cust_city
+            else reference.refinfo_cust_mailing_city
+            end as city,
             case
-               when reference.refinfo_cust_mailing_state Is Null
-               then customers.cust_state
-               else reference.refinfo_cust_mailing_state
-               end as state,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_state) ISNULL or
+                			LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_state))< 1
+            then customers.cust_state
+            else reference.refinfo_cust_mailing_state
+            end as state,
             case
-               when reference.refinfo_cust_mailing_zip_pc Is Null
-               then customers.cust_zip_pc
-               else reference.refinfo_cust_mailing_zip_pc
-               end as zip,
---            customers.cust_address           AS address_1,
---            customers.cust_address_2         AS address_2,
---            customers.cust_city              AS city,
---            customers.cust_state             AS state,
---            customers.cust_zip_pc            AS zip,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_zip_pc) ISNULL or
+              				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_zip_pc))< 1
+            then customers.cust_zip_pc
+            else reference.refinfo_cust_mailing_zip_pc
+            end as zip,
             customers.cust_cell_phone        AS cell_phone_number,
             customers.cust_home_phone        AS home_phone_number,
             customers.cust_email_address     AS email,
@@ -604,7 +604,7 @@ BEGIN
             LEFT JOIN
             ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id
          WHERE
-            agreements.agreement_type = ''O'' and agreement_versions.agreement_open_flag = ''Y''
+            agreements.agreement_type = ''O'' and agreement_versions.agreement_open_flag = ''Y'' and customers.cust_bankruptcy <> ''Y''
          GROUP BY
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
             customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone,
@@ -650,35 +650,35 @@ BEGIN
             customers.cust_first_name_mi      AS first_name,
             customers.cust_last_name          AS last_name,
             case
-            when reference.refinfo_cust_mailing_address Is Null
+           	when Trim(BOTH FROM reference.refinfo_cust_mailing_address) ISNULL or
+                       				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address))< 1
             then customers.cust_address
             else reference.refinfo_cust_mailing_address
             end as address_1,
             case
-               when reference.refinfo_cust_mailing_address_2 Is Null
-               then customers.cust_address_2
-               else reference.refinfo_cust_mailing_address_2
-               end as address_2,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address_2) ISNULL or
+                    				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address_2))< 1
+            then customers.cust_address_2
+            else reference.refinfo_cust_mailing_address_2
+            end as address_2,
             case
-               when reference.refinfo_cust_mailing_city Is Null
-               then customers.cust_city
-               else reference.refinfo_cust_mailing_city
-               end as city,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_city) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_city))< 1
+            then customers.cust_city
+            else reference.refinfo_cust_mailing_city
+            end as city,
             case
-               when reference.refinfo_cust_mailing_state Is Null
-               then customers.cust_state
-               else reference.refinfo_cust_mailing_state
-               end as state,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_state) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_state))< 1
+            then customers.cust_state
+            else reference.refinfo_cust_mailing_state
+            end as state,
             case
-               when reference.refinfo_cust_mailing_zip_pc Is Null
-               then customers.cust_zip_pc
-               else reference.refinfo_cust_mailing_zip_pc
-               end as zip,
---            customers.cust_address            AS address_1,
---            customers.cust_address_2          AS address_2,
---            customers.cust_city               AS city,
---            customers.cust_state              AS state,
---            customers.cust_zip_pc             AS zip,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_zip_pc) ISNULL or
+                         LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_zip_pc))< 1
+            then customers.cust_zip_pc
+            else reference.refinfo_cust_mailing_zip_pc
+            end as zip,
             customers.cust_cell_phone         AS cell_phone_number,
             customers.cust_home_phone         AS home_phone_number,
             customers.cust_email_address      AS email,
@@ -694,7 +694,7 @@ BEGIN
              LEFT JOIN
             ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id
          WHERE
-            agreements.agreement_type = ''O''
+            agreements.agreement_type = ''O'' and customers.cust_bankruptcy <> ''Y''
             and agreement_versions.agreement_open_flag = ''Y'' and agreement_versions.agreement_next_due_date < current_date
          GROUP BY
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
@@ -740,35 +740,35 @@ BEGIN
             customers.cust_first_name_mi     AS first_name,
             customers.cust_last_name         AS last_name,
             case
-            when reference.refinfo_cust_mailing_address Is Null
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address) ISNULL or
+                                   				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address))< 1
             then customers.cust_address
             else reference.refinfo_cust_mailing_address
             end as address_1,
             case
-               when reference.refinfo_cust_mailing_address_2 Is Null
-               then customers.cust_address_2
-               else reference.refinfo_cust_mailing_address_2
-               end as address_2,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address_2) ISNULL or
+                              LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address_2))< 1
+            then customers.cust_address_2
+            else reference.refinfo_cust_mailing_address_2
+            end as address_2,
             case
-               when reference.refinfo_cust_mailing_city Is Null
-               then customers.cust_city
-               else reference.refinfo_cust_mailing_city
-               end as city,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_city) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_city))< 1
+            then customers.cust_city
+            else reference.refinfo_cust_mailing_city
+            end as city,
             case
-               when reference.refinfo_cust_mailing_state Is Null
-               then customers.cust_state
-               else reference.refinfo_cust_mailing_state
-               end as state,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_state) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_state))< 1
+            then customers.cust_state
+            else reference.refinfo_cust_mailing_state
+            end as state,
             case
-               when reference.refinfo_cust_mailing_zip_pc Is Null
-               then customers.cust_zip_pc
-               else reference.refinfo_cust_mailing_zip_pc
-               end as zip,
---            customers.cust_address           AS address_1,
---            customers.cust_address_2         AS address_2,
---            customers.cust_city              AS city,
---            customers.cust_state             AS state,
---            customers.cust_zip_pc            AS zip,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_zip_pc) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_zip_pc))< 1
+            then customers.cust_zip_pc
+            else reference.refinfo_cust_mailing_zip_pc
+            end as zip,
             customers.cust_cell_phone        AS cell_phone_number,
             customers.cust_home_phone        AS home_phone_number,
             customers.cust_email_address     AS email,
@@ -783,7 +783,7 @@ BEGIN
             LEFT JOIN
             ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id
          WHERE
-            agreements.agreement_type = ''O''
+            agreements.agreement_type = ''O'' and customers.cust_bankruptcy <> ''Y''
             and agreement_versions.agreement_open_flag = ''Y''
          GROUP BY
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
@@ -830,35 +830,35 @@ BEGIN
             customers.cust_first_name_mi      AS first_name,
             customers.cust_last_name          AS last_name,
             case
-            when reference.refinfo_cust_mailing_address Is Null
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address) ISNULL or
+                                             LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address))< 1
             then customers.cust_address
             else reference.refinfo_cust_mailing_address
             end as address_1,
             case
-               when reference.refinfo_cust_mailing_address_2 Is Null
-               then customers.cust_address_2
-               else reference.refinfo_cust_mailing_address_2
-               end as address_2,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address_2) ISNULL or
+                              LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address_2))< 1
+            then customers.cust_address_2
+            else reference.refinfo_cust_mailing_address_2
+            end as address_2,
             case
-               when reference.refinfo_cust_mailing_city Is Null
-               then customers.cust_city
-               else reference.refinfo_cust_mailing_city
-               end as city,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_city) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_city))< 1
+            then customers.cust_city
+            else reference.refinfo_cust_mailing_city
+            end as city,
             case
-               when reference.refinfo_cust_mailing_state Is Null
-               then customers.cust_state
-               else reference.refinfo_cust_mailing_state
-               end as state,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_state) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_state))< 1
+            then customers.cust_state
+            else reference.refinfo_cust_mailing_state
+            end as state,
             case
-               when reference.refinfo_cust_mailing_zip_pc Is Null
-               then customers.cust_zip_pc
-               else reference.refinfo_cust_mailing_zip_pc
-               end as zip,
---            customers.cust_address            AS address_1,
---            customers.cust_address_2          AS address_2,
---            customers.cust_city               AS city,
---            customers.cust_state              AS state,
---            customers.cust_zip_pc             AS zip,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_zip_pc) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_zip_pc))< 1
+            then customers.cust_zip_pc
+            else reference.refinfo_cust_mailing_zip_pc
+            end as zip,
             customers.cust_cell_phone         AS cell_phone_number,
             customers.cust_home_phone         AS home_phone_number,
             customers.cust_email_address      AS email,
@@ -879,7 +879,7 @@ BEGIN
             LEFT JOIN
             ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id
          WHERE
-            agreements.agreement_type = ''O''
+            agreements.agreement_type = ''O'' and customers.cust_bankruptcy <> ''Y''
             and agreement_versions.agreement_contract_date
                    between current_date - extract(dow from current_date)::integer - 7
                        and current_date - extract(dow from current_date)::integer + 6 - 7
@@ -935,36 +935,36 @@ BEGIN
             customers.cust_acct_nbr          AS unique_id,
             customers.cust_first_name_mi     AS first_name,
             customers.cust_last_name         AS last_name,
-            case
-            when reference.refinfo_cust_mailing_address Is Null
-            then customers.cust_address
-            else reference.refinfo_cust_mailing_address
-            end as address_1,
-            case
-               when reference.refinfo_cust_mailing_address_2 Is Null
-               then customers.cust_address_2
-               else reference.refinfo_cust_mailing_address_2
-               end as address_2,
-            case
-               when reference.refinfo_cust_mailing_city Is Null
-               then customers.cust_city
-               else reference.refinfo_cust_mailing_city
-               end as city,
-            case
-               when reference.refinfo_cust_mailing_state Is Null
-               then customers.cust_state
-               else reference.refinfo_cust_mailing_state
-               end as state,
-            case
-               when reference.refinfo_cust_mailing_zip_pc Is Null
-               then customers.cust_zip_pc
-               else reference.refinfo_cust_mailing_zip_pc
-               end as zip,
---            customers.cust_address           AS address_1,
---            customers.cust_address_2         AS address_2,
---            customers.cust_city              AS city,
---            customers.cust_state             AS state,
---            customers.cust_zip_pc            AS zip,
+             case
+             when Trim(BOTH FROM reference.refinfo_cust_mailing_address) ISNULL or
+                                    				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address))< 1
+             then customers.cust_address
+             else reference.refinfo_cust_mailing_address
+             end as address_1,
+             case
+             when Trim(BOTH FROM reference.refinfo_cust_mailing_address_2) ISNULL or
+                               LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address_2))< 1
+             then customers.cust_address_2
+             else reference.refinfo_cust_mailing_address_2
+             end as address_2,
+             case
+             when Trim(BOTH FROM reference.refinfo_cust_mailing_city) ISNULL or
+                            LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_city))< 1
+             then customers.cust_city
+             else reference.refinfo_cust_mailing_city
+             end as city,
+             case
+             when Trim(BOTH FROM reference.refinfo_cust_mailing_state) ISNULL or
+                            LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_state))< 1
+             then customers.cust_state
+             else reference.refinfo_cust_mailing_state
+             end as state,
+             case
+             when Trim(BOTH FROM reference.refinfo_cust_mailing_zip_pc) ISNULL or
+                            LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_zip_pc))< 1
+             then customers.cust_zip_pc
+             else reference.refinfo_cust_mailing_zip_pc
+             end as zip,
             customers.cust_cell_phone        AS cell_phone_number,
             customers.cust_home_phone        AS home_phone_number,
             customers.cust_email_address     AS email,
@@ -982,7 +982,7 @@ BEGIN
             LEFT JOIN
             ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id
          WHERE
-            agreements.agreement_type = ''O''
+            agreements.agreement_type = ''O'' and customers.cust_bankruptcy <> ''Y''
             and agreement_versions.agreement_open_flag <> ''Y''
             and Trim(LEADING ''0'' FROM CAST(agreement_versions.agreement_closed_reason AS TEXT))In(''3'',''4'',''10'')
             and agreement_versions.agreement_closed_date
@@ -1031,35 +1031,35 @@ BEGIN
             customers.cust_first_name_mi    AS first_name,
             customers.cust_last_name        AS last_name,
             case
-            when reference.refinfo_cust_mailing_address Is Null
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address) ISNULL or
+                                   				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address))< 1
             then customers.cust_address
             else reference.refinfo_cust_mailing_address
             end as address_1,
             case
-               when reference.refinfo_cust_mailing_address_2 Is Null
-               then customers.cust_address_2
-               else reference.refinfo_cust_mailing_address_2
-               end as address_2,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address_2) ISNULL or
+                              LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address_2))< 1
+            then customers.cust_address_2
+            else reference.refinfo_cust_mailing_address_2
+            end as address_2,
             case
-               when reference.refinfo_cust_mailing_city Is Null
-               then customers.cust_city
-               else reference.refinfo_cust_mailing_city
-               end as city,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_city) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_city))< 1
+            then customers.cust_city
+            else reference.refinfo_cust_mailing_city
+            end as city,
             case
-               when reference.refinfo_cust_mailing_state Is Null
-               then customers.cust_state
-               else reference.refinfo_cust_mailing_state
-               end as state,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_state) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_state))< 1
+            then customers.cust_state
+            else reference.refinfo_cust_mailing_state
+            end as state,
             case
-               when reference.refinfo_cust_mailing_zip_pc Is Null
-               then customers.cust_zip_pc
-               else reference.refinfo_cust_mailing_zip_pc
-               end as zip,
---            customers.cust_address          AS address_1,
---            customers.cust_address_2        AS address_2,
---            customers.cust_city             AS city,
---            customers.cust_state            AS state,
---            customers.cust_zip_pc           AS zip,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_zip_pc) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_zip_pc))< 1
+            then customers.cust_zip_pc
+            else reference.refinfo_cust_mailing_zip_pc
+            end as zip,
             customers.cust_cell_phone       AS cell_phone_number,
             customers.cust_home_phone       AS home_phone_number,
             customers.cust_email_address    AS email,
@@ -1088,7 +1088,7 @@ BEGIN
             LEFT JOIN
             ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id
          WHERE
-            agreements.agreement_type = ''O''
+            agreements.agreement_type = ''O'' and customers.cust_bankruptcy <> ''Y''
             and agreement_versions.agreement_open_flag = ''Y''
          GROUP BY
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
@@ -1134,35 +1134,35 @@ BEGIN
             customers.cust_first_name_mi     AS first_name,
             customers.cust_last_name         AS last_name,
             case
-            when reference.refinfo_cust_mailing_address Is Null
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address) ISNULL or
+                                   				LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address))< 1
             then customers.cust_address
             else reference.refinfo_cust_mailing_address
             end as address_1,
             case
-               when reference.refinfo_cust_mailing_address_2 Is Null
-               then customers.cust_address_2
-               else reference.refinfo_cust_mailing_address_2
-               end as address_2,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_address_2) ISNULL or
+                              LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_address_2))< 1
+            then customers.cust_address_2
+            else reference.refinfo_cust_mailing_address_2
+            end as address_2,
             case
-               when reference.refinfo_cust_mailing_city Is Null
-               then customers.cust_city
-               else reference.refinfo_cust_mailing_city
-               end as city,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_city) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_city))< 1
+            then customers.cust_city
+            else reference.refinfo_cust_mailing_city
+            end as city,
             case
-               when reference.refinfo_cust_mailing_state Is Null
-               then customers.cust_state
-               else reference.refinfo_cust_mailing_state
-               end as state,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_state) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_state))< 1
+            then customers.cust_state
+            else reference.refinfo_cust_mailing_state
+            end as state,
             case
-               when reference.refinfo_cust_mailing_zip_pc Is Null
-               then customers.cust_zip_pc
-               else reference.refinfo_cust_mailing_zip_pc
-               end as zip,
---            customers.cust_address           AS address_1,
---            customers.cust_address_2         AS address_2,
---            customers.cust_city              AS city,
---            customers.cust_state             AS state,
---            customers.cust_zip_pc            AS zip,
+            when Trim(BOTH FROM reference.refinfo_cust_mailing_zip_pc) ISNULL or
+                           LENGTH(TRIM(BOTH FROM reference.refinfo_cust_mailing_zip_pc))< 1
+            then customers.cust_zip_pc
+            else reference.refinfo_cust_mailing_zip_pc
+            end as zip,
             customers.cust_cell_phone        AS cell_phone_number,
             customers.cust_home_phone        AS home_phone_number,
             customers.cust_email_address     AS email,
@@ -1191,7 +1191,7 @@ BEGIN
             LEFT JOIN
             ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id
          WHERE
-            agreements.agreement_type = ''O''
+            agreements.agreement_type = ''O'' and customers.cust_bankruptcy <> ''Y''
             and agreement_versions.agreement_open_flag <> ''Y''
             and stores.loc_tran_active_store_indr <> ''N''
             and Trim(LEADING ''0'' FROM CAST(agreement_versions.agreement_closed_reason AS TEXT))In(''2'',''3'',''5'',''10'')
@@ -1363,7 +1363,7 @@ BEGIN
                     JOIN
                      ' || r.schema_name || '.level2_models as models on inventories.model_id = models.id
                     WHERE
-                      agreements.agreement_type = ''O'' and agreement_versions.agreement_open_flag = ''Y''
+                      agreements.agreement_type = ''O'' and agreement_versions.agreement_open_flag = ''Y'' and customers.cust_bankruptcy <> ''Y''
                     GROUP BY
                       stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
                       customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone,
@@ -1434,7 +1434,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_models as models on inventories.model_id = models.id
          WHERE
-            agreements.agreement_type = ''O''
+            agreements.agreement_type = ''O'' and customers.cust_bankruptcy <> ''Y''
             and agreement_versions.agreement_open_flag <> ''Y''
             and Trim(LEADING ''0'' FROM CAST(agreement_versions.agreement_closed_reason AS TEXT))In(''3'',''4'',''10'')
             and agreement_versions.agreement_closed_date = current_date -1
@@ -1522,7 +1522,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_models as models on inventories.model_id = models.id
          WHERE
-            agreements.agreement_type = ''O''
+            agreements.agreement_type = ''O'' and customers.cust_bankruptcy <> ''Y''
             and agreement_versions.agreement_open_flag = ''Y'' and agreement_versions.agreement_next_due_date < current_date
          GROUP BY
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
@@ -1576,7 +1576,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
          WHERE
-            agreements.agreement_type = ''O''
+            agreements.agreement_type = ''O'' and customers.cust_bankruptcy <> ''Y''
             and agreement_versions.agreement_open_flag = ''Y'' and EXTRACT(MONTH FROM customers.cust_birth_date) = EXTRACT(MONTH FROM current_date)
          GROUP BY
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
@@ -1741,7 +1741,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_models as models on inventories.model_id = models.id
          WHERE
-            agreements.agreement_type = ''O'' and agreement_versions.agreement_open_flag = ''Y''
+            agreements.agreement_type = ''O'' and agreement_versions.agreement_open_flag = ''Y'' and customers.cust_bankruptcy <> ''Y''
          GROUP BY
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.id, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
             customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone,
@@ -1919,7 +1919,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_models as models on inventories.model_id = models.id
          WHERE
-            agreements.agreement_type = ''O'' and agreement_contract_date >= (current_date - 1826) --5years
+            agreements.agreement_type = ''O'' and customers.cust_bankruptcy <> ''Y'' and agreement_contract_date >= (current_date - 1826) --5years
          GROUP BY
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.id, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
             customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone,
@@ -2095,7 +2095,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_models as models on inventories.model_id = models.id
          WHERE
-            agreements.agreement_type = ''O'' and agreement_contract_date >= (current_date - 30) --last 30 days
+            agreements.agreement_type = ''O'' and customers.cust_bankruptcy <> ''Y'' and agreement_contract_date >= (current_date - 30) --last 30 days
          GROUP BY
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.id, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
             customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone,
@@ -2274,7 +2274,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_models as models on inventories.model_id = models.id
          WHERE
-            agreements.agreement_type = ''O'' and agreement_closed_date >= (current_date - 120) and agreement_closed_reason In(''02'',''05'') --last 120 days and refund or requested pickup
+            agreements.agreement_type = ''O'' and customers.cust_bankruptcy <> ''Y'' and agreement_closed_date >= (current_date - 120) and agreement_closed_reason In(''02'',''05'') --last 120 days and refund or requested pickup
          GROUP BY
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.id, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
             customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone,
@@ -2454,7 +2454,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_models as models on inventories.model_id = models.id
          WHERE
-            agreements.agreement_type = ''O'' and agreement_closed_date >= (current_date - 274) and agreement_closed_reason In(''02'',''05'',''03'',''04'',''10'') --last 9 months payouts or returns
+            agreements.agreement_type = ''O'' and customers.cust_bankruptcy <> ''Y'' and agreement_closed_date >= (current_date - 274) and agreement_closed_reason In(''02'',''05'',''03'',''04'',''10'') --last 9 months payouts or returns
             and customers.cust_acct_nbr not in (
               (select cust_acct_nbr from ' || r.schema_name || '.level2_customers as c2 join ' || r.schema_name || '.level2_agreements as a2 on c2.id = a2.customer_id
 			                  JOIN ' || r.schema_name || '.level2_agreement_versions as av2 on a2.id = av2.agreement_id
@@ -2644,7 +2644,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_models as models on inventories.model_id = models.id
          WHERE
-            agreements.agreement_type = ''O'' and agreement_closed_date >= (current_date - 120) and agreement_closed_reason In(''03'',''04'',''10'') --last 120 days payouts
+            agreements.agreement_type = ''O'' and customers.cust_bankruptcy <> ''Y'' and agreement_closed_date >= (current_date - 120) and agreement_closed_reason In(''03'',''04'',''10'') --last 120 days payouts
             and customers.cust_acct_nbr not in (
               (select cust_acct_nbr from ' || r.schema_name || '.level2_customers as c2 join ' || r.schema_name || '.level2_agreements as a2 on c2.id = a2.customer_id
 			                  JOIN ' || r.schema_name || '.level2_agreement_versions as av2 on a2.id = av2.agreement_id
@@ -2830,7 +2830,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_models as models on inventories.model_id = models.id
          WHERE
-            agreements.agreement_type = ''O'' and agreement_versions.agreement_open_flag = ''Y'' and agreement_versions.agreement_next_due_date < current_date
+            agreements.agreement_type = ''O'' and customers.cust_bankruptcy <> ''Y'' and agreement_versions.agreement_open_flag = ''Y'' and agreement_versions.agreement_next_due_date < current_date
          GROUP BY
             stores.loc_tran_loc, customers.cust_acct_nbr, customers.id, customers.cust_first_name_mi, customers.cust_last_name,customers.cust_address,
             customers.cust_address_2, customers.cust_city,customers.cust_state,customers.cust_zip_pc,customers.cust_cell_phone,
@@ -3007,7 +3007,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_models as models on inventories.model_id = models.id
           WHERE
-               agreements.agreement_type = ''O'' and agreement_versions.agreement_open_flag = ''Y'' and agreement_versions.agreement_next_due_date >= current_date and
+               agreements.agreement_type = ''O'' and customers.cust_bankruptcy <> ''Y'' and agreement_versions.agreement_open_flag = ''Y'' and agreement_versions.agreement_next_due_date >= current_date and
          			(case when agreement_versions.agreement_open_flag = ''Y'' then
                        (case when
                               (case
