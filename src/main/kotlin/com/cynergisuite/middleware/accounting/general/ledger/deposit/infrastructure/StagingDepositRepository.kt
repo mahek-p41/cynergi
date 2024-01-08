@@ -346,8 +346,8 @@ class StagingDepositRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findByStagingIds(company: CompanyEntity, stagingIds: List<UUID?>, isAdmin: Boolean): List<AccountingDetailDTO> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "verifyId" to stagingIds)
+   fun findAccountingDetailsByVerifyIds(company: CompanyEntity, verifyIds: List<UUID?>, isAdmin: Boolean): List<AccountingDetailDTO> {
+      val params = mutableMapOf("comp_id" to company.id, "verifyId" to verifyIds)
       val whereClause = StringBuilder("WHERE vs.deleted = false AND vs.company_id = :comp_id AND vs.id IN (<verifyId>) AND vs.verify_successful = TRUE")
       if (!isAdmin) {
          whereClause.append(" AND vs.moved_to_pending_journal_entries = FALSE")

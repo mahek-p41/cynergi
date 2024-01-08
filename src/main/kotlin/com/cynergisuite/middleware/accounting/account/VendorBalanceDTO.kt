@@ -1,13 +1,11 @@
 package com.cynergisuite.middleware.accounting.account
 
-import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.middleware.vendor.VendorTypeDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
-import java.util.UUID
+import java.util.LinkedHashSet
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
@@ -16,8 +14,6 @@ import javax.validation.constraints.Positive
 @JsonInclude(NON_NULL)
 @Schema(name = "Account", title = "A data transfer object containing account information", description = "An data transfer object containing a account information.")
 data class VendorBalanceDTO(
-
-   var id: UUID? = null,
 
    @field:NotNull
    @field:Schema(name = "name", description = "Description for a Vendor.")
@@ -36,17 +32,16 @@ data class VendorBalanceDTO(
    @field:Valid
    @field:NotNull
    @field:Schema(name = "normal account type", description = "Normal account type")
-   var invoiceList: List<VendorBalanceInvoiceDTO>? = null,
+   var invoiceList: MutableSet<VendorBalanceInvoiceDTO>? = LinkedHashSet(),
 
-) : Identifiable {
+   ) {
    constructor(vendorBalanceEntity: VendorBalanceEntity) :
       this(
-         id = vendorBalanceEntity.id,
          number = vendorBalanceEntity.number,
          name = vendorBalanceEntity.name,
          balance = vendorBalanceEntity.balance,
-         invoiceList = vendorBalanceEntity.invoiceList
+         invoiceList = vendorBalanceEntity.invoiceList!!.asSequence().map {
+            VendorBalanceInvoiceDTO(it)
+         }.toMutableSet()
       )
-
-   override fun myId(): UUID? = id
 }

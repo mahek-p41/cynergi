@@ -384,12 +384,12 @@ class InventoryRepository(
 
       if (filterRequest.serialNbr != null) {
          params["serialNbr"] = filterRequest.serialNbr
-         whereClause.append(" AND UPPER(inv.serial_number) LIKE \'${filterRequest.serialNbr!!.trim().uppercase()}%\'")
+         whereClause.append(" AND UPPER(inv.serial_number) LIKE \'%${filterRequest.serialNbr!!.trim().uppercase()}%\'")
       }
 
       if (filterRequest.modelNbr != null) {
          params["modelNbr"] = filterRequest.modelNbr
-         whereClause.append(" AND UPPER(inv.model_number) LIKE \'${filterRequest.modelNbr!!.trim().uppercase()}%\'")
+         whereClause.append(" AND UPPER(inv.model_number) LIKE \'%${filterRequest.modelNbr!!.trim().uppercase()}%\'")
       }
 
       if (filterRequest.poNbr != null) {
@@ -399,7 +399,7 @@ class InventoryRepository(
 
       if (filterRequest.invoiceNbr != null) {
          params["invoiceNbr"] = filterRequest.invoiceNbr
-         whereClause.append(" AND UPPER(inv.invoice_number) LIKE \'${filterRequest.invoiceNbr!!.trim().uppercase()}%\'")
+         whereClause.append(" AND UPPER(inv.invoice_number) LIKE \'%${filterRequest.invoiceNbr!!.trim().uppercase()}%\'")
       }
 
       if (filterRequest.receivedDate != null) {

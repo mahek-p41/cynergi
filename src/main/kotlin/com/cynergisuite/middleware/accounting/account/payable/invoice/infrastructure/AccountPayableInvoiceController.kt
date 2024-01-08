@@ -355,7 +355,7 @@ class AccountPayableInvoiceController @Inject constructor(
       filterRequest: AccountPayableVendorBalanceReportFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): VendorBalanceDTO {
+   ): List<VendorBalanceDTO> {
       logger.info("Fetching Account Payable Check Preview Report {}", filterRequest)
 
       val user = userService.fetchUser(authentication)
@@ -383,7 +383,7 @@ class AccountPayableInvoiceController @Inject constructor(
       logger.info("Fetching Account Payable Invoice Payments by {}", invoiceId)
 
       val user = userService.fetchUser(authentication)
-      val response = accountPayableInvoiceService.fetchInvoicePayments(invoiceId, user.myCompany()) ?: throw NotFoundException(invoiceId)
+      val response = accountPayableInvoiceService.fetchInvoicePayments(invoiceId, user.myCompany())
 
       logger.debug("Fetching Account Payable Invoice Payments by {} resulted in {}", invoiceId, response)
 
@@ -410,7 +410,7 @@ class AccountPayableInvoiceController @Inject constructor(
       logger.info("Fetching GL Distributions by {}", invoiceId)
 
       val user = userService.fetchUser(authentication)
-      val response = accountPayableInvoiceService.fetchGLDistributions(invoiceId, user.myCompany()) ?: throw NotFoundException(invoiceId)
+      val response = accountPayableInvoiceService.fetchGLDistributions(invoiceId, user.myCompany())
 
       logger.debug("Fetching GL Distributions by {} resulted in {}", invoiceId, response)
 

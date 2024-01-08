@@ -5,6 +5,7 @@ import com.cynergisuite.domain.StagingDepositFilterRequest
 import com.cynergisuite.domain.StagingStatusFilterRequest
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
+import com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure.BankReconciliationRepository
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalDTO
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalService
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO
@@ -26,6 +27,7 @@ import java.io.File
 import java.io.FileWriter
 import java.time.LocalDate
 import java.util.UUID
+import javax.transaction.Transactional
 
 @Singleton
 class StagingDepositService @Inject constructor(
@@ -34,6 +36,8 @@ class StagingDepositService @Inject constructor(
    private val storeRepository: StoreRepository,
    private val sourceCodeRepository: GeneralLedgerSourceCodeRepository,
    private val generalLedgerJournalService: GeneralLedgerJournalService,
+   private val bankReconciliationRepository: BankReconciliationRepository,
+
    @Value("\${cynergi.process.update.isam.summary}") private val processUpdateIsamForSummary: Boolean,
    @Value("\${cynergi.process.update.isam.script.directory}") private val scriptDirectory: String
 ) {
@@ -60,9 +64,10 @@ class StagingDepositService @Inject constructor(
       return AccountingDetailWrapper(found)
    }
 
+   @Transactional
    fun postByDate(company: CompanyEntity, idList: List<UUID>, isAdmin: Boolean){
-
-      val accountEntryList = stagingDepositRepository.findByStagingIds(company, idList, isAdmin)
+      bankReconciliationRepository.bulkInsertByVerifyIds(idList, company)
+      val accountEntryList = stagingDepositRepository.findAccountingDetailsByVerifyIds(company, idList, isAdmin)
 
       //create glJournal for each accountEntry
       if (accountEntryList.isNotEmpty()) {
@@ -90,8 +95,10 @@ class StagingDepositService @Inject constructor(
       } else throw NotFoundException("No Accounting Entries to Post To General Ledger Journal")
    }
 
+   @Transactional
    fun postByMonth(company: CompanyEntity, idList: List<UUID>, lastDayOfMonth: LocalDate, isAdmin: Boolean) {
-      val accountEntryList = stagingDepositRepository.findByStagingIds(company, idList, isAdmin)
+      bankReconciliationRepository.bulkInsertByVerifyIds(idList, company)
+      val accountEntryList = stagingDepositRepository.findAccountingDetailsByVerifyIds(company, idList, isAdmin)
 
       if (accountEntryList.isEmpty()) {
          throw NotFoundException("No Accounting Entries to Post To General Ledger Journal")
