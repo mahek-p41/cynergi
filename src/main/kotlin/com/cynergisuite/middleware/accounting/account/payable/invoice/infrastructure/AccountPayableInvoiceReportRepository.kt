@@ -186,7 +186,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
          params["useTax"] = filterRequest.useTax
          whereClause.append(" AND apInvoice.use_tax_indicator = :useTax ")
       }
-      val ordering = " ORDER BY poHeader.number ${filterRequest.sortDirection()}, apInvoice.id, pmt.id, pmtDetail.id "
+      val ordering = " ORDER BY poHeader.number ${filterRequest.sortDirection()}, apInvoice.id, pmt.id, pmtDetail.id, account.number, invDist.distribution_profit_center_id_sfk "
 
       jdbc.query(
          """
