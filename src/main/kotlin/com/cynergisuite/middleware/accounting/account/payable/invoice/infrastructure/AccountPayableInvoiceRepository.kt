@@ -1,6 +1,10 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
-import com.cynergisuite.domain.*
+import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
+import com.cynergisuite.domain.AccountPayableVendorBalanceReportFilterRequest
+import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.SimpleIdentifiableEntity
+import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getIntOrNull
@@ -28,11 +32,11 @@ import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.math.BigDecimal
 import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
 import java.sql.ResultSet
 import java.util.UUID
 import javax.transaction.Transactional
@@ -348,7 +352,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
             JOIN account_payable_invoice_selected_type_domain selected  ON apInvoice.selected_id = selected.id
             JOIN account_payable_invoice_type_domain type               ON apInvoice.type_id = type.id
             JOIN account_payable_invoice_status_type_domain status      ON apInvoice.status_id = status.id
-            JOIN purchase_order_header poHeader                         ON apInvoice.purchase_order_id = poHeader.id AND poHeader.deleted = FALSE
+            LEFT JOIN purchase_order_header poHeader                    ON apInvoice.purchase_order_id = poHeader.id AND poHeader.deleted = FALSE
       """
    }
 
@@ -410,7 +414,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
             count(*) OVER() AS total_elements
          FROM account_payable_invoice apInvoice
             JOIN vendor vend                                         ON apInvoice.vendor_id = vend.id AND vend.deleted = FALSE
-            JOIN purchase_order_header poHeader                      ON poHeader.id = apInvoice.purchase_order_id AND poHeader.deleted = FALSE
+            LEFT JOIN purchase_order_header poHeader                 ON poHeader.id = apInvoice.purchase_order_id AND poHeader.deleted = FALSE
             JOIN account_payable_invoice_status_type_domain status   ON status.id = apInvoice.status_id
       """.trimIndent()
 
