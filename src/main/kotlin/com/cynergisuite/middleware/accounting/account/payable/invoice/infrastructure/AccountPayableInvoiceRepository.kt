@@ -803,7 +803,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
                   coalesce(sum(ps.total_payment_detail), 0) as total_payment_amount,
                   coalesce(sum(ps.total_discount), 0) as total_payment_discount,
                   coalesce(sum(invSum.invoice_amount), 0) as total_invoice_amount,
-                  coalesce(sum(ps.total_payment_detail),0) + coalesce(sum(ps.total_discount), 0) - coalesce(sum(invSum.invoice_amount), 0) as balance
+                  coalesce(sum(invSum.invoice_amount), 0) - coalesce(sum(ps.total_payment_detail),0) + coalesce(sum(ps.total_discount), 0)as balance
                FROM paymentSum ps
                FULL OUTER JOIN invoiceSum invSum on ps.apPaymentDetail_apInvoice_pay_to_number = invSum.apInvoice_payTo_number
                GROUP BY apInvoice_payTo_number
@@ -865,7 +865,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
 
                vendorBalanceInvoiceEntity.amount = it.amount
                if (it.action == "payment") {
-                  vendorBalanceInvoiceEntity.balance = it.amount?.minus(runningBalance)
+                  vendorBalanceInvoiceEntity.balance = runningBalance.minus(it.amount ?: BigDecimal.ZERO)
                } else {
                   vendorBalanceInvoiceEntity.balance = it.amount?.plus(runningBalance)
                }
@@ -989,8 +989,8 @@ class AccountPayableInvoiceRepository @Inject constructor(
 
    private fun mapRowVendorBalance(rs: ResultSet): VendorBalanceEntity {
       return VendorBalanceEntity(
-         name = rs.getString("apinvoice_vendor_name"),
-         number = rs.getLong("apinvoice_vendor_number"),
+         name = rs.getString("apInvoice_payTo_name"),
+         number = rs.getLong("apInvoice_payTo_number"),
          balance = rs.getBigDecimal("balance")
       )
    }
