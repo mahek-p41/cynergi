@@ -602,7 +602,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
             LEFT JOIN
-            ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id
+            ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id and reference.refinfo_seq_nbr = 0
          WHERE
             agreements.agreement_type = ''O'' and agreement_versions.agreement_open_flag = ''Y'' and (customers.cust_bankruptcy  Is Null or customers.cust_bankruptcy = ''N'')
          GROUP BY
@@ -692,7 +692,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
              LEFT JOIN
-            ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id
+            ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id and reference.refinfo_seq_nbr = 0
          WHERE
             agreements.agreement_type = ''O'' and (customers.cust_bankruptcy  Is Null or customers.cust_bankruptcy = ''N'')
             and agreement_versions.agreement_open_flag = ''Y'' and agreement_versions.agreement_next_due_date < current_date
@@ -781,7 +781,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
             LEFT JOIN
-            ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id
+            ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id and reference.refinfo_seq_nbr = 0
          WHERE
             agreements.agreement_type = ''O'' and (customers.cust_bankruptcy  Is Null or customers.cust_bankruptcy = ''N'')
             and agreement_versions.agreement_open_flag = ''Y''
@@ -877,7 +877,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
             LEFT JOIN
-            ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id
+            ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id and reference.refinfo_seq_nbr = 0
          WHERE
             agreements.agreement_type = ''O'' and (customers.cust_bankruptcy  Is Null or customers.cust_bankruptcy = ''N'')
             and agreement_versions.agreement_contract_date
@@ -980,7 +980,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
             LEFT JOIN
-            ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id
+            ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id and reference.refinfo_seq_nbr = 0
          WHERE
             agreements.agreement_type = ''O'' and (customers.cust_bankruptcy  Is Null or customers.cust_bankruptcy = ''N'')
             and agreement_versions.agreement_open_flag <> ''Y''
@@ -1086,7 +1086,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
             LEFT JOIN
-            ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id
+            ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id and reference.refinfo_seq_nbr = 0
          WHERE
             agreements.agreement_type = ''O'' and (customers.cust_bankruptcy  Is Null or customers.cust_bankruptcy = ''N'')
             and agreement_versions.agreement_open_flag = ''Y''
@@ -1189,7 +1189,7 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_customers as customers on agreements.customer_id = customers.id
             LEFT JOIN
-            ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id
+            ' || r.schema_name || '.level2_refinfos as reference on reference.customer_id = customers.id and reference.refinfo_seq_nbr = 0
          WHERE
             agreements.agreement_type = ''O'' and (customers.cust_bankruptcy  Is Null or customers.cust_bankruptcy = ''N'')
             and agreement_versions.agreement_open_flag <> ''Y''
