@@ -237,6 +237,7 @@ class BankReconciliationRepository @Inject constructor(
              )
          WHERE
              ds.verify_id IN (<verify_ids>)
+             AND ds.deposit_amount > 0
              AND ds.deleted = FALSE
          """.trimIndent(),
          mapOf("verify_ids" to verifyIDs)
