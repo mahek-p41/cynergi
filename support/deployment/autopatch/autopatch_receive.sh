@@ -11,18 +11,19 @@ error() {
   exit "$ERR"
 }
 prepare_directories() {
-  [[ ! -d /tmp/ELIM ]] && mkdir /tmp/ELIM
-  [[ ! -d /tmp/ELIM/R ]] && mkdir /tmp/ELIM/R
-  [[ -d /tmp/ELIM/S ]] && rm -vrf /tmp/ELIM/S
-  [[ ! -L /tmp/ELIM/S ]] && ln -vs ./R /tmp/ELIM/S
-  [[ -d /tmp/ELIM/D ]] && rm -vrf /tmp/ELIM/D
-  [[ ! -L /tmp/ELIM/D ]] && ln -vs ./R /tmp/ELIM/D
+  [[ ! -d /tmp/ELIM/R ]] && mkdir --verbose --parents /tmp/ELIM/R
+  [[ ! -d /tmp/ELIM/S ]] && mkdir --verbose --parents /tmp/ELIM/S
+  [[ ! -d /tmp/ELIM/D ]] && mkdir --verbose --parents /tmp/ELIM/D
 }
 install_this_system() {
-  DIR="$1"
+  local installDir="$1"
   prepare_directories
-  mv "$TAR_CLIENT" "$DIR"
-  mv "$TAR_MIDDLE" "$DIR"
+  mv --verbose "$TAR_CLIENT" "$installDir"
+  mv --verbose "$TAR_MIDDLE" "$installDir"
+  for dir in /tmp/ELIM/*; do
+    [[ "${dir}" == "${installDir}" ]] && continue
+    ln --verbose ${installDir}/* ${dir}/
+  done
   sh /opt/cyn/v01/SCRIPTS/ht.patch_elimination.sh
   RET=$?
   logit "Status: $RET ht.patch_elimination.sh"
