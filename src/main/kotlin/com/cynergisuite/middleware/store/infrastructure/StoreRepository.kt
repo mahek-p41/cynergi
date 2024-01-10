@@ -132,7 +132,7 @@ class StoreRepository @Inject constructor(
 
       val found = jdbc.findFirstOrNull(query, params) { rs, _ -> mapRowWithRegion(rs, company) }
 
-      logger.trace("Search for Store by number with params resulted in {}", params, found)
+      logger.trace("Search for Store by number with params {} resulted in {}", params, found)
 
       return found
    }

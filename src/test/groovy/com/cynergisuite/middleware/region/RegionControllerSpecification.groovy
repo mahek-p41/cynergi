@@ -676,8 +676,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
          elements[1].id == 2
          elements[1].storeNumber == store1.myNumber()
          elements[1].name == store1.myName()
-         elements[1].region.id == this.regions[0].id
-         elements[1].region.name == this.regions[0].name
+         elements[1].region == null
       }
 
       when: 're-associate store with a new region'

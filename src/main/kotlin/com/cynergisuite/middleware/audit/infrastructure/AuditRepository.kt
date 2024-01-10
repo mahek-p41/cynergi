@@ -107,6 +107,7 @@ class AuditRepository @Inject constructor(
             WHERE i.primary_location = a.store_number
                   AND i.dataset = auditStore.dataset
                   AND i.audit_id = a.id
+                  AND (comp.include_demo_inventory = FALSE AND i.status != 'D')
             )
          END                                                           AS a_inventory_count,
          auditAction.id                                                AS auditAction_id,
@@ -254,6 +255,7 @@ class AuditRepository @Inject constructor(
                WHERE i.primary_location = a.store_number
                      AND i.dataset = auditStore.dataset
                      AND i.audit_id = a.id
+                     AND (comp.include_demo_inventory = FALSE AND i.status != 'D')
                )
             END                                                 AS a_inventory_count,
             a.last_updated                                      AS a_last_updated,
@@ -337,8 +339,8 @@ class AuditRepository @Inject constructor(
    fun findOne(id: UUID, company: CompanyEntity): AuditEntity? {
       logger.debug("Searching for audit by id {} with company {}", id, company)
 
-      val params = mutableMapOf<String, Any?>("id" to id)
-      val query = "${selectByIdBaseQuery()}\nWHERE a.id = :id"
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
+      val query = "${selectByIdBaseQuery()}\nWHERE a.id = :id AND comp.id = :comp_id"
       val found = executeFindForSingleAudit(query, params)
 
       logger.trace("Searching for Audit with ID {} resulted in {}", id, found)
@@ -348,10 +350,11 @@ class AuditRepository @Inject constructor(
 
    @ReadOnly
    fun findOneCreatedOrInProgress(store: Store): AuditEntity? {
-      val params = mutableMapOf("store_number" to store.myNumber(), "current_status" to listOf(Created.value, InProgress.value))
+      val params = mutableMapOf("comp_id" to store.myCompany().id!!, "store_number" to store.myNumber(), "current_status" to listOf(Created.value, InProgress.value))
       val whereClause =
          """ WHERE a.store_number = :store_number
                    AND current_status IN (<current_status>)
+                   AND comp.id = :comp_id
          """.trimIndent()
       val query = selectAllBaseQuery(whereClause)
 
@@ -446,6 +449,7 @@ class AuditRepository @Inject constructor(
          "status" -> "a_current_status"
          else -> "a_id"
       }
+
       val sql =
          """
          WITH company AS (
@@ -489,18 +493,20 @@ class AuditRepository @Inject constructor(
                     LEFT JOIN audit_detail ad ON a.id = ad.audit_id and i.lookup_key = ad.lookup_key
                WHERE i.status in ('N', 'R', 'D')
                      AND ad.id IS NULL
-                     and a.company_id = comp.id AND a.store_number = i.primary_location
-                     and comp.dataset_code = i.dataset
+                     AND a.company_id = comp.id AND a.store_number = i.primary_location
+                     AND comp.dataset_code = i.dataset
+                     AND (comp.include_demo_inventory = FALSE AND i.status != 'D')
               )
             ELSE
               (
-              SELECT count(i.id)
+               SELECT count(i.id)
                FROM audit_inventory i
                     LEFT JOIN audit_detail ad ON a.id = ad.audit_id and i.lookup_key = ad.lookup_key
                WHERE i.status in ('N', 'R', 'D')
                      AND ad.id IS NULL
-                     and a.company_id = comp.id AND a.store_number = i.primary_location AND a.id = i.audit_id
-                     and comp.dataset_code = i.dataset
+                     AND a.company_id = comp.id AND a.store_number = i.primary_location AND a.id = i.audit_id
+                     AND comp.dataset_code = i.dataset
+                     AND (comp.include_demo_inventory = FALSE AND i.status != 'D')
               )
             END                                                 AS a_total_unscanned,
             (SELECT count(aen.id) > 0
@@ -541,6 +547,7 @@ class AuditRepository @Inject constructor(
                WHERE i.primary_location = a.store_number
                      AND i.dataset = auditStore.dataset
                      AND i.audit_id = a.id
+                     AND (comp.include_demo_inventory = FALSE AND i.status != 'D')
                )
             END                                                 AS a_inventory_count,
             comp.id                                             AS comp_id,
@@ -580,7 +587,6 @@ class AuditRepository @Inject constructor(
          ORDER BY ${sortBy} ${pageRequest.sortDirection()}
          LIMIT :limit OFFSET :offset
          """.trimIndent()
-
 
       logger.trace("Finding all audits using {}\n{}", params, sql)
 

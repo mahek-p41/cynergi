@@ -125,7 +125,7 @@ test {
    useJUnitPlatform()
    maxHeapSize = "4096m"
    retry {
-      maxRetries = 4
+      maxRetries = 2
       maxFailures = 20
       failOnPassedAfterRetry = false
    }

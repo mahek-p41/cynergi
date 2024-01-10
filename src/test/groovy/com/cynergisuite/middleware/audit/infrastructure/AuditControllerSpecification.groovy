@@ -23,12 +23,12 @@ import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
+import com.cynergisuite.middleware.employee.EmployeeTestDataLoaderService
 import com.cynergisuite.middleware.error.ErrorDTO
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.store.StoreDTO
-import groovy.sql.Sql
 import io.micronaut.core.type.Argument
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -50,6 +50,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/audit"
    private static final Locale locale = US
 
+   @Inject EmployeeTestDataLoaderService userSetupEmployeeTestDataLoaderService
    @Inject AuditDetailTestDataLoaderService auditDetailFactoryService
    @Inject AuditExceptionTestDataLoaderService auditExceptionFactoryService
    @Inject AuditExceptionNoteFactoryService auditExceptionNoteFactoryService
@@ -57,7 +58,6 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
    @Inject AuditRepository auditRepository
    @Inject InventoryService inventoryService
    @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
-   @Inject Sql sql
    @Inject SimpleTransactionalSql sts
    @Inject LocalizationService localizationService
 
@@ -1201,25 +1201,29 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
 
    void "process audit with inventory item in status 'D' from CREATED to IN-PROGRESS finally to COMPLETED" () {
       given:
-      final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(1, company)
+      final company = companyFactoryService.forDatasetCode('corrto')
+      final store = storeFactoryService.store(7, company)
+      final employee = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, company, 'man', 'super', 'pass')
+      final authenticatedEmployee = userService.fetchUserByAuthentication(employee.number, employee.passCode, company.datasetCode, 6).with { new AuthenticatedEmployee(it, 'pass') }
+      final accessToken = loginEmployee(authenticatedEmployee)
+
       final savedAudit = auditFactoryService.single(store)
       final storeroom = auditScanAreaFactoryService.storeroom(store, company)
       final inventory = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 20, sortBy: "id", sortDirection: "ASC", storeNumber: store.number, locationType: "STORE", inventoryStatus: ["D"]]), company, locale).elements
-      final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(3, savedAudit, storeroom, inventory).toList()
+      final List<AuditDetailEntity> auditDetails = auditDetailFactoryService.stream(2, savedAudit, storeroom, inventory).toList()
       final List<AuditExceptionEntity> auditExceptions = auditExceptionFactoryService.stream(3, savedAudit, storeroom).toList()
 
       when:
-      def openedResult = get("$path/${savedAudit.id}")
+      def openedResult = get("$path/${savedAudit.id}", accessToken)
 
       then:
       notThrown(HttpClientResponseException)
       openedResult.id != null
-      openedResult.store.storeNumber == 1
+      openedResult.store.storeNumber == 7
       openedResult.actions.size() == 1
-      openedResult.totalDetails == 3
+      openedResult.totalDetails == 2
       openedResult.totalExceptions == 3
-      openedResult.inventoryCount == 1694
+      openedResult.inventoryCount == 273
       final openActions = openedResult.actions
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
@@ -1228,17 +1232,17 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       openActions[0].status.description == "Created"
 
       when:
-      put(path, new AuditUpdateDTO([id: openedResult.id, status: new AuditStatusValueObject([value: "IN-PROGRESS"])]))
-      def inProgressResult = get("$path/${openedResult.id}")
+      put(path, new AuditUpdateDTO([id: openedResult.id, status: new AuditStatusValueObject([value: "IN-PROGRESS"])]), accessToken)
+      def inProgressResult = get("$path/${openedResult.id}", accessToken)
 
       then:
       notThrown(HttpClientResponseException)
       inProgressResult.id != null
-      inProgressResult.store.storeNumber == 1
+      inProgressResult.store.storeNumber == 7
       inProgressResult.actions.size() == 2
-      inProgressResult.totalDetails == 3
+      inProgressResult.totalDetails == 2
       inProgressResult.totalExceptions == 3
-      inProgressResult.inventoryCount == 1694
+      inProgressResult.inventoryCount == 273
       final inProgressActions = inProgressResult.actions
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
@@ -1251,17 +1255,17 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       inProgressActions[1].status.description == "In Progress"
 
       when:
-      put(path, new AuditUpdateDTO([id: openedResult.id, status: new AuditStatusValueObject([value: "COMPLETED"])]))
-      def completedResult = get("$path/${openedResult.id}")
+      put(path, new AuditUpdateDTO([id: openedResult.id, status: new AuditStatusValueObject([value: "COMPLETED"])]), accessToken)
+      def completedResult = get("$path/${openedResult.id}", accessToken)
 
       then:
       notThrown(HttpClientResponseException)
       completedResult.id != null
-      completedResult.store.storeNumber == 1
+      completedResult.store.storeNumber == 7
       completedResult.actions.size() == 3
-      completedResult.totalDetails == 3
+      completedResult.totalDetails == 2
       completedResult.totalExceptions == 3
-      completedResult.inventoryCount == 1694
+      completedResult.inventoryCount == 273
       final completedActions = completedResult.actions
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }

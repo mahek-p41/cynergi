@@ -13,6 +13,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaDTO
 import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactoryService
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
+import com.cynergisuite.middleware.employee.EmployeeTestDataLoaderService
 import com.cynergisuite.middleware.error.ErrorDTO
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
@@ -33,6 +34,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
    private static final String path = "/audit/detail"
    private static final Locale locale = US
 
+   @Inject EmployeeTestDataLoaderService userSetupEmployeeTestDataLoaderService
    @Inject AuditDetailTestDataLoaderService auditDetailFactoryService
    @Inject AuditTestDataLoaderService auditFactoryService
    @Inject AuditScanAreaFactoryService auditScanAreaFactoryService
@@ -75,7 +77,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final storeWarehouse = auditScanAreaFactoryService.warehouse(store, company)
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 3, locationType: "STORE", inventoryStatus: ["R", "D", "N"]]), company, locale).elements
 
-      final twentyAuditDetails = auditDetailFactoryService.stream(20, audit, storeWarehouse, employee, inventoryListing).sorted { o1, o2 -> o1.id <=> o2.id }.map { new AuditDetailValueObject(it, new AuditScanAreaDTO(storeWarehouse)) }.toList()
+      final twentyAuditDetails = auditDetailFactoryService.stream(20, audit, storeWarehouse, employee, inventoryListing).sorted { o1, o2 -> o1.id <=> o2.id }.toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       final pageFive = new StandardPageRequest(5, 5, "id", "ASC")
@@ -91,9 +93,20 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
       pageOneResult.totalElements == 20
-      pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableDTO(it.audit.id)}.collect {
-         new AuditDetailValueObject(it)
-      } == firstFiveDetails
+      pageOneResult.elements.eachWithIndex { result, index ->
+         with(result) {
+            id == firstFiveDetails[index].id
+            scanArea.name == firstFiveDetails[index].scanArea.name
+            scanArea.store.storeNumber == firstFiveDetails[index].scanArea.store.number
+            scanArea.store.name == firstFiveDetails[index].scanArea.store.name
+            lookupKey == firstFiveDetails[index].lookupKey
+            barcode == firstFiveDetails[index].barcode
+            serialNumber == firstFiveDetails[index].serialNumber
+            inventoryBrand == firstFiveDetails[index].inventoryBrand
+            inventoryModel == firstFiveDetails[index].inventoryModel
+            scannedBy.number == firstFiveDetails[index].scannedBy.number
+         }
+      }
 
       when:
       def pageTwoResult = get("/audit/${audit.id}/detail/${pageTwo}")
@@ -103,9 +116,20 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       new StandardPageRequest(pageTwoResult.requested) == pageTwo
       pageTwoResult.elements != null
       pageTwoResult.elements.size() == 5
-      pageTwoResult.elements.each {it['audit'] = new SimpleIdentifiableDTO(it.audit.id)}.collect {
-         new AuditDetailValueObject(it)
-      } == secondFiveDetails
+      pageTwoResult.elements.eachWithIndex { result, index ->
+         with(result) {
+            id == secondFiveDetails[index].id
+            scanArea.name == secondFiveDetails[index].scanArea.name
+            scanArea.store.storeNumber == secondFiveDetails[index].scanArea.store.number
+            scanArea.store.name == secondFiveDetails[index].scanArea.store.name
+            lookupKey == secondFiveDetails[index].lookupKey
+            barcode == secondFiveDetails[index].barcode
+            serialNumber == secondFiveDetails[index].serialNumber
+            inventoryBrand == secondFiveDetails[index].inventoryBrand
+            inventoryModel == secondFiveDetails[index].inventoryModel
+            scannedBy.number == secondFiveDetails[index].scannedBy.number
+         }
+      }
 
       when:
       get("/audit/${audit.id}/detail${pageFive}")
@@ -127,7 +151,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final secondAudit = audits[1]
       final storeShowroom = auditScanAreaFactoryService.showroom(store, company)
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 50, sortBy: "id", sortDirection: "ASC", storeNumber: 3, locationType: "STORE", inventoryStatus: ["R", "D", "N"]]), company, locale).elements
-      final twelveAuditDetails = auditDetailFactoryService.stream(12, audit, storeShowroom, employee, inventoryListing[0..24]).sorted { o1, o2 -> o1.id <=> o2.id }.map { new AuditDetailValueObject(it, new AuditScanAreaDTO(storeShowroom)) }.toList()
+      final twelveAuditDetails = auditDetailFactoryService.stream(12, audit, storeShowroom, employee, inventoryListing[0..24]).sorted { o1, o2 -> o1.id <=> o2.id }.toList()
       final firstTenDetails = twelveAuditDetails[0..9]
       auditDetailFactoryService.generate(12, secondAudit, employee, storeShowroom, inventoryListing[25..49])
 
@@ -139,7 +163,20 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       result.elements != null
       result.elements.size() == 10
       result.totalElements == 12
-      result.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }.collect { new AuditDetailValueObject(it) } == firstTenDetails
+      result.elements.eachWithIndex { res, index ->
+         with(res) {
+            id == firstTenDetails[index].id
+            scanArea.name == firstTenDetails[index].scanArea.name
+            scanArea.store.storeNumber == firstTenDetails[index].scanArea.store.number
+            scanArea.store.name == firstTenDetails[index].scanArea.store.name
+            lookupKey == firstTenDetails[index].lookupKey
+            barcode == firstTenDetails[index].barcode
+            serialNumber == firstTenDetails[index].serialNumber
+            inventoryBrand == firstTenDetails[index].inventoryBrand
+            inventoryModel == firstTenDetails[index].inventoryModel
+            scannedBy.number == firstTenDetails[index].scannedBy.number
+         }
+      }
    }
 
    void "fetch all audit details related to an audit where there are 2 different scan areas" () {
@@ -220,17 +257,19 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       given:
       final locale = Locale.US
       final company = companyFactoryService.forDatasetCode('corrto')
-      final store = storeFactoryService.store(1, company)
-      final department = departmentFactoryService.random(company)
-      final employee = employeeFactoryService.single(store, department)
-      loginEmployee(userService.fetchUserByAuthentication(employee.myNumber(), 'pass', tstds2.datasetCode, null).with { new AuthenticatedEmployee(it, 'pass') })
+      final store = storeFactoryService.store(6, company)
+
+      final employee = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, company, 'man', 'super', 'pass')
+      final authenticatedEmployee = userService.fetchUserByAuthentication(employee.number, employee.passCode, company.datasetCode, 6).with { new AuthenticatedEmployee(it, 'pass') }
+      final accessToken = loginEmployee(authenticatedEmployee)
+
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.myNumber(), locationType: "STORE", inventoryStatus: ["D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
 
       when:
-      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleLegacyIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
+      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleLegacyIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)), accessToken)
 
       then:
       notThrown(HttpClientResponseException)
@@ -273,11 +312,13 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
 
    void "create duplicate audit detail with inventory item with status 'D'" () {
       given:
-      final locale = US
-      final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(1, company)
-      final department = departmentFactoryService.random(company)
-      final employee = employeeFactoryService.single(store, department)
+      final locale = Locale.US
+      final company = companyFactoryService.forDatasetCode('corrto')
+      final store = storeFactoryService.store(6, company)
+      final employee = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, company, 'man', 'super', 'pass')
+      final authenticatedEmployee = userService.fetchUserByAuthentication(employee.number, employee.passCode, company.datasetCode, 6).with { new AuthenticatedEmployee(it, 'pass') }
+      final accessToken = loginEmployee(authenticatedEmployee)
+
       final inventoryListing = inventoryService.fetchAll(new InventoryPageRequest([page: 1, size: 25, sortBy: "id", sortDirection: "ASC", storeNumber: store.myNumber(), locationType: "STORE", inventoryStatus: ["D"]]), company, locale).elements
       final inventoryItem = inventoryListing[RandomUtils.nextInt(0, inventoryListing.size())]
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
@@ -286,7 +327,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final savedAuditDetail = auditDetailFactoryService.single(audit, storeWarehouse, employee, [inventoryItem])
 
       when:
-      def response = postForResponse("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleLegacyIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
+      def response = postForResponse("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleLegacyIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)), accessToken)
 
       then:
       notThrown(Exception)
