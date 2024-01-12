@@ -217,7 +217,7 @@ class BankReconciliationRepository @Inject constructor(
              ds.business_date AS transaction_date,
              NULL AS cleared_date,
              ds.deposit_amount AS amount,
-             'SUM ' || ds.store_number_sfk || ' ' || dep.value AS description,
+             'SUM ' || RIGHT(REPEAT('0', 4) || ds.store_number_sfk, 4) || ' ' || dep.value AS description,
              TO_CHAR(CURRENT_DATE, 'YYYYMMDD') AS document
          FROM
              deposits_staging ds
