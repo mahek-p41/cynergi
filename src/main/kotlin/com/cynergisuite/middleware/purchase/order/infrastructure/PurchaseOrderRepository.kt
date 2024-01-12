@@ -192,6 +192,7 @@ class PurchaseOrderRepository @Inject constructor(
             vendor.v_vgrp_company_id                            AS po_vendor_vgrp_company_id,
             vendor.v_vgrp_value                                 AS po_vendor_vgrp_value,
             vendor.v_vgrp_description                           AS po_vendor_vgrp_description,
+            CASE WHEN exists( select 1 from rebate_to_vendor r2v where r2v.vendor_id = vendor.v_id ) THEN true ELSE false END AS po_vendor_has_rebate,
             count(*) OVER()                                     AS total_elements,
             statusType.id                                       AS po_statusType_id,
             statusType.value                                    AS po_statusType_value,

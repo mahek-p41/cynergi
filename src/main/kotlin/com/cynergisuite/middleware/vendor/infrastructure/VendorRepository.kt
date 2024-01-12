@@ -186,6 +186,7 @@ class VendorRepository @Inject constructor(
             vgrp.company_id                       AS v_vgrp_company_id,
             vgrp.value                            AS v_vgrp_value,
             vgrp.description                      AS v_vgrp_description,
+            CASE WHEN exists( select 1 from rebate_to_vendor r2v where r2v.vendor_id = v.id) THEN true ELSE false END AS v_has_rebate,
             count(*) OVER()                       AS total_elements
          FROM vendor v
             JOIN company comp                            ON v.company_id = comp.id AND comp.deleted = FALSE
@@ -985,7 +986,8 @@ class VendorRepository @Inject constructor(
          number = rs.getInt("${columnPrefix}number"),
          note = rs.getString("${columnPrefix}note"),
          phone = rs.getString("${columnPrefix}phone_number"),
-         isActive = rs.getBoolean("${columnPrefix}active")
+         isActive = rs.getBoolean("${columnPrefix}active"),
+         hasRebate = rs.getBoolean("${columnPrefix}has_rebate")
       )
    }
 
@@ -1046,7 +1048,8 @@ class VendorRepository @Inject constructor(
          number = rs.getInt("number"),
          note = rs.getString("note"),
          phone = rs.getString("phone_number"),
-         isActive = rs.getBoolean("active")
+         isActive = rs.getBoolean("active"),
+
       )
    }
 

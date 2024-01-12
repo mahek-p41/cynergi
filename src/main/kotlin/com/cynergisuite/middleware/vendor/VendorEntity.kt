@@ -49,7 +49,8 @@ data class VendorEntity(
    val number: Int? = null,
    val note: String?,
    val phone: String?,
-   val isActive: Boolean = true
+   val isActive: Boolean = true,
+   val hasRebate: Boolean? = false
 ) : Identifiable {
 
 
@@ -91,7 +92,8 @@ data class VendorEntity(
          autoSubmitPurchaseOrder = dto.autoSubmitPurchaseOrder!!,
          note = dto.note,
          phone = dto.phone,
-         isActive = dto.isActive
+         isActive = dto.isActive,
+         hasRebate = dto.hasRebate
       )
 
    constructor(existingVendor: VendorEntity, vendorPaymentTerm: VendorPaymentTermEntity, shipVia: ShipViaEntity, dto: VendorDTO, vendorGroup: VendorGroupEntity?, freightOnboardType: FreightOnboardType, freightMethodType: FreightCalcMethodType, payTo: Identifiable? = null) :

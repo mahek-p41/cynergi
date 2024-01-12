@@ -86,10 +86,13 @@ class VendorStatisticsRepository @Inject constructor(
                JOIN vendor vend ON r_to_v.vendor_id = vend.id
             WHERE vend.company_id = :comp_id AND vend.id = :vendorId
             ORDER BY r.description
+            LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
             "comp_id" to company.id,
-            "vendorId" to filterRequest.vendorId
+            "vendorId" to filterRequest.vendorId,
+            "limit" to filterRequest.size(),
+            "offset" to filterRequest.offset()
          ),
          filterRequest
       ) { rs, elements ->
