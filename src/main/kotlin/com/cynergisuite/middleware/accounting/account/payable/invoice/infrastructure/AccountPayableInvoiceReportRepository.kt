@@ -179,7 +179,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
 
       filterRequest.invStatus?.let {
          params["status"] = filterRequest.invStatus
-         whereClause.append(" AND invStatus.value = :status ")
+         whereClause.append(" AND invStatus.value IN (<status>) ")
       }
 
       filterRequest.useTax?.let {

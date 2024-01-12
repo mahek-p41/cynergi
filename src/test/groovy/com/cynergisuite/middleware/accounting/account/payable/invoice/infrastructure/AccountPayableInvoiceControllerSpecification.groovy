@@ -477,8 +477,9 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final payToPmtTerm = vendorPaymentTermList[3]
       final payToShipVia = shipViaList[3]
       final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      final statusO = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
 
-      def apInvoiceEntities = dataLoaderService.stream(20, company, vendorIn, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
+      def apInvoiceEntities = dataLoaderService.stream(20, company, vendorIn, purchaseOrderIn, null, employeeIn, null, statusO, payToIn, store)
          .sorted { o1, o2 -> o1.id <=> o2.id }.toList()
 
       def apInvoices = apInvoiceEntities.stream().map { new AccountPayableInvoiceDTO(it) }.toList()
@@ -509,7 +510,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
          """)
 
-      def filterRequest = new InvoiceReportFilterRequest([sortBy: "poHeader.number", sortDirection: "ASC"])
+      def filterRequest = new InvoiceReportFilterRequest([sortBy: "poHeader.number", sortDirection: "ASC", invStatus: ["O", "P"]])
 
       when:
       def result = get("$path/report${filterRequest}")

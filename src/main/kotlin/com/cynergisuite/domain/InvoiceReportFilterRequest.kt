@@ -69,7 +69,7 @@ class InvoiceReportFilterRequest(
    var endVenGr: String? = null,
 
    @field:Schema(name = "invStatus", description = "The Invoice Status to filter results with")
-   var invStatus: String? = null,
+   var invStatus: List<String>? = null,
 
    @field:Schema(name = "useTax", description = "Only use tax indicator")
    var useTax: Boolean? = null,
