@@ -5,6 +5,7 @@ import com.cynergisuite.middleware.accounting.account.VendorBalanceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewService
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableDistDetailReportDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableExpenseReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryPaymentDTO
@@ -178,6 +179,44 @@ class AccountPayableInvoiceController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
       return accountPayableInvoiceService.fetchReport(user.myCompany(), filterRequest)
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/expense/report{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(
+      tags = ["AccountPayableInvoiceEndpoints"],
+      summary = "Fetch an Account Payable Expense Report",
+      description = "Fetch an Account Payable Expense Report",
+      operationId = "accountPayableInvoice-fetchExpenseReport"
+   )
+   @ApiResponses(
+      value = [
+         ApiResponse(
+            responseCode = "200",
+            content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]
+         ),
+         ApiResponse(
+            responseCode = "204",
+            description = "The requested Account Payable Expense Report was unable to be found, or the result is empty"
+         ),
+         ApiResponse(
+            responseCode = "401",
+            description = "If the user calling this endpoint does not have permission to operate it"
+         ),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchExpenseReport(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: ExpenseReportFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): AccountPayableExpenseReportTemplate {
+      logger.info("Fetching AP Expense Report  {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+      return accountPayableInvoiceService.fetchExpenseReport(user.myCompany(), filterRequest)
    }
 
    @Throws(NotFoundException::class)

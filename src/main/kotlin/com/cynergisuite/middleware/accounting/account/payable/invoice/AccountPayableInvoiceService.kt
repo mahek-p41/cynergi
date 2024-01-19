@@ -1,7 +1,14 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice
 
-import com.cynergisuite.domain.*
+import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
+import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
+import com.cynergisuite.domain.AccountPayableVendorBalanceReportFilterRequest
+import com.cynergisuite.domain.ExpenseReportFilterRequest
+import com.cynergisuite.domain.InvoiceReportFilterRequest
+import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.account.VendorBalanceDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableExpenseReportRepository
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceInquiryRepository
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceReportRepository
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceRepository
@@ -18,6 +25,7 @@ class AccountPayableInvoiceService @Inject constructor(
    private val accountPayableInvoiceInquiryRepository: AccountPayableInvoiceInquiryRepository,
    private val accountPayableInvoiceRepository: AccountPayableInvoiceRepository,
    private val accountPayableInvoiceReportRepository: AccountPayableInvoiceReportRepository,
+   private val accountPayableExpenseReportRepository: AccountPayableExpenseReportRepository,
    private val accountPayableInvoiceValidator: AccountPayableInvoiceValidator
 ) {
 
@@ -56,6 +64,52 @@ class AccountPayableInvoiceService @Inject constructor(
 
    fun fetchGLDistributions(invoiceID: UUID, company: CompanyEntity): List<AccountPayableDistDetailReportDTO> {
       return accountPayableInvoiceInquiryRepository.fetchInquiryDistributions(invoiceID, company)
+   }
+
+   fun fetchExpenseReport(company: CompanyEntity, filterRequest: ExpenseReportFilterRequest): AccountPayableExpenseReportTemplate {
+      val reportData = accountPayableExpenseReportRepository.fetchReport(company, filterRequest)
+
+      val allInvoices = reportData.flatMap { it.invoices }
+
+      val beginDate = filterRequest.beginDate
+      val endDate = filterRequest.endDate
+
+      val beginBalance = allInvoices
+         .filter { it!!.expenseDate!! < beginDate &&
+            (it.status != "P" || it.invoiceDetails
+               .any { it.paymentDate!! > endDate })
+         }
+         .mapNotNull { it!!.invoiceAmount }
+         .sumOf { it }
+
+      val newInvoicesTotal = allInvoices
+         .filter {
+            it!!.expenseDate!! >= beginDate &&
+               it.expenseDate!! <= endDate
+         }
+         .mapNotNull { it!!.invoiceAmount }
+         .sumOf { it }
+
+      val paidInvoicesTotal = allInvoices
+         .filter {
+            it!!.invoiceDetails.any { it.paymentDate!! >= beginDate } &&
+               it.invoiceDetails.any { it.paymentDate!! <= endDate }
+         }
+         .mapNotNull { it!!.invoiceAmount }
+         .sumOf { it }
+
+      val endBalance = beginBalance + newInvoicesTotal - paidInvoicesTotal
+
+      val chargedAfterEndingDate = allInvoices
+         .filter {
+            it!!.invoiceDetails.any { it.paymentDate!! >= beginDate &&
+               it.paymentDate!! <= endDate } &&
+               it.expenseDate!! > endDate
+         }
+         .mapNotNull { it!!.invoiceAmount }
+         .sumOf { it }
+
+      return AccountPayableExpenseReportTemplate(reportData, beginBalance, newInvoicesTotal, paidInvoicesTotal, endBalance, chargedAfterEndingDate)
    }
 
    fun export(filterRequest: InvoiceReportFilterRequest, company: CompanyEntity): ByteArray {
