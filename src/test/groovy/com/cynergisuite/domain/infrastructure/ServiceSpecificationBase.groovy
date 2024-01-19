@@ -10,6 +10,7 @@ import com.cynergisuite.middleware.department.DepartmentFactoryService
 import com.cynergisuite.middleware.division.DivisionEntity
 import com.cynergisuite.middleware.division.DivisionFactoryService
 import com.cynergisuite.middleware.employee.EmployeeTestDataLoaderService
+import com.cynergisuite.middleware.inventory.InventoryDataLoaderService
 import com.cynergisuite.middleware.region.RegionEntity
 import com.cynergisuite.middleware.region.RegionTestDataLoaderService
 import com.cynergisuite.middleware.store.StoreTestDataLoaderService
@@ -25,19 +26,15 @@ abstract class ServiceSpecificationBase extends Specification {
    @Inject EmployeeTestDataLoaderService employeeFactoryService
    @Inject TruncateDatabaseService truncateDatabaseService
    @Inject AreaDataTestDataLoaderService areaDataLoaderService
+   @Inject InventoryDataLoaderService inventoryDataLoaderService
 
    List<CompanyEntity> companies
    List<DivisionEntity> divisions
    List<RegionEntity> regions
 
-   Boolean inventoryLoaded = false
-
    void setup() {
       truncateDatabaseService.truncate() //need to exclude the inventory table for test
-      if(!inventoryLoaded) {
-         truncateDatabaseService.loadInventory()
-         inventoryLoaded = true
-      }
+      inventoryDataLoaderService.loadInventory()
       this.companies = companyFactoryService.streamPredefined().toList() // create the default companies
 
       def tstds1 = companies.find {
