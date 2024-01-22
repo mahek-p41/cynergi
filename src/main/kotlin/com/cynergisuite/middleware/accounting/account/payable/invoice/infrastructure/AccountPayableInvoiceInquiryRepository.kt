@@ -190,7 +190,7 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
             FROM account_payable_invoice_distribution invDist
                JOIN account ON invDist.distribution_account_id = account.id AND account.deleted = FALSE
             WHERE invDist.invoice_id = :apInvoiceId
-            ORDER BY invDist.distribution_profit_center_id_sfk ASC
+            ORDER BY invDist.time_created ASC, invDist.distribution_profit_center_id_sfk ASC
          """.trimIndent(),
          mapOf("apInvoiceId" to apInvoiceId)
       ) { rs, _ ->
