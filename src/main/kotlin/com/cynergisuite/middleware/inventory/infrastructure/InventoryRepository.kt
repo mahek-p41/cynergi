@@ -333,11 +333,11 @@ class InventoryRepository(
          """
       WITH paged AS (
          ${
-         if (audit.currentStatus() == Created || audit.currentStatus() == InProgress) {
-            "$selectBase JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.primary_location)"
-         } else {
-            "$selectFromAuditInventory JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.primary_location AND a.id = i.audit_id)"
-         }
+            if (audit.currentStatus() == Created || audit.currentStatus() == InProgress) {
+               "$selectBase JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.primary_location)"
+            } else {
+               "$selectFromAuditInventory JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.primary_location AND a.id = i.audit_id)"
+            }
          }
          WHERE
             comp.id = :comp_id
@@ -412,7 +412,7 @@ class InventoryRepository(
       if (filterRequest.beginAltId != null && filterRequest.endAltId != null) {
          params["beginAltId"] = filterRequest.beginAltId!!.uppercase()
          params["endAltId"] = filterRequest.endAltId!!.uppercase()
-         whereClause.append(" AND UPPER(inv.alt_id) BETWEEN :beginAltId AND :endAltId ")
+         whereClause.append(" AND UPPER(inv.alternate_id) BETWEEN :beginAltId AND :endAltId ")
       }
 
       if (filterRequest.receivedDate != null) {
@@ -428,7 +428,7 @@ class InventoryRepository(
       } else if (filterRequest.serialNbr != null) {
          sortBy.append("inv.serial_number")
       } else if (filterRequest.beginAltId != null && filterRequest.endAltId != null) {
-         sortBy.append("inv.alt_id")
+         sortBy.append("inv.alternate_id")
       } else {
          sortBy.append("inv.inv_purchase_order_number, inv.invoice_number, inv.model_number, inv.serial_number")
       }
@@ -446,9 +446,9 @@ class InventoryRepository(
                inv.description                  AS description,
                inv.location                     AS current_location,
                inv.inv_invoice_expensed_date    AS invoice_expensed_date,
-               inv.alt_id                       AS alt_id,
+               inv.alternate_id                 AS alternate_id,
                count(*) OVER() AS total_elements
-            FROM fastinfo_prod_import.inventory_vw inv
+            FROM inventory inv
                JOIN company comp ON inv.dataset = comp.dataset_code AND comp.deleted = FALSE
             $whereClause
             $sortBy
@@ -563,7 +563,7 @@ class InventoryRepository(
          description = rs.getString("description"),
          currentLoc = currentLoc,
          invoiceExpensedDate = invoiceExpensedDate,
-         altId = rs.getString("alt_id"),
+         altId = rs.getString("alternate_id"),
          currentLocExpensed = currentLocExpensed
       )
    }

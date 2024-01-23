@@ -409,10 +409,10 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
             filterRequest['poNbr'] = 'S100000703'
             filterRequest['sortBy'] = 'inv.inv_purchase_order_number'
             break
-         case 'Search by alt id':
+         case 'Search by alternate id':
             filterRequest['beginAltId'] = '10004640'
             filterRequest['endAltId'] = '10005019'
-            filterRequest['sortBy'] = 'inv.alt_id'
+            filterRequest['sortBy'] = 'inv.alternate_id'
             break
       }
 
@@ -428,7 +428,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       criteria                         || elements
       'Search by serial number'        || 1
       'Search by po number'            || 4
-      'Search by alt id'               || 271
+      'Search by alternate id'         || 271
    }
 
    void "fetch AP inventory inquiry no content" () {
