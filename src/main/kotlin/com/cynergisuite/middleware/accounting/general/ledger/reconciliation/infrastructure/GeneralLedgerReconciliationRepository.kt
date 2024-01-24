@@ -121,7 +121,7 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
 
           FROM inventory_end_of_month i
              JOIN company comp ON i.company_id = comp.id AND comp.deleted = FALSE
-             JOIN financial_calendar fc ON i.year = fc.r_fiscal_year  AND i.month between extract(month from fc.r_period_from) and EXTRACT(month from fc.r_period_to)
+             JOIN financial_calendar fc ON comp.id = fc.r_company_id
              JOIN summary summary ON i.company_id = summary.glSummary_company_id AND i.store_number_sfk = summary.glSummary_profit_center_id_sfk
                 AND i.asset_account_id = summary.glSummary_acct_id AND fc.r_overall_period_id = summary.glSummary_overallPeriod_id
              JOIN fastinfo_prod_import.store_vw profitCenter
@@ -150,6 +150,7 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
          params["year"] = filterRequest.date!!.year
          params["month"] = filterRequest.date!!.monthValue
          whereClause.append(" AND i.year = :year AND i.month = :month")
+         whereClause.append(" AND fc.r_period_from <= :date AND fc.r_period_to >= :date")
       }
       val query =
          """WITH summary AS (
@@ -254,7 +255,7 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
 
           FROM inventory_end_of_month i
              JOIN company comp ON i.company_id = comp.id AND comp.deleted = FALSE
-             JOIN financial_calendar fc ON i.year = fc.r_fiscal_year  AND i.month between extract(month from fc.r_period_from) and EXTRACT(month from fc.r_period_to)
+             JOIN financial_calendar fc ON comp.id = fc.r_company_id
              JOIN summary summary ON i.company_id = summary.glSummary_company_id AND i.store_number_sfk = summary.glSummary_profit_center_id_sfk
                 AND i.contra_asset_account_id = summary.glSummary_acct_id AND fc.r_overall_period_id = summary.glSummary_overallPeriod_id
              JOIN fastinfo_prod_import.store_vw profitCenter
@@ -371,12 +372,12 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
    }
 
    private fun calculateGLSumTotal(storeAccount: GeneralLedgerReconciliationInventoryEntity, currentGLSummary: GeneralLedgerSummaryEntity ): BigDecimal? {
-      val glSummaryTotal = currentGLSummary.beginningBalance?.let { bb ->
+      val glSummaryTotal = currentGLSummary.run {
+         val startingBalance = beginningBalance ?: BigDecimal.ZERO
          (1..storeAccount.period!!).sumOf { month ->
-            currentGLSummary.getNetActivityForMonth(month) ?: BigDecimal.ZERO
-         }.plus(bb)
-      } ?: BigDecimal.ZERO
+            getNetActivityForMonth(month) ?: BigDecimal.ZERO
+         }.plus(startingBalance)
+      }
       return glSummaryTotal
    }
-
 }
