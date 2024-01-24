@@ -22,10 +22,10 @@ class VendorStatisticsFilterRequest(
    @field:Schema(name = "vendorId", description = "Vendor ID")
    var vendorId: UUID? = null,
 
-   @field:Schema(name = "startingInvoice", description = "Starting invoice number")
+   @field:Schema(name = "startingInvoice", description = "Starting invoice number", required = false)
    var startingInvoice: String? = null,
 
-   @field:Schema(name = "startingPO", description = "Starting Purchase Order number")
+   @field:Schema(name = "startingPO", description = "Starting Purchase Order number", required = false)
    var startingPO: Long? = null
 
 ) : PageRequestBase<VendorStatisticsFilterRequest>(page, size, sortBy, sortDirection) {
