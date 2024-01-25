@@ -32,7 +32,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
       final employee = employeeFactoryService.singleUser(store)
-      final auditSchedule = auditScheduleFactoryService.single(FRIDAY, [store], employee, company)
+      final auditSchedule = auditScheduleFactoryService.single(FRIDAY, [store], employee, company, true)
 
       when:
       def result = get("/audit/schedule/${auditSchedule.id}")
@@ -54,7 +54,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.singleUser(storeOne)
-      final auditSchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne, storeThree], employee, company)
+      final auditSchedule = auditScheduleFactoryService.single(TUESDAY, [storeOne, storeThree], employee, company, true)
 
       when:
       def result = get("/audit/schedule/${auditSchedule.id}")
@@ -75,7 +75,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('coravt')
       final store = storeFactoryService.random(company)
       final emp = employeeFactoryService.singleUser(store)
-      final List<ScheduleEntity> auditSchedules = auditScheduleFactoryService.stream(10, FRIDAY, [store], emp, company).toList()
+      final List<ScheduleEntity> auditSchedules = auditScheduleFactoryService.stream(10, FRIDAY, [store], emp, company, true).toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       final pageThree = new StandardPageRequest(3, 5, "id", "ASC")
@@ -150,7 +150,7 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final storeOne = storeFactoryService.store(1, company)
       final storeThree = storeFactoryService.store(3, company)
       final emp = employeeFactoryService.singleUser(storeOne)
-      final List<ScheduleEntity> auditSchedules = auditScheduleFactoryService.stream(10, TUESDAY, [storeOne, storeThree], emp, company).toList()
+      final List<ScheduleEntity> auditSchedules = auditScheduleFactoryService.stream(10, TUESDAY, [storeOne, storeThree], emp, company, true).toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageThree = new StandardPageRequest(3, 5, "id", "ASC")
 
@@ -303,10 +303,10 @@ class AuditScheduleControllerSpecification extends ControllerSpecificationBase {
       final company = companyFactoryService.forDatasetCode('coravt')
       final storeOne = storeFactoryService.store(1, company)
       final employee = employeeFactoryService.singleUser(storeOne)
-      final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], employee, company)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [storeOne], employee, company, false)
 
       when:
-      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDTO([id: schedule.id, title: "Updated title", description:  "Updated description", schedule:  TUESDAY, stores: [new SimpleLegacyIdentifiableDTO(storeOne.id)] as Set, enabled: false]))
+      def result = put("/audit/schedule", new AuditScheduleCreateUpdateDTO([id: schedule.id, title: "Updated title", description:  "Updated description", schedule:  TUESDAY, stores: [new SimpleLegacyIdentifiableDTO(storeOne.id)] as Set, enabled: schedule.enabled]))
       def loadedSchedule = scheduleRepository.findOne(schedule.id)
 
       then:

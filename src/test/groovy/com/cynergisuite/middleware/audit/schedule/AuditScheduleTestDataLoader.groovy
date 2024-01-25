@@ -20,7 +20,7 @@ import java.util.stream.Stream
 
 @CompileStatic
 class AuditScheduleTestDataLoader {
-   static ScheduleEntity single(DayOfWeek dayOfWeek, List<Store> stores, User user, CompanyEntity company) {
+   static ScheduleEntity single(DayOfWeek dayOfWeek, List<Store> stores, User user, CompanyEntity company, Boolean enabled) {
       final faker = new Faker()
       final bool = faker.bool()
       final chuckNorris = faker.chuckNorris()
@@ -79,7 +79,7 @@ class AuditScheduleTestDataLoader {
          dayOfWeek.name(),
          ScheduleCommandTypeTestDataLoader.auditSchedule(),
          ScheduleTypeTestDataLoader.daily(),
-         new Random().nextBoolean(),
+         enabled != null ? enabled : new Random().nextBoolean(),
          user.myCompany(),
          arguments
       )
@@ -100,12 +100,25 @@ class AuditScheduleTestDataLoaderService {
       final number = numberIn > 0 ? numberIn : 1
 
       return IntStream.range(0, number).mapToObj {
-         single(dayOfWeek, stores as List<Store>, user, company)
+         single(dayOfWeek, stores as List<Store>, user, company, null)
+      }
+   }
+
+   Stream<ScheduleEntity> stream(int numberIn = 1, DayOfWeek dayOfWeek, List<StoreEntity> stores, User user, CompanyEntity company, Boolean enabled) {
+      final number = numberIn > 0 ? numberIn : 1
+
+      return IntStream.range(0, number).mapToObj {
+         single(dayOfWeek, stores as List<Store>, user, company, enabled)
       }
    }
 
    ScheduleEntity single(DayOfWeek dayOfWeek, List<Store> stores, User user, CompanyEntity company) {
-      return AuditScheduleTestDataLoader.single(dayOfWeek, stores, user, company)
+      return AuditScheduleTestDataLoader.single(dayOfWeek, stores, user, company, null)
+         .with { scheduleRepository.insert(it) }
+   }
+
+   ScheduleEntity single(DayOfWeek dayOfWeek, List<Store> stores, User user, CompanyEntity company, Boolean enabled) {
+      return AuditScheduleTestDataLoader.single(dayOfWeek, stores, user, company, enabled)
          .with { scheduleRepository.insert(it) }
    }
 }

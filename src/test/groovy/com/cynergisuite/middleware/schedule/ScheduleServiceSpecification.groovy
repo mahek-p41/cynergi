@@ -32,7 +32,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       final employee = employeeFactoryService.single(storeOne)
       final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, employee.securityGroups) // make ourselves a user who can see all audits
 
-      auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company)
+      auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company, true)
 
       when:
       def result = scheduleService.runDaily(novemberTuesday, false)
@@ -58,7 +58,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       final novemberTuesday = OffsetDateTime.of(2021, 11, 23, 0, 0, 0, 0, UTC)
       final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, employee.securityGroups) // make ourselves a user who can see all audits
 
-      auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company)
+      auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company, true)
 
       when:
       def result = scheduleService.runDaily(novemberTuesday, false)
@@ -82,7 +82,7 @@ class ScheduleServiceSpecification extends ServiceSpecificationBase {
       auditTestDataLoaderService.single(storeOne, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final user = new AuthenticatedUser(employee.id, employee.type, employee.number, company, employee.department, storeOne, "A", 0, employee.securityGroups) // make ourselves a user who can see all audits
       final novemberWednesday = OffsetDateTime.of(2021, 11, 24, 0, 0, 0, 0, UTC)
-      auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company)
+      auditScheduleTestDataLoaderService.single(TUESDAY, [storeOne], user, company, true)
 
       when:
       def result = scheduleService.runDaily(novemberWednesday, false)

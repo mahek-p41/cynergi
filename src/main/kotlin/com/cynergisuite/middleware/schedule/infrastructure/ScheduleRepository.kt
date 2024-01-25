@@ -22,7 +22,6 @@ import io.micronaut.context.annotation.Value
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import org.apache.commons.lang3.StringUtils.EMPTY
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -136,8 +135,7 @@ class ScheduleRepository @Inject constructor(
       var totalElement: Long? = null
       val elements = mutableListOf<ScheduleEntity>()
       var currentSchedule: ScheduleEntity? = null
-      var where = "WHERE comp.id = :comp_id "
-      val whereClause = StringBuilder()
+      val whereClause = StringBuilder("WHERE comp.id = :comp_id ")
       val params = mutableMapOf<String, Any>(
          "limit" to pageRequest.size(),
          "offset" to pageRequest.offset(),
@@ -146,18 +144,17 @@ class ScheduleRepository @Inject constructor(
       )
 
       if (command != null) {
-         whereClause.append(" $where AND sctd.value = :sctd_value")
+         whereClause.append(" AND sctd.value = :sctd_value ")
          params["sctd_value"] = command
-         where = EMPTY
       }
 
       if (type != null) {
-         whereClause.append("$where AND schedType.value = :schedType_value")
+         whereClause.append(" AND schedType.value = :schedType_value ")
          params["schedType_value"] = type.value
       }
 
       if (pageRequest.enabled != null) {
-         whereClause.append("$where AND sched.enabled = :sched_enabled")
+         whereClause.append(" AND sched.enabled = :sched_enabled ")
          params["sched_enabled"] = pageRequest.enabled!!
       }
 
@@ -266,7 +263,7 @@ class ScheduleRepository @Inject constructor(
 
    @ReadOnly
    fun allEnabled(type: ScheduleType, company: CompanyEntity): Sequence<ScheduleEntity> {
-      var result = findAll(SchedulePageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"), company, type)
+      var result = findAll(SchedulePageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC", enabled = true), company, type)
 
       return sequence {
          while (result.elements.isNotEmpty()) {

@@ -30,7 +30,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final store = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.single(store).with { new AuthenticatedEmployee(it.id, it, store) }
       final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)
-      final schedule = auditScheduleFactoryService.single(MONDAY, [store], employee, company)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [store], employee, company, true)
 
       when:
       def result = auditScheduleService.process(schedule, novemberMonday)
@@ -56,7 +56,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final store3 = storeFactoryService.store(3, company)
       final employee = employeeFactoryService.single(store1).with { new AuthenticatedEmployee(it.id, it, store1) }
       final novemberFriday = OffsetDateTime.of(2021, 11, 26, 0, 0, 0, 0, UTC)
-      final schedule = auditScheduleFactoryService.single(FRIDAY, [store1, store3], employee, company)
+      final schedule = auditScheduleFactoryService.single(FRIDAY, [store1, store3], employee, company, true)
 
       when:
       def result = auditScheduleService.process(schedule, novemberFriday)
@@ -89,7 +89,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final employee = employeeFactoryService.single(store1)
       final createdAudit = auditFactoryService.single(store1, employee, [AuditStatusFactory.created()] as Set)
       final novemberMonday = OffsetDateTime.of(2021, 11, 29, 0, 0, 0, 0, UTC)
-      final schedule = auditScheduleFactoryService.single(MONDAY, [store1], new AuthenticatedEmployee(employee.id, employee, store1), company)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [store1], new AuthenticatedEmployee(employee.id, employee, store1), company, true)
 
       when:
       def result = auditScheduleService.process(schedule, novemberMonday)
@@ -113,7 +113,7 @@ class AuditScheduleServiceSpecification extends ServiceSpecificationBase {
       final employee = employeeFactoryService.single(store1)
       final user = new AuthenticatedEmployee(employee.id, employee, store1)
       final createdAudit = auditFactoryService.single(store1, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final schedule = auditScheduleFactoryService.single(MONDAY, [store1], new AuthenticatedEmployee(employee.id, employee, store1), company)
+      final schedule = auditScheduleFactoryService.single(MONDAY, [store1], new AuthenticatedEmployee(employee.id, employee, store1), company, true)
       final novemberTuesday = OffsetDateTime.of(2021, 11, 23, 0, 0, 0, 0, UTC)
       final completedStatus = new AuditStatusValueObject(AuditStatusFactory.completed())
 
