@@ -109,7 +109,7 @@ class VendorStatisticsRepository @Inject constructor(
 
       if (filterRequest.startingInvoice != null) {
          params["startingInvoice"] = filterRequest.startingInvoice
-         whereClause.append(" AND apInvoice.invoice !< :startingInvoice ")
+         whereClause.append(" AND apInvoice.invoice >= :startingInvoice ")
       }
 
       return jdbc.queryPaged(
@@ -146,7 +146,7 @@ class VendorStatisticsRepository @Inject constructor(
 
       if (filterRequest.startingPO != null) {
          params["startingPO"] = filterRequest.startingInvoice
-         whereClause.append(" AND po.number !< :startingPO ")
+         whereClause.append(" AND po.number >= :startingPO ")
       }
 
       return jdbc.queryPaged(
