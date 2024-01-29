@@ -186,7 +186,7 @@ class VendorRepository @Inject constructor(
             vgrp.company_id                       AS v_vgrp_company_id,
             vgrp.value                            AS v_vgrp_value,
             vgrp.description                      AS v_vgrp_description,
-            CASE WHEN exists( select 1 from rebate_to_vendor r2v where r2v.vendor_id = v.id) THEN true ELSE false END AS v_has_rebate,
+            CASE WHEN r2v.vendor_id IS NOT NULL THEN true ELSE false END AS v_has_rebate,
             count(*) OVER()                       AS total_elements
          FROM vendor v
             JOIN company comp                            ON v.company_id = comp.id AND comp.deleted = FALSE
@@ -196,6 +196,7 @@ class VendorRepository @Inject constructor(
             JOIN ship_via shipVia                        ON shipVia.id = v.ship_via_id AND shipVia.deleted = FALSE
             LEFT OUTER JOIN address                      ON address.id = v.address_id AND address.deleted = FALSE
             LEFT OUTER JOIN vendor_group vgrp            ON vgrp.id = v.vendor_group_id AND vgrp.deleted = FALSE
+            LEFT JOIN rebate_to_vendor r2v               ON r2v.vendor_id = v.id
       """
 
    fun select1099ReportBaseQuery() =
@@ -1048,8 +1049,7 @@ class VendorRepository @Inject constructor(
          number = rs.getInt("number"),
          note = rs.getString("note"),
          phone = rs.getString("phone_number"),
-         isActive = rs.getBoolean("active"),
-
+         isActive = rs.getBoolean("active")
       )
    }
 

@@ -174,6 +174,7 @@ class PurchaseOrderControlRepository @Inject constructor(
             defVen.v_vgrp_company_id                                             AS defVen_vgrp_company_id,
             defVen.v_vgrp_value                                                  AS defVen_vgrp_value,
             defVen.v_vgrp_description                                            AS defVen_vgrp_description,
+            defVen.v_has_rebate                                                  AS defVen_has_rebate,
             updatePOCostType.id                                                  AS updatePOCostType_id,
             updatePOCostType.value                                               AS updatePOCostType_value,
             updatePOCostType.description                                         AS updatePOCostType_description,
