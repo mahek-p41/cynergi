@@ -110,6 +110,7 @@ class AgreementSigningRepository(
       $selectBase
       WHERE comp.id = :companyId AND
             asn.primary_customer_number = :customerNumber
+      ORDER BY asn.agreement_number ASC
       """.trimIndent()
 
       logger.debug("Querying for agreements by customer number {} {}", customerNumber, sql)

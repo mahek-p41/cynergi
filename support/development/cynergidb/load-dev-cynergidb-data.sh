@@ -4,11 +4,8 @@ if [[ -f /tmp/dumps/cynergidb.dump ]]; then
   pushd /tmp/dumps/
 
   echo "Restoring cynergidb from snapshot (excluding schema fastinfo_prod_import)"
-  dropdb --if-exists cynergidb
-  createdb cynergidb
-
   #pg_restore -l /tmp/dumps/cynergidb.dump /tmp/tables.list # filter out flyway tables
-  pg_restore --verbose --no-owner --no-privileges --exclude-schema="fastinfo_prod_import" --username "cynergiuser" --dbname "cynergidb" --host cynergidb --port 5432 --clean /tmp/dumps/cynergidb.dump
+  pg_restore --verbose --no-owner --no-privileges --schema="public" --username "cynergiuser" --dbname "cynergidb" --host cynergidb --port 5432 --clean /tmp/dumps/cynergidb.dump
   echo "Finished restoring cynergidb from snapshot (excluding schema fastinfo_prod_import)"
 
   /opt/scripts/migratedb.sh

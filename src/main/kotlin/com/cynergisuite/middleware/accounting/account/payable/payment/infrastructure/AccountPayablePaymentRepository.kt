@@ -762,7 +762,7 @@ class AccountPayablePaymentRepository @Inject constructor(
       logger.trace("Listing Account Payable Payments by bank {} pmt {} type {} and date {}", filterRequest.beginBank, filterRequest.beginPmt, filterRequest.type, filterRequest.frmPmtDt)
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder(" WHERE apPayment.company_id = :comp_id ")
-      val sortBy = StringBuilder("ORDER BY bnk.bank_number")
+      val sortBy = StringBuilder("ORDER BY bnk.bank_number, type.value")
 
       if (filterRequest.beginBank != null) {
          params["beginningBank"] = filterRequest.beginBank

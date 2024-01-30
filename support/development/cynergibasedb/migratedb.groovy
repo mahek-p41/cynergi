@@ -1,7 +1,7 @@
 #!/usr/bin/env /opt/cyn/v01/cynmid/groovy/current/bin/groovy
 @GrabConfig(systemClassLoader = true)
 @Grab(group = 'org.postgresql', module = 'postgresql', version = '42.2.15')
-@Grab(group = 'org.flywaydb', module = 'flyway-core', version = '5.2.4')
+@Grab(group = 'org.flywaydb', module = 'flyway-core', version = '7.15.0')
 @Grab(group = 'info.picocli', module = 'picocli', version = '4.6.3')
 @Grab(group = 'org.slf4j', module = 'slf4j-simple', version = '1.7.32')
 @Grab(group = 'org.slf4j', module = 'jcl-over-slf4j', version = '1.7.32')
