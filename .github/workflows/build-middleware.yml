@@ -71,11 +71,7 @@ jobs:
         #!/usr/bin/env bash
         ${DEBUG_MODE}
 
-        #the branch name is used in a docker tag, so it must be a valid docker tag, and under 50 characters
-        if [ ${#BRANCH_NAME} -gt 50 ]; then
-          echo "::error:: Branch name is too long: ${BRANCH_NAME} (${#BRANCH_NAME} characters). Maximum length is 50 characters."
-          exit 1
-        fi
+        #the branch name is used in a docker tag, so it must be a valid docker tag
         if [[ ! "${BRANCH_NAME}" =~ ^[a-zA-Z0-9][a-zA-Z0-9_./-]+$ ]]; then
           echo "::error:: Invalid branch name: ${BRANCH_NAME}"
           exit 1
@@ -141,19 +137,19 @@ jobs:
         mkdir -p /tmp/sftpuser
 
         echo "::group::docker run cynergitestdb"
-        docker run -d --rm --network ${NETWORK_ID} --name cynergitestdb${BRANCH_NAME} -e POSTGRES_PASSWORD=password --tmpfs /var/lib/postgresql/data:rw -v ${GITHUB_WORKSPACE}/support/development/cynergitestdb/fastinfo:/tmp/fastinfo cynergitestdb:${BRANCH_NAME}
+        docker run -d --rm --network ${NETWORK_ID} --name cynergitestdb -e POSTGRES_PASSWORD=password --tmpfs /var/lib/postgresql/data:rw -v ${GITHUB_WORKSPACE}/support/development/cynergitestdb/fastinfo:/tmp/fastinfo cynergitestdb:${BRANCH_NAME}
         echo "::endgroup::"
 
         echo "::group::docker run cynergitestsftp"
-        docker run -d --rm --network ${NETWORK_ID} --name cynergitestsftp${BRANCH_NAME} cynergitestsftp:${BRANCH_NAME}
+        docker run -d --rm --network ${NETWORK_ID} --name cynergitestsftp cynergitestsftp:${BRANCH_NAME}
         echo "::endgroup::"
 
         echo "::group::docker run cynergibasedb"
-        docker run -i --rm --network ${NETWORK_ID} cynergibasedb:${BRANCH_NAME} /opt/scripts/db-ready.sh cynergitestdb${BRANCH_NAME}
+        docker run -i --rm --network ${NETWORK_ID} cynergibasedb:${BRANCH_NAME} /opt/scripts/db-ready.sh cynergitestdb
         echo "::endgroup::"
 
         echo "::group::docker run middleware"
-        docker run --rm --network ${NETWORK_ID} -v ${GITHUB_WORKSPACE}/gradleCache:/home/jenkins/caches -v ${GITHUB_WORKSPACE}/gradleWrapper:/home/jenkins/wrapper -v ${GITHUB_WORKSPACE}:/home/jenkins/cynergi-middleware -e DATASOURCES_DEFAULT_URL=jdbc:postgresql://cynergitestdb${BRANCH_NAME}:5432/postgres -e TEST_SFTP_HOSTNAME=cynergitestsftp${BRANCH_NAME} -e TEST_SFTP_PORT=22 middleware:${BRANCH_NAME} /bin/bash -c "
+        docker run --rm --network ${NETWORK_ID} -v ${GITHUB_WORKSPACE}/gradleCache:/home/jenkins/caches -v ${GITHUB_WORKSPACE}/gradleWrapper:/home/jenkins/wrapper -v ${GITHUB_WORKSPACE}:/home/jenkins/cynergi-middleware -e DATASOURCES_DEFAULT_URL=jdbc:postgresql://cynergitestdb:5432/postgres -e TEST_SFTP_HOSTNAME=cynergitestsftp -e TEST_SFTP_PORT=22 middleware:${BRANCH_NAME} /bin/bash -c "
           ${DEBUG_MODE}
           set -o errexit -o pipefail -o noclobber -o nounset
           export JAVA_OPTS='-Xms2048m -Xmx2048m -Xgcpolicy:gencon'
