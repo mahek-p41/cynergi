@@ -36,6 +36,7 @@ class AccountPayableDistributionTemplateRepository @Inject constructor(
             apDist.company_id                                                    AS apDist_company_id
          FROM account_payable_distribution_template apDist
             JOIN company comp ON apDist.company_id = comp.id AND comp.deleted = FALSE
+            JOIN account_payable_distribution_template_detail apDistDetail ON apDist.id = apDistDetail.template_id
       """
    }
 
@@ -174,9 +175,10 @@ class AccountPayableDistributionTemplateRepository @Inject constructor(
    }
 
    fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): AccountPayableDistributionTemplateEntity {
+      val templateId = rs.getUuid("${columnPrefix}id")
       return AccountPayableDistributionTemplateEntity(
          id = rs.getUuid("${columnPrefix}id"),
-         name = rs.getString("${columnPrefix}name")
+         name = rs.getString("${columnPrefix}name"),
       )
    }
 

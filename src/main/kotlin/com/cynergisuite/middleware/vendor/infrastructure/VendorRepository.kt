@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.vendor.infrastructure
 
-import com.cynergisuite.domain.CashFlowFilterRequest
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
@@ -20,16 +19,8 @@ import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
-import com.cynergisuite.middleware.accounting.account.payable.cashflow.AccountPayableCashFlowDTO
-import com.cynergisuite.middleware.accounting.account.payable.cashflow.AccountPayableCashFlowEntity
-import com.cynergisuite.middleware.accounting.account.payable.cashflow.CashFlowBalanceEntity
-import com.cynergisuite.middleware.accounting.account.payable.cashflow.CashFlowReportInvoiceDetailEntity
-import com.cynergisuite.middleware.accounting.account.payable.cashflow.CashFlowVendorEntity
 import com.cynergisuite.middleware.accounting.account.payable.cashout.CashRequirementBalanceEnum
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalEntity
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerPendingReportDetailsTemplate
-import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerReportSortEnum
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -41,9 +32,7 @@ import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
 import com.cynergisuite.middleware.vendor.Form1099ReportDTO
 import com.cynergisuite.middleware.vendor.Form1099ReportEntity
 import com.cynergisuite.middleware.vendor.Form1099ReportInvoiceDetailEntity
-import com.cynergisuite.middleware.vendor.Form1099TotalsDTO
 import com.cynergisuite.middleware.vendor.Form1099TotalsEntity
-import com.cynergisuite.middleware.vendor.Form1099VendorDTO
 import com.cynergisuite.middleware.vendor.Form1099VendorEntity
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.group.VendorGroupEntity
@@ -59,7 +48,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.sql.ResultSet
-import java.time.LocalDate
 import java.util.UUID
 import javax.transaction.Transactional
 
@@ -171,10 +159,10 @@ class VendorRepository @Inject constructor(
             vpt.company_id                        AS v_vpt_company_id,
             vpt.description                       AS v_vpt_description,
             vpt.number                            AS v_vpt_number,
-            vpt.number_of_payments                AS v_vpt_number_of_payments,
             vpt.discount_month                    AS v_vpt_discount_month,
             vpt.discount_days                     AS v_vpt_discount_days,
             vpt.discount_percent                  AS v_vpt_discount_percent,
+            vpt.number_of_payments                AS v_vpt_number_of_payments,
             shipVia.id                            AS v_shipVia_id,
             shipVia.time_created                  AS v_shipVia_time_created,
             shipVia.time_updated                  AS v_shipVia_time_updated,
@@ -1079,7 +1067,9 @@ class VendorRepository @Inject constructor(
          description = rs.getString("${columnPrefix}description"),
          discountMonth = rs.getInt("${columnPrefix}discount_month"),
          discountDays = rs.getInt("${columnPrefix}discount_days"),
-         discountPercent = rs.getBigDecimal("${columnPrefix}discount_percent")
+         discountPercent = rs.getBigDecimal("${columnPrefix}discount_percent"),
+         numberOfPayments = rs.getInt("${columnPrefix}number_of_payments"),
+
       )
 
    private fun mapShipVia(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): ShipViaEntity =

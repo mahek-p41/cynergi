@@ -13,6 +13,7 @@ import com.cynergisuite.extensions.queryForObjectOrNull
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDistributionEntity
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentEntity
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -1099,6 +1100,26 @@ class AccountPayablePaymentRepository @Inject constructor(
       if (rowsAffected == 0) throw NotFoundException(id)
    }
 
+   @Transactional
+   fun insertDistributions(entity: AccountPayablePaymentDistributionEntity, company: CompanyEntity): AccountPayablePaymentDistributionEntity {
+      return jdbc.updateReturning(
+         """
+         INSERT INTO account_payable_payment_distribution(payment_id, distribution_account, distribution_profit_center_sfk, distribution_amount)
+         VALUES(:payment_id, :distribution_account_id, :distribution_profit_center_sfk, :distribution_amount)
+         RETURNING
+            *
+         """.trimIndent(),
+         mapOf(
+            "payment_id" to entity.paymentId,
+            "distribution_account_id" to entity.distributionAccount,
+            "distribution_profit_center_sfk" to entity.distributionProfitCenter,
+            "distribution_amount" to entity.distributionAmount
+         )
+      ) { rs, _ ->
+         mapDistributions(rs)
+      }
+   }
+
    private fun mapRow(
       rs: ResultSet,
       company: CompanyEntity,
@@ -1134,6 +1155,18 @@ class AccountPayablePaymentRepository @Inject constructor(
          dateCleared = rs.getLocalDateOrNull("${columnPrefix}date_cleared"),
          dateVoided = rs.getLocalDateOrNull("${columnPrefix}date_voided"),
          amount = rs.getBigDecimal("${columnPrefix}amount")
+      )
+   }
+
+   private fun mapDistributions(
+      rs: ResultSet
+   ): AccountPayablePaymentDistributionEntity {
+      return AccountPayablePaymentDistributionEntity(
+         id = rs.getUuid("id"),
+         paymentId = rs.getUuid("payment_id"),
+         distributionAccount = rs.getUuid("distribution_account"),
+         distributionProfitCenter = rs.getLong("distribution_profit_center_sfk"),
+         distributionAmount = rs.getBigDecimal("distribution_amount")
       )
    }
 

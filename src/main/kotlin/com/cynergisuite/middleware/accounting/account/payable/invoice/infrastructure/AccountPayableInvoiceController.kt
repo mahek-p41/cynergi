@@ -10,6 +10,7 @@ import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryPaymentDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceListByVendorDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceMaintenanceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceService
 import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
@@ -452,6 +453,35 @@ class AccountPayableInvoiceController @Inject constructor(
       val response = accountPayableInvoiceService.fetchGLDistributions(invoiceId, user.myCompany())
 
       logger.debug("Fetching GL Distributions by {} resulted in {}", invoiceId, response)
+
+      return response
+   }
+
+   @Secured("APADD")
+   @Post(value = "/maintenance", processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Create a single Account Payable Invoice", description = "Create a single AccountPayableInvoice", operationId = "accountPayableInvoice-create")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableInvoiceDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The Account Payable Invoice was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun maintenance(
+      @Body @Valid
+      dto: AccountPayableInvoiceMaintenanceDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): AccountPayableInvoiceDTO {
+      logger.debug("Requested Create Account Payable Invoice {}", dto)
+
+      val user = userService.fetchUser(authentication)
+      val response = accountPayableInvoiceService.maintenance(dto, user.myCompany())
+
+      logger.debug("Requested Create Account Payable Invoice {} resulted in {}", dto, response)
 
       return response
    }

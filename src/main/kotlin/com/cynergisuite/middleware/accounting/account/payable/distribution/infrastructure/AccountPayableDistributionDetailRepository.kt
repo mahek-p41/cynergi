@@ -14,6 +14,7 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDetailDTO
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDetailEntity
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryPaymentDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
@@ -179,6 +180,29 @@ class AccountPayableDistributionDetailRepository @Inject constructor(
             elements.add(mapRow(rs, company, "apDistDetail_"))
          } while (rs.next())
       }
+   }
+
+   @ReadOnly
+   fun findAllRecordsByGroup(
+      company: CompanyEntity,
+      id: UUID
+   ): List<AccountPayableDistributionDetailEntity> {
+      val details = mutableListOf<AccountPayableDistributionDetailEntity>()
+      jdbc.query(
+         """
+            ${selectBaseQuery()}
+            WHERE comp.id = :comp_id AND apDistDetail.template_id = :template_id AND apDistDetail.deleted = FALSE
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "template_id" to id
+         ),
+      ) { rs, _ ->
+         do {
+            details.add(mapRow(rs, company, "apDistDetail_"))
+         } while (rs.next())
+      }
+      return details
    }
 
    @Transactional

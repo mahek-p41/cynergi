@@ -32,6 +32,7 @@ import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
+import java.time.LocalDate
 import java.util.UUID
 import javax.transaction.Transactional
 
@@ -114,6 +115,22 @@ class BankReconciliationRepository @Inject constructor(
       }
 
       logger.trace("Searching for BankReconciliation id {}: \nQuery {} \nResulted in {}", id, query, found)
+
+      return found
+   }
+
+   @ReadOnly
+   fun findOne(bank: UUID, type: String, document: String, date: LocalDate, company: CompanyEntity): BankReconciliationEntity? {
+      val params = mutableMapOf<String, Any?>("bank_id" to bank, "comp_id" to company.id, "type_value" to type, "document" to document, "date" to date)
+      val query = "${selectBaseQuery()} WHERE bankRecon.bank_id = :bank_id AND bankRecon.company_id = :comp_id and bankReconType.value = :type_value and bankRecon.document = :document and bankRecon.transaction_date = :date and bankRecon.deleted = false"
+      val found = jdbc.findFirstOrNull(
+         query,
+         params
+      ) { rs, _ ->
+         mapRow(rs, company, "bankRecon_")
+      }
+
+      logger.trace("Searching for BankReconciliation id {}: \nQuery {} \nResulted in {}", bank, query, found)
 
       return found
    }
