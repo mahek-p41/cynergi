@@ -145,7 +145,7 @@ class VendorStatisticsRepository @Inject constructor(
       )
 
       if (filterRequest.startingPO != null) {
-         params["startingPO"] = filterRequest.startingInvoice
+         params["startingPO"] = filterRequest.startingPO
          whereClause.append(" AND po.number >= :startingPO ")
       }
 
