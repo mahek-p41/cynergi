@@ -45,7 +45,10 @@ data class CompanyDTO(
    var federalTaxNumber: String? = null,
 
    @field:Schema(name = "address", required = false, nullable = true, description = "Address")
-   var address: AddressDTO? = null
+   var address: AddressDTO? = null,
+
+   @field:Schema(name = "includeDemoInventory", required = false, nullable = true, description = "Include demo inventory items")
+   var includeDemoInventory: Boolean? = null,
 
 ) : Comparable<CompanyDTO> {
 
@@ -58,7 +61,8 @@ data class CompanyDTO(
          clientId = company.clientId,
          datasetCode = company.datasetCode,
          federalTaxNumber = company.federalIdNumber,
-         address = company.address?.let { AddressDTO(it) }
+         address = company.address?.let { AddressDTO(it) },
+         includeDemoInventory = company.includeDemoInventory,
       )
 
    override fun compareTo(other: CompanyDTO): Int =
@@ -71,5 +75,6 @@ data class CompanyDTO(
          .append(this.doingBusinessAs, other.doingBusinessAs)
          .append(this.federalTaxNumber, other.federalTaxNumber)
          .append(this.address, other.address)
+         .append(this.includeDemoInventory, other.includeDemoInventory)
          .toComparison()
 }

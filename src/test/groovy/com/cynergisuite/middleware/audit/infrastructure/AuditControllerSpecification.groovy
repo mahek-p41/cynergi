@@ -1223,7 +1223,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       openedResult.actions.size() == 1
       openedResult.totalDetails == 2
       openedResult.totalExceptions == 3
-      openedResult.inventoryCount == 273
+      openedResult.inventoryCount == 275
       final openActions = openedResult.actions
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
@@ -1242,7 +1242,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       inProgressResult.actions.size() == 2
       inProgressResult.totalDetails == 2
       inProgressResult.totalExceptions == 3
-      inProgressResult.inventoryCount == 273
+      inProgressResult.inventoryCount == 275
       final inProgressActions = inProgressResult.actions
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }
@@ -1265,7 +1265,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       completedResult.actions.size() == 3
       completedResult.totalDetails == 2
       completedResult.totalExceptions == 3
-      completedResult.inventoryCount == 273
+      completedResult.inventoryCount == 275
       final completedActions = completedResult.actions
          .collect{ new AuditActionValueObject(it) }
          .sort { o1, o2 -> o1.id <=> o2.id }

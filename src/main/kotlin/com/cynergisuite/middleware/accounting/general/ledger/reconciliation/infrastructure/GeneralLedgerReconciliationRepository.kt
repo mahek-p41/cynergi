@@ -13,12 +13,12 @@ import com.cynergisuite.middleware.inventory.InventoryEOMReportEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.math.BigDecimal
-import java.sql.ResultSet
 import org.apache.commons.lang3.StringUtils
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
+import java.sql.ResultSet
 
 @Singleton
 class GeneralLedgerReconciliationRepository @Inject constructor(
@@ -65,6 +65,7 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
              comp.client_id                                             AS comp_client_id,
              comp.dataset_code                                          AS comp_dataset_code,
              comp.federal_id_number                                     AS comp_federal_id_number,
+             comp.include_demo_inventory                                AS comp_include_demo_inventory,
              summary.glSummary_id                                       AS glSummary_id,
              summary.glSummary_company_id                               AS glSummary_company_id,
              summary.glSummary_profit_center_id_sfk                     AS glSummary_profit_center_id_sfk,
@@ -199,6 +200,7 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
              comp.client_id                                             AS comp_client_id,
              comp.dataset_code                                          AS comp_dataset_code,
              comp.federal_id_number                                     AS comp_federal_id_number,
+             comp.include_demo_inventory                                AS comp_include_demo_inventory,
              summary.glSummary_id                                       AS glSummary_id,
              summary.glSummary_company_id                               AS glSummary_company_id,
              summary.glSummary_profit_center_id_sfk                     AS glSummary_profit_center_id_sfk,

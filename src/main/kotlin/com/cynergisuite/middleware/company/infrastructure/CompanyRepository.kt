@@ -80,6 +80,7 @@ class CompanyRepository @Inject constructor(
            comp.client_id           AS client_id,
            comp.dataset_code        AS dataset_code,
            comp.federal_id_number   AS federal_id_number,
+           comp.include_demo_inventory AS include_demo_inventory,
            comp.deleted             As deleted,
            address.id               AS address_id,
            address.name             AS address_name,
@@ -234,8 +235,8 @@ class CompanyRepository @Inject constructor(
 
       return jdbc.insertReturning(
          """
-         INSERT INTO company(name, doing_business_as, client_code, client_id, dataset_code, federal_id_number, address_id)
-         VALUES (:name, :doing_business_as, :client_code, :client_id, :dataset_code, :federal_id_number, :address_id)
+         INSERT INTO company(name, doing_business_as, client_code, client_id, dataset_code, federal_id_number, address_id, include_demo_inventory)
+         VALUES (:name, :doing_business_as, :client_code, :client_id, :dataset_code, :federal_id_number, :address_id, :include_demo_inventory)
          RETURNING
             *
          """,
@@ -246,7 +247,8 @@ class CompanyRepository @Inject constructor(
             "client_id" to company.clientId,
             "dataset_code" to company.datasetCode,
             "federal_id_number" to company.federalIdNumber,
-            "address_id" to addressCreated?.id
+            "include_demo_inventory" to company.includeDemoInventory,
+            "address_id" to addressCreated?.id,
          )
       ) { rs, _ -> mapRow(rs, addressCreated) }
    }
@@ -276,7 +278,8 @@ class CompanyRepository @Inject constructor(
             client_id = :client_id,
             dataset_code = :dataset_code,
             federal_id_number = :federal_id_number,
-            address_id = :address_id
+            address_id = :address_id,
+            include_demo_inventory = :include_demo_inventory
          WHERE id = :id
          RETURNING
             *
@@ -289,7 +292,8 @@ class CompanyRepository @Inject constructor(
             "client_id" to toUpdate.clientId,
             "dataset_code" to toUpdate.datasetCode,
             "federal_id_number" to toUpdate.federalIdNumber,
-            "address_id" to companyAddress?.id
+            "address_id" to companyAddress?.id,
+            "include_demo_inventory" to toUpdate.includeDemoInventory
          )
       ) { rs, _ ->
          mapRow(rs, companyAddress)
@@ -327,7 +331,8 @@ class CompanyRepository @Inject constructor(
          clientId = rs.getInt("${columnPrefix}client_id"),
          datasetCode = rs.getString("${columnPrefix}dataset_code"),
          federalIdNumber = rs.getString("${columnPrefix}federal_id_number"),
-         address = addressRepository.mapAddressOrNull(rs, addressPrefix)
+         includeDemoInventory = rs.getBoolean("${columnPrefix}include_demo_inventory"),
+         address = addressRepository.mapAddressOrNull(rs, addressPrefix),
       )
 
    fun mapRow(rs: ResultSet, address: AddressEntity?, columnPrefix: String = EMPTY): CompanyEntity =
@@ -339,6 +344,7 @@ class CompanyRepository @Inject constructor(
          clientId = rs.getInt("${columnPrefix}client_id"),
          datasetCode = rs.getString("${columnPrefix}dataset_code"),
          federalIdNumber = rs.getString("${columnPrefix}federal_id_number"),
-         address = address
+         address = address,
+         includeDemoInventory = rs.getBoolean("${columnPrefix}include_demo_inventory"),
       )
 }

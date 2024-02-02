@@ -107,7 +107,7 @@ class AuditRepository @Inject constructor(
             WHERE i.primary_location = a.store_number
                   AND i.dataset = auditStore.dataset
                   AND i.audit_id = a.id
-                  AND (comp.include_demo_inventory = FALSE AND i.status != 'D')
+                  AND (comp.include_demo_inventory OR i.status != 'D')
             )
          END                                                           AS a_inventory_count,
          auditAction.id                                                AS auditAction_id,
@@ -144,6 +144,7 @@ class AuditRepository @Inject constructor(
          comp.client_id                                                AS comp_client_id,
          comp.dataset_code                                             AS comp_dataset_code,
          comp.federal_id_number                                        AS comp_federal_id_number,
+         comp.include_demo_inventory                                   AS comp_include_demo_inventory,
          compAddress.id                                                AS comp_address_id,
          compAddress.name                                              AS comp_address_name,
          compAddress.address1                                          AS comp_address_address1,
@@ -255,7 +256,7 @@ class AuditRepository @Inject constructor(
                WHERE i.primary_location = a.store_number
                      AND i.dataset = auditStore.dataset
                      AND i.audit_id = a.id
-                     AND (comp.include_demo_inventory = FALSE AND i.status != 'D')
+                     AND (comp.include_demo_inventory OR i.status != 'D')
                )
             END                                                 AS a_inventory_count,
             a.last_updated                                      AS a_last_updated,
@@ -294,6 +295,7 @@ class AuditRepository @Inject constructor(
             comp.client_id                                      AS comp_client_id,
             comp.dataset_code                                   AS comp_dataset_code,
             comp.federal_id_number                              AS comp_federal_id_number,
+            comp.include_demo_inventory                         AS comp_include_demo_inventory,
             compAddress.id                                      AS comp_address_id,
             compAddress.address1                                AS comp_address_address1,
             compAddress.address2                                AS comp_address_address2,
@@ -495,7 +497,7 @@ class AuditRepository @Inject constructor(
                      AND ad.id IS NULL
                      AND a.company_id = comp.id AND a.store_number = i.primary_location
                      AND comp.dataset_code = i.dataset
-                     AND (comp.include_demo_inventory = FALSE AND i.status != 'D')
+                     AND (comp.include_demo_inventory OR i.status != 'D')
               )
             ELSE
               (
@@ -506,7 +508,7 @@ class AuditRepository @Inject constructor(
                      AND ad.id IS NULL
                      AND a.company_id = comp.id AND a.store_number = i.primary_location AND a.id = i.audit_id
                      AND comp.dataset_code = i.dataset
-                     AND (comp.include_demo_inventory = FALSE AND i.status != 'D')
+                     AND (comp.include_demo_inventory OR i.status != 'D')
               )
             END                                                 AS a_total_unscanned,
             (SELECT count(aen.id) > 0
@@ -547,7 +549,7 @@ class AuditRepository @Inject constructor(
                WHERE i.primary_location = a.store_number
                      AND i.dataset = auditStore.dataset
                      AND i.audit_id = a.id
-                     AND (comp.include_demo_inventory = FALSE AND i.status != 'D')
+                     AND (comp.include_demo_inventory OR i.status != 'D')
                )
             END                                                 AS a_inventory_count,
             comp.id                                             AS comp_id,
@@ -559,6 +561,7 @@ class AuditRepository @Inject constructor(
             comp.client_id                                      AS comp_client_id,
             comp.dataset_code                                   AS comp_dataset_code,
             comp.federal_id_number                              AS comp_federal_id_number,
+            comp.include_demo_inventory                         AS comp_include_demo_inventory,
             comp.address_id                                     AS comp_address_id,
             comp.address_name                                   AS comp_address_name,
             comp.address_address1                               AS comp_address_address1,

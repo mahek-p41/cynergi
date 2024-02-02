@@ -127,6 +127,7 @@ class VendorRepository @Inject constructor(
             comp.client_id                        AS v_comp_client_id,
             comp.dataset_code                     AS v_comp_dataset_code,
             comp.federal_id_number                AS v_comp_federal_id_number,
+            comp.include_demo_inventory           AS v_comp_include_demo_inventory,
             comp.address_id                       AS v_comp_address_id,
             comp.address_name                     AS v_comp_address_name,
             comp.address_address1                 AS v_comp_address_address1,

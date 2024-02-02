@@ -21,7 +21,8 @@ class CompanyFactory {
          1812,
          "coravt",
          null,
-         null
+         null,
+         false,
       ),
       new CompanyEntity(
          null,
@@ -31,7 +32,8 @@ class CompanyFactory {
          5124,
          "corrto",
          "48-1256789",
-         null
+         null,
+         true,
       )
    ]
 
@@ -62,7 +64,8 @@ class CompanyFactory {
               random.nextInt(1000, 10000),
               lorem.characters(6, false),
               numbers.valid(),
-              addressIn
+              addressIn,
+              random.nextBoolean(),
           )
       }
    }

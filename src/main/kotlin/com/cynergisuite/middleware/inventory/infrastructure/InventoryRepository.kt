@@ -75,6 +75,7 @@ class InventoryRepository(
          comp.client_id                AS comp_client_id,
          comp.dataset_code             AS comp_dataset_code,
          comp.federal_id_number        AS comp_federal_id_number,
+         comp.include_demo_inventory   AS comp_include_demo_inventory,
          compAddress.id                AS comp_address_id,
          compAddress.name              AS comp_address_name,
          compAddress.address1          AS comp_address_address1,
@@ -145,6 +146,7 @@ class InventoryRepository(
          comp.client_id           AS comp_client_id,
          comp.dataset_code        AS comp_dataset_code,
          comp.federal_id_number   AS comp_federal_id_number,
+         comp.include_demo_inventory AS comp_include_demo_inventory,
          compAddress.id           AS comp_address_id,
          compAddress.name         AS comp_address_name,
          compAddress.address1     AS comp_address_address1,
@@ -346,6 +348,7 @@ class InventoryRepository(
             AND i.lookup_key NOT IN (SELECT lookup_key
                                         FROM audit_detail
                                         WHERE audit_id = :audit_id)
+            AND (comp.include_demo_inventory OR i.status != 'D')
       )
       SELECT
          p.*,

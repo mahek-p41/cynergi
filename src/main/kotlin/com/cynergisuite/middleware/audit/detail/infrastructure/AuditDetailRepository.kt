@@ -74,6 +74,7 @@ class AuditDetailRepository @Inject constructor(
             scannedBy.comp_client_id                  AS comp_client_id,
             scannedBy.comp_dataset_code               AS comp_dataset_code,
             scannedBy.comp_federal_id_number          AS comp_federal_id_number,
+            scannedBy.comp_include_demo_inventory    AS comp_include_demo_inventory,
             scannedBy.address_id                      AS address_id,
             scannedBy.address_name                    AS address_name,
             scannedBy.address_address1                AS address_address1,

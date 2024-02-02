@@ -72,6 +72,7 @@ class RegionRepository @Inject constructor(
                emp.comp_client_id                     AS comp_client_id,
                emp.comp_dataset_code                  AS comp_dataset_code,
                emp.comp_federal_id_number             AS comp_federal_id_number,
+               emp.comp_include_demo_inventory        AS comp_include_demo_inventory,
                emp.address_id                         AS address_id,
                emp.address_name                       AS address_name,
                emp.address_address1                   AS address_address1,

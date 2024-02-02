@@ -30,11 +30,7 @@ class AuditInventoryRepository @Inject constructor(
          WHERE i.primary_location = :store_number
                AND comp.id = :company_id
                AND (
-                  CASE WHEN comp.include_demo_inventory THEN
-                     (i.status = 'D' OR (i.status IN ('N','R') AND i.location = :store_number))
-                  ELSE
-                     (i.status IN ('N','R') AND i.location = :store_number)
-                  END
+                  (i.status = 'D' OR (i.status IN ('N','R') AND i.location = :store_number))
                   OR i.lookup_key IN (SELECT lookup_key FROM audit_detail WHERE audit_id = :audit_id)
                   )
          """.trimIndent(),

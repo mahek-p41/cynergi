@@ -34,32 +34,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements[0].id == 127
-//      pageOneResult.elements[0].serialNumber == null
-//      pageOneResult.elements[0].barcode == null
-//      pageOneResult.elements[0].lookupKey == "201-00923"
-//      pageOneResult.elements[0].lookupKeyType == "ALT_ID"
-//      pageOneResult.elements[0].altId == "201-00923"
-//      pageOneResult.elements[0].brand == "GIDGET MEAUT"
-//      pageOneResult.elements[0].modelNumber == "FPGIDFRAMEDART"
-//      pageOneResult.elements[0].productCode == "F-MISCELLANEOUS FURNITURE PICT"
-//      pageOneResult.elements[0].description == "MISCELLANEOUS FURNITURE PICT"
-//      pageOneResult.elements[0].receivedDate == "2012-04-13"
-//      pageOneResult.elements[0].originalCost == 55.03
-//      pageOneResult.elements[0].actualCost == 55.03
-//      pageOneResult.elements[0].modelCategory == "F"
-//      pageOneResult.elements[0].timesRented == 0
-//      pageOneResult.elements[0].totalRevenue == 0.00
-//      pageOneResult.elements[0].remainingValue == 0.00
-//      pageOneResult.elements[0].sellPrice == 0.00
-//      pageOneResult.elements[0].assignedValue == 0.00
-//      pageOneResult.elements[0].idleDays == 0
-//      pageOneResult.elements[0].condition == null
-//      pageOneResult.elements[0].status == "N"
-//      pageOneResult.elements[0].primaryLocation.id == 1
-//      pageOneResult.elements[0].primaryLocation.storeNumber == 1
-//      pageOneResult.elements[0].primaryLocation.name == "KANSAS CITY"
-      pageOneResult.elements[0].locationType.value == "STORE"
-      pageOneResult.elements[0].locationType.description == "Store"
+
    }
 
    void "fetch first page of inventory-app without locationType" () {
@@ -84,9 +59,9 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
          first == true
          last == false
          elements[0].id == 127
-//         elements[0].lookupKey == "201-00923"
-//         elements[0].modelNumber == "FPGIDFRAMEDART"
-//         elements[0].description == "MISCELLANEOUS FURNITURE PICT"
+         elements[0].lookupKey == "00127405"
+         elements[0].modelNumber == "TR"
+         elements[0].description == "19 IN TIRE"
          elements[0].serialNumber != null
          elements[0].barcode != null
          // below this values should be null
@@ -125,32 +100,11 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements[1].id == 423
-//      pageOneResult.elements[1].serialNumber == null
-//      pageOneResult.elements[1].barcode == null
-//      pageOneResult.elements[1].altId == "201-00925"
-//      pageOneResult.elements[1].lookupKey == "201-00925"
-//      pageOneResult.elements[1].lookupKeyType == "ALT_ID"
-//      pageOneResult.elements[1].brand == "GIDGET MEAUT"
-//      pageOneResult.elements[1].modelNumber == "FPGIDFRAMEDART"
-//      pageOneResult.elements[1].productCode == "F-MISCELLANEOUS FURNITURE PICT"
-//      pageOneResult.elements[1].description == "MISCELLANEOUS FURNITURE PICT"
-//      pageOneResult.elements[1].receivedDate == "2012-04-13"
-//      pageOneResult.elements[1].originalCost == 55.03
-//      pageOneResult.elements[1].actualCost == 55.03
-//      pageOneResult.elements[1].modelCategory == "F"
-//      pageOneResult.elements[1].timesRented == 0
-//      pageOneResult.elements[1].totalRevenue == 0.00
-//      pageOneResult.elements[1].remainingValue == 0.00
-//      pageOneResult.elements[1].sellPrice == 0.00
-//      pageOneResult.elements[1].assignedValue == 0.00
-//      pageOneResult.elements[1].idleDays == 0
-//      pageOneResult.elements[1].condition == null
-//      pageOneResult.elements[1].status == "N"
       pageOneResult.elements[1].primaryLocation.id == 2
       pageOneResult.elements[1].primaryLocation.storeNumber == 1
       pageOneResult.elements[1].primaryLocation.name == "HOUMA"
-//      pageOneResult.elements[1].locationType.value == "STORE"
-//      pageOneResult.elements[1].locationType.description == "Store"
+      pageOneResult.elements[1].locationType.value == "STORE"
+      pageOneResult.elements[1].locationType.description == "Store"
    }
 
    @Ignore
@@ -223,30 +177,30 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements[2].id == 935
-//      pageOneResult.elements[2].serialNumber == "201-00931"
-//      pageOneResult.elements[2].lookupKey == "201-00931"
-//      pageOneResult.elements[2].lookupKeyType == "SERIAL"
-//      pageOneResult.elements[2].barcode == "201-00931"
-//      pageOneResult.elements[2].altId == null
-//      pageOneResult.elements[2].brand == "GIDGET MEAUT"
-//      pageOneResult.elements[2].modelNumber == "FPGIDFRAMEDART"
-//      pageOneResult.elements[2].productCode == "F-MISCELLANEOUS FURNITURE PICT"
-//      pageOneResult.elements[2].description == "MISCELLANEOUS FURNITURE PICT"
-//      pageOneResult.elements[2].receivedDate == "2012-04-13"
-//      pageOneResult.elements[2].originalCost == 55.03
-//      pageOneResult.elements[2].actualCost == 55.03
-//      pageOneResult.elements[2].modelCategory == "F"
-//      pageOneResult.elements[2].timesRented == 0
-//      pageOneResult.elements[2].totalRevenue == 0.00
-//      pageOneResult.elements[2].remainingValue == 0.00
-//      pageOneResult.elements[2].sellPrice == 0.00
-//      pageOneResult.elements[2].assignedValue == 0.00
-//      pageOneResult.elements[2].idleDays == 0
-//      pageOneResult.elements[2].condition == null
-//      pageOneResult.elements[2].status == "N"
-//      pageOneResult.elements[2].primaryLocation.id == 1
-//      pageOneResult.elements[2].primaryLocation.storeNumber == 1
-//      pageOneResult.elements[2].primaryLocation.name == "KANSAS CITY"
+      pageOneResult.elements[2].serialNumber == "10000865"
+      pageOneResult.elements[2].lookupKey == "10000865"
+      pageOneResult.elements[2].lookupKeyType == "SERIAL"
+      pageOneResult.elements[2].barcode == "10000865"
+      pageOneResult.elements[2].altId == "10000865"
+      pageOneResult.elements[2].brand == "LEXANI"
+      pageOneResult.elements[2].modelNumber == "TR"
+      pageOneResult.elements[2].productCode == "T-22 IN TIRE"
+      pageOneResult.elements[2].description == "22 IN TIRE"
+      pageOneResult.elements[2].receivedDate == "2017-04-05"
+      pageOneResult.elements[2].originalCost == 103.00
+      pageOneResult.elements[2].actualCost == 92.26
+      pageOneResult.elements[2].modelCategory == "T"
+      pageOneResult.elements[2].timesRented == 0
+      pageOneResult.elements[2].totalRevenue == 0.00
+      pageOneResult.elements[2].remainingValue == 92.26
+      pageOneResult.elements[2].sellPrice == 0.00
+      pageOneResult.elements[2].assignedValue == 0.00
+      pageOneResult.elements[2].idleDays == 0
+      pageOneResult.elements[2].condition == null
+      pageOneResult.elements[2].status == "N"
+      pageOneResult.elements[2].primaryLocation.id == 2
+      pageOneResult.elements[2].primaryLocation.storeNumber == 1
+      pageOneResult.elements[2].primaryLocation.name == "HOUMA"
       pageOneResult.elements[2].locationType.value == "STORE"
       pageOneResult.elements[2].locationType.description == "Store"
    }
@@ -321,27 +275,27 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements[3].id == 763
-//      pageOneResult.elements[3].serialNumber == "00110360"
-//      pageOneResult.elements[3].barcode == "00110360"
-//      pageOneResult.elements[3].altId == null
-//      pageOneResult.elements[3].lookupKey == "00110360"
-//      pageOneResult.elements[3].lookupKeyType == "SERIAL"
-//      pageOneResult.elements[3].brand == "HD CANVAS ART"
-//      pageOneResult.elements[3].modelNumber == "FPHAD11856"
-//      pageOneResult.elements[3].productCode == "F-MISCELLANEOUS FURNITURE PICT"
-//      pageOneResult.elements[3].description == "MISCELLANEOUS FURNITURE PICT"
-//      pageOneResult.elements[3].receivedDate == "2010-05-18"
-//      pageOneResult.elements[3].originalCost == 85.00
-//      pageOneResult.elements[3].actualCost == 85.00
-//      pageOneResult.elements[3].modelCategory == "F"
-//      pageOneResult.elements[3].timesRented == 0
-//      pageOneResult.elements[3].totalRevenue == 0.00
-//      pageOneResult.elements[3].remainingValue == 0.00
-//      pageOneResult.elements[3].sellPrice == 0.00
-//      pageOneResult.elements[3].assignedValue == 0.00
-//      pageOneResult.elements[3].idleDays == 0
-//      pageOneResult.elements[3].condition == null
-//      pageOneResult.elements[3].status == "N"
+      pageOneResult.elements[3].serialNumber == "00128336"
+      pageOneResult.elements[3].barcode == "00128336"
+      pageOneResult.elements[3].altId == "00128336"
+      pageOneResult.elements[3].lookupKey == "00128336"
+      pageOneResult.elements[3].lookupKeyType == "SERIAL"
+      pageOneResult.elements[3].brand == "A-PLUS"
+      pageOneResult.elements[3].modelNumber == "TR"
+      pageOneResult.elements[3].productCode == "T-16 IN TIRE"
+      pageOneResult.elements[3].description == "16 IN TIRE"
+      pageOneResult.elements[3].receivedDate == "2016-01-22"
+      pageOneResult.elements[3].originalCost == 48.07
+      pageOneResult.elements[3].actualCost == 48.07
+      pageOneResult.elements[3].modelCategory == "T"
+      pageOneResult.elements[3].timesRented == 1
+      pageOneResult.elements[3].totalRevenue == 220.85
+      pageOneResult.elements[3].remainingValue == 19.34
+      pageOneResult.elements[3].sellPrice == 170.60
+      pageOneResult.elements[3].assignedValue == 0.00
+      pageOneResult.elements[3].idleDays == 0
+      pageOneResult.elements[3].condition == "OKAY"
+      pageOneResult.elements[3].status == "R"
       pageOneResult.elements[3].primaryLocation.id == 2
       pageOneResult.elements[3].primaryLocation.storeNumber == 1
       pageOneResult.elements[3].primaryLocation.name == "HOUMA"
@@ -359,41 +313,6 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       notThrown(HttpClientResponseException)
       with(inventory) {
          id == 20496
-//         serialNumber == "00110360"
-//         lookupKey == "00110360"
-//         lookupKeyType == "SERIAL"
-//         barcode == "00110360"
-//         altId == null
-//         brand == "HD CANVAS ART"
-//         modelNumber == "FPHAD11856"
-//         productCode == "F-MISCELLANEOUS FURNITURE PICT"
-//         description == "MISCELLANEOUS FURNITURE PICT"
-//         receivedDate == "2010-05-18"
-//         originalCost == 85
-//         actualCost == 85
-//         modelCategory == "F"
-//         timesRented == 0
-//         totalRevenue == 0
-//         remainingValue == 0
-//         sellPrice == 0
-//         assignedValue == 0
-//         idleDays == 0
-//         condition == null
-//         with(location) {
-//            id == 1
-//            storeNumber == 1
-//            name == "KANSAS CITY"
-//         }
-//         status == "N"
-//         with(primaryLocation) {
-//            id == 1
-//            storeNumber == 1
-//            name == "KANSAS CITY"
-//         }
-//         with(locationType) {
-//            value == "STORE"
-//            description == "Store"
-//         }
       }
    }
 
