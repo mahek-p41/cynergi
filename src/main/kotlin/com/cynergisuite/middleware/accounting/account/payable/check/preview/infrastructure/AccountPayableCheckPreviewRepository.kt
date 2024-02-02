@@ -125,6 +125,7 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
       var checkNumber = filterRequest.checkNumber
       val previewDetails = mutableListOf<AccountPayableCheckPreviewVendorsEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val sortBy = StringBuilder("ORDER BY ")
       val whereClause = StringBuilder(
          "WHERE apInvoice.company_id = :comp_id " +
             "AND apInvoice.status_id = 2"
@@ -146,12 +147,18 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
             "WHEN apControl.pay_after_discount_date = true THEN apInvoice.discount_date >= :discountDate" +
             "WHEN apControl.pay_after_discount_date = false THEN apInvoice.discount_date  <= :discountDate AND apInvoice.discount_date >= :checkDate")
       }
+      if (filterRequest.sortBy == "V"){
+         sortBy.append("apInvoice_vendor_name")
+      }
+      if (filterRequest.sortBy == "N") {
+         sortBy.append("apInvoice_vendor_number")
+      }
 
       jdbc.query(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY apInvoice_vendor_number, apInvoice_invoice
+            $sortBy
          """.trimIndent(),
          params)
       { rs, elements ->
