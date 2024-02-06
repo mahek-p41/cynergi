@@ -636,10 +636,34 @@ class AccountPayableInvoiceRepository @Inject constructor(
       var currentVendor: VendorBalanceEntity? = null
       var runningBalance = BigDecimal.ZERO
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val topWhere = StringBuilder("WHERE inv.apInvoice_company_id = :comp_id AND inv.apInvoice_status_id IN (2,3)")
+      val bottomWhere = StringBuilder("WHERE payment.apPaymentDetail_company_id = :comp_id AND payment.apPayment_status_id = 1")
+      val paymentWhere = StringBuilder("WHERE payment.apPaymentDetail_company_id = :comp_id and payment.apPayment_status_id = 1")
+      val invoiceWhere = StringBuilder("WHERE inv.apInvoice_company_id = :comp_id AND inv.apInvoice_status_id IN (2,3)")
+
+
 
       params["beginVendor"] = filterRequest.beginVendor
       params["endVendor"] = filterRequest.endVendor
-
+      topWhere.append(" AND inv.apInvoice_payTo_number")
+         .append(buildFilterString(true, true, "beginVendor", "endVendor")
+         )
+      bottomWhere.append(" AND apPaymentDetail_apInvoice_pay_to_number")
+         .append(buildFilterString(true, true, "beginVendor", "endVendor"))
+      paymentWhere.append(" AND payment.apPaymentDetail_apInvoice_pay_to_number")
+         .append(buildFilterString(true, true, "beginVendor", "endVendor"))
+      invoiceWhere.append(" AND inv.apInvoice_payto_number")
+         .append(buildFilterString(true, true, "beginVendor", "endVendor"))
+      if (filterRequest.fromDate != null && filterRequest.thruDate != null) {
+         params["fromDate"] = filterRequest.fromDate
+         params["thruDate"] = filterRequest.thruDate
+         topWhere.append(" AND inv.apInvoice_expense_date")
+            .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
+         bottomWhere.append(" AND payment.apPayment_payment_date")
+            .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
+         paymentWhere.append(" AND payment.apPayment_payment_date < :fromDate")
+         invoiceWhere.append(" AND inv.apInvoice_expense_date < :fromDate")
+      }
       jdbc.query(
          """
          with company as (
