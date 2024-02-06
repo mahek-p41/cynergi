@@ -13,17 +13,22 @@ import org.jetbrains.annotations.NotNull
 data class AccountPayableInvoiceDistributionDTO(
 
    @field:NotNull
+   @field:Schema(description = "Account Payable Invoice Distribution ID.", maxLength = 10)
    var id: UUID? = null,
 
    @field:NotNull
+   @field:Schema(name = "invoiceId", description = "Account Payable Invoice ID.", maxLength = 10)
    var invoiceId: UUID? = null,
 
    @field:NotNull
+   @field:Schema(name = "accountId", description = "Account ID", maxLength = 10)
    var accountId: UUID? = null,
 
    @field:NotNull
+   @field:Schema(name = "profitCenter", description = "Profit Center", maxLength = 10)
    var profitCenter: Long? = null,
 
    @field:NotNull
+   @field:Schema(name = "amount", description = "Amount", maxLength = 10)
    var amount: BigDecimal? = null,
 )

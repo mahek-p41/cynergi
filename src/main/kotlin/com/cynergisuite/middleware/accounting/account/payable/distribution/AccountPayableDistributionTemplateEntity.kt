@@ -5,8 +5,7 @@ import java.util.UUID
 
 data class AccountPayableDistributionTemplateEntity(
    val id: UUID? = null,
-   val name: String,
-   val distributionDetails: MutableSet<AccountPayableDistributionDetailEntity>? = LinkedHashSet()
+   val name: String
 ) : Identifiable {
 
    constructor(
@@ -14,7 +13,6 @@ data class AccountPayableDistributionTemplateEntity(
       this(
          id = dto.id,
          name = dto.name!!
-
       )
    override fun myId(): UUID? = id
 }

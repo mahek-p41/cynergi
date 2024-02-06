@@ -13,14 +13,18 @@ import org.jetbrains.annotations.NotNull
 data class AccountPayableInvoiceMaintenanceDTO(
 
    @field:NotNull
+   @field:Schema(name = "apInvoice", description = "Account Payable Invoice.", maxLength = 10)
    var apInvoice: AccountPayableInvoiceDTO? = null,
 
    @field:NotNull
+   @field:Schema(name = "apPayment", description = "Account Payable Payment.", maxLength = 10)
    var apPayment: AccountPayablePaymentDTO? = null,
 
    @field:NotNull
+   @field:Schema(name = "glDistribution", description = "Account Payable Distribution Template.", maxLength = 10)
    var glDistribution: AccountPayableDistributionTemplateDTO? = null,
 
    @field:NotNull
+   @field:Schema(name = "apInvoiceSchedule", description = "Account Payable Invoice Schedule.", maxLength = 10)
    var apInvoiceSchedule: AccountPayableInvoiceScheduleDTO? = null
 )
