@@ -11,7 +11,8 @@ import java.util.UUID
    allOf = [SortableRequestBase::class]
 )
 class AccountPayableCheckPreviewFilterRequest(
-
+   sortBy: String? = null,
+   sortDirection: String? = null,
    @field:Schema(name = "bank", description = "Bank number")
    var bank: Long,
 
@@ -33,7 +34,7 @@ class AccountPayableCheckPreviewFilterRequest(
    @field:Schema(name = "printNotes", description = "Print notes")
    var printNotes: Boolean? = null
 
-) : SortableRequestBase<AccountPayableCheckPreviewFilterRequest>(null, null) {
+) : SortableRequestBase<AccountPayableCheckPreviewFilterRequest>(sortBy, sortDirection) {
 
    override fun sortByMe(): String = sortBy()
 
