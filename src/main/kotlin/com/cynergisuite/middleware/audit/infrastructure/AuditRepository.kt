@@ -87,7 +87,7 @@ class AuditRepository @Inject constructor(
          THEN
             (
                SELECT COUNT(*)
-               FROM fastinfo_prod_import.inventory_vw i
+               FROM inventory i
                WHERE
                   i.primary_location = a.store_number
                   AND
@@ -237,7 +237,7 @@ class AuditRepository @Inject constructor(
             THEN
                (
                SELECT COUNT (*)
-               FROM fastinfo_prod_import.inventory_vw i
+               FROM inventory i
                WHERE i.primary_location = a.store_number
                      AND
                         i.dataset = auditStore.dataset
@@ -489,7 +489,7 @@ class AuditRepository @Inject constructor(
             THEN
               (
               SELECT count(i.id)
-               FROM fastinfo_prod_import.inventory_vw i
+               FROM inventory i
                     LEFT JOIN audit_detail ad ON a.id = ad.audit_id and i.lookup_key = ad.lookup_key
                WHERE i.status in ('N', 'R', 'D')
                      AND ad.id IS NULL
@@ -529,7 +529,7 @@ class AuditRepository @Inject constructor(
             THEN
                (
                SELECT COUNT (*)
-               FROM fastinfo_prod_import.inventory_vw i
+               FROM inventory i
                WHERE i.primary_location = a.store_number
                      AND
                         i.dataset = auditStore.dataset
