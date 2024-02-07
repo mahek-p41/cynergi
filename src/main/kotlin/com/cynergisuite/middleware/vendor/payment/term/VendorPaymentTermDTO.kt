@@ -59,6 +59,7 @@ data class VendorPaymentTermDTO(
       this(
          id = entity.id,
          description = entity.description,
+         numberOfPayments = entity.numberOfPayments,
          discountMonth = entity.discountMonth,
          discountDays = entity.discountDays,
          discountPercent = entity.discountPercent,

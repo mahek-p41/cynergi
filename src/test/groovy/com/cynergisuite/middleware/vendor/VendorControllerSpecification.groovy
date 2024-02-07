@@ -766,7 +766,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
-      final VPT = new VendorPaymentTermEntity(null, company, "test1", null, null, null, schedules)
+      final VPT = new VendorPaymentTermEntity(null, company, "test1", 1, null, null, null, schedules)
       final vendorPaymentTerm = vendorPaymentTermRepository.insert(VPT)
 
       final shipVia = shipViaTestDataLoaderService.single(nineNineEightEmployee.company)
@@ -838,7 +838,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
-      final VPT = new VendorPaymentTermEntity(null, company, "test1", null, null, null, schedules)
+      final VPT = new VendorPaymentTermEntity(null, company, "test1", 1, null, null, null, schedules)
       final vendorPaymentTerm = vendorPaymentTermRepository.insert(VPT)
 
       final shipVia = shipViaTestDataLoaderService.single(nineNineEightEmployee.company)
@@ -893,7 +893,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
-      final VPT = new VendorPaymentTermEntity(null, company, "test1", null, null, null, schedules)
+      final VPT = new VendorPaymentTermEntity(null, company, "test1", 1, null, null, null, schedules)
       final vendorPaymentTerm = vendorPaymentTermRepository.insert(VPT)
 
       final shipVia = shipViaTestDataLoaderService.single(nineNineEightEmployee.company)
@@ -960,7 +960,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
-      final VPT = new VendorPaymentTermEntity(null, company, "test1", null, null, null, schedules)
+      final VPT = new VendorPaymentTermEntity(null, company, "test1", 1, null, null, null, schedules)
       final vendorPaymentTerm = vendorPaymentTermRepository.insert(VPT)
 
       final shipVia = shipViaTestDataLoaderService.single(nineNineEightEmployee.company)
@@ -1027,7 +1027,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
-      final VPT = new VendorPaymentTermEntity(null, company, "test1", null, null, null, schedules)
+      final VPT = new VendorPaymentTermEntity(null, company, "test1", 1, null, null, null, schedules)
       final vendorPaymentTerm = vendorPaymentTermRepository.insert(VPT)
 
       final shipVia = shipViaTestDataLoaderService.single(nineNineEightEmployee.company)
@@ -1089,7 +1089,7 @@ class VendorControllerSpecification extends ControllerSpecificationBase {
       final addressEntity = new AddressEntity(addressVO)
 
       final schedules = [new VendorPaymentTermScheduleEntity(null, null, 90, 1.0, 1)]
-      final VPT = new VendorPaymentTermEntity(null, company, "test1", null, null, null, schedules)
+      final VPT = new VendorPaymentTermEntity(null, company, "test1", 1, null, null, null, schedules)
       final vendorPaymentTerm = vendorPaymentTermRepository.insert(VPT)
 
       final shipVia = shipViaTestDataLoaderService.single(nineNineEightEmployee.company)
