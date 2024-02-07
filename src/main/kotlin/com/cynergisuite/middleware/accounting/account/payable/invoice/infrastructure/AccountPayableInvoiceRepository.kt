@@ -636,34 +636,42 @@ class AccountPayableInvoiceRepository @Inject constructor(
       var currentVendor: VendorBalanceEntity? = null
       var runningBalance = BigDecimal.ZERO
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val sortBy = StringBuilder("ORDER BY ")
       val topWhere = StringBuilder("WHERE inv.apInvoice_company_id = :comp_id AND inv.apInvoice_status_id IN (2,3)")
-      val bottomWhere = StringBuilder("WHERE payment.apPaymentDetail_company_id = :comp_id AND payment.apPayment_status_id = 1")
-      val paymentWhere = StringBuilder("WHERE payment.apPaymentDetail_company_id = :comp_id and payment.apPayment_status_id = 1")
+      val bottomWhere = StringBuilder("WHERE payment.apPayment_company_id = :comp_id AND payment.apPayment_status_id = 1")
+      val paymentWhere = StringBuilder("WHERE payment.apPayment_company_id = :comp_id and payment.apPayment_status_id = 1")
       val invoiceWhere = StringBuilder("WHERE inv.apInvoice_company_id = :comp_id AND inv.apInvoice_status_id IN (2,3)")
 
-
-
-      params["beginVendor"] = filterRequest.beginVendor
-      params["endVendor"] = filterRequest.endVendor
-      topWhere.append(" AND inv.apInvoice_payTo_number")
-         .append(buildFilterString(true, true, "beginVendor", "endVendor")
-         )
-      bottomWhere.append(" AND apPaymentDetail_apInvoice_pay_to_number")
-         .append(buildFilterString(true, true, "beginVendor", "endVendor"))
-      paymentWhere.append(" AND payment.apPaymentDetail_apInvoice_pay_to_number")
-         .append(buildFilterString(true, true, "beginVendor", "endVendor"))
-      invoiceWhere.append(" AND inv.apInvoice_payto_number")
-         .append(buildFilterString(true, true, "beginVendor", "endVendor"))
-      if (filterRequest.fromDate != null && filterRequest.thruDate != null) {
-         params["fromDate"] = filterRequest.fromDate
-         params["thruDate"] = filterRequest.thruDate
-         topWhere.append(" AND inv.apInvoice_expense_date")
-            .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
-         bottomWhere.append(" AND payment.apPayment_payment_date")
-            .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
-         paymentWhere.append(" AND payment.apPayment_payment_date < :fromDate")
-         invoiceWhere.append(" AND inv.apInvoice_expense_date < :fromDate")
+      if (filterRequest.beginVendor != null || filterRequest.endVendor != null) {
+         params["beginVendor"] = filterRequest.beginVendor
+         params["endVendor"] = filterRequest.endVendor
+         topWhere.append(" AND inv.apInvoice_payTo_number")
+            .append(buildFilterString(filterRequest.beginVendor != null, filterRequest.endVendor  != null, "beginVendor", "endVendor"))
+         bottomWhere.append(" AND apPaymentDetail_apInvoice_pay_to_number")
+            .append(buildFilterString(filterRequest.beginVendor != null, filterRequest.endVendor  != null, "beginVendor", "endVendor"))
+         paymentWhere.append(" AND payment.apPaymentDetail_apInvoice_pay_to_number")
+            .append(buildFilterString(filterRequest.beginVendor != null, filterRequest.endVendor  != null, "beginVendor", "endVendor"))
+         invoiceWhere.append(" AND inv.apInvoice_payto_number")
+            .append(buildFilterString(filterRequest.beginVendor != null, filterRequest.endVendor  != null, "beginVendor", "endVendor"))
       }
+      if (filterRequest.fromDate != null && filterRequest.thruDate != null) {
+        params["fromDate"] = filterRequest.fromDate
+        params["thruDate"] = filterRequest.thruDate
+        topWhere.append(" AND inv.apInvoice_expense_date")
+           .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
+        bottomWhere.append(" AND payment.apPayment_payment_date")
+          .append(buildFilterString(filterRequest.fromDate != null, filterRequest.thruDate != null, "fromDate", "thruDate"))
+        paymentWhere.append(" AND payment.apPayment_payment_date < :fromDate")
+        invoiceWhere.append(" AND inv.apInvoice_expense_date < :fromDate")
+     }
+
+      if (filterRequest.sortBy == "V"){
+         sortBy.append("apInvoice_payTo_name")
+      }
+      if (filterRequest.sortBy == "N") {
+         sortBy.append("apInvoice_payTo_number")
+      }
+
       jdbc.query(
          """
          with company as (
@@ -789,7 +797,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
                   apPaymentDetail_apInvoice_pay_to_number,
                   apPaymentDetail_apInvoice_vendor_name
                FROM payment
-               WHERE payment.apPayment_company_id = :comp_id and payment.apPayment_status_id = 1 AND payment.apPaymentDetail_apInvoice_pay_to_number BETWEEN :beginVendor AND :endVendor AND payment.apPayment_payment_date < :fromDate
+               $paymentWhere
                GROUP BY apPaymentDetail_apInvoice_pay_to_number, apPaymentDetail_apInvoice_vendor_name
             ),
             invoiceSum as (
@@ -798,7 +806,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
                  apInvoice_payTo_number,
                  apInvoice_vendor_name
                FROM inv
-               WHERE inv.apInvoice_company_id = :comp_id AND inv.apInvoice_status_id IN (2,3) AND inv.apInvoice_payto_number BETWEEN :beginVendor AND :endVendor AND inv.apInvoice_expense_date < :fromDate
+               $invoiceWhere
                GROUP BY inv.apInvoice_payto_number, inv.apInvoice_vendor_name
             ),
             beginningBalance as (
@@ -825,7 +833,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
                   apInvoice_purchase_order_number,
                   apInvoice_invoice_amount
                FROM inv
-               WHERE inv.apInvoice_company_id = :comp_id AND inv.apInvoice_status_id IN (2,3) AND inv.apInvoice_payTo_number BETWEEN :beginVendor AND :endVendor AND inv.apInvoice_expense_date BETWEEN :fromDate AND :thruDate
+               $topWhere
                UNION
                SELECT
                   apPaymentDetail_vendor_name,
@@ -839,7 +847,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
                   apPaymentDetail_apInvoice_purchase_order_number,
                   apPaymentDetail_amount
                FROM payment
-               WHERE payment.apPayment_company_id = :comp_id AND payment.apPayment_status_id = 1 AND apPaymentDetail_apInvoice_pay_to_number BETWEEN :beginVendor AND :endVendor AND payment.apPayment_payment_date BETWEEN :fromDate AND :thruDate
+               $bottomWhere
                ORDER BY apInvoice_vendor_name, apInvoice_expense_date
             )
             SELECT
@@ -850,6 +858,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
               bb.balance
             FROM combinedData
             LEFT JOIN beginningBalance bb ON combinedData.apInvoice_payTo_number = bb.apInvoice_payTo_number
+            $sortBy
          """.trimIndent(),
          params
       ){ rs, elements ->
@@ -995,7 +1004,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
       return VendorBalanceEntity(
          name = rs.getString("apInvoice_payTo_name"),
          number = rs.getLong("apInvoice_payTo_number"),
-         balance = rs.getBigDecimal("balance")
+         balance = rs.getBigDecimal("balance") ?: BigDecimal.ZERO
       )
    }
 

@@ -5,7 +5,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 @Schema(
-   name = "AccountPayableCheckPreviewFilterRequest",
+   name = "AccountPayableVendorBalanceReportFilterRequest",
    title = "Resulting list for filtering result",
    description = "Defines the parameters available for a sortable request.",
    allOf = [SortableRequestBase::class]
@@ -13,10 +13,10 @@ import java.util.UUID
 class AccountPayableVendorBalanceReportFilterRequest(
 
    @field:Schema(name = "beginVendor", description = "Begin Vendor")
-   var beginVendor: Int,
+   var beginVendor: Int? = null,
 
    @field:Schema(name = "endVendor", description = "End Vendor")
-   var endVendor: Int,
+   var endVendor: Int? = null,
 
    @field:Schema(name = "fromDate", description = "From date")
    var fromDate: LocalDate? = null,

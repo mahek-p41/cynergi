@@ -380,11 +380,11 @@ class AccountPayableInvoiceController @Inject constructor(
    @Secured("APTRLBAL")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/vendor-balance{?filterRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Fetch an Account Payable Check Preview Report", description = "Fetch an Account Payable Check Preview Report", operationId = "accountPayableInvoice-checkPreview")
+   @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Fetch an Account Payable Vendor Balance Report", description = "Fetch an Account Payable Vendor Balance Report", operationId = "accountPayableInvoice-vendorBalance")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
-         ApiResponse(responseCode = "204", description = "The requested Account Payable Check Preview Report was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "204", description = "The requested Account Payable Vendor Balance Report was unable to be found, or the result is empty"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
@@ -396,7 +396,7 @@ class AccountPayableInvoiceController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): List<VendorBalanceDTO> {
-      logger.info("Fetching Account Payable Check Preview Report {}", filterRequest)
+      logger.info("Fetching Account Payable Vendor Balance Report {}", filterRequest)
 
       val user = userService.fetchUser(authentication)
 
