@@ -95,7 +95,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
             JOIN account                                                ON invDist.distribution_account_id = account.id AND account.deleted = FALSE
             LEFT JOIN account_payable_control apControl                 ON invDist.distribution_account_id = apControl.general_ledger_inventory_account_id
             JOIN company comp                                           ON apInvoice.company_id = comp.id AND comp.deleted = FALSE
-            LEFT JOIN fastinfo_prod_import.inventory_vw inv ON
+            LEFT JOIN inventory inv ON
                   comp.dataset_code = inv.dataset
                   AND inv.invoice_number = apInvoice.invoice
                   AND CASE
@@ -179,14 +179,14 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
 
       filterRequest.invStatus?.let {
          params["status"] = filterRequest.invStatus
-         whereClause.append(" AND invStatus.value = :status ")
+         whereClause.append(" AND invStatus.value IN (<status>) ")
       }
 
       filterRequest.useTax?.let {
          params["useTax"] = filterRequest.useTax
          whereClause.append(" AND apInvoice.use_tax_indicator = :useTax ")
       }
-      val ordering = " ORDER BY poHeader.number ${filterRequest.sortDirection()}, apInvoice.id, pmt.id, pmtDetail.id "
+      val ordering = " ORDER BY poHeader.number ${filterRequest.sortDirection()}, apInvoice.id, pmt.id, pmtDetail.id, account.number, invDist.distribution_profit_center_id_sfk "
 
       jdbc.query(
          """

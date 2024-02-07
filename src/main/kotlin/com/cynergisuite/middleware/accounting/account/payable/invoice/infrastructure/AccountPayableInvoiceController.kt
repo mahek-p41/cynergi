@@ -5,10 +5,12 @@ import com.cynergisuite.middleware.accounting.account.VendorBalanceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewService
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableDistDetailReportDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableExpenseReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryPaymentDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceListByVendorDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceMaintenanceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceService
 import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
@@ -178,6 +180,44 @@ class AccountPayableInvoiceController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
       return accountPayableInvoiceService.fetchReport(user.myCompany(), filterRequest)
+   }
+
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/expense/report{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(
+      tags = ["AccountPayableInvoiceEndpoints"],
+      summary = "Fetch an Account Payable Expense Report",
+      description = "Fetch an Account Payable Expense Report",
+      operationId = "accountPayableInvoice-fetchExpenseReport"
+   )
+   @ApiResponses(
+      value = [
+         ApiResponse(
+            responseCode = "200",
+            content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]
+         ),
+         ApiResponse(
+            responseCode = "204",
+            description = "The requested Account Payable Expense Report was unable to be found, or the result is empty"
+         ),
+         ApiResponse(
+            responseCode = "401",
+            description = "If the user calling this endpoint does not have permission to operate it"
+         ),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchExpenseReport(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: ExpenseReportFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): AccountPayableExpenseReportTemplate {
+      logger.info("Fetching AP Expense Report  {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+      return accountPayableInvoiceService.fetchExpenseReport(user.myCompany(), filterRequest)
    }
 
    @Throws(NotFoundException::class)
@@ -355,7 +395,7 @@ class AccountPayableInvoiceController @Inject constructor(
       filterRequest: AccountPayableVendorBalanceReportFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): VendorBalanceDTO {
+   ): List<VendorBalanceDTO> {
       logger.info("Fetching Account Payable Check Preview Report {}", filterRequest)
 
       val user = userService.fetchUser(authentication)
@@ -383,7 +423,7 @@ class AccountPayableInvoiceController @Inject constructor(
       logger.info("Fetching Account Payable Invoice Payments by {}", invoiceId)
 
       val user = userService.fetchUser(authentication)
-      val response = accountPayableInvoiceService.fetchInvoicePayments(invoiceId, user.myCompany()) ?: throw NotFoundException(invoiceId)
+      val response = accountPayableInvoiceService.fetchInvoicePayments(invoiceId, user.myCompany())
 
       logger.debug("Fetching Account Payable Invoice Payments by {} resulted in {}", invoiceId, response)
 
@@ -410,9 +450,38 @@ class AccountPayableInvoiceController @Inject constructor(
       logger.info("Fetching GL Distributions by {}", invoiceId)
 
       val user = userService.fetchUser(authentication)
-      val response = accountPayableInvoiceService.fetchGLDistributions(invoiceId, user.myCompany()) ?: throw NotFoundException(invoiceId)
+      val response = accountPayableInvoiceService.fetchGLDistributions(invoiceId, user.myCompany())
 
       logger.debug("Fetching GL Distributions by {} resulted in {}", invoiceId, response)
+
+      return response
+   }
+
+   @Secured("APADD")
+   @Post(value = "/maintenance", processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Create a single Account Payable Invoice", description = "Create a single AccountPayableInvoice", operationId = "accountPayableInvoice-create")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableInvoiceDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The Account Payable Invoice was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun maintenance(
+      @Body @Valid
+      dto: AccountPayableInvoiceMaintenanceDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): AccountPayableInvoiceDTO {
+      logger.debug("Requested Create Account Payable Invoice {}", dto)
+
+      val user = userService.fetchUser(authentication)
+      val response = accountPayableInvoiceService.maintenance(dto, user.myCompany())
+
+      logger.debug("Requested Create Account Payable Invoice {} resulted in {}", dto, response)
 
       return response
    }

@@ -39,7 +39,7 @@ class StagingDepositRepository @Inject constructor(
       filterRequest: StagingDepositPageRequest
    ): RepositoryPage<StagingDepositEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "movedToJe" to filterRequest.movedToJe, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
-      val whereClause = StringBuilder(" WHERE vs.deleted = false AND vs.company_id = :comp_id AND dep.value IN ('DEP_1', 'DEP_2', 'DEP_3', 'DEP_4', 'DEP_5', 'DEP_6', 'DEP_7', 'DEP_8', 'DEP_9', 'DEP_10', 'DEP_11')  AND vs.moved_to_pending_journal_entries = :movedToJe ")
+      val whereClause = StringBuilder(" WHERE vs.deleted = false AND vs.company_id = :comp_id AND dep.value IN ('DEP-1', 'DEP-2', 'DEP-3', 'DEP-4', 'DEP-5', 'DEP-6', 'DEP-7', 'DEP-8', 'DEP-9', 'DEP-10', 'DEP-11')  AND vs.moved_to_pending_journal_entries = :movedToJe ")
 
       if (filterRequest.verifiedSuccessful != null) {
          params["verifiedSuccessful"] = filterRequest.verifiedSuccessful
@@ -84,17 +84,17 @@ class StagingDepositRepository @Inject constructor(
              vs.store_number_sfk,
              sv.name AS store_name,
              vs.error_amount,
-             SUM(CASE WHEN dep.value = 'DEP_1' THEN ds.deposit_amount ELSE 0 END)   AS deposit_1,
-             SUM(CASE WHEN dep.value = 'DEP_2' THEN ds.deposit_amount ELSE 0 END)   AS deposit_2,
-             SUM(CASE WHEN dep.value = 'DEP_3' THEN ds.deposit_amount ELSE 0 END)   AS deposit_3,
-             SUM(CASE WHEN dep.value = 'DEP_4' THEN ds.deposit_amount ELSE 0 END)   AS deposit_4,
-             SUM(CASE WHEN dep.value = 'DEP_5' THEN ds.deposit_amount ELSE 0 END)   AS deposit_5,
-             SUM(CASE WHEN dep.value = 'DEP_6' THEN ds.deposit_amount ELSE 0 END)   AS deposit_6,
-             SUM(CASE WHEN dep.value = 'DEP_7' THEN ds.deposit_amount ELSE 0 END)   AS deposit_7,
-             SUM(CASE WHEN dep.value = 'DEP_8' THEN ds.deposit_amount ELSE 0 END)   AS deposit_8,
-             SUM(CASE WHEN dep.value = 'DEP_9' THEN ds.deposit_amount ELSE 0 END)   AS deposit_9,
-             SUM(CASE WHEN dep.value = 'DEP_10' THEN ds.deposit_amount ELSE 0 END)   AS deposit_10,
-             SUM(CASE WHEN dep.value = 'DEP_11' THEN ds.deposit_amount ELSE 0 END)   AS deposit_11,
+             SUM(CASE WHEN dep.value = 'DEP-1' THEN ds.deposit_amount ELSE 0 END)   AS deposit_1,
+             SUM(CASE WHEN dep.value = 'DEP-2' THEN ds.deposit_amount ELSE 0 END)   AS deposit_2,
+             SUM(CASE WHEN dep.value = 'DEP-3' THEN ds.deposit_amount ELSE 0 END)   AS deposit_3,
+             SUM(CASE WHEN dep.value = 'DEP-4' THEN ds.deposit_amount ELSE 0 END)   AS deposit_4,
+             SUM(CASE WHEN dep.value = 'DEP-5' THEN ds.deposit_amount ELSE 0 END)   AS deposit_5,
+             SUM(CASE WHEN dep.value = 'DEP-6' THEN ds.deposit_amount ELSE 0 END)   AS deposit_6,
+             SUM(CASE WHEN dep.value = 'DEP-7' THEN ds.deposit_amount ELSE 0 END)   AS deposit_7,
+             SUM(CASE WHEN dep.value = 'DEP-8' THEN ds.deposit_amount ELSE 0 END)   AS deposit_8,
+             SUM(CASE WHEN dep.value = 'DEP-9' THEN ds.deposit_amount ELSE 0 END)   AS deposit_9,
+             SUM(CASE WHEN dep.value = 'DEP-10' THEN ds.deposit_amount ELSE 0 END)   AS deposit_10,
+             SUM(CASE WHEN dep.value = 'DEP-11' THEN ds.deposit_amount ELSE 0 END)   AS deposit_11,
              SUM(ds.deposit_amount)                                                 AS deposit_total,
              count(*) OVER()                                                        AS total_elements
          FROM
@@ -133,7 +133,7 @@ class StagingDepositRepository @Inject constructor(
       filterRequest: StagingDepositFilterRequest
    ): List<StagingDepositEntity> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "movedToJe" to filterRequest.movedToJe)
-      val whereClause = StringBuilder(" WHERE vs.deleted = false AND vs.company_id = :comp_id AND dep.value IN ('DEP_1', 'DEP_2', 'DEP_3', 'DEP_4', 'DEP_5', 'DEP_6', 'DEP_7', 'DEP_8', 'DEP_9', 'DEP_10', 'DEP_11')  AND vs.moved_to_pending_journal_entries = :movedToJe ")
+      val whereClause = StringBuilder(" WHERE vs.deleted = false AND vs.company_id = :comp_id AND dep.value IN ('DEP-1', 'DEP-2', 'DEP-3', 'DEP-4', 'DEP-5', 'DEP-6', 'DEP-7', 'DEP-8', 'DEP-9', 'DEP-10', 'DEP-11')  AND vs.moved_to_pending_journal_entries = :movedToJe ")
 
       if (filterRequest.verifiedSuccessful != null) {
          params["verifiedSuccessful"] = filterRequest.verifiedSuccessful
@@ -178,17 +178,17 @@ class StagingDepositRepository @Inject constructor(
              vs.store_number_sfk,
              sv.name AS store_name,
              vs.error_amount,
-             SUM(CASE WHEN dep.value = 'DEP_1' THEN ds.deposit_amount ELSE 0 END)   AS deposit_1,
-             SUM(CASE WHEN dep.value = 'DEP_2' THEN ds.deposit_amount ELSE 0 END)   AS deposit_2,
-             SUM(CASE WHEN dep.value = 'DEP_3' THEN ds.deposit_amount ELSE 0 END)   AS deposit_3,
-             SUM(CASE WHEN dep.value = 'DEP_4' THEN ds.deposit_amount ELSE 0 END)   AS deposit_4,
-             SUM(CASE WHEN dep.value = 'DEP_5' THEN ds.deposit_amount ELSE 0 END)   AS deposit_5,
-             SUM(CASE WHEN dep.value = 'DEP_6' THEN ds.deposit_amount ELSE 0 END)   AS deposit_6,
-             SUM(CASE WHEN dep.value = 'DEP_7' THEN ds.deposit_amount ELSE 0 END)   AS deposit_7,
-             SUM(CASE WHEN dep.value = 'DEP_8' THEN ds.deposit_amount ELSE 0 END)   AS deposit_8,
-             SUM(CASE WHEN dep.value = 'DEP_9' THEN ds.deposit_amount ELSE 0 END)   AS deposit_9,
-             SUM(CASE WHEN dep.value = 'DEP_10' THEN ds.deposit_amount ELSE 0 END)   AS deposit_10,
-             SUM(CASE WHEN dep.value = 'DEP_11' THEN ds.deposit_amount ELSE 0 END)   AS deposit_11,
+             SUM(CASE WHEN dep.value = 'DEP-1' THEN ds.deposit_amount ELSE 0 END)   AS deposit_1,
+             SUM(CASE WHEN dep.value = 'DEP-2' THEN ds.deposit_amount ELSE 0 END)   AS deposit_2,
+             SUM(CASE WHEN dep.value = 'DEP-3' THEN ds.deposit_amount ELSE 0 END)   AS deposit_3,
+             SUM(CASE WHEN dep.value = 'DEP-4' THEN ds.deposit_amount ELSE 0 END)   AS deposit_4,
+             SUM(CASE WHEN dep.value = 'DEP-5' THEN ds.deposit_amount ELSE 0 END)   AS deposit_5,
+             SUM(CASE WHEN dep.value = 'DEP-6' THEN ds.deposit_amount ELSE 0 END)   AS deposit_6,
+             SUM(CASE WHEN dep.value = 'DEP-7' THEN ds.deposit_amount ELSE 0 END)   AS deposit_7,
+             SUM(CASE WHEN dep.value = 'DEP-8' THEN ds.deposit_amount ELSE 0 END)   AS deposit_8,
+             SUM(CASE WHEN dep.value = 'DEP-9' THEN ds.deposit_amount ELSE 0 END)   AS deposit_9,
+             SUM(CASE WHEN dep.value = 'DEP-10' THEN ds.deposit_amount ELSE 0 END)   AS deposit_10,
+             SUM(CASE WHEN dep.value = 'DEP-11' THEN ds.deposit_amount ELSE 0 END)   AS deposit_11,
              SUM(ds.deposit_amount)                                                 AS deposit_total,
              count(*) OVER()                                                        AS total_elements
          FROM
@@ -272,17 +272,17 @@ class StagingDepositRepository @Inject constructor(
              vs.store_number_sfk,
              sv.name AS store_name,
              vs.error_amount,
-             SUM(CASE WHEN dep.value = 'DEP_1' THEN ds.deposit_amount ELSE 0 END)   AS deposit_1,
-             SUM(CASE WHEN dep.value = 'DEP_2' THEN ds.deposit_amount ELSE 0 END)   AS deposit_2,
-             SUM(CASE WHEN dep.value = 'DEP_3' THEN ds.deposit_amount ELSE 0 END)   AS deposit_3,
-             SUM(CASE WHEN dep.value = 'DEP_4' THEN ds.deposit_amount ELSE 0 END)   AS deposit_4,
-             SUM(CASE WHEN dep.value = 'DEP_5' THEN ds.deposit_amount ELSE 0 END)   AS deposit_5,
-             SUM(CASE WHEN dep.value = 'DEP_6' THEN ds.deposit_amount ELSE 0 END)   AS deposit_6,
-             SUM(CASE WHEN dep.value = 'DEP_7' THEN ds.deposit_amount ELSE 0 END)   AS deposit_7,
-             SUM(CASE WHEN dep.value = 'DEP_8' THEN ds.deposit_amount ELSE 0 END)   AS deposit_8,
-             SUM(CASE WHEN dep.value = 'DEP_9' THEN ds.deposit_amount ELSE 0 END)   AS deposit_9,
-             SUM(CASE WHEN dep.value = 'DEP_10' THEN ds.deposit_amount ELSE 0 END)   AS deposit_10,
-             SUM(CASE WHEN dep.value = 'DEP_11' THEN ds.deposit_amount ELSE 0 END)   AS deposit_11,
+             SUM(CASE WHEN dep.value = 'DEP-1' THEN ds.deposit_amount ELSE 0 END)   AS deposit_1,
+             SUM(CASE WHEN dep.value = 'DEP-2' THEN ds.deposit_amount ELSE 0 END)   AS deposit_2,
+             SUM(CASE WHEN dep.value = 'DEP-3' THEN ds.deposit_amount ELSE 0 END)   AS deposit_3,
+             SUM(CASE WHEN dep.value = 'DEP-4' THEN ds.deposit_amount ELSE 0 END)   AS deposit_4,
+             SUM(CASE WHEN dep.value = 'DEP-5' THEN ds.deposit_amount ELSE 0 END)   AS deposit_5,
+             SUM(CASE WHEN dep.value = 'DEP-6' THEN ds.deposit_amount ELSE 0 END)   AS deposit_6,
+             SUM(CASE WHEN dep.value = 'DEP-7' THEN ds.deposit_amount ELSE 0 END)   AS deposit_7,
+             SUM(CASE WHEN dep.value = 'DEP-8' THEN ds.deposit_amount ELSE 0 END)   AS deposit_8,
+             SUM(CASE WHEN dep.value = 'DEP-9' THEN ds.deposit_amount ELSE 0 END)   AS deposit_9,
+             SUM(CASE WHEN dep.value = 'DEP-10' THEN ds.deposit_amount ELSE 0 END)   AS deposit_10,
+             SUM(CASE WHEN dep.value = 'DEP-11' THEN ds.deposit_amount ELSE 0 END)   AS deposit_11,
              SUM(ds.deposit_amount)                                                 AS deposit_total,
              count(*) OVER()                                                        AS total_elements
          FROM
@@ -346,8 +346,8 @@ class StagingDepositRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findByStagingIds(company: CompanyEntity, stagingIds: List<UUID?>, isAdmin: Boolean): List<AccountingDetailDTO> {
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "verifyId" to stagingIds)
+   fun findAccountingDetailsByVerifyIds(company: CompanyEntity, verifyIds: List<UUID?>, isAdmin: Boolean): List<AccountingDetailDTO> {
+      val params = mutableMapOf("comp_id" to company.id, "verifyId" to verifyIds)
       val whereClause = StringBuilder("WHERE vs.deleted = false AND vs.company_id = :comp_id AND vs.id IN (<verifyId>) AND vs.verify_successful = TRUE")
       if (!isAdmin) {
          whereClause.append(" AND vs.moved_to_pending_journal_entries = FALSE")

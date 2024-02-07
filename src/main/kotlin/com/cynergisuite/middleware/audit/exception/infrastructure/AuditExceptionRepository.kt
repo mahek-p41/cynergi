@@ -5,7 +5,14 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
-import com.cynergisuite.extensions.*
+import com.cynergisuite.extensions.findFirstOrNull
+import com.cynergisuite.extensions.getOffsetDateTime
+import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.queryForObject
+import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.update
+import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.address.AddressEntity
 import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.audit.AuditEntity
@@ -75,6 +82,7 @@ class AuditExceptionRepository @Inject constructor(
          comp.client_id                                             AS comp_client_id,
          comp.dataset_code                                          AS comp_dataset_code,
          comp.federal_id_number                                     AS comp_federal_id_number,
+         comp.include_demo_inventory                                AS comp_include_demo_inventory,
          comp.address_id                                            AS address_id,
          comp.address_name                                          AS address_name,
          comp.address_address1                                      AS address_address1,
@@ -266,6 +274,7 @@ class AuditExceptionRepository @Inject constructor(
                comp.client_id                              AS comp_client_id,
                comp.dataset_code                           AS comp_dataset_code,
                comp.federal_id_number                      AS comp_federal_id_number,
+               comp.include_demo_inventory                 AS comp_include_demo_inventory,
                comp.address_id                             AS address_id,
                comp.address_name                           AS address_name,
                comp.address_address1                       AS address_address1,
@@ -516,6 +525,7 @@ class AuditExceptionRepository @Inject constructor(
          clientCode = rs.getString("comp_client_code"),
          clientId = rs.getInt("comp_client_id"),
          federalIdNumber = rs.getString("comp_federal_id_number"),
+         includeDemoInventory = rs.getBoolean("comp_include_demo_inventory"),
          address = address,
          datasetCode = rs.getString("comp_dataset_code")
       )

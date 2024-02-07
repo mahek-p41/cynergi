@@ -30,7 +30,6 @@ class CompanyControllerSpecification extends ControllerSpecificationBase {
    private JsonSlurper jsonSlurper = new JsonSlurper()
    @Inject AddressTestDataLoaderService addressTestDataLoaderService
    @Inject AddressRepository addressRepository
-   @Inject CompanyRepository companyRepository
    @Inject EmployeeTestDataLoaderService employeeTestDataLoader
 
    private static String path = '/company'

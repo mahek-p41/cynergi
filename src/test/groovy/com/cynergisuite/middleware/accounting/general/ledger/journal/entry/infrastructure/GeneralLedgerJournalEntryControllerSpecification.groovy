@@ -7,7 +7,6 @@ import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDataLoaderService
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService
-import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarGLAPDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDataLoader
 import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerSourceCodeDTO

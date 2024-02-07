@@ -17,7 +17,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
    void "fetch one store by id with the a region assigned" () {
       given: 'store number 1 is assigned to a region of company tstds1'
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store1 = storeFactoryService.store(1, company)
+      final store1 = storeFactoryService.store(3, company)
 
       when:
       def result = get("$path/$store1.id")
@@ -32,23 +32,23 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
    }
 
    void "fetch one store by id without region assigned" () {
-      given: 'store store3Tstds1 is not assigned to any region, store store3Tstds2 is assigned to a region'
+      given: 'store store1Tstds1 is not assigned to any region, store store10Tstds2 is assigned to a region'
       final tstds1 = companyFactoryService.forDatasetCode('coravt')
       final tstds2 = companyFactoryService.forDatasetCode('corrto')
-      final store3Tstds1 = storeFactoryService.store(3, tstds1)
-      final store3Tstds2 = storeFactoryService.store(6, tstds2)
+      final store1Tstds1 = storeFactoryService.store(1, tstds1)
+      final store10Tstds2 = storeFactoryService.store(10, tstds2)
       final region2Tstds2 = regions[1]
       // this make the test failed (no store return) if there are no company_id column in region_to_store
-      storeFactoryService.companyStoresToRegion(region2Tstds2, store3Tstds2)
+      storeFactoryService.companyStoresToRegion(region2Tstds2, store10Tstds2)
 
       when:
-      def result = get("$path/$store3Tstds1.id")
+      def result = get("$path/$store1Tstds1.id")
 
       then: 'store should not have a assigned region'
       notThrown(HttpClientResponseException)
-      result.id == store3Tstds1.id
-      result.storeNumber == store3Tstds1.number
-      result.name == store3Tstds1.name
+      result.id == store1Tstds1.id
+      result.storeNumber == store1Tstds1.number
+      result.name == store1Tstds1.name
       result.region == null
    }
 
@@ -99,11 +99,11 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].storeNumber == 0
       pageOneResult.elements[0].name == "ADVANCED VENTURES,LLC"
       pageOneResult.elements[0].region == null
-      pageOneResult.elements[1].id == 2
-      pageOneResult.elements[1].storeNumber == 1
-      pageOneResult.elements[1].name == "HOUMA"
-      pageOneResult.elements[1].region.name == regions[0].name
-      pageOneResult.elements[1].region.division.name == divisions[0].name
+      pageOneResult.elements[3].id == 4
+      pageOneResult.elements[3].storeNumber == 3
+      pageOneResult.elements[3].name == "HATTIESBURG"
+      pageOneResult.elements[3].region.name == regions[0].name
+      pageOneResult.elements[3].region.division.name == divisions[0].name
    }
 
    void "fetch all stores as a user who can only see the store they are assigned" () {
@@ -125,8 +125,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 2
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "HOUMA"
-      pageOneResult.elements[0].region.name == regions[0].name
-      pageOneResult.elements[0].region.division.name == divisions[0].name
+      pageOneResult.elements[0].region == null
       pageOneResult.first == true
       pageOneResult.last == true
    }
@@ -151,8 +150,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 1
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "Derby"
-      pageOneResult.elements[0].region.name == regions[1].name
-      pageOneResult.elements[0].region.division.name == divisions[1].name
+      pageOneResult.elements[0].region == null
       pageOneResult.first == true
       pageOneResult.last == true
    }
@@ -177,8 +175,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 1
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "Derby"
-      pageOneResult.elements[0].region.name == regions[1].name
-      pageOneResult.elements[0].region.division.name == divisions[1].name
+      pageOneResult.elements[0].region == null
       pageOneResult.first == true
       pageOneResult.last == true
    }
@@ -199,8 +196,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.elements[0].id == 2
       pageOneResult.elements[0].storeNumber == 1
       pageOneResult.elements[0].name == "HOUMA"
-      pageOneResult.elements[0].region.name == regions[0].name
-      pageOneResult.elements[0].region.division.name == divisions[0].name
+      pageOneResult.elements[0].region == null
       pageOneResult.first == true
       pageOneResult.last == true
 
@@ -215,7 +211,7 @@ class StoreControllerSpecification extends ControllerSpecificationBase {
       pageTwoResult.elements[0].id == 4
       pageTwoResult.elements[0].storeNumber == 3
       pageTwoResult.elements[0].name == "HATTIESBURG"
-      pageTwoResult.elements[0].region == null
+      pageOneResult.elements[0].region == null
       pageTwoResult.first == true
       pageTwoResult.last == true
    }

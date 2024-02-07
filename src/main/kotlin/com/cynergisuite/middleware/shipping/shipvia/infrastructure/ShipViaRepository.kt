@@ -51,6 +51,7 @@ class ShipViaRepository @Inject constructor(
          comp.client_id                AS comp_client_id,
          comp.dataset_code             AS comp_dataset_code,
          comp.federal_id_number        AS comp_federal_id_number,
+         comp.include_demo_inventory   AS comp_include_demo_inventory,
          comp.address_id               AS address_id,
          comp.address_name             AS address_name,
          comp.address_address1         AS address_address1,
@@ -215,6 +216,7 @@ class ShipViaRepository @Inject constructor(
             clientId = rs.getInt("comp_client_id"),
             datasetCode = rs.getString("comp_dataset_code"),
             federalIdNumber = rs.getString("comp_federal_id_number"),
+            includeDemoInventory = rs.getBoolean("comp_include_demo_inventory"),
             address = addressRepository.mapAddressOrNull(rs, "address_")
          )
       )

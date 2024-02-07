@@ -59,6 +59,7 @@ class VendorPaymentTermRepository @Inject constructor(
          comp.client_id             AS comp_client_id,
          comp.dataset_code          AS comp_dataset_code,
          comp.federal_id_number     AS comp_federal_id_number,
+         comp.include_demo_inventory AS comp_include_demo_inventory,
          comp.address_id            AS address_id,
          comp.address_name          AS address_name,
          comp.address_address1      AS address_address1,
@@ -138,6 +139,7 @@ class VendorPaymentTermRepository @Inject constructor(
                comp.client_id             AS comp_client_id,
                comp.dataset_code          AS comp_dataset_code,
                comp.federal_id_number     AS comp_federal_id_number,
+               comp.include_demo_inventory AS comp_include_demo_inventory,
                comp.address_id            AS address_id,
                comp.address_name          AS address_name,
                comp.address_address1      AS address_address1,
@@ -303,7 +305,8 @@ class VendorPaymentTermRepository @Inject constructor(
          description = rs.getString("vpt_description"),
          discountMonth = rs.getIntOrNull("vpt_discount_month"),
          discountDays = rs.getIntOrNull("vpt_discount_days"),
-         discountPercent = rs.getBigDecimal("vpt_discount_percent")
+         discountPercent = rs.getBigDecimal("vpt_discount_percent"),
+         numberOfPayments = rs.getInt("vpt_number_of_payments"),
       )
    }
 
@@ -314,7 +317,8 @@ class VendorPaymentTermRepository @Inject constructor(
          description = rs.getString("${columnPrefix}vpt_description"),
          discountMonth = rs.getIntOrNull("${columnPrefix}vpt_discount_month"),
          discountDays = rs.getIntOrNull("${columnPrefix}vpt_discount_days"),
-         discountPercent = rs.getBigDecimal("${columnPrefix}vpt_discount_percent")
+         discountPercent = rs.getBigDecimal("${columnPrefix}vpt_discount_percent"),
+         numberOfPayments = rs.getInt("${columnPrefix}vpt_number_of_payments"),
       )
    }
 
@@ -325,7 +329,8 @@ class VendorPaymentTermRepository @Inject constructor(
          description = rs.getString("description"),
          discountMonth = rs.getIntOrNull("discount_month"),
          discountDays = rs.getIntOrNull("discount_days"),
-         discountPercent = rs.getBigDecimal("discount_percent")
+         discountPercent = rs.getBigDecimal("discount_percent"),
+         numberOfPayments = rs.getInt("number_of_payments"),
       )
    }
 

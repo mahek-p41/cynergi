@@ -13,12 +13,12 @@ import com.cynergisuite.middleware.inventory.InventoryEOMReportEntity
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.math.BigDecimal
-import java.sql.ResultSet
 import org.apache.commons.lang3.StringUtils
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
+import java.sql.ResultSet
 
 @Singleton
 class GeneralLedgerReconciliationRepository @Inject constructor(
@@ -32,7 +32,7 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
       return """
          SELECT
              i.store_number_sfk                                         AS store_number,
-             'Asset'                                                    AS account_type,
+             'Asset'::text                                                    AS account_type,
              summary.glSummary_acct_number								      AS account_number,
              summary.glSummary_acct_name									      AS account_name,
              i.year                                                     AS year,
@@ -65,6 +65,7 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
              comp.client_id                                             AS comp_client_id,
              comp.dataset_code                                          AS comp_dataset_code,
              comp.federal_id_number                                     AS comp_federal_id_number,
+             comp.include_demo_inventory                                AS comp_include_demo_inventory,
              summary.glSummary_id                                       AS glSummary_id,
              summary.glSummary_company_id                               AS glSummary_company_id,
              summary.glSummary_profit_center_id_sfk                     AS glSummary_profit_center_id_sfk,
@@ -121,7 +122,7 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
 
           FROM inventory_end_of_month i
              JOIN company comp ON i.company_id = comp.id AND comp.deleted = FALSE
-             JOIN financial_calendar fc ON i.year = fc.r_fiscal_year  AND i.month between extract(month from fc.r_period_from) and EXTRACT(month from fc.r_period_to)
+             JOIN financial_calendar fc ON comp.id = fc.r_company_id
              JOIN summary summary ON i.company_id = summary.glSummary_company_id AND i.store_number_sfk = summary.glSummary_profit_center_id_sfk
                 AND i.asset_account_id = summary.glSummary_acct_id AND fc.r_overall_period_id = summary.glSummary_overallPeriod_id
              JOIN fastinfo_prod_import.store_vw profitCenter
@@ -150,6 +151,7 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
          params["year"] = filterRequest.date!!.year
          params["month"] = filterRequest.date!!.monthValue
          whereClause.append(" AND i.year = :year AND i.month = :month")
+         whereClause.append(" AND fc.r_period_from <= :date AND fc.r_period_to >= :date")
       }
       val query =
          """WITH summary AS (
@@ -165,7 +167,7 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
             contra_inv AS (
             SELECT
              i.store_number_sfk                                         AS store_number,
-             'Contra'                                                   AS account_type,
+             'Contra'::text                                                   AS account_type,
              summary.glSummary_acct_number								      AS account_number,
              summary.glSummary_acct_name									      AS account_name,
              i.year                                                     AS year,
@@ -198,6 +200,7 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
              comp.client_id                                             AS comp_client_id,
              comp.dataset_code                                          AS comp_dataset_code,
              comp.federal_id_number                                     AS comp_federal_id_number,
+             comp.include_demo_inventory                                AS comp_include_demo_inventory,
              summary.glSummary_id                                       AS glSummary_id,
              summary.glSummary_company_id                               AS glSummary_company_id,
              summary.glSummary_profit_center_id_sfk                     AS glSummary_profit_center_id_sfk,
@@ -254,7 +257,7 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
 
           FROM inventory_end_of_month i
              JOIN company comp ON i.company_id = comp.id AND comp.deleted = FALSE
-             JOIN financial_calendar fc ON i.year = fc.r_fiscal_year  AND i.month between extract(month from fc.r_period_from) and EXTRACT(month from fc.r_period_to)
+             JOIN financial_calendar fc ON comp.id = fc.r_company_id
              JOIN summary summary ON i.company_id = summary.glSummary_company_id AND i.store_number_sfk = summary.glSummary_profit_center_id_sfk
                 AND i.contra_asset_account_id = summary.glSummary_acct_id AND fc.r_overall_period_id = summary.glSummary_overallPeriod_id
              JOIN fastinfo_prod_import.store_vw profitCenter
@@ -371,12 +374,12 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
    }
 
    private fun calculateGLSumTotal(storeAccount: GeneralLedgerReconciliationInventoryEntity, currentGLSummary: GeneralLedgerSummaryEntity ): BigDecimal? {
-      val glSummaryTotal = currentGLSummary.beginningBalance?.let { bb ->
+      val glSummaryTotal = currentGLSummary.run {
+         val startingBalance = beginningBalance ?: BigDecimal.ZERO
          (1..storeAccount.period!!).sumOf { month ->
-            currentGLSummary.getNetActivityForMonth(month) ?: BigDecimal.ZERO
-         }.plus(bb)
-      } ?: BigDecimal.ZERO
+            getNetActivityForMonth(month) ?: BigDecimal.ZERO
+         }.plus(startingBalance)
+      }
       return glSummaryTotal
    }
-
 }

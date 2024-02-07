@@ -1,244 +1,269 @@
 name: Cynergi Middleware CI
 on:
-   workflow_dispatch:
-      inputs:
-         fastfail:
-            description: Fast-fail Gradle tests (disables retry plugin)
-            required: false
-            type: boolean
-            default: false
-         debugLogs:
-            description: Verbose debug logging
-            required: false
-            type: boolean
-            default: false
-   push:
+  workflow_dispatch:
+    inputs:
+      fastfail:
+        description: Fast-fail Gradle tests (disables retry plugin)
+        required: false
+        type: boolean
+        default: false
+      debugLogs:
+        description: Verbose debug logging
+        required: false
+        type: boolean
+        default: false
+  push:
 env:
-   BASH_EXPORT_OVERRIDE: |
-      # override the export builtin
-      function export() {
-         builtin export "${@?}"
-         [[ "$1" =~ ^- ]] && return 0
-         if [[ "$1" =~ = ]]; then
-            echo "$1" >> "$GITHUB_ENV"
-         else
-            echo "$1=${!1}" >> "$GITHUB_ENV"
-         fi
-      }
-      export -f export
+  BASH_EXPORT_OVERRIDE: |
+    # override the export builtin
+    function export() {
+      builtin export "${@?}"
+      [[ "$1" =~ ^- ]] && return 0
+      if [[ "$1" =~ = ]]; then
+        echo "$1" >> "$GITHUB_ENV"
+      else
+        echo "$1=${!1}" >> "$GITHUB_ENV"
+      fi
+    }
+    export -f export
 jobs:
-   build:
-      name: Build, Run Tests, Store Artifacts
-      runs-on: ubuntu-latest
-      outputs:
-         branchName: ${{ steps.setBuildVars.outputs.branchName }}
-         micronautEnv: ${{ steps.setBuildVars.outputs.micronautEnv }}
-         releaseEnvironment: ${{ steps.setBuildVars.outputs.releaseEnvironment }}
-         deployTargets: ${{ steps.setBuildVars.outputs.deployTargets }}
-         tarball: ${{ steps.buildDeployArtifact.outputs.deployFile }}
-      steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-        with:
-         show-progress: false
-
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          java-version: '11'
-          distribution: 'temurin'
-
-      - name: Set build variables
-        id: setBuildVars
-        env:
-         SOURCE_TARGET_MAP: ${{ vars.SOURCE_TARGET_MAP }}
-         COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-         FASTFAIL_FLAG: ${{ inputs.fastfail == true && 'true' || 'false' }}
-         DEBUG_FLAG: ${{ (inputs.debugLogs == true || runner.debug == '1' || vars.ACTIONS_STEP_DEBUG == 'true') && 'true' || 'false' }}
-        run: ${{ github.workspace }}/.github/workflows/scripts/set-build-variables.py
-
-      - name: Validate branch name
-        env:
-         DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
-         BRANCH_NAME: ${{ steps.setBuildVars.outputs.branchName }}
-        run: |
-         ${DEBUG_MODE}
-         if [ ${#BRANCH_NAME} -gt 50 ]; then
-            echo "Branch name is too long: ${BRANCH_NAME} (${#BRANCH_NAME} characters). Maximum length is 50 characters."
-            exit 1
-         fi
-
-      - name: Setup Docker
-        env:
-         DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
-         NETWORK_ID: ${{ steps.setBuildVars.outputs.networkId }}
-        run: |
-         ${DEBUG_MODE}
-         docker network create "$NETWORK_ID"
-         mkdir -p gradleCache gradleWrapper
-
-      - name: Test
-        env:
-         DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
-         BRANCH_NAME: ${{ steps.setBuildVars.outputs.branchName }}
-         JENKINS_UID: ${{ steps.setBuildVars.outputs.jenkinsUid }}
-         JENKINS_GID: ${{ steps.setBuildVars.outputs.jenkinsGid }}
-         NETWORK_ID: ${{ steps.setBuildVars.outputs.networkId }}
-         FASTFAIL: ${{ steps.setBuildVars.outputs.fastfail == 'true' && '--fail-fast' || '' }}
-        run: |
-         ${DEBUG_MODE}
-         echo "::group::docker build cynergibasedb"
-         docker build -t cynergibasedb:${BRANCH_NAME} -f ./support/development/cynergibasedb/cynergibasedb.dockerfile ./support/development/cynergibasedb
-         echo "::endgroup::"
-
-         echo "::group::docker build cynergitestdb"
-         docker build -t cynergitestdb:${BRANCH_NAME} --build-arg LOG_STATEMENT=all --build-arg DB_IMAGE=cynergibasedb:${BRANCH_NAME} -f ./support/development/cynergitestdb/cynergitestdb.dockerfile ./support/development/cynergitestdb
-         echo "::endgroup::"
-
-         echo "::group::docker build cynergitestsftp"
-         docker build -t cynergitestsftp:${BRANCH_NAME} --build-arg USER_ID=${JENKINS_UID} --build-arg GROUP_ID=${JENKINS_GID} -f ./support/development/sftp/sftp.dockerfile ./support/development/sftp
-         echo "::endgroup::"
-
-         echo "::group::docker build middleware"
-         docker build -t middleware:${BRANCH_NAME} --build-arg USER_ID=${JENKINS_UID} --build-arg GROUP_ID=${JENKINS_GID} -f ./support/deployment/cynmid/cynmid.dockerfile ./support/deployment/cynmid
-         echo "::endgroup::"
-
-         mkdir -p /tmp/sftpuser
-
-         echo "::group::docker run cynergitestdb"
-         docker run -d --rm --network ${NETWORK_ID} --name cynergitestdb${BRANCH_NAME} -e POSTGRES_PASSWORD=password --tmpfs /var/lib/postgresql/data:rw -v ${GITHUB_WORKSPACE}/support/development/cynergitestdb/fastinfo:/tmp/fastinfo cynergitestdb:${BRANCH_NAME}
-         echo "::endgroup::"
-
-         echo "::group::docker run cynergitestsftp"
-         docker run -d --rm --network ${NETWORK_ID} --name cynergitestsftp${BRANCH_NAME} cynergitestsftp:${BRANCH_NAME}
-         echo "::endgroup::"
-
-         echo "::group::docker run cynergibasedb"
-         docker run -i --rm --network ${NETWORK_ID} cynergibasedb:${BRANCH_NAME} /opt/scripts/db-ready.sh cynergitestdb${BRANCH_NAME}
-         echo "::endgroup::"
-
-         echo "::group::docker run middleware"
-         docker run --rm --network ${NETWORK_ID} -v ${GITHUB_WORKSPACE}/gradleCache:/home/jenkins/caches -v ${GITHUB_WORKSPACE}/gradleWrapper:/home/jenkins/wrapper -v ${GITHUB_WORKSPACE}:/home/jenkins/cynergi-middleware -e DATASOURCES_DEFAULT_URL=jdbc:postgresql://cynergitestdb${BRANCH_NAME}:5432/postgres -e TEST_SFTP_HOSTNAME=cynergitestsftp${BRANCH_NAME} -e TEST_SFTP_PORT=22 middleware:${BRANCH_NAME} /bin/bash -c "
-            ${DEBUG_MODE}
-            set -o errexit -o pipefail -o noclobber -o nounset
-            export JAVA_OPTS='-Xms2048m -Xmx2048m -Xgcpolicy:gencon'
-            [[ '$DEBUG_MODE' != '' ]] && export VERBOSE_MODE=1
-
-            ./gradlew --no-daemon --stacktrace clean buildApiDocs 2>&1 1>/dev/null
-            ./gradlew --no-daemon test ${FASTFAIL} jacocoTestReport
-         "
-         echo "::endgroup::"
-
-      - name: Build deploy artifact
-        id: buildDeployArtifact
-        if: ${{ (success() || failure()) && steps.setBuildVars.outputs.releaseEnvironment != '' }}
-        env:
-         DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
-         BRANCH_NAME: ${{ steps.setBuildVars.outputs.branchName }}
-         JENKINS_UID: ${{ steps.setBuildVars.outputs.jenkinsUid }}
-         JENKINS_GID: ${{ steps.setBuildVars.outputs.jenkinsGid }}
-         RELEASE_VERSION: ${{ steps.setBuildVars.outputs.releaseVersion  }}
-         MICRONAUT_ENV: ${{ steps.setBuildVars.outputs.micronautEnv  }}
-        run: |
-         ${DEBUG_MODE}
-         echo "::group::docker build middlewaretar"
-         docker build -t middlewaretar:${BRANCH_NAME} --build-arg USER_ID=${JENKINS_UID} --build-arg GROUP_ID=${JENKINS_GID} --build-arg GROOVY_VER=3.0.9 -f ./support/deployment/cynmid/cynmid.dockerfile ./support/deployment/cynmid
-         echo "::endgroup::"
-
-         echo "::group::docker run middlewaretar"
-         results=$(docker run --rm -v ${GITHUB_WORKSPACE}/gradleCache:/home/jenkins/caches -v ${GITHUB_WORKSPACE}/gradleWrapper:/home/jenkins/wrapper -v ${GITHUB_WORKSPACE}:/home/jenkins/cynergi-middleware -v ${GITHUB_WORKSPACE}/.github/workflows/scripts:/scripts -e BUILD_VERSION=${RELEASE_VERSION} -e MICRONAUT_ENV=${MICRONAUT_ENV} -e RELEASE_VERSION=${RELEASE_VERSION} middlewaretar:${BRANCH_NAME} /bin/bash -c "/scripts/build-tarball.sh")
-
-         echo "${results}" | sed 's/^/::debug::/'
-         #filter only the results which set variables as expected
-         echo "${results}" | sed -n '/^[a-zA-Z_][a-zA-Z0-9_]*=[^[:space:]]*$/p' >> "${GITHUB_OUTPUT}"
-         echo "::endgroup::"
-
-      - name: Store artifacts
-        id: storeArtifacts
-        if: ${{ (success() || failure()) && steps.buildDeployArtifact.outcome != 'skipped' }}
-        uses: actions/upload-artifact@v3
-        with:
-         name: ${{ steps.buildDeployArtifact.outputs.deployFile }}
-         path: ${{ steps.buildDeployArtifact.outputs.buildPath }}/${{ steps.buildDeployArtifact.outputs.deployFile }}
-
-      - name: Prepare build reports
-        id: prepareBuildReports
-        if: ${{ success() || failure() }}
-        continue-on-error: true
-        env:
-         DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugMode == 'true' && 'set -x' || '' }}
-        run: |
-         ${DEBUG_MODE}
-         reportsPath="${GITHUB_WORKSPACE}/build/reports"
-         if [ -d "${reportsPath}" ] && [ "$(ls -A "${reportsPath}")" ]; then
-            tar -czf "${reportsPath}/reports.tar.gz" "${reportsPath}"/*
-            echo "reportsPath=${reportsPath}/reports.tar.gz" >> "${GITHUB_OUTPUT}"
-         else
-            echo "::warning ::Path not found: ${reportsPath}"
-         fi
-
-      - name: "Store reports"
-        if: ${{ (success() || failure()) && steps.prepareBuildReports.outputs.reportsPath != '' }}
-        continue-on-error: true
-        uses: actions/upload-artifact@v3
-        with:
-         name: buildReports
-         path: ${{ steps.prepareBuildReports.outputs.reportsPath }}
-         if-no-files-found: warn
-
-      - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v3
-        if: ${{ success() || failure() }}
-        continue-on-error: true
-        with:
-          report_paths: 'build/test-results/**/*.xml'
-
-   e2eTesting:
-      runs-on: ubuntu-latest
-      continue-on-error: true
-      permissions:
-         contents: read
-         id-token: write
-         actions: write
-      steps:
-         - uses: actions/checkout@v4
-           with:
-            fetch-depth: 0
-            show-progress: false
-         - name: Calculate variables
-           id: calcVars
-           env:
-            DUMPFILES_ETAGS_JSON: ${{ vars.DUMPFILES_ETAGS_JSON }}
-           run: |
-            #!/usr/bin/env bash
-            ${{ env.BASH_EXPORT_OVERRIDE }}
-
-            DEBUG_FLAG='false'
-            if [[ '${{ (inputs.debugLogs == true || runner.debug == '1' || vars.ACTIONS_STEP_DEBUG == 'true') && 'true' || 'false' }}' == 'true' ]]; then
-               DEBUG_FLAG='true'
-               set -x
-            fi
-            export DEBUG_FLAG
-
-            BRANCH_NAME='${{ github.ref_name }}'
-            source ${{ github.workspace }}/.github/workflows/scripts/validate-branch-name || exit 0 # ignore failed validation, use the results anyway
-
-            echo "ETAGS_JSON=${DUMPFILES_ETAGS_JSON//\"/\\\"}" >> "${GITHUB_ENV}"
-
-         - name: Trigger E2E testing
-           uses: hightouchinc/dynamic-uses@v1
-           with:
-            uses: hightouchinc/cynergi-e2e/.github/actions/test-e2e@${{ env.BASE_BRANCH_NAME }}
-            with: '{"e2eBranch": "${{ env.BASE_BRANCH_NAME }}", "token": "${{ secrets.READONLY_HTI_PAT }}", "middlewareBranch": "${{ github.ref_name}}", "middlewareSha": "${{ github.sha }}", "clientBranch": "${{ env.BASE_BRANCH_NAME }}", "teamsNotificationWebhook": "${{ secrets.TEAMS_NOTIFICATION_WEBHOOK }}", "dumpfilesEtagsJson": "${{ env.ETAGS_JSON }}", "debugMode": "${{ env.DEBUG_FLAG }}"}'
-
-   deploy:
-      needs: build
-      name: Deploy tarball to Gold Box
-      if: ${{ needs.build.outputs.releaseEnvironment != '' }}
-      uses: ./.github/workflows/deploy-tarball.yml
+  prep:
+    runs-on: ubuntu-latest
+    outputs:
+      debugFlag: ${{ steps.setBuildVars.outputs.debugFlag }}
+      branchName: ${{ steps.setBuildVars.outputs.branchName }}
+      sanitizedBranchName: ${{ steps.setBuildVars.outputs.sanitizedBranchName }}
+      micronautEnv: ${{ steps.setBuildVars.outputs.micronautEnv }}
+      releaseEnvironment: ${{ steps.setBuildVars.outputs.releaseEnvironment }}
+      deployTargets: ${{ steps.setBuildVars.outputs.deployTargets }}
+      networkId: ${{ steps.setBuildVars.outputs.networkId }}
+      jenkinsUid: ${{ steps.setBuildVars.outputs.jenkinsUid }}
+      jenkinsGid: ${{ steps.setBuildVars.outputs.jenkinsGid }}
+      fastfail: ${{ steps.setBuildVars.outputs.fastfail }}
+      releaseVersion: ${{ steps.setBuildVars.outputs.releaseVersion }}
+      etagsJson: ${{ steps.validateBranchName.outputs.etagsJson }}
+      branchFolder: ${{ steps.validateBranchName.outputs.branchFolder }}
+      validBranchName: ${{ steps.validateBranchName.outputs.validBranchName }}
+      baseBranchName: ${{ steps.validateBranchName.outputs.baseBranchName }}
+      branchCoreName: ${{ steps.validateBranchName.outputs.branchCoreName }}
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
       with:
-         tarball: ${{ needs.build.outputs.tarball }}
-         targetDeployable: 'cynergi-middleware-current.tar.xz'
-         releaseEnvironment: ${{ needs.build.outputs.releaseEnvironment }}
-         deployTargets: ${{ needs.build.outputs.deployTargets }}
-      secrets: inherit
+        show-progress: false
+
+    - name: Set build variables
+      id: setBuildVars
+      env:
+        SOURCE_TARGET_MAP: ${{ vars.SOURCE_TARGET_MAP }}
+        COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        FASTFAIL_FLAG: ${{ inputs.fastfail == true && 'true' || 'false' }}
+        DEBUG_FLAG: ${{ (inputs.debugLogs == true || runner.debug == '1' || vars.ACTIONS_STEP_DEBUG == 'true') && 'true' || 'false' }}
+      run: ${{ github.workspace }}/.github/workflows/scripts/set-build-variables.py
+
+    - name: Validate branch name
+      id: validateBranchName
+      env:
+        DEBUG_MODE: ${{ steps.setBuildVars.outputs.debugFlag == 'true' && 'set -x' || '' }}
+        BRANCH_NAME: ${{ steps.setBuildVars.outputs.branchName }}
+        DUMPFILES_ETAGS_JSON: ${{ vars.DUMPFILES_ETAGS_JSON }}
+      run: |
+        #!/usr/bin/env bash
+        ${DEBUG_MODE}
+
+        #the branch name is used in a docker tag, so it must be a valid docker tag
+        if [[ ! "${BRANCH_NAME}" =~ ^[a-zA-Z0-9][a-zA-Z0-9_./-]+$ ]]; then
+          echo "::error:: Invalid branch name: ${BRANCH_NAME}"
+          exit 1
+        fi
+
+        ${{ env.BASH_EXPORT_OVERRIDE }}
+        source ${GITHUB_WORKSPACE}/.github/workflows/scripts/validate-branch-name.sh \
+          || : # ignore failed validation, use the results anyway
+        {
+          echo "validBranchName=${VALID_BRANCH_NAME}"
+          echo "branchFolder=${BRANCH_FOLDER}"
+          echo "baseBranchName=${BASE_BRANCH_NAME}"
+          echo "branchCoreName=${BRANCH_CORE_NAME}"
+        } >> "${GITHUB_OUTPUT}"
+
+        #this will fully escape the double quotes in the embedded JSON string
+        echo "etagsJson=${DUMPFILES_ETAGS_JSON//\"/\\\"}" >> "${GITHUB_OUTPUT}"
+
+  unitTesting:
+    needs: prep
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+      with:
+        show-progress: false
+
+    - name: Setup Docker
+      env:
+        DEBUG_MODE: ${{ needs.prep.outputs.debugFlag == 'true' && 'set -x' || '' }}
+        NETWORK_ID: ${{ needs.prep.outputs.networkId }}
+      run: |
+        ${DEBUG_MODE}
+        docker network create "$NETWORK_ID"
+        mkdir -p gradleCache gradleWrapper
+
+    - name: Test
+      env:
+        DEBUG_MODE: ${{ needs.prep.outputs.debugFlag == 'true' && 'set -x' || '' }}
+        BRANCH_NAME: ${{ needs.prep.outputs.sanitizedBranchName }}
+        JENKINS_UID: ${{ needs.prep.outputs.jenkinsUid }}
+        JENKINS_GID: ${{ needs.prep.outputs.jenkinsGid }}
+        NETWORK_ID: ${{ needs.prep.outputs.networkId }}
+        FASTFAIL: ${{ needs.prep.outputs.fastfail == 'true' && '--fail-fast' || '' }}
+      run: |
+        ${DEBUG_MODE}
+        echo "::group::docker build cynergibasedb"
+        docker build -t cynergibasedb:${BRANCH_NAME} -f ./support/development/cynergibasedb/cynergibasedb.dockerfile ./support/development/cynergibasedb
+        echo "::endgroup::"
+
+        echo "::group::docker build cynergitestdb"
+        docker build -t cynergitestdb:${BRANCH_NAME} --build-arg LOG_STATEMENT=all --build-arg DB_IMAGE=cynergibasedb:${BRANCH_NAME} -f ./support/development/cynergitestdb/cynergitestdb.dockerfile ./support/development/cynergitestdb
+        echo "::endgroup::"
+
+        echo "::group::docker build cynergitestsftp"
+        docker build -t cynergitestsftp:${BRANCH_NAME} --build-arg USER_ID=${JENKINS_UID} --build-arg GROUP_ID=${JENKINS_GID} -f ./support/development/sftp/sftp.dockerfile ./support/development/sftp
+        echo "::endgroup::"
+
+        echo "::group::docker build middleware"
+        docker build -t middleware:${BRANCH_NAME} --build-arg USER_ID=${JENKINS_UID} --build-arg GROUP_ID=${JENKINS_GID} -f ./support/deployment/cynmid/cynmid.dockerfile ./support/deployment/cynmid
+        echo "::endgroup::"
+
+        mkdir -p /tmp/sftpuser
+
+        echo "::group::docker run cynergitestdb"
+        docker run -d --rm --network ${NETWORK_ID} --name cynergitestdb -e POSTGRES_PASSWORD=password --tmpfs /var/lib/postgresql/data:rw -v ${GITHUB_WORKSPACE}/support/development/cynergitestdb/fastinfo:/tmp/fastinfo cynergitestdb:${BRANCH_NAME}
+        echo "::endgroup::"
+
+        echo "::group::docker run cynergitestsftp"
+        docker run -d --rm --network ${NETWORK_ID} --name cynergitestsftp cynergitestsftp:${BRANCH_NAME}
+        echo "::endgroup::"
+
+        echo "::group::docker run cynergibasedb"
+        docker run -i --rm --network ${NETWORK_ID} cynergibasedb:${BRANCH_NAME} /opt/scripts/db-ready.sh cynergitestdb
+        echo "::endgroup::"
+
+        echo "::group::docker run middleware"
+        docker run --rm --network ${NETWORK_ID} -v ${GITHUB_WORKSPACE}/gradleCache:/home/jenkins/caches -v ${GITHUB_WORKSPACE}/gradleWrapper:/home/jenkins/wrapper -v ${GITHUB_WORKSPACE}:/home/jenkins/cynergi-middleware -e DATASOURCES_DEFAULT_URL=jdbc:postgresql://cynergitestdb:5432/postgres -e TEST_SFTP_HOSTNAME=cynergitestsftp -e TEST_SFTP_PORT=22 middleware:${BRANCH_NAME} /bin/bash -c "
+          ${DEBUG_MODE}
+          set -o errexit -o pipefail -o noclobber -o nounset
+          export JAVA_OPTS='-Xms2048m -Xmx2048m -Xgcpolicy:gencon'
+          [[ '$DEBUG_MODE' != '' ]] && export VERBOSE_MODE=1
+
+          ./gradlew --no-daemon --stacktrace clean buildApiDocs 2>&1 1>/dev/null
+          ./gradlew --no-daemon test ${FASTFAIL} jacocoTestReport
+        "
+        echo "::endgroup::"
+
+    - name: Prepare unit tests report
+      id: prepareUnitTestsReport
+      if: ${{ success() || failure() }}
+      continue-on-error: true
+      env:
+        DEBUG_MODE: ${{ needs.prep.outputs.debugFlag == 'true' && 'set -x' || '' }}
+      run: |
+        ${DEBUG_MODE}
+        reportsPath="${GITHUB_WORKSPACE}/build/reports"
+        if [ -d "${reportsPath}" ] && [ "$(ls -A "${reportsPath}")" ]; then
+          tar -czf "${reportsPath}/unit-tests-report.tar.gz" "${reportsPath}"/*
+          echo "reportsPath=${reportsPath}/unit-tests-report.tar.gz" >> "${GITHUB_OUTPUT}"
+        else
+          echo "::warning:: Path not found: ${reportsPath}"
+        fi
+
+    - name: "Store reports"
+      if: ${{ (success() || failure()) && steps.prepareUnitTestsReport.outputs.reportsPath != '' }}
+      continue-on-error: true
+      uses: actions/upload-artifact@v3
+      with:
+        name: unitTestsReport
+        path: ${{ steps.prepareUnitTestsReport.outputs.reportsPath }}
+        if-no-files-found: warn
+
+    - name: Publish Test Report
+      uses: mikepenz/action-junit-report@v4
+      if: ${{ success() || failure() }}
+      continue-on-error: true
+      with:
+       report_paths: 'build/test-results/**/*.xml'
+
+  build:
+    needs: prep
+    runs-on: ubuntu-latest
+    outputs:
+      tarball: ${{ steps.buildDeployArtifact.outputs.deployFile }}
+    if: ${{ needs.prep.outputs.releaseEnvironment != '' }}
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+      with:
+        show-progress: false
+
+    - name: Build deploy artifact
+      id: buildDeployArtifact
+      env:
+        DEBUG_MODE: ${{ needs.prep.outputs.debugFlag == 'true' && 'set -x' || '' }}
+        BRANCH_NAME: ${{ needs.prep.outputs.sanitizedBranchName }}
+        JENKINS_UID: ${{ needs.prep.outputs.jenkinsUid }}
+        JENKINS_GID: ${{ needs.prep.outputs.jenkinsGid }}
+        RELEASE_VERSION: ${{ needs.prep.outputs.releaseVersion  }}
+        MICRONAUT_ENV: ${{ needs.prep.outputs.micronautEnv  }}
+      run: |
+        ${DEBUG_MODE}
+        bashDebugFlag=$( [[ "${DEBUG_MODE}" != '' ]] && echo '-x' || echo '' )
+
+        mkdir --verbose gradleCache gradleWrapper
+
+        echo "::group::docker build middlewaretar"
+        docker build -t middlewaretar:${BRANCH_NAME} --build-arg USER_ID=${JENKINS_UID} --build-arg GROUP_ID=${JENKINS_GID} --build-arg GROOVY_VER=3.0.9 -f ./support/deployment/cynmid/cynmid.dockerfile ./support/deployment/cynmid
+        echo "::endgroup::"
+
+        echo "::group::docker run middlewaretar"
+        results=$(docker run --rm -v ${GITHUB_WORKSPACE}/gradleCache:/home/jenkins/caches -v ${GITHUB_WORKSPACE}/gradleWrapper:/home/jenkins/wrapper -v ${GITHUB_WORKSPACE}:/home/jenkins/cynergi-middleware -v ${GITHUB_WORKSPACE}/.github/workflows/scripts:/scripts -e BUILD_VERSION=${RELEASE_VERSION} -e MICRONAUT_ENV=${MICRONAUT_ENV} -e RELEASE_VERSION=${RELEASE_VERSION} middlewaretar:${BRANCH_NAME} /bin/bash ${bashDebugFlag} "/scripts/build-tarball.sh")
+
+        echo "${results}" | sed 's/^/::debug::/'
+        #filter only the results which set variables as expected
+        echo "${results}" | sed -n '/^[a-zA-Z_][a-zA-Z0-9_]*=[^[:space:]]*$/p' >> "${GITHUB_OUTPUT}"
+        echo "::endgroup::"
+
+    - name: Store artifacts
+      id: storeArtifacts
+      if: ${{ (success() || failure()) && steps.buildDeployArtifact.outcome != 'skipped' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ steps.buildDeployArtifact.outputs.deployFile }}
+        path: ${{ steps.buildDeployArtifact.outputs.buildPath }}/${{ steps.buildDeployArtifact.outputs.deployFile }}
+
+  e2eTesting:
+    needs: prep
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+      id-token: write
+      actions: write
+    steps:
+      - name: Trigger E2E testing
+        uses: hightouchinc/dynamic-uses@v1
+        with:
+          uses: hightouchinc/cynergi-e2e/.github/actions/test-e2e@${{ needs.prep.outputs.baseBranchName }}
+          with: '{"e2eBranch": "${{ needs.prep.outputs.baseBranchName }}", "token": "${{ secrets.READONLY_HTI_PAT }}", "middlewareBranch": "${{ github.ref_name}}", "middlewareSha": "${{ github.sha }}", "clientBranch": "${{ needs.prep.outputs.baseBranchName }}", "teamsNotificationWebhook": "${{ secrets.TEAMS_NOTIFICATION_WEBHOOK }}", "dumpfilesEtagsJson": "${{ needs.prep.outputs.etagsJson }}", "debugMode": "${{ needs.prep.outputs.debugFlag }}"}'
+
+  deploy:
+    needs:
+      - prep
+      - build
+    name: Deploy tarball to Gold Box
+    if: ${{ needs.prep.outputs.deployTargets != '' }}
+    uses: ./.github/workflows/deploy-tarball.yml
+    with:
+      tarball: ${{ needs.build.outputs.tarball }}
+      targetDeployable: 'cynergi-middleware-current.tar.xz'
+      releaseEnvironment: ${{ needs.prep.outputs.releaseEnvironment }}
+      deployTargets: ${{ needs.prep.outputs.deployTargets }}
+    secrets: inherit

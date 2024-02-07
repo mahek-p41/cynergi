@@ -130,7 +130,7 @@ class InloadServiceSpecification extends ControllerSpecificationBase {
          .builder()
          .setHeader(*['Data_Set_ID', 'Store', 'Account_Number', 'Profit_Center_Number', 'JE_Date', 'Source_Code', 'JE_Amount', 'Deposit_Type', 'Message'])
          .build()
-      def csvData2 = 'coravt,1,2,1,2020-03-31,MEC,-5697.59,DEP_1,'
+      def csvData2 = 'coravt,1,2,1,2020-03-31,MEC,-5697.59,DEP-1,'
       def parser2 = CSVParser.parse(csvData2, format2)
       def record2 = parser2.getRecords().get(0)
 

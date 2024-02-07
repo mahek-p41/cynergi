@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 
 if [[ -f /tmp/dumps/fastinfo.dump ]]; then
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "fastinfo_production" <<-EOSQL
-   DROP SCHEMA IF EXISTS public;
-EOSQL
     echo "Restoring fastinfo_production from snapshot"
     pg_restore -v -O -x --username "fastinfo_dba" --host=cynergidb --dbname "fastinfo_production" --port 5432 /tmp/dumps/fastinfo.dump
     echo "Finished restoring fastinfo_production from snapshot"

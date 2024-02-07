@@ -36,29 +36,30 @@ class CompanyRepository @Inject constructor(
    fun companyBaseQuery() =
       """
       SELECT
-         comp.id                  AS id,
-         comp.time_created        AS time_created,
-         comp.time_updated        AS time_updated,
-         comp.name                AS name,
-         comp.doing_business_as   AS doing_business_as,
-         comp.client_code         AS client_code,
-         comp.client_id           AS client_id,
-         comp.dataset_code        AS dataset_code,
-         comp.federal_id_number   AS federal_id_number,
-         comp.deleted             AS deleted,
-         address.id               AS address_id,
-         address.name             AS address_name,
-         address.address1         AS address_address1,
-         address.address2         AS address_address2,
-         address.city             AS address_city,
-         address.state            AS address_state,
-         address.postal_code      AS address_postal_code,
-         address.latitude         AS address_latitude,
-         address.longitude        AS address_longitude,
-         address.country          AS address_country,
-         address.county           AS address_county,
-         address.phone            AS address_phone,
-         address.fax              AS address_fax
+         comp.id                       AS id,
+         comp.time_created             AS time_created,
+         comp.time_updated             AS time_updated,
+         comp.name                     AS name,
+         comp.doing_business_as        AS doing_business_as,
+         comp.client_code              AS client_code,
+         comp.client_id                AS client_id,
+         comp.dataset_code             AS dataset_code,
+         comp.federal_id_number        AS federal_id_number,
+         comp.include_demo_inventory   AS include_demo_inventory,
+         comp.deleted                  AS deleted,
+         address.id                    AS address_id,
+         address.name                  AS address_name,
+         address.address1              AS address_address1,
+         address.address2              AS address_address2,
+         address.city                  AS address_city,
+         address.state                 AS address_state,
+         address.postal_code           AS address_postal_code,
+         address.latitude              AS address_latitude,
+         address.longitude             AS address_longitude,
+         address.country               AS address_country,
+         address.county                AS address_county,
+         address.phone                 AS address_phone,
+         address.fax                   AS address_fax
       FROM company comp
          LEFT JOIN address ON comp.address_id = address.id AND address.deleted = FALSE
    """
@@ -79,6 +80,7 @@ class CompanyRepository @Inject constructor(
            comp.client_id           AS client_id,
            comp.dataset_code        AS dataset_code,
            comp.federal_id_number   AS federal_id_number,
+           comp.include_demo_inventory AS include_demo_inventory,
            comp.deleted             As deleted,
            address.id               AS address_id,
            address.name             AS address_name,
@@ -233,8 +235,8 @@ class CompanyRepository @Inject constructor(
 
       return jdbc.insertReturning(
          """
-         INSERT INTO company(name, doing_business_as, client_code, client_id, dataset_code, federal_id_number, address_id)
-         VALUES (:name, :doing_business_as, :client_code, :client_id, :dataset_code, :federal_id_number, :address_id)
+         INSERT INTO company(name, doing_business_as, client_code, client_id, dataset_code, federal_id_number, address_id, include_demo_inventory)
+         VALUES (:name, :doing_business_as, :client_code, :client_id, :dataset_code, :federal_id_number, :address_id, :include_demo_inventory)
          RETURNING
             *
          """,
@@ -245,7 +247,8 @@ class CompanyRepository @Inject constructor(
             "client_id" to company.clientId,
             "dataset_code" to company.datasetCode,
             "federal_id_number" to company.federalIdNumber,
-            "address_id" to addressCreated?.id
+            "include_demo_inventory" to company.includeDemoInventory,
+            "address_id" to addressCreated?.id,
          )
       ) { rs, _ -> mapRow(rs, addressCreated) }
    }
@@ -275,7 +278,8 @@ class CompanyRepository @Inject constructor(
             client_id = :client_id,
             dataset_code = :dataset_code,
             federal_id_number = :federal_id_number,
-            address_id = :address_id
+            address_id = :address_id,
+            include_demo_inventory = :include_demo_inventory
          WHERE id = :id
          RETURNING
             *
@@ -288,7 +292,8 @@ class CompanyRepository @Inject constructor(
             "client_id" to toUpdate.clientId,
             "dataset_code" to toUpdate.datasetCode,
             "federal_id_number" to toUpdate.federalIdNumber,
-            "address_id" to companyAddress?.id
+            "address_id" to companyAddress?.id,
+            "include_demo_inventory" to toUpdate.includeDemoInventory
          )
       ) { rs, _ ->
          mapRow(rs, companyAddress)
@@ -326,7 +331,8 @@ class CompanyRepository @Inject constructor(
          clientId = rs.getInt("${columnPrefix}client_id"),
          datasetCode = rs.getString("${columnPrefix}dataset_code"),
          federalIdNumber = rs.getString("${columnPrefix}federal_id_number"),
-         address = addressRepository.mapAddressOrNull(rs, addressPrefix)
+         includeDemoInventory = rs.getBoolean("${columnPrefix}include_demo_inventory"),
+         address = addressRepository.mapAddressOrNull(rs, addressPrefix),
       )
 
    fun mapRow(rs: ResultSet, address: AddressEntity?, columnPrefix: String = EMPTY): CompanyEntity =
@@ -338,6 +344,7 @@ class CompanyRepository @Inject constructor(
          clientId = rs.getInt("${columnPrefix}client_id"),
          datasetCode = rs.getString("${columnPrefix}dataset_code"),
          federalIdNumber = rs.getString("${columnPrefix}federal_id_number"),
-         address = address
+         address = address,
+         includeDemoInventory = rs.getBoolean("${columnPrefix}include_demo_inventory"),
       )
 }

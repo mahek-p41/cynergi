@@ -13,6 +13,7 @@ import com.cynergisuite.extensions.queryForObjectOrNull
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDistributionEntity
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentEntity
 import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -134,6 +135,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             vend.v_comp_client_id                                     AS apPayment_vendor_comp_client_id,
             vend.v_comp_dataset_code                                  AS apPayment_vendor_comp_dataset_code,
             vend.v_comp_federal_id_number                             AS apPayment_vendor_comp_federal_id_number,
+            vend.v_comp_include_demo_inventory                        AS apPayment_vendor_comp_include_demo_inventory,
             vend.v_comp_address_id                                    AS apPayment_vendor_comp_address_id,
             vend.v_comp_address_name                                  AS apPayment_vendor_comp_address_name,
             vend.v_comp_address_address1                              AS apPayment_vendor_comp_address_address1,
@@ -192,6 +194,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             vend.v_vgrp_company_id                                    AS apPayment_vendor_vgrp_company_id,
             vend.v_vgrp_value                                         AS apPayment_vendor_vgrp_value,
             vend.v_vgrp_description                                   AS apPayment_vendor_vgrp_description,
+            vend.v_has_rebate                                         AS apPayment_vendor_has_rebate,
             status.id                                                 AS apPayment_status_id,
             status.value                                              AS apPayment_status_value,
             status.description                                        AS apPayment_status_description,
@@ -277,6 +280,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             paymentDetail.apPaymentDetail_apInvoice_vendor_comp_client_id                             AS apPaymentDetail_apInvoice_vendor_comp_client_id,
             paymentDetail.apPaymentDetail_apInvoice_vendor_comp_dataset_code                          AS apPaymentDetail_apInvoice_vendor_comp_dataset_code,
             paymentDetail.apPaymentDetail_apInvoice_vendor_comp_federal_id_number                     AS apPaymentDetail_apInvoice_vendor_comp_federal_id_number,
+            paymentDetail.apPaymentDetail_apInvoice_vendor_comp_include_demo_inventory                AS apPaymentDetail_apInvoice_vendor_comp_include_demo_inventory,
             paymentDetail.apPaymentDetail_apInvoice_vendor_comp_address_id                            AS apPaymentDetail_apInvoice_vendor_comp_address_id,
             paymentDetail.apPaymentDetail_apInvoice_vendor_comp_address_name                          AS apPaymentDetail_apInvoice_vendor_comp_address_name,
             paymentDetail.apPaymentDetail_apInvoice_vendor_comp_address_address1                      AS apPaymentDetail_apInvoice_vendor_comp_address_address1,
@@ -333,6 +337,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             paymentDetail.apPaymentDetail_apInvoice_vendor_vgrp_company_id                            AS apPaymentDetail_apInvoice_vendor_vgrp_company_id,
             paymentDetail.apPaymentDetail_apInvoice_vendor_vgrp_value                                 AS apPaymentDetail_apInvoice_vendor_vgrp_value,
             paymentDetail.apPaymentDetail_apInvoice_vendor_vgrp_description                           AS apPaymentDetail_apInvoice_vendor_vgrp_description,
+            paymentDetail.apPaymentDetail_apInvoice_vendor_has_rebate                                 AS apPaymentDetail_apInvoice_vendor_has_rebate,
             paymentDetail.apPaymentDetail_apInvoice_payTo_id                                         AS apPaymentDetail_apInvoice_payTo_id,
             paymentDetail.apPaymentDetail_apInvoice_payTo_company_id                                 AS apPaymentDetail_apInvoice_payTo_company_id,
             paymentDetail.apPaymentDetail_apInvoice_payTo_number                                     AS apPaymentDetail_apInvoice_payTo_number,
@@ -379,6 +384,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             paymentDetail.apPaymentDetail_apInvoice_payTo_comp_client_id                             AS apPaymentDetail_apInvoice_payTo_comp_client_id,
             paymentDetail.apPaymentDetail_apInvoice_payTo_comp_dataset_code                          AS apPaymentDetail_apInvoice_payTo_comp_dataset_code,
             paymentDetail.apPaymentDetail_apInvoice_payTo_comp_federal_id_number                     AS apPaymentDetail_apInvoice_payTo_comp_federal_id_number,
+            paymentDetail.apPaymentDetail_apInvoice_payTo_comp_include_demo_inventory                AS apPaymentDetail_apInvoice_payTo_comp_include_demo_inventory,
             paymentDetail.apPaymentDetail_apInvoice_payTo_comp_address_id                            AS apPaymentDetail_apInvoice_payTo_comp_address_id,
             paymentDetail.apPaymentDetail_apInvoice_payTo_comp_address_name                          AS apPaymentDetail_apInvoice_payTo_comp_address_name,
             paymentDetail.apPaymentDetail_apInvoice_payTo_comp_address_address1                      AS apPaymentDetail_apInvoice_payTo_comp_address_address1,
@@ -435,6 +441,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             paymentDetail.apPaymentDetail_apInvoice_payTo_vgrp_company_id                            AS apPaymentDetail_apInvoice_payTo_vgrp_company_id,
             paymentDetail.apPaymentDetail_apInvoice_payTo_vgrp_value                                 AS apPaymentDetail_apInvoice_payTo_vgrp_value,
             paymentDetail.apPaymentDetail_apInvoice_payTo_vgrp_description                           AS apPaymentDetail_apInvoice_payTo_vgrp_description,
+            paymentDetail.apPaymentDetail_apInvoice_payTo_has_rebate                                 AS apPaymentDetail_apInvoice_payTo_has_rebate,
             paymentDetail.apPaymentDetail_apInvoice_employee_id                                       AS apPaymentDetail_apInvoice_employee_id,
             paymentDetail.apPaymentDetail_apInvoice_employee_number                                   AS apPaymentDetail_apInvoice_employee_number,
             paymentDetail.apPaymentDetail_apInvoice_employee_last_name                                AS apPaymentDetail_apInvoice_employee_last_name,
@@ -457,6 +464,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             paymentDetail.apPaymentDetail_apInvoice_employee_comp_client_id                           AS apPaymentDetail_apInvoice_employee_comp_client_id,
             paymentDetail.apPaymentDetail_apInvoice_employee_comp_dataset_code                        AS apPaymentDetail_apInvoice_employee_comp_dataset_code,
             paymentDetail.apPaymentDetail_apInvoice_employee_comp_federal_id_number                   AS apPaymentDetail_apInvoice_employee_comp_federal_id_number,
+            paymentDetail.apPaymentDetail_apInvoice_employee_comp_include_demo_inventory              AS apPaymentDetail_apInvoice_employee_comp_include_demo_inventory,
             paymentDetail.apPaymentDetail_apInvoice_employee_comp_address_id                          AS apPaymentDetail_apInvoice_employee_comp_address_id,
             paymentDetail.apPaymentDetail_apInvoice_employee_comp_address_name                        AS apPaymentDetail_apInvoice_employee_comp_address_name,
             paymentDetail.apPaymentDetail_apInvoice_employee_comp_address_address1                    AS apPaymentDetail_apInvoice_employee_comp_address_address1,
@@ -534,6 +542,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             paymentDetail.apPaymentDetail_vendor_comp_client_id                                       AS apPaymentDetail_vendor_comp_client_id,
             paymentDetail.apPaymentDetail_vendor_comp_dataset_code                                    AS apPaymentDetail_vendor_comp_dataset_code,
             paymentDetail.apPaymentDetail_vendor_comp_federal_id_number                               AS apPaymentDetail_vendor_comp_federal_id_number,
+            paymentDetail.apPaymentDetail_vendor_comp_include_demo_inventory                          AS apPaymentDetail_vendor_comp_include_demo_inventory,
             paymentDetail.apPaymentDetail_vendor_comp_address_id                                      AS apPaymentDetail_vendor_comp_address_id,
             paymentDetail.apPaymentDetail_vendor_comp_address_name                                    AS apPaymentDetail_vendor_comp_address_name,
             paymentDetail.apPaymentDetail_vendor_comp_address_address1                                AS apPaymentDetail_vendor_comp_address_address1,
@@ -589,6 +598,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             paymentDetail.apPaymentDetail_vendor_vgrp_company_id                                      AS apPaymentDetail_vendor_vgrp_company_id,
             paymentDetail.apPaymentDetail_vendor_vgrp_value                                           AS apPaymentDetail_vendor_vgrp_value,
             paymentDetail.apPaymentDetail_vendor_vgrp_description                                     AS apPaymentDetail_vendor_vgrp_description,
+            paymentDetail.apPaymentDetail_vendor_has_rebate                                           AS apPaymentDetail_vendor_has_rebate,
             paymentDetail.apPaymentDetail_payment_number_id                                           AS apPaymentDetail_payment_number_id,
             paymentDetail.apPaymentDetail_amount                                                      AS apPaymentDetail_amount,
             paymentDetail.apPaymentDetail_discount                                                    AS apPaymentDetail_discount,
@@ -762,7 +772,7 @@ class AccountPayablePaymentRepository @Inject constructor(
       logger.trace("Listing Account Payable Payments by bank {} pmt {} type {} and date {}", filterRequest.beginBank, filterRequest.beginPmt, filterRequest.type, filterRequest.frmPmtDt)
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val whereClause = StringBuilder(" WHERE apPayment.company_id = :comp_id ")
-      val sortBy = StringBuilder("ORDER BY bnk.bank_number")
+      val sortBy = StringBuilder("ORDER BY bnk.bank_number, type.value")
 
       if (filterRequest.beginBank != null) {
          params["beginningBank"] = filterRequest.beginBank
@@ -877,6 +887,7 @@ class AccountPayablePaymentRepository @Inject constructor(
                vend.v_comp_client_id                                     AS apPayment_vendor_comp_client_id,
                vend.v_comp_dataset_code                                  AS apPayment_vendor_comp_dataset_code,
                vend.v_comp_federal_id_number                             AS apPayment_vendor_comp_federal_id_number,
+               vend.v_comp_include_demo_inventory                        AS apPayment_vendor_comp_include_demo_inventory,
                vend.v_comp_address_id                                    AS apPayment_vendor_comp_address_id,
                vend.v_comp_address_name                                  AS apPayment_vendor_comp_address_name,
                vend.v_comp_address_address1                              AS apPayment_vendor_comp_address_address1,
@@ -935,6 +946,7 @@ class AccountPayablePaymentRepository @Inject constructor(
                vend.v_vgrp_company_id                                    AS apPayment_vendor_vgrp_company_id,
                vend.v_vgrp_value                                         AS apPayment_vendor_vgrp_value,
                vend.v_vgrp_description                                   AS apPayment_vendor_vgrp_description,
+               vend.v_has_rebate                                         AS apPayment_vendor_has_rebate,
                status.id                                                 AS apPayment_status_id,
                status.value                                              AS apPayment_status_value,
                status.description                                        AS apPayment_status_description,
@@ -1088,6 +1100,26 @@ class AccountPayablePaymentRepository @Inject constructor(
       if (rowsAffected == 0) throw NotFoundException(id)
    }
 
+   @Transactional
+   fun insertDistributions(entity: AccountPayablePaymentDistributionEntity, company: CompanyEntity): AccountPayablePaymentDistributionEntity {
+      return jdbc.updateReturning(
+         """
+         INSERT INTO account_payable_payment_distribution(payment_id, distribution_account, distribution_profit_center_sfk, distribution_amount)
+         VALUES(:payment_id, :distribution_account_id, :distribution_profit_center_sfk, :distribution_amount)
+         RETURNING
+            *
+         """.trimIndent(),
+         mapOf(
+            "payment_id" to entity.paymentId,
+            "distribution_account_id" to entity.distributionAccount,
+            "distribution_profit_center_sfk" to entity.distributionProfitCenter,
+            "distribution_amount" to entity.distributionAmount
+         )
+      ) { rs, _ ->
+         mapDistributions(rs)
+      }
+   }
+
    private fun mapRow(
       rs: ResultSet,
       company: CompanyEntity,
@@ -1123,6 +1155,18 @@ class AccountPayablePaymentRepository @Inject constructor(
          dateCleared = rs.getLocalDateOrNull("${columnPrefix}date_cleared"),
          dateVoided = rs.getLocalDateOrNull("${columnPrefix}date_voided"),
          amount = rs.getBigDecimal("${columnPrefix}amount")
+      )
+   }
+
+   private fun mapDistributions(
+      rs: ResultSet
+   ): AccountPayablePaymentDistributionEntity {
+      return AccountPayablePaymentDistributionEntity(
+         id = rs.getUuid("id"),
+         paymentId = rs.getUuid("payment_id"),
+         distributionAccount = rs.getUuid("distribution_account"),
+         distributionProfitCenter = rs.getLong("distribution_profit_center_sfk"),
+         distributionAmount = rs.getBigDecimal("distribution_amount")
       )
    }
 

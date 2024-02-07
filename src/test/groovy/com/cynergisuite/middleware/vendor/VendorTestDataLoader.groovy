@@ -71,7 +71,8 @@ class VendorTestDataLoader {
             it + 1,
             faker.lorem().sentence(),
             phone.phoneNumber(),
-            true
+            true,
+            null
          )
       }
    }

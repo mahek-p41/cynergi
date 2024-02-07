@@ -11,18 +11,19 @@ def debugLog(message: str):
 # A list of key=value pairs to send to GITHUB_OUTPUT
 outVars = []
 
-# Read the DEBUG_FLAG environment variable and set debugMode accordingly
 debugFlag = os.environ.get("DEBUG_FLAG", "false")
-debugMode = "true" if debugFlag == "true" else "false"
-outVars.append(f"debugMode={debugMode}")
+outVars.append(f"debugFlag={debugFlag}")
 debugLog(outVars[-1])
 
-# Only use the name after the last / in the ref
-branchName = os.environ["GITHUB_REF_NAME"].rsplit("/", 1)[-1]
+branchName = os.environ["GITHUB_REF_NAME"]
 outVars.append(f"branchName={branchName}")
 debugLog(outVars[-1])
 
-#expecting something like this: {"default":{"micronautEnv":"","releaseEnvironment":"","deployTarget":[]},"master":{"micronautEnv":"prod","releaseEnvironment":"RELEASE","deployTarget":[]},"staging":{"micronautEnv":"cstdevelop","releaseEnvironment":"STAGING","deployTarget":["cst145"]},"develop":{"micronautEnv":"cstdevelop","releaseEnvironment":"DEVELOP","deployTarget":["cst143","cst144"]}}
+sanitizedBranchName = branchName.replace("/", "_")
+outVars.append(f"sanitizedBranchName={sanitizedBranchName}")
+debugLog(outVars[-1])
+
+#expecting something like this: {"default":{"micronautEnv":"","releaseEnvironment":"","deployTargets":[]},"master":{"micronautEnv":"prod","releaseEnvironment":"RELEASE","deployTargets":[]},"staging":{"micronautEnv":"cstdevelop","releaseEnvironment":"STAGING","deployTargets":["cst145"]},"develop":{"micronautEnv":"cstdevelop","releaseEnvironment":"DEVELOP","deployTargets":["cst143","cst144"]}}
 jsonInput = os.environ["SOURCE_TARGET_MAP"]
 sourceTargetMap: Dict[str, Dict[str, str]] = json.loads(jsonInput)
 

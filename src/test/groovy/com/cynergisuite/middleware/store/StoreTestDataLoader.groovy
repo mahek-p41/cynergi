@@ -20,51 +20,51 @@ class StoreTestDataLoader {
    // list of stores defined in cynergi-inittestdb.sql that aren't HOME OFFICE
    private static final List<StoreEntity> stores = [
       new StoreEntity(
-         1,
-         1,
-         "KANSAS CITY",
+         4,
+         3,
+         "HATTIESBURG",
          null,
          CompanyFactory.tstds1(),
       ),
       new StoreEntity(
          2,
-         3,
-         "INDEPENDENCE",
+         1,
+         "HOUMA",
          null,
          CompanyFactory.tstds1(),
       ),
       new StoreEntity(
          4,
-         1,
-         "Pelham Trading Post, Inc",
+         7,
+         "Emporia",
          null,
          CompanyFactory.tstds2(),
       ),
       new StoreEntity(
          5,
-         2,
-         "Camilla Trading Post, Inc.",
+         10,
+         "Hutchinson",
          null,
          CompanyFactory.tstds2(),
       ),
       new StoreEntity(
          6,
-         3,
-         "Arlington Trading Post",
+         14,
+         "Salina",
          null,
          CompanyFactory.tstds2(),
       ),
       new StoreEntity(
          7,
-         4,
-         "Moultrie Trading Post, Inc",
+         101,
+         "Derby PDL",
          null,
          CompanyFactory.tstds2(),
       ),
       new StoreEntity(
          8,
-         5,
-         "Bainbridge Trading Post",
+         106,
+         "Newton PDL",
          null,
          CompanyFactory.tstds2(),
       )
@@ -109,15 +109,6 @@ class StoreTestDataLoaderService {
 
    Store store(int storeNumber, CompanyEntity company) {
       final StoreEntity toReturn = storeRepository.findOne(storeNumber, company)
-         ?.with { StoreEntity e ->
-            return new StoreEntity(
-               e.myId(),
-               e.myNumber(),
-               e.myName(),
-               null,
-               e.myCompany(),
-            )
-         }
 
       if (toReturn != null) {
          return toReturn

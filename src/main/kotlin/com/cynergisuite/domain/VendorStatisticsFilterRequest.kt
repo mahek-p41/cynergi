@@ -20,7 +20,13 @@ class VendorStatisticsFilterRequest(
 
    @field:NotNull
    @field:Schema(name = "vendorId", description = "Vendor ID")
-   var vendorId: UUID? = null
+   var vendorId: UUID? = null,
+
+   @field:Schema(name = "startingInvoice", description = "Starting invoice number", required = false)
+   var startingInvoice: String? = null,
+
+   @field:Schema(name = "startingPO", description = "Starting Purchase Order number", required = false)
+   var startingPO: Long? = null
 
 ) : PageRequestBase<VendorStatisticsFilterRequest>(page, size, sortBy, sortDirection) {
 
@@ -32,11 +38,15 @@ class VendorStatisticsFilterRequest(
          size = size,
          sortBy = sortBy,
          sortDirection = sortDirection,
-         vendorId = this.vendorId
+         vendorId = this.vendorId,
+         startingInvoice = this.startingInvoice,
+         startingPO = this.startingPO
       )
 
    override fun myToStringValues(): List<Pair<String, Any?>> =
       listOf(
-         "vendorId" to vendorId
+         "vendorId" to vendorId,
+         "startingInvoice" to startingInvoice,
+         "startingPO" to startingPO
       )
 }

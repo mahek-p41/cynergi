@@ -25,8 +25,8 @@ class EmployeeControllerSpecification extends ControllerSpecificationBase {
 
       then:
       pageOneResult.requested.with { new EmployeePageRequest(it) } == pageOne
-      pageOneResult.totalElements == 79
-      pageOneResult.totalPages == 4
+      pageOneResult.totalElements == 28
+      pageOneResult.totalPages == 2
       pageOneResult.first == true
       pageOneResult.last == false
       pageOneResult.elements.size() == 20

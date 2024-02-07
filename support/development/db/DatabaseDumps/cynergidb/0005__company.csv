@@ -1,4 +1,4 @@
-"id","time_created","time_updated","name","doing_business_as","client_code","client_id","dataset_code","federal_id_number","address_id","deleted"
-"157dcbe8-05d9-11ec-882f-005056bb008a","2021-08-25 19:17:26.825081","2021-08-25 19:17:26.825081","RENT-A-CENTER EBRO INT.",,"cst","5124","corrto","59-2956126",,false
-"15c8bdba-05d9-11ec-a4c4-005056bb008a","2021-08-25 19:17:27.316231","2021-08-25 19:17:27.316231","ADVANCED VENTURES,LLC","testDba Stuff","cst","1812","coravt",,,false
-"dd0eaec6-b055-11ec-9244-0242ac130003", "2021-08-25 19:17:27.316231","2021-08-25 19:17:27.316231","COMPANY TEST DATA","testCompanyDba","cst","6565","cortst",,,false
+"id","time_created","time_updated","name","doing_business_as","client_code","client_id","dataset_code","federal_id_number","address_id","deleted","include_demo_inventory"
+"157dcbe8-05d9-11ec-882f-005056bb008a","2021-08-25 19:17:26.825081","2021-08-25 19:17:26.825081","RENT-A-CENTER EBRO INT.",,"cst","5124","corrto","59-2956126",,false,true
+"15c8bdba-05d9-11ec-a4c4-005056bb008a","2021-08-25 19:17:27.316231","2021-08-25 19:17:27.316231","ADVANCED VENTURES,LLC","testDba Stuff","cst","1812","coravt",,,false,false
+"dd0eaec6-b055-11ec-9244-0242ac130003", "2021-08-25 19:17:27.316231","2021-08-25 19:17:27.316231","COMPANY TEST DATA","testCompanyDba","cst","6565","cortst",,,false,false

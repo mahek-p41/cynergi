@@ -577,12 +577,12 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
 
    void "associate store with region for tstds2" () {
       given:
-      final tstds2 = companyFactoryService.forDatasetCode('corrto')
-      final store = storeFactoryService.store(6, tstds2)
-      final tstds2SuperUser = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, tstds2, 'man', 'super', 'pass')
-      final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', tstds2.datasetCode, null).with { new AuthenticatedEmployee(it, 'pass') }
+      final company = companyFactoryService.forDatasetCode('corrto')
+      final store = storeFactoryService.store(6, company)
+      final tstds2SuperUser = userSetupEmployeeTestDataLoaderService.singleSuperUser(998, company, 'man', 'super', 'pass')
+      final tstds2SuperUserAuthenticated = userService.fetchUserByAuthentication(tstds2SuperUser.myNumber(), 'pass', company.datasetCode, null).with { new AuthenticatedEmployee(it, 'pass') }
       final tstds2SuperUserLogin = loginEmployee(tstds2SuperUserAuthenticated)
-      final division = divisionFactoryService.single(tstds2)
+      final division = divisionFactoryService.single(company)
       final region = regionFactoryService.single(division)
 
       when:
@@ -676,8 +676,7 @@ class RegionControllerSpecification extends ControllerSpecificationBase {
          elements[1].id == 2
          elements[1].storeNumber == store1.myNumber()
          elements[1].name == store1.myName()
-         elements[1].region.id == this.regions[0].id
-         elements[1].region.name == this.regions[0].name
+         elements[1].region == null
       }
 
       when: 're-associate store with a new region'
