@@ -128,24 +128,28 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
       val sortBy = StringBuilder("ORDER BY ")
       val whereClause = StringBuilder(
          "WHERE apInvoice.company_id = :comp_id " +
-            "AND apInvoice.status_id = 2"
+            "AND apInvoice.status_id = 2 "
       )
+
+      if (filterRequest.checkDate != null) {
+         params["checkDate"] = filterRequest.checkDate
+      }
 
       if (filterRequest.vendorGroup != null) {
          params["vendorGroup"] = filterRequest.vendorGroup
-         whereClause.append("AND apInvoice.pay_to_id = :vendorGroup")
+         whereClause.append("AND apInvoice.pay_to_id = :vendorGroup ")
       }
 
       if (filterRequest.dueDate != null) {
          params["dueDate"] = filterRequest.dueDate
-         whereClause.append("AND apInvoice.dueDate <= :dueDate")
+         whereClause.append("AND apInvoice.due_date <= :dueDate ")
       }
 
       if (filterRequest.discountDate != null) {
          params["discountDate"] = filterRequest.discountDate
-         whereClause.append("AND CASE" +
-            "WHEN apControl.pay_after_discount_date = true THEN apInvoice.discount_date >= :discountDate" +
-            "WHEN apControl.pay_after_discount_date = false THEN apInvoice.discount_date  <= :discountDate AND apInvoice.discount_date >= :checkDate")
+         whereClause.append("AND CASE " +
+            "WHEN apControl.pay_after_discount_date = true THEN apInvoice.discount_date >= :discountDate " +
+            "WHEN apControl.pay_after_discount_date = false THEN apInvoice.discount_date  <= :discountDate AND apInvoice.discount_date >= :checkDate END ")
       }
       if (filterRequest.sortBy == "V"){
          sortBy.append("apInvoice_vendor_name")
