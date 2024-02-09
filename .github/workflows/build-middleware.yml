@@ -179,7 +179,7 @@ jobs:
     - name: "Store reports"
       if: ${{ (success() || failure()) && steps.prepareUnitTestsReport.outputs.reportsPath != '' }}
       continue-on-error: true
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: unitTestsReport
         path: ${{ steps.prepareUnitTestsReport.outputs.reportsPath }}
@@ -234,7 +234,7 @@ jobs:
     - name: Store artifacts
       id: storeArtifacts
       if: ${{ (success() || failure()) && steps.buildDeployArtifact.outcome != 'skipped' }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ steps.buildDeployArtifact.outputs.deployFile }}
         path: ${{ steps.buildDeployArtifact.outputs.buildPath }}/${{ steps.buildDeployArtifact.outputs.deployFile }}
