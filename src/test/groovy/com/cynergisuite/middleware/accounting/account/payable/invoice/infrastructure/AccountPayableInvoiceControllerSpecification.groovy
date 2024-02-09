@@ -1458,7 +1458,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
          """)
 
-      def filterRequest = new AccountPayableVendorBalanceReportFilterRequest(payToIn.number, payToIn.number, YearMonth.now().plusMonths(1).atDay(1), YearMonth.now().plusMonths(1).atEndOfMonth(), null)
+      def filterRequest = new AccountPayableVendorBalanceReportFilterRequest(payToIn.number, payToIn.number, YearMonth.now().plusMonths(1).atDay(1), YearMonth.now().plusMonths(1).atEndOfMonth(), "V")
 
       when:
       def result = get("$path//vendor-balance${filterRequest}")

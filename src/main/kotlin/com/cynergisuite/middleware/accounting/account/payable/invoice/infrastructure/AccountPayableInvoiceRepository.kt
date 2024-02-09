@@ -665,10 +665,10 @@ class AccountPayableInvoiceRepository @Inject constructor(
         invoiceWhere.append(" AND inv.apInvoice_expense_date < :fromDate")
      }
 
-      if (filterRequest.sortBy == "V"){
+      if (filterRequest.sortOption == "V"){
          sortBy.append("apInvoice_payTo_name")
       }
-      if (filterRequest.sortBy == "N") {
+      if (filterRequest.sortOption == "N") {
          sortBy.append("apInvoice_payTo_number")
       }
 
