@@ -80,6 +80,7 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
             payTo.v_name                                                AS apInvoice_payTo_name,
             payTo.v_account_number                                      AS apInvoice_payTo_account_number,
             payTo.v_pay_to_id                                           AS apInvoice_payTo_pay_to_id,
+            payTo.v_vendor_group_id                                            AS apInvoice_payTo_group_id,
 
             pmt.payment_number                                          AS apPayment_number,
             pmt.payment_date                                            AS apPayment_payment_date,
@@ -137,7 +138,7 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
 
       if (filterRequest.vendorGroup != null) {
          params["vendorGroup"] = filterRequest.vendorGroup
-         whereClause.append("AND apInvoice.pay_to_id = :vendorGroup ")
+         whereClause.append("AND payTo.v_vendor_group_id = :vendorGroup ")
       }
 
       if (filterRequest.dueDate != null) {
