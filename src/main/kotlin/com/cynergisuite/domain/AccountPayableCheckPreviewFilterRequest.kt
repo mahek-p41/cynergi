@@ -1,8 +1,10 @@
 package com.cynergisuite.domain
 
 import io.swagger.v3.oas.annotations.media.Schema
+import java.math.BigInteger
 import java.time.LocalDate
 import java.util.UUID
+import javax.validation.constraints.Max
 
 @Schema(
    name = "AccountPayableCheckPreviewFilterRequest",
@@ -17,7 +19,8 @@ class AccountPayableCheckPreviewFilterRequest(
    var bank: Long,
 
    @field:Schema(name = "checkNumber", description = "Check Number")
-   var checkNumber: Int,
+   @field:Max(value = 20)
+   var checkNumber: BigInteger,
 
    @field:Schema(name = "checkDate", description = "Check date")
    var checkDate: LocalDate? = null,

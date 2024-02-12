@@ -22,6 +22,7 @@ import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.sql.ResultSet
 
 @Singleton
@@ -232,7 +233,7 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
 
    private fun mapCheckPreview(
       rs: ResultSet,
-      checkNumber: Int
+      checkNumber: BigInteger
    ): AccountPayableCheckPreviewVendorsEntity {
       return AccountPayableCheckPreviewVendorsEntity(
          vendorNumber = rs.getInt("apInvoice_vendor_number"),
@@ -249,13 +250,15 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
 
    @ReadOnly
    fun validateCheckNums(
-      checkNumber: Int,
+      checkNumber: BigInteger,
       bank: Long,
       vendorList: List<AccountPayableCheckPreviewVendorsEntity>
    ): Boolean {
       val numOfChecks = vendorList.size
-      val range = checkNumber..checkNumber.plus(numOfChecks - 1L)
-      val list = range.toList()
+      val list: ArrayList<BigInteger> = ArrayList()
+      for (i in 0 until numOfChecks) {
+         list.add(checkNumber + i.toBigInteger())
+      }
 
       return jdbc.queryForObject(
          "SELECT EXISTS(SELECT payment_number FROM account_payable_payment " +
@@ -264,7 +267,7 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
                  "any(array[<checkList>]::varchar[]) AND bank.number = :bank" +
                  ")",
          mapOf(
-            "checkList" to list, "bank" to bank
+            "checkList" to list.map { it.toString()}, "bank" to bank
          ),
          Boolean::class.java
       )
