@@ -20,6 +20,8 @@ import com.cynergisuite.middleware.shipping.location.ShipLocationTypeDTO
 import com.cynergisuite.middleware.shipping.location.ShipLocationTypeTestDataLoader
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
 import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreDTO
+import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.github.javafaker.Faker
@@ -43,7 +45,7 @@ class PurchaseOrderTestDataLoader {
       EmployeeEntity approvedByIn,
       EmployeeEntity purchaseAgentIn,
       ShipViaEntity shipViaIn,
-      Store shipToIn,
+      StoreEntity shipToIn,
       VendorPaymentTermEntity paymentTermTypeIn,
       EmployeeEntity vendorSubmittedEmployeeIn = null
    ) {
@@ -90,7 +92,7 @@ class PurchaseOrderTestDataLoader {
       EmployeeEntity approvedByIn,
       EmployeeEntity purchaseAgentIn,
       SimpleIdentifiableDTO shipViaIn,
-      SimpleLegacyIdentifiableDTO shipToIn,
+      StoreEntity shipToIn,
       SimpleIdentifiableDTO paymentTermTypeIn,
       EmployeeEntity vendorSubmittedEmployeeIn = null
    ) {
@@ -118,7 +120,7 @@ class PurchaseOrderTestDataLoader {
             new EmployeeValueObject(purchaseAgentIn),
             shipViaIn,
             LocalDate.now(),
-            shipToIn,
+            new StoreDTO(shipToIn),
             paymentTermTypeIn,
             lorem.sentence(),
             numbers.numberBetween(1, 10_000).toBigDecimal().setScale(2, RoundingMode.HALF_EVEN),
@@ -149,7 +151,7 @@ class PurchaseOrderTestDataLoaderService {
       EmployeeEntity approvedByIn,
       EmployeeEntity purchaseAgentIn,
       ShipViaEntity shipViaIn,
-      Store shipToIn,
+      StoreEntity shipToIn,
       VendorPaymentTermEntity paymentTermTypeIn,
       EmployeeEntity vendorSubmittedEmployeeIn = null
    ) {
@@ -163,7 +165,7 @@ class PurchaseOrderTestDataLoaderService {
       EmployeeEntity approvedByIn,
       EmployeeEntity purchaseAgentIn,
       ShipViaEntity shipViaIn,
-      Store shipToIn,
+      StoreEntity shipToIn,
       VendorPaymentTermEntity paymentTermTypeIn,
       EmployeeEntity vendorSubmittedEmployeeIn = null
    ) {
@@ -176,7 +178,7 @@ class PurchaseOrderTestDataLoaderService {
       EmployeeEntity approvedByIn,
       EmployeeEntity purchaseAgentIn,
       SimpleIdentifiableDTO shipViaIn,
-      SimpleLegacyIdentifiableDTO shipToIn,
+      StoreEntity shipToIn,
       SimpleIdentifiableDTO paymentTermTypeIn,
       EmployeeEntity vendorSubmittedEmployeeIn = null
    ) {
