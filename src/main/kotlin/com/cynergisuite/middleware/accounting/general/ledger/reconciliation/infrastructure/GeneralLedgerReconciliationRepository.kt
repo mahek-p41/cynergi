@@ -301,9 +301,9 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
             } else {
                mapContra(rs).let {
                   if(tempStoreAcct.currentInvInd != 4) {
-                     tempStoreAcct.deprUnits = tempStoreAcct.deprUnits!!.plus(it.deprUnits!!)
+                     tempStoreAcct.deprUnits = tempStoreAcct.deprUnits!!.plus(it.deprUnits!!.negate())
                   } else {
-                     tempStoreAcct.nonDepr = tempStoreAcct.nonDepr!!.plus(it.nonDepr!!)
+                     tempStoreAcct.nonDepr = tempStoreAcct.nonDepr!!.plus(it.nonDepr!!.negate())
                   }
                }
             }
@@ -350,7 +350,6 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
          difference = BigDecimal.ZERO,
          currentInvInd = rs.getInt("${columnPrefix}current_inv_indr"),
          period = rs.getInt("${columnPrefix}r_period")
-
       )
    }
 
@@ -373,7 +372,7 @@ private val logger: Logger = LoggerFactory.getLogger(GeneralLedgerReconciliation
       return generalLedgerSummary.mapRow(rs, company, "glSummary_")
    }
 
-   private fun calculateGLSumTotal(storeAccount: GeneralLedgerReconciliationInventoryEntity, currentGLSummary: GeneralLedgerSummaryEntity ): BigDecimal? {
+   private fun calculateGLSumTotal(storeAccount: GeneralLedgerReconciliationInventoryEntity, currentGLSummary: GeneralLedgerSummaryEntity ): BigDecimal {
       val glSummaryTotal = currentGLSummary.run {
          val startingBalance = beginningBalance ?: BigDecimal.ZERO
          (1..storeAccount.period!!).sumOf { month ->
