@@ -10,6 +10,7 @@ import com.cynergisuite.middleware.shipping.freight.term.FreightTermType
 import com.cynergisuite.middleware.shipping.location.ShipLocationType
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
 import com.cynergisuite.middleware.store.Store
+import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import java.math.BigDecimal
@@ -34,7 +35,7 @@ data class PurchaseOrderEntity(
    val purchaseAgent: EmployeeEntity,
    val shipVia: ShipViaEntity,
    val requiredDate: LocalDate,
-   val shipTo: Store,
+   val shipTo: StoreEntity,
    val paymentTermType: VendorPaymentTermEntity,
    val message: String?,
    val totalLandedAmount: BigDecimal?,
@@ -57,7 +58,7 @@ data class PurchaseOrderEntity(
       approvedBy: EmployeeEntity,
       purchaseAgent: EmployeeEntity,
       shipVia: ShipViaEntity,
-      shipTo: Store,
+      shipTo: StoreEntity,
       paymentTermType: VendorPaymentTermEntity,
       exceptionIndicatorType: ExceptionIndicatorType,
       vendorSubmittedEmployee: EmployeeEntity?,

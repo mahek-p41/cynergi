@@ -19,6 +19,7 @@ import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
+import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
@@ -45,7 +46,7 @@ class AccountPayableCashFlowReportControllerSpecification extends ControllerSpec
    void "fetch all with multiple vendors and invoices"() {
       given:
       def company = companyFactoryService.forDatasetCode('coravt')
-      def store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def shipViaList = shipViaTestDataLoaderService.stream(4, company).toList()
 
@@ -150,7 +151,7 @@ class AccountPayableCashFlowReportControllerSpecification extends ControllerSpec
    void "fetch all with multiple vendors and invoices correct calculations"() {
       given:
       def company = companyFactoryService.forDatasetCode('coravt')
-      def store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       def shipViaList = shipViaTestDataLoaderService.stream(4, company).toList()
 

@@ -29,6 +29,7 @@ import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
+import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
@@ -65,7 +66,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "fetch one" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -162,7 +163,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "fetch all" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -389,7 +390,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "fetch all by vendor" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -453,7 +454,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "fetch AP Invoice report" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(1, company)
+      final StoreEntity store = storeFactoryService.store(1, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -577,7 +578,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "fetch AP invoice inquiry" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(1, company)
+      final StoreEntity store = storeFactoryService.store(1, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -672,7 +673,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "create one" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -761,7 +762,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "create valid account payable invoice without nullable properties" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -854,7 +855,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "create invalid account payable invoice without #nonNullableProp" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -926,7 +927,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "create invalid account payable invoice with non-existing #testProp" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -988,7 +989,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "update one" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -1080,7 +1081,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "update valid account payable invoice without nullable properties" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -1175,7 +1176,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "update invalid account payable invoice without #nonNullableProp" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -1249,7 +1250,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "update invalid account payable invoice with non-existing #testProp" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -1310,7 +1311,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "fetch check preview" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(1, company)
+      final StoreEntity store = storeFactoryService.store(1, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -1393,7 +1394,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "fetch vendor balance" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(1, company)
+      final StoreEntity store = storeFactoryService.store(1, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()

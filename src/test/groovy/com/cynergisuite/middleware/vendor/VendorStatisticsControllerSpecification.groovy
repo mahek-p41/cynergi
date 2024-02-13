@@ -17,6 +17,7 @@ import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPer
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
+import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import com.cynergisuite.middleware.vendor.rebate.RebateTestDataLoaderService
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
@@ -44,7 +45,7 @@ class VendorStatisticsControllerSpecification extends ControllerSpecificationBas
    void "fetch statistics with unpaid balance" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      def store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
@@ -88,7 +89,7 @@ class VendorStatisticsControllerSpecification extends ControllerSpecificationBas
    void "fetch statistics with ytdPaid and ptdPaid" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      def store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       def vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipVia = shipViaTestDataLoaderService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
@@ -185,7 +186,7 @@ class VendorStatisticsControllerSpecification extends ControllerSpecificationBas
 
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), true, true).collect()
 
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaTestDataLoaderService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -234,7 +235,7 @@ class VendorStatisticsControllerSpecification extends ControllerSpecificationBas
 
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
-      final shipToIn = storeFactoryService.store(3, company)
+      final StoreEntity shipToIn = storeFactoryService.store(3, company) as StoreEntity
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
       purchaseOrderDataLoaderService.stream(

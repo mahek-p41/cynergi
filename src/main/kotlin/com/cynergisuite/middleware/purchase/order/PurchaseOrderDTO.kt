@@ -10,6 +10,7 @@ import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderTypeValueObj
 import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardTypeDTO
 import com.cynergisuite.middleware.shipping.freight.term.FreightTermTypeDTO
 import com.cynergisuite.middleware.shipping.location.ShipLocationTypeDTO
+import com.cynergisuite.middleware.store.StoreDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.micronaut.core.annotation.Introspected
@@ -103,7 +104,7 @@ data class PurchaseOrderDTO(
 
    @field:NotNull
    @field:Schema(name = "shipTo", description = "Ship to store")
-   var shipTo: SimpleLegacyIdentifiableDTO? = null,
+   var shipTo: StoreDTO? = null,
 
    @field:NotNull
    @field:Schema(name = "paymentTermType", description = "Vendor payment term")
@@ -137,7 +138,7 @@ data class PurchaseOrderDTO(
    @field:Schema(name = "ecommerceIndicator", description = "Ecommerce indicator")
    var ecommerceIndicator: Boolean? = null,
 
-) : Identifiable {
+   ) : Identifiable {
 
    constructor(entity: PurchaseOrderEntity) :
       this(
@@ -157,7 +158,7 @@ data class PurchaseOrderDTO(
          purchaseAgent = EmployeeValueObject(entity.purchaseAgent),
          shipVia = SimpleIdentifiableDTO(entity.shipVia),
          requiredDate = entity.requiredDate,
-         shipTo = SimpleLegacyIdentifiableDTO(entity.shipTo.myId()),
+         shipTo = StoreDTO(entity.shipTo),
          paymentTermType = SimpleIdentifiableDTO(entity.paymentTermType),
          message = entity.message,
          totalLandedAmount = entity.totalLandedAmount,
