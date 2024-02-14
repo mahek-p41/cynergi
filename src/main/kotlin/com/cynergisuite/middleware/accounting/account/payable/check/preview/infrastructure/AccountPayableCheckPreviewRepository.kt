@@ -123,8 +123,8 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
    @ReadOnly
    fun fetchCheckPreview(company: CompanyEntity, filterRequest: AccountPayableCheckPreviewFilterRequest): AccountPayableCheckPreviewEntity {
       var currentVendor: AccountPayableCheckPreviewVendorsEntity? = null
-      var previousCheck: Boolean = false
-      var checkNumber = filterRequest.checkNumber
+      var previousCheck = false
+      var checkNumber = filterRequest.checkNumber.toBigInteger()
       val previewDetails = mutableListOf<AccountPayableCheckPreviewVendorsEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val sortBy = StringBuilder("ORDER BY ")
@@ -243,7 +243,7 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
          city = rs.getString("apInvoice_vendor_address_city"),
          state = rs.getString("apInvoice_vendor_address_state"),
          postalCode = rs.getString("apInvoice_vendor_address_postal_code"),
-         checkNumber = checkNumber,
+         checkNumber = checkNumber.toString(),
          date = rs.getLocalDate("apInvoice_invoice_date")
       )
    }

@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice
 
 import java.math.BigDecimal
-import java.math.BigInteger
 import java.time.LocalDate
 
 data class AccountPayableCheckPreviewVendorsEntity (
@@ -12,7 +11,7 @@ data class AccountPayableCheckPreviewVendorsEntity (
    val city: String?,
    val state: String?,
    val postalCode: String?,
-   val checkNumber: BigInteger,
+   val checkNumber: String,
    val date: LocalDate,
    val invoiceList: MutableList<AccountPayableCheckPreviewInvoiceEntity>? = mutableListOf(),
    var gross: BigDecimal = BigDecimal.ZERO,

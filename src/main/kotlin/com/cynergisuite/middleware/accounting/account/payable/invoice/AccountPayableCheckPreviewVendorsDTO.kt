@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.accounting.account.payable.invoice
 import com.fasterxml.jackson.annotation.JsonView
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
-import java.math.BigInteger
 import java.time.LocalDate
 import javax.validation.constraints.NotNull
 
@@ -35,7 +34,7 @@ data class AccountPayableCheckPreviewVendorsDTO(
    var postalCode: String? = null,
 
    @field:Schema(description = "Check number")
-   var checkNumber: BigInteger? = null,
+   var checkNumber: String? = null,
 
    @field:Schema(description = "Distribution amount")
    var date: LocalDate? = null,
