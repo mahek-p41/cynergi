@@ -475,7 +475,7 @@ class AccountPayableInvoiceController @Inject constructor(
       dto: AccountPayableInvoiceMaintenanceDTO,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): AccountPayableInvoiceDTO {
+   ): AccountPayableInvoiceMaintenanceDTO {
       logger.debug("Requested Create Account Payable Invoice {}", dto)
 
       val user = userService.fetchUser(authentication)

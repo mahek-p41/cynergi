@@ -26,5 +26,5 @@ data class AccountPayableInvoiceMaintenanceDTO(
 
    @field:NotNull
    @field:Schema(name = "apInvoiceSchedule", description = "Account Payable Invoice Schedule.", maxLength = 10)
-   var apInvoiceSchedule: AccountPayableInvoiceScheduleDTO? = null
+   var apInvoiceSchedule: MutableList<AccountPayableInvoiceScheduleDTO>? = null
 )

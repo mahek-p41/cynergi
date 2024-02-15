@@ -60,7 +60,7 @@ data class AccountPayableInvoiceScheduleDTO(
          paymentSequenceNumber = entity.paymentSequenceNumber,
          amountToPay = entity.amountToPay,
          bank = entity.bank,
-         externalPaymentTypeId = AccountPayablePaymentTypeTypeDTO(entity.externalPaymentTypeId!!),
+         externalPaymentTypeId = entity.externalPaymentTypeId?.let { AccountPayablePaymentTypeTypeDTO(it) },
          externalPaymentNumber = entity.externalPaymentNumber,
          externalPaymentDate = entity.externalPaymentDate,
          selectedForProcessing = entity.selectedForProcessing,

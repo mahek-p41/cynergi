@@ -20,8 +20,6 @@ import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDistributionDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDistributionEntity
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentEntity
-import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeType
-import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentDetailRepository
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentRepository
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentStatusTypeRepository
@@ -207,7 +205,7 @@ class AccountPayableInvoiceService @Inject constructor(
       return accountPayableInvoiceRepository.vendorBalance(company, filterRequest)
    }
 
-   fun maintenance(dto: AccountPayableInvoiceMaintenanceDTO, company: CompanyEntity): AccountPayableInvoiceDTO {
+   fun maintenance(dto: AccountPayableInvoiceMaintenanceDTO, company: CompanyEntity): AccountPayableInvoiceMaintenanceDTO {
       val vendor = vendorRepository.findOne(dto.apInvoice?.vendor!!.id!!, company)
       val payTo = if (dto.apInvoice?.payTo != null) vendorRepository.findOne(dto.apInvoice?.payTo!!.id!!, company) else vendor
       val invoice = dto.apInvoice!!
@@ -218,11 +216,10 @@ class AccountPayableInvoiceService @Inject constructor(
       val paymentType = accountPayablePaymentTypeTypeRepository.findOne(dto.apPayment!!.type!!.value)
 
 
-
       //create ap invoice schedule
       terms!!.numberOfPayments.let {
          for (i in 1..it) {
-            val apptt = dto.apInvoiceSchedule?.externalPaymentTypeId?.value?.let { it1 -> appttRepository.findOne(it1) }
+            val apptt = dto.apInvoiceSchedule?.get(0)?.externalPaymentTypeId?.value?.let { it1 -> appttRepository.findOne(it1) }
             val schedule = AccountPayableInvoiceScheduleEntity(
                null,
                invoice.id!!,
@@ -232,8 +229,8 @@ class AccountPayableInvoiceService @Inject constructor(
                terms.scheduleRecords[i-1].duePercent.times(invoice.invoiceAmount!!),
                bank!!.id!!,
                apptt,
-               dto.apInvoiceSchedule?.externalPaymentNumber,
-               dto.apInvoiceSchedule?.externalPaymentDate,
+               dto.apInvoiceSchedule?.get(0)?.externalPaymentNumber,
+               dto.apInvoiceSchedule?.get(0)?.externalPaymentDate,
                false,
                false
             )
@@ -289,6 +286,8 @@ class AccountPayableInvoiceService @Inject constructor(
                      glc.defaultProfitCenter.myId(),
                      dto.apPayment!!.amount!!.times(BigDecimal(-1)),
                   )
+                  accountPayablePaymentRepository.insertDistributions(apAcct, company)
+                  accountPayablePaymentRepository.insertDistributions(bankDist, company)
                }
 
                val bankRecon = bankReconciliationRepository.findOne(bank.id!!, apPayment.type.value, apPayment.paymentNumber, apPayment.paymentDate, company)
@@ -403,8 +402,10 @@ class AccountPayableInvoiceService @Inject constructor(
 
       val toCreate = accountPayableInvoiceValidator.validateCreate(invoice, company)
       val updatedInvoice = accountPayableInvoiceRepository.insert(toCreate, company)
-
-      return transformEntity(updatedInvoice)
+      val updatedInvoiceDTO = transformEntity(updatedInvoice)
+      val scheduleListDTO = scheduleList.map { AccountPayableInvoiceScheduleDTO(it) }.toMutableList()
+      val updatedInvoiceMaintenanceDTO = AccountPayableInvoiceMaintenanceDTO(updatedInvoiceDTO, null, null, scheduleListDTO)
+      return updatedInvoiceMaintenanceDTO
    }
 
    private fun transformEntity(accountPayableInvoiceEntity: AccountPayableInvoiceEntity): AccountPayableInvoiceDTO {
