@@ -78,7 +78,7 @@ dependencies {
    // esig additional dependencies
    implementation('org.slf4j:jul-to-slf4j:1.7.36')
    implementation("org.slf4j:log4j-over-slf4j:1.7.36")
-   implementation('org.slf4j:jcl-over-slf4j:1.7.36')
+   implementation('org.slf4j:jcl-over-slf4j:2.0.12')
    implementation('org.apache.httpcomponents.core5:httpcore5:5.2')
    implementation('org.apache.httpcomponents.client5:httpclient5:5.2.1')
    implementation('info.picocli:picocli:4.7.5')
