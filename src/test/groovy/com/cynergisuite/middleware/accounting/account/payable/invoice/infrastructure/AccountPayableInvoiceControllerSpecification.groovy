@@ -1371,7 +1371,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
          """)
 
-      def filterRequest = new AccountPayableCheckPreviewFilterRequest( "V", "ASC", bank.number, 100, null, null, null, null, null )
+      def filterRequest = new AccountPayableCheckPreviewFilterRequest( "V", "ASC", bank.number, "100", null, null, null, null, null )
 
       when:
       def result = get("$path/check-preview${filterRequest}")
