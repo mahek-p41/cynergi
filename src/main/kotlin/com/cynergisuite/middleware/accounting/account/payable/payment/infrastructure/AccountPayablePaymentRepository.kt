@@ -1120,6 +1120,48 @@ class AccountPayablePaymentRepository @Inject constructor(
       }
    }
 
+   @ReadOnly
+   fun findDistribution(id: UUID, company: CompanyEntity): AccountPayablePaymentDistributionEntity? {
+      val params = mapOf("id" to id)
+      return jdbc.queryForObjectOrNull(
+         """
+         SELECT
+            *
+         FROM account_payable_payment_distribution
+         WHERE id = :id
+         """.trimIndent(),
+         params
+      ) { rs, _ ->
+         mapDistributions(rs)
+      }
+   }
+
+   @Transactional
+   fun updateDistribution(entity: AccountPayablePaymentDistributionEntity, company: CompanyEntity): AccountPayablePaymentDistributionEntity {
+      return jdbc.updateReturning(
+         """
+         UPDATE account_payable_payment_distribution
+         SET
+            payment_id = :payment_id,
+            distribution_account = :distribution_account_id,
+            distribution_profit_center_sfk = :distribution_profit_center_sfk,
+            distribution_amount = :distribution_amount
+         WHERE id = :id
+         RETURNING
+            *
+         """.trimIndent(),
+         mapOf(
+            "id" to entity.id,
+            "payment_id" to entity.paymentId,
+            "distribution_account_id" to entity.distributionAccount,
+            "distribution_profit_center_sfk" to entity.distributionProfitCenter,
+            "distribution_amount" to entity.distributionAmount
+         )
+      ) { rs, _ ->
+         mapDistributions(rs)
+      }
+   }
+
    private fun mapRow(
       rs: ResultSet,
       company: CompanyEntity,

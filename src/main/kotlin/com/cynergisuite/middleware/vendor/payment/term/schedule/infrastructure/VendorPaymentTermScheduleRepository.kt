@@ -3,11 +3,14 @@ package com.cynergisuite.middleware.vendor.payment.term.schedule.infrastructure
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermEntity
 import com.cynergisuite.middleware.vendor.payment.term.schedule.VendorPaymentTermScheduleEntity
+import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.jdbi.v3.core.Jdbi
@@ -85,6 +88,31 @@ class VendorPaymentTermScheduleRepository @Inject constructor(
       ) { rs, _ -> mapDdlRow(rs) }
    }
 
+   @ReadOnly
+   fun findAllByVendorPaymentTerm(id: UUID): MutableList<VendorPaymentTermScheduleEntity> {
+      val elements = mutableListOf<VendorPaymentTermScheduleEntity>()
+
+      jdbc.query(
+         """
+            SELECT
+               vpts.id                    AS vpts_id,
+               vpts.time_created          AS vpts_time_created,
+               vpts.time_updated          AS vpts_time_updated,
+               vpts.vendor_payment_term_id       AS vpts_vendor_payment_term_id,
+               vpts.due_month             AS vpts_due_month,
+               vpts.due_days              AS vpts_due_days,
+               vpts.due_percent           AS vpts_due_percent,
+               vpts.schedule_order_number AS vpts_schedule_order_number
+            FROM vendor_payment_term_schedule vpts
+            WHERE vpts.vendor_payment_term_id = :id
+      """,
+         mapOf("id" to id)
+      ) { rs, _ ->
+         elements.add(mapRow(rs))
+      }
+      return elements
+   }
+
    @Transactional
    fun deleteNotIn(id: UUID, scheduleRecords: List<VendorPaymentTermScheduleEntity>) {
 
@@ -121,6 +149,16 @@ class VendorPaymentTermScheduleRepository @Inject constructor(
       )
 
       logger.info("Affected rows: {}", affectedRows)
+   }
+
+   private fun mapRow(rs: ResultSet): VendorPaymentTermScheduleEntity {
+      return VendorPaymentTermScheduleEntity(
+         id = rs.getUuid("vpts_id"),
+         dueMonth = rs.getIntOrNull("vpts_due_month"),
+         dueDays = rs.getIntOrNull("vpts_due_days")!!,
+         duePercent = rs.getBigDecimal("vpts_due_percent"),
+         scheduleOrderNumber = rs.getInt("vpts_schedule_order_number")
+      )
    }
 
    private fun mapDdlRow(rs: ResultSet): VendorPaymentTermScheduleEntity {

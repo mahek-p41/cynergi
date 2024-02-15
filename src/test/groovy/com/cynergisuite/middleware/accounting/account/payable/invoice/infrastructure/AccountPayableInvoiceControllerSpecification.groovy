@@ -17,14 +17,18 @@ import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvo
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDetailDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionTemplateDTO
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionTemplateDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceMaintenanceDTO
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDetailDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentStatusTypeDataLoader
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeTypeDataLoader
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
+import com.cynergisuite.middleware.accounting.general.ledger.control.GeneralLedgerControlDataLoaderService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
@@ -62,6 +66,8 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    @Inject AccountPayableDistributionTemplateDataLoaderService apDistTemplateDataLoaderService
    @Inject SimpleTransactionalSql sql
    @Inject AccountPayableControlTestDataLoaderService accountPayableControlDataLoaderService
+   @Inject GeneralLedgerControlDataLoaderService generalLedgerControlDataLoaderService
+
 
    void "fetch one" () {
       given:
@@ -1463,6 +1469,92 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       when:
       def result = get("$path//vendor-balance${filterRequest}")
+
+      then:
+      notThrown(Exception)
+      result[0].balance == 2000.00
+      result[0].number == payToIn.number
+      result[0].invoiceList.size() == 22
+      result[0].invoiceList.last().balance == 5600.00
+   }
+
+   void "ap invoice maintenance" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final StoreEntity store = storeFactoryService.store(1, company) as StoreEntity
+      final vendorPmtTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final poVendorPmtTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final poPmtTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final payToPmtTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final shipViaList = shipViaFactoryService.stream(4, company).toList()
+      final employeeList = employeeFactoryService.stream(4, company).toList()
+
+      final vendorShipVia = shipViaList[0]
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+
+
+      final poVendorShipVia = shipViaList[1]
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poApprovedBy = employeeList[0]
+      final poPurchaseAgent = employeeList[1]
+      final poShipVia = shipViaList[2]
+      final poVendorSubEmp = employeeList[2]
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+
+      final employeeIn = employeeList[3]
+
+      final payToShipVia = shipViaList[3]
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+
+      final statusO = new AccountPayableInvoiceStatusType(3, "P", "Paid", "paid")
+
+
+      final defProfitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final defAPAcct = accountFactoryService.single(company)
+      final defAPDiscAcct = accountFactoryService.single(company)
+      final defARAcct = accountFactoryService.single(company)
+      final defARDiscAcct = accountFactoryService.single(company)
+      final defAcctMiscInvAcct = accountFactoryService.single(company)
+      final defAcctSerializedInvAcct = accountFactoryService.single(company)
+      final defAcctUnbilledInvAcct = accountFactoryService.single(company)
+      final defAcctFreightAcct = accountFactoryService.single(company)
+      final generalLedgerControl = generalLedgerControlDataLoaderService.single(
+         company,
+         defProfitCenter,
+         defAPAcct,
+         defAPDiscAcct,
+         defARAcct,
+         defARDiscAcct,
+         defAcctMiscInvAcct,
+         defAcctSerializedInvAcct,
+         defAcctUnbilledInvAcct,
+         defAcctFreightAcct
+      )
+
+
+      def account = accountFactoryService.single(company)
+      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      def pmtStatuses = AccountPayablePaymentStatusTypeDataLoader.predefined()
+      def pmtTypes = AccountPayablePaymentTypeTypeDataLoader.predefined()
+
+      def apPayments = accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }, LocalDate.now().plusMonths(1)).toList()
+      apPayments.addAll(accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }, LocalDate.now().plusMonths(1)).toList())
+      final accountPayableControl = accountPayableControlDataLoaderService.single(company, account, account)
+
+      final existingAPInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, null, employeeIn, null, statusO, payToIn, store, null)
+      def existingAPInvoiceDTO = new AccountPayableInvoiceDTO(existingAPInvoice)
+
+      def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendorIn, existingAPInvoice, apPayments[0], 200, 0.00).toList()
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendorIn, existingAPInvoice, apPayments[1], 200, 0.00).toList())
+
+      def template = apDistTemplateDataLoaderService.single(company)
+      def apDistribution = apDistDetailDataLoaderService.single(store, account, company, template)
+      def templateDTO = new AccountPayableDistributionTemplateDTO(template)
+      def apPaymentDTO = new AccountPayablePaymentDTO(apPayments[0])
+      def invMaintDTO = new AccountPayableInvoiceMaintenanceDTO(existingAPInvoiceDTO, apPaymentDTO, templateDTO, null)
+
+      when:
+      def result = post("$path/maintenance", invMaintDTO)
 
       then:
       notThrown(Exception)

@@ -53,7 +53,7 @@ class VendorPaymentTermTestDataLoader {
          null,
          null,
          null,
-         []
+         vendorPaymentTermSchedules
       )
    }
 
