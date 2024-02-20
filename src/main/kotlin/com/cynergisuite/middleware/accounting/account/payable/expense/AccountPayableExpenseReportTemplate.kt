@@ -1,8 +1,9 @@
-package com.cynergisuite.middleware.accounting.account.payable.invoice
+package com.cynergisuite.middleware.accounting.account.payable.expense
 
-import com.cynergisuite.extensions.sumByBigDecimal
+import com.cynergisuite.util.GroupingType
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 
@@ -31,39 +32,61 @@ data class AccountPayableExpenseReportTemplate(
    @field:Schema(description = "Total of AP Payment Detail amount for all Expenses on report")
    var paidTotal: BigDecimal? = null,
 
-   @field:Schema(description = "Listing of Expenses")
-   var purchaseOrders: List<AccountPayableExpenseReportAccountProfitCenterPair>? = null
+   @field:Schema(description = "Grouping Type")
+   var groupingType: GroupingType,
+
+   @field:Schema(description = "Internal listing of Invoices. Used as data source for getters.")
+   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+   var invoices: List<AccountPayableExpenseReportDTO>? = null
 
 ) {
-   constructor(entities: List<AccountPayableExpenseReportAccountProfitCenterPair>) :
-      this(
-         purchaseOrders = entities,
-         expenseTotal = entities.flatMap { it.invoices }.mapNotNull { it!!.invoiceAmount }.sumOf { it },
-         paidTotal = entities.flatMap { it.invoices }.flatMap { it!!.invoiceDetails }.mapNotNull { it.paymentDetailAmount }.sumOf { it },
-      )
-
    constructor(
-      entities: List<AccountPayableExpenseReportAccountProfitCenterPair>,
-      beginBalance: BigDecimal,
-      newInvoicesTotal: BigDecimal,
-      paidInvoicesTotal: BigDecimal,
-      endBalance: BigDecimal,
-      chargedAfterEndingDate: BigDecimal
+       entities: List<AccountPayableExpenseReportDTO>,
+       beginBalance: BigDecimal,
+       newInvoicesTotal: BigDecimal,
+       paidInvoicesTotal: BigDecimal,
+       endBalance: BigDecimal,
+       chargedAfterEndingDate: BigDecimal,
+       groupingType: GroupingType,
    ) : this(
-      purchaseOrders = entities,
-      expenseTotal = entities.flatMap { it.invoices }.mapNotNull { it!!.invoiceAmount }.sumOf { it },
-      paidTotal = entities.flatMap { it.invoices }.flatMap { it!!.invoiceDetails }.mapNotNull { it.paymentDetailAmount }.sumOf { it },
+      invoices = entities,
+      expenseTotal = entities.mapNotNull { it.invoiceAmount }.sumOf { it },
+      paidTotal = entities.mapNotNull { it.paidAmount }.sumOf { it },
       beginBalance = beginBalance,
       newInvoicesTotal = newInvoicesTotal,
       paidInvoicesTotal = paidInvoicesTotal,
       endBalance = endBalance,
-      chargedAfterEndingDate = chargedAfterEndingDate
+      chargedAfterEndingDate = chargedAfterEndingDate,
+      groupingType = groupingType,
    )
 
-   @get:Schema(description = "Account Summary Total")
-   val accountSummary get() = purchaseOrders!!.flatMap { it.invoices }.flatMap { it!!.distDetails }
-      .groupBy { it.accountNumber }
-      .map { (_, items) -> items.first().copy(distAmount = items.sumByBigDecimal { it.distAmount ?: BigDecimal.ZERO }) }
-      .sortedBy { it.accountNumber }
+   @get:Schema(description = "Listing of Invoices grouped by Accounts")
+   val groupedByAccount get() = groupingType.takeIf { it == GroupingType.ACCOUNT }?.let {
+      invoices!!
+         .groupBy { it.acctNumber }
+         .map { (accountNumber, list) ->
+            val sortedList = list.sortedWith(compareBy<AccountPayableExpenseReportDTO?> {
+               it!!.pmtNumber
+            }.thenBy {
+               it!!.distCenter
+            })
 
+            AccountPayableExpenseReportLevel1AccountGrouped(accountNumber!!, list.first().acctName, sortedList)
+         }.sortedBy { it.accountNumber }
+   }
+
+   @get:Schema(description = "Listing of Invoices grouped by Vendors")
+   val groupedByVendor get() = groupingType.takeIf { it == GroupingType.VENDOR }?.let {
+      invoices!!
+         .groupBy { it.vendorNumber }
+         .map { (vendorNumber, list) ->
+            val sortedList = list.sortedWith(compareBy<AccountPayableExpenseReportDTO?> {
+               it!!.pmtNumber
+            }.thenBy {
+               it!!.distCenter
+            })
+
+            AccountPayableExpenseReportVendorGrouped(vendorNumber!!, sortedList)
+         }.sortedBy { it.vendorNumber }
+   }
 }

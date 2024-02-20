@@ -19,7 +19,7 @@ class AccountPayableInvoiceInquiryFilterRequest(
    size: Int? = null,
    @field:Pattern(regexp = "poHeader.number|apInvoice.invoice|apInvoice.invoice_date|apInvoice.due_date|apInvoice.invoice_amount")
    @field:Schema(description = "The column to sort the AP invoice inquiry by (poHeader.number|apInvoice.invoice|apInvoice.invoice_date|apInvoice.due_date|apInvoice.invoice_amount).", defaultValue = "poHeader.number")
-   override var sortBy: String? = null,
+   override var sortBy: String? = "poHeader.number",
    sortDirection: String? = null,
 
    @field:NotNull

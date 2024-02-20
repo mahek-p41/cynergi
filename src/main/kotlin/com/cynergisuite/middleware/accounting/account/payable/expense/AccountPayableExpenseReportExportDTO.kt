@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.accounting.account.payable.invoice
+package com.cynergisuite.middleware.accounting.account.payable.expense
 
 import com.cynergisuite.domain.Identifiable
 import com.fasterxml.jackson.annotation.JsonView
@@ -43,9 +43,6 @@ data class AccountPayableExpenseReportExportDTO(
    @field:Schema(description = "Account payable invoice date")
    var invoiceDate: LocalDate? = null,
 
-   @field:Schema(description = "Account payable invoice date cleared", required = false)
-   var entryDate: LocalDate? = null,
-
    @field:NotNull
    @field:Schema(description = "Account payable invoice status id")
    var status: String? = null,
@@ -53,13 +50,6 @@ data class AccountPayableExpenseReportExportDTO(
    @field:NotNull
    @field:Schema(description = "Account payable invoice amount")
    var invoiceAmount: BigDecimal? = null,
-
-   @field:NotNull
-   @field:Schema(description = "Account payable discount taken")
-   var discountTaken: BigDecimal? = null,
-
-   @field:Schema(description = "Account payable invoice due date", required = false)
-   var dueDate: LocalDate? = null,
 
    @field:Schema(description = "Account payable invoice expense date", required = false)
    var expenseDate: LocalDate? = null,
@@ -77,6 +67,10 @@ data class AccountPayableExpenseReportExportDTO(
    var pmtNumber: String? = null,
 
    @field:NotNull
+   @field:Schema(description = "Payment date")
+   var pmtDate: LocalDate? = null,
+
+   @field:NotNull
    @field:Schema(description = "Account number")
    var acctNumber: Int? = null,
 
@@ -92,8 +86,6 @@ data class AccountPayableExpenseReportExportDTO(
    @field:Schema(description = "Distribution amount")
    var distAmount: BigDecimal? = null,
 
-
 ) : Identifiable {
-
    override fun myId(): UUID? = id
 }

@@ -3,6 +3,7 @@ package com.cynergisuite.domain
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
+import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
 
 @Schema(
@@ -26,10 +27,12 @@ class ExpenseReportFilterRequest(
    @field:Schema(name = "endVen", description = "Ending Vendor number")
    var endVen: Int? = null,
 
-   @field:Schema(name = "beginDate", description = "Beginning date")
+   @field:NotNull
+   @field:Schema(name = "beginDate", description = "Beginning date", required = true)
    var beginDate: LocalDate? = null,
 
-   @field:Schema(name = "endDate", description = "Ending date")
+   @field:NotNull
+   @field:Schema(name = "endDate", description = "Ending date", required = true)
    var endDate: LocalDate? = null,
 
    @field:Schema(name = "iclHoldInv", description = "Include the hold invoices", defaultValue = "false")
@@ -38,11 +41,11 @@ class ExpenseReportFilterRequest(
    @field:Schema(name = "invStatus", description = "The Invoice Status to filter results with")
    var invStatus: List<String>? = null,
 
-   @field:Pattern(regexp = "apInvoice.invoice|vendor.number")
-   @field:Schema(description = "The column to sort the AP Expense report by (apInvoice.invoice|vendor.number).", defaultValue = "apInvoice.invoice")
-   override var sortBy: String? = null,
+   @field:Pattern(regexp = "account|vendor")
+   @field:Schema(description = "The column to sort the AP Expense report by (account|vendor).", defaultValue = "account")
+   override var sortBy: String? = "account",
 
-) : SortableRequestBase<ExpenseReportFilterRequest>("apInvoice.invoice", "ASC") {
+) : SortableRequestBase<ExpenseReportFilterRequest>(sortBy, "ASC") {
 
    override fun sortByMe(): String = sortBy()
 
@@ -54,6 +57,7 @@ class ExpenseReportFilterRequest(
          "endVen" to endVen,
          "beginDate" to beginDate,
          "endDate" to endDate,
+         "iclHoldInv" to iclHoldInv,
          "invStatus" to invStatus,
       )
 }

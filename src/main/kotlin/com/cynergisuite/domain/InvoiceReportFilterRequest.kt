@@ -76,7 +76,7 @@ class InvoiceReportFilterRequest(
 
    @field:Pattern(regexp = "poHeader.number|apInvoice.invoice|vendor.number|vendor.name")
    @field:Schema(description = "The column to sort the purchase order invoice report by (poHeader.number|apInvoice.invoice|vendor.number|vendor.name).", defaultValue = "poHeader.number")
-   override var sortBy: String? = null,
+   override var sortBy: String? = "poHeader.number",
 
 ) : SortableRequestBase<InvoiceReportFilterRequest>("poHeader.number", "ASC") {
 

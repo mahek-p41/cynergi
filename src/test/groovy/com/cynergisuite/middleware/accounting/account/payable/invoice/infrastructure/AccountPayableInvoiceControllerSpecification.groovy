@@ -5,6 +5,7 @@ import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDataLoader
 import com.cynergisuite.domain.AccountPayableVendorBalanceReportFilterRequest
+import com.cynergisuite.domain.ExpenseReportFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
@@ -44,6 +45,7 @@ import jakarta.inject.Inject
 import spock.lang.Unroll
 
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.time.YearMonth
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
@@ -750,6 +752,107 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       'Search by invoice date'            || 4
       'Search by due date'                || 4
       'Search by invoice amount'          || 4
+   }
+
+   void "fetch AP Expense report" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final StoreEntity store = storeFactoryService.store(1, company) as StoreEntity
+      final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
+      final shipViaList = shipViaFactoryService.stream(4, company).toList()
+      final employeeList = employeeFactoryService.stream(4, company).toList()
+
+      final vendorPmtTerm = vendorPaymentTermList[0]
+      final vendorShipVia = shipViaList[0]
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+
+      final poVendorPmtTerm = vendorPaymentTermList[1]
+      final poVendorShipVia = shipViaList[1]
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poApprovedBy = employeeList[0]
+      final poPurchaseAgent = employeeList[1]
+      final poShipVia = shipViaList[2]
+      final poPmtTerm = vendorPaymentTermList[2]
+      final poVendorSubEmp = employeeList[2]
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+
+      final employeeIn = employeeList[3]
+
+      final payToPmtTerm = vendorPaymentTermList[3]
+      final payToShipVia = shipViaList[3]
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      final statusO = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
+
+      def apInvoiceEntities = dataLoaderService.stream(20, company, vendorIn, purchaseOrderIn, null, employeeIn, null, statusO, payToIn, store)
+         .sorted { o1, o2 -> o1.id <=> o2.id }.toList()
+
+      def apInvoices = apInvoiceEntities.stream().map { new AccountPayableInvoiceDTO(it) }.toList()
+
+      def account = accountFactoryService.single(company)
+      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      def pmtStatuses = AccountPayablePaymentStatusTypeDataLoader.predefined()
+      def pmtTypes = AccountPayablePaymentTypeTypeDataLoader.predefined()
+
+      def apPayments = accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }).toList()
+      apPayments.addAll(accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'V' }, pmtTypes.find { it.value == 'C' }, null, null, null, true).toList())
+
+      def apPaymentDetails = apPaymentDetailDataLoaderService.stream(1, company, vendorIn, apInvoiceEntities[0], apPayments[0], 2000).toList()
+      apPaymentDetailDataLoaderService.stream(1, company, vendorIn, apInvoiceEntities[1], apPayments[1], 4000).toList()
+      apPaymentDetailDataLoaderService.stream(1, company, vendorIn, apInvoiceEntities[1], apPayments[2], 5000).toList()
+
+      def template = apDistTemplateDataLoaderService.single(company)
+      def apDistribution = apDistDetailDataLoaderService.single(store, account, company, template)
+      def invDistAmountForFirstInvoice = 1000
+      def invDistAmountForSecondInvoice = 2000
+
+      sql.executeUpdate([invoice_id: apInvoices[0].id, account_id: account.id, profit_center_sfk: store.number, amount: invDistAmountForFirstInvoice], """
+         INSERT INTO account_payable_invoice_distribution(invoice_id, distribution_account_id, distribution_profit_center_id_sfk, distribution_amount)
+	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
+         """)
+      sql.executeUpdate([invoice_id: apInvoices[1].id, account_id: account.id, profit_center_sfk: store.number, amount: invDistAmountForSecondInvoice], """
+         INSERT INTO account_payable_invoice_distribution(invoice_id, distribution_account_id, distribution_profit_center_id_sfk, distribution_amount)
+	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
+         """)
+
+      def filterRequest = new ExpenseReportFilterRequest([sortDirection: "ASC", invStatus: ["O", "P"], beginDate: LocalDate.of(2020, 1, 1), endDate: OffsetDateTime.now().toLocalDate()])
+
+      when:
+      def result = get("$path/expense/report${filterRequest}")
+
+      then:
+      notThrown(Exception)
+      with(result.groupedByAccount[0]) {
+         accountNumber == account.number
+         accountName == account.name
+         groupedByDistributionCenters.eachWithIndex { profitCenter, index ->
+            with(profitCenter) {
+               distCenter == store.number
+               accountTotal == invDistAmountForFirstInvoice + invDistAmountForSecondInvoice
+               with(invoices[0]) {
+                  id == apInvoices[index].id
+                  vendorNumber == vendorIn.number
+                  vendorName == vendorIn.name
+                  invoice == apInvoices[index].invoice
+                  type == apInvoices[index].type.value
+                  invoiceDate == apInvoices[index].invoiceDate.toString()
+                  status == apInvoices[index].status.value
+                  invoiceAmount == apInvoices[index].invoiceAmount
+                  expenseDate == apInvoices[index].expenseDate.toString()
+                  paidAmount == apInvoices[index].paidAmount
+                  bankNumber == bank.number
+                  pmtNumber == apPayments[0].paymentNumber
+                  pmtDate == apPayments[0].paymentDate.toString()
+                  notes == apInvoices[index].message
+                  poHeaderNumber == purchaseOrderIn.number
+                  acctNumber == account.number
+                  acctName == account.name
+                  distCenter == store.number
+                  glAmount == invDistAmountForFirstInvoice
+                  bankNumber == bank.number
+               }
+            }
+         }
+      }
    }
 
    void "create one" () {

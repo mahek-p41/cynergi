@@ -10,6 +10,7 @@ import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.VendorBalanceDTO
 import com.cynergisuite.middleware.accounting.account.payable.distribution.infrastructure.AccountPayableDistributionDetailRepository
+import com.cynergisuite.middleware.accounting.account.payable.expense.AccountPayableExpenseReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableExpenseReportRepository
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceDistributionRepository
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceInquiryRepository
@@ -34,6 +35,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.control.infrastruct
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
+import com.cynergisuite.util.GroupingType
 import com.opencsv.CSVWriter
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -109,49 +111,45 @@ class AccountPayableInvoiceService @Inject constructor(
    }
 
    fun fetchExpenseReport(company: CompanyEntity, filterRequest: ExpenseReportFilterRequest): AccountPayableExpenseReportTemplate {
-      val reportData = accountPayableExpenseReportRepository.fetchReport(company, filterRequest)
-
-      val allInvoices = reportData.flatMap { it.invoices }
+      val allInvoices = accountPayableExpenseReportRepository.fetchReport(company, filterRequest)
 
       val beginDate = filterRequest.beginDate
       val endDate = filterRequest.endDate
 
       val beginBalance = allInvoices
-         .filter { it!!.expenseDate!! < beginDate &&
-            (it.status != "P" || it.invoiceDetails
-               .any { it.paymentDate!! > endDate })
+         .filter { it.expenseDate!! < beginDate &&
+            (it.status != "P" ||  it.pmtDate!! > endDate )
          }
-         .mapNotNull { it!!.invoiceAmount }
+         .mapNotNull { it.invoiceAmount }
          .sumOf { it }
 
       val newInvoicesTotal = allInvoices
          .filter {
-            it!!.expenseDate!! >= beginDate &&
+            it.expenseDate!! >= beginDate &&
                it.expenseDate!! <= endDate
          }
-         .mapNotNull { it!!.invoiceAmount }
+         .mapNotNull { it.invoiceAmount }
          .sumOf { it }
-
       val paidInvoicesTotal = allInvoices
          .filter {
-            it!!.invoiceDetails.any { it.paymentDate!! >= beginDate } &&
-               it.invoiceDetails.any { it.paymentDate!! <= endDate }
+            it.pmtDate != null && it.pmtDate!! >= beginDate && it.pmtDate!! <= endDate
          }
-         .mapNotNull { it!!.invoiceAmount }
+         .mapNotNull { it.invoiceAmount }
          .sumOf { it }
+
 
       val endBalance = beginBalance + newInvoicesTotal - paidInvoicesTotal
 
       val chargedAfterEndingDate = allInvoices
          .filter {
-            it!!.invoiceDetails.any { it.paymentDate!! >= beginDate &&
-               it.paymentDate!! <= endDate } &&
+            it.pmtDate != null && it.pmtDate!! >= beginDate &&
+               it.pmtDate!! <= endDate &&
                it.expenseDate!! > endDate
          }
-         .mapNotNull { it!!.invoiceAmount }
+         .mapNotNull { it.invoiceAmount }
          .sumOf { it }
 
-      return AccountPayableExpenseReportTemplate(reportData, beginBalance, newInvoicesTotal, paidInvoicesTotal, endBalance, chargedAfterEndingDate)
+      return AccountPayableExpenseReportTemplate(allInvoices, beginBalance, newInvoicesTotal, paidInvoicesTotal, endBalance, chargedAfterEndingDate, GroupingType.fromString(filterRequest.sortBy!!))
    }
 
    fun export(filterRequest: InvoiceReportFilterRequest, company: CompanyEntity): ByteArray {
@@ -281,7 +279,7 @@ class AccountPayableInvoiceService @Inject constructor(
                   val bankDist = AccountPayablePaymentDistributionEntity(
                      null,
                      dto.apPayment!!.id!!,
-                     bank.generalLedgerAccount.id!!,
+                     bank.generalLedgerAccount.id,
                      bank.generalLedgerProfitCenter.myId(),
                      dto.apPayment!!.amount!!,
                   )
@@ -416,5 +414,37 @@ class AccountPayableInvoiceService @Inject constructor(
 
    private fun transformEntity(accountPayableInvoiceEntity: AccountPayableInvoiceEntity): AccountPayableInvoiceDTO {
       return AccountPayableInvoiceDTO(accountPayableInvoiceEntity)
+   }
+
+   fun exportExpenseInvoices(filterRequest: ExpenseReportFilterRequest, company: CompanyEntity): ByteArray {
+      val found = accountPayableExpenseReportRepository.fetchReport(company, filterRequest)
+      val stream = ByteArrayOutputStream()
+      val output = OutputStreamWriter(stream)
+      val csvWriter = CSVWriter(output, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER)
+
+      val headers = arrayOf("GL_Acct_Nbr", "Account_Desc","Invoice_Date","Invoice_Nbr", "Vend_Nbr","Vend_Name",
+         "PFT_Ctr","Invoice_Total", "GL_Amt",  "Payment_Nbr", "Date_Paid","PO-Nbr", "Expense_Date")
+      csvWriter.writeNext(headers)
+
+      for(element in found) {
+         val data = arrayOf(
+            element.acctNumber.toString(),
+            element.acctName.toString(),
+            element.invoiceDate.toString(),
+            element.invoice.toString(),
+            element.vendorNumber.toString(),
+            element.vendorName.toString(),
+            element.distCenter.toString(),
+            element.invoiceAmount.toString(),
+            element.pmtNumber.toString(),
+            element.pmtDate.toString(),
+            element.poHeaderNumber.toString(),
+            element.expenseDate.toString(),
+         )
+         csvWriter.writeNext(data)
+      }
+      csvWriter.close()
+      output.close()
+      return stream.toByteArray()
    }
 }

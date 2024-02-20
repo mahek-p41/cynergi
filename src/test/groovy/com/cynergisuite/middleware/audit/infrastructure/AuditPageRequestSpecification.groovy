@@ -12,7 +12,7 @@ class AuditPageRequestSpecification extends Specification {
 
    void "audit page request handles only storeNumber property yields separation correctly" () {
       expect:
-      new AuditPageRequest([storeNumber: [1]]).toString() == "?storeNumber=1"
+      new AuditPageRequest([storeNumber: [1]]).toString() == "?sortBy=lastupdated&storeNumber=1"
    }
 
    void "audit page request handles from and thru properties yielding separation and format correctly" () {
@@ -21,7 +21,7 @@ class AuditPageRequestSpecification extends Specification {
       final thru = OffsetDateTime.now()
 
       expect:
-      new AuditPageRequest([from: from, thru: thru]).toString() == "?from=$from&thru=$thru"
+      new AuditPageRequest([from: from, thru: thru]).toString() == "?sortBy=lastupdated&from=$from&thru=$thru"
    }
 
    void "audit page request handles storeNumber and status properties yielding separation and format correctly" () {
@@ -31,7 +31,7 @@ class AuditPageRequestSpecification extends Specification {
       final status = ["CREATED", "IN-PROGRESS"]
 
       expect:
-      new AuditPageRequest([from: from, thru: thru, status: status]).toString() == "?from=$from&thru=$thru&status=CREATED&status=IN-PROGRESS"
+      new AuditPageRequest([from: from, thru: thru, status: status]).toString() == "?sortBy=lastupdated&from=$from&thru=$thru&status=CREATED&status=IN-PROGRESS"
    }
 
    void "audit page request handles only status property yielding separation and format correctly" () {
@@ -39,6 +39,6 @@ class AuditPageRequestSpecification extends Specification {
       final status = ["CREATED", "IN-PROGRESS"]
 
       expect:
-      new AuditPageRequest([status: status]).toString() == "?status=CREATED&status=IN-PROGRESS"
+      new AuditPageRequest([status: status]).toString() == "?sortBy=lastupdated&status=CREATED&status=IN-PROGRESS"
    }
 }

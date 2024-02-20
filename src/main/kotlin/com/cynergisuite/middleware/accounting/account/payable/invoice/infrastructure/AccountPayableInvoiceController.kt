@@ -2,10 +2,10 @@ package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastru
 
 import com.cynergisuite.domain.*
 import com.cynergisuite.middleware.accounting.account.VendorBalanceDTO
+import com.cynergisuite.middleware.accounting.account.payable.expense.AccountPayableExpenseReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewService
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableDistDetailReportDTO
-import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableExpenseReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryPaymentDTO
@@ -212,6 +212,7 @@ class AccountPayableInvoiceController @Inject constructor(
       return accountPayableInvoiceService.fetchReport(user.myCompany(), filterRequest)
    }
 
+   @Secured("APEXPENS")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/expense/report{?filterRequest*}", produces = [APPLICATION_JSON])
    @Operation(
@@ -250,6 +251,7 @@ class AccountPayableInvoiceController @Inject constructor(
       return accountPayableInvoiceService.fetchExpenseReport(user.myCompany(), filterRequest)
    }
 
+   @Secured("APRPT")
    @Throws(NotFoundException::class)
    @Get(uri = "/export{?filterRequest*}")
    @Operation(
@@ -277,6 +279,36 @@ class AccountPayableInvoiceController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
       val byteArray = accountPayableInvoiceService.export(filterRequest, user.myCompany())
+      return StreamedFile(ByteArrayInputStream(byteArray), MediaType.ALL_TYPE).attach("AP Invoice Report Export.csv")
+   }
+
+   @Secured("APEXPENS")
+   @Throws(NotFoundException::class)
+   @Get(uri = "expense/export{?filterRequest*}")
+   @Operation(
+      tags = ["AccountPayableInvoiceEndpoints"],
+      summary = "Export a listing of Account Payable Expense Invoices",
+      description = "Export a listing of Account Payable Expense Invoices to a file",
+      operationId = "accountPayableInvoice-exportExpenseInvoices"
+   )
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun exportExpenseInvoices(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @QueryValue("filterRequest")
+      filterRequest: ExpenseReportFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): StreamedFile {
+      logger.info("Exporting a listing of Account Payable Expense Invoices {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+      val byteArray = accountPayableInvoiceService.exportExpenseInvoices(filterRequest, user.myCompany())
       return StreamedFile(ByteArrayInputStream(byteArray), MediaType.ALL_TYPE).attach("AP Invoice Report Export.csv")
    }
 
