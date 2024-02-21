@@ -487,7 +487,15 @@ BEGIN
             id                                AS id,
             ''' || r.schema_name || '''::text AS dataset,
             loc_tran_loc                      AS number,
-            loc_transfer_desc                 AS name
+            loc_transfer_desc                 AS name,
+            loc_tran_address                  AS address,
+            loc_tran_city                     AS city,
+            loc_tran_state                    AS state,
+            loc_tran_zip                      AS zip,
+            loc_tran_zip_plus                 AS zip_plus,
+            loc_tran_country_code             AS country_code,
+            loc_tran_zip_pc                   AS zip_pc,
+            loc_tran_active_store_indr        AS active_store_indr
          FROM ' || r.schema_name || '.level2_stores
          WHERE loc_transfer_desc IS NOT NULL
       ';
@@ -3217,7 +3225,15 @@ CREATE FOREIGN TABLE fastinfo_prod_import.location_vw (
     id BIGINT,
     dataset VARCHAR,
     number INTEGER,
-    name VARCHAR
+    name VARCHAR,
+    address VARCHAR,
+    city VARCHAR,
+    state VARCHAR,
+    zip INTEGER,
+    zip_plus INTEGER,
+    country_code VARCHAR,
+    zip_pc VARCHAR,
+    active_store_indr VARCHAR
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'location_vw', SCHEMA_NAME 'public');
 
 
