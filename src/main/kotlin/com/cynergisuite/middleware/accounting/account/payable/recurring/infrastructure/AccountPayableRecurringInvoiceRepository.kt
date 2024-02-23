@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure
 
+import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
@@ -333,21 +334,29 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
    @ReadOnly
    fun findAll(
       company: CompanyEntity,
-      page: PageRequest
+      filterRequest: AccountPayableInvoiceListByVendorFilterRequest
    ): RepositoryPage<AccountPayableRecurringInvoiceEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
+      val whereClause = StringBuilder(" WHERE apRecurringInvoice.company_id = :comp_id")
+
+      if (filterRequest.vendor != null) {
+         params["vendor"] = filterRequest.vendor
+         whereClause.append(" AND vendor.v_number >= :vendor ")
+      }
+
+      if (filterRequest.invoice != null) {
+         params["invoice"] = filterRequest.invoice
+         whereClause.append(" AND apRecurringInvoice.invoice = :invoice ")
+      }
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
-            WHERE apRecurringInvoice.company_id = :comp_id
-            ORDER BY apRecurringInvoice_${page.snakeSortBy()} ${page.sortDirection()}
+            $whereClause
+            ORDER BY apRecurringInvoice_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
-         mapOf(
-            "comp_id" to company.id,
-            "limit" to page.size(),
-            "offset" to page.offset()
-         ),
-         page
+         params,
+         filterRequest
       ) { rs, elements ->
          do {
             elements.add(mapRow(rs, company, "apRecurringInvoice_"))

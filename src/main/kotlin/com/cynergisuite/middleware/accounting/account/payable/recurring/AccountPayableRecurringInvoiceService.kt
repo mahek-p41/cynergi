@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.recurring
 
+import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure.AccountPayableRecurringInvoiceRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import jakarta.inject.Inject
@@ -23,8 +23,8 @@ class AccountPayableRecurringInvoiceService @Inject constructor(
       return transformEntity(accountPayableRecurringInvoiceRepository.insert(toCreate, company))
    }
 
-   fun fetchAll(company: CompanyEntity, pageRequest: PageRequest): Page<AccountPayableRecurringInvoiceDTO> {
-      val found = accountPayableRecurringInvoiceRepository.findAll(company, pageRequest)
+   fun fetchAll(company: CompanyEntity, filterRequest: AccountPayableInvoiceListByVendorFilterRequest): Page<AccountPayableRecurringInvoiceDTO> {
+      val found = accountPayableRecurringInvoiceRepository.findAll(company, filterRequest)
 
       return found.toPage { accountPayableRecurringInvoiceEntity: AccountPayableRecurringInvoiceEntity ->
          AccountPayableRecurringInvoiceDTO(accountPayableRecurringInvoiceEntity)

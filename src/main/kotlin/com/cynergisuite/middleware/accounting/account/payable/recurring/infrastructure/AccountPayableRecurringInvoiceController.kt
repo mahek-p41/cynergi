@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure
 
+import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
 import com.cynergisuite.domain.Page
-import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceService
 import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
@@ -86,17 +86,17 @@ class AccountPayableRecurringInvoiceController @Inject constructor(
    fun fetchAll(
       @Parameter(name = "pageRequest", `in` = QUERY, required = false)
       @Valid @QueryValue("pageRequest")
-      pageRequest: StandardPageRequest,
+      filterRequest: AccountPayableInvoiceListByVendorFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<AccountPayableRecurringInvoiceDTO> {
-      logger.info("Fetching all Account Payable Recurring Invoices {}", pageRequest)
+      logger.info("Fetching all Account Payable Recurring Invoices {}", filterRequest)
 
       val user = userService.fetchUser(authentication)
-      val page = accountPayableRecurringInvoiceService.fetchAll(user.myCompany(), pageRequest)
+      val page = accountPayableRecurringInvoiceService.fetchAll(user.myCompany(), filterRequest)
 
       if (page.elements.isEmpty()) {
-         throw PageOutOfBoundsException(pageRequest = pageRequest)
+         throw PageOutOfBoundsException(pageRequest = filterRequest)
       }
 
       return page
