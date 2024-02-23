@@ -88,6 +88,12 @@ class AccountPayableInvoiceService @Inject constructor(
       return found.toPage { dto: AccountPayableInvoiceListByVendorDTO -> dto }
    }
 
+   fun fetchOpenByVendor(company: CompanyEntity, filterRequest: AccountPayableInvoiceListByVendorFilterRequest): Page<AccountPayableInvoiceListByVendorDTO> {
+      val found = accountPayableInvoiceRepository.findOpenByVendor(company, filterRequest)
+
+      return found.toPage { dto: AccountPayableInvoiceListByVendorDTO -> dto }
+   }
+
    fun fetchReport(company: CompanyEntity, filterRequest: InvoiceReportFilterRequest): AccountPayableInvoiceReportTemplate {
       val found = accountPayableInvoiceReportRepository.fetchReport(company, filterRequest)
 
