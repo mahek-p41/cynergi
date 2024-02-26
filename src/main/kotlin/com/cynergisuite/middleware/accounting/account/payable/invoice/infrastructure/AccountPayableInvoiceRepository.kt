@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
+import com.cynergisuite.domain.AccountPayableInvoiceFilterRequest
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
 import com.cynergisuite.domain.AccountPayableVendorBalanceReportFilterRequest
 import com.cynergisuite.domain.PageRequest
@@ -378,20 +379,49 @@ class AccountPayableInvoiceRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<AccountPayableInvoiceEntity, PageRequest> {
+   fun findAll(company: CompanyEntity, filterRequest: AccountPayableInvoiceFilterRequest): RepositoryPage<AccountPayableInvoiceEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
+      val whereClause = StringBuilder("WHERE apInvoice.company_id = :comp_id ")
+
+      if (filterRequest.status != null) {
+         params["status"] = filterRequest.status
+         whereClause.append(" AND status.value = :status ")
+      }
+
+      if (filterRequest.poNumber != null) {
+         params["poNumber"] = filterRequest.poNumber
+         whereClause.append(" AND poHeader.number = :poNumber ")
+      }
+
+      if (filterRequest.invoiceNumber != null) {
+         params["invoiceNumber"] = filterRequest.invoiceNumber
+         whereClause.append(" AND apInvoice.invoice = :invoiceNumber ")
+      }
+
+      if (filterRequest.invoiceDate != null) {
+         params["invoiceDate"] = filterRequest.invoiceDate
+         whereClause.append(" AND apInvoice.invoice_date = :invoiceDate ")
+      }
+
+      if (filterRequest.dueDate != null) {
+         params["dueDate"] = filterRequest.dueDate
+         whereClause.append(" AND apInvoice.due_date = :dueDate ")
+      }
+
+      if (filterRequest.invoiceAmount != null) {
+         params["invoiceAmount"] = filterRequest.invoiceAmount
+         whereClause.append(" AND apInvoice.invoice_amount = :invoiceAmount ")
+      }
+
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
-            WHERE apInvoice.company_id = :comp_id
-            ORDER BY apInvoice_${page.snakeSortBy()} ${page.sortDirection()}
+            $whereClause
+            ORDER BY apInvoice_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
-         mapOf(
-            "comp_id" to company.id,
-            "limit" to page.size(),
-            "offset" to page.offset()
-         ),
-         page
+         params,
+         filterRequest
       ) { rs, elements ->
          do {
             elements.add(mapRow(rs, company, "apInvoice_"))

@@ -97,17 +97,17 @@ class AccountPayableInvoiceController @Inject constructor(
    fun fetchAll(
       @Parameter(name = "pageRequest", `in` = QUERY, required = false)
       @Valid @QueryValue("pageRequest")
-      pageRequest: StandardPageRequest,
+      filterRequest: AccountPayableInvoiceFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<AccountPayableInvoiceDTO> {
-      logger.info("Fetching all Account Payable Invoices {}", pageRequest)
+      logger.info("Fetching all Account Payable Invoices {}", filterRequest)
 
       val user = userService.fetchUser(authentication)
-      val page = accountPayableInvoiceService.fetchAll(user.myCompany(), pageRequest)
+      val page = accountPayableInvoiceService.fetchAll(user.myCompany(), filterRequest)
 
       if (page.elements.isEmpty()) {
-         throw PageOutOfBoundsException(pageRequest = pageRequest)
+         throw PageOutOfBoundsException(pageRequest = filterRequest)
       }
 
       return page
