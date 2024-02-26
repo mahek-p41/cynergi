@@ -449,6 +449,51 @@ class AccountPayableInvoiceRepository @Inject constructor(
       }
    }
 
+   @ReadOnly
+   fun findOpenByVendor(company: CompanyEntity, filterRequest: AccountPayableInvoiceListByVendorFilterRequest): RepositoryPage<AccountPayableInvoiceListByVendorDTO, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
+      val whereClause = StringBuilder("WHERE apInvoice.company_id = :comp_id AND status.id = 2")
+
+      val query = """
+         SELECT
+            vend.number                         AS vendor_number,
+            vend.name                           AS vendor_name,
+            apInvoice.invoice                   AS invoice,
+            apInvoice.invoice_date              AS invoice_date,
+            apInvoice.invoice_amount            AS invoice_amount,
+            poHeader.number                     AS purchase_order_number,
+            status.id                           AS apInvoice_status_id,
+            status.value                        AS apInvoice_status_value,
+            status.description                  AS apInvoice_status_description,
+            status.localization_code            AS apInvoice_status_localization_code,
+            count(*) OVER() AS total_elements
+         FROM account_payable_invoice apInvoice
+            JOIN vendor vend                                         ON apInvoice.vendor_id = vend.id AND vend.deleted = FALSE
+            LEFT JOIN purchase_order_header poHeader                 ON poHeader.id = apInvoice.purchase_order_id AND poHeader.deleted = FALSE
+            JOIN account_payable_invoice_status_type_domain status   ON status.id = apInvoice.status_id
+      """.trimIndent()
+
+      if (filterRequest.vendor != null) {
+         params["vendor"] = filterRequest.vendor
+         whereClause.append(" AND vend.number = :vendor ")
+      }
+
+      return jdbc.queryPaged(
+         """
+            $query
+            $whereClause
+            ORDER BY apInvoice.invoice
+            LIMIT :limit OFFSET :offset
+         """.trimIndent(),
+         params,
+         filterRequest
+      ) { rs, elements ->
+         do {
+            elements.add(mapRowVendor(rs))
+         } while (rs.next())
+      }
+   }
+
    @Transactional
    fun insert(entity: AccountPayableInvoiceEntity, company: CompanyEntity): AccountPayableInvoiceEntity {
       logger.debug("Inserting account_payable_invoice {}", company)

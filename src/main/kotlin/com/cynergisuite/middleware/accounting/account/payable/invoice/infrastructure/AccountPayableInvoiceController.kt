@@ -143,6 +143,36 @@ class AccountPayableInvoiceController @Inject constructor(
       return accountPayableInvoiceService.fetchAllByVendor(user.myCompany(), filterRequest)
    }
 
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/open-by-vendor{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(
+      tags = ["AccountPayableInvoiceEndpoints"],
+      summary = "Fetch Open Account Payable Invoices by vendor",
+      description = "Fetch Open Account Payable Invoices by vendor",
+      operationId = "accountPayableInvoice-openByVendor"
+   )
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested Account Payable Invoices were unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchOpenByVendor(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: AccountPayableInvoiceListByVendorFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Page<AccountPayableInvoiceListByVendorDTO> {
+      logger.info("Fetching Open Account Payable Invoices By Vendor {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+
+      return accountPayableInvoiceService.fetchOpenByVendor(user.myCompany(), filterRequest)
+   }
+
    @Secured("APRPT")
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "/report{?filterRequest*}", produces = [APPLICATION_JSON])
