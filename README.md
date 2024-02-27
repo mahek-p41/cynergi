@@ -30,6 +30,7 @@ including a sub-command are unique the `cyn` command will know what script to ex
       ```shell script
       $ cyn
       Script: cleanup.sh
+      Script: run.sh
       Script: stop.sh
       Dir: db
       Dir: middleware
@@ -56,6 +57,7 @@ captured via the pg_dump command.
    1. `cyn db psql dev cynergidb`
 
 #### Dumps
+Put the dump files in `cynergi-middleware/support/development/db/DatabaseDumps`
 1. cynergidb.dump
    1. This dump will be read when the db is started up if it is available.
    2. If this file doesn't exist the cynergidb database will be empty after each successive restart of the docker
@@ -98,7 +100,7 @@ Note: This option is useful if you just want to run the application but aren't i
 
 1. Make sure the middleware(DB & SFTP servers) is running via `cyn mid dev start`
 2. Rebuild and start the application
-   1. `./gradlew clean shadowJar && java -Dmicronaut.environments=development -jar ./build/libs/cynergi-middleware.jar`
+   1. `cyn run` or `./gradlew clean shadowJar && java -Dmicronaut.environments=development -jar ./build/libs/cynergi-middleware.jar`
 3. To stop the application use `ctrl+c` AKA press the CTRL key at the same time you press the C key.
 4. To stop the middleware
    1. `cyn stop`
