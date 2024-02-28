@@ -18,23 +18,29 @@ class AccountPayableInvoiceFilterRequest(
    sortBy: String? = null,
    sortDirection: String? = null,
 
-   @field:Schema(name = "status", description = "Invoice Status")
-   var status: String? = null,
+   @field:Schema(name = "vendor", description = "Vendor Number")
+   var vendor: Int? = null,
 
-   @field:Schema(name = "poNumber", description = "PO Number")
-   var poNumber: Int? = null,
+   @field:Schema(name = "payTo", description = "Pay To Number")
+   var payTo: Int? = null,
 
-   @field:Schema(name = "invoiceNumber", description = "Invoice Number")
-   var invoiceNumber: String? = null,
+   @field:Schema(name = "invStatus", description = "Invoice Status")
+   var invStatus: String? = null,
 
-   @field:Schema(name = "invoiceDate", description = "Invoice date")
-   var invoiceDate: LocalDate? = null,
+   @field:Schema(name = "poNbr", description = "PO Number")
+   var poNbr: Int? = null,
+
+   @field:Schema(name = "invNbr", description = "Invoice Number")
+   var invNbr: String? = null,
+
+   @field:Schema(name = "invDate", description = "Invoice date")
+   var invDate: LocalDate? = null,
 
    @field:Schema(name = "dueDate", description = "Due date")
    var dueDate: LocalDate? = null,
 
-   @field:Schema(name = "invoiceAmount", description = "Invoice amount")
-   var invoiceAmount: BigDecimal? = null,
+   @field:Schema(name = "invAmount", description = "Invoice amount")
+   var invAmount: BigDecimal? = null,
 
    @field:Schema(name = "sortOption", description = "Sort Option")
    var sortOption: String? = null
@@ -49,23 +55,27 @@ class AccountPayableInvoiceFilterRequest(
          size = size,
          sortBy = sortBy,
          sortDirection = sortDirection,
-         status = this.status,
-         poNumber = this.poNumber,
-         invoiceNumber = this.invoiceNumber,
-         invoiceDate = this.invoiceDate,
+         vendor = this.vendor,
+         payTo = this.payTo,
+         invStatus = this.invStatus,
+         poNbr = this.poNbr,
+         invNbr = this.invNbr,
+         invDate = this.invDate,
          dueDate = this.dueDate,
-         invoiceAmount = this.invoiceAmount,
+         invAmount = this.invAmount,
          sortOption = this.sortOption
       )
 
    override fun myToStringValues(): List<Pair<String, Any?>> =
       listOf(
-         "status" to status,
-         "poNumber" to poNumber,
-         "invoiceNumber" to invoiceNumber,
-         "invoiceDate" to invoiceDate,
+         "vendor" to vendor,
+         "payTo" to payTo,
+         "invStatus" to invStatus,
+         "poNbr" to poNbr,
+         "invNbr" to invNbr,
+         "invDate" to invDate,
          "dueDate" to dueDate,
-         "invoiceAmount" to invoiceAmount,
+         "invAmount" to invAmount,
          "sortOption" to sortOption
       )
 }

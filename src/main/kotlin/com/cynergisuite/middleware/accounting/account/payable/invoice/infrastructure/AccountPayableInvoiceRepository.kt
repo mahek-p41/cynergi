@@ -383,23 +383,33 @@ class AccountPayableInvoiceRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder("WHERE apInvoice.company_id = :comp_id ")
 
-      if (filterRequest.status != null) {
-         params["status"] = filterRequest.status
+      if (filterRequest.vendor != null) {
+         params["vendor"] = filterRequest.vendor
+         whereClause.append(" AND vend.v_number = :vendor ")
+      }
+
+      if (filterRequest.payTo != null) {
+         params["payTo"] = filterRequest.payTo
+         whereClause.append(" AND payTo.v_number = :payTo ")
+      }
+
+      if (filterRequest.invStatus != null) {
+         params["status"] = filterRequest.invStatus
          whereClause.append(" AND status.value = :status ")
       }
 
-      if (filterRequest.poNumber != null) {
-         params["poNumber"] = filterRequest.poNumber
+      if (filterRequest.poNbr != null) {
+         params["poNumber"] = filterRequest.poNbr
          whereClause.append(" AND poHeader.number = :poNumber ")
       }
 
-      if (filterRequest.invoiceNumber != null) {
-         params["invoiceNumber"] = filterRequest.invoiceNumber
+      if (filterRequest.invNbr != null) {
+         params["invoiceNumber"] = filterRequest.invNbr
          whereClause.append(" AND apInvoice.invoice = :invoiceNumber ")
       }
 
-      if (filterRequest.invoiceDate != null) {
-         params["invoiceDate"] = filterRequest.invoiceDate
+      if (filterRequest.invDate != null) {
+         params["invoiceDate"] = filterRequest.invDate
          whereClause.append(" AND apInvoice.invoice_date = :invoiceDate ")
       }
 
@@ -408,8 +418,8 @@ class AccountPayableInvoiceRepository @Inject constructor(
          whereClause.append(" AND apInvoice.due_date = :dueDate ")
       }
 
-      if (filterRequest.invoiceAmount != null) {
-         params["invoiceAmount"] = filterRequest.invoiceAmount
+      if (filterRequest.invAmount != null) {
+         params["invoiceAmount"] = filterRequest.invAmount
          whereClause.append(" AND apInvoice.invoice_amount = :invoiceAmount ")
       }
 
