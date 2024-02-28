@@ -746,6 +746,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
       if (filterRequest.sortOption == "N") {
          sortBy.append("apInvoice_payTo_number")
       }
+      sortBy.append(", apInvoice_vendor_number, apInvoice_invoice, action")
 
       jdbc.query(
          """
@@ -953,7 +954,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
 
                vendorBalanceInvoiceEntity.amount = it.amount
                if (it.action == "payment") {
-                  vendorBalanceInvoiceEntity.balance = runningBalance.minus(it.amount ?: BigDecimal.ZERO)
+                  vendorBalanceInvoiceEntity.balance = runningBalance.plus(it.amount ?: BigDecimal.ZERO)
                } else {
                   vendorBalanceInvoiceEntity.balance = it.amount?.plus(runningBalance)
                }
@@ -1090,7 +1091,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
          invoiceNumber = rs.getString("apinvoice_invoice"),
          invoiceDate = rs.getLocalDate("apinvoice_invoice_date"),
          poNumber = rs.getString("apinvoice_purchase_order_number"),
-         amount = rs.getBigDecimal("apinvoice_invoice_amount"),
+         amount = if (rs.getString("action") == "payment") rs.getBigDecimal("apinvoice_invoice_amount").negate() else rs.getBigDecimal("apinvoice_invoice_amount"),
          balance = rs.getBigDecimal("apinvoice_invoice_amount")
       )
    }
