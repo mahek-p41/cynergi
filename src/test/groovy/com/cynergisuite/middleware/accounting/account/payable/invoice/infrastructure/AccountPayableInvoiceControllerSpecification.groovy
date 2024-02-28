@@ -3,6 +3,7 @@ package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastru
 import com.cynergisuite.domain.AccountPayableCheckPreviewFilterRequest
 import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDataLoader
 import com.cynergisuite.domain.AccountPayableVendorBalanceReportFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
@@ -455,6 +456,81 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       'Search by invoice'   || 20
       'Search by both'      || 10
       'Search by neither'   || 20
+   }
+
+   void "fetch open by vendor" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
+      final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
+      final shipViaList = shipViaFactoryService.stream(4, company).toList()
+      final employeeList = employeeFactoryService.stream(4, company).toList()
+
+      final vendorPmtTerm = vendorPaymentTermList[0]
+      final vendorShipVia = shipViaList[0]
+      final vendorOne = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      final vendorTwo = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      final vendorThree = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+
+      final poVendorPmtTerm = vendorPaymentTermList[1]
+      final poVendorShipVia = shipViaList[1]
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poApprovedBy = employeeList[0]
+      final poPurchaseAgent = employeeList[1]
+      final poShipVia = shipViaList[2]
+      final poPmtTerm = vendorPaymentTermList[2]
+      final poVendorSubEmp = employeeList[2]
+      final purchaseOrderOne = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      final purchaseOrderTwo = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      final purchaseOrderThree = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+
+      final employeeIn = employeeList[3]
+
+      final payToPmtTerm = vendorPaymentTermList[3]
+      final payToShipVia = shipViaList[3]
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+
+      def openAccountPayableInvoiceStatus = AccountPayableInvoiceStatusTypeDataLoader.predefined().get(1)
+      def paidAccountPayableInvoiceStatus = AccountPayableInvoiceStatusTypeDataLoader.predefined().get(2)
+
+      def apInvoicesVendorOneOpen20 = dataLoaderService.stream(20, company, vendorOne, purchaseOrderOne, null, employeeIn, null, openAccountPayableInvoiceStatus, payToIn, store)
+         .map { new AccountPayableInvoiceDTO(it)}
+         .sorted { o1, o2 -> o1.id <=> o2.id }.toList()
+
+      def apInvoicesVendorOnePaid15 = dataLoaderService.stream(15, company, vendorOne, purchaseOrderTwo, null, employeeIn, null, paidAccountPayableInvoiceStatus, payToIn, store)
+         .map { new AccountPayableInvoiceDTO(it)}
+         .sorted { o1, o2 -> o1.id <=> o2.id }.toList()
+
+      def apInvoicesVendorTwoOpen10 = dataLoaderService.stream(10, company, vendorTwo, purchaseOrderThree, null, employeeIn, null, openAccountPayableInvoiceStatus, payToIn, store)
+         .map { new AccountPayableInvoiceDTO(it)}
+         .sorted { o1, o2 -> o1.id <=> o2.id }.toList()
+
+      def filterRequest = new AccountPayableInvoiceListByVendorFilterRequest()
+      switch (criteria) {
+         case 'Search by first vendor with 20 open and 15 paid':
+            filterRequest['vendor'] = vendorOne.number
+            break
+         case 'Search by second vendor with 10 open':
+            filterRequest['vendor'] = vendorTwo.number
+            break
+         case 'Search by third vendor with 0 open':
+            filterRequest['vendor'] = vendorThree.number
+            break
+      }
+
+      when:
+      def result = get("$path/open-by-vendor${filterRequest}")
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.totalElements == elements
+
+      where:
+      criteria                                              || elements
+      'Search by first vendor with 20 open and 15 paid'     || 20
+      'Search by second vendor with 10 open'                || 10
+      'Search by third vendor with 0 open'                  || 0
    }
 
    void "fetch AP Invoice report" () {
