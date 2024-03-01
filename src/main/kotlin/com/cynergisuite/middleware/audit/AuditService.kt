@@ -389,11 +389,11 @@ class AuditService @Inject constructor(
 
       table.makeCell("Scan Area", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Model #", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
-      table.makeCell("Bar Code", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Barcode", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Alt ID", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Serial #", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Employee", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
-      table.makeCell("Scanned", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
+      table.makeCell("Entered", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Exception", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
 
       auditExceptionRepository.forEach(audit) { exception: AuditExceptionEntity, even: Boolean ->
@@ -493,6 +493,20 @@ class AuditService @Inject constructor(
          table.addCell(Phrase(it.idleDays.toString(), rowFont))
          table.addCell(Phrase(it.condition, rowFont))
          table.addCell(Phrase(it.status, rowFont))
+
+         it.exception?.notes?.forEach {
+            table.addCell(EMPTY)
+            table.defaultCell.colspan = 4
+            table.addCell(Phrase(it.note, rowFont))
+            table.defaultCell.colspan = 1
+            table.defaultCell.horizontalAlignment = Element.ALIGN_LEFT
+            table.addCell(Phrase(it.enteredBy.displayName(), rowFont))
+            table.defaultCell.colspan = 1
+            table.addCell(Phrase(dateTimeFormatter.format(it.timeUpdated), rowFont))
+            table.addCell(EMPTY)
+            table.addCell(EMPTY)
+            table.addCell(EMPTY)
+         }
       }
 
       return table

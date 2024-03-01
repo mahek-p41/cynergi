@@ -153,13 +153,13 @@ class AuditExceptionRepository @Inject constructor(
          auditExceptionNoteEmployee.store_number                    AS auditExceptionNoteEmployee_store_number,
          auditExceptionNoteEmployee.store_name                      AS auditExceptionNoteEmployee_store_name
       FROM audit_exception auditException
-           JOIN audit_scan_area AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
+           LEFT OUTER JOIN audit_scan_area AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
            JOIN audit a ON auditException.audit_id = a.id
            JOIN (${companyRepository.companyBaseQuery()}) comp ON a.company_id = comp.id AND comp.deleted = FALSE
            JOIN system_employees_fimvw scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
            LEFT JOIN employee_to_security_group empSecGrp on scannedBy.emp_number = empSecGrp.employee_id_sfk and empSecGrp.deleted = FALSE
 		     LEFT JOIN security_group secGrp on empSecGrp.security_group_id = secGrp.id
-           JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND auditScanArea.store_number_sfk = store.number
+           LEFT OUTER JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND auditScanArea.store_number_sfk = store.number
            LEFT OUTER JOIN system_employees_fimvw approvedBy ON auditException.approved_by = approvedBy.emp_number AND comp.id = approvedBy.comp_id
            LEFT OUTER JOIN audit_exception_note auditExceptionNote ON auditException.id = auditExceptionNote.audit_exception_id
            LEFT OUTER JOIN system_employees_fimvw auditExceptionNoteEmployee ON auditExceptionNote.entered_by = auditExceptionNoteEmployee.emp_number AND comp.id = auditExceptionNoteEmployee.comp_id
@@ -176,7 +176,7 @@ class AuditExceptionRepository @Inject constructor(
          val address = addressRepository.mapAddressOrNull(rs, "address_")
          val scannedBy = mapEmployeeNotNull(rs, address, "scannedBy_")
          val approvedBy = mapEmployee(rs, address, "approvedBy_")
-         val scanArea = auditScanAreaRepository.mapRow(rs, company, "auditScanArea_")
+         val scanArea = auditScanAreaRepository.mapRowOrNull(rs, company, "auditScanArea_")
          val exception = mapRow(rs, scanArea, scannedBy, approvedBy, SimpleIdentifiableEntity(rs.getUuid("auditException_audit_id")), "auditException_")
 
          do {
@@ -239,9 +239,10 @@ class AuditExceptionRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findAll(audit: AuditEntity, company: CompanyEntity, page: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
+   fun findAll(audit: AuditEntity, company: CompanyEntity, includeUnscanned: Boolean = false, page: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
       val compId = company.id
       val params = mutableMapOf("audit_id" to audit.id, "comp_id" to compId, "limit" to page.size(), "offset" to page.offset())
+      val unscannedJoin = if (includeUnscanned) "LEFT OUTER" else ""
       val sql =
          """
          WITH paged AS (
@@ -322,11 +323,11 @@ class AuditExceptionRepository @Inject constructor(
                approvedBy.store_name                       AS approvedBy_store_name,
                count(*) OVER () AS total_elements
             FROM audit_exception auditException
-               JOIN audit_scan_area AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
+               ${unscannedJoin} JOIN audit_scan_area AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
                JOIN audit a ON auditException.audit_id = a.id
                JOIN (${companyRepository.companyBaseQuery()}) comp ON a.company_id = comp.id AND comp.deleted = FALSE
                JOIN system_employees_fimvw scannedBy ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
-               JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND auditScanArea.store_number_sfk = store.number
+               LEFT OUTER JOIN system_stores_fimvw store ON comp.dataset_code = store.dataset AND auditScanArea.store_number_sfk = store.number
                LEFT OUTER JOIN system_employees_fimvw approvedBy ON auditException.approved_by = approvedBy.emp_number AND comp.id = approvedBy.comp_id
             WHERE auditException.audit_id = :audit_id AND comp.id = :comp_id
             ORDER BY auditException_${page.snakeSortBy()} ${page.sortDirection()}
@@ -372,7 +373,7 @@ class AuditExceptionRepository @Inject constructor(
             val tempParentEntity: AuditExceptionEntity = if (tempId != currentId) {
                val scannedBy = mapEmployeeNotNull(rs, address, "scannedBy_")
                val approvedBy = mapEmployee(rs, address, "approvedBy_")
-               val scanArea = auditScanAreaRepository.mapRow(rs, company, "auditScanArea_")
+               val scanArea = auditScanAreaRepository.mapRowOrNull(rs, company, "auditScanArea_")
 
                currentId = tempId
                currentParentEntity = mapRow(rs, scanArea, scannedBy, approvedBy, SimpleIdentifiableEntity(rs.getUuid("auditException_audit_id")), "auditException_")
@@ -393,7 +394,8 @@ class AuditExceptionRepository @Inject constructor(
 
    fun forEach(audit: AuditEntity, callback: (AuditExceptionEntity, even: Boolean) -> Unit) {
       val auditCompany = audit.store.myCompany()
-      var result = findAll(audit, auditCompany, StandardPageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
+      val includeUnscanned = false
+      var result = findAll(audit, auditCompany, includeUnscanned, StandardPageRequest(page = 1, size = 100, sortBy = "id", sortDirection = "ASC"))
       var index = 0
 
       while (result.elements.isNotEmpty()) {
@@ -402,7 +404,7 @@ class AuditExceptionRepository @Inject constructor(
             index++
          }
 
-         result = findAll(audit, auditCompany, result.requested.nextPage())
+         result = findAll(audit, auditCompany, includeUnscanned, result.requested.nextPage())
       }
    }
 
@@ -554,7 +556,7 @@ class AuditExceptionRepository @Inject constructor(
       )
    }
 
-   private fun mapEmployee(rs: ResultSet, address: AddressEntity?, columnPrefix: String): EmployeeEntity? {
+   fun mapEmployee(rs: ResultSet, address: AddressEntity?, columnPrefix: String): EmployeeEntity? {
       return if (rs.getString("${columnPrefix}id") != null) {
          mapEmployeeNotNull(rs, address, columnPrefix)
       } else {
@@ -589,7 +591,7 @@ class AuditExceptionRepository @Inject constructor(
       }
    }
 
-   private fun mapRowAuditExceptionNote(rs: ResultSet, enteredBy: EmployeeEntity): AuditExceptionNote? =
+   fun mapRowAuditExceptionNote(rs: ResultSet, enteredBy: EmployeeEntity): AuditExceptionNote? =
       if (rs.getString("auditExceptionNote_id") != null) {
          AuditExceptionNote(
             id = rs.getUuid("auditExceptionNote_id"),

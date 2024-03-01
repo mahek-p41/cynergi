@@ -22,6 +22,7 @@ import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
+import java.sql.SQLException
 import java.util.UUID
 import javax.transaction.Transactional
 
@@ -206,6 +207,27 @@ class AuditScanAreaRepository @Inject constructor(
          store = storeRepository.mapRowOrNull(rs, company, storePrefix) as? StoreEntity,
          company = company
       )
+
+   fun mapRowOrNull(
+      rs: ResultSet,
+      company: CompanyEntity,
+      columnPrefix: String = EMPTY,
+      storePrefix: String = "store_"
+   ): AuditScanAreaEntity? =
+   try {
+      if (rs.getString("${columnPrefix}id") != null ) {
+         AuditScanAreaEntity(
+            id = rs.getUuid("${columnPrefix}id"),
+            name = rs.getString("${columnPrefix}name"),
+            store = storeRepository.mapRowOrNull(rs, company, storePrefix) as? StoreEntity,
+            company = company
+         )
+      } else {
+         null
+      }
+   } catch (e: SQLException) {
+      null
+   }
 
    private fun mapRow(
       rs: ResultSet,

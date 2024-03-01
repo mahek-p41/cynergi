@@ -12,15 +12,23 @@ import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.update
+import com.cynergisuite.middleware.address.AddressEntity
+import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.audit.AuditEntity
+import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
+import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
+import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.audit.status.InProgress
+import com.cynergisuite.middleware.authentication.user.infrastructure.SecurityGroupRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.inventory.InventoryEntity
 import com.cynergisuite.middleware.inventory.InventoryInquiryDTO
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
 import com.cynergisuite.middleware.location.infrastructure.LocationRepository
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
@@ -29,13 +37,17 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
+import java.util.UUID
 import javax.transaction.Transactional
 
 @Singleton
 class InventoryRepository(
+   private val addressRepository: AddressRepository,
+   private val auditExceptionRepository: AuditExceptionRepository,
    private val companyRepository: CompanyRepository,
    private val jdbc: Jdbi,
    private val locationRepository: LocationRepository,
+   private val securityGroupRepository: SecurityGroupRepository,
    private val storeRepository: StoreRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(InventoryRepository::class.java)
@@ -172,7 +184,8 @@ class InventoryRepository(
          iltd.id                  AS location_type_id,
          iltd.value               AS location_type_value,
          iltd.description         AS location_type_description,
-         iltd.localization_code   AS location_type_localization_code
+         iltd.localization_code   AS location_type_localization_code,
+         count(*) OVER() as total_elements
       FROM company comp
            JOIN audit_inventory i ON comp.dataset_code = i.dataset
            LEFT JOIN address AS compAddress ON comp.address_id = compAddress.id AND compAddress.deleted = FALSE
@@ -353,8 +366,51 @@ class InventoryRepository(
       )
       SELECT
          p.*,
-         count(*) OVER() as total_elements
+         auditException.id                                          AS auditException_id,
+         auditException.exception_code                              AS auditException_exception_code,
+         scannedBy.emp_id                                           AS auditExceptionEmployee_id,
+         scannedBy.emp_type                                         AS auditExceptionEmployee_type,
+         scannedBy.emp_number                                       AS auditExceptionEmployee_number,
+         scannedBy.emp_last_name                                    AS auditExceptionEmployee_last_name,
+         scannedBy.emp_first_name_mi                                AS auditExceptionEmployee_first_name_mi,
+         scannedBy.emp_pass_code                                    AS auditExceptionEmployee_pass_code,
+         scannedBy.emp_active                                       AS auditExceptionEmployee_active,
+         scannedBy.emp_cynergi_system_admin                         AS auditExceptionEmployee_cynergi_system_admin,
+         scannedBy.emp_alternative_store_indicator                  AS auditExceptionEmployee_alternative_store_indicator,
+         scannedBy.emp_alternative_area                             AS auditExceptionEmployee_alternative_area,
+         scannedBy.dept_id                                          AS auditExceptionEmployee_dept_id,
+         scannedBy.dept_code                                        AS auditExceptionEmployee_dept_code,
+         scannedBy.dept_description                                 AS auditExceptionEmployee_dept_description,
+         scannedBy.store_id                                         AS auditExceptionEmployee_store_id,
+         scannedBy.store_number                                     AS auditExceptionEmployee_store_number,
+         scannedBy.store_name                                       AS auditExceptionEmployee_store_name,
+         auditExceptionNote.id                                      AS auditExceptionNote_id,
+         auditExceptionNote.time_created                            AS auditExceptionNote_time_created,
+         auditExceptionNote.time_updated                            AS auditExceptionNote_time_updated,
+         auditExceptionNote.note                                    AS auditExceptionNote_note,
+         auditExceptionNoteEmployee.emp_id                          AS auditExceptionNoteEmployee_id,
+         auditExceptionNoteEmployee.emp_type                        AS auditExceptionNoteEmployee_type,
+         auditExceptionNoteEmployee.emp_number                      AS auditExceptionNoteEmployee_number,
+         auditExceptionNoteEmployee.emp_last_name                   AS auditExceptionNoteEmployee_last_name,
+         auditExceptionNoteEmployee.emp_first_name_mi               AS auditExceptionNoteEmployee_first_name_mi,
+         auditExceptionNoteEmployee.emp_pass_code                   AS auditExceptionNoteEmployee_pass_code,
+         auditExceptionNoteEmployee.emp_active                      AS auditExceptionNoteEmployee_active,
+         auditExceptionNoteEmployee.emp_cynergi_system_admin        AS auditExceptionNoteEmployee_cynergi_system_admin,
+         auditExceptionNoteEmployee.emp_alternative_store_indicator AS auditExceptionNoteEmployee_alternative_store_indicator,
+         auditExceptionNoteEmployee.emp_alternative_area            AS auditExceptionNoteEmployee_alternative_area,
+         auditExceptionNoteEmployee.dept_id                         AS auditExceptionNoteEmployee_dept_id,
+         auditExceptionNoteEmployee.dept_code                       AS auditExceptionNoteEmployee_dept_code,
+         auditExceptionNoteEmployee.dept_description                AS auditExceptionNoteEmployee_dept_description,
+         auditExceptionNoteEmployee.store_id                        AS auditExceptionNoteEmployee_store_id,
+         auditExceptionNoteEmployee.store_number                    AS auditExceptionNoteEmployee_store_number,
+         auditExceptionNoteEmployee.store_name                      AS auditExceptionNoteEmployee_store_name
       FROM paged AS p
+      LEFT OUTER JOIN audit_exception auditException on (auditException.audit_id = p.audit_id and auditException.lookup_key = p.lookup_key)
+      LEFT OUTER JOIN system_employees_fimvw scannedBy ON auditException.scanned_by = scannedBy.emp_number AND p.comp_id = scannedBy.comp_id
+      LEFT OUTER JOIN audit_exception_note auditExceptionNote on auditExceptionNote.audit_exception_id = auditException.id
+      LEFT OUTER JOIN system_employees_fimvw auditExceptionNoteEmployee ON auditExceptionNote.entered_by = auditExceptionNoteEmployee.emp_number AND p.comp_id = auditExceptionNoteEmployee.comp_id
+      LEFT OUTER JOIN audit_scan_area AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
+      WHERE auditException.scan_area_id is null
       ORDER BY CASE WHEN status = 'D' THEN 1 ELSE 0 END,${pageRequest.sortBy()} ${pageRequest.sortDirection()}
       LIMIT :limit
          OFFSET :offset
@@ -362,19 +418,33 @@ class InventoryRepository(
 
       logger.debug("find unscanned idle inventory {}/{}", sql, params)
 
-      jdbc.query(sql, params) { rs, _ ->
-         if (totalElements == null) {
-            totalElements = rs.getLong("total_elements")
-         }
+      return jdbc.queryPaged(sql, params, pageRequest) { rs, elements ->
+         var currentId: Long? = null
+         var currentParentEntity: InventoryEntity? = null
+         do {
+            val tempId = rs.getLong("id")
+            val address = addressRepository.mapAddressOrNull(rs, "comp_address_")
+            val tempParentEntity: InventoryEntity = if (tempId != currentId) {
+               currentId = tempId
+               currentParentEntity = mapRowWithException(rs, address)
+               elements.add(currentParentEntity)
+               currentParentEntity
+            } else {
+               currentParentEntity!!
+            }
 
-         elements.add(mapRow(rs))
+            if (tempParentEntity.exception != null) {
+               val noteBy = auditExceptionRepository.mapEmployee(rs, address, "auditExceptionNoteEmployee_")
+               if (noteBy != null) {
+                  auditExceptionRepository.mapRowAuditExceptionNote(rs, noteBy)?.also { tempParentEntity.exception.notes?.add(it) }
+               }
+            }
+
+            if (totalElements == null) {
+               totalElements = rs.getLong("total_elements")
+            }
+         } while (rs.next())
       }
-
-      return RepositoryPage(
-         requested = pageRequest,
-         elements = elements,
-         totalElements = totalElements ?: 0
-      )
    }
 
    @ReadOnly
@@ -526,6 +596,94 @@ class InventoryRepository(
       )
    }
 
+   fun mapRowWithException(rs: ResultSet, address: AddressEntity?): InventoryEntity {
+      val company = companyRepository.mapRow(rs, columnPrefix = "comp_", addressPrefix = "comp_address_")
+      val exceptionBy = auditExceptionRepository.mapEmployee(rs, address, "auditExceptionEmployee_")
+      var auditException: AuditExceptionEntity? = null
+      if (exceptionBy != null) {
+         auditException = mapRowAuditException(rs, exceptionBy)
+      }
+
+      return InventoryEntity(
+         id = rs.getUuid("id"),
+         serialNumber = rs.getString("serial_number"),
+         lookupKey = rs.getString("lookup_key"),
+         lookupKeyType = rs.getString("lookup_key_type"),
+         barcode = rs.getString("barcode"),
+         altId = rs.getString("alternate_id"),
+         brand = rs.getString("brand"),
+         modelNumber = rs.getString("model_number"),
+         productCode = rs.getString("product_code"),
+         description = rs.getString("description"),
+         receivedDate = rs.getLocalDateOrNull("received_date"),
+         originalCost = rs.getBigDecimal("original_cost"),
+         actualCost = rs.getBigDecimal("actual_cost"),
+         modelCategory = rs.getString("model_category"),
+         timesRented = rs.getInt("times_rented"),
+         totalRevenue = rs.getBigDecimal("total_revenue"),
+         remainingValue = rs.getBigDecimal("remaining_value"),
+         sellPrice = rs.getBigDecimal("sell_price"),
+         assignedValue = rs.getBigDecimal("assigned_value"),
+         idleDays = rs.getInt("idle_days"),
+         condition = rs.getString("condition"),
+         returnedDate = rs.getLocalDateOrNull("returned_date"),
+         location = locationRepository.maybeMapRow(rs, "current_store_"),
+         status = rs.getString("status"),
+         primaryLocation = storeRepository.mapRow(rs, company, "primary_store_"),
+         locationType = InventoryLocationType(
+            id = rs.getInt("location_type_id"),
+            value = rs.getString("location_type_value"),
+            description = rs.getString("location_type_description"),
+            localizationCode = rs.getString("location_type_localization_code")
+         ),
+         exception = auditException
+      )
+   }
+
+   fun mapRowWithException(rs: ResultSet, address: AddressEntity?): InventoryEntity {
+      val company = companyRepository.mapRow(rs, columnPrefix = "comp_", addressPrefix = "comp_address_")
+      val exceptionBy = auditExceptionRepository.mapEmployee(rs, address, "auditExceptionEmployee_")
+      var auditException: AuditExceptionEntity? = null
+      if (exceptionBy != null) {
+         auditException = mapRowAuditException(rs, exceptionBy)
+      }
+
+      return InventoryEntity(
+         id = rs.getLong("id"),
+         serialNumber = rs.getString("serial_number"),
+         lookupKey = rs.getString("lookup_key"),
+         lookupKeyType = rs.getString("lookup_key_type"),
+         barcode = rs.getString("barcode"),
+         altId = rs.getString("alt_id"),
+         brand = rs.getString("brand"),
+         modelNumber = rs.getString("model_number"),
+         productCode = rs.getString("product_code"),
+         description = rs.getString("description"),
+         receivedDate = rs.getLocalDateOrNull("received_date"),
+         originalCost = rs.getBigDecimal("original_cost"),
+         actualCost = rs.getBigDecimal("actual_cost"),
+         modelCategory = rs.getString("model_category"),
+         timesRented = rs.getInt("times_rented"),
+         totalRevenue = rs.getBigDecimal("total_revenue"),
+         remainingValue = rs.getBigDecimal("remaining_value"),
+         sellPrice = rs.getBigDecimal("sell_price"),
+         assignedValue = rs.getBigDecimal("assigned_value"),
+         idleDays = rs.getInt("idle_days"),
+         condition = rs.getString("condition"),
+         returnedDate = rs.getLocalDateOrNull("returned_date"),
+         location = locationRepository.maybeMapRow(rs, "current_store_"),
+         status = rs.getString("status"),
+         primaryLocation = storeRepository.mapRow(rs, company, "primary_store_"),
+         locationType = InventoryLocationType(
+            id = rs.getInt("location_type_id"),
+            value = rs.getString("location_type_value"),
+            description = rs.getString("location_type_description"),
+            localizationCode = rs.getString("location_type_localization_code")
+         ),
+         exception = auditException
+      )
+   }
+
    private fun buildStatusAndLocationTypeFilterString(statuses: List<String>, params: MutableMap<String, Any?>): String {
       //location_type filter is applied to status (N,R) only
       val str = StringBuilder(" ( ")
@@ -571,4 +729,17 @@ class InventoryRepository(
          currentLocExpensed = currentLocExpensed
       )
    }
+
+   private fun mapRowAuditException(rs: ResultSet, scannedBy: EmployeeEntity): AuditExceptionEntity? =
+      if (rs.getString("auditException_id") != null) {
+         AuditExceptionEntity(
+            audit = rs.getUuid("audit_id"),
+            lookupKey = rs.getString("lookup_key"),
+            scanArea = null,
+            scannedBy = scannedBy,
+            exceptionCode = rs.getString("auditException_exception_code")
+         )
+      } else {
+         null
+      }
 }

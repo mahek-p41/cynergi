@@ -18,10 +18,10 @@ class AuditExceptionService @Inject constructor(
    fun fetchById(id: UUID, company: CompanyEntity): AuditExceptionEntity? =
       auditExceptionRepository.findOne(id = id, company = company)
 
-   fun fetchAll(auditId: UUID, company: CompanyEntity, pageRequest: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
+   fun fetchAll(auditId: UUID, company: CompanyEntity, includeUnscanned: Boolean = false , pageRequest: PageRequest): RepositoryPage<AuditExceptionEntity, PageRequest> {
       val audit = auditRepository.findOne(auditId, company) ?: throw NotFoundException(auditId)
 
-      return auditExceptionRepository.findAll(audit, company, pageRequest)
+      return auditExceptionRepository.findAll(audit, company, includeUnscanned, pageRequest)
    }
 
    fun exists(id: UUID): Boolean =

@@ -74,7 +74,7 @@ class AuditExceptionController @Inject constructor(
    }
 
    @Throws(PageOutOfBoundsException::class)
-   @Get(uri = "/{auditId}/exception{?pageRequest*}", produces = [APPLICATION_JSON])
+   @Get(uri = "/{auditId}/exception{?pageRequest*,includeUnscanned}", produces = [APPLICATION_JSON])
    @Operation(tags = ["AuditExceptionEndpoints"], summary = "Fetch a listing of AuditExceptions", description = "Fetch a paginated listing of AuditExceptions based on a parent Audit", operationId = "auditException-fetchAll")
    @ApiResponses(
       value = [
@@ -88,12 +88,13 @@ class AuditExceptionController @Inject constructor(
       @Parameter(name = "auditId", `in` = PATH, description = "The audit for which the listing of exceptions is to be loaded") @QueryValue("auditId") auditId: UUID,
       @Parameter(name = "pageRequest", `in` = ParameterIn.QUERY, required = false) @QueryValue("pageRequest")
       @Valid pageRequest: StandardPageRequest,
+      @Parameter(name = "includeUnscanned", `in` = ParameterIn.QUERY, required = false) @QueryValue("includeUnscanned") includeUnscanned: Boolean? = false,
       authentication: Authentication
    ): Page<AuditExceptionDTO> {
-      logger.info("Fetching all details associated with audit {} {}", auditId, pageRequest)
+      logger.info("Fetching all exceptions associated with audit {} {}", auditId, includeUnscanned, pageRequest)
 
       val user = userService.fetchUser(authentication)
-      val page = auditExceptionService.fetchAll(auditId, user.myCompany(), pageRequest)
+      val page = auditExceptionService.fetchAll(auditId, user.myCompany(), includeUnscanned ?: false, pageRequest)
 
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = pageRequest)
