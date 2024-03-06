@@ -37,7 +37,7 @@ data class AccountPayableExpenseReportTemplate(
 
    @field:Schema(description = "Internal listing of Invoices. Used as data source for getters.")
    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-   var invoices: List<AccountPayableExpenseReportDTO>? = null
+   var invoices: List<AccountPayableExpenseReportDTO> = mutableListOf()
 
 ) {
    constructor(
@@ -60,9 +60,15 @@ data class AccountPayableExpenseReportTemplate(
       groupingType = groupingType,
    )
 
+   @get:Schema(description = "Total debit amount of all Invoices")
+   val debitTotal get() = invoices.filter { it.glAmount != null && it.glAmount!! > BigDecimal.ZERO }.mapNotNull { it.glAmount }.sumOf { it }
+
+   @get:Schema(description = "Total credit amount of all Invoices")
+   val creditTotal get() = invoices.filter { it.glAmount != null && it.glAmount!! < BigDecimal.ZERO }.mapNotNull { it.glAmount }.sumOf { it }
+
    @get:Schema(description = "Listing of Invoices grouped by Accounts")
    val groupedByAccount get() = groupingType.takeIf { it == GroupingType.ACCOUNT }?.let {
-      invoices!!
+      invoices
          .groupBy { it.acctNumber }
          .map { (accountNumber, list) ->
             val sortedList = list.sortedWith(compareBy<AccountPayableExpenseReportDTO?> {
@@ -77,7 +83,7 @@ data class AccountPayableExpenseReportTemplate(
 
    @get:Schema(description = "Listing of Invoices grouped by Vendors")
    val groupedByVendor get() = groupingType.takeIf { it == GroupingType.VENDOR }?.let {
-      invoices!!
+      invoices
          .groupBy { it.vendorNumber }
          .map { (vendorNumber, list) ->
             val sortedList = list.sortedWith(compareBy<AccountPayableExpenseReportDTO?> {
@@ -86,7 +92,7 @@ data class AccountPayableExpenseReportTemplate(
                it!!.distCenter
             })
 
-            AccountPayableExpenseReportVendorGrouped(vendorNumber!!, sortedList)
+            AccountPayableExpenseReportVendorGrouped(vendorNumber!!, list.first().vendorName!!, sortedList)
          }.sortedBy { it.vendorNumber }
    }
 }

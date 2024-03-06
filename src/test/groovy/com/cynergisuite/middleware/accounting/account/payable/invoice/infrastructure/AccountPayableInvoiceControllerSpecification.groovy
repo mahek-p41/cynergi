@@ -824,10 +824,11 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       with(result.groupedByAccount[0]) {
          accountNumber == account.number
          accountName == account.name
+         glAmountTotal == invDistAmountForFirstInvoice + invDistAmountForSecondInvoice
          groupedByDistributionCenters.eachWithIndex { profitCenter, index ->
             with(profitCenter) {
                distCenter == store.number
-               accountTotal == invDistAmountForFirstInvoice + invDistAmountForSecondInvoice
+               glAmountTotal == invDistAmountForFirstInvoice + invDistAmountForSecondInvoice
                with(invoices[0]) {
                   id == apInvoices[index].id
                   vendorNumber == vendorIn.number
