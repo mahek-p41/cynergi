@@ -171,8 +171,51 @@ if (!helpRequested) {
                                  break
                            }
 
+                           def filePath = "/opt/rdist/scripts/weborder/esig.setup"
+                           def targetCompany = companyUUID.toString()
+                           def csClientId, username, token, appUid
+
+                           logger.info "Searching for callback group using: Company id ${targetCompany}"
+
+                           try {
+                              def properties = readPropertiesFile(filePath)
+                              def groupNumber = findGroupNumber(properties, targetCompany)
+
+                              if (groupNumber != null) {
+                                 def variables = extractVariables(properties, groupNumber)
+
+                                 // Access the extracted variables
+                                 csClientId = variables.csClientId
+                                 username = variables.username
+                                 token = variables.token
+                                 appUid = variables.appUid
+
+                                 logger.info "Found callback variables: Client id ${csClientId}   Username ${username}   AppId ${appUid}"
+                              } else {
+                                 logger.error "Callback variables group not found for company UUID: ${companyUUID}"
+                              }
+
+                           } catch (FileNotFoundException e) {
+                              println("Error: ${e.message}")
+                           }
+
+                           final formatter3 = DateTimeFormatter.ofPattern("yyyyMMdd", Locale.ENGLISH);
+                           final certifiedDate = retentionDate.format(formatter3)
+
+                           def callbackHost
+                           if (host == 'https://app.signhereplease.com') {
+                              callbackHost = 'https://api.htsecurepay.com'
+                           } else {
+                              callbackHost = 'https://qa.htsecurepay.com'
+                           }
+
+                           def notificationHook = "${callbackHost}/cynergi/api/v1/signatures/certify?&cs_client_id=${csClientId.toString()}&username=${username.toString()}&token=${token.toString()}&app_uid=${appUid.toString()}&cs_dataset=${dataset}&account=${primaryCustomerNumber.toString()}&agreement=${metaAgreementNumber.toString()}&date_certified=${certifiedDate}"
+
+                           logger.info("Notification Hook: $notificationHook")
+
                            uploadDocumentRequest.setHeader("Authorization", "Bearer ${accessToken}")
                            uploadDocumentRequest.setHeader("X-Sig-Meta-Type", "agreement")
+                           uploadDocumentRequest.setHeader("X-Notification-Hook", notificationHook)
                            uploadDocumentRequest.setHeader("X-Sig-Meta-Store", storeNumber.toString())
                            uploadDocumentRequest.setHeader("X-Sig-Meta-Dataset", dataset)
                            uploadDocumentRequest.setHeader("X-Sig-Meta-Name", name)
@@ -185,7 +228,6 @@ if (!helpRequested) {
                            //will get back json:
                            //requestedDocumentId UUID The id for the root of the whole transaction
                            //nextSignatureUri
-
 
                            if (uploadResponseCode >= 200 && uploadResponseCode < 400) {
                               final awsResponse = UUID.fromString(jsonSlurper.parse(uploadResponse.entity.content).requestedDocumentId)
@@ -204,8 +246,8 @@ if (!helpRequested) {
                                     final agreementToUpsert = new AgreementSigningDTO(null, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, rtoAgreementNumber, agreementType, 1, awsResponse.toString())
                                     final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
                                     final createRtoAgreement = new HttpPost("http://localhost:${cynmidPort}/agreement/signing/dataset/${dataset}")
-                                       createRtoAgreement.setHeader("Content-Type", "application/json")
-                                       createRtoAgreement.setEntity(new StringEntity(agreementToUpsertJson))
+                                    createRtoAgreement.setHeader("Content-Type", "application/json")
+                                    createRtoAgreement.setEntity(new StringEntity(agreementToUpsertJson))
 
                                     final createResponse = client.execute(createRtoAgreement)
                                     final responseCode = createResponse.getCode()
@@ -226,8 +268,8 @@ if (!helpRequested) {
                                     final agreementToUpsert = new AgreementSigningDTO(existingRtoAgreementUUID.toString(), storeDTO, primaryCustomerNumber, secondaryCustomerNumber, rtoAgreementNumber, agreementType, 1, awsResponse.toString())
                                     final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
                                     final updateRtoAgreement = new HttpPut("http://localhost:${cynmidPort}/agreement/signing/${existingRtoAgreementUUID}/dataset/${dataset}")
-                                       updateRtoAgreement.setHeader("Content-Type", "application/json")
-                                       updateRtoAgreement.setEntity(new StringEntity(agreementToUpsertJson))
+                                    updateRtoAgreement.setHeader("Content-Type", "application/json")
+                                    updateRtoAgreement.setEntity(new StringEntity(agreementToUpsertJson))
 
                                     final updateResponse = client.execute(updateRtoAgreement)
                                     final responseCode = updateResponse.getCode()
@@ -258,8 +300,8 @@ if (!helpRequested) {
                                     final agreementToUpsert = new AgreementSigningDTO(null, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, clubAgreementNumber, agreementType, 1, awsResponse.toString())
                                     final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
                                     final createClubAgreement = new HttpPost("http://localhost:${cynmidPort}/agreement/signing/dataset/${dataset}")
-                                       createClubAgreement.setHeader("Content-Type", "application/json")
-                                       createClubAgreement.setEntity(new StringEntity(agreementToUpsertJson))
+                                    createClubAgreement.setHeader("Content-Type", "application/json")
+                                    createClubAgreement.setEntity(new StringEntity(agreementToUpsertJson))
 
                                     final createResponse = client.execute(createClubAgreement)
                                     final responseCode = createResponse.getCode()
@@ -280,8 +322,8 @@ if (!helpRequested) {
                                     final agreementToUpsert = new AgreementSigningDTO(existingClubAgreementUUID.toString(), storeDTO, primaryCustomerNumber, secondaryCustomerNumber, clubAgreementNumber, agreementType, 1, awsResponse.toString())
                                     final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
                                     final updateClubAgreement = new HttpPut("http://localhost:${cynmidPort}/agreement/signing/${existingClubAgreementUUID}/dataset/${dataset}")
-                                       updateClubAgreement.setHeader("Content-Type", "application/json")
-                                       updateClubAgreement.setEntity(new StringEntity(agreementToUpsertJson))
+                                    updateClubAgreement.setHeader("Content-Type", "application/json")
+                                    updateClubAgreement.setEntity(new StringEntity(agreementToUpsertJson))
 
                                     final updateResponse = client.execute(updateClubAgreement)
                                     final responseCode = updateResponse.getCode()
@@ -311,8 +353,8 @@ if (!helpRequested) {
                                     final agreementToUpsert = new AgreementSigningDTO(null, storeDTO, primaryCustomerNumber, secondaryCustomerNumber, otherAgreementNumber, agreementType, 1, awsResponse.toString())
                                     final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
                                     final createOtherAgreement = new HttpPost("http://localhost:${cynmidPort}/agreement/signing/dataset/${dataset}")
-                                       createOtherAgreement.setHeader("Content-Type", "application/json")
-                                       createOtherAgreement.setEntity(new StringEntity(agreementToUpsertJson))
+                                    createOtherAgreement.setHeader("Content-Type", "application/json")
+                                    createOtherAgreement.setEntity(new StringEntity(agreementToUpsertJson))
 
                                     final createResponse = client.execute(createOtherAgreement)
                                     final responseCode = createResponse.getCode()
@@ -331,8 +373,8 @@ if (!helpRequested) {
                                     final agreementToUpsert = new AgreementSigningDTO(existingOtherAgreementUUID.toString(), storeDTO, primaryCustomerNumber, secondaryCustomerNumber, otherAgreementNumber, agreementType, 1, awsResponse.toString())
                                     final agreementToUpsertJson = new JsonBuilder(agreementToUpsert).toPrettyString()
                                     final updateOtherAgreement = new HttpPut("http://localhost:${cynmidPort}/agreement/signing/${existingOtherAgreementUUID}/dataset/${dataset}")
-                                       updateOtherAgreement.setHeader("Content-Type", "application/json")
-                                       updateOtherAgreement.setEntity(new StringEntity(agreementToUpsertJson))
+                                    updateOtherAgreement.setHeader("Content-Type", "application/json")
+                                    updateOtherAgreement.setEntity(new StringEntity(agreementToUpsertJson))
 
                                     final updateResponse = client.execute(updateOtherAgreement)
                                     final responseCode = updateResponse.getCode()
@@ -378,4 +420,55 @@ if (!helpRequested) {
       logger.info "${argsFile} is not a csv file"
       System.exit(-13)
    }
+
+}
+
+def readPropertiesFile(filePath) {
+   def properties = new Properties()
+   def file = new File(filePath)
+
+   if (file.exists()) {
+      def inputStream = new FileInputStream(file)
+      properties.load(inputStream)
+   } else {
+      throw new FileNotFoundException("File not found: $filePath")
+   }
+
+   return properties
+}
+
+def findGroupNumber(properties, targetValue) {
+   // Iterate through all keys in properties
+   for (def key : properties.keySet()) {
+      // Check if the key represents a company UUID
+      if (properties[key] == targetValue) {
+         // Extract the group number from the key
+         def matcher = key =~ /group(\d+)\.company/
+         if (matcher.matches()) {
+            return matcher[0][1]
+         }
+      }
+   }
+
+   return null  // Return null if the group is not found
+}
+
+def extractVariables(properties, groupNumber) {
+   def groupProperties = new Properties()
+
+   // Iterate through all keys in properties
+   properties.each { key, value ->
+      // Check if the key starts with the groupNumber followed by a dot
+      if (key.startsWith("group${groupNumber}.")) {
+         // Extract the substring after the dot
+         def variableKey = key - "group${groupNumber}."
+         // Store the variable in the groupProperties map
+         groupProperties[variableKey] = value
+      }
+   }
+
+   // Debugging output
+   println "Debug: Extracted Variables - ${groupProperties}"
+
+   return groupProperties
 }
