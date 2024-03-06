@@ -2459,8 +2459,10 @@ BEGIN
             JOIN
             ' || r.schema_name || '.level2_models as models on inventories.model_id = models.id
          WHERE
-            agreements.agreement_type = ''O'' and (customers.cust_bankruptcy  Is Null or customers.cust_bankruptcy = ''N'')
-            and agreement_closed_date >= (current_date - 274) and agreement_closed_reason In(''02'',''05'',''03'',''04'',''10'') --last 9 months payouts or returns
+            agreements.agreement_type = ''O''
+            and agreement_closed_date >= (current_date - 274)
+            and (customers.cust_bankruptcy  Is Null or customers.cust_bankruptcy = ''N'')
+            and agreement_closed_reason In(''02'',''05'',''03'',''04'',''10'') --last 9 months payouts or returns
             and customers.cust_acct_nbr not in (
               (select cust_acct_nbr from ' || r.schema_name || '.level2_customers as c2 join ' || r.schema_name || '.level2_agreements as a2 on c2.id = a2.customer_id
 			                  JOIN ' || r.schema_name || '.level2_agreement_versions as av2 on a2.id = av2.agreement_id
@@ -2500,7 +2502,7 @@ BEGIN
    unionAll := '';
 
    IF EXISTS(SELECT 1 FROM information_schema.views WHERE table_name = 'csv_payouts_vw') THEN
-      DROP VIEW IF EXISTS csv_lost_customer_vw CASCADE;
+      DROP VIEW IF EXISTS csv_payouts_vw CASCADE;
    END IF;
 
    FOR r IN SELECT schema_name FROM information_schema.schemata WHERE schema_name = ANY(argsDatasets)
