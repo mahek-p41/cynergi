@@ -8,6 +8,7 @@ import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.isNumber
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableRecurringInvoiceStatusType
@@ -336,8 +337,10 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
       company: CompanyEntity,
       filterRequest: AccountPayableInvoiceListByVendorFilterRequest
    ): RepositoryPage<AccountPayableRecurringInvoiceEntity, PageRequest> {
+      val searchQuery = filterRequest.invoice?.trim()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder(" WHERE apRecurringInvoice.company_id = :comp_id")
+      val searchQueryBeginsWith = "%$searchQuery%"
 
       if (filterRequest.vendor != null) {
          params["vendor"] = filterRequest.vendor
@@ -346,8 +349,9 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
 
       if (filterRequest.invoice != null) {
          params["invoice"] = filterRequest.invoice
-         whereClause.append(" AND apRecurringInvoice.invoice = :invoice ")
+         whereClause.append(" AND apRecurringInvoice.invoice ILIKE \'$searchQueryBeginsWith\'")
       }
+
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
