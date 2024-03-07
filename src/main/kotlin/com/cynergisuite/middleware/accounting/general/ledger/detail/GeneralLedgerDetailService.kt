@@ -252,18 +252,19 @@ class GeneralLedgerDetailService @Inject constructor(
 
    fun postEntry(dto: GeneralLedgerAccountPostingDTO, company: CompanyEntity, locale: Locale): GeneralLedgerAccountPostingResponseDTO {
       val generalLedgerDetail = dto.glDetail!!
-      val cal = financialCalendarService.fetchByDate(company, generalLedgerDetail.date!!)!!
-      val overallPeriod = cal.overallPeriod!!.value
+      val cal = financialCalendarService.fetchByDate(company, generalLedgerDetail.date!!)
+      val overallPeriod = cal?.overallPeriod?.value
       val summaryUpdated : UUID?
       val bankRecon : UUID?
-      // If summary record not found, create them, then set the appropriate one
-      var summary = generalLedgerSummaryService.fetchOneByBusinessKey(company, generalLedgerDetail.account?.id!!, generalLedgerDetail.profitCenter?.storeNumber!!, overallPeriod)
-         ?:
-         createSummaries(generalLedgerDetail, company, overallPeriod)
-      if (cal.generalLedgerOpen == false) {
-         val errors: Set<ValidationError> = mutableSetOf(ValidationError("GL not open for this period.", GLNotOpen(cal.periodFrom!!)))
-         throw ValidationException(errors)
+
+      if (cal == null || cal.generalLedgerOpen == false) {
+            val errors: Set<ValidationError> = mutableSetOf(ValidationError("GL not open for this period.", GLNotOpen(generalLedgerDetail.date!!)))
+            throw ValidationException(errors)
       } else {
+         // If summary record not found, create them, then set the appropriate one
+         val summary = generalLedgerSummaryService.fetchOneByBusinessKey(company, generalLedgerDetail.account?.id!!, generalLedgerDetail.profitCenter?.storeNumber!!, overallPeriod!!)
+            ?:
+            createSummaries(generalLedgerDetail, company, overallPeriod!!)
          val glSourceCode = generalLedgerSourceCodeService.fetchById(generalLedgerDetail.source?.id!!, company)
          summaryUpdated = if (glSourceCode?.value == "BAL") {
             summary!!.beginningBalance?.plus(generalLedgerDetail.amount!!)

@@ -30,6 +30,10 @@ data class VendorPaymentTermDTO(
    @field:Schema(name = "description", minimum = "1", maximum = "30", description = "Describes the vendor payment term")
    var description: String? = null,
 
+   @field:NotNull
+   @field:Schema(name = "numberOfPayments", required = true, description = "Number of payments")
+   var numberOfPayments: Int? = null,
+
    @field:Min(0)
    @field:Schema(name = "discountMonth", minimum = "0", required = false, description = "Vendor Payment Term Discount Month")
    var discountMonth: Int? = null,
@@ -55,6 +59,7 @@ data class VendorPaymentTermDTO(
       this(
          id = entity.id,
          description = entity.description,
+         numberOfPayments = entity.numberOfPayments,
          discountMonth = entity.discountMonth,
          discountDays = entity.discountDays,
          discountPercent = entity.discountPercent,

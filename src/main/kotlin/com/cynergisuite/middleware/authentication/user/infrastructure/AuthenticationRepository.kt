@@ -52,6 +52,7 @@ abstract class AuthenticationRepository @Inject constructor(
          comp.client_id                 AS company_client_id,
          comp.dataset_code              AS company_dataset_code,
          comp.federal_id_number         AS company_federal_id_number,
+         comp.include_demo_inventory    AS company_include_demo_inventory,
          compAddr.id                    AS company_address_id,
          compAddr.number                AS company_address_number,
          compAddr.name                  AS company_address_name,
@@ -76,6 +77,7 @@ abstract class AuthenticationRepository @Inject constructor(
          comp.client_id                 AS department_company_client_id,
          comp.dataset_code              AS department_company_dataset_code,
          comp.federal_id_number         AS department_company_federal_id_number,
+         comp.include_demo_inventory    AS department_company_include_demo_inventory,
          compAddr.id                    AS department_company_address_id,
          compAddr.number                AS department_company_address_number,
          compAddr.name                  AS department_company_address_name,
@@ -100,6 +102,7 @@ abstract class AuthenticationRepository @Inject constructor(
          comp.client_id                 AS assigned_location_company_client_id,
          comp.dataset_code              AS assigned_location_company_dataset_code,
          comp.federal_id_number         AS assigned_location_company_federal_id_number,
+         comp.include_demo_inventory    AS assigned_location_company_include_demo_inventory,
          compAddr.id                    AS assigned_location_company_address_id,
          compAddr.number                AS assigned_location_company_address_number,
          compAddr.name                  AS assigned_location_company_address_name,
@@ -124,6 +127,7 @@ abstract class AuthenticationRepository @Inject constructor(
          comp.client_id                 AS chosen_location_company_client_id,
          comp.dataset_code              AS chosen_location_company_dataset_code,
          comp.federal_id_number         AS chosen_location_company_federal_id_number,
+         comp.include_demo_inventory    AS chosen_location_company_include_demo_inventory,
          compAddr.id                    AS chosen_location_company_address_id,
          compAddr.number                AS chosen_location_company_address_number,
          compAddr.name                  AS chosen_location_company_address_name,
@@ -156,6 +160,7 @@ abstract class AuthenticationRepository @Inject constructor(
          comp.client_id                 AS security_groups_company_client_id,
          comp.dataset_code              AS security_groups_company_dataset_code,
          comp.federal_id_number         AS security_groups_company_federal_id_number,
+         comp.include_demo_inventory    AS security_groups_company_include_demo_inventory,
          compAddr.id                    AS security_groups_company_address_id,
          compAddr.number                AS security_groups_company_address_number,
          compAddr.name                  AS security_groups_company_address_name,
@@ -175,7 +180,7 @@ abstract class AuthenticationRepository @Inject constructor(
            LEFT JOIN address compAddr on comp.address_id = compAddr.id AND compAddr.deleted = FALSE
            LEFT OUTER JOIN fastinfo_prod_import.department_vw dept ON comp.dataset_code = dept.dataset AND au.department = dept.code
            LEFT OUTER JOIN system_stores_fimvw assignedLoc ON comp.dataset_code = assignedLoc.dataset AND au.store_number = assignedLoc.number
-           LEFT OUTER JOIN system_stores_fimvw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number  = :storeNumber
+           LEFT OUTER JOIN system_stores_fimvw chosenLoc ON comp.dataset_code = chosenLoc.dataset AND chosenLoc.number = :storeNumber
            JOIN system_stores_fimvw fallbackLoc ON comp.dataset_code = fallbackLoc.dataset AND fallbackLoc.number = (SELECT coalesce(max(store_number), 9000) FROM fastinfo_prod_import.employee_vw WHERE dataset = comp.dataset_code)
            LEFT OUTER JOIN (
              select esg.employee_id_sfk, sg.id as security_group_id,
@@ -194,7 +199,7 @@ abstract class AuthenticationRepository @Inject constructor(
             AND au.pass_code = convert_passcode(au.type, :passCode, au.pass_code)
             AND au.active = TRUE
    """,
-      nativeQuery = true
+   nativeQuery = true
    )
    @JoinSpecifications(
       Join("company"), // when defining these Join's the pathing should match the Java/Kotlin camelCase property access path not the '_' snake_case access path used in the associated SQL.  Micronaut Data will handle translating this
@@ -234,6 +239,7 @@ abstract class AuthenticationRepository @Inject constructor(
          comp.client_id                 AS company_client_id,
          comp.dataset_code              AS company_dataset_code,
          comp.federal_id_number         AS company_federal_id_number,
+         comp.include_demo_inventory    AS company_include_demo_inventory,
          compAddr.id                    AS company_address_id,
          compAddr.number                AS company_address_number,
          compAddr.name                  AS company_address_name,
@@ -258,6 +264,7 @@ abstract class AuthenticationRepository @Inject constructor(
          comp.client_id                 AS department_company_client_id,
          comp.dataset_code              AS department_company_dataset_code,
          comp.federal_id_number         AS department_company_federal_id_number,
+         comp.include_demo_inventory    AS department_company_include_demo_inventory,
          compAddr.id                    AS department_company_address_id,
          compAddr.number                AS department_company_address_number,
          compAddr.name                  AS department_company_address_name,
@@ -282,6 +289,7 @@ abstract class AuthenticationRepository @Inject constructor(
          comp.client_id                 AS assigned_location_company_client_id,
          comp.dataset_code              AS assigned_location_company_dataset_code,
          comp.federal_id_number         AS assigned_location_company_federal_id_number,
+         comp.include_demo_inventory    AS assigned_location_company_include_demo_inventory,
          compAddr.id                    AS assigned_location_company_address_id,
          compAddr.number                AS assigned_location_company_address_number,
          compAddr.name                  AS assigned_location_company_address_name,
@@ -306,6 +314,7 @@ abstract class AuthenticationRepository @Inject constructor(
          comp.client_id                 AS chosen_location_company_client_id,
          comp.dataset_code              AS chosen_location_company_dataset_code,
          comp.federal_id_number         AS chosen_location_company_federal_id_number,
+         comp.include_demo_inventory    AS chosen_location_company_include_demo_inventory,
          compAddr.id                    AS chosen_location_company_address_id,
          compAddr.number                AS chosen_location_company_address_number,
          compAddr.name                  AS chosen_location_company_address_name,
@@ -330,6 +339,7 @@ abstract class AuthenticationRepository @Inject constructor(
          comp.client_id                 AS fallback_location_company_client_id,
          comp.dataset_code              AS fallback_location_company_dataset_code,
          comp.federal_id_number         AS fallback_location_company_federal_id_number,
+         comp.include_demo_inventory    AS fallback_location_company_include_demo_inventory,
          compAddr.id                    AS fallback_location_company_address_id,
          compAddr.number                AS fallback_location_company_address_number,
          compAddr.name                  AS fallback_location_company_address_name,
@@ -359,6 +369,7 @@ abstract class AuthenticationRepository @Inject constructor(
          comp.client_id                 AS security_groups_company_client_id,
          comp.dataset_code              AS security_groups_company_dataset_code,
          comp.federal_id_number         AS security_groups_company_federal_id_number,
+         comp.include_demo_inventory    AS security_groups_company_include_demo_inventory,
          compAddr.id                    AS security_groups_company_address_id,
          compAddr.number                AS security_groups_company_address_number,
          compAddr.name                  AS security_groups_company_address_name,

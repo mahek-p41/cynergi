@@ -34,6 +34,7 @@ class TruncateDatabaseService {
           WHERE table_schema='public'
                 AND table_type='BASE TABLE'
                 AND table_name <> 'flyway_schema_history'
+                AND table_name <> 'inventory'
                 AND table_name NOT LIKE '%_type_domain'"""
       ) {rs ->
          final String table = rs.getString("tableName")
@@ -47,5 +48,6 @@ class TruncateDatabaseService {
          }
       }
    }
+
 }
 

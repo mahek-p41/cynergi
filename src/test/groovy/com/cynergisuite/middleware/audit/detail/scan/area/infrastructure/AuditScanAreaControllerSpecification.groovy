@@ -47,13 +47,36 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      response.collect { new AuditScanAreaDTO(it) } == (
-         [
-            storeThreeShowroom,
-            storeThreeStoreroom,
-            storeThreeWarehouse
-         ].collect {new AuditScanAreaDTO(it) }
-      )
+      with(response[0]) {
+         id != null
+         name == storeThreeShowroom.name
+         value == storeThreeShowroom.name
+         with(store) {
+            id == storeThreeShowroom.store.id
+            storeNumber == storeThreeShowroom.store.number
+            name == storeThreeShowroom.store.name
+         }
+      }
+      with(response[1]) {
+         id != null
+         name == storeThreeStoreroom.name
+         value == storeThreeStoreroom.name
+         with(store) {
+            id == storeThreeStoreroom.store.id
+            storeNumber == storeThreeStoreroom.store.number
+            name == storeThreeStoreroom.store.name
+         }
+      }
+      with(response[2]) {
+         id != null
+         name == storeThreeWarehouse.name
+         value == storeThreeWarehouse.name
+         with(store) {
+            id == storeThreeWarehouse.store.id
+            storeNumber == storeThreeWarehouse.store.number
+            name == storeThreeWarehouse.store.name
+         }
+      }
 
    }
 
@@ -86,13 +109,36 @@ class AuditScanAreaControllerSpecification extends ControllerSpecificationBase {
 
       then:
       notThrown(HttpClientResponseException)
-      response.elements.collect { new AuditScanAreaDTO(it) } == (
-         [
-            storeThreeWarehouse,
-            storeThreeShowroom,
-            storeThreeStoreroom
-         ].collect {new AuditScanAreaDTO(it) }
-      )
+      with(response.elements[0]) {
+         id != null
+         name == storeThreeWarehouse.name
+         value == storeThreeWarehouse.name
+         with(store) {
+            id == storeThreeWarehouse.store.id
+            storeNumber == storeThreeWarehouse.store.number
+            name == storeThreeWarehouse.store.name
+         }
+      }
+      with(response.elements[1]) {
+         id != null
+         name == storeThreeShowroom.name
+         value == storeThreeShowroom.name
+         with(store) {
+            id == storeThreeShowroom.store.id
+            storeNumber == storeThreeShowroom.store.number
+            name == storeThreeShowroom.store.name
+         }
+      }
+      with(response.elements[2]) {
+         id != null
+         name == storeThreeStoreroom.name
+         value == storeThreeStoreroom.name
+         with(store) {
+            id == storeThreeStoreroom.store.id
+            storeNumber == storeThreeStoreroom.store.number
+            name == storeThreeStoreroom.store.name
+         }
+      }
 
       when:
       client.exchange(

@@ -86,10 +86,13 @@ class VendorStatisticsRepository @Inject constructor(
                JOIN vendor vend ON r_to_v.vendor_id = vend.id
             WHERE vend.company_id = :comp_id AND vend.id = :vendorId
             ORDER BY r.description
+            LIMIT :limit OFFSET :offset
          """.trimIndent(),
          mapOf(
             "comp_id" to company.id,
-            "vendorId" to filterRequest.vendorId
+            "vendorId" to filterRequest.vendorId,
+            "limit" to filterRequest.size(),
+            "offset" to filterRequest.offset()
          ),
          filterRequest
       ) { rs, elements ->
@@ -101,16 +104,25 @@ class VendorStatisticsRepository @Inject constructor(
 
    @ReadOnly
    fun fetchInvoices(company: CompanyEntity, filterRequest: VendorStatisticsFilterRequest): RepositoryPage<AccountPayableInvoiceInquiryDTO, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "vendorId" to filterRequest.vendorId, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
+
+      val whereClause = StringBuilder(
+         "WHERE vend.company_id = :comp_id AND vend.id = :vendorId "
+      )
+
+      if (filterRequest.startingInvoice != null) {
+         params["startingInvoice"] = filterRequest.startingInvoice
+         whereClause.append(" AND apInvoice.invoice >= :startingInvoice ")
+      }
+
       return jdbc.queryPaged(
          """
             ${accountPayableInvoiceInquiryRepository.selectBaseQuery()}
-            WHERE vend.company_id = :comp_id AND vend.id = :vendorId
+            $whereClause
             ORDER BY naturalsort(apInvoice.invoice)
+            LIMIT :limit OFFSET :offset
          """.trimIndent(),
-         mapOf(
-            "comp_id" to company.id,
-            "vendorId" to filterRequest.vendorId
-         ),
+         params,
          filterRequest
       ) { rs, elements ->
          do {
@@ -129,16 +141,25 @@ class VendorStatisticsRepository @Inject constructor(
 
    @ReadOnly
    fun fetchPurchaseOrders(company: CompanyEntity, filterRequest: VendorStatisticsFilterRequest): RepositoryPage<PurchaseOrderEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "vendorId" to filterRequest.vendorId, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
+
+      val whereClause = StringBuilder(
+         "WHERE vendor.v_company_id = :comp_id AND vendor.v_id = :vendorId "
+      )
+
+      if (filterRequest.startingPO != null) {
+         params["startingPO"] = filterRequest.startingPO
+         whereClause.append(" AND po.number >= :startingPO ")
+      }
+
       return jdbc.queryPaged(
          """
             ${purchaseOrderRepository.selectBaseQuery()}
-            WHERE vendor.v_company_id = :comp_id AND vendor.v_id = :vendorId
+            $whereClause
             ORDER BY po.number
+            LIMIT :limit OFFSET :offset
          """.trimIndent(),
-         mapOf(
-            "comp_id" to company.id,
-            "vendorId" to filterRequest.vendorId
-         ),
+         params,
          filterRequest
       ) { rs, elements ->
          do {

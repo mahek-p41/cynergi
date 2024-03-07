@@ -46,7 +46,8 @@ class AccountPayableInvoiceDataLoader {
       LocalDate dueDateIn = null,
       VendorEntity payToIn,
       Store locationIn = null,
-      BigDecimal discountTakenIn = null
+      BigDecimal discountTakenIn = null,
+      LocalDate expenseDateIn = null
    ) {
       final number = numberIn > 0 ? numberIn : 1
       final faker = new Faker()
@@ -79,7 +80,7 @@ class AccountPayableInvoiceDataLoader {
             random.nextBoolean(),
             discountTaken,
             LocalDate.now(),
-            LocalDate.now(),
+            expenseDateIn ?: LocalDate.now(),
             LocalDate.now(),
             employeeIn,
             numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
@@ -173,9 +174,10 @@ class AccountPayableInvoiceDataLoaderService {
       AccountPayableInvoiceStatusType statusTypeIn = null,
       VendorEntity payToIn,
       Store locationIn = null,
-      BigDecimal discountTakenIn = null
+      BigDecimal discountTakenIn = null,
+      LocalDate expenseDateIn = null
    ) {
-      return AccountPayableInvoiceDataLoader.stream(numberIn, vendorIn, purchaseOrderIn, null, invoiceAmountIn, employeeIn, paidAmountIn, statusTypeIn, null, payToIn, locationIn, discountTakenIn)
+      return AccountPayableInvoiceDataLoader.stream(numberIn, vendorIn, purchaseOrderIn, null, invoiceAmountIn, employeeIn, paidAmountIn, statusTypeIn, null, payToIn, locationIn, discountTakenIn, expenseDateIn)
          .map { accountPayableInvoiceRepository.insert(it, company) }
    }
 

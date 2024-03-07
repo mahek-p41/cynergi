@@ -69,14 +69,14 @@ class InvoiceReportFilterRequest(
    var endVenGr: String? = null,
 
    @field:Schema(name = "invStatus", description = "The Invoice Status to filter results with")
-   var invStatus: String? = null,
+   var invStatus: List<String>? = null,
 
    @field:Schema(name = "useTax", description = "Only use tax indicator")
    var useTax: Boolean? = null,
 
    @field:Pattern(regexp = "poHeader.number|apInvoice.invoice|vendor.number|vendor.name")
    @field:Schema(description = "The column to sort the purchase order invoice report by (poHeader.number|apInvoice.invoice|vendor.number|vendor.name).", defaultValue = "poHeader.number")
-   override var sortBy: String? = null,
+   override var sortBy: String? = "poHeader.number",
 
 ) : SortableRequestBase<InvoiceReportFilterRequest>("poHeader.number", "ASC") {
 

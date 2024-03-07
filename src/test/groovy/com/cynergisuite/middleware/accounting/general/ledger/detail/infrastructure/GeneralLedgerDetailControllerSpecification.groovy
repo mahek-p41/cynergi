@@ -1048,9 +1048,9 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
 
-      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.parse("2023-01-01"), true, false).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().minusMonths(9), true, false).collect()
 
-      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-06-01"), LocalDate.parse("2023-06-05"), glSource2.value)
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.now(), LocalDate.now().plusDays(5), glSource2.value)
 
       when:
       def toBeDeletedCount = get("$path/purgeCount$toBeDeleted")
@@ -1139,7 +1139,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
 
-      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.parse("2023-01-01"), true, false).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().minusMonths(9), true, false).collect()
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "N" }, LocalDate.parse("2024-01-01"), true, false).collect()
 
       final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-03-28"), LocalDate.parse("2024-04-02"), glSource2.value)
@@ -1164,7 +1164,7 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
 
-      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.parse("2023-01-01"), true, false).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().minusMonths(9), true, false).collect()
       financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "N" }, LocalDate.parse("2024-01-01"), true, false).collect()
 
       final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-03-28"), LocalDate.parse("2024-04-02"), glSource2.value)
@@ -1191,9 +1191,9 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
 
-      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "P" }, LocalDate.parse("2023-01-01"), true, false).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "P" }, LocalDate.now().minusMonths(9), true, false).collect()
 
-      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-06-01"), LocalDate.parse("2023-06-05"), glSource2.value)
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.now(), LocalDate.now().plusDays(5), glSource2.value)
 
       when:
       delete("$path/purge$toBeDeleted")
@@ -1217,9 +1217,9 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
 
-      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "P" }, LocalDate.parse("2023-01-01"), true, false).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "P" }, LocalDate.now().minusMonths(9), true, false).collect()
 
-      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-06-01"), LocalDate.parse("2023-06-05"), glSource2.value)
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.now(), LocalDate.now().plusDays(5), glSource2.value)
 
       when:
       get("$path/purgeCount$toBeDeleted")
@@ -1242,9 +1242,9 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
 
-      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.parse("2023-01-01"), true, false).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().minusMonths(9), true, false).collect()
 
-      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-06-01"), LocalDate.parse("2023-06-05"), 'XYZ')
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.now(), LocalDate.now().plusDays(5), 'XYZ')
 
       when:
       delete("$path/purge$toBeDeleted")
@@ -1266,9 +1266,9 @@ class GeneralLedgerDetailControllerSpecification extends ControllerSpecification
       final glSummary = generalLedgerSummaryDataLoaderService.single(company, glAccount, profitCenter, OverallPeriodTypeDataLoader.predefined().get(1))
       final generalLedgerDetails1 = generalLedgerDetailDataLoaderService.stream(3, company, glAccount, profitCenter, glSource1).toList()
 
-      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.parse("2023-01-01"), true, false).collect()
+      financialCalendarDataLoaderService.streamFiscalYear(company, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now().minusMonths(9), true, false).collect()
 
-      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.parse("2023-06-01"), LocalDate.parse("2023-06-05"), 'XYZ')
+      final toBeDeleted = new GeneralLedgerDetailPostPurgeDTO(LocalDate.now(), LocalDate.now().plusDays(5), 'XYZ')
 
       when:
       get("$path/purgeCount$toBeDeleted")

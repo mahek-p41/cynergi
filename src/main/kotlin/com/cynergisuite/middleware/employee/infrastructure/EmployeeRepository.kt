@@ -115,7 +115,7 @@ class EmployeeRepository @Inject constructor(
       )
       var totalElements: Long? = null
       val elements = mutableListOf<EmployeeEntity>()
-      val where = StringBuilder(" WHERE comp_id = :comp_id AND emp_cynergi_system_admin = false ")
+      val where = StringBuilder(" WHERE comp_id = :comp_id AND emp_cynergi_system_admin = false and emp_active = true")
       val and = " AND "
       var sortBy = " emp_${pageRequest.snakeSortBy()} ${pageRequest.sortDirection()}  "
 

@@ -3,6 +3,9 @@ package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastru
 import com.cynergisuite.domain.AccountPayableCheckPreviewFilterRequest
 import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDataLoader
+import com.cynergisuite.domain.AccountPayableVendorBalanceReportFilterRequest
+import com.cynergisuite.domain.ExpenseReportFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
@@ -16,18 +19,23 @@ import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvo
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDetailDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionTemplateDTO
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionTemplateDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceMaintenanceDTO
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDetailDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentStatusTypeDataLoader
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeTypeDataLoader
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
+import com.cynergisuite.middleware.accounting.general.ledger.control.GeneralLedgerControlDataLoaderService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
+import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
@@ -37,6 +45,8 @@ import jakarta.inject.Inject
 import spock.lang.Unroll
 
 import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.YearMonth
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
 import static io.micronaut.http.HttpStatus.NOT_FOUND
@@ -59,11 +69,13 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    @Inject AccountPayableDistributionTemplateDataLoaderService apDistTemplateDataLoaderService
    @Inject SimpleTransactionalSql sql
    @Inject AccountPayableControlTestDataLoaderService accountPayableControlDataLoaderService
+   @Inject GeneralLedgerControlDataLoaderService generalLedgerControlDataLoaderService
+
 
    void "fetch one" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -160,7 +172,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "fetch all" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -387,7 +399,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "fetch all by vendor" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -448,10 +460,85 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       'Search by neither'   || 20
    }
 
+   void "fetch open by vendor" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
+      final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
+      final shipViaList = shipViaFactoryService.stream(4, company).toList()
+      final employeeList = employeeFactoryService.stream(4, company).toList()
+
+      final vendorPmtTerm = vendorPaymentTermList[0]
+      final vendorShipVia = shipViaList[0]
+      final vendorOne = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      final vendorTwo = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+      final vendorThree = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+
+      final poVendorPmtTerm = vendorPaymentTermList[1]
+      final poVendorShipVia = shipViaList[1]
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poApprovedBy = employeeList[0]
+      final poPurchaseAgent = employeeList[1]
+      final poShipVia = shipViaList[2]
+      final poPmtTerm = vendorPaymentTermList[2]
+      final poVendorSubEmp = employeeList[2]
+      final purchaseOrderOne = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      final purchaseOrderTwo = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+      final purchaseOrderThree = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+
+      final employeeIn = employeeList[3]
+
+      final payToPmtTerm = vendorPaymentTermList[3]
+      final payToShipVia = shipViaList[3]
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+
+      def openAccountPayableInvoiceStatus = AccountPayableInvoiceStatusTypeDataLoader.predefined().get(1)
+      def paidAccountPayableInvoiceStatus = AccountPayableInvoiceStatusTypeDataLoader.predefined().get(2)
+
+      def apInvoicesVendorOneOpen20 = dataLoaderService.stream(20, company, vendorOne, purchaseOrderOne, null, employeeIn, null, openAccountPayableInvoiceStatus, payToIn, store)
+         .map { new AccountPayableInvoiceDTO(it)}
+         .sorted { o1, o2 -> o1.id <=> o2.id }.toList()
+
+      def apInvoicesVendorOnePaid15 = dataLoaderService.stream(15, company, vendorOne, purchaseOrderTwo, null, employeeIn, null, paidAccountPayableInvoiceStatus, payToIn, store)
+         .map { new AccountPayableInvoiceDTO(it)}
+         .sorted { o1, o2 -> o1.id <=> o2.id }.toList()
+
+      def apInvoicesVendorTwoOpen10 = dataLoaderService.stream(10, company, vendorTwo, purchaseOrderThree, null, employeeIn, null, openAccountPayableInvoiceStatus, payToIn, store)
+         .map { new AccountPayableInvoiceDTO(it)}
+         .sorted { o1, o2 -> o1.id <=> o2.id }.toList()
+
+      def filterRequest = new AccountPayableInvoiceListByVendorFilterRequest()
+      switch (criteria) {
+         case 'Search by first vendor with 20 open and 15 paid':
+            filterRequest['vendor'] = vendorOne.number
+            break
+         case 'Search by second vendor with 10 open':
+            filterRequest['vendor'] = vendorTwo.number
+            break
+         case 'Search by third vendor with 0 open':
+            filterRequest['vendor'] = vendorThree.number
+            break
+      }
+
+      when:
+      def result = get("$path/open-by-vendor${filterRequest}")
+
+      then:
+      notThrown(Exception)
+      result != null
+      result.totalElements == elements
+
+      where:
+      criteria                                              || elements
+      'Search by first vendor with 20 open and 15 paid'     || 20
+      'Search by second vendor with 10 open'                || 10
+      'Search by third vendor with 0 open'                  || 0
+   }
+
    void "fetch AP Invoice report" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(1, company)
+      final StoreEntity store = storeFactoryService.store(1, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -475,8 +562,9 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final payToPmtTerm = vendorPaymentTermList[3]
       final payToShipVia = shipViaList[3]
       final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      final statusO = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
 
-      def apInvoiceEntities = dataLoaderService.stream(20, company, vendorIn, purchaseOrderIn, null, employeeIn, null, null, payToIn, store)
+      def apInvoiceEntities = dataLoaderService.stream(20, company, vendorIn, purchaseOrderIn, null, employeeIn, null, statusO, payToIn, store)
          .sorted { o1, o2 -> o1.id <=> o2.id }.toList()
 
       def apInvoices = apInvoiceEntities.stream().map { new AccountPayableInvoiceDTO(it) }.toList()
@@ -507,7 +595,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
          """)
 
-      def filterRequest = new InvoiceReportFilterRequest([sortBy: "poHeader.number", sortDirection: "ASC"])
+      def filterRequest = new InvoiceReportFilterRequest([sortBy: "poHeader.number", sortDirection: "ASC", invStatus: ["O", "P"]])
 
       when:
       def result = get("$path/report${filterRequest}")
@@ -574,7 +662,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "fetch AP invoice inquiry" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(1, company)
+      final StoreEntity store = storeFactoryService.store(1, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -623,7 +711,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       switch (criteria) {
          case 'Search by status':
             filterRequest['invStatus'] = 'P'
-            filterRequest['poNbr'] = purchaseOrderIn1.number
+            filterRequest['poNbr'] = purchaseOrderIn2.number
             filterRequest['sortBy'] = 'poHeader.number'
             break
          case 'Search by purchase order number':
@@ -639,7 +727,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
             filterRequest['sortBy'] = 'apInvoice.invoice_date'
             break
          case 'Search by due date':
-            filterRequest['dueDate'] = LocalDate.of(2020, 2, 1)
+            filterRequest['dueDate'] = LocalDate.of(2020, 2, 2)
             filterRequest['sortBy'] = 'apInvoice.due_date'
             break
          case 'Search by invoice amount':
@@ -658,18 +746,120 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       where:
       criteria                            || elements
-      'Search by status'                  || 8
+      'Search by status'                  || 4
       'Search by purchase order number'   || 4
-      'Search by invoice number'          || 10
-      'Search by invoice date'            || 12
-      'Search by due date'                || 16
-      'Search by invoice amount'          || 16
+      'Search by invoice number'          || 5
+      'Search by invoice date'            || 4
+      'Search by due date'                || 4
+      'Search by invoice amount'          || 4
+   }
+
+   void "fetch AP Expense report" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final StoreEntity store = storeFactoryService.store(1, company) as StoreEntity
+      final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
+      final shipViaList = shipViaFactoryService.stream(4, company).toList()
+      final employeeList = employeeFactoryService.stream(4, company).toList()
+
+      final vendorPmtTerm = vendorPaymentTermList[0]
+      final vendorShipVia = shipViaList[0]
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+
+      final poVendorPmtTerm = vendorPaymentTermList[1]
+      final poVendorShipVia = shipViaList[1]
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poApprovedBy = employeeList[0]
+      final poPurchaseAgent = employeeList[1]
+      final poShipVia = shipViaList[2]
+      final poPmtTerm = vendorPaymentTermList[2]
+      final poVendorSubEmp = employeeList[2]
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+
+      final employeeIn = employeeList[3]
+
+      final payToPmtTerm = vendorPaymentTermList[3]
+      final payToShipVia = shipViaList[3]
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      final statusO = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
+
+      def apInvoiceEntities = dataLoaderService.stream(20, company, vendorIn, purchaseOrderIn, null, employeeIn, null, statusO, payToIn, store)
+         .sorted { o1, o2 -> o1.id <=> o2.id }.toList()
+
+      def apInvoices = apInvoiceEntities.stream().map { new AccountPayableInvoiceDTO(it) }.toList()
+
+      def account = accountFactoryService.single(company)
+      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      def pmtStatuses = AccountPayablePaymentStatusTypeDataLoader.predefined()
+      def pmtTypes = AccountPayablePaymentTypeTypeDataLoader.predefined()
+
+      def apPayments = accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }).toList()
+      apPayments.addAll(accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'V' }, pmtTypes.find { it.value == 'C' }, null, null, null, true).toList())
+
+      def apPaymentDetails = apPaymentDetailDataLoaderService.stream(1, company, vendorIn, apInvoiceEntities[0], apPayments[0], 2000).toList()
+      apPaymentDetailDataLoaderService.stream(1, company, vendorIn, apInvoiceEntities[1], apPayments[1], 4000).toList()
+      apPaymentDetailDataLoaderService.stream(1, company, vendorIn, apInvoiceEntities[1], apPayments[2], 5000).toList()
+
+      def template = apDistTemplateDataLoaderService.single(company)
+      def apDistribution = apDistDetailDataLoaderService.single(store, account, company, template)
+      def invDistAmountForFirstInvoice = 1000
+      def invDistAmountForSecondInvoice = 2000
+
+      sql.executeUpdate([invoice_id: apInvoices[0].id, account_id: account.id, profit_center_sfk: store.number, amount: invDistAmountForFirstInvoice], """
+         INSERT INTO account_payable_invoice_distribution(invoice_id, distribution_account_id, distribution_profit_center_id_sfk, distribution_amount)
+	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
+         """)
+      sql.executeUpdate([invoice_id: apInvoices[1].id, account_id: account.id, profit_center_sfk: store.number, amount: invDistAmountForSecondInvoice], """
+         INSERT INTO account_payable_invoice_distribution(invoice_id, distribution_account_id, distribution_profit_center_id_sfk, distribution_amount)
+	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
+         """)
+
+      def filterRequest = new ExpenseReportFilterRequest([sortDirection: "ASC", invStatus: ["O", "P"], beginDate: LocalDate.of(2020, 1, 1), endDate: OffsetDateTime.now().toLocalDate()])
+
+      when:
+      def result = get("$path/expense/report${filterRequest}")
+
+      then:
+      notThrown(Exception)
+      with(result.groupedByAccount[0]) {
+         accountNumber == account.number
+         accountName == account.name
+         glAmountTotal == invDistAmountForFirstInvoice + invDistAmountForSecondInvoice
+         groupedByDistributionCenters.eachWithIndex { profitCenter, index ->
+            with(profitCenter) {
+               distCenter == store.number
+               glAmountTotal == invDistAmountForFirstInvoice + invDistAmountForSecondInvoice
+               with(invoices[0]) {
+                  id == apInvoices[index].id
+                  vendorNumber == vendorIn.number
+                  vendorName == vendorIn.name
+                  invoice == apInvoices[index].invoice
+                  type == apInvoices[index].type.value
+                  invoiceDate == apInvoices[index].invoiceDate.toString()
+                  status == apInvoices[index].status.value
+                  invoiceAmount == apInvoices[index].invoiceAmount
+                  expenseDate == apInvoices[index].expenseDate.toString()
+                  paidAmount == apInvoices[index].paidAmount
+                  bankNumber == bank.number
+                  pmtNumber == apPayments[0].paymentNumber
+                  pmtDate == apPayments[0].paymentDate.toString()
+                  notes == apInvoices[index].message
+                  poHeaderNumber == purchaseOrderIn.number
+                  acctNumber == account.number
+                  acctName == account.name
+                  distCenter == store.number
+                  glAmount == invDistAmountForFirstInvoice
+                  bankNumber == bank.number
+               }
+            }
+         }
+      }
    }
 
    void "create one" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -758,7 +948,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "create valid account payable invoice without nullable properties" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -851,7 +1041,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "create invalid account payable invoice without #nonNullableProp" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -923,7 +1113,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "create invalid account payable invoice with non-existing #testProp" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -985,7 +1175,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "update one" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -1077,7 +1267,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "update valid account payable invoice without nullable properties" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -1172,7 +1362,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "update invalid account payable invoice without #nonNullableProp" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -1246,7 +1436,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "update invalid account payable invoice with non-existing #testProp" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(3, company)
+      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -1307,7 +1497,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "fetch check preview" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final store = storeFactoryService.store(1, company)
+      final StoreEntity store = storeFactoryService.store(1, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -1367,7 +1557,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
          """)
 
-      def filterRequest = new AccountPayableCheckPreviewFilterRequest(bank.number, 100, null, null, null, null, null)
+      def filterRequest = new AccountPayableCheckPreviewFilterRequest( "V", "ASC", bank.number, "100", null, null, null, null, null )
 
       when:
       def result = get("$path/check-preview${filterRequest}")
@@ -1385,5 +1575,167 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
             vendor.invoiceList != null
          }
       }
+   }
+
+   void "fetch vendor balance" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final StoreEntity store = storeFactoryService.store(1, company) as StoreEntity
+      final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
+      final shipViaList = shipViaFactoryService.stream(4, company).toList()
+      final employeeList = employeeFactoryService.stream(4, company).toList()
+
+      final vendorPmtTerm = vendorPaymentTermList[0]
+      final vendorShipVia = shipViaList[0]
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+
+      final poVendorPmtTerm = vendorPaymentTermList[1]
+      final poVendorShipVia = shipViaList[1]
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poApprovedBy = employeeList[0]
+      final poPurchaseAgent = employeeList[1]
+      final poShipVia = shipViaList[2]
+      final poPmtTerm = vendorPaymentTermList[2]
+      final poVendorSubEmp = employeeList[2]
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+
+      final employeeIn = employeeList[3]
+
+      final payToPmtTerm = vendorPaymentTermList[3]
+      final payToShipVia = shipViaList[3]
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+      final statusO = new AccountPayableInvoiceStatusType(3, "P", "Paid", "paid")
+
+      def apInvoiceEntitiesPriorDate = dataLoaderService.stream(20, company, vendorIn, purchaseOrderIn, 100.00, employeeIn, null, statusO, payToIn, store, 0.02)
+         .sorted { o1, o2 -> o1.id <=> o2.id }.sorted{
+         o1, o2 -> o1.invoice <=> o2.invoice
+      }.toList()
+
+      def apInvoiceEntitiesCriteriaDate = dataLoaderService.stream(20, company, vendorIn, purchaseOrderIn, 200.00, employeeIn, null, statusO, payToIn, store, 0.02, LocalDate.now().plusMonths(1))
+         .sorted { o1, o2 -> o1.id <=> o2.id }.sorted{
+         o1, o2 -> o1.invoice <=> o2.invoice
+      }.toList()
+
+      def apInvoices = apInvoiceEntitiesPriorDate.stream().map { new AccountPayableInvoiceDTO(it) }.toList()
+
+      def account = accountFactoryService.single(company)
+      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      def pmtStatuses = AccountPayablePaymentStatusTypeDataLoader.predefined()
+      def pmtTypes = AccountPayablePaymentTypeTypeDataLoader.predefined()
+
+      def apPayments = accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }, LocalDate.now().plusMonths(1)).toList()
+      apPayments.addAll(accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }, LocalDate.now().plusMonths(1)).toList())
+      final accountPayableControl = accountPayableControlDataLoaderService.single(company, account, account)
+
+
+      def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendorIn, apInvoiceEntitiesPriorDate[0], apPayments[0], 200, 0.00).toList()
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendorIn, apInvoiceEntitiesPriorDate[0], apPayments[1], 200, 0.00).toList())
+      apPaymentDetailDataLoaderService.stream(5, company, vendorIn, apInvoiceEntitiesPriorDate[1], apPayments[2], 200, 0.00).toList()
+      apPaymentDetailDataLoaderService.stream(5, company, vendorIn, apInvoiceEntitiesPriorDate[1], apPayments[3], 200, 0.00).toList()
+
+      def template = apDistTemplateDataLoaderService.single(company)
+      def apDistribution = apDistDetailDataLoaderService.single(store, account, company, template)
+
+      sql.executeUpdate([invoice_id: apInvoices[0].id, account_id: account.id, profit_center_sfk: store.number, amount: 1000], """
+         INSERT INTO account_payable_invoice_distribution(invoice_id, distribution_account_id, distribution_profit_center_id_sfk, distribution_amount)
+	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
+         """)
+      sql.executeUpdate([invoice_id: apInvoices[1].id, account_id: account.id, profit_center_sfk: store.number, amount: 2000], """
+         INSERT INTO account_payable_invoice_distribution(invoice_id, distribution_account_id, distribution_profit_center_id_sfk, distribution_amount)
+	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
+         """)
+
+      def filterRequest = new AccountPayableVendorBalanceReportFilterRequest(payToIn.number, payToIn.number, YearMonth.now().plusMonths(1).atDay(1), YearMonth.now().plusMonths(1).atEndOfMonth(), "V")
+
+      when:
+      def result = get("$path//vendor-balance${filterRequest}")
+
+      then:
+      notThrown(Exception)
+      result[0].balance == 2000.00
+      result[0].number == payToIn.number
+      result[0].invoiceList.size() == 22
+      result[0].invoiceList.last().balance == 5600.00
+   }
+
+   void "ap invoice maintenance" () {
+      given:
+      final company = companyFactoryService.forDatasetCode('coravt')
+      final StoreEntity store = storeFactoryService.store(1, company) as StoreEntity
+      final vendorPmtTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final poVendorPmtTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final poPmtTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final payToPmtTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
+      final shipViaList = shipViaFactoryService.stream(4, company).toList()
+      final employeeList = employeeFactoryService.stream(4, company).toList()
+
+      final vendorShipVia = shipViaList[0]
+      final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
+
+
+      final poVendorShipVia = shipViaList[1]
+      final poVendor = vendorTestDataLoaderService.single(company, poVendorPmtTerm, poVendorShipVia)
+      final poApprovedBy = employeeList[0]
+      final poPurchaseAgent = employeeList[1]
+      final poShipVia = shipViaList[2]
+      final poVendorSubEmp = employeeList[2]
+      final purchaseOrderIn = purchaseOrderDataLoaderService.single(company, poVendor, poApprovedBy, poPurchaseAgent, poShipVia, store, poPmtTerm, poVendorSubEmp)
+
+      final employeeIn = employeeList[3]
+
+      final payToShipVia = shipViaList[3]
+      final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
+
+      final statusO = new AccountPayableInvoiceStatusType(3, "P", "Paid", "paid")
+
+      final defProfitCenter = storeFactoryService.store(3, nineNineEightEmployee.company)
+      final defAPAcct = accountFactoryService.single(company)
+      final defAPDiscAcct = accountFactoryService.single(company)
+      final defARAcct = accountFactoryService.single(company)
+      final defARDiscAcct = accountFactoryService.single(company)
+      final defAcctMiscInvAcct = accountFactoryService.single(company)
+      final defAcctSerializedInvAcct = accountFactoryService.single(company)
+      final defAcctUnbilledInvAcct = accountFactoryService.single(company)
+      final defAcctFreightAcct = accountFactoryService.single(company)
+      final generalLedgerControl = generalLedgerControlDataLoaderService.single(
+         company,
+         defProfitCenter,
+         defAPAcct,
+         defAPDiscAcct,
+         defARAcct,
+         defARDiscAcct,
+         defAcctMiscInvAcct,
+         defAcctSerializedInvAcct,
+         defAcctUnbilledInvAcct,
+         defAcctFreightAcct
+      )
+
+      def account = accountFactoryService.single(company)
+      def bank = bankFactoryService.single(nineNineEightEmployee.company, store, account)
+      def pmtStatuses = AccountPayablePaymentStatusTypeDataLoader.predefined()
+      def pmtTypes = AccountPayablePaymentTypeTypeDataLoader.predefined()
+
+      def apPayments = accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }, LocalDate.now().plusMonths(1)).toList()
+      apPayments.addAll(accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }, LocalDate.now().plusMonths(1)).toList())
+      final accountPayableControl = accountPayableControlDataLoaderService.single(company, account, account)
+
+      final existingAPInvoice = dataLoaderService.single(company, vendorIn, purchaseOrderIn, null, employeeIn, null, statusO, payToIn, store, null)
+      def existingAPInvoiceDTO = new AccountPayableInvoiceDTO(existingAPInvoice)
+
+      def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendorIn, existingAPInvoice, apPayments[0], 200, 0.00).toList()
+      apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendorIn, existingAPInvoice, apPayments[1], 200, 0.00).toList())
+
+      def template = apDistTemplateDataLoaderService.single(company)
+      def apDistribution = apDistDetailDataLoaderService.single(store, account, company, template)
+      def templateDTO = new AccountPayableDistributionTemplateDTO(template)
+      def apPaymentDTO = new AccountPayablePaymentDTO(apPayments[0])
+      def invMaintDTO = new AccountPayableInvoiceMaintenanceDTO(existingAPInvoiceDTO, apPaymentDTO, templateDTO, null)
+
+      when:
+      def result = post("$path/maintenance", invMaintDTO)
+
+      then:
+      notThrown(Exception)
+      result.apInvoiceSchedule != null
    }
 }

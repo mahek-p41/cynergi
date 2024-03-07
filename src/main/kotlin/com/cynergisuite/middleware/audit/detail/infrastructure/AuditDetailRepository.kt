@@ -74,6 +74,7 @@ class AuditDetailRepository @Inject constructor(
             scannedBy.comp_client_id                  AS comp_client_id,
             scannedBy.comp_dataset_code               AS comp_dataset_code,
             scannedBy.comp_federal_id_number          AS comp_federal_id_number,
+            scannedBy.comp_include_demo_inventory    AS comp_include_demo_inventory,
             scannedBy.address_id                      AS address_id,
             scannedBy.address_name                    AS address_name,
             scannedBy.address_address1                AS address_address1,
@@ -141,13 +142,13 @@ class AuditDetailRepository @Inject constructor(
 
    @ReadOnly
    fun findOne(auditId: UUID, inventory: InventoryEntity, company: CompanyEntity): AuditDetailEntity? {
-      val sql = "${selectBaseQuery()} WHERE audit_id = :audit_id AND auditDetail.alt_id = :alt_id AND auditDetail.serial_number = :serial_number"
-      val params = mapOf("audit_id" to auditId, "alt_id" to inventory.altId, "serial_number" to inventory.serialNumber)
+      val sql = "${selectBaseQuery()} WHERE audit_id = :audit_id AND auditDetail.lookup_key = :lookup_key"
+      val params = mapOf("audit_id" to auditId, "lookup_key" to inventory.lookupKey)
 
       val found = queryAndExtractFindOneResults(sql, params, company)
 
       logger.trace(
-         "Searching for audit detail by audit ID {} and inventory(lookup_key) {}, resulted in ",
+         "Searching for audit detail by audit ID {} and inventory(lookup_key) {}, resulted in {}",
          auditId,
          inventory,
          found

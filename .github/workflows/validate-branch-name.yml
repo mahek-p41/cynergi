@@ -40,7 +40,7 @@ jobs:
           fi
           export DEBUG_FLAG
 
-          source ${{ github.workspace }}/.github/workflows/scripts/validate-branch-name
+          source ${{ github.workspace }}/.github/workflows/scripts/validate-branch-name.sh
           [[ "$VALID_BRANCH_NAME" != "true" ]] && exit 1
           export POSSIBLE_BASE_BRANCH_NAME="base-branch-here"
 
@@ -59,7 +59,7 @@ jobs:
           #!/usr/bin/env bash
           ${{ env.BASH_EXPORT_OVERRIDE }}
 
-          source ${{ github.workspace }}/.github/workflows/scripts/detect-base-branch
+          source ${{ github.workspace }}/.github/workflows/scripts/detect-base-branch.sh
 
           randDelim=$(base64 <<<"$SRANDOM")
           {

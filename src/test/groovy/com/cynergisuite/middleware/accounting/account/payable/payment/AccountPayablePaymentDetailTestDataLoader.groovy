@@ -36,7 +36,7 @@ class AccountPayablePaymentDetailTestDataLoader {
             invoiceIn,
             apPaymentIn,
             amountIn ? amountIn : random.nextInt(1, 100000).toBigDecimal(),
-            discountIn ? discountIn : random.nextInt(1, 100000).toBigDecimal()
+            discountIn != null ? discountIn : random.nextInt(1, 100000).toBigDecimal()
          )
       }
    }

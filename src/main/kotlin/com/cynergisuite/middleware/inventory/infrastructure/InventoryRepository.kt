@@ -11,6 +11,7 @@ import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.update
 import com.cynergisuite.middleware.audit.AuditEntity
 import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.audit.status.InProgress
@@ -27,6 +28,7 @@ import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
+import javax.transaction.Transactional
 
 @Singleton
 class InventoryRepository(
@@ -73,6 +75,7 @@ class InventoryRepository(
          comp.client_id                AS comp_client_id,
          comp.dataset_code             AS comp_dataset_code,
          comp.federal_id_number        AS comp_federal_id_number,
+         comp.include_demo_inventory   AS comp_include_demo_inventory,
          compAddress.id                AS comp_address_id,
          compAddress.name              AS comp_address_name,
          compAddress.address1          AS comp_address_address1,
@@ -143,6 +146,7 @@ class InventoryRepository(
          comp.client_id           AS comp_client_id,
          comp.dataset_code        AS comp_dataset_code,
          comp.federal_id_number   AS comp_federal_id_number,
+         comp.include_demo_inventory AS comp_include_demo_inventory,
          compAddress.id           AS comp_address_id,
          compAddress.name         AS comp_address_name,
          compAddress.address1     AS comp_address_address1,
@@ -331,11 +335,11 @@ class InventoryRepository(
          """
       WITH paged AS (
          ${
-         if (audit.currentStatus() == Created || audit.currentStatus() == InProgress) {
-            "$selectBase JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.primary_location)"
-         } else {
-            "$selectFromAuditInventory JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.primary_location AND a.id = i.audit_id)"
-         }
+            if (audit.currentStatus() == Created || audit.currentStatus() == InProgress) {
+               "$selectBase JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.primary_location)"
+            } else {
+               "$selectFromAuditInventory JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.primary_location AND a.id = i.audit_id)"
+            }
          }
          WHERE
             comp.id = :comp_id
@@ -344,6 +348,7 @@ class InventoryRepository(
             AND i.lookup_key NOT IN (SELECT lookup_key
                                         FROM audit_detail
                                         WHERE audit_id = :audit_id)
+            AND (comp.include_demo_inventory OR i.status != 'D')
       )
       SELECT
          p.*,
@@ -384,12 +389,12 @@ class InventoryRepository(
 
       if (filterRequest.serialNbr != null) {
          params["serialNbr"] = filterRequest.serialNbr
-         whereClause.append(" AND UPPER(inv.serial_number) LIKE \'${filterRequest.serialNbr!!.trim().uppercase()}%\'")
+         whereClause.append(" AND UPPER(inv.serial_number) LIKE \'%${filterRequest.serialNbr!!.trim().uppercase()}%\'")
       }
 
       if (filterRequest.modelNbr != null) {
          params["modelNbr"] = filterRequest.modelNbr
-         whereClause.append(" AND UPPER(inv.model_number) LIKE \'${filterRequest.modelNbr!!.trim().uppercase()}%\'")
+         whereClause.append(" AND UPPER(inv.model_number) LIKE \'%${filterRequest.modelNbr!!.trim().uppercase()}%\'")
       }
 
       if (filterRequest.poNbr != null) {
@@ -399,7 +404,7 @@ class InventoryRepository(
 
       if (filterRequest.invoiceNbr != null) {
          params["invoiceNbr"] = filterRequest.invoiceNbr
-         whereClause.append(" AND UPPER(inv.invoice_number) LIKE \'${filterRequest.invoiceNbr!!.trim().uppercase()}%\'")
+         whereClause.append(" AND UPPER(inv.invoice_number) LIKE \'%${filterRequest.invoiceNbr!!.trim().uppercase()}%\'")
       }
 
       if (filterRequest.receivedDate != null) {
@@ -410,7 +415,7 @@ class InventoryRepository(
       if (filterRequest.beginAltId != null && filterRequest.endAltId != null) {
          params["beginAltId"] = filterRequest.beginAltId!!.uppercase()
          params["endAltId"] = filterRequest.endAltId!!.uppercase()
-         whereClause.append(" AND UPPER(inv.alt_id) BETWEEN :beginAltId AND :endAltId ")
+         whereClause.append(" AND UPPER(inv.alternate_id) BETWEEN :beginAltId AND :endAltId ")
       }
 
       if (filterRequest.receivedDate != null) {
@@ -426,7 +431,7 @@ class InventoryRepository(
       } else if (filterRequest.serialNbr != null) {
          sortBy.append("inv.serial_number")
       } else if (filterRequest.beginAltId != null && filterRequest.endAltId != null) {
-         sortBy.append("inv.alt_id")
+         sortBy.append("inv.alternate_id")
       } else {
          sortBy.append("inv.inv_purchase_order_number, inv.invoice_number, inv.model_number, inv.serial_number")
       }
@@ -444,9 +449,9 @@ class InventoryRepository(
                inv.description                  AS description,
                inv.location                     AS current_location,
                inv.inv_invoice_expensed_date    AS invoice_expensed_date,
-               inv.alt_id                       AS alt_id,
+               inv.alternate_id                 AS alternate_id,
                count(*) OVER() AS total_elements
-            FROM fastinfo_prod_import.inventory_vw inv
+            FROM inventory inv
                JOIN company comp ON inv.dataset = comp.dataset_code AND comp.deleted = FALSE
             $whereClause
             $sortBy
@@ -459,6 +464,26 @@ class InventoryRepository(
          do {
             elements.add(mapInquiry(rs))
          } while (rs.next())
+      }
+   }
+
+   @Transactional
+   fun loadInventoryTable() {
+      logger.debug("Checking if the inventory table is empty")
+
+      val isInventoryEmpty = jdbc.queryForObject("""
+         SELECT NOT EXISTS (SELECT id FROM inventory LIMIT 1)
+      """.trimIndent(), emptyMap<String, Any>(), Boolean::class.java)
+
+      if (isInventoryEmpty) {
+         logger.debug("--> Inserting data for empty inventory table")
+         jdbc.update("""
+            INSERT INTO inventory (dataset, serial_number, lookup_key, lookup_key_type, barcode, alternate_id, brand, model_number, product_code, description, received_date, original_cost, actual_cost, model_category, times_rented, total_revenue, remaining_value, sell_price, assigned_value, idle_days, condition, invoice_number, inv_invoice_expensed_date, inv_purchase_order_number, returned_date, location, status, primary_location, location_type, status_id, model_id, store_id, received_location, invoice_id, inventory_changed_sw, changes_sent_to_current_state_sw)
+            SELECT dataset, serial_number, lookup_key, lookup_key_type, barcode, COALESCE(alt_id, '123') AS alternate_id, COALESCE(brand, 'default_brand') AS brand, model_number, product_code, description, received_date, original_cost, actual_cost, model_category, times_rented, total_revenue, remaining_value, sell_price, assigned_value, idle_days, condition, invoice_number, inv_invoice_expensed_date, inv_purchase_order_number, returned_date, location, status, primary_location, location_type, 1 AS status_id, null AS model_id, 1 AS store_id, 1 AS received_location, null AS invoice_id, false AS inventory_changed_sw, false AS changes_sent_to_current_state_sw
+            FROM fastinfo_prod_import.inventory_vw
+         """, emptyMap<String, Any>())
+      } else {
+         logger.debug("--> Inventory table already has data")
       }
    }
 
@@ -541,7 +566,7 @@ class InventoryRepository(
          description = rs.getString("description"),
          currentLoc = currentLoc,
          invoiceExpensedDate = invoiceExpensedDate,
-         altId = rs.getString("alt_id"),
+         altId = rs.getString("alternate_id"),
          currentLocExpensed = currentLocExpensed
       )
    }

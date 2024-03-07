@@ -15,7 +15,6 @@ import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.security.token.jwt.render.BearerAccessRefreshToken
-
 import jakarta.inject.Inject
 
 import static io.micronaut.http.HttpRequest.DELETE

@@ -22,6 +22,7 @@ import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.sql.ResultSet
 
 @Singleton
@@ -80,6 +81,7 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
             payTo.v_name                                                AS apInvoice_payTo_name,
             payTo.v_account_number                                      AS apInvoice_payTo_account_number,
             payTo.v_pay_to_id                                           AS apInvoice_payTo_pay_to_id,
+            payTo.v_vendor_group_id                                            AS apInvoice_payTo_group_id,
 
             pmt.payment_number                                          AS apPayment_number,
             pmt.payment_date                                            AS apPayment_payment_date,
@@ -121,37 +123,48 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
    @ReadOnly
    fun fetchCheckPreview(company: CompanyEntity, filterRequest: AccountPayableCheckPreviewFilterRequest): AccountPayableCheckPreviewEntity {
       var currentVendor: AccountPayableCheckPreviewVendorsEntity? = null
-      var previousCheck: Boolean = false
-      var checkNumber = filterRequest.checkNumber
+      var previousCheck = false
+      var checkNumber = filterRequest.checkNumber.toBigInteger()
       val previewDetails = mutableListOf<AccountPayableCheckPreviewVendorsEntity>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val sortBy = StringBuilder("ORDER BY ")
       val whereClause = StringBuilder(
          "WHERE apInvoice.company_id = :comp_id " +
-            "AND apInvoice.status_id = 2"
+            "AND apInvoice.status_id = 2 "
       )
+
+      if (filterRequest.checkDate != null) {
+         params["checkDate"] = filterRequest.checkDate
+      }
 
       if (filterRequest.vendorGroup != null) {
          params["vendorGroup"] = filterRequest.vendorGroup
-         whereClause.append("AND apInvoice.pay_to_id = :vendorGroup")
+         whereClause.append("AND payTo.v_vendor_group_id = :vendorGroup ")
       }
 
       if (filterRequest.dueDate != null) {
          params["dueDate"] = filterRequest.dueDate
-         whereClause.append("AND apInvoice.dueDate <= :dueDate")
+         whereClause.append("AND apInvoice.due_date <= :dueDate ")
       }
 
       if (filterRequest.discountDate != null) {
          params["discountDate"] = filterRequest.discountDate
-         whereClause.append("AND CASE" +
-            "WHEN apControl.pay_after_discount_date = true THEN apInvoice.discount_date >= :discountDate" +
-            "WHEN apControl.pay_after_discount_date = false THEN apInvoice.discount_date  <= :discountDate AND apInvoice.discount_date >= :checkDate")
+         whereClause.append("AND CASE " +
+            "WHEN apControl.pay_after_discount_date = true THEN apInvoice.discount_date >= :discountDate " +
+            "WHEN apControl.pay_after_discount_date = false THEN apInvoice.discount_date  <= :discountDate AND apInvoice.discount_date >= :checkDate END ")
+      }
+      if (filterRequest.sortBy == "V"){
+         sortBy.append("apInvoice_vendor_name")
+      }
+      if (filterRequest.sortBy == "N") {
+         sortBy.append("apInvoice_vendor_number")
       }
 
       jdbc.query(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY apInvoice_vendor_number, apInvoice_invoice
+            $sortBy
          """.trimIndent(),
          params)
       { rs, elements ->
@@ -220,7 +233,7 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
 
    private fun mapCheckPreview(
       rs: ResultSet,
-      checkNumber: Int
+      checkNumber: BigInteger
    ): AccountPayableCheckPreviewVendorsEntity {
       return AccountPayableCheckPreviewVendorsEntity(
          vendorNumber = rs.getInt("apInvoice_vendor_number"),
@@ -230,20 +243,22 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
          city = rs.getString("apInvoice_vendor_address_city"),
          state = rs.getString("apInvoice_vendor_address_state"),
          postalCode = rs.getString("apInvoice_vendor_address_postal_code"),
-         checkNumber = checkNumber,
+         checkNumber = checkNumber.toString(),
          date = rs.getLocalDate("apInvoice_invoice_date")
       )
    }
 
    @ReadOnly
    fun validateCheckNums(
-      checkNumber: Int,
+      checkNumber: BigInteger,
       bank: Long,
       vendorList: List<AccountPayableCheckPreviewVendorsEntity>
    ): Boolean {
       val numOfChecks = vendorList.size
-      val range = checkNumber..checkNumber.plus(numOfChecks - 1L)
-      val list = range.toList()
+      val list: ArrayList<BigInteger> = ArrayList()
+      for (i in 0 until numOfChecks) {
+         list.add(checkNumber + i.toBigInteger())
+      }
 
       return jdbc.queryForObject(
          "SELECT EXISTS(SELECT payment_number FROM account_payable_payment " +
@@ -252,7 +267,7 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
                  "any(array[<checkList>]::varchar[]) AND bank.number = :bank" +
                  ")",
          mapOf(
-            "checkList" to list, "bank" to bank
+            "checkList" to list.map { it.toString()}, "bank" to bank
          ),
          Boolean::class.java
       )

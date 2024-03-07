@@ -26,11 +26,12 @@ data class CompanyEntity(
    val clientId: Int,
    val datasetCode: String,
    val federalIdNumber: String? = null,
-
    @Relation(ONE_TO_ONE)
-   val address: AddressEntity? = null
+   val address: AddressEntity? = null,
+   val includeDemoInventory: Boolean? = null,
 
 ) : Comparable<CompanyEntity> {
+
 
    constructor(companyDTO: CompanyEntity) :
       this (
@@ -41,7 +42,8 @@ data class CompanyEntity(
          clientId = companyDTO.clientId,
          datasetCode = companyDTO.datasetCode,
          federalIdNumber = companyDTO.federalIdNumber,
-         address = companyDTO.address
+         address = companyDTO.address,
+         includeDemoInventory = companyDTO.includeDemoInventory,
       )
 
    constructor(companyDTO: CompanyDTO) :
@@ -53,7 +55,8 @@ data class CompanyEntity(
          clientId = companyDTO.clientId!!,
          datasetCode = companyDTO.datasetCode!!,
          federalIdNumber = companyDTO.federalTaxNumber,
-         address = companyDTO.address?.let { AddressEntity(it) }
+         address = companyDTO.address?.let { AddressEntity(it) },
+         includeDemoInventory = companyDTO.includeDemoInventory,
       )
 
    fun copyMeWithNewDatasetCode(datasetCode: String) = copy(datasetCode = datasetCode)
@@ -69,6 +72,7 @@ data class CompanyEntity(
          .append(this.datasetCode)
          .append(this.federalIdNumber)
          .append(this.address)
+         .append(this.includeDemoInventory)
          .toHashCode()
 
    override fun equals(other: Any?): Boolean =
@@ -82,6 +86,7 @@ data class CompanyEntity(
             .append(this.datasetCode, other.datasetCode)
             .append(this.federalIdNumber, other.federalIdNumber)
             .append(this.address, other.address)
+            .append(this.includeDemoInventory, other.includeDemoInventory)
             .isEquals
       } else {
          false
@@ -97,5 +102,6 @@ data class CompanyEntity(
          .append(this.doingBusinessAs, other.doingBusinessAs)
          .append(this.federalIdNumber, other.federalIdNumber)
          .append(this.address, other.address)
+         .append(this.includeDemoInventory, other.includeDemoInventory)
          .toComparison()
 }

@@ -26,7 +26,7 @@ data class AccountPayableDistributionTemplateDTO(
    constructor(entity: AccountPayableDistributionTemplateEntity) :
       this(
          id = entity.id,
-         name = entity.name
+         name = entity.name,
       )
 
    override fun myId(): UUID? = id

@@ -45,6 +45,7 @@ class SignHereTokenRepository(
          comp.client_id AS comp_client_id,
          comp.dataset_code AS comp_dataset_code,
          comp.federal_id_number AS comp_federal_id_number,
+         comp.include_demo_inventory AS comp_include_demo_inventory,
          compAddress.id                AS comp_address_id,
          compAddress.name              AS comp_address_name,
          compAddress.address1          AS comp_address_address1,

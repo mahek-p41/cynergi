@@ -176,7 +176,7 @@ class AccountPayableDistributionTemplateRepository @Inject constructor(
    fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): AccountPayableDistributionTemplateEntity {
       return AccountPayableDistributionTemplateEntity(
          id = rs.getUuid("${columnPrefix}id"),
-         name = rs.getString("${columnPrefix}name")
+         name = rs.getString("${columnPrefix}name"),
       )
    }
 

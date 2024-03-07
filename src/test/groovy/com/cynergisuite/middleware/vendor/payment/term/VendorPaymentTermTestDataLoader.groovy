@@ -30,6 +30,7 @@ class VendorPaymentTermTestDataLoader {
             company,
             lorem.characters(3, 30),
             random.nextInt(1, 12),
+            random.nextInt(1, 12),
             random.nextInt(1, 30),
             random.nextDouble().toBigDecimal().setScale(2, HALF_EVEN),
             []
@@ -48,10 +49,11 @@ class VendorPaymentTermTestDataLoader {
          null,
          company,
          lorem.characters(3, 30),
+         1,
          null,
          null,
          null,
-         []
+         vendorPaymentTermSchedules
       )
    }
 

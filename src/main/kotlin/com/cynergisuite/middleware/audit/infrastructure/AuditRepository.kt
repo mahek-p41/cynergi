@@ -86,12 +86,19 @@ class AuditRepository @Inject constructor(
          WHEN $queryAuditCurrentStatus IN ('CREATED', 'IN-PROGRESS')
          THEN
             (
-            SELECT COUNT (*)
-            FROM fastinfo_prod_import.inventory_vw i
-            WHERE i.primary_location = a.store_number
-                  AND (i.status = 'D'
-                        OR (i.status in ('N', 'R') AND i.location = a.store_number))
-                  AND i.dataset = auditStore.dataset
+               SELECT COUNT(*)
+               FROM inventory i
+               WHERE
+                  i.primary_location = a.store_number
+                  AND
+                     i.dataset = auditStore.dataset
+                  AND
+                     CASE WHEN comp.include_demo_inventory THEN
+                        (i.status = 'D' OR (i.status IN ('N','R') AND i.location = a.store_number))
+                     ELSE
+                        (i.status IN ('N','R') AND i.location = a.store_number)
+                     END
+
             )
          ELSE
             (
@@ -100,6 +107,7 @@ class AuditRepository @Inject constructor(
             WHERE i.primary_location = a.store_number
                   AND i.dataset = auditStore.dataset
                   AND i.audit_id = a.id
+                  AND (comp.include_demo_inventory OR i.status != 'D')
             )
          END                                                           AS a_inventory_count,
          auditAction.id                                                AS auditAction_id,
@@ -136,6 +144,7 @@ class AuditRepository @Inject constructor(
          comp.client_id                                                AS comp_client_id,
          comp.dataset_code                                             AS comp_dataset_code,
          comp.federal_id_number                                        AS comp_federal_id_number,
+         comp.include_demo_inventory                                   AS comp_include_demo_inventory,
          compAddress.id                                                AS comp_address_id,
          compAddress.name                                              AS comp_address_name,
          compAddress.address1                                          AS comp_address_address1,
@@ -229,11 +238,16 @@ class AuditRepository @Inject constructor(
             THEN
                (
                SELECT COUNT (*)
-               FROM fastinfo_prod_import.inventory_vw i
+               FROM inventory i
                WHERE i.primary_location = a.store_number
-                     AND (i.status = 'D'
-                        OR (i.status in ('N', 'R') AND i.location = a.store_number))
-                     AND i.dataset = auditStore.dataset
+                     AND
+                        i.dataset = auditStore.dataset
+                     AND
+                        CASE WHEN comp.include_demo_inventory THEN
+                           (i.status = 'D' OR (i.status IN ('N','R') AND i.location = a.store_number))
+                        ELSE
+                           (i.status IN ('N','R') AND i.location = a.store_number)
+                        END
                )
             ELSE
                (
@@ -242,6 +256,7 @@ class AuditRepository @Inject constructor(
                WHERE i.primary_location = a.store_number
                      AND i.dataset = auditStore.dataset
                      AND i.audit_id = a.id
+                     AND (comp.include_demo_inventory OR i.status != 'D')
                )
             END                                                 AS a_inventory_count,
             a.last_updated                                      AS a_last_updated,
@@ -280,6 +295,7 @@ class AuditRepository @Inject constructor(
             comp.client_id                                      AS comp_client_id,
             comp.dataset_code                                   AS comp_dataset_code,
             comp.federal_id_number                              AS comp_federal_id_number,
+            comp.include_demo_inventory                         AS comp_include_demo_inventory,
             compAddress.id                                      AS comp_address_id,
             compAddress.address1                                AS comp_address_address1,
             compAddress.address2                                AS comp_address_address2,
@@ -325,8 +341,8 @@ class AuditRepository @Inject constructor(
    fun findOne(id: UUID, company: CompanyEntity): AuditEntity? {
       logger.debug("Searching for audit by id {} with company {}", id, company)
 
-      val params = mutableMapOf<String, Any?>("id" to id)
-      val query = "${selectByIdBaseQuery()}\nWHERE a.id = :id"
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
+      val query = "${selectByIdBaseQuery()}\nWHERE a.id = :id AND comp.id = :comp_id"
       val found = executeFindForSingleAudit(query, params)
 
       logger.trace("Searching for Audit with ID {} resulted in {}", id, found)
@@ -336,10 +352,11 @@ class AuditRepository @Inject constructor(
 
    @ReadOnly
    fun findOneCreatedOrInProgress(store: Store): AuditEntity? {
-      val params = mutableMapOf("store_number" to store.myNumber(), "current_status" to listOf(Created.value, InProgress.value))
+      val params = mutableMapOf("comp_id" to store.myCompany().id!!, "store_number" to store.myNumber(), "current_status" to listOf(Created.value, InProgress.value))
       val whereClause =
          """ WHERE a.store_number = :store_number
                    AND current_status IN (<current_status>)
+                   AND comp.id = :comp_id
          """.trimIndent()
       val query = selectAllBaseQuery(whereClause)
 
@@ -474,22 +491,24 @@ class AuditRepository @Inject constructor(
             THEN
               (
               SELECT count(i.id)
-               FROM fastinfo_prod_import.inventory_vw i
+               FROM inventory i
                     LEFT JOIN audit_detail ad ON a.id = ad.audit_id and i.lookup_key = ad.lookup_key
                WHERE i.status in ('N', 'R', 'D')
                      AND ad.id IS NULL
-                     and a.company_id = comp.id AND a.store_number = i.primary_location
-                     and comp.dataset_code = i.dataset
+                     AND a.company_id = comp.id AND a.store_number = i.primary_location
+                     AND comp.dataset_code = i.dataset
+                     AND (comp.include_demo_inventory OR i.status != 'D')
               )
             ELSE
               (
-              SELECT count(i.id)
+               SELECT count(i.id)
                FROM audit_inventory i
                     LEFT JOIN audit_detail ad ON a.id = ad.audit_id and i.lookup_key = ad.lookup_key
                WHERE i.status in ('N', 'R', 'D')
                      AND ad.id IS NULL
-                     and a.company_id = comp.id AND a.store_number = i.primary_location AND a.id = i.audit_id
-                     and comp.dataset_code = i.dataset
+                     AND a.company_id = comp.id AND a.store_number = i.primary_location AND a.id = i.audit_id
+                     AND comp.dataset_code = i.dataset
+                     AND (comp.include_demo_inventory OR i.status != 'D')
               )
             END                                                 AS a_total_unscanned,
             (SELECT count(aen.id) > 0
@@ -512,11 +531,16 @@ class AuditRepository @Inject constructor(
             THEN
                (
                SELECT COUNT (*)
-               FROM fastinfo_prod_import.inventory_vw i
+               FROM inventory i
                WHERE i.primary_location = a.store_number
-                     AND (i.status = 'D'
-                           OR (i.status in ('N', 'R') AND i.location = a.store_number))
-                     AND i.dataset = auditStore.dataset
+                     AND
+                        i.dataset = auditStore.dataset
+                     AND
+                        CASE WHEN comp.include_demo_inventory THEN
+                           (i.status = 'D' OR (i.status IN ('N','R') AND i.location = a.store_number))
+                        ELSE
+                           (i.status IN ('N','R') AND i.location = a.store_number)
+                        END
                )
             ELSE
                (
@@ -525,6 +549,7 @@ class AuditRepository @Inject constructor(
                WHERE i.primary_location = a.store_number
                      AND i.dataset = auditStore.dataset
                      AND i.audit_id = a.id
+                     AND (comp.include_demo_inventory OR i.status != 'D')
                )
             END                                                 AS a_inventory_count,
             comp.id                                             AS comp_id,
@@ -536,6 +561,7 @@ class AuditRepository @Inject constructor(
             comp.client_id                                      AS comp_client_id,
             comp.dataset_code                                   AS comp_dataset_code,
             comp.federal_id_number                              AS comp_federal_id_number,
+            comp.include_demo_inventory                         AS comp_include_demo_inventory,
             comp.address_id                                     AS comp_address_id,
             comp.address_name                                   AS comp_address_name,
             comp.address_address1                               AS comp_address_address1,

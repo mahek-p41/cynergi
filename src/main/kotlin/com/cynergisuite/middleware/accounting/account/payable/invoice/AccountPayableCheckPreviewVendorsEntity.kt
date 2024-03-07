@@ -11,7 +11,7 @@ data class AccountPayableCheckPreviewVendorsEntity (
    val city: String?,
    val state: String?,
    val postalCode: String?,
-   val checkNumber: Int,
+   val checkNumber: String,
    val date: LocalDate,
    val invoiceList: MutableList<AccountPayableCheckPreviewInvoiceEntity>? = mutableListOf(),
    var gross: BigDecimal = BigDecimal.ZERO,

@@ -10,6 +10,7 @@ import com.cynergisuite.middleware.purchase.order.detail.PurchaseOrderDetailDTO
 import com.cynergisuite.middleware.purchase.order.detail.PurchaseOrderDetailDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaEntity
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
+import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -41,7 +42,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
-      final shipToIn = storeFactoryService.store(3, company)
+      final StoreEntity shipToIn = storeFactoryService.store(3, company) as StoreEntity
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
       final purchaseOrderIn = purchaseOrderTestDataLoaderService.single(
@@ -129,7 +130,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
-      final shipToIn = storeFactoryService.store(3, company)
+      final StoreEntity shipToIn = storeFactoryService.store(3, company) as StoreEntity
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
       final purchaseOrderIn = purchaseOrderTestDataLoaderService.single(
@@ -339,7 +340,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
-      final shipToIn = storeFactoryService.store(3, company)
+      final StoreEntity shipToIn = storeFactoryService.store(3, company) as StoreEntity
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
       final purchaseOrderIn = purchaseOrderTestDataLoaderService.single(
@@ -414,7 +415,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
-      final shipToIn = storeFactoryService.store(3, company)
+      final StoreEntity shipToIn = storeFactoryService.store(3, company) as StoreEntity
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
       final purchaseOrderIn = purchaseOrderTestDataLoaderService.single(
@@ -501,7 +502,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
-      final shipToIn = storeFactoryService.store(3, company)
+      final StoreEntity shipToIn = storeFactoryService.store(3, company) as StoreEntity
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
       final purchaseOrderIn = purchaseOrderTestDataLoaderService.single(
@@ -555,7 +556,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
-      final shipToIn = storeFactoryService.store(3, company)
+      final StoreEntity shipToIn = storeFactoryService.store(3, company) as StoreEntity
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
       final purchaseOrderIn = purchaseOrderTestDataLoaderService.single(
@@ -631,7 +632,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
-      final shipToIn = storeFactoryService.store(3, company)
+      final StoreEntity shipToIn = storeFactoryService.store(3, company) as StoreEntity
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
       final purchaseOrderIn = purchaseOrderTestDataLoaderService.single(
@@ -720,7 +721,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
-      final shipToIn = storeFactoryService.store(3, company)
+      final StoreEntity shipToIn = storeFactoryService.store(3, company) as StoreEntity
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
       final purchaseOrderIn = purchaseOrderTestDataLoaderService.single(
@@ -776,7 +777,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
-      final shipToIn = storeFactoryService.store(3, company)
+      final StoreEntity shipToIn = storeFactoryService.store(3, company) as StoreEntity
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
       final purchaseOrderIn = purchaseOrderTestDataLoaderService.single(
@@ -819,7 +820,7 @@ class PurchaseOrderDetailControllerSpecification extends ControllerSpecification
       final approvedByIn = employeeFactoryService.single(company)
       final purchaseAgentIn = employeeFactoryService.single(company)
       final shipViaIn = shipViaList[1]
-      final shipToIn = storeFactoryService.store(3, company)
+      final StoreEntity shipToIn = storeFactoryService.store(3, company) as StoreEntity
       final paymentTermTypeIn = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendorSubmittedEmployeeIn = employeeFactoryService.single(company)
       final purchaseOrderIn = purchaseOrderTestDataLoaderService.single(

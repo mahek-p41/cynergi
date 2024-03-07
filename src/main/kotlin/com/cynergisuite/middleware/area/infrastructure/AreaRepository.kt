@@ -53,6 +53,7 @@ abstract class AreaRepository @Inject constructor(
          c.client_id           AS company_client_id,
          c.dataset_code        AS company_dataset_code,
          c.federal_id_number   AS company_federal_id_number,
+         c.include_demo_inventory AS company_include_demo_inventory,
          add.id                AS company_address_id,
          add.number            AS company_address_number,
          add.name              AS company_address_name,

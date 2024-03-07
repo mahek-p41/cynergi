@@ -59,6 +59,7 @@ class VendorPaymentTermRepository @Inject constructor(
          comp.client_id             AS comp_client_id,
          comp.dataset_code          AS comp_dataset_code,
          comp.federal_id_number     AS comp_federal_id_number,
+         comp.include_demo_inventory AS comp_include_demo_inventory,
          comp.address_id            AS address_id,
          comp.address_name          AS address_name,
          comp.address_address1      AS address_address1,
@@ -72,18 +73,9 @@ class VendorPaymentTermRepository @Inject constructor(
          comp.address_county        AS address_county,
          comp.address_phone         AS address_phone,
          comp.address_fax           AS address_fax,
-         vpts.id                    AS vpts_id,
-         vpts.time_created          AS vpts_time_created,
-         vpts.time_updated          AS vpts_time_updated,
-         vpts.vendor_payment_term_id       AS vpts_vendor_payment_term_id,
-         vpts.due_month             AS vpts_due_month,
-         vpts.due_days              AS vpts_due_days,
-         vpts.due_percent           AS vpts_due_percent,
-         vpts.schedule_order_number AS vpts_schedule_order_number,
          count(*) OVER()            AS total_elements
       FROM vendor_payment_term vpt
            JOIN company comp ON vpt.company_id = comp.id AND comp.deleted = FALSE
-           LEFT OUTER JOIN vendor_payment_term_schedule vpts ON vpt.id = vpts.vendor_payment_term_id AND vpts.deleted = FALSE
    """
 
    @ReadOnly
@@ -95,11 +87,6 @@ class VendorPaymentTermRepository @Inject constructor(
 
       val found = jdbc.findFirstOrNull(query, params) { rs, _ ->
          val vendorPaymentTerm = mapRow(rs)
-
-         do {
-            mapRowVendorPaymentTermSchedule(rs)?.also { vendorPaymentTerm.scheduleRecords.add(it) }
-         } while (rs.next())
-
          vendorPaymentTerm
       }
 
@@ -138,6 +125,7 @@ class VendorPaymentTermRepository @Inject constructor(
                comp.client_id             AS comp_client_id,
                comp.dataset_code          AS comp_dataset_code,
                comp.federal_id_number     AS comp_federal_id_number,
+               comp.include_demo_inventory AS comp_include_demo_inventory,
                comp.address_id            AS address_id,
                comp.address_name          AS address_name,
                comp.address_address1      AS address_address1,
@@ -189,7 +177,6 @@ class VendorPaymentTermRepository @Inject constructor(
             } else {
                currentParentEntity!!
             }
-            mapRowVendorPaymentTermSchedule(rs)?.also { tempParentEntity.scheduleRecords.add(it) }
          } while (rs.next())
       }
    }
@@ -215,7 +202,7 @@ class VendorPaymentTermRepository @Inject constructor(
          mapOf(
             "company_id" to entity.company.id,
             "description" to entity.description,
-            "number_of_payments" to entity.scheduleRecords.size,
+            "number_of_payments" to entity.numberOfPayments,
             "discount_month" to entity.discountMonth,
             "discount_days" to entity.discountDays,
             "discount_percent" to entity.discountPercent
@@ -303,7 +290,9 @@ class VendorPaymentTermRepository @Inject constructor(
          description = rs.getString("vpt_description"),
          discountMonth = rs.getIntOrNull("vpt_discount_month"),
          discountDays = rs.getIntOrNull("vpt_discount_days"),
-         discountPercent = rs.getBigDecimal("vpt_discount_percent")
+         discountPercent = rs.getBigDecimal("vpt_discount_percent"),
+         numberOfPayments = rs.getInt("vpt_number_of_payments"),
+         scheduleRecords = vendorPaymentTermScheduleRepository.findAllByVendorPaymentTerm(rs.getUuid("vpt_id"))
       )
    }
 
@@ -314,7 +303,9 @@ class VendorPaymentTermRepository @Inject constructor(
          description = rs.getString("${columnPrefix}vpt_description"),
          discountMonth = rs.getIntOrNull("${columnPrefix}vpt_discount_month"),
          discountDays = rs.getIntOrNull("${columnPrefix}vpt_discount_days"),
-         discountPercent = rs.getBigDecimal("${columnPrefix}vpt_discount_percent")
+         discountPercent = rs.getBigDecimal("${columnPrefix}vpt_discount_percent"),
+         numberOfPayments = rs.getInt("${columnPrefix}vpt_number_of_payments"),
+         scheduleRecords = vendorPaymentTermScheduleRepository.findAllByVendorPaymentTerm(rs.getUuid("${columnPrefix}vpt_id"))
       )
    }
 
@@ -325,20 +316,9 @@ class VendorPaymentTermRepository @Inject constructor(
          description = rs.getString("description"),
          discountMonth = rs.getIntOrNull("discount_month"),
          discountDays = rs.getIntOrNull("discount_days"),
-         discountPercent = rs.getBigDecimal("discount_percent")
+         discountPercent = rs.getBigDecimal("discount_percent"),
+         numberOfPayments = rs.getInt("number_of_payments"),
+         scheduleRecords = vendorPaymentTermScheduleRepository.findAllByVendorPaymentTerm(rs.getUuid("id"))
       )
    }
-
-   private fun mapRowVendorPaymentTermSchedule(rs: ResultSet): VendorPaymentTermScheduleEntity? =
-      if (rs.getString("vpts_id") != null) {
-         VendorPaymentTermScheduleEntity(
-            id = rs.getUuid("vpts_id"),
-            dueMonth = rs.getIntOrNull("vpts_due_month"),
-            dueDays = rs.getInt("vpts_due_days"),
-            duePercent = rs.getBigDecimal("vpts_due_percent"),
-            scheduleOrderNumber = rs.getInt("vpts_schedule_order_number")
-         )
-      } else {
-         null
-      }
 }

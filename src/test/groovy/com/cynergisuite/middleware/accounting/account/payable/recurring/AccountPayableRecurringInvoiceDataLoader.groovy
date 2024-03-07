@@ -5,6 +5,7 @@ import com.cynergisuite.middleware.accounting.account.payable.AccountPayableRecu
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableRecurringInvoiceStatusTypeDataLoader
 import com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure.AccountPayableRecurringInvoiceRepository
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.github.javafaker.Faker
 import groovy.transform.CompileStatic
@@ -73,7 +74,7 @@ class AccountPayableRecurringInvoiceDataLoader {
       return IntStream.range(0, number).mapToObj {
          new AccountPayableRecurringInvoiceDTO(
             null,
-            new SimpleIdentifiableDTO(vendor.id),
+            new VendorDTO(vendor),
             lorem.characters(5, 20),
             numbers.randomDouble(2, 1, 1000000).toBigDecimal(),
             random.nextBoolean(),
@@ -81,7 +82,7 @@ class AccountPayableRecurringInvoiceDataLoader {
             lorem.sentence(),
             lorem.characters(1, 3),
             "E",
-            new SimpleIdentifiableDTO(payTo.id),
+            new VendorDTO(payTo),
             lastTransferToCreateInvoiceDate,
             new AccountPayableRecurringInvoiceStatusTypeDTO(AccountPayableRecurringInvoiceStatusTypeDataLoader.random()),
             random.nextInt(1, 100),

@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure
 
+import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
@@ -113,6 +114,7 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             vendor.v_comp_client_id                                     AS apRecurringInvoice_vendor_comp_client_id,
             vendor.v_comp_dataset_code                                  AS apRecurringInvoice_vendor_comp_dataset_code,
             vendor.v_comp_federal_id_number                             AS apRecurringInvoice_vendor_comp_federal_id_number,
+            vendor.v_comp_include_demo_inventory                        AS apRecurringInvoice_vendor_comp_include_demo_inventory,
             vendor.v_comp_address_id                                    AS apRecurringInvoice_vendor_comp_address_id,
             vendor.v_comp_address_name                                  AS apRecurringInvoice_vendor_comp_address_name,
             vendor.v_comp_address_address1                              AS apRecurringInvoice_vendor_comp_address_address1,
@@ -171,6 +173,7 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             vendor.v_vgrp_company_id                                    AS apRecurringInvoice_vendor_vgrp_company_id,
             vendor.v_vgrp_value                                         AS apRecurringInvoice_vendor_vgrp_value,
             vendor.v_vgrp_description                                   AS apRecurringInvoice_vendor_vgrp_description,
+            vendor.v_has_rebate                                         AS apRecurringInvoice_vendor_has_rebate,
             payTo.v_id                                                  AS apRecurringInvoice_payTo_id,
             payTo.v_time_created                                        AS apRecurringInvoice_payTo_time_created,
             payTo.v_time_updated                                        AS apRecurringInvoice_payTo_time_updated,
@@ -220,6 +223,7 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             payTo.v_comp_client_id                                      AS apRecurringInvoice_payTo_comp_client_id,
             payTo.v_comp_dataset_code                                   AS apRecurringInvoice_payTo_comp_dataset_code,
             payTo.v_comp_federal_id_number                              AS apRecurringInvoice_payTo_comp_federal_id_number,
+            payTo.v_comp_include_demo_inventory                         AS apRecurringInvoice_payTo_comp_include_demo_inventory,
             payTo.v_comp_address_id                                     AS apRecurringInvoice_payTo_comp_address_id,
             payTo.v_comp_address_name                                   AS apRecurringInvoice_payTo_comp_address_name,
             payTo.v_comp_address_address1                               AS apRecurringInvoice_payTo_comp_address_address1,
@@ -278,6 +282,7 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             payTo.v_vgrp_company_id                                     AS apRecurringInvoice_payTo_vgrp_company_id,
             payTo.v_vgrp_value                                          AS apRecurringInvoice_payTo_vgrp_value,
             payTo.v_vgrp_description                                    AS apRecurringInvoice_payTo_vgrp_description,
+            payTo.v_has_rebate                                          AS apRecurringInvoice_payTo_has_rebate,
             status.id                                                   AS apRecurringInvoice_status_id,
             status.value                                                AS apRecurringInvoice_status_value,
             status.description                                          AS apRecurringInvoice_status_description,
@@ -329,21 +334,29 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
    @ReadOnly
    fun findAll(
       company: CompanyEntity,
-      page: PageRequest
+      filterRequest: AccountPayableInvoiceListByVendorFilterRequest
    ): RepositoryPage<AccountPayableRecurringInvoiceEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
+      val whereClause = StringBuilder(" WHERE apRecurringInvoice.company_id = :comp_id")
+
+      if (filterRequest.vendor != null) {
+         params["vendor"] = filterRequest.vendor
+         whereClause.append(" AND vendor.v_number >= :vendor ")
+      }
+
+      if (filterRequest.invoice != null) {
+         params["invoice"] = filterRequest.invoice
+         whereClause.append(" AND apRecurringInvoice.invoice = :invoice ")
+      }
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
-            WHERE apRecurringInvoice.company_id = :comp_id
-            ORDER BY apRecurringInvoice_${page.snakeSortBy()} ${page.sortDirection()}
+            $whereClause
+            ORDER BY apRecurringInvoice_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
-         mapOf(
-            "comp_id" to company.id,
-            "limit" to page.size(),
-            "offset" to page.offset()
-         ),
-         page
+         params,
+         filterRequest
       ) { rs, elements ->
          do {
             elements.add(mapRow(rs, company, "apRecurringInvoice_"))

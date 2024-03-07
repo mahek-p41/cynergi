@@ -12,6 +12,7 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.softDelete
+import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportEntity
@@ -31,6 +32,7 @@ import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
+import java.time.LocalDate
 import java.util.UUID
 import javax.transaction.Transactional
 
@@ -118,6 +120,22 @@ class BankReconciliationRepository @Inject constructor(
    }
 
    @ReadOnly
+   fun findOne(bank: UUID, type: String, document: String, date: LocalDate, company: CompanyEntity): BankReconciliationEntity? {
+      val params = mutableMapOf<String, Any?>("bank_id" to bank, "comp_id" to company.id, "type_value" to type, "document" to document, "date" to date)
+      val query = "${selectBaseQuery()} WHERE bankRecon.bank_id = :bank_id AND bankRecon.company_id = :comp_id and bankReconType.value = :type_value and bankRecon.document = :document and bankRecon.transaction_date = :date and bankRecon.deleted = false"
+      val found = jdbc.findFirstOrNull(
+         query,
+         params
+      ) { rs, _ ->
+         mapRow(rs, company, "bankRecon_")
+      }
+
+      logger.trace("Searching for BankReconciliation id {}: \nQuery {} \nResulted in {}", bank, query, found)
+
+      return found
+   }
+
+   @ReadOnly
    fun findAll(company: CompanyEntity, page: PageRequest): RepositoryPage<BankReconciliationEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val query =
@@ -192,6 +210,57 @@ class BankReconciliationRepository @Inject constructor(
       ) { rs, _ ->
          mapRow(rs, entity)
       }
+   }
+
+   @Transactional
+   fun bulkInsertByVerifyIds(verifyIDs: List<UUID>, company: CompanyEntity): Int {
+      logger.debug("Creating bank reconciliation entries for Verify IDs {}", verifyIDs)
+      val affectedRows = jdbc.update(
+         """
+         INSERT INTO bank_reconciliation (
+             company_id,
+             bank_id,
+             type_id,
+             transaction_date,
+             cleared_date,
+             amount,
+             description,
+             document
+         )
+         SELECT
+             ds.company_id,
+             b.id AS bank_id,
+             brtd.id AS type_id,
+             ds.business_date AS transaction_date,
+             NULL AS cleared_date,
+             ds.deposit_amount AS amount,
+             'SUM ' || RIGHT(REPEAT('0', 4) || ds.store_number_sfk, 4) || ' ' || dep.value AS description,
+             TO_CHAR(CURRENT_DATE, 'YYYYMMDD') AS document
+         FROM
+             deposits_staging ds
+         JOIN
+             deposits_staging_deposit_type_domain dep ON ds.deposit_type_id = dep.id
+         JOIN
+             area a ON ds.company_id = a.company_id
+         JOIN
+             area_type_domain atd ON a.area_type_id = atd.id AND atd.value = 'BR'
+         JOIN
+             bank b ON ds.deposit_account_id = b.general_ledger_account_id AND b.deleted = FALSE
+         JOIN
+             bank_reconciliation_type_domain brtd ON (
+                 (ds.deposit_type_id BETWEEN 1 AND 7 AND brtd.value = 'D')
+                 OR (ds.deposit_type_id BETWEEN 8 AND 9 AND brtd.value = 'M')
+                 OR (ds.deposit_type_id BETWEEN 10 AND 11 AND brtd.value = 'R')
+             )
+         WHERE
+             ds.verify_id IN (<verify_ids>)
+             AND ds.deposit_amount > 0
+             AND ds.deleted = FALSE
+         """.trimIndent(),
+         mapOf("verify_ids" to verifyIDs)
+      )
+      logger.info("Inserted {} bank_reconciliation rows.", affectedRows)
+      return affectedRows
    }
 
    @Transactional

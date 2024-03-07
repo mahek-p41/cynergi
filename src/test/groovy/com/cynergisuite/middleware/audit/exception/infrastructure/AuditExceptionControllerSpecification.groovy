@@ -135,7 +135,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
       final warehouse = auditScanAreaFactoryService.warehouse(store, company)
-      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, warehouse, employee, false).map { new AuditExceptionDTO(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
+      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, warehouse, employee, false).toList()
       final firstTenDiscrepancies = twentyAuditDiscrepancies[0..9]
 
       when:
@@ -150,8 +150,23 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       pageOneResult.requested.sortDirection == "ASC"
       pageOneResult.elements != null
       pageOneResult.elements.size() == 10
-      pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
-         .collect { new AuditExceptionDTO(it) } == firstTenDiscrepancies
+      pageOneResult.elements.eachWithIndex { result, index ->
+         with(result) {
+            id == firstTenDiscrepancies[index].id
+            scanArea.name == firstTenDiscrepancies[index].scanArea.name
+            scanArea.store.storeNumber == firstTenDiscrepancies[index].scanArea.store.number
+            scanArea.store.name == firstTenDiscrepancies[index].scanArea.store.name
+            lookupKey == firstTenDiscrepancies[index].lookupKey
+            barcode == firstTenDiscrepancies[index].barcode
+            serialNumber == firstTenDiscrepancies[index].serialNumber
+            inventoryBrand == firstTenDiscrepancies[index].inventoryBrand
+            inventoryModel == firstTenDiscrepancies[index].inventoryModel
+            scannedBy.number == firstTenDiscrepancies[index].scannedBy.number
+            approved == firstTenDiscrepancies[index].approved
+            notes.size() == firstTenDiscrepancies[index].notes.size()
+            audit.id == firstTenDiscrepancies[index].audit.id
+         }
+      }
    }
 
    void "fetch all exceptions for a single audit" () {
@@ -163,7 +178,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final department = departmentFactoryService.random(company)
       final employee = employeeFactoryService.single(store, department)
       final warehouse = auditScanAreaFactoryService.warehouse(store, company)
-      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, warehouse, employee, false).map { new AuditExceptionDTO(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
+      final twentyAuditDiscrepancies = auditExceptionFactoryService.stream(20, audit, warehouse, employee, false).toList()
       final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
       final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
       final pageFive = new StandardPageRequest(5, 5, "id", "ASC")
@@ -183,8 +198,23 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       new StandardPageRequest(pageOneResult.requested) == pageOne
       pageOneResult.elements != null
       pageOneResult.elements.size() == 5
-      pageOneResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
-         .collect { new AuditExceptionDTO(it) } == firstFiveDiscrepancies
+      pageOneResult.elements.eachWithIndex { result, index ->
+         with(result) {
+            id == firstFiveDiscrepancies[index].id
+            scanArea.name == firstFiveDiscrepancies[index].scanArea.name
+            scanArea.store.storeNumber == firstFiveDiscrepancies[index].scanArea.store.number
+            scanArea.store.name == firstFiveDiscrepancies[index].scanArea.store.name
+            lookupKey == firstFiveDiscrepancies[index].lookupKey
+            barcode == firstFiveDiscrepancies[index].barcode
+            serialNumber == firstFiveDiscrepancies[index].serialNumber
+            inventoryBrand == firstFiveDiscrepancies[index].inventoryBrand
+            inventoryModel == firstFiveDiscrepancies[index].inventoryModel
+            scannedBy.number == firstFiveDiscrepancies[index].scannedBy.number
+            approved == firstFiveDiscrepancies[index].approved
+            notes.size() == firstFiveDiscrepancies[index].notes.size()
+            audit.id == firstFiveDiscrepancies[index].audit.id
+         }
+      }
 
       when:
       def pageTwoResult = get("/audit/${audit.id}/exception$pageTwo")
@@ -194,8 +224,23 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       new StandardPageRequest(pageTwoResult.requested) == pageTwo
       pageTwoResult.elements != null
       pageTwoResult.elements.size() == 5
-      pageTwoResult.elements.each{ it['audit'] = new SimpleIdentifiableDTO(it.audit.id) }
-         .collect { new AuditExceptionDTO(it) } == secondFiveDiscrepancies
+      pageTwoResult.elements.eachWithIndex { result, index ->
+         with(result) {
+            id == secondFiveDiscrepancies[index].id
+            scanArea.name == secondFiveDiscrepancies[index].scanArea.name
+            scanArea.store.storeNumber == secondFiveDiscrepancies[index].scanArea.store.number
+            scanArea.store.name == secondFiveDiscrepancies[index].scanArea.store.name
+            lookupKey == secondFiveDiscrepancies[index].lookupKey
+            barcode == secondFiveDiscrepancies[index].barcode
+            serialNumber == secondFiveDiscrepancies[index].serialNumber
+            inventoryBrand == secondFiveDiscrepancies[index].inventoryBrand
+            inventoryModel == secondFiveDiscrepancies[index].inventoryModel
+            scannedBy.number == secondFiveDiscrepancies[index].scannedBy.number
+            approved == secondFiveDiscrepancies[index].approved
+            notes.size() == secondFiveDiscrepancies[index].notes.size()
+            audit.id == secondFiveDiscrepancies[index].audit.id
+         }
+      }
 
       when:
       get("/audit/${audit.id}/exception$pageFive")
@@ -312,7 +357,7 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       final auditOne = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress(), AuditStatusFactory.completed()] as Set)
       final auditTwo = auditFactoryService.single(store, employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
       final warehouse = auditScanAreaFactoryService.warehouse(store, company)
-      final List<AuditExceptionDTO> threeAuditDiscrepanciesAuditTwo = auditExceptionFactoryService.stream(3, auditTwo, warehouse, employee, false).map { new AuditExceptionDTO(it, new AuditScanAreaDTO(it.scanArea)) }.toList()
+      final List<AuditExceptionDTO> threeAuditDiscrepanciesAuditTwo = auditExceptionFactoryService.stream(3, auditTwo, warehouse, employee, false).toList()
 
       when:
       def pageOneResult = get("/audit/${auditTwo.id}/exception")
@@ -322,9 +367,23 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       auditOne.number == 1
       auditTwo.number == 2
       pageOneResult.elements.size() == 3
-      pageOneResult.elements.each {it['audit'] = new SimpleIdentifiableDTO(it.audit.id)}
-         .collect { new AuditExceptionDTO(it) }.toSorted {o1, o2 -> o2.id <=> o2.id } == threeAuditDiscrepanciesAuditTwo
-   }
+      pageOneResult.elements.eachWithIndex { result, index ->
+         with(result) {
+            id == threeAuditDiscrepanciesAuditTwo[index].id
+            scanArea.name == threeAuditDiscrepanciesAuditTwo[index].scanArea.name
+            scanArea.store.storeNumber == threeAuditDiscrepanciesAuditTwo[index].scanArea.store.number
+            scanArea.store.name == threeAuditDiscrepanciesAuditTwo[index].scanArea.store.name
+            lookupKey == threeAuditDiscrepanciesAuditTwo[index].lookupKey
+            barcode == threeAuditDiscrepanciesAuditTwo[index].barcode
+            serialNumber == threeAuditDiscrepanciesAuditTwo[index].serialNumber
+            inventoryBrand == threeAuditDiscrepanciesAuditTwo[index].inventoryBrand
+            inventoryModel == threeAuditDiscrepanciesAuditTwo[index].inventoryModel
+            scannedBy.number == threeAuditDiscrepanciesAuditTwo[index].scannedBy.number
+            approved == threeAuditDiscrepanciesAuditTwo[index].approved
+            notes.size() == threeAuditDiscrepanciesAuditTwo[index].notes.size()
+            audit.id == threeAuditDiscrepanciesAuditTwo[index].audit.id
+         }
+      }   }
 
    void "fetch one audit exception by id not found" () {
       given:
@@ -664,7 +723,9 @@ class AuditExceptionControllerSpecification extends ControllerSpecificationBase 
       result.id == savedAuditException.id
       OffsetDateTime.parse(result.timeCreated as String) == savedAuditException.timeCreated
       OffsetDateTime.parse(result.timeUpdated as String) == savedAuditException.timeUpdated
-      new AuditScanAreaDTO(result.scanArea) == new AuditScanAreaDTO(savedAuditException.scanArea)
+      result.scanArea.name == savedAuditException.scanArea.name
+      result.scanArea.store.storeNumber == savedAuditException.scanArea.store.number
+      result.scanArea.store.name == savedAuditException.scanArea.store.name
       result.barcode == savedAuditException.barcode
       result.productCode == savedAuditException.productCode
       result.altId == savedAuditException.altId

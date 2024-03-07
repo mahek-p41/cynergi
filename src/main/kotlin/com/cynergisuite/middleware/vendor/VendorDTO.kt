@@ -179,7 +179,10 @@ data class VendorDTO(
    var phone: String? = null,
 
    @field:Schema(name = "Active vendor indicator", required = false, description = "Active vendor indicator")
-   var isActive: Boolean = true
+   var isActive: Boolean = true,
+
+   @field:Schema(name = "hasRebate", required = false, description = "If Vendor has a rebate")
+   var hasRebate: Boolean? = false
 
 ) : Identifiable {
 
@@ -221,7 +224,8 @@ data class VendorDTO(
          number = entity.number,
          note = entity.note,
          phone = entity.phone,
-         isActive = entity.isActive
+         isActive = entity.isActive,
+         hasRebate = entity.hasRebate ?: false
       )
 
    override fun myId(): UUID? = id

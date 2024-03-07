@@ -6,7 +6,12 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableRecurringInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.recurring.ExpenseMonthCreationTypeDTO
+import com.cynergisuite.middleware.address.AddressDTO
+import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodType
+import com.cynergisuite.middleware.shipping.freight.calc.method.FreightCalcMethodTypeDTO
+import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardTypeDTO
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
+import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
 import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestDataLoaderService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -374,6 +379,11 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+//      final vendorDTO = new VendorDTO(vendor)
+//      vendorDTO.id = UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')
+//      final payToDTO = new VendorDTO(payTo)
+//      payToDTO.id = UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')
+
       final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(vendor, payTo)
       accountPayableRecurringInvoiceDTO["$testProp"] = invalidValue
 
@@ -389,14 +399,59 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       response[0].message == errorMessage
       response[0].code == 'system.not.found'
 
+
       where:
       testProp                        | invalidValue                                                                       || errorResponsePath                     | errorMessage
-      'vendor'                        | new SimpleIdentifiableDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')) || 'vendor.id'                           | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
-      'payTo'                         | new SimpleIdentifiableDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')) || 'payTo.id'                            | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
+      'vendor'                        | new VendorDTO(
+         id: UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702'),
+         name: "Example Vendor",
+         address: null,
+         payTo: new SimpleIdentifiableDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')),
+         freightOnboardType: new FreightOnboardTypeDTO('P', 'Prepaid'),
+         paymentTerm: new SimpleIdentifiableDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')),
+         returnPolicy: true,
+         shipVia: new SimpleIdentifiableDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')),
+         separateCheck: true,
+         freightCalcMethodType: new FreightCalcMethodTypeDTO('I', 'Invoice'),
+         chargeInventoryTax1: true,
+         chargeInventoryTax2: true,
+         chargeInventoryTax3: true,
+         chargeInventoryTax4: true,
+         federalIdNumberVerification: true,
+         allowDropShipToCustomer: true,
+         autoSubmitPurchaseOrder: true,
+         isActive: true,
+         hasRebate: true
+      ) || 'vendor.id' | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
+      'payTo'                         | new VendorDTO(
+         id: UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702'),
+         name: "Example Vendor",
+         address: null,
+         payTo: new SimpleIdentifiableDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')),
+         freightOnboardType: new FreightOnboardTypeDTO('P', 'Prepaid'),
+         paymentTerm: new SimpleIdentifiableDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')),
+         returnPolicy: true,
+         shipVia: new SimpleIdentifiableDTO(UUID.fromString('ee2359b6-c88c-11eb-8098-02420a4d0702')),
+         separateCheck: true,
+         freightCalcMethodType: new FreightCalcMethodTypeDTO('I', 'Invoice'),
+         chargeInventoryTax1: true,
+         chargeInventoryTax2: true,
+         chargeInventoryTax3: true,
+         chargeInventoryTax4: true,
+         federalIdNumberVerification: true,
+         allowDropShipToCustomer: true,
+         autoSubmitPurchaseOrder: true,
+         isActive: true,
+         hasRebate: true
+      )      || 'payTo.id'                            | 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
       'status'                        | new AccountPayableRecurringInvoiceStatusTypeDTO('Z', 'Invalid DTO')                || 'status.value'                        | 'Z was unable to be found'
       'expenseMonthCreationIndicator' | new ExpenseMonthCreationTypeDTO('Z', 'Invalid DTO')                                || 'expenseMonthCreationIndicator.value' | 'Z was unable to be found'
-   }
 
+
+   }
+   def createVendorDTO(vendor) {
+      new VendorDTO(vendor)
+   }
    void "update one" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
@@ -523,18 +578,20 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
 
    void "update invalid Account Payable Recurring Invoice with non-existing values" () {
       given:
-      final nonExistentVendorId = UUID.randomUUID()
-      final nonExistentPayToId = UUID.randomUUID()
       final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
       final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
       final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final nonExistentVendorId = new VendorDTO(vendor)
+      nonExistentVendorId.id = UUID.randomUUID()
+      final nonExistentPayToId = new VendorDTO(payTo)
+      nonExistentPayToId.id = UUID.randomUUID()
       final accountPayableRecurringInvoiceEntity = accountPayableRecurringInvoiceDataLoaderService.single(company, vendor, payTo)
       final accountPayableRecurringInvoiceDTO = accountPayableRecurringInvoiceDataLoaderService.singleDTO(vendor, payTo)
       accountPayableRecurringInvoiceDTO.id = accountPayableRecurringInvoiceEntity.id
-      accountPayableRecurringInvoiceDTO.vendor = new SimpleIdentifiableDTO(nonExistentVendorId)
-      accountPayableRecurringInvoiceDTO.payTo = new SimpleIdentifiableDTO(nonExistentPayToId)
+      accountPayableRecurringInvoiceDTO.vendor = nonExistentVendorId
+      accountPayableRecurringInvoiceDTO.payTo = nonExistentPayToId
       accountPayableRecurringInvoiceDTO.status = new AccountPayableRecurringInvoiceStatusTypeDTO('Z', 'Invalid DTO')
       accountPayableRecurringInvoiceDTO.expenseMonthCreationIndicator = new ExpenseMonthCreationTypeDTO('Z', 'Invalid DTO')
 
@@ -551,13 +608,13 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       response[0].message == 'Z was unable to be found'
       response[0].code == 'system.not.found'
       response[1].path == 'payTo.id'
-      response[1].message == "$nonExistentPayToId was unable to be found"
+      response[1].message == "$nonExistentPayToId.id was unable to be found"
       response[1].code == 'system.not.found'
       response[2].path == 'status.value'
       response[2].message == 'Z was unable to be found'
       response[2].code == 'system.not.found'
       response[3].path == 'vendor.id'
-      response[3].message == "$nonExistentVendorId was unable to be found"
+      response[3].message == "$nonExistentVendorId.id was unable to be found"
       response[3].code == 'system.not.found'
    }
 }

@@ -34,7 +34,7 @@ data class AccountPayableCheckPreviewVendorsDTO(
    var postalCode: String? = null,
 
    @field:Schema(description = "Check number")
-   var checkNumber: Int? = null,
+   var checkNumber: String? = null,
 
    @field:Schema(description = "Distribution amount")
    var date: LocalDate? = null,

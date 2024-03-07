@@ -44,7 +44,7 @@ class GeneralLedgerProfitCenterTrialBalanceReportFilterRequest(
 
    @field:Pattern(regexp = "location|account")
    @field:Schema(description = "The column to sort the GL Profit Center Trial Balance report by (location|account).", defaultValue = "location")
-   override var sortBy: String? = null,
+   override var sortBy: String? = "location",
 
 ) : SortableRequestBase<GeneralLedgerProfitCenterTrialBalanceReportFilterRequest>("location", "ASC") {
 

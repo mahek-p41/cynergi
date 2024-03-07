@@ -53,6 +53,7 @@ class StoreRepository @Inject constructor(
             comp.client_id                AS comp_client_id,
             comp.dataset_code             AS comp_dataset_code,
             comp.federal_id_number        AS comp_federal_id_number,
+            comp.include_demo_inventory   AS comp_include_demo_inventory,
             address.id                    AS address_id,
             address.name                  AS address_name,
             address.address1              AS address_address1,
@@ -132,7 +133,7 @@ class StoreRepository @Inject constructor(
 
       val found = jdbc.findFirstOrNull(query, params) { rs, _ -> mapRowWithRegion(rs, company) }
 
-      logger.trace("Search for Store by number with params resulted in {}", params, found)
+      logger.trace("Search for Store by number with params {} resulted in {}", params, found)
 
       return found
    }
@@ -319,7 +320,7 @@ class StoreRepository @Inject constructor(
       return region to store
    }
 
-   fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): Store =
+   fun mapRow(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): StoreEntity =
       StoreEntity(
          id = rs.getLong("${columnPrefix}id"),
          number = rs.getInt("${columnPrefix}number"),

@@ -35,7 +35,7 @@ class AccountPayablePaymentTypeTypeRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun findOne(id: Long): AccountPayablePaymentTypeType? {
+   fun findOne(id: Int): AccountPayablePaymentTypeType? {
       val params = mutableMapOf<String, Any?>("id" to id)
       val query = "SELECT * FROM account_payable_payment_type_type_domain WHERE id = :id"
       logger.trace("Searching for AccountPayablePaymentTypeTypeDomain {}: \nQuery {}", params, query)

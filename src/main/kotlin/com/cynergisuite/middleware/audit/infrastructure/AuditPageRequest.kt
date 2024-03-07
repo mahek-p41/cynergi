@@ -34,7 +34,7 @@ class AuditPageRequest(
 
    @field:Pattern(regexp = "lastupdated|store|status|id")
    @field:Schema(description = "The column to sort the audits by (timeupdated|store|status|id).", defaultValue = "lastupdated", allowableValues = ["lastupdated", "store", "status", "id"])
-   override var sortBy: String? = null,
+   override var sortBy: String? = "lastupdated",
 
 ) : PageRequestBase<AuditPageRequest>(page, size, sortBy, sortDirection) {
 

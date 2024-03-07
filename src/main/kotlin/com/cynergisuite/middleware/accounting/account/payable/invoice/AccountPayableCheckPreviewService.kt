@@ -7,7 +7,6 @@ import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationError
 import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.localization.CheckInUse
-import com.cynergisuite.middleware.localization.NotFound
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 
@@ -19,7 +18,7 @@ class AccountPayableCheckPreviewService @Inject constructor(
    fun checkPreview(company: CompanyEntity, filterRequest: AccountPayableCheckPreviewFilterRequest): AccountPayableCheckPreviewDTO {
       val checkPreviews = accountPayableCheckPreviewRepository.fetchCheckPreview(company, filterRequest)
       if (checkPreviews.vendorList.isNotEmpty()) {
-         val checksInUse = accountPayableCheckPreviewRepository.validateCheckNums(filterRequest.checkNumber, filterRequest.bank, checkPreviews.vendorList)
+         val checksInUse = accountPayableCheckPreviewRepository.validateCheckNums(filterRequest.checkNumber.toBigInteger(), filterRequest.bank, checkPreviews.vendorList)
          if (checksInUse){
             val errors: Set<ValidationError> = mutableSetOf(ValidationError("Check previously used", CheckInUse()))
             throw ValidationException(errors)

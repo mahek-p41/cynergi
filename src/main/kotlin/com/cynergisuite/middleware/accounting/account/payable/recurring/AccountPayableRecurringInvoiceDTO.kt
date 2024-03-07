@@ -1,9 +1,9 @@
 package com.cynergisuite.middleware.accounting.account.payable.recurring
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableRecurringInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.schedule.ScheduleDTO
+import com.cynergisuite.middleware.vendor.VendorDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.micronaut.core.annotation.Introspected
@@ -24,7 +24,7 @@ data class AccountPayableRecurringInvoiceDTO(
 
    @field:NotNull
    @field:Schema(description = "Account payable recurring invoice vendor")
-   var vendor: SimpleIdentifiableDTO? = null,
+   var vendor: VendorDTO? = null,
 
    @field:NotNull
    @field:Size(max = 20)
@@ -57,7 +57,7 @@ data class AccountPayableRecurringInvoiceDTO(
 
    @field:NotNull
    @field:Schema(description = "Account payable recurring invoice pay to")
-   var payTo: SimpleIdentifiableDTO? = null,
+   var payTo: VendorDTO? = null,
 
    @field:Schema(description = "Account payable recurring invoice last transfer to create invoice date")
    var lastTransferToCreateInvoiceDate: LocalDate? = null,
@@ -120,7 +120,7 @@ data class AccountPayableRecurringInvoiceDTO(
    ) :
       this(
          id = entity.id,
-         vendor = SimpleIdentifiableDTO(entity.vendor),
+         vendor = VendorDTO(entity.vendor),
          invoice = entity.invoice,
          invoiceAmount = entity.invoiceAmount,
          fixedAmountIndicator = entity.fixedAmountIndicator,
@@ -128,7 +128,7 @@ data class AccountPayableRecurringInvoiceDTO(
          message = entity.message,
          codeIndicator = entity.codeIndicator,
          type = entity.type,
-         payTo = SimpleIdentifiableDTO(entity.payTo),
+         payTo = VendorDTO(entity.payTo),
          lastTransferToCreateInvoiceDate = entity.lastTransferToCreateInvoiceDate,
          status = AccountPayableRecurringInvoiceStatusTypeDTO(entity.status),
          dueDays = entity.dueDays,

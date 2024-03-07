@@ -34,9 +34,9 @@ jobs:
        RELEASE_ENVIRONMENT: ${{ inputs.releaseEnvironment }}
        DEPLOY_TARGETS: ${{ inputs.deployTargets }}
       steps:
-         - uses: actions/checkout@v3
+         - uses: actions/checkout@v4
 
-         - uses: actions/download-artifact@v3
+         - uses: actions/download-artifact@v4
            with:
             name: ${{ inputs.tarball }}
 
