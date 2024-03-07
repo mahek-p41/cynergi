@@ -31,10 +31,22 @@ import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeTypeDataLoader
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.accounting.general.ledger.control.GeneralLedgerControlDataLoaderService
+import com.cynergisuite.middleware.authentication.user.SecurityGroupDTO
+import com.cynergisuite.middleware.authentication.user.SecurityType
+import com.cynergisuite.middleware.company.CompanyDTO
+import com.cynergisuite.middleware.division.DivisionDTO
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
+import com.cynergisuite.middleware.purchase.order.type.ExceptionIndicatorTypeDTO
+import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderStatusTypeValueObject
+import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderTypeValueObject
+import com.cynergisuite.middleware.region.RegionDTO
+import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardTypeDTO
+import com.cynergisuite.middleware.shipping.freight.term.FreightTermTypeDTO
+import com.cynergisuite.middleware.shipping.location.ShipLocationTypeDTO
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
+import com.cynergisuite.middleware.store.StoreDTO
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
@@ -70,7 +82,6 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    @Inject SimpleTransactionalSql sql
    @Inject AccountPayableControlTestDataLoaderService accountPayableControlDataLoaderService
    @Inject GeneralLedgerControlDataLoaderService generalLedgerControlDataLoaderService
-
 
    void "fetch one" () {
       given:
@@ -995,7 +1006,6 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
          id != null
          vendor.id == apInvoiceDTO.vendor.id
          invoice == apInvoiceDTO.invoice
-         purchaseOrder.id == apInvoiceDTO.purchaseOrder
          invoiceDate == apInvoiceDTO.invoiceDate.toString()
          invoiceAmount == apInvoiceDTO.invoiceAmount
          discountAmount == apInvoiceDTO.discountAmount
@@ -1162,7 +1172,6 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       where:
       testProp          | invalidValue                                                                       || errorResponsePath  | errorCode                                         | errorMessage
-      'purchaseOrder'   | new SimpleIdentifiableDTO(UUID.fromString('905545bf-3509-4ad3-8ccc-e437b2dbdcb0')) || 'purchaseOrder.id' | 'system.not.found'                                | "905545bf-3509-4ad3-8ccc-e437b2dbdcb0 was unable to be found"
       'selected'        | new AccountPayableInvoiceSelectedTypeDTO('Z', 'Invalid DTO')                       || 'selected.value'   | 'system.not.found'                                | "Z was unable to be found"
       'type'            | new AccountPayableInvoiceTypeDTO('Z', 'Invalid DTO')                               || 'type.value'       | 'system.not.found'                                | "Z was unable to be found"
       'status'          | new AccountPayableInvoiceStatusTypeDTO('Z', 'Invalid DTO')                         || 'status.value'     | 'system.not.found'                                | "Z was unable to be found"
@@ -1171,6 +1180,8 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       'discountPercent' | 0.12123456                                                                         || 'discountPercent'  | 'javax.validation.constraints.Digits.message'     | '0.12123456 is out of range for discountPercent'
       'discountPercent' | 1                                                                                  || 'discountPercent'  | 'javax.validation.constraints.DecimalMax.message' | 'must be less than or equal to value'
    }
+
+
 
    void "update one" () {
       given:
@@ -1316,7 +1327,6 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
          id == updatedAPInvoice.id
          vendor.id == updatedAPInvoice.vendor.id
          invoice == updatedAPInvoice.invoice
-         purchaseOrder.id == updatedAPInvoice.purchaseOrder
          invoiceDate == updatedAPInvoice.invoiceDate.toString()
          invoiceAmount == updatedAPInvoice.invoiceAmount
          discountAmount == updatedAPInvoice.discountAmount
@@ -1487,7 +1497,6 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       where:
       testProp        | invalidValue                                                                       || errorResponsePath  | errorMessage
-      'purchaseOrder' | new SimpleIdentifiableDTO(UUID.fromString('905545bf-3509-4ad3-8ccc-e437b2dbdcb0')) || 'purchaseOrder.id' | "905545bf-3509-4ad3-8ccc-e437b2dbdcb0 was unable to be found"
       'selected'      | new AccountPayableInvoiceSelectedTypeDTO('Z', 'Invalid DTO')                       || 'selected.value'   | "Z was unable to be found"
       'type'          | new AccountPayableInvoiceTypeDTO('Z', 'Invalid DTO')                               || 'type.value'       | "Z was unable to be found"
       'status'        | new AccountPayableInvoiceStatusTypeDTO('Z', 'Invalid DTO')                         || 'status.value'     | "Z was unable to be found"

@@ -190,7 +190,7 @@ class AccountPayableCashFlowReportControllerSpecification extends ControllerSpec
          it.paidAmount = 50 - (index * 10)
          it.discountTaken = 50
          it.dueDate = LocalDate.now().minusWeeks(index)
-         apInvoicesEntity.add(accountPayableInvoiceRepository.insert(new AccountPayableInvoiceEntity(it, vendor1, new SimpleIdentifiableEntity(purchaseOrderIn1), employeeIn, selected, invoiceType, statusTypeO, payToIn, new SimpleLegacyIdentifiableEntity(store.myId()) ), company))
+         apInvoicesEntity.add(accountPayableInvoiceRepository.insert(new AccountPayableInvoiceEntity(it, vendor1, purchaseOrderIn1, employeeIn, selected, invoiceType, statusTypeO, payToIn, new SimpleLegacyIdentifiableEntity(store.myId()) ), company))
       }
 
 
@@ -204,7 +204,7 @@ class AccountPayableCashFlowReportControllerSpecification extends ControllerSpec
          it.paidAmount = 100 - (index * 10)
          it.discountTaken = 50
          it.dueDate = LocalDate.now().minusWeeks(index)
-         apInvoicesEntity2.add(accountPayableInvoiceRepository.insert(new AccountPayableInvoiceEntity(it, vendor2, new SimpleIdentifiableEntity(purchaseOrderIn2), employeeIn, selected, invoiceType, statusTypeO, payToIn, new SimpleLegacyIdentifiableEntity(store.myId()) ), company))
+         apInvoicesEntity2.add(accountPayableInvoiceRepository.insert(new AccountPayableInvoiceEntity(it, vendor2, purchaseOrderIn2, employeeIn, selected, invoiceType, statusTypeO, payToIn, new SimpleLegacyIdentifiableEntity(store.myId()) ), company))
       }
 
       def account = accountTestDataLoaderService.single(company)

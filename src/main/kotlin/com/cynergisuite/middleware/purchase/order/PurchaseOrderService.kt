@@ -2,10 +2,14 @@ package com.cynergisuite.middleware.purchase.order
 
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.SearchPageRequest
+import com.cynergisuite.middleware.accounting.account.AccountDTO
+import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.purchase.order.infrastructure.PurchaseOrderRepository
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.util.Locale
 import java.util.UUID
 
 @Singleton
@@ -27,6 +31,14 @@ class PurchaseOrderService @Inject constructor(
 
       return found.toPage { purchaseOrderEntity: PurchaseOrderEntity ->
          transformEntity(purchaseOrderEntity)
+      }
+   }
+
+   fun search(company: CompanyEntity, pageRequest: SearchPageRequest, locale: Locale): Page<PurchaseOrderDTO> {
+      val found = purchaseOrderRepository.search(company, pageRequest)
+
+      return found.toPage { purchaseOrder: PurchaseOrderEntity ->
+         transformEntity(purchaseOrder)
       }
    }
 

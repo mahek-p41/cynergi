@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice
 
-import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.domain.ValidatorBase
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceSelectedTypeRepository
@@ -77,7 +76,7 @@ class AccountPayableInvoiceValidator @Inject constructor(
       return AccountPayableInvoiceEntity(
          dto,
          vendor!!,
-         purchaseOrder?.let { SimpleIdentifiableEntity(it) },
+         purchaseOrder,
          employee!!,
          selected!!,
          type!!,

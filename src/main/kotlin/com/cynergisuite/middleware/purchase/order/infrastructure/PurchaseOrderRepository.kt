@@ -1,15 +1,18 @@
 package com.cynergisuite.middleware.purchase.order.infrastructure
 
 import com.cynergisuite.domain.PageRequest
+import com.cynergisuite.domain.SearchPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getOffsetDateTimeOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.isNumber
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
@@ -454,6 +457,58 @@ class PurchaseOrderRepository @Inject constructor(
             "comp_id" to company.id,
             "limit" to page.size(),
             "offset" to page.offset()
+         ),
+         page
+      ) { rs, elements ->
+         do {
+            elements.add(mapRow(rs, company, "po_"))
+         } while (rs.next())
+      }
+   }
+
+   @ReadOnly
+   fun search(company: CompanyEntity, page: SearchPageRequest): RepositoryPage<PurchaseOrderEntity, PageRequest> {
+      val searchQuery = page.query?.trim()
+      val where = StringBuilder(" WHERE po.company_id = :comp_id")
+      val sortBy = StringBuilder("")
+      if (!searchQuery.isNullOrEmpty()) {
+         val searchQueryBeginsWith = "$searchQuery%"
+
+         sortBy.append("ORDER BY ")
+            if (page.fuzzy!!) {
+               where.append(" AND po.number::text LIKE \'$searchQueryBeginsWith\'")
+               sortBy.append("po.number::text <-> :search_query, po.number::text ASC ")
+            } else {
+               where.append(" AND po.number = $searchQuery")
+               sortBy.append("po.number ASC")
+            }
+//         } else if (splitSearchQuery.first().isNumber()) {
+//            val nameBeginsWith = "${splitSearchQuery.drop(1).joinToString(" - ")}%"
+//            where.append("po.number = ${splitSearchQuery.first()} AND po.number ILIKE \'$nameBeginsWith\')")
+//            sortBy.append("account.name ASC")
+//         } else {
+//            where.append("po.name ILIKE \'$searchQueryBeginsWith\')")
+//            sortBy.append("account.name ASC")
+//         }
+      }
+      return jdbc.queryPaged(
+         """
+         WITH paged AS (
+            ${selectBaseQuery()}
+            $where
+            $sortBy
+         )
+         SELECT
+            p.*,
+            count(*) OVER() as total_elements
+         FROM paged AS p
+         LIMIT :limit OFFSET :offset
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "limit" to page.size(),
+            "offset" to page.offset(),
+            "search_query" to searchQuery
          ),
          page
       ) { rs, elements ->

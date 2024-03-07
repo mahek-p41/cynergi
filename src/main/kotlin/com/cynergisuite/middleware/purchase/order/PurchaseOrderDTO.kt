@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.purchase.order
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.type.ExceptionIndicatorTypeDTO
 import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderStatusTypeValueObject

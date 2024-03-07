@@ -1,12 +1,12 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice
 
 import com.cynergisuite.domain.Identifiable
-import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceSelectedTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceTypeDTO
 import com.cynergisuite.middleware.employee.EmployeeValueObject
+import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.vendor.VendorDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -40,10 +40,7 @@ data class AccountPayableInvoiceDTO(
    var invoice: String? = null,
 
    @field:Schema(description = "Purchase order id", required = false)
-   var purchaseOrder: SimpleIdentifiableDTO? = null,
-
-   @field:Schema(description = "Purchase Order Number", required = false)
-   var poNumber: Long? = null,
+   var purchaseOrder: PurchaseOrderDTO? = null,
 
    @field:NotNull
    @field:Schema(description = "Invoice date")
@@ -142,8 +139,7 @@ data class AccountPayableInvoiceDTO(
          id = entity.id,
          vendor = VendorDTO(entity.vendor),
          invoice = entity.invoice,
-         purchaseOrder = SimpleIdentifiableDTO(entity.purchaseOrder?.myId()),
-         poNumber = entity.poNumber,
+         purchaseOrder = entity.purchaseOrder?.let { PurchaseOrderDTO(it) },
          invoiceDate = entity.invoiceDate,
          invoiceAmount = entity.invoiceAmount,
          discountAmount = entity.discountAmount,

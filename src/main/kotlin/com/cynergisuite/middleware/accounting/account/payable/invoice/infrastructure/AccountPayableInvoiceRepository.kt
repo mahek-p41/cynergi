@@ -4,7 +4,6 @@ import com.cynergisuite.domain.AccountPayableInvoiceFilterRequest
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
 import com.cynergisuite.domain.AccountPayableVendorBalanceReportFilterRequest
 import com.cynergisuite.domain.PageRequest
-import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
@@ -29,6 +28,7 @@ import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceListByVendorDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.purchase.order.infrastructure.PurchaseOrderRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
@@ -49,7 +49,8 @@ class AccountPayableInvoiceRepository @Inject constructor(
    private val employeeRepository: EmployeeRepository,
    private val selectedRepository: AccountPayableInvoiceSelectedTypeRepository,
    private val statusRepository: AccountPayableInvoiceStatusTypeRepository,
-   private val typeRepository: AccountPayableInvoiceTypeRepository
+   private val typeRepository: AccountPayableInvoiceTypeRepository,
+   private val purchaseOrderRepository: PurchaseOrderRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableInvoiceRepository::class.java)
 
@@ -1000,13 +1001,14 @@ class AccountPayableInvoiceRepository @Inject constructor(
       val selected = selectedRepository.mapRow(rs, "${columnPrefix}selected_")
       val type = typeRepository.mapRow(rs, "${columnPrefix}type_")
       val status = statusRepository.mapRow(rs, "${columnPrefix}status_")
+      val purchaseOrder =
+         rs.getUuidOrNull("${columnPrefix}purchase_order_id")?.let { purchaseOrderRepository.findOne(it, company) }
 
       return AccountPayableInvoiceEntity(
          id = rs.getUuid("${columnPrefix}id"),
          vendor = vendor,
          invoice = rs.getString("${columnPrefix}invoice"),
-         purchaseOrder = rs.getUuidOrNull("${columnPrefix}purchase_order_id")?.let { SimpleIdentifiableEntity(it) },
-         poNumber = rs.getLongOrNull("${columnPrefix}purchase_order_number"),
+         purchaseOrder = purchaseOrder,
          invoiceDate = rs.getLocalDate("${columnPrefix}invoice_date"),
          invoiceAmount = rs.getBigDecimal("${columnPrefix}invoice_amount"),
          discountAmount = rs.getBigDecimal("${columnPrefix}discount_amount"),
@@ -1044,7 +1046,6 @@ class AccountPayableInvoiceRepository @Inject constructor(
          vendor = entity.vendor,
          invoice = rs.getString("${columnPrefix}invoice"),
          purchaseOrder = entity.purchaseOrder,
-         poNumber = entity.poNumber,
          invoiceDate = rs.getLocalDate("${columnPrefix}invoice_date"),
          invoiceAmount = rs.getBigDecimal("${columnPrefix}invoice_amount"),
          discountAmount = rs.getBigDecimal("${columnPrefix}discount_amount"),

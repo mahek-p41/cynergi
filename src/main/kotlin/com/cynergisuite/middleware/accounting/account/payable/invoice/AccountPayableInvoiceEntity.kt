@@ -2,12 +2,12 @@ package com.cynergisuite.middleware.accounting.account.payable.invoice
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.LegacyIdentifiable
-import com.cynergisuite.domain.SimpleIdentifiableEntity
 import com.cynergisuite.domain.SimpleLegacyIdentifiableEntity
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceSelectedType
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusType
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceType
 import com.cynergisuite.middleware.employee.EmployeeEntity
+import com.cynergisuite.middleware.purchase.order.PurchaseOrderEntity
 import com.cynergisuite.middleware.vendor.VendorEntity
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -17,8 +17,7 @@ data class AccountPayableInvoiceEntity(
    val id: UUID? = null,
    val vendor: VendorEntity,
    val invoice: String,
-   val purchaseOrder: Identifiable?,
-   val poNumber: Long?,
+   val purchaseOrder: PurchaseOrderEntity?,
    val invoiceDate: LocalDate,
    val invoiceAmount: BigDecimal,
    val discountAmount: BigDecimal?,
@@ -48,7 +47,7 @@ data class AccountPayableInvoiceEntity(
    constructor(
       dto: AccountPayableInvoiceDTO,
       vendor: VendorEntity,
-      purchaseOrder: SimpleIdentifiableEntity?,
+      purchaseOrder: PurchaseOrderEntity?,
       employeeNumber: EmployeeEntity,
       selected: AccountPayableInvoiceSelectedType,
       type: AccountPayableInvoiceType,
@@ -61,7 +60,6 @@ data class AccountPayableInvoiceEntity(
          vendor = vendor,
          invoice = dto.invoice!!,
          purchaseOrder = purchaseOrder,
-         poNumber = dto.poNumber,
          invoiceDate = dto.invoiceDate!!,
          invoiceAmount = dto.invoiceAmount!!,
          discountAmount = dto.discountAmount,
