@@ -117,12 +117,12 @@ class AccountPayableInvoiceService @Inject constructor(
       val endDate = filterRequest.endDate
 
       val beginBalance = allInvoices
-         .filter { it.expenseDate!! < beginDate &&
-            (it.status != "P" ||  it.pmtDate!! > endDate )
+         .filter { inv ->
+            inv.expenseDate!! < beginDate &&
+            (inv.status != "P" ||  inv.pmtDate?.let { it > endDate } ?: true )
          }
          .mapNotNull { it.invoiceAmount }
          .sumOf { it }
-
       val newInvoicesTotal = allInvoices
          .filter {
             it.expenseDate!! >= beginDate &&
@@ -136,10 +136,7 @@ class AccountPayableInvoiceService @Inject constructor(
          }
          .mapNotNull { it.invoiceAmount }
          .sumOf { it }
-
-
       val endBalance = beginBalance + newInvoicesTotal - paidInvoicesTotal
-
       val chargedAfterEndingDate = allInvoices
          .filter {
             it.pmtDate != null && it.pmtDate!! >= beginDate &&
