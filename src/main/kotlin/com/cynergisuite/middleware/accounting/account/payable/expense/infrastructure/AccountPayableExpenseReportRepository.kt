@@ -1,4 +1,4 @@
-package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
+package com.cynergisuite.middleware.accounting.account.payable.expense.infrastructure
 
 import com.cynergisuite.domain.ExpenseReportFilterRequest
 import com.cynergisuite.extensions.getLocalDate
@@ -6,7 +6,6 @@ import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.query
 import com.cynergisuite.middleware.accounting.account.payable.expense.AccountPayableExpenseReportDTO
-import com.cynergisuite.middleware.accounting.account.payable.expense.AccountPayableExpenseReportExportDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.util.GroupingType
 import io.micronaut.transaction.annotation.ReadOnly
@@ -233,35 +232,6 @@ class AccountPayableExpenseReportRepository @Inject constructor(
          distCenter = rs.getInt("${columnPrefix}dist_center"),
          glAmount = rs.getBigDecimal("${columnPrefix}gl_amount"),
          poHeaderNumber = rs.getInt("poHeader_number"),
-      )
-   }
-
-   private fun mapExpenseExport(
-      rs: ResultSet,
-      columnPrefix: String = EMPTY,
-      paymentPrefix: String = EMPTY
-   ): AccountPayableExpenseReportExportDTO {
-      return AccountPayableExpenseReportExportDTO(
-         id = rs.getUuid("${columnPrefix}id"),
-         vendorNumber = rs.getInt("${columnPrefix}vendor_number"),
-         vendorName = rs.getString("${columnPrefix}vendor_name"),
-         vendorGroup = rs.getString("${columnPrefix}vendor_vgrp_value"),
-         invoice = rs.getString("${columnPrefix}invoice"),
-         type = rs.getString("${columnPrefix}type_value"),
-         invoiceDate = rs.getLocalDate("${columnPrefix}invoice_date"),
-
-         status = rs.getString("${columnPrefix}status_value"),
-         invoiceAmount = rs.getBigDecimal("${columnPrefix}invoice_amount"),
-         poHeaderNumber = rs.getInt("poHeader_number"),
-         expenseDate = rs.getLocalDate("${columnPrefix}expense_date"),
-         paidAmount = rs.getBigDecimal("${columnPrefix}paid_amount"),
-         bankNumber = rs.getInt("bank_number"),
-         pmtNumber = rs.getString("${paymentPrefix}number"),
-         pmtDate = rs.getLocalDateOrNull("${paymentPrefix}payment_date"),
-         acctNumber = rs.getInt("${paymentPrefix}account_number"),
-         acctName = rs.getString("${paymentPrefix}account_name"),
-         distCenter = rs.getString("${paymentPrefix}dist_center"),
-         distAmount = rs.getBigDecimal("${paymentPrefix}dist_amount"),
       )
    }
 

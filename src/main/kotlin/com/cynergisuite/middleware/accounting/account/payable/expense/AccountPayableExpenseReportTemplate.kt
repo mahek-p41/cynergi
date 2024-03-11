@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import java.util.SortedMap
 
 @JsonInclude(NON_NULL)
 @Schema(name = "AccountPayableExpenseReportTemplate", title = "Account Payable Expense Report Template", description = "Account Payable Expense Report Template")
@@ -94,5 +95,49 @@ data class AccountPayableExpenseReportTemplate(
 
             AccountPayableExpenseReportVendorGrouped(vendorNumber!!, list.first().vendorName!!, sortedList)
          }.sortedBy { it.vendorNumber }
+   }
+
+   companion object {
+      fun calculateSortedListAndTotalPerPayment(invoices: List<AccountPayableExpenseReportDTO>): Pair<List<AccountPayableExpenseReportDTO>, SortedMap<String, BigDecimal>> {
+         val glAmountTotalPerPayment = invoices
+            .filter { it.pmtNumber != null }
+            .groupBy { it.pmtNumber!! }
+            .filterValues { it.size > 1 }
+            .mapValues {
+               it.value.sumOf { invoice ->
+                  invoice.glAmount ?: BigDecimal.ZERO
+               }
+            }.toSortedMap()
+
+         val previousProcessedPmtNumbers = mutableSetOf<String>()
+         val sortedList: List<AccountPayableExpenseReportDTO> = invoices
+            .sortedWith(
+               compareBy<AccountPayableExpenseReportDTO> { it.expenseDate }
+                  .thenBy { it.vendorNumber }
+            )
+            .flatMap { element ->
+               if (element.pmtNumber != null) {
+                  // The condition to avoid duplicate elements with same pmtNumber of the sort
+                  if (previousProcessedPmtNumbers.find { it == element.pmtNumber } != null) {
+                     listOf<AccountPayableExpenseReportDTO>()
+                  } else if (glAmountTotalPerPayment.containsKey(element.pmtNumber)) {
+                     previousProcessedPmtNumbers.add(element.pmtNumber!!)
+
+                     invoices
+                        .filter { it.pmtNumber == element.pmtNumber }
+                        .sortedWith(
+                           compareBy<AccountPayableExpenseReportDTO> { it.expenseDate }
+                              .thenBy { it.vendorNumber }
+                        )
+                  } else {
+                     listOf(element)
+                  }
+               } else {
+                  listOf(element)
+               }
+            }
+
+         return sortedList to glAmountTotalPerPayment
+      }
    }
 }

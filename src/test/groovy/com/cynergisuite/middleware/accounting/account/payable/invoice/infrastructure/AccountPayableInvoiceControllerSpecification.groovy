@@ -794,8 +794,8 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final payToIn = vendorTestDataLoaderService.single(company, payToPmtTerm, payToShipVia)
       final statusO = new AccountPayableInvoiceStatusType(2, "O", "Open", "open")
 
-      def apInvoiceEntities = dataLoaderService.stream(20, company, vendorIn, purchaseOrderIn, null, employeeIn, null, statusO, payToIn, store)
-         .sorted { o1, o2 -> o1.id <=> o2.id }.toList()
+      def apInvoiceEntities = dataLoaderService.stream(5, company, vendorIn, purchaseOrderIn, null, employeeIn, null, statusO, payToIn, store)
+         .toList()
 
       def apInvoices = apInvoiceEntities.stream().map { new AccountPayableInvoiceDTO(it) }.toList()
 
@@ -804,7 +804,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       def pmtStatuses = AccountPayablePaymentStatusTypeDataLoader.predefined()
       def pmtTypes = AccountPayablePaymentTypeTypeDataLoader.predefined()
 
-      def apPayments = accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }).toList()
+      def apPayments = accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'P' }, pmtTypes.find { it.value == 'A' }).toList().sort { o1, o2 -> o1.paymentNumber <=> o2.paymentNumber }
       apPayments.addAll(accountPayablePaymentDataLoaderService.stream(2, company, bank, vendorIn, pmtStatuses.find { it.value == 'V' }, pmtTypes.find { it.value == 'C' }, null, null, null, true).toList())
 
       def apPaymentDetails = apPaymentDetailDataLoaderService.stream(1, company, vendorIn, apInvoiceEntities[0], apPayments[0], 2000).toList()
@@ -825,7 +825,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
          """)
 
-      def filterRequest = new ExpenseReportFilterRequest([sortDirection: "ASC", invStatus: ["O", "P"], beginDate: LocalDate.of(2020, 1, 1), endDate: OffsetDateTime.now().toLocalDate()])
+      def filterRequest = new ExpenseReportFilterRequest([sortDirection: "ASC", invStatus: ["O", "P"], beginDate: LocalDate.of(2020, 1, 1), endDate: OffsetDateTime.now().toLocalDate().plusDays(5)])
 
       when:
       def result = get("$path/expense/report${filterRequest}")

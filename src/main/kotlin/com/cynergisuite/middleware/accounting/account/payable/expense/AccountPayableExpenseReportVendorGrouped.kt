@@ -16,31 +16,16 @@ class AccountPayableExpenseReportVendorGrouped(
 
    @field:Schema(description = "Internal listing of Invoices. Used as data source for getters.")
    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-   var invoices: List<AccountPayableExpenseReportDTO?> = mutableListOf(),
+   var invoices: List<AccountPayableExpenseReportDTO> = mutableListOf(),
 ) {
    @field:Schema(description = "Sum of GL Amount of each Vendor")
-   val glAmountTotal: BigDecimal = invoices.sumOf { it!!.glAmount ?: BigDecimal.ZERO }
+   val glAmountTotal: BigDecimal = invoices.sumOf { it.glAmount ?: BigDecimal.ZERO }
 
    @get:Schema(description = "Listing of Invoices grouped by Accounts")
    val groupedByAccount get() = invoices
-      .groupBy { it!!.acctNumber }
+      .groupBy { it.acctNumber }
       .map { (accountNumber, list) ->
-         val sortedList = list.sortedWith(compareBy<AccountPayableExpenseReportDTO?> {
-            it!!.pmtNumber
-         }.thenBy {
-            it!!.distCenter
-         })
-
-         val glAmountTotalPerPayment = list.filterNotNull()
-            .filter { it.pmtNumber != null }
-            .groupBy { it.pmtNumber!! }
-            .filterValues { it.size > 1 }
-            .mapValues {
-               it.value.sumOf { invoice ->
-                  invoice.glAmount ?: BigDecimal.ZERO
-               }
-            }.toSortedMap()
-
-         AccountPayableExpenseReportLevel2AccountGrouped(accountNumber!!, list.first()!!.acctName, glAmountTotalPerPayment, sortedList)
+         val (sortedList, glAmountTotalPerPayment) = AccountPayableExpenseReportTemplate.calculateSortedListAndTotalPerPayment(list)
+         AccountPayableExpenseReportLevel2AccountGrouped(accountNumber!!, list.first().acctName, glAmountTotalPerPayment, sortedList)
       }.sortedBy { it.accountNumber }
 }
