@@ -23,6 +23,7 @@ import io.micronaut.http.MediaType
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Delete
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
@@ -546,5 +547,27 @@ class AccountPayableInvoiceController @Inject constructor(
       logger.debug("Requested Create Account Payable Invoice {} resulted in {}", dto, response)
 
       return response
+   }
+
+   @Secured("APDEL")
+   @Delete(uri = "/{id:[0-9a-fA-F\\-]+}")
+   @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Delete a single account payable invoice", description = "Deletes an account payable invoice based on passed id", operationId = "accountPayableInvoice-delete")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", description = "If the account payable invoice record was deleted"),
+         ApiResponse(responseCode = "401", description = "If the user calling the endpoint does not have permission"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun delete(
+      @QueryValue("id") id: UUID,
+      httpRequest: HttpRequest<*>,
+      authentication: Authentication
+   ) {
+      logger.debug("User {} requested delete account payable invoice", authentication)
+
+      val user = userService.fetchUser(authentication)
+
+      return accountPayableInvoiceService.delete(id, user.myCompany())
    }
 }

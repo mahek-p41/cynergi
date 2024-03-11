@@ -447,4 +447,8 @@ class AccountPayableInvoiceService @Inject constructor(
       output.close()
       return stream.toByteArray()
    }
+
+   fun delete (id: UUID, company: CompanyEntity) {
+      accountPayableInvoiceRepository.delete(id, company)
+   }
 }

@@ -16,6 +16,7 @@ import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.extensions.softDelete
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.VendorBalanceDTO
 import com.cynergisuite.middleware.accounting.account.VendorBalanceEntity
@@ -28,6 +29,7 @@ import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceListByVendorDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.purchase.order.infrastructure.PurchaseOrderRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import io.micronaut.transaction.annotation.ReadOnly
@@ -981,6 +983,23 @@ class AccountPayableInvoiceRepository @Inject constructor(
          } while (rs.next())
       }
       return vendors.map { VendorBalanceDTO(it) }
+   }
+
+   @Transactional
+   fun delete(id: UUID, company: CompanyEntity) {
+      logger.debug("Deleting Account Payable Invoice with id={}", id)
+
+      val rowsAffected = jdbc.softDelete(
+         """
+         DELETE FROM account_payable_invoice
+         WHERE id = :id AND company_id = :company_id
+         """,
+         mapOf("id" to id, "company_id" to company.id),
+         "account_payable_invoice"
+      )
+      logger.info("Row affected {}", rowsAffected)
+
+      if (rowsAffected == 0) throw NotFoundException(id)
    }
 
    fun mapRow(
