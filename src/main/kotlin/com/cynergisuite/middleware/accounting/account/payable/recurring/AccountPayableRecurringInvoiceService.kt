@@ -71,7 +71,6 @@ class AccountPayableRecurringInvoiceService @Inject constructor(
          vendor = dto.vendor,
          invoice = dto.invoice,
          purchaseOrder = null,
-         poNumber = null,
          invoiceDate = dto.nextInvoiceDate,
          invoiceAmount = dto.invoiceAmount,
          discountAmount = null,
