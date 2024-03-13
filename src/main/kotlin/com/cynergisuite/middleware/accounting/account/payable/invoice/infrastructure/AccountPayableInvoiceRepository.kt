@@ -991,7 +991,8 @@ class AccountPayableInvoiceRepository @Inject constructor(
 
       val rowsAffected = jdbc.softDelete(
          """
-         DELETE FROM account_payable_invoice
+         UPDATE account_payable_invoice
+         SET deleted = TRUE
          WHERE id = :id AND company_id = :company_id
          """,
          mapOf("id" to id, "company_id" to company.id),
