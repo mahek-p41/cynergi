@@ -47,7 +47,7 @@ class InventoryRepository(
          i.lookup_key                  AS lookup_key,
          i.lookup_key_type             AS lookup_key_type,
          i.barcode                     AS barcode,
-         i.alt_id                      AS alt_id,
+         i.alternate_id                AS alternate_id,
          i.brand                       AS brand,
          i.model_number                AS model_number,
          i.product_code                AS product_code,
@@ -102,7 +102,7 @@ class InventoryRepository(
          iltd.description              AS location_type_description,
          iltd.localization_code        AS location_type_localization_code
       FROM company comp
-           JOIN fastinfo_prod_import.inventory_vw i ON comp.dataset_code = i.dataset
+           JOIN inventory i ON comp.dataset_code = i.dataset
            LEFT JOIN address AS compAddress ON comp.address_id = compAddress.id AND compAddress.deleted = FALSE
            JOIN system_stores_fimvw primaryStore ON comp.dataset_code = primaryStore.dataset AND i.primary_location = primaryStore.number
            LEFT OUTER JOIN system_stores_fimvw currentStore ON comp.dataset_code = currentStore.dataset AND i.location = currentStore.number
@@ -118,7 +118,7 @@ class InventoryRepository(
          i.lookup_key             AS lookup_key,
          i.lookup_key_type        AS lookup_key_type,
          i.barcode                AS barcode,
-         i.alt_id                 AS alt_id,
+         i.alternate_id           AS alternate_id,
          i.brand                  AS brand,
          i.model_number           AS model_number,
          i.product_code           AS product_code,
@@ -207,7 +207,7 @@ class InventoryRepository(
          """
          SELECT count(i.id) > 0
          FROM company comp
-              JOIN fastinfo_prod_import.inventory_vw i ON comp.dataset_code = i.dataset
+              JOIN inventory i ON comp.dataset_code = i.dataset
          WHERE i.id = :i_id AND comp.id = :comp_id
          """.trimIndent(),
          mapOf("i_id" to id, "comp_id" to company.id),
@@ -496,7 +496,7 @@ class InventoryRepository(
          lookupKey = rs.getString("lookup_key"),
          lookupKeyType = rs.getString("lookup_key_type"),
          barcode = rs.getString("barcode"),
-         altId = rs.getString("alt_id"),
+         altId = rs.getString("alternate_id"),
          brand = rs.getString("brand"),
          modelNumber = rs.getString("model_number"),
          productCode = rs.getString("product_code"),
