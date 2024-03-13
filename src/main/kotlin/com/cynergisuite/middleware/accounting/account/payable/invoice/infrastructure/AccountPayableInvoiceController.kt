@@ -15,6 +15,8 @@ import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceService
 import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
+import com.cynergisuite.middleware.employee.EmployeeService
+import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.PageOutOfBoundsException
 import com.cynergisuite.middleware.error.ValidationException
@@ -53,7 +55,8 @@ import javax.validation.Valid
 class AccountPayableInvoiceController @Inject constructor(
    private val accountPayableInvoiceService: AccountPayableInvoiceService,
    private val accountPayableCheckPreviewService: AccountPayableCheckPreviewService,
-   private val userService: UserService
+   private val userService: UserService,
+   private val employeeService: EmployeeService
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableInvoiceController::class.java)
 
@@ -375,6 +378,9 @@ class AccountPayableInvoiceController @Inject constructor(
       logger.debug("Requested Create Account Payable Invoice {}", dto)
 
       val user = userService.fetchUser(authentication)
+      if (dto.employee == null) {
+         dto.employee = EmployeeValueObject(employeeService.fetchOne(user.myId(), user.myCompany()))
+      }
       val response = accountPayableInvoiceService.create(dto, user.myCompany())
 
       logger.debug("Requested Create Account Payable Invoice {} resulted in {}", dto, response)

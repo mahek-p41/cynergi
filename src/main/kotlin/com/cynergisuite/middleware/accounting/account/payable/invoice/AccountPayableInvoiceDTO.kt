@@ -77,7 +77,6 @@ data class AccountPayableInvoiceDTO(
    @field:Schema(description = "Discount date", required = false)
    var discountDate: LocalDate? = null,
 
-   @field:NotNull
    @JsonInclude(ALWAYS)
    @field:Schema(description = "Employee number")
    var employee: EmployeeValueObject? = null,
