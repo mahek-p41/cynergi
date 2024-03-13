@@ -368,7 +368,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
    @ReadOnly
    fun findOne(id: UUID, company: CompanyEntity): AccountPayableInvoiceEntity? {
       val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
-      val query = "${selectBaseQuery()} WHERE apInvoice.id = :id AND apInvoice.company_id = :comp_id"
+      val query = "${selectBaseQuery()} WHERE apInvoice.id = :id AND apInvoice.company_id = :comp_id AND apInvoice.deleted = false"
 
       logger.trace("Querying for a single account payable invoice {}/{}", query, params)
 
@@ -384,7 +384,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
    @ReadOnly
    fun findAll(company: CompanyEntity, filterRequest: AccountPayableInvoiceFilterRequest): RepositoryPage<AccountPayableInvoiceEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
-      val whereClause = StringBuilder("WHERE apInvoice.company_id = :comp_id ")
+      val whereClause = StringBuilder("WHERE apInvoice.company_id = :comp_id AND apInvoice.deleted = false ")
 
       if (filterRequest.vendor != null) {
          params["vendor"] = filterRequest.vendor
@@ -445,7 +445,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
    @ReadOnly
    fun findAllByVendor(company: CompanyEntity, filterRequest: AccountPayableInvoiceListByVendorFilterRequest): RepositoryPage<AccountPayableInvoiceListByVendorDTO, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
-      val whereClause = StringBuilder("WHERE apInvoice.company_id = :comp_id ")
+      val whereClause = StringBuilder("WHERE apInvoice.company_id = :comp_id AND apInvoice.deleted = false ")
 
       val query = """
          SELECT
@@ -495,7 +495,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
    @ReadOnly
    fun findOpenByVendor(company: CompanyEntity, filterRequest: AccountPayableInvoiceListByVendorFilterRequest): RepositoryPage<AccountPayableInvoiceListByVendorDTO, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
-      val whereClause = StringBuilder("WHERE apInvoice.company_id = :comp_id AND status.id = 2")
+      val whereClause = StringBuilder("WHERE apInvoice.company_id = :comp_id AND status.id = 2 AND apInvoice.deleted = false")
 
       val query = """
          SELECT
@@ -725,10 +725,10 @@ class AccountPayableInvoiceRepository @Inject constructor(
       var runningBalance = BigDecimal.ZERO
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val sortBy = StringBuilder("ORDER BY ")
-      val topWhere = StringBuilder("WHERE inv.apInvoice_company_id = :comp_id AND inv.apInvoice_status_id IN (2,3)")
+      val topWhere = StringBuilder("WHERE inv.apInvoice_company_id = :comp_id AND inv.apInvoice_status_id IN (2,3) AND inv.apInvoice_deleted = false")
       val bottomWhere = StringBuilder("WHERE payment.apPayment_company_id = :comp_id AND payment.apPayment_status_id = 1")
       val paymentWhere = StringBuilder("WHERE payment.apPayment_company_id = :comp_id and payment.apPayment_status_id = 1")
-      val invoiceWhere = StringBuilder("WHERE inv.apInvoice_company_id = :comp_id AND inv.apInvoice_status_id IN (2,3)")
+      val invoiceWhere = StringBuilder("WHERE inv.apInvoice_company_id = :comp_id AND inv.apInvoice_status_id IN (2,3) AND inv.apInvoice_deleted = false")
 
       if (filterRequest.beginVendor != null || filterRequest.endVendor != null) {
          params["beginVendor"] = filterRequest.beginVendor
@@ -800,6 +800,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
                   apInvoice.selected_amount                                   AS apInvoice_selected_amount,
                   apInvoice.due_date                                          AS apInvoice_due_date,
                   apInvoice.receive_date                                      AS apInvoice_receive_date,
+                  apInvoice.deleted                                           AS apInvoice_deleted,
                   vend.v_id                                                   AS apInvoice_vendor_id,
                   vend.v_company_id                                           AS apInvoice_vendor_company_id,
                   vend.v_number                                               AS apInvoice_vendor_number,

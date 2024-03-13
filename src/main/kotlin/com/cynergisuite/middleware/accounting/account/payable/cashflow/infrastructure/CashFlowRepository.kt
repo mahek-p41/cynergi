@@ -81,7 +81,7 @@ class CashFlowRepository @Inject constructor(
       var currentVendor:CashFlowVendorEntity ? = null
       val cashflowTotals = CashFlowBalanceEntity()
       val params = mutableMapOf < String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id AND apInvoice.status_id = 2")
+      val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id AND apInvoice.status_id = 2 AND apInvoice.deleted = false")
       params["fromDateOne"] = filterRequest.fromDateOne
       params["fromDateTwo"] = filterRequest.fromDateTwo
       params["fromDateThree"] = filterRequest.fromDateThree

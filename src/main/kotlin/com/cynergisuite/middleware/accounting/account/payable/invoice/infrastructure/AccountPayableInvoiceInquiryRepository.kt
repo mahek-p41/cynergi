@@ -76,7 +76,8 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "vendor" to filterRequest.vendor, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder(
          "WHERE apInvoice.company_id = :comp_id " +
-         "AND vend.number = :vendor "
+         "AND vend.number = :vendor " +
+         "AND apInvoice.deleted = false "
       )
       val sortBy = StringBuilder("ORDER BY ")
 
@@ -161,7 +162,7 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
                apInvoice.original_invoice_amount   AS apInvoice_original_amount
             FROM account_payable_payment_detail pmtDetail
                JOIN account_payable_payment pmt ON pmtDetail.payment_number_id = pmt.id
-               JOIN account_payable_invoice apInvoice ON pmtDetail.account_payable_invoice_id = apInvoice.id
+               JOIN account_payable_invoice apInvoice ON pmtDetail.account_payable_invoice_id = apInvoice.id and apInvoice.deleted = false
                JOIN bank ON pmt.bank_id = bank.id AND bank.deleted = FALSE
             WHERE apInvoice.id = :apInvoiceId AND pmt.account_payable_payment_status_id = 1
             ORDER BY bank.number ASC, pmt.payment_number ASC

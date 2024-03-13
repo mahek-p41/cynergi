@@ -37,7 +37,7 @@ class VendorStatisticsRepository @Inject constructor(
             SELECT COALESCE(SUM(apPmtDetail.amount), 0)
             FROM account_payable_payment_detail apPmtDetail
                JOIN account_payable_payment apPmt ON apPmtDetail.payment_number_id = apPmt.id
-               JOIN account_payable_invoice apInv ON apPmtDetail.account_payable_invoice_id = apInv.id
+               JOIN account_payable_invoice apInv ON apPmtDetail.account_payable_invoice_id = apInv.id and apInv.deleted = false
                JOIN vendor ON apInv.vendor_id = vendor.id
             WHERE vendor.company_id = :company_id
                AND vendor.number = :vendorNumber
@@ -68,6 +68,7 @@ class VendorStatisticsRepository @Inject constructor(
             WHERE vendor.company_id = :company_id
                AND vendor.number = :vendorNumber
                AND (apInv.status_id = 1 OR apInv.status_id = 2)
+               and apInv.deleted = false
          """.trimIndent(),
          mapOf(
             "company_id" to company.id,

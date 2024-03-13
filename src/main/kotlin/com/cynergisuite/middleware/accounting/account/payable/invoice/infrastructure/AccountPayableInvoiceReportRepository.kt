@@ -112,7 +112,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
       var currentPO: AccountPayableInvoiceReportPoWrapper? = null
       var currentInvoice: AccountPayableInvoiceReportDTO? = null
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id ")
+      val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id and apInvoice.deleted = false ")
 
       if (filterRequest.beginVen != null && filterRequest.endVen != null) {
          params["beginVen"] = filterRequest.beginVen
@@ -270,7 +270,7 @@ class AccountPayableInvoiceReportRepository @Inject constructor(
    fun export(company: CompanyEntity, filterRequest: InvoiceReportFilterRequest): List<AccountPayableInvoiceReportExportDTO> {
       val invoices = mutableListOf<AccountPayableInvoiceReportExportDTO>()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id ")
+      val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id AND apInvoice.deleted = false")
 
       if (filterRequest.beginVen != null && filterRequest.endVen != null) {
          params["beginVen"] = filterRequest.beginVen

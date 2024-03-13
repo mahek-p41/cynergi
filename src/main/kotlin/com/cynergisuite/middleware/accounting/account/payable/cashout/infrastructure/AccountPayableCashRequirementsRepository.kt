@@ -90,7 +90,7 @@ class AccountPayableCashRequirementsRepository @Inject constructor(
       var currentVendor: CashRequirementVendorEntity? = null
       val cashoutTotals = CashRequirementBalanceEntity()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id")
+      val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id AND apInvoice.deleted = false")
 
       if (filterRequest.beginVendor != null || filterRequest.endVendor!= null) {
          params["beginVendor"] = filterRequest.beginVendor

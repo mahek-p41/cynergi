@@ -704,7 +704,7 @@ class VendorRepository @Inject constructor(
       val form1099Totals = Form1099TotalsEntity()
 
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
-      val whereClause = StringBuilder("WHERE comp.company_id = :comp_id AND vend.vendor_1099 = 'Y' AND apInvoice.status_id NOT IN (1, 2, 4) AND pmt.account_payable_payment_status != 2")
+      val whereClause = StringBuilder("WHERE comp.company_id = :comp_id AND vend.vendor_1099 = 'Y' AND apInvoice.status_id NOT IN (1, 2, 4) AND pmt.account_payable_payment_status != 2 AND apInvoice.deleted = false")
 
       if (filterRequest.form1099Type != null) {
          if (filterRequest.form1099Type == "M") {

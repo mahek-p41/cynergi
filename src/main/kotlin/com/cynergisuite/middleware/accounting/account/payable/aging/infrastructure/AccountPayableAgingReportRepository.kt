@@ -84,7 +84,7 @@ class AccountPayableAgingReportRepository @Inject constructor(
       var currentVendor: AgingReportVendorDetailEntity? = null
       val agedTotals = BalanceDisplayTotalsEntity()
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
-      val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id")
+      val whereClause = StringBuilder(" WHERE apInvoice.company_id = :comp_id AND apInvoice.deleted = false")
 
       if (filterRequest.vendorStart != null) {
          params["vendorStart"] = filterRequest.vendorStart

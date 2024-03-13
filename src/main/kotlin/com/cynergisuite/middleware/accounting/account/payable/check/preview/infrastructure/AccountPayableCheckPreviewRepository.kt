@@ -130,7 +130,7 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
       val sortBy = StringBuilder("ORDER BY ")
       val whereClause = StringBuilder(
          "WHERE apInvoice.company_id = :comp_id " +
-            "AND apInvoice.status_id = 2 "
+            "AND apInvoice.status_id = 2 AND apInvoice.deleted = false "
       )
 
       if (filterRequest.checkDate != null) {
