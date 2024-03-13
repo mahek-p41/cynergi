@@ -146,7 +146,12 @@ class AccountPayableInvoiceService @Inject constructor(
          .mapNotNull { it.invoiceAmount }
          .sumOf { it }
 
-      return AccountPayableExpenseReportTemplate(allInvoices, beginBalance, newInvoicesTotal, paidInvoicesTotal, endBalance, chargedAfterEndingDate, GroupingType.fromString(filterRequest.sortBy!!))
+      val proformaInvoiceTotal = allInvoices
+         .filter { it.acctNumber == 0 }
+         .mapNotNull { it.invoiceAmount }
+         .sumOf { it }
+
+      return AccountPayableExpenseReportTemplate(allInvoices, beginBalance, newInvoicesTotal, paidInvoicesTotal, endBalance, chargedAfterEndingDate, proformaInvoiceTotal, GroupingType.fromString(filterRequest.sortBy!!))
    }
 
    fun export(filterRequest: InvoiceReportFilterRequest, company: CompanyEntity): ByteArray {

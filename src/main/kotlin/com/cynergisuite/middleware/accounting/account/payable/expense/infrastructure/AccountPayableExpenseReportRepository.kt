@@ -65,7 +65,7 @@ class AccountPayableExpenseReportRepository @Inject constructor(
          JOIN vendor ON apExpense.vendor_id = vendor.id AND vendor.deleted = FALSE
          LEFT JOIN vendor_group vgrp ON vgrp.id = vendor.vendor_group_id AND vgrp.deleted = FALSE
          LEFT JOIN purchase_order_header poHeader ON poHeader.id = apExpense.purchase_order_id AND poHeader.deleted = FALSE
-         JOIN (
+         LEFT JOIN (
              SELECT
                  invoice_id,
                  account_id,

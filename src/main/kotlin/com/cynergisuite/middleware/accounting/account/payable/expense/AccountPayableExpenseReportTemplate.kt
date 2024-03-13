@@ -33,6 +33,9 @@ data class AccountPayableExpenseReportTemplate(
    @field:Schema(description = "Total of AP Payment Detail amount for all Expenses on report")
    var paidTotal: BigDecimal? = null,
 
+   @field:Schema(description = "Total of AP Expense amount for Invoices without payment information")
+   var proformaInvoiceTotal: BigDecimal? = null,
+
    @field:Schema(description = "Grouping Type")
    var groupingType: GroupingType,
 
@@ -42,13 +45,14 @@ data class AccountPayableExpenseReportTemplate(
 
 ) {
    constructor(
-       entities: List<AccountPayableExpenseReportDTO>,
-       beginBalance: BigDecimal,
-       newInvoicesTotal: BigDecimal,
-       paidInvoicesTotal: BigDecimal,
-       endBalance: BigDecimal,
-       chargedAfterEndingDate: BigDecimal,
-       groupingType: GroupingType,
+      entities: List<AccountPayableExpenseReportDTO>,
+      beginBalance: BigDecimal,
+      newInvoicesTotal: BigDecimal,
+      paidInvoicesTotal: BigDecimal,
+      endBalance: BigDecimal,
+      chargedAfterEndingDate: BigDecimal,
+      proformaInvoiceTotal: BigDecimal,
+      groupingType: GroupingType
    ) : this(
       invoices = entities,
       expenseTotal = entities.mapNotNull { it.invoiceAmount }.sumOf { it },
@@ -58,7 +62,8 @@ data class AccountPayableExpenseReportTemplate(
       paidInvoicesTotal = paidInvoicesTotal,
       endBalance = endBalance,
       chargedAfterEndingDate = chargedAfterEndingDate,
-      groupingType = groupingType,
+      proformaInvoiceTotal = proformaInvoiceTotal,
+      groupingType = groupingType
    )
 
    @get:Schema(description = "Total debit amount of all Invoices")

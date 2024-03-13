@@ -3,11 +3,9 @@ package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastru
 import com.cynergisuite.domain.AccountPayableCheckPreviewFilterRequest
 import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
-import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDataLoader
 import com.cynergisuite.domain.AccountPayableVendorBalanceReportFilterRequest
 import com.cynergisuite.domain.ExpenseReportFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
-import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
@@ -16,6 +14,7 @@ import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderServi
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceSelectedTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusType
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDataLoader
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.control.AccountPayableControlTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDetailDataLoaderService
@@ -31,22 +30,10 @@ import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeTypeDataLoader
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.accounting.general.ledger.control.GeneralLedgerControlDataLoaderService
-import com.cynergisuite.middleware.authentication.user.SecurityGroupDTO
-import com.cynergisuite.middleware.authentication.user.SecurityType
-import com.cynergisuite.middleware.company.CompanyDTO
-import com.cynergisuite.middleware.division.DivisionDTO
 import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
-import com.cynergisuite.middleware.purchase.order.type.ExceptionIndicatorTypeDTO
-import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderStatusTypeValueObject
-import com.cynergisuite.middleware.purchase.order.type.PurchaseOrderTypeValueObject
-import com.cynergisuite.middleware.region.RegionDTO
-import com.cynergisuite.middleware.shipping.freight.onboard.FreightOnboardTypeDTO
-import com.cynergisuite.middleware.shipping.freight.term.FreightTermTypeDTO
-import com.cynergisuite.middleware.shipping.location.ShipLocationTypeDTO
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
-import com.cynergisuite.middleware.store.StoreDTO
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
@@ -832,7 +819,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 
       then:
       notThrown(Exception)
-      with(result.groupedByAccount[0]) {
+      with(result.groupedByAccount[1]) {
          accountNumber == account.number
          accountName == account.name
          glAmountTotal == invDistAmountForFirstInvoice + invDistAmountForSecondInvoice
