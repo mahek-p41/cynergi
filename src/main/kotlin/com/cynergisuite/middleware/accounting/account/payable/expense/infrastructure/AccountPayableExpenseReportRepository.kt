@@ -160,6 +160,13 @@ class AccountPayableExpenseReportRepository @Inject constructor(
             .append(buildNumberFilterString("beginVen", "endVen"))
       }
 
+      if (filterRequest.beginVenGr != null && filterRequest.endVenGr != null) {
+         params["beginVenGr"] = filterRequest.beginVenGr
+         params["endVenGr"] = filterRequest.endVenGr
+         whereClause.append(" AND vgrp.value ")
+            .append(buildNumberFilterString("beginVenGr", "endVenGr"))
+      }
+
       if (filterRequest.beginDate != null || filterRequest.endDate != null) {
          params["beginDate"] = filterRequest.beginDate
          params["endDate"] = filterRequest.endDate

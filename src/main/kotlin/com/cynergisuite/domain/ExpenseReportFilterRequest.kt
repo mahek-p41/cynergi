@@ -27,6 +27,12 @@ class ExpenseReportFilterRequest(
    @field:Schema(name = "endVen", description = "Ending Vendor number")
    var endVen: Int? = null,
 
+   @field:Schema(name = "beginVenGr", description = "Beginning Vendor group number")
+   var beginVenGr: String? = null,
+
+   @field:Schema(name = "endVenGr", description = "Ending Vendor group number")
+   var endVenGr: String? = null,
+
    @field:NotNull
    @field:Schema(name = "beginDate", description = "Beginning date", required = true)
    var beginDate: LocalDate? = null,
@@ -55,6 +61,8 @@ class ExpenseReportFilterRequest(
          "endAcct" to endAcct,
          "beginVen" to beginVen,
          "endVen" to endVen,
+         "beginVenGr" to beginVenGr,
+         "endVenGr" to endVenGr,
          "beginDate" to beginDate,
          "endDate" to endDate,
          "iclHoldInv" to iclHoldInv,
