@@ -43,6 +43,7 @@ class VendorStatisticsRepository @Inject constructor(
                AND vendor.number = :vendorNumber
                AND apPmt.account_payable_payment_status_id = 1
                AND apPmt.payment_date BETWEEN :from AND :thru
+               AND apInv.paid_amount != 0
          """.trimIndent(),
          mapOf(
             "company_id" to company.id,
