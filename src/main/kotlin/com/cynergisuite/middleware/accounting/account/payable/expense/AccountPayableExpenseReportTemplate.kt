@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.expense
 
+import com.cynergisuite.util.APInvoiceReportOverviewType
 import com.cynergisuite.util.GroupingType
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
@@ -38,6 +39,9 @@ data class AccountPayableExpenseReportTemplate(
 
    @field:Schema(description = "Grouping Type")
    var groupingType: GroupingType,
+
+   @field:Schema(description = "Report Overview Type")
+   var overviewType: APInvoiceReportOverviewType? = APInvoiceReportOverviewType.SUMMARIZED,
 
    @field:Schema(description = "Internal listing of Invoices. Used as data source for getters.")
    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -99,6 +103,21 @@ data class AccountPayableExpenseReportTemplate(
             })
 
             AccountPayableExpenseReportVendorGrouped(vendorNumber!!, list.first().vendorName!!, sortedList)
+         }.sortedBy { it.vendorNumber }
+   }
+
+   @get:Schema(description = "Report overview")
+   val overview get() = overviewType.takeIf { it == APInvoiceReportOverviewType.DETAILED }?.let {
+      invoices
+         .groupBy { it.vendorNumber }
+         .map { (vendorNumber, list) ->
+            val sortedList = list.sortedWith(compareBy<AccountPayableExpenseReportDTO?> {
+               it!!.pmtNumber
+            }.thenBy {
+               it!!.distCenter
+            })
+
+            AccountPayableExpenseReportOverview(vendorNumber!!, list.first().vendorName!!, sortedList)
          }.sortedBy { it.vendorNumber }
    }
 
