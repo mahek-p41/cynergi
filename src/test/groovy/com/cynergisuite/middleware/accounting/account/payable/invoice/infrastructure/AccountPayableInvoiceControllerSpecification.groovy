@@ -1094,7 +1094,6 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       'autoDistributionApplied'        || 'autoDistributionApplied'
       'entryDate'                      || 'entryDate'
       'expenseDate'                    || 'expenseDate'
-      'employee'                       || 'employee'
       'originalInvoiceAmount'          || 'originalInvoiceAmount'
       'selected'                       || 'selected'
       'multiplePaymentIndicator'       || 'multiplePaymentIndicator'
