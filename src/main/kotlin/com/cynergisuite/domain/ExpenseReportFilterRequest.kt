@@ -13,7 +13,7 @@ import javax.validation.constraints.Pattern
    allOf = [SortableRequestBase::class]
 )
 @Introspected
-class ExpenseReportFilterRequest(
+open class ExpenseReportFilterRequest(
 
    @field:Schema(name = "beginAcct", description = "Beginning Account number")
    var beginAcct: Int? = null,

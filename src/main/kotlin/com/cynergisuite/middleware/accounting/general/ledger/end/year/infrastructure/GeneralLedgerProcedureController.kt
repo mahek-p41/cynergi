@@ -1,5 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.end.year.infrastructure
 
+import com.cynergisuite.middleware.accounting.account.payable.expense.AccountPayableExpenseReportTemplate
+import com.cynergisuite.middleware.accounting.general.ledger.end.month.EndMonthProceduresDTO
 import com.cynergisuite.middleware.accounting.general.ledger.end.year.EndYearProceduresDTO
 import com.cynergisuite.middleware.accounting.general.ledger.end.year.GeneralLedgerProcedureService
 import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
@@ -64,6 +66,41 @@ class GeneralLedgerProcedureController @Inject constructor(
 
       logger.debug("Requested close current GL year {} resulted in {}", dto, response)
 
+   }
+
+   @Secured("GLMONTHEND")
+   @Post(uri = "end-month", processes = [MediaType.APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["GeneralLedgerProcedureEndpoints"], summary = "Close current GL month", description = "Close current GL month", operationId = "GeneralLedgerProcedure-endCurrentMonth")
+   @ApiResponses(
+      value = [
+         ApiResponse(
+            responseCode = "200",
+            content = [Content(
+               mediaType = MediaType.APPLICATION_JSON,
+               schema = Schema(implementation = EndYearProceduresDTO::class)
+            )]
+         ),
+         ApiResponse(
+            responseCode = "400",
+            description = "If one of the required properties in the payload is missing"
+         ),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun endCurrentGLMonth(
+      @Body @Valid
+      dto: EndMonthProceduresDTO,
+      authentication: Authentication
+   ): AccountPayableExpenseReportTemplate {
+      val user = userService.fetchUser(authentication)
+      logger.info("Requested close current GL month {}", dto)
+
+      val response = generalLedgerProcedureService.endCurrentMonth(dto, user)
+
+      logger.debug("Requested close current GL month {} resulted in {}", dto, response)
+
+      return response
    }
 
 }

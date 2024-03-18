@@ -2,9 +2,12 @@ package com.cynergisuite.middleware.accounting.general.ledger.end.year
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.payable.expense.AccountPayableExpenseReportTemplate
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceService
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
+import com.cynergisuite.middleware.accounting.general.ledger.end.month.EndMonthProceduresDTO
 import com.cynergisuite.middleware.accounting.general.ledger.end.year.infrastructure.GeneralLedgerProcedureRepository
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryDTO
 import com.cynergisuite.middleware.accounting.general.ledger.summary.GeneralLedgerSummaryService
@@ -25,6 +28,7 @@ class GeneralLedgerProcedureService @Inject constructor(
    private val generalLedgerProcedureRepository: GeneralLedgerProcedureRepository,
    private val generalLedgerSummaryService: GeneralLedgerSummaryService,
    private val storeRepository: StoreRepository,
+   private val accountPayableInvoiceService: AccountPayableInvoiceService,
 ) {
 
    @Transactional
@@ -116,6 +120,11 @@ class GeneralLedgerProcedureService @Inject constructor(
          "retained_earnings_account" to retainedEarningsAccount.id!!,
       )
       generalLedgerProcedureRepository.createBalEntriesForAssetLiabilityCapitalAccounts(params)
+   }
+
+   @Transactional
+   fun endCurrentMonth(dto: EndMonthProceduresDTO, user: User): AccountPayableExpenseReportTemplate {
+      return accountPayableInvoiceService.fetchExpenseReport(user.myCompany(), dto)
    }
 
 }
