@@ -28,7 +28,8 @@ data class AuditExceptionEntity(
    val approvedBy: EmployeeEntity? = null,
    val lookupKey: String,
    val notes: MutableList<AuditExceptionNote> = mutableListOf(),
-   val audit: Identifiable
+   val audit: Identifiable,
+   val inventory: InventoryEntity? = null
 ) : Identifiable {
 
    constructor(audit: UUID, inventory: InventoryEntity, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, exceptionCode: String) :
@@ -43,7 +44,8 @@ data class AuditExceptionEntity(
          scannedBy = scannedBy,
          exceptionCode = exceptionCode,
          lookupKey = inventory.lookupKey,
-         audit = SimpleIdentifiableEntity(audit)
+         audit = SimpleIdentifiableEntity(audit),
+         inventory = inventory
       )
 
    constructor(audit: UUID, lookupKey: String, scanArea: AuditScanAreaEntity?, scannedBy: EmployeeEntity, exceptionCode: String) :

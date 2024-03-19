@@ -4,7 +4,6 @@ import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
 import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.store.Store
-import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import io.micronaut.core.annotation.Introspected
 import java.math.BigDecimal
 import java.time.LocalDate

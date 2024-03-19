@@ -27,6 +27,8 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.department.DepartmentEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
+import com.cynergisuite.middleware.inventory.InventoryEntity
+import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreEntity
 import io.micronaut.transaction.annotation.ReadOnly
@@ -46,10 +48,35 @@ class AuditExceptionRepository @Inject constructor(
    private val auditScanAreaRepository: AuditScanAreaRepository,
    private val auditExceptionNoteRepository: AuditExceptionNoteRepository,
    private val companyRepository: CompanyRepository,
+   private val inventoryRepository: InventoryRepository,
    private val securityGroupRepository: SecurityGroupRepository,
    private val jdbc: Jdbi
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AuditExceptionRepository::class.java)
+
+   private val selectAuditExceptionNoteAndEmployee =
+      """
+      auditExceptionNote.id                                      AS auditExceptionNote_id,
+      auditExceptionNote.time_created                            AS auditExceptionNote_time_created,
+      auditExceptionNote.time_updated                            AS auditExceptionNote_time_updated,
+      auditExceptionNote.note                                    AS auditExceptionNote_note,
+      auditExceptionNoteEmployee.emp_id                          AS auditExceptionNoteEmployee_id,
+      auditExceptionNoteEmployee.emp_type                        AS auditExceptionNoteEmployee_type,
+      auditExceptionNoteEmployee.emp_number                      AS auditExceptionNoteEmployee_number,
+      auditExceptionNoteEmployee.emp_last_name                   AS auditExceptionNoteEmployee_last_name,
+      auditExceptionNoteEmployee.emp_first_name_mi               AS auditExceptionNoteEmployee_first_name_mi,
+      auditExceptionNoteEmployee.emp_pass_code                   AS auditExceptionNoteEmployee_pass_code,
+      auditExceptionNoteEmployee.emp_active                      AS auditExceptionNoteEmployee_active,
+      auditExceptionNoteEmployee.emp_cynergi_system_admin        AS auditExceptionNoteEmployee_cynergi_system_admin,
+      auditExceptionNoteEmployee.emp_alternative_store_indicator AS auditExceptionNoteEmployee_alternative_store_indicator,
+      auditExceptionNoteEmployee.emp_alternative_area            AS auditExceptionNoteEmployee_alternative_area,
+      auditExceptionNoteEmployee.dept_id                         AS auditExceptionNoteEmployee_dept_id,
+      auditExceptionNoteEmployee.dept_code                       AS auditExceptionNoteEmployee_dept_code,
+      auditExceptionNoteEmployee.dept_description                AS auditExceptionNoteEmployee_dept_description,
+      auditExceptionNoteEmployee.store_id                        AS auditExceptionNoteEmployee_store_id,
+      auditExceptionNoteEmployee.store_number                    AS auditExceptionNoteEmployee_store_number,
+      auditExceptionNoteEmployee.store_name                      AS auditExceptionNoteEmployee_store_name
+      """.trimIndent()
 
    private fun findOneQuery(): String =
       """
@@ -132,26 +159,7 @@ class AuditExceptionRepository @Inject constructor(
          approvedBy.store_id                                        AS approvedBy_store_id,
          approvedBy.store_number                                    AS approvedBy_store_number,
          approvedBy.store_name                                      AS approvedBy_store_name,
-         auditExceptionNote.id                                      AS auditExceptionNote_id,
-         auditExceptionNote.time_created                            AS auditExceptionNote_time_created,
-         auditExceptionNote.time_updated                            AS auditExceptionNote_time_updated,
-         auditExceptionNote.note                                    AS auditExceptionNote_note,
-         auditExceptionNoteEmployee.emp_id                          AS auditExceptionNoteEmployee_id,
-         auditExceptionNoteEmployee.emp_type                        AS auditExceptionNoteEmployee_type,
-         auditExceptionNoteEmployee.emp_number                      AS auditExceptionNoteEmployee_number,
-         auditExceptionNoteEmployee.emp_last_name                   AS auditExceptionNoteEmployee_last_name,
-         auditExceptionNoteEmployee.emp_first_name_mi               AS auditExceptionNoteEmployee_first_name_mi,
-         auditExceptionNoteEmployee.emp_pass_code                   AS auditExceptionNoteEmployee_pass_code,
-         auditExceptionNoteEmployee.emp_active                      AS auditExceptionNoteEmployee_active,
-         auditExceptionNoteEmployee.emp_cynergi_system_admin        AS auditExceptionNoteEmployee_cynergi_system_admin,
-         auditExceptionNoteEmployee.emp_alternative_store_indicator AS auditExceptionNoteEmployee_alternative_store_indicator,
-         auditExceptionNoteEmployee.emp_alternative_area            AS auditExceptionNoteEmployee_alternative_area,
-         auditExceptionNoteEmployee.dept_id                         AS auditExceptionNoteEmployee_dept_id,
-         auditExceptionNoteEmployee.dept_code                       AS auditExceptionNoteEmployee_dept_code,
-         auditExceptionNoteEmployee.dept_description                AS auditExceptionNoteEmployee_dept_description,
-         auditExceptionNoteEmployee.store_id                        AS auditExceptionNoteEmployee_store_id,
-         auditExceptionNoteEmployee.store_number                    AS auditExceptionNoteEmployee_store_number,
-         auditExceptionNoteEmployee.store_name                      AS auditExceptionNoteEmployee_store_name
+         ${selectAuditExceptionNoteAndEmployee}
       FROM audit_exception auditException
            LEFT OUTER JOIN audit_scan_area AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
            JOIN audit a ON auditException.audit_id = a.id
@@ -335,26 +343,7 @@ class AuditExceptionRepository @Inject constructor(
          )
          SELECT
             p.*,
-            auditExceptionNote.id                                      AS auditExceptionNote_id,
-            auditExceptionNote.time_created                            AS auditExceptionNote_time_created,
-            auditExceptionNote.time_updated                            AS auditExceptionNote_time_updated,
-            auditExceptionNote.note                                    AS auditExceptionNote_note,
-            auditExceptionNoteEmployee.emp_id                          AS auditExceptionNoteEmployee_id,
-            auditExceptionNoteEmployee.emp_type                        AS auditExceptionNoteEmployee_type,
-            auditExceptionNoteEmployee.emp_number                      AS auditExceptionNoteEmployee_number,
-            auditExceptionNoteEmployee.emp_last_name                   AS auditExceptionNoteEmployee_last_name,
-            auditExceptionNoteEmployee.emp_first_name_mi               AS auditExceptionNoteEmployee_first_name_mi,
-            auditExceptionNoteEmployee.emp_pass_code                   AS auditExceptionNoteEmployee_pass_code,
-            auditExceptionNoteEmployee.emp_active                      AS auditExceptionNoteEmployee_active,
-            auditExceptionNoteEmployee.emp_cynergi_system_admin        AS auditExceptionNoteEmployee_cynergi_system_admin,
-            auditExceptionNoteEmployee.emp_alternative_store_indicator AS auditExceptionNoteEmployee_alternative_store_indicator,
-            auditExceptionNoteEmployee.emp_alternative_area            AS auditExceptionNoteEmployee_alternative_area,
-            auditExceptionNoteEmployee.dept_id                         AS auditExceptionNoteEmployee_dept_id,
-            auditExceptionNoteEmployee.dept_code                       AS auditExceptionNoteEmployee_dept_code,
-            auditExceptionNoteEmployee.dept_description                AS auditExceptionNoteEmployee_dept_description,
-            auditExceptionNoteEmployee.store_id                        AS auditExceptionNoteEmployee_store_id,
-            auditExceptionNoteEmployee.store_number                    AS auditExceptionNoteEmployee_store_number,
-            auditExceptionNoteEmployee.store_name                      AS auditExceptionNoteEmployee_store_name
+            ${selectAuditExceptionNoteAndEmployee}
          FROM paged AS p
             LEFT OUTER JOIN audit_exception_note auditExceptionNote ON p.auditException_id = auditExceptionNote.audit_exception_id
             LEFT OUTER JOIN system_employees_fimvw auditExceptionNoteEmployee ON auditExceptionNote.entered_by = auditExceptionNoteEmployee.emp_number AND p.comp_id = auditExceptionNoteEmployee.comp_id
@@ -604,4 +593,133 @@ class AuditExceptionRepository @Inject constructor(
       } else {
          null
       }
+
+   fun mapRowWithInventory(rs: ResultSet, columnPrefix: String): AuditExceptionEntity {
+      val company = companyRepository.mapRow(rs, columnPrefix = "comp_", addressPrefix = "comp_address_")
+      val address = company.address
+      val scannedBy = mapEmployeeNotNull(rs, address, "auditExceptionEmployee_")
+      val scanArea = auditScanAreaRepository.mapRowOrNull(rs, company, "auditScanArea_")
+      val approvedBy = null
+      val audit = SimpleIdentifiableEntity(rs.getUuid("audit_id"))
+      val inventory = inventoryRepository.mapRow(rs)
+      val result = AuditExceptionEntity(
+         id = rs.getUuid("${columnPrefix}id"),
+         timeCreated = rs.getOffsetDateTime("${columnPrefix}time_created"),
+         timeUpdated = rs.getOffsetDateTime("${columnPrefix}time_updated"),
+         scanArea = scanArea,
+         barcode = rs.getString("${columnPrefix}barcode"),
+         productCode = rs.getString("${columnPrefix}product_code"),
+         altId = rs.getString("${columnPrefix}alt_id"),
+         serialNumber = rs.getString("${columnPrefix}serial_number"),
+         inventoryBrand = rs.getString("${columnPrefix}inventory_brand"),
+         inventoryModel = rs.getString("${columnPrefix}inventory_model"),
+         scannedBy = scannedBy,
+         exceptionCode = rs.getString("${columnPrefix}exception_code"),
+         approved = rs.getBoolean("${columnPrefix}approved"),
+         approvedBy = approvedBy,
+         lookupKey = rs.getString("${columnPrefix}lookup_key"),
+         audit = audit,
+         inventory = inventory
+      )
+      return result
+   }
+
+   @ReadOnly
+   fun findUnscannedInventoryWithExceptions(audit: AuditEntity): List<AuditExceptionEntity> {
+      var pageResult = findUnscannedInventoryWithExceptions(
+         audit,
+         StandardPageRequest(page = 1, size = 1000, sortBy = "lookup_key", sortDirection = "ASC")
+      )
+      val exceptions: MutableList<AuditExceptionEntity> = mutableListOf()
+
+      while (pageResult.elements.isNotEmpty()) {
+         exceptions.addAll(pageResult.elements)
+         pageResult = findUnscannedInventoryWithExceptions(audit, pageResult.requested.nextPage())
+      }
+
+      return exceptions
+   }
+
+   val withAuditExceptionNote =
+      """
+      LEFT OUTER JOIN audit_exception_note auditExceptionNote on auditExceptionNote.audit_exception_id = p.auditException_id
+      LEFT OUTER JOIN system_employees_fimvw auditExceptionNoteEmployee ON auditExceptionNote.entered_by = auditExceptionNoteEmployee.emp_number AND p.comp_id = auditExceptionNoteEmployee.comp_id
+      """.trimIndent()
+
+   // @Readonly
+   fun findUnscannedInventoryWithExceptions(
+      audit: AuditEntity,
+      pageRequest: PageRequest
+   ): RepositoryPage<AuditExceptionEntity, PageRequest> {
+      var totalElements: Long? = null
+      val company = audit.store.myCompany()
+      val elements = mutableListOf<AuditExceptionEntity>()
+      val params = mapOf(
+         "audit_id" to audit.id,
+         "comp_id" to company.id,
+         "limit" to pageRequest.size(),
+         "offset" to pageRequest.offset()
+      )
+
+      val sql =
+      """
+      WITH paged AS (
+         SELECT
+            ${inventoryRepository.selectAuditInventoryAndException}
+         FROM company comp
+            JOIN audit a ON a.company_id = comp.id
+            JOIN audit_exception auditException ON a.id = auditException.audit_id
+            JOIN audit_inventory i ON auditException.audit_id = i.audit_id and auditException.lookup_key = i.lookup_key
+            ${inventoryRepository.withCompanyAddress}
+            ${inventoryRepository.withPrimaryStore}
+            ${inventoryRepository.withScannedBy}
+            ${inventoryRepository.withCurrentStore}
+            ${inventoryRepository.withInventoryLocationType}
+         WHERE
+            auditException.audit_id = :audit_id
+            AND comp.id = :comp_id
+            AND auditException.scan_area_id is null
+      )
+      SELECT
+         p.*,
+         ${selectAuditExceptionNoteAndEmployee}
+      FROM paged AS p
+         ${withAuditExceptionNote}
+      ORDER BY CASE WHEN status = 'D' THEN 1 ELSE 0 END,${pageRequest.sortBy()} ${pageRequest.sortDirection()},
+       auditExceptionNote.time_updated ASC
+      LIMIT :limit
+      OFFSET :offset
+      """.trimIndent()
+
+      logger.debug("find unscanned inventory with exceptions {}/{}", sql, params)
+
+      return jdbc.queryPaged(sql, params, pageRequest) { rs, elements ->
+         var currentId: UUID? = null
+         var currentParentEntity: AuditExceptionEntity? = null
+         do {
+            val tempId = rs.getUuid("auditException_id")
+            val address = addressRepository.mapAddressOrNull(rs, "comp_address_")
+            val tempParentEntity: AuditExceptionEntity = if (tempId != currentId) {
+               currentId = tempId
+               currentParentEntity = mapRowWithInventory(
+                  rs,
+                  "auditException_"
+               )
+               elements.add(currentParentEntity)
+               currentParentEntity
+            } else {
+               currentParentEntity!!
+            }
+
+            val noteBy = mapEmployee(rs, address, "auditExceptionNoteEmployee_")
+            if (noteBy != null) {
+               mapRowAuditExceptionNote(rs, noteBy)?.also { tempParentEntity.notes?.add(it) }
+            }
+
+            if (totalElements == null) {
+               totalElements = rs.getLong("total_elements")
+            }
+         } while (rs.next())
+      }
+   }
 }

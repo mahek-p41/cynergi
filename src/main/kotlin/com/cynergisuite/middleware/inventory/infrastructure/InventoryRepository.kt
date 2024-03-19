@@ -12,23 +12,15 @@ import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.update
-import com.cynergisuite.middleware.address.AddressEntity
-import com.cynergisuite.middleware.address.AddressRepository
 import com.cynergisuite.middleware.audit.AuditEntity
-import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
-import com.cynergisuite.middleware.audit.exception.infrastructure.AuditExceptionRepository
-import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.audit.status.Created
 import com.cynergisuite.middleware.audit.status.InProgress
-import com.cynergisuite.middleware.authentication.user.infrastructure.SecurityGroupRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
-import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.inventory.InventoryEntity
 import com.cynergisuite.middleware.inventory.InventoryInquiryDTO
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
 import com.cynergisuite.middleware.location.infrastructure.LocationRepository
-import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
@@ -37,161 +29,120 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
 import java.util.UUID
-import java.util.UUID
 import javax.transaction.Transactional
 
 @Singleton
 class InventoryRepository(
-   private val addressRepository: AddressRepository,
-   private val auditExceptionRepository: AuditExceptionRepository,
    private val companyRepository: CompanyRepository,
    private val jdbc: Jdbi,
    private val locationRepository: LocationRepository,
-   private val securityGroupRepository: SecurityGroupRepository,
    private val storeRepository: StoreRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(InventoryRepository::class.java)
 
+   private val selectInventoryInformation =
+      """
+      i.id                          AS id,
+      i.serial_number               AS serial_number,
+      i.lookup_key                  AS lookup_key,
+      i.lookup_key_type             AS lookup_key_type,
+      i.barcode                     AS barcode,
+      i.alternate_id                AS alternate_id,
+      i.brand                       AS brand,
+      i.model_number                AS model_number,
+      i.product_code                AS product_code,
+      i.description                 AS description,
+      i.received_date               AS received_date,
+      i.original_cost               AS original_cost,
+      i.actual_cost                 AS actual_cost,
+      i.model_category              AS model_category,
+      i.times_rented                AS times_rented,
+      i.total_revenue               AS total_revenue,
+      i.remaining_value             AS remaining_value,
+      i.sell_price                  AS sell_price,
+      i.assigned_value              AS assigned_value,
+      i.idle_days                   AS idle_days,
+      i.condition                   AS condition,
+      i.returned_date               AS returned_date,
+      i.status                      AS status,
+      i.dataset                     AS dataset
+      """.trimIndent()
+
+   private val selectCompanyAndAddress = 
+      """
+      comp.id                  AS comp_id,
+      comp.time_created        AS comp_time_created,
+      comp.time_updated        AS comp_time_updated,
+      comp.name                AS comp_name,
+      comp.doing_business_as   AS comp_doing_business_as,
+      comp.client_code         AS comp_client_code,
+      comp.client_id           AS comp_client_id,
+      comp.dataset_code        AS comp_dataset_code,
+      comp.federal_id_number   AS comp_federal_id_number,
+      comp.include_demo_inventory AS comp_include_demo_inventory,
+      compAddress.id           AS comp_address_id,
+      compAddress.name         AS comp_address_name,
+      compAddress.address1     AS comp_address_address1,
+      compAddress.address2     AS comp_address_address2,
+      compAddress.city         AS comp_address_city,
+      compAddress.state        AS comp_address_state,
+      compAddress.postal_code  AS comp_address_postal_code,
+      compAddress.latitude     AS comp_address_latitude,
+      compAddress.longitude    AS comp_address_longitude,
+      compAddress.country      AS comp_address_country,
+      compAddress.county       AS comp_address_county,
+      compAddress.phone        AS comp_address_phone,
+      compAddress.fax          AS comp_address_fax
+      """.trimIndent()
+
+   private val selectStoreInformation =
+      """
+      primaryStore.id               AS primary_store_id,
+      primaryStore.number           AS primary_store_number,
+      primaryStore.name             AS primary_store_name,
+      primaryStore.dataset          AS primary_store_dataset,
+      currentStore.id               AS current_store_id,
+      currentStore.number           AS current_store_number,
+      currentStore.name             AS current_store_name,
+      currentStore.dataset          AS current_store_dataset,
+      iltd.id                       AS location_type_id,
+      iltd.value                    AS location_type_value,
+      iltd.description              AS location_type_description,
+      iltd.localization_code        AS location_type_localization_code
+      """.trimIndent()
+
+   val withInventoryLocationType =
+      """
+      JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
+      """.trimIndent()
+
+   val withPrimaryStore =
+      """
+      JOIN system_stores_fimvw primaryStore ON comp.dataset_code = primaryStore.dataset AND i.primary_location = primaryStore.number
+      """.trimIndent()
+
+   val withCompanyAddress =
+      """
+      LEFT JOIN address AS compAddress ON comp.address_id = compAddress.id AND compAddress.deleted = FALSE
+      """.trimIndent()
+
+   val withCurrentStore =
+      """
+      LEFT OUTER JOIN system_stores_fimvw currentStore ON comp.dataset_code = currentStore.dataset AND i.location = currentStore.number
+      """.trimIndent()
+
    private val selectBase =
       """
       SELECT
-         i.id                          AS id,
-         i.serial_number               AS serial_number,
-         i.lookup_key                  AS lookup_key,
-         i.lookup_key_type             AS lookup_key_type,
-         i.barcode                     AS barcode,
-         i.alternate_id                AS alternate_id,
-         i.brand                       AS brand,
-         i.model_number                AS model_number,
-         i.product_code                AS product_code,
-         i.description                 AS description,
-         i.received_date               AS received_date,
-         i.original_cost               AS original_cost,
-         i.actual_cost                 AS actual_cost,
-         i.model_category              AS model_category,
-         i.times_rented                AS times_rented,
-         i.total_revenue               AS total_revenue,
-         i.remaining_value             AS remaining_value,
-         i.sell_price                  AS sell_price,
-         i.assigned_value              AS assigned_value,
-         i.idle_days                   AS idle_days,
-         i.condition                   AS condition,
-         i.returned_date               AS returned_date,
-         i.status                      AS status,
-         i.dataset                     AS dataset,
-         comp.id                       AS comp_id,
-         comp.time_created             AS comp_time_created,
-         comp.time_updated             AS comp_time_updated,
-         comp.name                     AS comp_name,
-         comp.doing_business_as        AS comp_doing_business_as,
-         comp.client_code              AS comp_client_code,
-         comp.client_id                AS comp_client_id,
-         comp.dataset_code             AS comp_dataset_code,
-         comp.federal_id_number        AS comp_federal_id_number,
-         comp.include_demo_inventory   AS comp_include_demo_inventory,
-         compAddress.id                AS comp_address_id,
-         compAddress.name              AS comp_address_name,
-         compAddress.address1          AS comp_address_address1,
-         compAddress.address2          AS comp_address_address2,
-         compAddress.city              AS comp_address_city,
-         compAddress.state             AS comp_address_state,
-         compAddress.postal_code       AS comp_address_postal_code,
-         compAddress.latitude          AS comp_address_latitude,
-         compAddress.longitude         AS comp_address_longitude,
-         compAddress.country           AS comp_address_country,
-         compAddress.county            AS comp_address_county,
-         compAddress.phone             AS comp_address_phone,
-         compAddress.fax               AS comp_address_fax,
-         primaryStore.id               AS primary_store_id,
-         primaryStore.number           AS primary_store_number,
-         primaryStore.name             AS primary_store_name,
-         primaryStore.dataset          AS primary_store_dataset,
-         currentStore.id               AS current_store_id,
-         currentStore.number           AS current_store_number,
-         currentStore.name             AS current_store_name,
-         currentStore.dataset          AS current_store_dataset,
-         iltd.id                       AS location_type_id,
-         iltd.value                    AS location_type_value,
-         iltd.description              AS location_type_description,
-         iltd.localization_code        AS location_type_localization_code
+         ${selectInventoryInformation},
+         ${selectCompanyAndAddress},
+         ${selectStoreInformation}
       FROM company comp
            JOIN inventory i ON comp.dataset_code = i.dataset
-           LEFT JOIN address AS compAddress ON comp.address_id = compAddress.id AND compAddress.deleted = FALSE
-           JOIN system_stores_fimvw primaryStore ON comp.dataset_code = primaryStore.dataset AND i.primary_location = primaryStore.number
-           LEFT OUTER JOIN system_stores_fimvw currentStore ON comp.dataset_code = currentStore.dataset AND i.location = currentStore.number
-           JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
-      """.trimIndent()
-
-   private val selectFromAuditInventory =
-      """
-      SELECT
-         i.id                     AS id,
-         i.audit_id               AS audit_id,
-         i.serial_number          AS serial_number,
-         i.lookup_key             AS lookup_key,
-         i.lookup_key_type        AS lookup_key_type,
-         i.barcode                AS barcode,
-         i.alternate_id           AS alternate_id,
-         i.brand                  AS brand,
-         i.model_number           AS model_number,
-         i.product_code           AS product_code,
-         i.description            AS description,
-         i.received_date          AS received_date,
-         i.original_cost          AS original_cost,
-         i.actual_cost            AS actual_cost,
-         i.model_category         AS model_category,
-         i.times_rented           AS times_rented,
-         i.total_revenue          AS total_revenue,
-         i.remaining_value         AS remaining_value,
-         i.sell_price             AS sell_price,
-         i.assigned_value         AS assigned_value,
-         i.idle_days              AS idle_days,
-         i.condition              AS condition,
-         i.returned_date          AS returned_date,
-         i.status                 AS status,
-         i.dataset                AS dataset,
-         comp.id                  AS comp_id,
-         comp.time_created        AS comp_time_created,
-         comp.time_updated        AS comp_time_updated,
-         comp.name                AS comp_name,
-         comp.doing_business_as   AS comp_doing_business_as,
-         comp.client_code         AS comp_client_code,
-         comp.client_id           AS comp_client_id,
-         comp.dataset_code        AS comp_dataset_code,
-         comp.federal_id_number   AS comp_federal_id_number,
-         comp.include_demo_inventory AS comp_include_demo_inventory,
-         compAddress.id           AS comp_address_id,
-         compAddress.name         AS comp_address_name,
-         compAddress.address1     AS comp_address_address1,
-         compAddress.address2     AS comp_address_address2,
-         compAddress.city         AS comp_address_city,
-         compAddress.state        AS comp_address_state,
-         compAddress.postal_code  AS comp_address_postal_code,
-         compAddress.latitude     AS comp_address_latitude,
-         compAddress.longitude    AS comp_address_longitude,
-         compAddress.country      AS comp_address_country,
-         compAddress.county       AS comp_address_county,
-         compAddress.phone        AS comp_address_phone,
-         compAddress.fax          AS comp_address_fax,
-         primaryStore.id          AS primary_store_id,
-         primaryStore.number      AS primary_store_number,
-         primaryStore.name        AS primary_store_name,
-         primaryStore.dataset     AS primary_store_dataset,
-         currentStore.id          AS current_store_id,
-         currentStore.number      AS current_store_number,
-         currentStore.name        AS current_store_name,
-         currentStore.dataset     AS current_store_dataset,
-         iltd.id                  AS location_type_id,
-         iltd.value               AS location_type_value,
-         iltd.description         AS location_type_description,
-         iltd.localization_code   AS location_type_localization_code,
-         count(*) OVER() as total_elements
-      FROM company comp
-           JOIN audit_inventory i ON comp.dataset_code = i.dataset
-           LEFT JOIN address AS compAddress ON comp.address_id = compAddress.id AND compAddress.deleted = FALSE
-           JOIN system_stores_fimvw primaryStore ON comp.dataset_code = primaryStore.dataset AND i.primary_location = primaryStore.number
-           LEFT OUTER JOIN system_stores_fimvw currentStore ON comp.dataset_code = currentStore.dataset AND i.location = currentStore.number
-           JOIN inventory_location_type_domain iltd ON i.location_type = iltd.id
+           ${withCompanyAddress}
+           ${withPrimaryStore}
+           ${withCurrentStore}
+           ${withInventoryLocationType}
       """.trimIndent()
 
    @ReadOnly
@@ -318,7 +269,7 @@ class InventoryRepository(
    fun findUnscannedIdleInventory(audit: AuditEntity): List<InventoryEntity> {
       var pageResult = findUnscannedIdleInventory(
          audit,
-         StandardPageRequest(page = 1, size = 1000, sortBy = "id", sortDirection = "ASC")
+         StandardPageRequest(page = 1, size = 1000, sortBy = "lookup_key", sortDirection = "ASC")
       )
       val inventories: MutableList<InventoryEntity> = mutableListOf()
 
@@ -329,6 +280,65 @@ class InventoryRepository(
 
       return inventories
    }
+
+   val selectScannedBy =
+      """
+      scannedBy.emp_id                                           AS auditExceptionEmployee_id,
+      scannedBy.emp_type                                         AS auditExceptionEmployee_type,
+      scannedBy.emp_number                                       AS auditExceptionEmployee_number,
+      scannedBy.emp_last_name                                    AS auditExceptionEmployee_last_name,
+      scannedBy.emp_first_name_mi                                AS auditExceptionEmployee_first_name_mi,
+      scannedBy.emp_pass_code                                    AS auditExceptionEmployee_pass_code,
+      scannedBy.emp_active                                       AS auditExceptionEmployee_active,
+      scannedBy.emp_cynergi_system_admin                         AS auditExceptionEmployee_cynergi_system_admin,
+      scannedBy.emp_alternative_store_indicator                  AS auditExceptionEmployee_alternative_store_indicator,
+      scannedBy.emp_alternative_area                             AS auditExceptionEmployee_alternative_area,
+      scannedBy.dept_id                                          AS auditExceptionEmployee_dept_id,
+      scannedBy.dept_code                                        AS auditExceptionEmployee_dept_code,
+      scannedBy.dept_description                                 AS auditExceptionEmployee_dept_description,
+      scannedBy.store_id                                         AS auditExceptionEmployee_store_id,
+      scannedBy.store_number                                     AS auditExceptionEmployee_store_number,
+      scannedBy.store_name                                       AS auditExceptionEmployee_store_name
+      """.trimIndent()
+
+   val selectException =
+      """
+      auditException.id                                          AS auditException_id,
+      auditException.exception_code                              AS auditException_exception_code,
+      auditException.scanned_by                                  AS auditException_scanned_by,
+      auditException.time_created                                AS auditException_time_created,
+      auditException.time_updated                                AS auditException_time_updated,
+      auditException.barcode                                     AS auditException_barcode,
+      auditException.product_code                                AS auditException_product_code,
+      auditException.alt_id                                      AS auditException_alt_id,
+      auditException.serial_number                               AS auditException_serial_number,
+      auditException.inventory_brand                             AS auditException_inventory_brand,
+      auditException.inventory_model                             AS auditException_inventory_model,
+      auditException.approved                                    AS auditException_approved,
+      auditException.lookup_key                                  AS auditException_lookup_key
+      """.trimIndent()
+
+   val selectAudit =
+      """
+      a.id                     AS audit_id
+      """.trimIndent()
+
+   val selectAuditInventoryAndException =
+      """
+      ${selectCompanyAndAddress},
+      ${selectStoreInformation},
+      ${selectAudit},
+      ${selectInventoryInformation},
+      ${selectException},
+      ${selectScannedBy},
+      count(*) OVER() AS total_elements
+      """.trimIndent()
+
+   val withScannedBy = 
+      """
+      LEFT OUTER JOIN system_employees_fimvw scannedBy
+         ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
+      """.trimIndent()
 
    @ReadOnly
    fun findUnscannedIdleInventory(
@@ -346,105 +356,56 @@ class InventoryRepository(
       )
 
       val sql =
-         """
+      """
       WITH paged AS (
-         ${
-            if (audit.currentStatus() == Created || audit.currentStatus() == InProgress) {
-               "$selectBase JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.primary_location)"
-            } else {
-               "$selectFromAuditInventory JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.primary_location AND a.id = i.audit_id)"
-            }
-         }
+         SELECT
+            ${selectAuditInventoryAndException}
+         FROM company comp
+            JOIN fastinfo_prod_import.inventory_vw i ON comp.dataset_code = i.dataset  
+            JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.primary_location)
+            ${withCompanyAddress}
+            ${withPrimaryStore}
+            ${withCurrentStore}
+            ${withInventoryLocationType}
+            LEFT OUTER JOIN audit_exception auditException on (auditException.audit_id = a.id and auditException.lookup_key = i.lookup_key)
+            ${withScannedBy}
          WHERE
             comp.id = :comp_id
             AND a.id = :audit_id
-            AND i.status in ('N', 'R', 'D')
+            AND auditException.id is null
+            AND CASE
+               WHEN comp.include_demo_inventory THEN
+                  (i.status = 'D' OR (i.status IN ('N','R') AND i.location = a.store_number))
+               ELSE
+                  (i.status IN ('N','R') AND i.location = a.store_number)
+            END
             AND i.lookup_key NOT IN (SELECT lookup_key
-                                        FROM audit_detail
-                                        WHERE audit_id = :audit_id)
+               FROM audit_detail
+               WHERE audit_id = :audit_id)
             AND (comp.include_demo_inventory OR i.status != 'D')
       )
       SELECT
-         p.*,
-         auditException.id                                          AS auditException_id,
-         auditException.exception_code                              AS auditException_exception_code,
-         scannedBy.emp_id                                           AS auditExceptionEmployee_id,
-         scannedBy.emp_type                                         AS auditExceptionEmployee_type,
-         scannedBy.emp_number                                       AS auditExceptionEmployee_number,
-         scannedBy.emp_last_name                                    AS auditExceptionEmployee_last_name,
-         scannedBy.emp_first_name_mi                                AS auditExceptionEmployee_first_name_mi,
-         scannedBy.emp_pass_code                                    AS auditExceptionEmployee_pass_code,
-         scannedBy.emp_active                                       AS auditExceptionEmployee_active,
-         scannedBy.emp_cynergi_system_admin                         AS auditExceptionEmployee_cynergi_system_admin,
-         scannedBy.emp_alternative_store_indicator                  AS auditExceptionEmployee_alternative_store_indicator,
-         scannedBy.emp_alternative_area                             AS auditExceptionEmployee_alternative_area,
-         scannedBy.dept_id                                          AS auditExceptionEmployee_dept_id,
-         scannedBy.dept_code                                        AS auditExceptionEmployee_dept_code,
-         scannedBy.dept_description                                 AS auditExceptionEmployee_dept_description,
-         scannedBy.store_id                                         AS auditExceptionEmployee_store_id,
-         scannedBy.store_number                                     AS auditExceptionEmployee_store_number,
-         scannedBy.store_name                                       AS auditExceptionEmployee_store_name,
-         auditExceptionNote.id                                      AS auditExceptionNote_id,
-         auditExceptionNote.time_created                            AS auditExceptionNote_time_created,
-         auditExceptionNote.time_updated                            AS auditExceptionNote_time_updated,
-         auditExceptionNote.note                                    AS auditExceptionNote_note,
-         auditExceptionNoteEmployee.emp_id                          AS auditExceptionNoteEmployee_id,
-         auditExceptionNoteEmployee.emp_type                        AS auditExceptionNoteEmployee_type,
-         auditExceptionNoteEmployee.emp_number                      AS auditExceptionNoteEmployee_number,
-         auditExceptionNoteEmployee.emp_last_name                   AS auditExceptionNoteEmployee_last_name,
-         auditExceptionNoteEmployee.emp_first_name_mi               AS auditExceptionNoteEmployee_first_name_mi,
-         auditExceptionNoteEmployee.emp_pass_code                   AS auditExceptionNoteEmployee_pass_code,
-         auditExceptionNoteEmployee.emp_active                      AS auditExceptionNoteEmployee_active,
-         auditExceptionNoteEmployee.emp_cynergi_system_admin        AS auditExceptionNoteEmployee_cynergi_system_admin,
-         auditExceptionNoteEmployee.emp_alternative_store_indicator AS auditExceptionNoteEmployee_alternative_store_indicator,
-         auditExceptionNoteEmployee.emp_alternative_area            AS auditExceptionNoteEmployee_alternative_area,
-         auditExceptionNoteEmployee.dept_id                         AS auditExceptionNoteEmployee_dept_id,
-         auditExceptionNoteEmployee.dept_code                       AS auditExceptionNoteEmployee_dept_code,
-         auditExceptionNoteEmployee.dept_description                AS auditExceptionNoteEmployee_dept_description,
-         auditExceptionNoteEmployee.store_id                        AS auditExceptionNoteEmployee_store_id,
-         auditExceptionNoteEmployee.store_number                    AS auditExceptionNoteEmployee_store_number,
-         auditExceptionNoteEmployee.store_name                      AS auditExceptionNoteEmployee_store_name
+         p.*
       FROM paged AS p
-      LEFT OUTER JOIN audit_exception auditException on (auditException.audit_id = p.audit_id and auditException.lookup_key = p.lookup_key)
-      LEFT OUTER JOIN system_employees_fimvw scannedBy ON auditException.scanned_by = scannedBy.emp_number AND p.comp_id = scannedBy.comp_id
-      LEFT OUTER JOIN audit_exception_note auditExceptionNote on auditExceptionNote.audit_exception_id = auditException.id
-      LEFT OUTER JOIN system_employees_fimvw auditExceptionNoteEmployee ON auditExceptionNote.entered_by = auditExceptionNoteEmployee.emp_number AND p.comp_id = auditExceptionNoteEmployee.comp_id
-      LEFT OUTER JOIN audit_scan_area AS auditScanArea ON auditException.scan_area_id = auditScanArea.id
-      WHERE auditException.scan_area_id is null
       ORDER BY CASE WHEN status = 'D' THEN 1 ELSE 0 END,${pageRequest.sortBy()} ${pageRequest.sortDirection()}
       LIMIT :limit
-         OFFSET :offset
-         """.trimIndent()
+      OFFSET :offset
+      """.trimIndent()
 
       logger.debug("find unscanned idle inventory {}/{}", sql, params)
 
-      return jdbc.queryPaged(sql, params, pageRequest) { rs, elements ->
-         var currentId: Long? = null
-         var currentParentEntity: InventoryEntity? = null
-         do {
-            val tempId = rs.getLong("id")
-            val address = addressRepository.mapAddressOrNull(rs, "comp_address_")
-            val tempParentEntity: InventoryEntity = if (tempId != currentId) {
-               currentId = tempId
-               currentParentEntity = mapRowWithException(rs, address)
-               elements.add(currentParentEntity)
-               currentParentEntity
-            } else {
-               currentParentEntity!!
-            }
-
-            if (tempParentEntity.exception != null) {
-               val noteBy = auditExceptionRepository.mapEmployee(rs, address, "auditExceptionNoteEmployee_")
-               if (noteBy != null) {
-                  auditExceptionRepository.mapRowAuditExceptionNote(rs, noteBy)?.also { tempParentEntity.exception.notes?.add(it) }
-               }
-            }
-
-            if (totalElements == null) {
-               totalElements = rs.getLong("total_elements")
-            }
-         } while (rs.next())
+      jdbc.query(sql, params) { rs, _ ->
+         if (totalElements == null) {
+            totalElements = rs.getLong("total_elements")
+         }
+         elements.add(mapRow(rs))
       }
+
+      return RepositoryPage(
+         requested = pageRequest,
+         elements = elements,
+         totalElements = totalElements ?: 0
+      )
    }
 
    @ReadOnly
@@ -596,94 +557,6 @@ class InventoryRepository(
       )
    }
 
-   fun mapRowWithException(rs: ResultSet, address: AddressEntity?): InventoryEntity {
-      val company = companyRepository.mapRow(rs, columnPrefix = "comp_", addressPrefix = "comp_address_")
-      val exceptionBy = auditExceptionRepository.mapEmployee(rs, address, "auditExceptionEmployee_")
-      var auditException: AuditExceptionEntity? = null
-      if (exceptionBy != null) {
-         auditException = mapRowAuditException(rs, exceptionBy)
-      }
-
-      return InventoryEntity(
-         id = rs.getUuid("id"),
-         serialNumber = rs.getString("serial_number"),
-         lookupKey = rs.getString("lookup_key"),
-         lookupKeyType = rs.getString("lookup_key_type"),
-         barcode = rs.getString("barcode"),
-         altId = rs.getString("alternate_id"),
-         brand = rs.getString("brand"),
-         modelNumber = rs.getString("model_number"),
-         productCode = rs.getString("product_code"),
-         description = rs.getString("description"),
-         receivedDate = rs.getLocalDateOrNull("received_date"),
-         originalCost = rs.getBigDecimal("original_cost"),
-         actualCost = rs.getBigDecimal("actual_cost"),
-         modelCategory = rs.getString("model_category"),
-         timesRented = rs.getInt("times_rented"),
-         totalRevenue = rs.getBigDecimal("total_revenue"),
-         remainingValue = rs.getBigDecimal("remaining_value"),
-         sellPrice = rs.getBigDecimal("sell_price"),
-         assignedValue = rs.getBigDecimal("assigned_value"),
-         idleDays = rs.getInt("idle_days"),
-         condition = rs.getString("condition"),
-         returnedDate = rs.getLocalDateOrNull("returned_date"),
-         location = locationRepository.maybeMapRow(rs, "current_store_"),
-         status = rs.getString("status"),
-         primaryLocation = storeRepository.mapRow(rs, company, "primary_store_"),
-         locationType = InventoryLocationType(
-            id = rs.getInt("location_type_id"),
-            value = rs.getString("location_type_value"),
-            description = rs.getString("location_type_description"),
-            localizationCode = rs.getString("location_type_localization_code")
-         ),
-         exception = auditException
-      )
-   }
-
-   fun mapRowWithException(rs: ResultSet, address: AddressEntity?): InventoryEntity {
-      val company = companyRepository.mapRow(rs, columnPrefix = "comp_", addressPrefix = "comp_address_")
-      val exceptionBy = auditExceptionRepository.mapEmployee(rs, address, "auditExceptionEmployee_")
-      var auditException: AuditExceptionEntity? = null
-      if (exceptionBy != null) {
-         auditException = mapRowAuditException(rs, exceptionBy)
-      }
-
-      return InventoryEntity(
-         id = rs.getLong("id"),
-         serialNumber = rs.getString("serial_number"),
-         lookupKey = rs.getString("lookup_key"),
-         lookupKeyType = rs.getString("lookup_key_type"),
-         barcode = rs.getString("barcode"),
-         altId = rs.getString("alt_id"),
-         brand = rs.getString("brand"),
-         modelNumber = rs.getString("model_number"),
-         productCode = rs.getString("product_code"),
-         description = rs.getString("description"),
-         receivedDate = rs.getLocalDateOrNull("received_date"),
-         originalCost = rs.getBigDecimal("original_cost"),
-         actualCost = rs.getBigDecimal("actual_cost"),
-         modelCategory = rs.getString("model_category"),
-         timesRented = rs.getInt("times_rented"),
-         totalRevenue = rs.getBigDecimal("total_revenue"),
-         remainingValue = rs.getBigDecimal("remaining_value"),
-         sellPrice = rs.getBigDecimal("sell_price"),
-         assignedValue = rs.getBigDecimal("assigned_value"),
-         idleDays = rs.getInt("idle_days"),
-         condition = rs.getString("condition"),
-         returnedDate = rs.getLocalDateOrNull("returned_date"),
-         location = locationRepository.maybeMapRow(rs, "current_store_"),
-         status = rs.getString("status"),
-         primaryLocation = storeRepository.mapRow(rs, company, "primary_store_"),
-         locationType = InventoryLocationType(
-            id = rs.getInt("location_type_id"),
-            value = rs.getString("location_type_value"),
-            description = rs.getString("location_type_description"),
-            localizationCode = rs.getString("location_type_localization_code")
-         ),
-         exception = auditException
-      )
-   }
-
    private fun buildStatusAndLocationTypeFilterString(statuses: List<String>, params: MutableMap<String, Any?>): String {
       //location_type filter is applied to status (N,R) only
       val str = StringBuilder(" ( ")
@@ -729,17 +602,4 @@ class InventoryRepository(
          currentLocExpensed = currentLocExpensed
       )
    }
-
-   private fun mapRowAuditException(rs: ResultSet, scannedBy: EmployeeEntity): AuditExceptionEntity? =
-      if (rs.getString("auditException_id") != null) {
-         AuditExceptionEntity(
-            audit = rs.getUuid("audit_id"),
-            lookupKey = rs.getString("lookup_key"),
-            scanArea = null,
-            scannedBy = scannedBy,
-            exceptionCode = rs.getString("auditException_exception_code")
-         )
-      } else {
-         null
-      }
 }

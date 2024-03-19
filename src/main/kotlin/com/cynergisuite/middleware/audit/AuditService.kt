@@ -20,6 +20,7 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
 import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.error.NotFoundException
+import com.cynergisuite.middleware.inventory.InventoryEntity
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.reportal.ReportalService
@@ -147,6 +148,21 @@ class AuditService @Inject constructor(
 
       // after update successfully create the inventory snapshot for the completed or canceled audit
       if (updated.actions.any { it.status == Completed || it.status == Canceled }) {
+         // File exceptions for all inventory that have no audit detail
+         val submittedBy = employeeRepository.findOne(user) ?: throw NotFoundException(user);
+         if (existingAudit.id != null) {
+            inventoryRepository.findUnscannedIdleInventory(audit = existingAudit).forEach {
+               auditExceptionRepository.insert(
+                  AuditExceptionEntity(
+                     audit = existingAudit.id,
+                     inventory = it,
+                     scanArea = null,
+                     scannedBy = submittedBy,
+                     exceptionCode = "Unit Was Not Scanned"
+                  )
+               )
+            };
+         }
          auditInventoryRepository.createInventorySnapshot(updated)
       }
 
@@ -479,36 +495,51 @@ class AuditService @Inject constructor(
       table.makeCell("Condition", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
       table.makeCell("Status", ALIGN_TOP, ALIGN_LEFT, headerFont, leading, padding, border, ascender, descender)
 
-      val unscannedIdleInventory = inventoryRepository.findUnscannedIdleInventory(audit)
+      if (audit.currentStatus() == Created || audit.currentStatus() == InProgress) {
+         var unscannedIdleInventory = inventoryRepository.findUnscannedIdleInventory(audit)
+         unscannedIdleInventory.forEachIndexed { index, it ->
+            table.defaultCell.backgroundColor = if (index % 2 == 0) evenColor else oddColor
+            table.addCell(Phrase(it.serialNumber, rowFont))
+            table.addCell(Phrase(it.altId, rowFont))
+            table.addCell(Phrase(it.brand, rowFont))
+            table.addCell(Phrase(it.modelNumber, rowFont))
+            table.addCell(Phrase(it.productCode, rowFont))
+            table.addCell(Phrase(it.description, rowFont))
+            table.addCell(Phrase(it.receivedDate?.let { dateTimeFormatter.format(it) }, rowFont))
+            table.addCell(Phrase(it.idleDays.toString(), rowFont))
+            table.addCell(Phrase(it.condition, rowFont))
+            table.addCell(Phrase(it.status, rowFont))
+         }
+      } else {
+         var unscannedExceptionsWithInventory = auditExceptionRepository.findUnscannedInventoryWithExceptions(audit)
+         unscannedExceptionsWithInventory.forEachIndexed { index, it ->
+            table.defaultCell.backgroundColor = if (index % 2 == 0) evenColor else oddColor
+            table.addCell(Phrase(it.inventory?.serialNumber, rowFont))
+            table.addCell(Phrase(it.inventory?.altId, rowFont))
+            table.addCell(Phrase(it.inventory?.brand, rowFont))
+            table.addCell(Phrase(it.inventory?.modelNumber, rowFont))
+            table.addCell(Phrase(it.inventory?.productCode, rowFont))
+            table.addCell(Phrase(it.inventory?.description, rowFont))
+            table.addCell(Phrase(it.inventory?.receivedDate?.let { dateTimeFormatter.format(it) }, rowFont))
+            table.addCell(Phrase(it.inventory?.idleDays.toString(), rowFont))
+            table.addCell(Phrase(it.inventory?.condition, rowFont))
+            table.addCell(Phrase(it.inventory?.status, rowFont))
 
-      unscannedIdleInventory.forEachIndexed { index, it ->
-         table.defaultCell.backgroundColor = if (index % 2 == 0) evenColor else oddColor
-         table.addCell(Phrase(it.serialNumber, rowFont))
-         table.addCell(Phrase(it.altId, rowFont))
-         table.addCell(Phrase(it.brand, rowFont))
-         table.addCell(Phrase(it.modelNumber, rowFont))
-         table.addCell(Phrase(it.productCode, rowFont))
-         table.addCell(Phrase(it.description, rowFont))
-         table.addCell(Phrase(it.receivedDate?.let { dateTimeFormatter.format(it) }, rowFont))
-         table.addCell(Phrase(it.idleDays.toString(), rowFont))
-         table.addCell(Phrase(it.condition, rowFont))
-         table.addCell(Phrase(it.status, rowFont))
-
-         it.exception?.notes?.forEach {
-            table.addCell(EMPTY)
-            table.defaultCell.colspan = 4
-            table.addCell(Phrase(it.note, rowFont))
-            table.defaultCell.colspan = 1
-            table.defaultCell.horizontalAlignment = Element.ALIGN_LEFT
-            table.addCell(Phrase(it.enteredBy.displayName(), rowFont))
-            table.defaultCell.colspan = 1
-            table.addCell(Phrase(dateTimeFormatter.format(it.timeUpdated), rowFont))
-            table.addCell(EMPTY)
-            table.addCell(EMPTY)
-            table.addCell(EMPTY)
+            it.notes?.forEach {
+               table.addCell(EMPTY)
+               table.defaultCell.colspan = 4
+               table.addCell(Phrase(it.note, rowFont))
+               table.defaultCell.colspan = 1
+               table.defaultCell.horizontalAlignment = Element.ALIGN_LEFT
+               table.addCell(Phrase(it.enteredBy.displayName(), rowFont))
+               table.defaultCell.colspan = 1
+               table.addCell(Phrase(dateTimeFormatter.format(it.timeUpdated), rowFont))
+               table.addCell(EMPTY)
+               table.addCell(EMPTY)
+               table.addCell(EMPTY)
+            }
          }
       }
-
       return table
    }
 }
