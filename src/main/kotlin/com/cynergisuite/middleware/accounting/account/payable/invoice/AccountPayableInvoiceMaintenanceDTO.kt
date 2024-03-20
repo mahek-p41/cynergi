@@ -1,5 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice
 
+import com.cynergisuite.middleware.accounting.account.AccountDTO
+import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDetailDTO
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionTemplateDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDTO
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -17,12 +19,8 @@ data class AccountPayableInvoiceMaintenanceDTO(
    var apInvoice: AccountPayableInvoiceDTO? = null,
 
    @field:NotNull
-   @field:Schema(name = "apPayment", description = "Account Payable Payment.", maxLength = 10)
-   var apPayment: AccountPayablePaymentDTO? = null,
-
-   @field:NotNull
    @field:Schema(name = "glDistribution", description = "Account Payable Distribution Template.", maxLength = 10)
-   var glDistribution: AccountPayableDistributionTemplateDTO? = null,
+   var glDistribution: List<AccountPayableInvoiceDistributionDTO>? = null,
 
    @field:NotNull
    @field:Schema(name = "apInvoiceSchedule", description = "Account Payable Invoice Schedule.", maxLength = 10)

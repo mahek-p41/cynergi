@@ -8,17 +8,17 @@ import java.time.LocalDate
 import java.util.UUID
 
 data class AccountPayablePaymentEntity(
-   val id: UUID? = null,
-   val bank: BankEntity,
-   val vendor: VendorEntity,
-   val status: AccountPayablePaymentStatusType,
-   val type: AccountPayablePaymentTypeType,
-   val paymentDate: LocalDate,
-   val dateCleared: LocalDate?,
-   val dateVoided: LocalDate?,
-   val paymentNumber: String,
-   val amount: BigDecimal,
-   val paymentDetails: MutableSet<AccountPayablePaymentDetailEntity>? = LinkedHashSet()
+    val id: UUID? = null,
+    val bank: BankEntity,
+    val vendor: VendorEntity,
+    val status: AccountPayablePaymentStatusType,
+    val type: AccountPayablePaymentTypeType,
+    val paymentDate: LocalDate,
+    val dateCleared: LocalDate?,
+    val dateVoided: LocalDate?,
+    val paymentNumber: String,
+    var amount: BigDecimal,
+    val paymentDetails: MutableSet<AccountPayablePaymentDetailEntity>? = LinkedHashSet()
 ) : Identifiable {
 
    constructor(

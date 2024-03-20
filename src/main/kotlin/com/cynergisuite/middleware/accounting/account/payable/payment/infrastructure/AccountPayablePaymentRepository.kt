@@ -993,6 +993,24 @@ class AccountPayablePaymentRepository @Inject constructor(
       }
    }
 
+   @ReadOnly
+   fun findPaymentByBankAndNumber(bankId: UUID, paymentNumber: String, company: CompanyEntity): AccountPayablePaymentEntity? {
+      val params = mutableMapOf<String, Any?>("bank_id" to bankId, "payment_number" to paymentNumber, "comp_id" to company.id)
+      val query = """
+         ${selectBaseQuery()}
+         WHERE apPayment.bank_id = :bank_id AND apPayment.company_id = :comp_id AND apPayment.payment_number = :payment_number"
+         ORDER BY apPaymentDetail_id
+      """.trimIndent()
+      return jdbc.queryForObjectOrNull(query, params) { rs, _ ->
+         var found: AccountPayablePaymentEntity? = null
+         do {
+            found = found ?: mapRow(rs, company, "apPayment_")
+            apPaymentDetailRepository.mapRowOrNull(rs, company, "apPaymentDetail_")?.let { found.paymentDetails?.add(it) }
+         } while (rs.next())
+         logger.trace("Searching for Account Payable Payment {} resulted in {}", bankId, found)
+         found
+      }
+   }
    @Transactional
    fun insert(entity: AccountPayablePaymentEntity, company: CompanyEntity): AccountPayablePaymentEntity {
       logger.debug("Inserting Account Payable Payment {}", company)

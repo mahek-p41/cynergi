@@ -8,6 +8,6 @@ data class AccountPayableRecurringInvoiceDistributionEntity(
    val id: UUID? = null,
    val invoiceId: UUID,
    val accountId: UUID,
-   val profitCenter: Long,
+   val profitCenter: Int,
    val amount: BigDecimal
 )

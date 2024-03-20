@@ -1,12 +1,20 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure
 
+import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.insertReturning
+import com.cynergisuite.extensions.query
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDistributionDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceScheduleEntity
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentTypeTypeRepository
+import com.cynergisuite.middleware.company.CompanyEntity
+import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.sql.ResultSet
+import java.util.UUID
+import org.apache.commons.lang3.StringUtils
 import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -37,6 +45,25 @@ class AccountPayableInvoiceScheduleRepository @Inject constructor(
          FROM account_payable_invoice_schedule apInvSch
             JOIN company comp ON apInvSch.company_id = comp.id AND comp.deleted = FALSE
       """
+   }
+
+   @ReadOnly
+   fun fetchByInvoiceId(id: UUID, company: CompanyEntity): List<AccountPayableInvoiceScheduleEntity> {
+      val schedules = mutableListOf<AccountPayableInvoiceScheduleEntity>()
+
+      jdbc.query(
+         """
+            ${selectBaseQuery()}
+            WHERE apInvSch.invoice_id = :apInvoiceId and apInvSch.company_id = :companyId
+         """.trimIndent(),
+         mapOf("apInvoiceId" to id, "companyId" to company.id)
+      ) { rs, _ ->
+         do {
+            schedules.add(mapRow(rs,"apInvSch_"))
+         } while (rs.next())
+      }
+
+      return schedules
    }
 
    @Transactional
@@ -91,21 +118,24 @@ class AccountPayableInvoiceScheduleRepository @Inject constructor(
 
    private fun mapRow(
       rs: ResultSet,
+      columnPrefix: String = StringUtils.EMPTY
    ): AccountPayableInvoiceScheduleEntity {
-      val externalPaymentType = accountPayablePaymentTypeTypeRepository.findOne(rs.getInt("external_payment_type_id"))
+      val externalPaymentType = rs.getIntOrNull("external_payment_type_id") ?.let {
+         accountPayablePaymentTypeTypeRepository.findOne(it)
+      }
       return AccountPayableInvoiceScheduleEntity(
-         id = rs.getUuid("id"),
-         invoiceId = rs.getUuid("invoice_id"),
-         companyId = rs.getUuid("company_id"),
-         scheduleDate = rs.getDate("schedule_date").toLocalDate(),
-         paymentSequenceNumber = rs.getInt("payment_sequence_number"),
-         amountToPay = rs.getBigDecimal("amount_to_pay"),
-         bank = rs.getUuid("bank_id"),
+         id = rs.getUuid("${columnPrefix}id"),
+         invoiceId = rs.getUuid("${columnPrefix}invoice_id"),
+         companyId = rs.getUuid("${columnPrefix}company_id"),
+         scheduleDate = rs.getDate("${columnPrefix}schedule_date").toLocalDate(),
+         paymentSequenceNumber = rs.getInt("${columnPrefix}payment_sequence_number"),
+         amountToPay = rs.getBigDecimal("${columnPrefix}amount_to_pay"),
+         bank = rs.getUuidOrNull("${columnPrefix}bank_id"),
          externalPaymentTypeId = externalPaymentType,
-         externalPaymentNumber = rs.getString("external_payment_number"),
-         externalPaymentDate = rs.getDate("external_payment_date")?.toLocalDate(),
-         selectedForProcessing = rs.getBoolean("selected_for_processing"),
-         paymentProcessed = rs.getBoolean("payment_processed")
+         externalPaymentNumber = rs.getString("${columnPrefix}external_payment_number"),
+         externalPaymentDate = rs.getDate("${columnPrefix}external_payment_date")?.toLocalDate(),
+         selectedForProcessing = rs.getBoolean("${columnPrefix}selected_for_processing"),
+         paymentProcessed = rs.getBoolean("${columnPrefix}payment_processed")
 
       )
    }

@@ -14,6 +14,10 @@ import javax.validation.constraints.NotNull
 @Schema(name = "AccountPayableInvoiceScheduleDTO", title = "Account Payable Invoice Schedule", description = "Account payable invoice schedule")
 data class AccountPayableInvoiceScheduleDTO(
 
+   @field:NotNull
+   @field:Schema(description = "id")
+   var id: UUID? = null,
+
    @field:Schema(description = "Account payable invoice id")
    var invoiceId: UUID? = null,
 

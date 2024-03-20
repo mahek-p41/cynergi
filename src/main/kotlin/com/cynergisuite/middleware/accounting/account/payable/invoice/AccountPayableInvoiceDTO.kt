@@ -111,7 +111,6 @@ data class AccountPayableInvoiceDTO(
    @field:Schema(description = "Account payable invoice status type")
    var status: AccountPayableInvoiceStatusTypeDTO? = null,
 
-   @field:NotNull
    @field:Schema(description = "Due date")
    var dueDate: LocalDate? = null,
 

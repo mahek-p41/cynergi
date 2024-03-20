@@ -8,7 +8,9 @@ import com.cynergisuite.domain.ExpenseReportFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.domain.SimpleIdentifiableDTO
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.VendorBalanceDTO
+import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.payable.distribution.infrastructure.AccountPayableDistributionDetailRepository
 import com.cynergisuite.middleware.accounting.account.payable.expense.AccountPayableExpenseReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.expense.infrastructure.AccountPayableExpenseReportRepository
@@ -21,6 +23,7 @@ import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDistributionDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDistributionEntity
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentEntity
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeType
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentDetailRepository
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentRepository
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentStatusTypeRepository
@@ -33,6 +36,8 @@ import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankRecon
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastructure.BankReconciliationTypeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure.GeneralLedgerControlRepository
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.store.StoreDTO
+import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import com.cynergisuite.util.APInvoiceReportOverviewType
@@ -54,6 +59,8 @@ class AccountPayableInvoiceService @Inject constructor(
    private val accountPayableExpenseReportRepository: AccountPayableExpenseReportRepository,
    private val accountPayableInvoiceValidator: AccountPayableInvoiceValidator,
    private val vendorRepository: VendorRepository,
+   private val accountRepository: AccountRepository,
+   private val storeRepository: StoreRepository,
    private val appttRepository: AccountPayablePaymentTypeTypeRepository,
    private val bankRepository: BankRepository,
    private val glcRepo: GeneralLedgerControlRepository,
@@ -108,8 +115,8 @@ class AccountPayableInvoiceService @Inject constructor(
       return accountPayableInvoiceInquiryRepository.fetchInquiryPayments(invoiceID, company)
    }
 
-   fun fetchGLDistributions(invoiceID: UUID, company: CompanyEntity): List<AccountPayableDistDetailReportDTO> {
-      return accountPayableInvoiceInquiryRepository.fetchInquiryDistributions(invoiceID, company)
+   fun fetchGLDistributions(invoiceID: UUID, company: CompanyEntity): List<AccountPayableInvoiceDistributionDTO> {
+      return accountPayableInvoiceInquiryRepository.fetchInvoiceDistributions(invoiceID, company)
    }
 
    fun fetchExpenseReport(company: CompanyEntity, filterRequest: ExpenseReportFilterRequest): AccountPayableExpenseReportTemplate {
@@ -218,41 +225,16 @@ class AccountPayableInvoiceService @Inject constructor(
       val vendor = vendorRepository.findOne(dto.apInvoice?.vendor!!.id!!, company)
       val payTo = if (dto.apInvoice?.payTo != null) vendorRepository.findOne(dto.apInvoice?.payTo!!.id!!, company) else vendor
       val invoice = dto.apInvoice!!
-      val terms = vendorPaymentTermRepository.findOne(vendor!!.paymentTerm.id!!, company)
-      val scheduleList: MutableList<AccountPayableInvoiceScheduleEntity> = mutableListOf()
-      val bank = bankRepository.findOne(dto.apPayment?.bank!!.id!!, company)
+      val scheduleList = dto.apInvoiceSchedule
       val apPmtStatus = accountPayablePaymentStatusTypeRepository.findOne("P")
-      val paymentType = accountPayablePaymentTypeTypeRepository.findOne(dto.apPayment!!.type!!.value)
 
 
-      //create ap invoice schedule
-      terms!!.numberOfPayments.let {
-         for (i in 1..it) {
-            val apptt = dto.apInvoiceSchedule?.get(0)?.externalPaymentTypeId?.value?.let { it1 -> appttRepository.findOne(it1) }
-            val schedule = AccountPayableInvoiceScheduleEntity(
-               null,
-               invoice.id!!,
-               company.id!!,
-               invoice.invoiceDate!!.plusMonths(i.toLong()),
-               i,
-               terms.scheduleRecords[i-1].duePercent.times(invoice.invoiceAmount!!),
-               bank!!.id!!,
-               apptt,
-               dto.apInvoiceSchedule?.get(0)?.externalPaymentNumber,
-               dto.apInvoiceSchedule?.get(0)?.externalPaymentDate,
-               false,
-               false
-            )
-
-            scheduleList.add(apInvoiceScheduleRepo.insert(schedule))
-         }
-      }
       //update ap Payment and check if discounts apply
-      if (invoice.status?.value == "P" || scheduleList.any { it.externalPaymentNumber != null}) {
-         scheduleList.forEach {
-            if (it.externalPaymentDate != null && invoice.discountDate != null && it.externalPaymentDate <= invoice.discountDate) {
+      if (invoice.status?.value == "P" || scheduleList!!.any { it.externalPaymentNumber != null}) {
+         scheduleList!!.forEach {
+            if (it.externalPaymentDate != null && invoice.discountDate != null && it.externalPaymentDate!! <= invoice.discountDate) {
                invoice.paidAmount = it.amountToPay
-               invoice.discountTaken = invoice.invoiceAmount?.minus(it.amountToPay)
+               invoice.discountTaken = invoice.invoiceAmount?.minus(it.amountToPay!!)
             } else {
                invoice.paidAmount = it.amountToPay
             }
@@ -260,22 +242,17 @@ class AccountPayableInvoiceService @Inject constructor(
 
          for (schedule in scheduleList) {
             //check if payment already exists for this bank or payment number
-            if (schedule.bank == dto.apPayment?.bank?.id || schedule.externalPaymentNumber == dto.apPayment?.paymentNumber) {
-               dto.apPayment?.amount = dto.apPayment?.amount?.plus(schedule.amountToPay)
-               val apPayment = AccountPayablePaymentEntity(
-                  dto.apPayment!!,
-                  bank!!,
-                  vendor,
-                  apPmtStatus!!,
-                  paymentType!!,
-                  null
-               )
-               accountPayablePaymentRepository.update(apPayment, company)
 
-               val distributionEntity = accountPayablePaymentRepository.findDistribution(bank.generalLedgerAccount.id!!, company)
+            val payment = if (schedule.bank !=null && schedule.externalPaymentNumber != null) accountPayablePaymentRepository.findPaymentByBankAndNumber(schedule.bank!!, schedule.externalPaymentNumber!!, company) else null
+            val appt = schedule.externalPaymentTypeId?.let {appttRepository.findOne(schedule.externalPaymentTypeId!!.value) }
+            if (payment != null) {
+               payment.amount = payment.amount.plus(schedule.amountToPay!!)
+               accountPayablePaymentRepository.update(payment, company)
+
+               val distributionEntity = accountPayablePaymentRepository.findDistribution(payment.bank.generalLedgerAccount.id!!, company)
                if (distributionEntity != null ) {
                   val distribution = AccountPayablePaymentDistributionDTO(distributionEntity)
-                  distribution.distributionAmount = distribution.distributionAmount.plus(schedule.amountToPay)
+                  distribution.distributionAmount = distribution.distributionAmount.plus(schedule.amountToPay!!)
                   val distEnt = AccountPayablePaymentDistributionEntity(distribution)
                   accountPayablePaymentRepository.updateDistribution(distEnt, company)
                } else {
@@ -283,137 +260,172 @@ class AccountPayableInvoiceService @Inject constructor(
                   //create 2 ap Payment distribution records per payment
                   val bankDist = AccountPayablePaymentDistributionEntity(
                      null,
-                     dto.apPayment!!.id!!,
-                     bank.generalLedgerAccount.id,
-                     bank.generalLedgerProfitCenter.myId(),
-                     dto.apPayment!!.amount!!,
+                     payment.id!!,
+                     payment.bank.generalLedgerAccount.id,
+                     payment.bank.generalLedgerProfitCenter.myId(),
+                     payment.amount,
                   )
                   val apAcct = AccountPayablePaymentDistributionEntity(
                      null,
-                     dto.apPayment!!.id!!,
+                     payment.id,
                      glc!!.defaultAccountPayableAccount!!.id!!,
                      glc.defaultProfitCenter.myId(),
-                     dto.apPayment!!.amount!!.times(BigDecimal(-1)),
+                     payment.amount.times(BigDecimal(-1)),
                   )
                   accountPayablePaymentRepository.insertDistributions(apAcct, company)
                   accountPayablePaymentRepository.insertDistributions(bankDist, company)
                }
 
-               val bankRecon = bankReconciliationRepository.findOne(bank.id!!, apPayment.type.value, apPayment.paymentNumber, apPayment.paymentDate, company)
+               val bankRecon = bankReconciliationRepository.findOne(payment.bank.id!!, payment.type.value, payment.paymentNumber, payment.paymentDate, company)
                if (bankRecon != null) {
-                  bankRecon.amount.plus(schedule.amountToPay)
+                  bankRecon.amount.plus(schedule.amountToPay!!)
                   bankReconciliationRepository.update(bankRecon, company)
                } else {
-                  val bankReconType = bankReconTypeRepository.findOne(apPayment.type.value)
+                  val bankReconType = bankReconTypeRepository.findOne(payment.type.value)
                   val newBankRecon = BankReconciliationDTO(
                      null,
-                     SimpleIdentifiableDTO(bank),
-                     BankReconciliationTypeDTO(apPayment.type.value, apPayment.type.description),
-                     apPayment.paymentDate,
+                     SimpleIdentifiableDTO(payment.bank),
+                     BankReconciliationTypeDTO(payment.type.value, payment.type.description),
+                     payment.paymentDate,
                      null,
-                     apPayment.amount,
-                     "A/P VND#" + vendor.number,
-                     apPayment.paymentNumber
+                     payment.amount,
+                     "A/P VND#" + vendor!!.number,
+                     payment.paymentNumber
                   )
                   val bankReconEntity = BankReconciliationEntity(
                      newBankRecon,
-                     bank,
+                     payment.bank,
                      bankReconType!!
                   )
                   bankReconciliationRepository.insert(bankReconEntity, company)
                }
             } else {
-               val newApPayment = AccountPayablePaymentEntity(
-                  null,
-                  bank!!,
-                  payTo!!,
-                  apPmtStatus!!,
-                  schedule.externalPaymentTypeId!!,
-                  schedule.externalPaymentDate!!,
-                  null,
-                  null,
-                  schedule.externalPaymentNumber!!,
-                  schedule.amountToPay,
-               )
-               val newApPaymentEnt = accountPayablePaymentRepository.insert(newApPayment, company)
-               val glc = glcRepo.findOne(company)
-               //create 2 ap Payment distribution records per payment
-               val bankDist = AccountPayablePaymentDistributionEntity(
-                  null,
-                  newApPaymentEnt.id!!,
-                  bank.generalLedgerAccount.id!!,
-                  bank.generalLedgerProfitCenter.myId(),
-                  newApPaymentEnt.amount,
-               )
-               val apAcct = AccountPayablePaymentDistributionEntity(
-                  null,
-                  newApPaymentEnt.id,
-                  glc!!.defaultAccountPayableAccount!!.id!!,
-                  glc.defaultProfitCenter.myId(),
-                  newApPaymentEnt.amount.times(BigDecimal(-1)),
-               )
-
-               val toCreate = accountPayableInvoiceValidator.validateCreate(invoice, company)
-
-
-               val apPaymentDetail = AccountPayablePaymentDetailEntity(
-                  null,
-                  vendor,
-                  toCreate,
-                  newApPaymentEnt,
-                  newApPaymentEnt.amount,
-                  invoice.discountTaken
-               )
-               accountPayablePaymentRepository.insertDistributions(apAcct, company)
-               accountPayablePaymentRepository.insertDistributions(bankDist, company)
-               accountPayablePaymentDetailRepository.insert(apPaymentDetail, company)
-
-               val bankRecon = bankReconciliationRepository.findOne(bank.id!!, newApPaymentEnt.type.value, newApPaymentEnt.paymentNumber, newApPaymentEnt.paymentDate, company)
-               if (bankRecon != null) {
-                  bankRecon.amount.plus(apPaymentDetail.amount)
-                  bankReconciliationRepository.update(bankRecon, company)
-               } else {
-                  val bankReconType = bankReconTypeRepository.findOne(newApPaymentEnt.type.value)
-                  val newBankRecon = BankReconciliationDTO(
+               val scheduleBank = if (schedule.bank != null) bankRepository.findOne(schedule.bank!!, company) else null
+               if (scheduleBank != null) {
+                  val newApPayment = AccountPayablePaymentEntity(
                      null,
-                     SimpleIdentifiableDTO(bank),
-                     BankReconciliationTypeDTO(newApPaymentEnt.type.value, newApPaymentEnt.type.description),
-                     newApPaymentEnt.paymentDate,
+                     scheduleBank!!,
+                     payTo!!,
+                     apPmtStatus!!,
+                     appt!!,
+                     schedule.externalPaymentDate!!,
                      null,
+                     null,
+                     schedule.externalPaymentNumber!!,
+                     schedule.amountToPay!!,
+                  )
+                  val newApPaymentEnt = accountPayablePaymentRepository.insert(newApPayment, company)
+                  val glc = glcRepo.findOne(company)
+                  //create 2 ap Payment distribution records per payment
+                  val bankDist = AccountPayablePaymentDistributionEntity(
+                     null,
+                     newApPaymentEnt.id!!,
+                     scheduleBank.generalLedgerAccount.id!!,
+                     scheduleBank.generalLedgerProfitCenter.myId(),
                      newApPaymentEnt.amount,
-                     "A/P VND#" + vendor.number,
-                     newApPaymentEnt.paymentNumber
                   )
-                  val bankReconEntity = BankReconciliationEntity(
-                     newBankRecon,
-                     bank,
-                     bankReconType!!
+                  val apAcct = AccountPayablePaymentDistributionEntity(
+                     null,
+                     newApPaymentEnt.id,
+                     glc!!.defaultAccountPayableAccount!!.id!!,
+                     glc.defaultProfitCenter.myId(),
+                     newApPaymentEnt.amount.times(BigDecimal(-1)),
                   )
-                  bankReconciliationRepository.insert(bankReconEntity, company)
+
+                  val toCreate = accountPayableInvoiceValidator.validateCreate(invoice, company)
+
+
+                  val apPaymentDetail = AccountPayablePaymentDetailEntity(
+                     null,
+                     vendor,
+                     toCreate,
+                     newApPaymentEnt,
+                     newApPaymentEnt.amount,
+                     invoice.discountTaken
+                  )
+                  accountPayablePaymentRepository.insertDistributions(apAcct, company)
+                  accountPayablePaymentRepository.insertDistributions(bankDist, company)
+                  accountPayablePaymentDetailRepository.insert(apPaymentDetail, company)
+
+                  val bankRecon = bankReconciliationRepository.findOne(
+                     scheduleBank.id!!,
+                     newApPaymentEnt.type.value,
+                     newApPaymentEnt.paymentNumber,
+                     newApPaymentEnt.paymentDate,
+                     company
+                  )
+                  if (bankRecon != null) {
+                     bankRecon.amount.plus(apPaymentDetail.amount)
+                     bankReconciliationRepository.update(bankRecon, company)
+                  } else {
+                     val bankReconType = bankReconTypeRepository.findOne(newApPaymentEnt.type.value)
+                     val newBankRecon = BankReconciliationDTO(
+                        null,
+                        SimpleIdentifiableDTO(scheduleBank),
+                        BankReconciliationTypeDTO(newApPaymentEnt.type.value, newApPaymentEnt.type.description),
+                        newApPaymentEnt.paymentDate,
+                        null,
+                        newApPaymentEnt.amount,
+                        "A/P VND#" + vendor!!.number,
+                        newApPaymentEnt.paymentNumber
+                     )
+                     val bankReconEntity = BankReconciliationEntity(
+                        newBankRecon,
+                        scheduleBank,
+                        bankReconType!!
+                     )
+                     bankReconciliationRepository.insert(bankReconEntity, company)
+                  }
                }
             }
          }
       }
-
-
-      //for each invoice dist with template chosen, create ap invoice dist
-      val distributionDetails = accountPayableDistributionDetailRepository.findAllRecordsByGroup(company, dto.glDistribution?.id!!)
-      for (dist in distributionDetails) {
-         val invDist = AccountPayableInvoiceDistributionEntity(
-            null,
-            invoice.id!!,
-            dist.account.id!!,
-            dist.profitCenter.myId(),
-            dto.apInvoice?.invoiceAmount!!.times(dist.percent)
-         )
-         accountPayableInvoiceDistributionRepository.insert(invDist)
+      val updatedInvoice: AccountPayableInvoiceEntity
+      if (invoice.id != null) {
+         val toUpdate = accountPayableInvoiceValidator.validateUpdate(invoice.id!!, invoice, company)
+         updatedInvoice = accountPayableInvoiceRepository.update(toUpdate, company)
+      } else {
+         val toCreate = accountPayableInvoiceValidator.validateCreate(invoice, company)
+         updatedInvoice = accountPayableInvoiceRepository.insert(toCreate, company)
       }
 
-      val toCreate = accountPayableInvoiceValidator.validateCreate(invoice, company)
-      val updatedInvoice = accountPayableInvoiceRepository.insert(toCreate, company)
+      scheduleList.map {
+         it.invoiceId = updatedInvoice.id!!
+      }
+
+      //for each invoice dist with template chosen, create ap invoice dist
+      var updatedDistsEntities = dto.glDistribution?.map {
+         val account = accountRepository.findOne(it.account!!.id!!, company)
+         val store = storeRepository.findOne(it.profitCenter!!.id!!, company)
+         AccountPayableInvoiceDistributionEntity(
+            null,
+            updatedInvoice.id!!,
+            account!!.id!!,
+            store!!.number,
+            it.amount!!
+         )
+      }
+
+      updatedDistsEntities = accountPayableInvoiceDistributionRepository.updateDistributions(invoice.id!!, updatedDistsEntities!!)
+      val updatedDistDTOS = updatedDistsEntities.map{
+         val account = accountRepository.findOne(it.accountId, company)
+         val store = storeRepository.findOne(it.profitCenter, company)
+         AccountPayableInvoiceDistributionDTO(
+            it.id,
+            it.invoiceId,
+            AccountDTO(account!!),
+            StoreDTO(store!!),
+            it.amount
+         )
+      }
+
       val updatedInvoiceDTO = transformEntity(updatedInvoice)
-      val scheduleListDTO = scheduleList.map { AccountPayableInvoiceScheduleDTO(it) }.toMutableList()
-      val updatedInvoiceMaintenanceDTO = AccountPayableInvoiceMaintenanceDTO(updatedInvoiceDTO, null, null, scheduleListDTO)
+      val updatedSchedule = scheduleList.map {
+         val type = if (it.externalPaymentTypeId != null) appttRepository.findOne(it.externalPaymentTypeId!!.value) else null
+         apInvoiceScheduleRepo.insert(AccountPayableInvoiceScheduleEntity(it, type))
+      }
+      val scheduleDTO = updatedSchedule.map { AccountPayableInvoiceScheduleDTO(it)}
+      val updatedInvoiceMaintenanceDTO = AccountPayableInvoiceMaintenanceDTO(updatedInvoiceDTO, updatedDistDTOS, scheduleDTO.toMutableList())
       return updatedInvoiceMaintenanceDTO
    }
 
@@ -451,6 +463,39 @@ class AccountPayableInvoiceService @Inject constructor(
       csvWriter.close()
       output.close()
       return stream.toByteArray()
+   }
+
+   fun createSchedule(dto: InvoiceScheduleDTO, company: CompanyEntity): List<AccountPayableInvoiceScheduleDTO> {
+      val terms = vendorPaymentTermRepository.findOne(dto.vendorPaymentTermId!!, company)
+      val scheduleList: MutableList<AccountPayableInvoiceScheduleDTO> = mutableListOf()
+      terms!!.numberOfPayments.let {
+         for (i in 1..it) {
+            val schedule = AccountPayableInvoiceScheduleDTO(
+               null,
+               null,
+               company.id,
+               dto.invoiceDate!!.plusMonths(i.toLong()),
+               i,
+               terms.scheduleRecords[i-1].duePercent.times(dto.invoiceAmount!!),
+               null,
+               null,
+               null,
+               null,
+               false,
+               false
+            )
+
+            scheduleList.add(schedule)
+
+         }
+      }
+      return scheduleList
+   }
+
+   fun fetchSchedules(id: UUID, company: CompanyEntity): List<AccountPayableInvoiceScheduleDTO> {
+      val found = apInvoiceScheduleRepo.fetchByInvoiceId(id, company)
+
+      return found.map { AccountPayableInvoiceScheduleDTO(it) }
    }
 
    fun delete (id: UUID, company: CompanyEntity) {

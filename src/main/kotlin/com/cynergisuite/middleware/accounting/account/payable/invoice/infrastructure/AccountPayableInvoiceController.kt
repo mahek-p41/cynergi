@@ -7,12 +7,16 @@ import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewService
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableDistDetailReportDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDistributionDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryPaymentDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceListByVendorDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceMaintenanceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceReportTemplate
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceScheduleDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceScheduleEntity
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceService
+import com.cynergisuite.middleware.accounting.account.payable.invoice.InvoiceScheduleDTO
 import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.employee.EmployeeService
@@ -515,7 +519,7 @@ class AccountPayableInvoiceController @Inject constructor(
       invoiceId: UUID,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
-   ): List<AccountPayableDistDetailReportDTO> {
+   ): List<AccountPayableInvoiceDistributionDTO> {
       logger.info("Fetching GL Distributions by {}", invoiceId)
 
       val user = userService.fetchUser(authentication)
@@ -575,5 +579,61 @@ class AccountPayableInvoiceController @Inject constructor(
       val user = userService.fetchUser(authentication)
 
       return accountPayableInvoiceService.delete(id, user.myCompany())
+   }
+
+   @Secured("APADD")
+   @Post(value = "/maintenance/schedule", processes = [APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Create a single Account Payable Invoice", description = "Create a single AccountPayableInvoice", operationId = "accountPayableInvoice-create")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableInvoiceDTO::class))]),
+         ApiResponse(responseCode = "400", description = "If the request body is invalid"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The Account Payable Invoice was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun schedule(
+      @Body @Valid
+      dto: InvoiceScheduleDTO,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): List<AccountPayableInvoiceScheduleDTO> {
+      logger.debug("Requested Create Account Payable Invoice {}", dto)
+
+      val user = userService.fetchUser(authentication)
+      val response = accountPayableInvoiceService.createSchedule(dto, user.myCompany())
+
+      logger.debug("Requested Create Account Payable Invoice {} resulted in {}", dto, response)
+
+      return response
+   }
+
+   @Throws(NotFoundException::class)
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}/schedules", produces = [APPLICATION_JSON])
+   @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Fetch a list of AP Invoice Schedules", description = "Fetch a list of AP Invoice Schedules", operationId = "accountPayableInvoice-fetchSchedules")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableDistDetailReportDTO::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Account Payable Invoice was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchSchedules(
+      @QueryValue("id")
+      invoiceId: UUID,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): List<AccountPayableInvoiceScheduleDTO> {
+      logger.info("Fetching GL Distributions by {}", invoiceId)
+
+      val user = userService.fetchUser(authentication)
+      val response = accountPayableInvoiceService.fetchSchedules(invoiceId, user.myCompany())
+
+      logger.debug("Fetching GL Distributions by {} resulted in {}", invoiceId, response)
+
+      return response
    }
 }

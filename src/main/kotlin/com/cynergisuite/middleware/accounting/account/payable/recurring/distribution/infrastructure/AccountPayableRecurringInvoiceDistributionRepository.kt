@@ -46,7 +46,7 @@ class AccountPayableRecurringInvoiceDistributionRepository @Inject constructor(
          id = rs.getUuid("id"),
          invoiceId = rs.getUuid("recurring_invoice_id"),
          accountId = rs.getUuid("distribution_account_id"),
-         profitCenter = rs.getLong("distribution_profit_center_id_sfk"),
+         profitCenter = rs.getInt("distribution_profit_center_id_sfk"),
          amount = rs.getBigDecimal("distribution_amount")
       )
    }

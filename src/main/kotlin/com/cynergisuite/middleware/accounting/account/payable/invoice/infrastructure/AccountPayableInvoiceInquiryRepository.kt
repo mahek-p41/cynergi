@@ -11,14 +11,19 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryPaged
+import com.cynergisuite.middleware.accounting.account.AccountDTO
+import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceStatusTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableInvoiceTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableDistDetailReportDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDistributionDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceInquiryPaymentDTO
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.store.StoreDTO
+import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -31,7 +36,9 @@ import java.util.UUID
 class AccountPayableInvoiceInquiryRepository @Inject constructor(
    private val jdbc: Jdbi,
    private val statusRepository: AccountPayableInvoiceStatusTypeRepository,
-   private val typeRepository: AccountPayableInvoiceTypeRepository
+   private val typeRepository: AccountPayableInvoiceTypeRepository,
+   private val accountRepository: AccountRepository,
+   private val storeRepository: StoreRepository
 ) {
    fun selectBaseQuery(): String {
       return """
@@ -203,6 +210,35 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
       return distDTOs
    }
 
+   @ReadOnly
+   fun fetchInvoiceDistributions(apInvoiceId: UUID, company: CompanyEntity): List<AccountPayableInvoiceDistributionDTO> {
+      val distDTOs = mutableListOf<AccountPayableInvoiceDistributionDTO>()
+
+      jdbc.query(
+         """
+            SELECT
+               invDist.id                                   AS invDist_id,
+               invDist.distribution_profit_center_id_sfk    AS invDist_profit_center,
+               invDist.distribution_amount                  AS invDist_amount,
+               invDist.invoice_id                           AS invDist_invoiceId,
+               account.id                                   AS invDist_account_id,
+               account.number                               AS invDist_account_number,
+               account.name                                 AS invDist_account_name
+            FROM account_payable_invoice_distribution invDist
+               JOIN account ON invDist.distribution_account_id = account.id AND account.deleted = FALSE
+            WHERE invDist.invoice_id = :apInvoiceId
+            ORDER BY invDist.time_created ASC, invDist.distribution_profit_center_id_sfk ASC
+         """.trimIndent(),
+         mapOf("apInvoiceId" to apInvoiceId)
+      ) { rs, _ ->
+         do {
+            distDTOs.add(mapInvoiceDistribution(rs, company, "invDist_"))
+         } while (rs.next())
+      }
+
+      return distDTOs
+   }
+
    fun mapInvoice(rs: ResultSet, columnPrefix: String = EMPTY): AccountPayableInvoiceInquiryDTO {
       val type = typeRepository.mapRow(rs, "${columnPrefix}type_")
       val status = statusRepository.mapRow(rs, "${columnPrefix}status_")
@@ -247,6 +283,18 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
          accountName = rs.getString("${columnPrefix}account_name"),
          distProfitCenter = rs.getInt("${columnPrefix}profit_center"),
          distAmount = rs.getBigDecimal("${columnPrefix}amount")
+      )
+   }
+
+   private fun mapInvoiceDistribution(rs: ResultSet, company: CompanyEntity, columnPrefix: String = EMPTY): AccountPayableInvoiceDistributionDTO {
+      val account = accountRepository.findOne(rs.getUuid("${columnPrefix}account_id"), company)
+      val profitCenter = storeRepository.findOne(rs.getInt("${columnPrefix}profit_center"), company)
+      return AccountPayableInvoiceDistributionDTO(
+         id = rs.getUuid("${columnPrefix}id"),
+         invoiceId = rs.getUuid("${columnPrefix}invoiceId"),
+         account = AccountDTO(account!!),
+         profitCenter = StoreDTO(profitCenter!!),
+         amount = rs.getBigDecimal("${columnPrefix}amount")
       )
    }
 }
