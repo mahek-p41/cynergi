@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.general.ledger.end.month
 
 import com.cynergisuite.domain.ExpenseReportFilterRequest
+import com.cynergisuite.util.APInvoiceReportOverviewType
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
@@ -12,19 +13,20 @@ import java.time.LocalDate
 )
 @Introspected
 class EndMonthProceduresDTO(
-    beginAcct: Int? = null,
-    endAcct: Int? = null,
-    beginVen: Int? = null,
-    endVen: Int? = null,
-    beginVenGr: String? = null,
-    endVenGr: String? = null,
-    beginDate: LocalDate? = null,
-    endDate: LocalDate? = null,
-    iclHoldInv: Boolean? = false,
-    invStatus: List<String>? = null,
-    sortBy: String? = "account",
-    @field:Schema(name = "jeDate", description = "Journal Entry Date")
-    val jeDate: LocalDate? = null
+   beginAcct: Int? = null,
+   endAcct: Int? = null,
+   beginVen: Int? = null,
+   endVen: Int? = null,
+   beginVenGr: String? = null,
+   endVenGr: String? = null,
+   beginDate: LocalDate,
+   endDate: LocalDate,
+   iclHoldInv: Boolean? = false,
+   invStatus: List<String>? = null,
+   overviewType: APInvoiceReportOverviewType? = APInvoiceReportOverviewType.DETAILED,
+   sortBy: String? = "account",
+   @field:Schema(name = "jeDate", description = "Journal Entry Date")
+   val jeDate: LocalDate? = null,
 ) : ExpenseReportFilterRequest(
    beginAcct,
    endAcct,
@@ -36,6 +38,7 @@ class EndMonthProceduresDTO(
    endDate,
    iclHoldInv,
    invStatus,
+   overviewType,
    sortBy
 ) {
    override fun sortByMe(): String = sortBy()

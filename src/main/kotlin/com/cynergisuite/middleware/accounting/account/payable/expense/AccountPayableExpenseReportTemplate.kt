@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.util.SortedMap
 
 @JsonInclude(NON_NULL)
@@ -40,8 +41,10 @@ data class AccountPayableExpenseReportTemplate(
    @field:Schema(description = "Grouping Type")
    var groupingType: GroupingType,
 
-   @field:Schema(description = "Report Overview Type")
+   @field:Schema(description = "Report Overview Type (detailed|summarized)", defaultValue = "summarized")
    var overviewType: APInvoiceReportOverviewType? = APInvoiceReportOverviewType.SUMMARIZED,
+
+   private var periodDateRangeDTO: ClosedRange<LocalDate>,
 
    @field:Schema(description = "Internal listing of Invoices. Used as data source for getters.")
    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
@@ -56,7 +59,9 @@ data class AccountPayableExpenseReportTemplate(
       endBalance: BigDecimal,
       chargedAfterEndingDate: BigDecimal,
       proformaInvoiceTotal: BigDecimal,
-      groupingType: GroupingType
+      groupingType: GroupingType,
+      overviewType: APInvoiceReportOverviewType? = APInvoiceReportOverviewType.SUMMARIZED,
+      periodDateRangeDTO: ClosedRange<LocalDate>
    ) : this(
       invoices = entities,
       expenseTotal = entities.mapNotNull { it.invoiceAmount }.sumOf { it },
@@ -67,7 +72,9 @@ data class AccountPayableExpenseReportTemplate(
       endBalance = endBalance,
       chargedAfterEndingDate = chargedAfterEndingDate,
       proformaInvoiceTotal = proformaInvoiceTotal,
-      groupingType = groupingType
+      groupingType = groupingType,
+      overviewType = overviewType,
+      periodDateRangeDTO = periodDateRangeDTO
    )
 
    @get:Schema(description = "Total debit amount of all Invoices")
@@ -108,16 +115,16 @@ data class AccountPayableExpenseReportTemplate(
 
    @get:Schema(description = "Report overview")
    val overview get() = overviewType.takeIf { it == APInvoiceReportOverviewType.DETAILED }?.let {
-      invoices
+      invoices.distinctBy { it.invoice }
          .groupBy { it.vendorNumber }
          .map { (vendorNumber, list) ->
             val sortedList = list.sortedWith(compareBy<AccountPayableExpenseReportDTO?> {
-               it!!.pmtNumber
+              it!!.expenseDate
             }.thenBy {
-               it!!.distCenter
+              it!!.pmtNumber
             })
 
-            AccountPayableExpenseReportOverview(vendorNumber!!, list.first().vendorName!!, sortedList)
+            AccountPayableExpenseReportOverview(vendorNumber!!, list.first().vendorName!!, periodDateRangeDTO, sortedList)
          }.sortedBy { it.vendorNumber }
    }
 

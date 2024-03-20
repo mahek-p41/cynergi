@@ -4,7 +4,6 @@ import com.cynergisuite.domain.AccountPayableCheckPreviewFilterRequest
 import com.cynergisuite.domain.AccountPayableInvoiceInquiryFilterRequest
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
 import com.cynergisuite.domain.AccountPayableVendorBalanceReportFilterRequest
-import com.cynergisuite.domain.ExpenseReportFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
@@ -44,7 +43,6 @@ import jakarta.inject.Inject
 import spock.lang.Unroll
 
 import java.time.LocalDate
-import java.time.OffsetDateTime
 import java.time.YearMonth
 
 import static io.micronaut.http.HttpStatus.BAD_REQUEST
@@ -812,7 +810,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
 	      VALUES (:invoice_id, :account_id, :profit_center_sfk, :amount)
          """)
 
-      def filterRequest = new ExpenseReportFilterRequest([sortDirection: "ASC", invStatus: ["O", "P"], beginDate: LocalDate.of(2020, 1, 1), endDate: OffsetDateTime.now().toLocalDate().plusDays(5)])
+      def filterRequest = "?sortBy=account&sortDirection=ASC&beginDate=2020-01-01&endDate=${LocalDate.now().plusDays(5)}&iclHoldInv=false&invStatus=O&invStatus=P"
 
       when:
       def result = get("$path/expense/report${filterRequest}")

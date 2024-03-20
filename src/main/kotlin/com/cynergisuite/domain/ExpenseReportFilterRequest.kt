@@ -1,5 +1,6 @@
 package com.cynergisuite.domain
 
+import com.cynergisuite.util.APInvoiceReportOverviewType
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
@@ -35,11 +36,11 @@ open class ExpenseReportFilterRequest(
 
    @field:NotNull
    @field:Schema(name = "beginDate", description = "Beginning date", required = true)
-   var beginDate: LocalDate? = null,
+   var beginDate: LocalDate,
 
    @field:NotNull
    @field:Schema(name = "endDate", description = "Ending date", required = true)
-   var endDate: LocalDate? = null,
+   var endDate: LocalDate,
 
    @field:Schema(name = "iclHoldInv", description = "Include the hold invoices", defaultValue = "false")
    var iclHoldInv: Boolean? = false,
@@ -47,11 +48,15 @@ open class ExpenseReportFilterRequest(
    @field:Schema(name = "invStatus", description = "The Invoice Status to filter results with")
    var invStatus: List<String>? = null,
 
+   @field:Pattern(regexp = "detailed|summarized")
+   @field:Schema(description = "Report Overview Type (detailed|summarized)", defaultValue = "summarized")
+   var overviewType: APInvoiceReportOverviewType? = APInvoiceReportOverviewType.SUMMARIZED,
+
    @field:Pattern(regexp = "account|vendor")
    @field:Schema(description = "The column to sort the AP Expense report by (account|vendor).", defaultValue = "account")
    override var sortBy: String? = "account",
 
-) : SortableRequestBase<ExpenseReportFilterRequest>(sortBy, "ASC") {
+   ) : SortableRequestBase<ExpenseReportFilterRequest>(sortBy, "ASC") {
 
    override fun sortByMe(): String = sortBy()
 
@@ -67,5 +72,6 @@ open class ExpenseReportFilterRequest(
          "endDate" to endDate,
          "iclHoldInv" to iclHoldInv,
          "invStatus" to invStatus,
+         "overviewType" to overviewType,
       )
 }

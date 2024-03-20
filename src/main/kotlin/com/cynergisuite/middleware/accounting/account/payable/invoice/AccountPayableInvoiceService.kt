@@ -35,6 +35,7 @@ import com.cynergisuite.middleware.accounting.general.ledger.control.infrastruct
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
+import com.cynergisuite.util.APInvoiceReportOverviewType
 import com.cynergisuite.util.GroupingType
 import com.opencsv.CSVWriter
 import jakarta.inject.Inject
@@ -42,6 +43,7 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.util.UUID
 
 @Singleton
@@ -115,6 +117,7 @@ class AccountPayableInvoiceService @Inject constructor(
 
       val beginDate = filterRequest.beginDate
       val endDate = filterRequest.endDate
+      val periodDateRange: ClosedRange<LocalDate> = beginDate..endDate
 
       val beginBalance = allInvoices
          .filter { inv ->
@@ -151,7 +154,7 @@ class AccountPayableInvoiceService @Inject constructor(
          .mapNotNull { it.invoiceAmount }
          .sumOf { it }
 
-      return AccountPayableExpenseReportTemplate(allInvoices, beginBalance, newInvoicesTotal, paidInvoicesTotal, endBalance, chargedAfterEndingDate, proformaInvoiceTotal, GroupingType.fromString(filterRequest.sortBy!!))
+      return AccountPayableExpenseReportTemplate(allInvoices, beginBalance, newInvoicesTotal, paidInvoicesTotal, endBalance, chargedAfterEndingDate, proformaInvoiceTotal, GroupingType.fromString(filterRequest.sortBy!!), APInvoiceReportOverviewType.DETAILED, periodDateRange)
    }
 
    fun export(filterRequest: InvoiceReportFilterRequest, company: CompanyEntity): ByteArray {
