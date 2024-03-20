@@ -3,11 +3,11 @@ package com.cynergisuite.middleware.inventory.infrastructure
 import com.cynergisuite.domain.InventoryInquiryFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.StandardPageRequest
-import com.cynergisuite.domain.infrastructure.DatasetRequiringRepository
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getBigDecimalOrNull
 import com.cynergisuite.extensions.getLocalDateOrNull
+import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
@@ -28,6 +28,7 @@ import org.jdbi.v3.core.Jdbi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.sql.ResultSet
+import java.util.UUID
 import javax.transaction.Transactional
 
 @Singleton
@@ -36,7 +37,7 @@ class InventoryRepository(
    private val jdbc: Jdbi,
    private val locationRepository: LocationRepository,
    private val storeRepository: StoreRepository
-) : DatasetRequiringRepository {
+) {
    private val logger: Logger = LoggerFactory.getLogger(InventoryRepository::class.java)
 
    private val selectBase =
@@ -181,7 +182,7 @@ class InventoryRepository(
       """.trimIndent()
 
    @ReadOnly
-   fun findOne(id: Long, company: CompanyEntity): InventoryEntity? {
+   fun findOne(id: UUID, company: CompanyEntity): InventoryEntity? {
       logger.debug("Finding Inventory by ID with {}", id)
 
       val inventory = jdbc.findFirstOrNull(
@@ -202,7 +203,7 @@ class InventoryRepository(
    }
 
    @ReadOnly
-   override fun exists(id: Long, company: CompanyEntity): Boolean {
+   fun exists(id: UUID, company: CompanyEntity): Boolean {
       val exists = jdbc.queryForObject(
          """
          SELECT count(i.id) > 0
@@ -219,7 +220,7 @@ class InventoryRepository(
       return exists
    }
 
-   fun doesNotExist(id: Long, company: CompanyEntity): Boolean =
+   fun doesNotExist(id: UUID, company: CompanyEntity): Boolean =
       !exists(id, company)
 
    @ReadOnly
@@ -491,7 +492,7 @@ class InventoryRepository(
       val company = companyRepository.mapRow(rs, columnPrefix = "comp_", addressPrefix = "comp_address_")
 
       return InventoryEntity(
-         id = rs.getLong("id"),
+         id = rs.getUuid("id"),
          serialNumber = rs.getString("serial_number"),
          lookupKey = rs.getString("lookup_key"),
          lookupKeyType = rs.getString("lookup_key_type"),

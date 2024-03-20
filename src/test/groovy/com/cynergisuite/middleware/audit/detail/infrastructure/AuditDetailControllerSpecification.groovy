@@ -236,7 +236,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
 
       when:
-      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleLegacyIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
+      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
 
       then:
       notThrown(HttpClientResponseException)
@@ -269,7 +269,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
 
       when:
-      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleLegacyIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)), accessToken)
+      def result = post("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)), accessToken)
 
       then:
       notThrown(HttpClientResponseException)
@@ -301,7 +301,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final savedAuditDetail = auditDetailFactoryService.single(audit, storeWarehouse, employee, [inventoryItem])
 
       when:
-      def response = postForResponse("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleLegacyIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
+      def response = postForResponse("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
 
       then:
       notThrown(Exception)
@@ -327,7 +327,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final savedAuditDetail = auditDetailFactoryService.single(audit, storeWarehouse, employee, [inventoryItem])
 
       when:
-      def response = postForResponse("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleLegacyIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)), accessToken)
+      def response = postForResponse("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)), accessToken)
 
       then:
       notThrown(Exception)
@@ -345,8 +345,8 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final employee = employeeFactoryService.single(store, department)
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
       final audit = auditFactoryService.single(employee, [AuditStatusFactory.created(), AuditStatusFactory.inProgress()] as Set)
-      final detail = new AuditDetailCreateUpdateDTO(new SimpleLegacyIdentifiableDTO([id: 9998]), new SimpleIdentifiableDTO([id: invalidId]))
-      final secondDetail = new AuditDetailCreateUpdateDTO(new SimpleLegacyIdentifiableDTO([id: 9998]), new SimpleIdentifiableDTO(scanArea))
+      final detail = new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO(UUID.fromString("ee2359b6-c88c-11eb-8098-02420a4d0702")), new SimpleIdentifiableDTO([id: invalidId]))
+      final secondDetail = new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO(UUID.fromString("ee2359b6-c88c-11eb-8098-02420a4d0702")), new SimpleIdentifiableDTO(scanArea))
 
       when:
       post("/audit/${audit.id}/detail", detail)
@@ -355,7 +355,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final exception = thrown(HttpClientResponseException)
       exception.status == NOT_FOUND
       final response = exception.response.bodyAsJson()
-      response.message == '9998 was unable to be found'
+      response.message == 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
       response.code == 'system.not.found'
 
       when:
@@ -366,7 +366,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       inventoryNotFoundException.status == NOT_FOUND
       exception.status == NOT_FOUND
       response == exception.response.bodyAsJson()
-      response.message == '9998 was unable to be found'
+      response.message == 'ee2359b6-c88c-11eb-8098-02420a4d0702 was unable to be found'
       response.code == 'system.not.found'
    }
 
@@ -383,7 +383,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final scanArea = auditScanAreaFactoryService.single("Custom Area", store, company)
 
       when:
-      post("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleLegacyIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
+      post("/audit/${audit.id}/detail", new AuditDetailCreateUpdateDTO(new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(scanArea)))
 
       then:
       final exception = thrown(HttpClientResponseException)
@@ -410,7 +410,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       final existingAuditDetail = auditDetailFactoryService.single(audit, showroom, null)
 
       when:
-      def result = put("/audit/${audit.id}/detail/${existingAuditDetail.id}", new AuditDetailCreateUpdateDTO(existingAuditDetail.myId(), new SimpleLegacyIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(warehouse)))
+      def result = put("/audit/${audit.id}/detail/${existingAuditDetail.id}", new AuditDetailCreateUpdateDTO(existingAuditDetail.myId(), new SimpleIdentifiableDTO(inventoryItem.id), new SimpleIdentifiableDTO(warehouse)))
 
       then:
       notThrown(HttpClientResponseException)
@@ -444,7 +444,7 @@ class AuditDetailControllerSpecification extends ControllerSpecificationBase {
       auditDetailFactoryService.single(audit, showroom, inventoryItem2)
 
       when:
-      put("/audit/${audit.id}/detail/${existingAuditDetail.id}", new AuditDetailCreateUpdateDTO(existingAuditDetail.myId(), new SimpleLegacyIdentifiableDTO(inventoryItem2.id), new SimpleIdentifiableDTO(warehouse)))
+      put("/audit/${audit.id}/detail/${existingAuditDetail.id}", new AuditDetailCreateUpdateDTO(existingAuditDetail.myId(), new SimpleIdentifiableDTO(inventoryItem2.id), new SimpleIdentifiableDTO(warehouse)))
 
       then:
       final exception = thrown(HttpClientResponseException)

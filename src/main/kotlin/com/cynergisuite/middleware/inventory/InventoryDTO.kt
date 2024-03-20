@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.inventory
 
-import com.cynergisuite.domain.LegacyIdentifiable
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.inventory.location.InventoryLocationTypeValueObject
 import com.cynergisuite.middleware.json.view.Full
 import com.cynergisuite.middleware.json.view.InventoryApp
@@ -10,6 +10,7 @@ import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 
 @Introspected
 @JsonView
@@ -18,7 +19,7 @@ data class InventoryDTO(
 
    @field:JsonView(value = [Full::class, InventoryApp::class])
    @field:Schema(name = "id", description = "System generated Unique id")
-   val id: Long,
+   val id: UUID,
 
    @field:JsonView(value = [Full::class, InventoryApp::class])
    @field:Schema(name = "serialNumber", description = "Either a manufacturer defined serial number or a system generated serial number")
@@ -124,7 +125,7 @@ data class InventoryDTO(
    @field:Schema(name = "dataset", description = "dataset item is associated with")
    val dataset: String
 
-) : LegacyIdentifiable {
+) : Identifiable {
 
    constructor(item: InventoryEntity, locationType: InventoryLocationTypeValueObject) :
       this(
@@ -157,5 +158,5 @@ data class InventoryDTO(
          dataset = item.primaryLocation.myCompany().datasetCode
       )
 
-   override fun myId(): Long = id
+   override fun myId(): UUID = id
 }

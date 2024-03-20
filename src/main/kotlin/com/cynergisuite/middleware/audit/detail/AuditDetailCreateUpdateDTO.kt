@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.audit.detail
 
 import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.util.UUID
@@ -19,7 +18,7 @@ data class AuditDetailCreateUpdateDTO(
    @field:Valid
    @field:NotNull
    @field:Schema(name = "inventory", description = "Inventory item being associated with a new AuditDetail")
-   val inventory: SimpleLegacyIdentifiableDTO?,
+   val inventory: SimpleIdentifiableDTO?,
 
    @field:Valid
    @field:NotNull
@@ -27,7 +26,7 @@ data class AuditDetailCreateUpdateDTO(
    var scanArea: SimpleIdentifiableDTO?
 
 ) : Identifiable {
-   constructor(inventory: SimpleLegacyIdentifiableDTO?, scanArea: SimpleIdentifiableDTO?) :
+   constructor(inventory: SimpleIdentifiableDTO?, scanArea: SimpleIdentifiableDTO?) :
       this(
          id = null,
          inventory = inventory,

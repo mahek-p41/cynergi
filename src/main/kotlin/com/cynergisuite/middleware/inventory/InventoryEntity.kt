@@ -1,16 +1,17 @@
 package com.cynergisuite.middleware.inventory
 
-import com.cynergisuite.domain.LegacyIdentifiable
+import com.cynergisuite.domain.Identifiable
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
 import com.cynergisuite.middleware.location.Location
 import com.cynergisuite.middleware.store.Store
 import io.micronaut.core.annotation.Introspected
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 
 @Introspected
 data class InventoryEntity(
-   val id: Long,
+   val id: UUID,
    val serialNumber: String?,
    val lookupKey: String,
    val lookupKeyType: String,
@@ -36,7 +37,7 @@ data class InventoryEntity(
    val status: String,
    val primaryLocation: Store,
    val locationType: InventoryLocationType
-) : LegacyIdentifiable {
+) : Identifiable {
    constructor(dto: InventoryDTO, location: Location, primaryLocation: Store, locationType: InventoryLocationType) :
       this(
          id = dto.id,
@@ -67,5 +68,5 @@ data class InventoryEntity(
          locationType = locationType
       )
 
-   override fun myId(): Long = id
+   override fun myId(): UUID = id
 }

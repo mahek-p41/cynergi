@@ -90,7 +90,7 @@ class AuditExceptionValidator @Inject constructor (
       }
    }
 
-   private fun createAuditException(auditId: UUID, enteredBy: User, scanArea: AuditScanAreaEntity?, exceptionCode: String, inventoryId: Long?, barcode: String?): AuditExceptionEntity {
+   private fun createAuditException(auditId: UUID, enteredBy: User, scanArea: AuditScanAreaEntity?, exceptionCode: String, inventoryId: UUID?, barcode: String?): AuditExceptionEntity {
       val employeeUser = employeeRepository.findOne(enteredBy)!!
 
       return if (inventoryId != null) {

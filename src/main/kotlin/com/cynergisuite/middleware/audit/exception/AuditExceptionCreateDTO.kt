@@ -1,7 +1,6 @@
 package com.cynergisuite.middleware.audit.exception
 
 import com.cynergisuite.domain.SimpleIdentifiableDTO
-import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.validation.Valid
@@ -15,7 +14,7 @@ data class AuditExceptionCreateDTO(
 
    @field:Valid
    @field:Schema(name = "inventory", description = "If this field is not provided then barcode needs to be. Inventory item being associated with a new AuditException.  This indicates that the item was on the list but unable to be found in the store.")
-   var inventory: SimpleLegacyIdentifiableDTO? = null,
+   var inventory: SimpleIdentifiableDTO? = null,
 
    @field:Valid
    @field:Schema(name = "scanArea", description = "The optional location where the exception was encountered")
