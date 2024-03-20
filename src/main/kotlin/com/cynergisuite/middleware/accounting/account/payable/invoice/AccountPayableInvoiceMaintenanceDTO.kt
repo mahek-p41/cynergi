@@ -1,9 +1,5 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice
 
-import com.cynergisuite.middleware.accounting.account.AccountDTO
-import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionDetailDTO
-import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionTemplateDTO
-import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema

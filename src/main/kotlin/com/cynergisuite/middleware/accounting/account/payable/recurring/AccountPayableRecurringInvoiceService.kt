@@ -1,8 +1,11 @@
 package com.cynergisuite.middleware.accounting.account.payable.recurring
 
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
+import com.cynergisuite.domain.AccountPayableRecurringInvoiceTransferFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.Page
+import com.cynergisuite.middleware.accounting.account.AccountDTO
+import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceSelectedTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceTypeDTO
@@ -10,12 +13,16 @@ import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDistributionEntity
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceService
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceDistributionRepository
+import com.cynergisuite.middleware.accounting.account.payable.recurring.distribution.infrastructure.AccountPayableRecurringInvoiceDistributionDTO
+import com.cynergisuite.middleware.accounting.account.payable.recurring.distribution.infrastructure.AccountPayableRecurringInvoiceDistributionEntity
 import com.cynergisuite.middleware.accounting.account.payable.recurring.distribution.infrastructure.AccountPayableRecurringInvoiceDistributionRepository
 import com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure.AccountPayableRecurringInvoiceRepository
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.EmployeeService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
+import com.cynergisuite.middleware.store.StoreDTO
+import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -31,7 +38,9 @@ class AccountPayableRecurringInvoiceService @Inject constructor(
    private val vendorPaymentTermRepository: VendorPaymentTermRepository,
    private val accountPayableInvoiceService: AccountPayableInvoiceService,
    private val accountPayableRecurringInvoiceDistributionRepository: AccountPayableRecurringInvoiceDistributionRepository,
-   private val accountPayableInvoiceDistributionRepository: AccountPayableInvoiceDistributionRepository
+   private val accountPayableInvoiceDistributionRepository: AccountPayableInvoiceDistributionRepository,
+   private val accountRepository: AccountRepository,
+   private val storeRepository: StoreRepository
 ) {
 
    fun fetchById(id: UUID, company: CompanyEntity): AccountPayableRecurringInvoiceDTO? =
@@ -45,6 +54,13 @@ class AccountPayableRecurringInvoiceService @Inject constructor(
 
    fun fetchAll(company: CompanyEntity, filterRequest: AccountPayableInvoiceListByVendorFilterRequest): Page<AccountPayableRecurringInvoiceDTO> {
       val found = accountPayableRecurringInvoiceRepository.findAll(company, filterRequest)
+
+      return found.toPage { accountPayableRecurringInvoiceEntity: AccountPayableRecurringInvoiceEntity ->
+         AccountPayableRecurringInvoiceDTO(accountPayableRecurringInvoiceEntity)
+      }
+   }
+   fun fetchAllTransfer(company: CompanyEntity, filterRequest: AccountPayableRecurringInvoiceTransferFilterRequest): Page<AccountPayableRecurringInvoiceDTO> {
+      val found = accountPayableRecurringInvoiceRepository.findAllTransfer(company, filterRequest)
 
       return found.toPage { accountPayableRecurringInvoiceEntity: AccountPayableRecurringInvoiceEntity ->
          AccountPayableRecurringInvoiceDTO(accountPayableRecurringInvoiceEntity)
@@ -64,11 +80,11 @@ class AccountPayableRecurringInvoiceService @Inject constructor(
    fun transfer(dto: AccountPayableRecurringInvoiceDTO, user: User): AccountPayableInvoiceDTO {
       val employee = employeeService.fetchOne(user.myId(), user.myCompany())
       val vpt = vendorPaymentTermRepository.findOne(dto.vendor!!.paymentTerm!!.id!!, user.myCompany())!!
-      val discountDate: LocalDate
+      var discountDate: LocalDate? = null
       if (vpt.discountMonth == 0) {
          discountDate = dto.nextInvoiceDate!!.plusDays(vpt.discountDays!!.toLong())
-      } else {
-         discountDate = dto.nextInvoiceDate!!.plusMonths(vpt.discountMonth!!.toLong()).plusDays(vpt.discountDays!!.toLong())
+      } else if (vpt.discountMonth != null && vpt.discountMonth > 0){
+         discountDate = dto.nextInvoiceDate!!.plusMonths(vpt.discountMonth.toLong()).plusDays(vpt.discountDays!!.toLong())
       }
 
       val invoice = AccountPayableInvoiceDTO(
@@ -102,25 +118,68 @@ class AccountPayableRecurringInvoiceService @Inject constructor(
          location = null
       )
 
-      //move recur distributions to inv dists, update next invoice dates
-      val recDist = accountPayableRecurringInvoiceDistributionRepository.findByRecurringInvoice(dto.id!!, user.myCompany())
-      recDist.forEach {
-         val invoiceDist = AccountPayableInvoiceDistributionEntity(
-            id = null,
-            invoiceId = it.invoiceId,
-            accountId = it.accountId,
-            profitCenter = it.profitCenter,
-            amount = it.amount
-         )
-         accountPayableInvoiceDistributionRepository.insert(invoiceDist)
-      }
+
 
       dto.lastCreatedInPeriod = LocalDate.now()
       dto.nextCreationDate = dto.nextCreationDate!!.plusMonths(1)
       dto.nextInvoiceDate = dto.nextInvoiceDate!!.plusMonths(1)
       dto.nextExpenseDate = dto.nextExpenseDate!!.plusMonths(1)
       update(dto.id!!, dto, user.myCompany())
-      return accountPayableInvoiceService.create(invoice, user.myCompany())
+      val updatedInvoice = accountPayableInvoiceService.create(invoice, user.myCompany())
+
+      //move recur distributions to inv dists, update next invoice dates
+      val recDist = accountPayableRecurringInvoiceDistributionRepository.findByRecurringInvoice(dto.id!!, user.myCompany())
+      recDist.forEach {
+         val invoiceDist = AccountPayableInvoiceDistributionEntity(
+            id = null,
+            invoiceId = updatedInvoice.id!!,
+            accountId = it.accountId,
+            profitCenter = it.profitCenter,
+            amount = it.amount
+         )
+         accountPayableInvoiceDistributionRepository.insert(invoiceDist)
+      }
+      return updatedInvoice
+   }
+
+   fun fetchGLDistributions(invoiceId: UUID, company: CompanyEntity): List<AccountPayableRecurringInvoiceDistributionDTO> {
+      return accountPayableRecurringInvoiceDistributionRepository.findByRecurringInvoice(invoiceId, company).map {
+         val account = accountRepository.findOne(it.accountId, company)
+         val store = storeRepository.findOne(it.profitCenter, company)
+         AccountPayableRecurringInvoiceDistributionDTO(
+            it.id,
+            it.accountId,
+            AccountDTO(account!!),
+            StoreDTO(store!!),
+            it.amount
+         )
+      }
+   }
+
+   fun updateDistributions(invoiceId: UUID, distributions: List<AccountPayableRecurringInvoiceDistributionDTO>, company: CompanyEntity): List<AccountPayableRecurringInvoiceDistributionDTO> {
+      val updated = distributions.map{
+         accountPayableRecurringInvoiceDistributionRepository.upsert(
+            AccountPayableRecurringInvoiceDistributionEntity(
+               id = it.id,
+               invoiceId = invoiceId,
+               accountId = it.account!!.id!!,
+               profitCenter = it.profitCenter!!.storeNumber!!,
+               amount = it.amount!!
+            ),
+            company
+         )
+      }
+
+      return updated.map{
+         val account = accountRepository.findOne(it.accountId, company)
+         val store = storeRepository.findOne(it.profitCenter, company)
+         AccountPayableRecurringInvoiceDistributionDTO(
+         it.id,
+         it.invoiceId,
+         AccountDTO(account!!),
+         StoreDTO(store!!),
+         it.amount
+      ) }
    }
 
    private fun transformEntity(accountPayableRecurringInvoiceEntity: AccountPayableRecurringInvoiceEntity): AccountPayableRecurringInvoiceDTO {

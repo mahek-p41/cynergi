@@ -23,7 +23,6 @@ import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDistributionDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDistributionEntity
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentEntity
-import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentTypeType
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentDetailRepository
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentRepository
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentStatusTypeRepository
@@ -242,8 +241,8 @@ class AccountPayableInvoiceService @Inject constructor(
 
          for (schedule in scheduleList) {
             //check if payment already exists for this bank or payment number
-
-            val payment = if (schedule.bank !=null && schedule.externalPaymentNumber != null) accountPayablePaymentRepository.findPaymentByBankAndNumber(schedule.bank!!, schedule.externalPaymentNumber!!, company) else null
+            val bank = bankRepository.findOne(schedule.bank!!, company)
+            val payment = if (schedule.bank !=null && schedule.externalPaymentNumber != null) accountPayablePaymentRepository.findPaymentByBankAndNumber(bank!!.number, schedule.externalPaymentNumber!!, company) else null
             val appt = schedule.externalPaymentTypeId?.let {appttRepository.findOne(schedule.externalPaymentTypeId!!.value) }
             if (payment != null) {
                payment.amount = payment.amount.plus(schedule.amountToPay!!)

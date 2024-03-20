@@ -1,12 +1,15 @@
 package com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure
 
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
+import com.cynergisuite.domain.AccountPayableRecurringInvoiceTransferFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.Page
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableDistDetailReportDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceService
+import com.cynergisuite.middleware.accounting.account.payable.recurring.distribution.infrastructure.AccountPayableRecurringInvoiceDistributionDTO
 import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
@@ -107,12 +110,43 @@ class AccountPayableRecurringInvoiceController @Inject constructor(
 
    @Secured("APRECURLST")
    @Throws(PageOutOfBoundsException::class)
-   @Get(uri = "/report{?filterRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["AccountPayableRecurringInvoiceEndpoints"], summary = "Fetch a listing of Account Payable Recurring Invoices", description = "Fetch a paginated listing of Account Payable Recurring Invoice", operationId = "accountPayableRecurringInvoice-fetchAll")
+   @Get(uri = "/transfer{?pageRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["AccountPayableRecurringInvoiceEndpoints"], summary = "Fetch a listing of Account Payable Recurring Invoices for transfer", description = "Fetch a paginated listing of Account Payable Recurring Invoice for transfer", operationId = "accountPayableRecurringInvoice-fetchAllTransfer")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
          ApiResponse(responseCode = "204", description = "The requested Account Payable Recurring Invoice was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchAllTransfer(
+      @Parameter(name = "pageRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("pageRequest")
+      filterRequest: AccountPayableRecurringInvoiceTransferFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Page<AccountPayableRecurringInvoiceDTO> {
+      logger.info("Fetching all Account Payable Recurring Invoices {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+      val page = accountPayableRecurringInvoiceService.fetchAllTransfer(user.myCompany(), filterRequest)
+
+      if (page.elements.isEmpty()) {
+         throw PageOutOfBoundsException(pageRequest = filterRequest)
+      }
+
+      return page
+   }
+
+   @Secured("APRECURLST")
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/report{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["AccountPayableRecurringInvoiceEndpoints"], summary = "Fetch an Account Payable Recurring Invoice Report", description = "Fetch an Account Payable Recurring Invoice Report", operationId = "accountPayableRecurringInvoice-report")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested Account Payable Recurring Invoice Report was unable to be found, or the result is empty"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
       ]
@@ -124,7 +158,7 @@ class AccountPayableRecurringInvoiceController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AccountPayableRecurringInvoiceReportTemplate {
-      logger.info("Fetching all Account Payable Recurring Invoices {}", filterRequest)
+      logger.info("Fetching an Account Payable Recurring Invoices Report{}", filterRequest)
 
       val user = userService.fetchUser(authentication)
       val page = accountPayableRecurringInvoiceService.fetchReport(user.myCompany(), filterRequest)
@@ -218,6 +252,63 @@ class AccountPayableRecurringInvoiceController @Inject constructor(
       val response = accountPayableRecurringInvoiceService.transfer(dto, user)
 
       logger.debug("Requested Update Account Payable Recurring Invoice {} resulted in {}", dto, response)
+
+      return response
+   }
+
+   @Throws(NotFoundException::class)
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}/distributions", produces = [APPLICATION_JSON])
+   @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Fetch an AP Invoice GL Distributions", description = "Fetch an AP Invoice GL Distributions", operationId = "accountPayableRecurringInvoice-fetchGLDistributions")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableDistDetailReportDTO::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Account Payable Invoice was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchGLDistributions(
+      @QueryValue("id")
+      invoiceId: UUID,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): List<AccountPayableRecurringInvoiceDistributionDTO> {
+      logger.info("Fetching GL Distributions by {}", invoiceId)
+
+      val user = userService.fetchUser(authentication)
+      val response = accountPayableRecurringInvoiceService.fetchGLDistributions(invoiceId, user.myCompany())
+
+      logger.debug("Fetching GL Distributions by {} resulted in {}", invoiceId, response)
+
+      return response
+   }
+
+   @Throws(NotFoundException::class)
+   @Put(value = "/{id:[0-9a-fA-F\\-]+}/distributions", produces = [APPLICATION_JSON])
+   @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Update an AP Recurring Invoice GL Distributions", description = "Update an AP Recurring Invoice GL Distributions", operationId = "accountPayableRecurringInvoice-updateGLDistributions")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableDistDetailReportDTO::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Account Payable Invoice was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun updateDistributions(
+      @Parameter(name = "id", `in` = PATH, description = "The id for the Recurring Invoice being updated")
+      @QueryValue("id")
+      id: UUID,
+      @Body @Valid
+      dto: List<AccountPayableRecurringInvoiceDistributionDTO>,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+      ): List<AccountPayableRecurringInvoiceDistributionDTO> {
+      logger.info("Fetching GL Distributions by {}", id)
+
+      val user = userService.fetchUser(authentication)
+      val response = accountPayableRecurringInvoiceService.updateDistributions(id, dto, user.myCompany())
+
+      logger.debug("Fetching GL Distributions by {} resulted in {}", id, response)
 
       return response
    }

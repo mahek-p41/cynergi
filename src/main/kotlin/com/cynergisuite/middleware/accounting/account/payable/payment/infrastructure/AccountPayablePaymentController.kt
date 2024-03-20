@@ -2,6 +2,7 @@ package com.cynergisuite.middleware.accounting.account.payable.payment.infrastru
 
 import com.cynergisuite.domain.AccountPayableListPaymentsFilterRequest
 import com.cynergisuite.domain.Page
+import com.cynergisuite.domain.PaymentFilterRequest
 import com.cynergisuite.domain.PaymentReportFilterRequest
 import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDTO
@@ -126,6 +127,34 @@ class AccountPayablePaymentController @Inject constructor(
       logger.debug("Listing of Account Payable Payments resulted in {}", paymentListing)
 
       return paymentListing
+   }
+
+   @Throws(NotFoundException::class)
+   @Get(value = "/bank-payment{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["AccountPayablePaymentEndpoints"], summary = "Fetch a single Account Payable Payment", description = "Fetch a single Account Payable Payment by its system generated primary key", operationId = "accountPayablePayment-fetchOne")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayablePaymentDTO::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Account Payable Payment was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchByBankAndPaymentNumber(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: PaymentFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): AccountPayablePaymentDTO {
+      logger.info("Fetching Account Payable Payment by {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+      val response = accountPayablePaymentService.fetchByBankAndNumber(filterRequest.bankNumber, filterRequest.paymentNumber, user.myCompany()) ?: throw NotFoundException(filterRequest)
+
+      logger.debug("Fetching Account Payable Payment by {} resulted in", filterRequest, response)
+
+      return response
    }
 
    @Post(processes = [APPLICATION_JSON])

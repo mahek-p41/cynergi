@@ -39,6 +39,9 @@ class AccountPayablePaymentService @Inject constructor(
       }
    }
 
+   fun fetchByBankAndNumber(bank: Long, paymentNumber: String, company: CompanyEntity): AccountPayablePaymentDTO? =
+      accountPayablePaymentRepository.findPaymentByBankAndNumber(bank, paymentNumber, company)?.let { AccountPayablePaymentDTO(it) }
+
    fun update(id: UUID, dto: AccountPayablePaymentDTO, company: CompanyEntity): AccountPayablePaymentDTO {
       val toUpdate = accountPayablePaymentValidator.validateUpdate(id, dto, company)
 

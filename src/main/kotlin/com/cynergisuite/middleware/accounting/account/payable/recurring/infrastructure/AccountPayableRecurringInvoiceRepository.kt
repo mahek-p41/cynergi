@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure
 
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
+import com.cynergisuite.domain.AccountPayableRecurringInvoiceTransferFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
@@ -12,14 +13,21 @@ import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
+import com.cynergisuite.middleware.accounting.account.AccountDTO
+import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableRecurringInvoiceStatusType
+import com.cynergisuite.middleware.accounting.account.payable.AccountPayableRecurringInvoiceStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableRecurringInvoiceStatusTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceEntity
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceReportDTO
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.recurring.ExpenseMonthCreationType
+import com.cynergisuite.middleware.accounting.account.payable.recurring.distribution.infrastructure.AccountPayableRecurringInvoiceDistributionDTO
+import com.cynergisuite.middleware.accounting.account.payable.recurring.distribution.infrastructure.AccountPayableRecurringInvoiceDistributionRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.schedule.ScheduleEntity
+import com.cynergisuite.middleware.store.StoreDTO
+import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
@@ -39,7 +47,11 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
    private val jdbc: Jdbi,
    private val vendorRepository: VendorRepository,
    private val statusTypeRepository: AccountPayableRecurringInvoiceStatusTypeRepository,
-   private val expenseMonthCreationTypeRepository: ExpenseMonthCreationTypeRepository
+   private val expenseMonthCreationTypeRepository: ExpenseMonthCreationTypeRepository,
+   private val accountPayableRecurringInvoiceDistributionRepository: AccountPayableRecurringInvoiceDistributionRepository,
+   private val accountRepository: AccountRepository,
+   private val storeRepository: StoreRepository,
+   private val accountPayableRecurringInvoiceStatusRepo: AccountPayableRecurringInvoiceStatusTypeRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableRecurringInvoiceRepository::class.java)
 
@@ -70,6 +82,7 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             apRecurringInvoice.next_expense_date                        AS apRecurringInvoice_next_expense_date,
             apRecurringInvoice.start_date                               AS apRecurringInvoice_start_date,
             apRecurringInvoice.end_date                                 AS apRecurringInvoice_end_date,
+            apRecurringInvoice.status_id                                AS apRecurringInvoice_status_id,
             vendor.v_id                                                 AS apRecurringInvoice_vendor_id,
             vendor.v_time_created                                       AS apRecurringInvoice_vendor_time_created,
             vendor.v_time_updated                                       AS apRecurringInvoice_vendor_time_updated,
@@ -354,6 +367,42 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
       if (filterRequest.invoice != null) {
          params["invoice"] = filterRequest.invoice
          whereClause.append(" AND apRecurringInvoice.invoice ILIKE \'$searchQueryBeginsWith\'")
+      }
+
+      return jdbc.queryPaged(
+         """
+            ${selectBaseQuery()}
+            $whereClause
+            ORDER BY apRecurringInvoice_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
+            LIMIT :limit OFFSET :offset
+         """.trimIndent(),
+         params,
+         filterRequest
+      ) { rs, elements ->
+         do {
+            elements.add(mapRow(rs, company, "apRecurringInvoice_"))
+         } while (rs.next())
+      }
+   }
+
+   @ReadOnly
+   fun findAllTransfer(
+      company: CompanyEntity,
+      filterRequest: AccountPayableRecurringInvoiceTransferFilterRequest
+   ): RepositoryPage<AccountPayableRecurringInvoiceEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
+      val whereClause = StringBuilder(" WHERE apRecurringInvoice.company_id = :comp_id")
+
+      if (filterRequest.beginVendor != null || filterRequest.endVendor!= null) {
+         params["beginVendor"] = filterRequest.beginVendor
+         params["endVendor"] = filterRequest.endVendor
+         whereClause.append(" AND vendor.v_number")
+            .append(buildFilterString(filterRequest.beginVendor != null, filterRequest.endVendor != null, "beginVendor", "endVendor"))
+      }
+
+      if (filterRequest.entryDate != null) {
+         params["entryDate"] = filterRequest.entryDate
+         whereClause.append(" AND apRecurringInvoice.last_transfer_to_create_invoice_date = :entryDate")
       }
 
       return jdbc.queryPaged(
@@ -657,6 +706,18 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
       company: CompanyEntity,
       columnPrefix: String = EMPTY
    ): AccountPayableRecurringInvoiceReportDTO {
+      val distributions = accountPayableRecurringInvoiceDistributionRepository.findByRecurringInvoice(rs.getUuid("${columnPrefix}id"), company).map {
+         AccountPayableRecurringInvoiceDistributionDTO(
+            it.id,
+            it.invoiceId,
+            accountRepository.findOne(it.accountId, company)?.let { it1 -> AccountDTO(it1) },
+            storeRepository.findOne(it.profitCenter, company)?.let { it1 -> StoreDTO(it1) },
+            it.amount
+         )
+      }
+      val status = accountPayableRecurringInvoiceStatusRepo.findOne(rs.getLong("${columnPrefix}status_id"))
+         ?.let { AccountPayableRecurringInvoiceStatusTypeDTO(it) }
+      val dueDays = rs.getInt("${columnPrefix}due_days")
       return AccountPayableRecurringInvoiceReportDTO(
          id = rs.getUuid("${columnPrefix}id"),
          vendor = VendorDTO(vendorRepository.mapRow(rs, company, "${columnPrefix}vendor_")),
@@ -664,14 +725,24 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
          message = rs.getString("${columnPrefix}message"),
          amount = rs.getBigDecimal("${columnPrefix}invoice_amount"),
          payTo = VendorDTO(vendorRepository.mapRow(rs, company, "${columnPrefix}payTo_")),
+         status = status!!,
          separateCheckIndicator = rs.getBoolean("${columnPrefix}separate_check_indicator"),
+         dueDate = rs.getLocalDateOrNull("${columnPrefix}next_invoice_date")?.plusDays(dueDays.toLong()),
          lastCreatedInPeriod = rs.getLocalDateOrNull("${columnPrefix}last_created_in_period"),
+         lastTransferToCreateInvoiceDate = rs.getLocalDateOrNull("${columnPrefix}last_transfer_to_create_invoice_date"),
          nextCreationDate = rs.getLocalDateOrNull("${columnPrefix}next_creation_date"),
          nextInvoiceDate = rs.getLocalDateOrNull("${columnPrefix}next_invoice_date"),
          nextExpenseDate = rs.getLocalDateOrNull("${columnPrefix}next_expense_date"),
          startDate = rs.getLocalDate("${columnPrefix}start_date"),
-         endDate = rs.getLocalDate("${columnPrefix}end_date")
+         endDate = rs.getLocalDate("${columnPrefix}end_date"),
+         distributions = distributions
       )
    }
 
+
+   private fun buildFilterString(begin: Boolean, end: Boolean, beginningParam: String, endingParam: String): String {
+      return if (begin && end) " BETWEEN :$beginningParam AND :$endingParam"
+      else if (begin) " >= :$beginningParam"
+      else " <= :$endingParam"
+   }
 }
