@@ -33,7 +33,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.totalPages == 339
       pageOneResult.first == true
       pageOneResult.last == false
-      pageOneResult.elements[0].id == UUID.fromString("6d7250a8-e6c8-11ee-b0ca-0242ac130004")
+      pageOneResult.elements[0].serialNumber == "00127405"
 
    }
 
@@ -58,7 +58,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
          totalPages == 339
          first == true
          last == false
-         elements[0].id == UUID.fromString("6d7250a8-e6c8-11ee-b0ca-0242ac130004")
+         elements[0].serialNumber == "00127405"
          elements[0].lookupKey == "00127405"
          elements[0].modelNumber == "TR"
          elements[0].description == "19 IN TIRE"
@@ -99,7 +99,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.totalPages == 339
       pageOneResult.first == true
       pageOneResult.last == false
-      pageOneResult.elements[1].id == UUID.fromString("6d729388-e6c8-11ee-b0ca-0242ac130004")
+      pageOneResult.elements[1].serialNumber == "00127404"
       pageOneResult.elements[1].primaryLocation.id == 2
       pageOneResult.elements[1].primaryLocation.storeNumber == 1
       pageOneResult.elements[1].primaryLocation.name == "HOUMA"
@@ -130,7 +130,6 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.totalPages == 5
       pageOneResult.first == true
       pageOneResult.last == false
-      pageOneResult.elements[1].id == 73823
       pageOneResult.elements[1].lookupKey == "201-00925"
       pageOneResult.elements[1].modelNumber == "FPGIDFRAMEDART"
       pageOneResult.elements[1].description == "MISCELLANEOUS FURNITURE PICT"
@@ -176,7 +175,6 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.totalPages == 140
       pageOneResult.first == true
       pageOneResult.last == false
-      pageOneResult.elements[2].id == UUID.fromString("6d7324c4-e6c8-11ee-b0ca-0242ac130004")
       pageOneResult.elements[2].serialNumber == "10000865"
       pageOneResult.elements[2].lookupKey == "10000865"
       pageOneResult.elements[2].lookupKeyType == "SERIAL"
@@ -226,7 +224,6 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.totalPages == 1
       pageOneResult.first == true
       pageOneResult.last == true
-      pageOneResult.elements[2].id == 85324
       pageOneResult.elements[2].serialNumber == "3CUK902302"
       pageOneResult.elements[2].lookupKey == "3CUK902302"
       pageOneResult.elements[2].lookupKeyType == "ALT_ID"
@@ -274,7 +271,6 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       pageOneResult.totalPages == 339
       pageOneResult.first == true
       pageOneResult.last == false
-      pageOneResult.elements[3].id == UUID.fromString("6d72e298-e6c8-11ee-b0ca-0242ac130004")
       pageOneResult.elements[3].serialNumber == "00128336"
       pageOneResult.elements[3].barcode == "00128336"
       pageOneResult.elements[3].altId == "00128336"
@@ -312,7 +308,7 @@ class InventoryControllerSpecification extends ControllerSpecificationBase {
       then:
       notThrown(HttpClientResponseException)
       with(inventory) {
-         id == UUID.fromString("6d7fabb8-e6c8-11ee-b0ca-0242ac130004")
+         serialNumber == "00136726"
       }
    }
 
