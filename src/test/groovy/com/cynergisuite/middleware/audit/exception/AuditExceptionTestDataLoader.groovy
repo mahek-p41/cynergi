@@ -60,7 +60,8 @@ class AuditExceptionTestDataLoader {
             approvedBy,
             lorem.characters(10).toUpperCase(),
             List.of(),
-            new SimpleIdentifiableEntity(audit)
+            new SimpleIdentifiableEntity(audit),
+            null
          )
       }
    }
