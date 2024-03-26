@@ -148,6 +148,7 @@ class AuditService @Inject constructor(
 
       // after update successfully create the inventory snapshot for the completed or canceled audit
       if (updated.actions.any { it.status == Completed || it.status == Canceled }) {
+
          // File exceptions for all inventory that have no audit detail
          val submittedBy = employeeRepository.findOne(user) ?: throw NotFoundException(user);
          if (existingAudit.id != null) {
@@ -525,7 +526,7 @@ class AuditService @Inject constructor(
             table.addCell(Phrase(it.inventory?.condition, rowFont))
             table.addCell(Phrase(it.inventory?.status, rowFont))
 
-            it.notes?.forEach {
+            it.notes.forEach {
                table.addCell(EMPTY)
                table.defaultCell.colspan = 4
                table.addCell(Phrase(it.note, rowFont))
