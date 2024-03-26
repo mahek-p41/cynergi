@@ -21,6 +21,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.infrastructure.AuditSc
 import com.cynergisuite.middleware.audit.exception.AuditExceptionEntity
 import com.cynergisuite.middleware.audit.exception.note.AuditExceptionNote
 import com.cynergisuite.middleware.audit.exception.note.infrastructure.AuditExceptionNoteRepository
+import com.cynergisuite.middleware.audit.inventory.infrastructure.AuditInventoryRepository
 import com.cynergisuite.middleware.authentication.user.User
 import com.cynergisuite.middleware.authentication.user.infrastructure.SecurityGroupRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -45,6 +46,7 @@ import javax.transaction.Transactional
 @Singleton
 class AuditExceptionRepository @Inject constructor(
    private val addressRepository: AddressRepository,
+   private val auditInventoryRepository: AuditInventoryRepository,
    private val auditScanAreaRepository: AuditScanAreaRepository,
    private val auditExceptionNoteRepository: AuditExceptionNoteRepository,
    private val companyRepository: CompanyRepository,
@@ -665,7 +667,7 @@ class AuditExceptionRepository @Inject constructor(
       """
       WITH paged AS (
          SELECT
-            ${inventoryRepository.selectAuditInventoryAndException}
+            ${auditInventoryRepository.selectAuditInventoryAndException}
          FROM company comp
             JOIN audit a ON a.company_id = comp.id
             JOIN audit_exception auditException ON a.id = auditException.audit_id

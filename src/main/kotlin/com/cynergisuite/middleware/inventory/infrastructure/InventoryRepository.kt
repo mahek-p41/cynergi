@@ -68,7 +68,7 @@ class InventoryRepository(
       i.dataset                     AS dataset
       """.trimIndent()
 
-   private val selectCompanyAndAddress = 
+   val selectCompanyAndAddress = 
       """
       comp.id                  AS comp_id,
       comp.time_created        AS comp_time_created,
@@ -95,7 +95,7 @@ class InventoryRepository(
       compAddress.fax          AS comp_address_fax
       """.trimIndent()
 
-   private val selectStoreInformation =
+   val selectStoreInformation =
       """
       primaryStore.id               AS primary_store_id,
       primaryStore.number           AS primary_store_number,
@@ -323,7 +323,7 @@ class InventoryRepository(
       a.id                     AS audit_id
       """.trimIndent()
 
-   val selectAuditInventoryAndException =
+   val selectInventoryAndException =
       """
       ${selectCompanyAndAddress},
       ${selectStoreInformation},
@@ -359,9 +359,9 @@ class InventoryRepository(
       """
       WITH paged AS (
          SELECT
-            ${selectAuditInventoryAndException}
+            ${selectInventoryAndException}
          FROM company comp
-            JOIN fastinfo_prod_import.inventory_vw i ON comp.dataset_code = i.dataset  
+            JOIN inventory i ON comp.dataset_code = i.dataset
             JOIN audit a ON (a.company_id = comp.id AND a.store_number = i.primary_location)
             ${withCompanyAddress}
             ${withPrimaryStore}
