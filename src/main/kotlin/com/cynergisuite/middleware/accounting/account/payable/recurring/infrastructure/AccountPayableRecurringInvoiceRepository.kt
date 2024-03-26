@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure
 
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
+import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
@@ -8,12 +9,13 @@ import com.cynergisuite.extensions.getLocalDate
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
-import com.cynergisuite.extensions.isNumber
+import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableRecurringInvoiceStatusType
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableRecurringInvoiceStatusTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceEntity
+import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.recurring.ExpenseMonthCreationType
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.schedule.ScheduleEntity
@@ -551,6 +553,29 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
             entity.schedule
          )
       }
+   }
+
+   @ReadOnly
+   fun fetchReport(company: CompanyEntity, filterRequest: InvoiceReportFilterRequest): AccountPayableRecurringInvoiceReportTemplate {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val reportDTO = AccountPayableRecurringInvoiceReportTemplate()
+      val whereClause = StringBuilder(" WHERE apRecurringInvoice.company_id = :comp_id ")
+      jdbc.query(
+         """
+            ${selectBaseQuery()}
+            $whereClause
+            ORDER BY vendor.v_number, apRecurringInvoice.invoice
+         """.trimIndent(),
+         params)
+      { rs, element ->
+         do {
+             val tempInvoice = mapRow(rs, company,"apRecurringInvoice_")
+
+                        reportDTO.invoices.add(tempInvoice)
+            reportDTO.invoices.sortWith(compareBy { it!!.vendor.number})
+         } while (rs.next())
+      }
+   return reportDTO
    }
 
    private fun mapRow(

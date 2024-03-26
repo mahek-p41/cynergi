@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.recurring
 
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
+import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceSelectedTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusTypeDTO
@@ -48,6 +49,10 @@ class AccountPayableRecurringInvoiceService @Inject constructor(
       return found.toPage { accountPayableRecurringInvoiceEntity: AccountPayableRecurringInvoiceEntity ->
          AccountPayableRecurringInvoiceDTO(accountPayableRecurringInvoiceEntity)
       }
+   }
+
+   fun fetchReport(company: CompanyEntity, filterRequest: InvoiceReportFilterRequest): AccountPayableRecurringInvoiceReportTemplate {
+      return accountPayableRecurringInvoiceRepository.fetchReport(company, filterRequest)
    }
 
    fun update(id: UUID, dto: AccountPayableRecurringInvoiceDTO, company: CompanyEntity): AccountPayableRecurringInvoiceDTO {

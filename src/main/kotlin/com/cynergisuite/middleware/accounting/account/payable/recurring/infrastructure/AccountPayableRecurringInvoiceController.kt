@@ -1,9 +1,11 @@
 package com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure
 
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
+import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceDTO
+import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceService
 import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
@@ -99,6 +101,33 @@ class AccountPayableRecurringInvoiceController @Inject constructor(
       if (page.elements.isEmpty()) {
          throw PageOutOfBoundsException(pageRequest = filterRequest)
       }
+
+      return page
+   }
+
+   @Secured("APRECURLST")
+   @Throws(PageOutOfBoundsException::class)
+   @Get(uri = "/report{?filterRequest*}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["AccountPayableRecurringInvoiceEndpoints"], summary = "Fetch a listing of Account Payable Recurring Invoices", description = "Fetch a paginated listing of Account Payable Recurring Invoice", operationId = "accountPayableRecurringInvoice-fetchAll")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
+         ApiResponse(responseCode = "204", description = "The requested Account Payable Recurring Invoice was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchReport(
+      @Parameter(name = "filterRequest", `in` = QUERY, required = false)
+      @Valid @QueryValue("filterRequest")
+      filterRequest: InvoiceReportFilterRequest,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): AccountPayableRecurringInvoiceReportTemplate {
+      logger.info("Fetching all Account Payable Recurring Invoices {}", filterRequest)
+
+      val user = userService.fetchUser(authentication)
+      val page = accountPayableRecurringInvoiceService.fetchReport(user.myCompany(), filterRequest)
 
       return page
    }
