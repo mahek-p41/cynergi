@@ -334,6 +334,36 @@ class FinancialCalendarRepository @Inject constructor(
    }
 
    @Transactional
+   fun closeAPAccountsForPeriods(dateRangeDTO: FinancialCalendarDateRangeDTO, company: CompanyEntity) {
+      logger.debug("Set APAccounts to false for selected period(s)")
+
+      logger.info("Closing AP Account range for company {}", company.id)
+
+      val newAffectedRowCount = jdbc.update(
+         """
+         UPDATE financial_calendar finCal
+         SET
+            account_payable_open = false
+         FROM overall_period_type_domain overallPeriod
+         WHERE overallPeriod.id = finCal.overall_period_id
+            AND finCal.company_id = :comp_id
+            AND (overallPeriod.value = :financial_period1 OR
+                 overallPeriod.value = :financial_period2)
+            AND finCal.period_from BETWEEN :from_date AND :to_date
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "financial_period1" to "C",
+            "financial_period2" to "N",
+            "from_date" to dateRangeDTO.periodFrom,
+            "to_date" to dateRangeDTO.periodTo
+         )
+      )
+
+      logger.info("Affected row count when closing APAccounts {}", newAffectedRowCount)
+   }
+
+   @Transactional
    fun openGLAPAccountsForPeriods(dateRangeDTO: FinancialCalendarGLAPDateRangeDTO, company: CompanyEntity) {
       logger.debug("Set GLAccounts to false")
 
@@ -654,6 +684,34 @@ class FinancialCalendarRepository @Inject constructor(
          FROM financial_calendar
          WHERE company_id = :comp_id
                AND overall_period_id = 3;
+         """.trimIndent(),
+         mapOf("comp_id" to company.id)
+      )
+   }
+
+   fun rollFinancialMonths(company: CompanyEntity, beginDate: LocalDate, endDate: LocalDate) {
+      logger.debug("Roll one financial year for financial_calendar {}", company)
+      jdbc.update("""
+         DELETE FROM financial_calendar
+         WHERE company_id = :comp_id
+               AND overall_period_id = 1;
+
+         UPDATE financial_calendar
+         SET overall_period_id = 1
+         WHERE company_id = :comp_id
+               AND overall_period_id in (2);
+
+         UPDATE financial_calendar
+         SET   overall_period_id = 2,
+               general_ledger_open = false,
+               account_payable_open = false
+         WHERE company_id = :comp_id
+               AND overall_period_id in (3);
+
+         UPDATE financial_calendar
+         SET overall_period_id = 3
+         WHERE company_id = :comp_id
+               AND overall_period_id in (4);
          """.trimIndent(),
          mapOf("comp_id" to company.id)
       )

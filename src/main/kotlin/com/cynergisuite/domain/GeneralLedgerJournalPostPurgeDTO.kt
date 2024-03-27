@@ -1,5 +1,6 @@
 package com.cynergisuite.domain
 
+import com.cynergisuite.middleware.accounting.general.ledger.end.month.EndMonthProceduresDTO
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
@@ -32,6 +33,10 @@ class GeneralLedgerJournalPostPurgeDTO(
    var thruDate: LocalDate? = null,
 
    ) : SortableRequestBase<GeneralLedgerJournalPostPurgeDTO>(null, null) {
+   constructor(dto: EndMonthProceduresDTO) : this(
+      fromDate = dto.beginDate,
+      thruDate = dto.endDate,
+   )
 
    override fun sortByMe(): String = sortBy()
 

@@ -264,7 +264,7 @@ class GeneralLedgerDetailService @Inject constructor(
          // If summary record not found, create them, then set the appropriate one
          val summary = generalLedgerSummaryService.fetchOneByBusinessKey(company, generalLedgerDetail.account?.id!!, generalLedgerDetail.profitCenter?.storeNumber!!, overallPeriod!!)
             ?:
-            createSummaries(generalLedgerDetail, company, overallPeriod!!)
+            createSummaries(generalLedgerDetail, company, overallPeriod)
          val glSourceCode = generalLedgerSourceCodeService.fetchById(generalLedgerDetail.source?.id!!, company)
          summaryUpdated = if (glSourceCode?.value == "BAL") {
             summary!!.beginningBalance?.plus(generalLedgerDetail.amount!!)

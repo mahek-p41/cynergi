@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.general.ledger.end.year.infrastructure
 
+import com.cynergisuite.extensions.findLocaleWithDefault
 import com.cynergisuite.middleware.accounting.account.payable.expense.AccountPayableExpenseReportTemplate
 import com.cynergisuite.middleware.accounting.general.ledger.end.month.EndMonthProceduresDTO
 import com.cynergisuite.middleware.accounting.general.ledger.end.year.EndYearProceduresDTO
@@ -8,6 +9,7 @@ import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
 import com.cynergisuite.middleware.error.ValidationException
+import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
@@ -91,12 +93,13 @@ class GeneralLedgerProcedureController @Inject constructor(
    fun endCurrentGLMonth(
       @Body @Valid
       dto: EndMonthProceduresDTO,
-      authentication: Authentication
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
    ): AccountPayableExpenseReportTemplate {
       val user = userService.fetchUser(authentication)
       logger.info("Requested close current GL month {}", dto)
 
-      val response = generalLedgerProcedureService.endCurrentMonth(dto, user)
+      val response = generalLedgerProcedureService.endCurrentMonth(dto, user, httpRequest.findLocaleWithDefault())
 
       logger.debug("Requested close current GL month {} resulted in {}", dto, response)
 

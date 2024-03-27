@@ -1,11 +1,14 @@
 package com.cynergisuite.middleware.accounting.general.ledger.end.year
 
+import com.cynergisuite.domain.GeneralLedgerJournalPostPurgeDTO
 import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.payable.expense.AccountPayableExpenseReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceService
+import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDateRangeDTO
 import com.cynergisuite.middleware.accounting.financial.calendar.infrastructure.FinancialCalendarRepository
 import com.cynergisuite.middleware.accounting.financial.calendar.type.OverallPeriodTypeDTO
+import com.cynergisuite.middleware.accounting.general.ledger.GeneralLedgerJournalService
 import com.cynergisuite.middleware.accounting.general.ledger.detail.infrastructure.GeneralLedgerDetailRepository
 import com.cynergisuite.middleware.accounting.general.ledger.end.month.EndMonthProceduresDTO
 import com.cynergisuite.middleware.accounting.general.ledger.end.year.infrastructure.GeneralLedgerProcedureRepository
@@ -17,6 +20,7 @@ import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.math.BigDecimal
+import java.util.Locale
 import javax.transaction.Transactional
 
 @Singleton
@@ -29,6 +33,7 @@ class GeneralLedgerProcedureService @Inject constructor(
    private val generalLedgerSummaryService: GeneralLedgerSummaryService,
    private val storeRepository: StoreRepository,
    private val accountPayableInvoiceService: AccountPayableInvoiceService,
+   private val generalLedgerJournalService: GeneralLedgerJournalService,
 ) {
 
    @Transactional
@@ -46,6 +51,16 @@ class GeneralLedgerProcedureService @Inject constructor(
 
       generalLedgerSummaryRepository.rollOneFinancialYear(company)
       financialCalendarRepository.rollOneFinancialYear(company)
+   }
+
+   @Transactional
+   fun endCurrentMonth(dto: EndMonthProceduresDTO, user: User, locale: Locale): AccountPayableExpenseReportTemplate {
+      val generalLedgerJournalPostPurgeDTO = GeneralLedgerJournalPostPurgeDTO(dto)
+      val company = user.myCompany()
+      generalLedgerJournalService.transfer(user, generalLedgerJournalPostPurgeDTO, locale)
+      val dateRange = FinancialCalendarDateRangeDTO(dto.beginDate, dto.endDate)
+      financialCalendarRepository.closeAPAccountsForPeriods(dateRange, company)
+      return accountPayableInvoiceService.fetchExpenseReport(company, dto)
    }
 
    private fun createBalEntriesForRetainedEarningsAccount(user: User, dto: EndYearProceduresDTO, jeNumber: Int) {
@@ -121,10 +136,4 @@ class GeneralLedgerProcedureService @Inject constructor(
       )
       generalLedgerProcedureRepository.createBalEntriesForAssetLiabilityCapitalAccounts(params)
    }
-
-   @Transactional
-   fun endCurrentMonth(dto: EndMonthProceduresDTO, user: User): AccountPayableExpenseReportTemplate {
-      return accountPayableInvoiceService.fetchExpenseReport(user.myCompany(), dto)
-   }
-
 }

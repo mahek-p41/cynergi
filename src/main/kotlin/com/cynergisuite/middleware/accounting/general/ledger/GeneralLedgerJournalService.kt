@@ -135,22 +135,21 @@ class GeneralLedgerJournalService @Inject constructor(
 
       glJournals.forEach {
          // create GL detail for each distribution
-            glDetailDTO = GeneralLedgerDetailDTO(
-               null,
-               AccountDTO(it.account),
-               it.date,
-               StoreDTO(it.profitCenter),
-               GeneralLedgerSourceCodeDTO(it.source),
-               it.amount,
-               it.message,
-               user.myEmployeeNumber(),
-               journalEntryNumber
-            )
-
-      generalLedgerDetailService.create(glDetailDTO, company)
+         glDetailDTO = GeneralLedgerDetailDTO(
+            null,
+            AccountDTO(it.account),
+            it.date,
+            StoreDTO(it.profitCenter),
+            GeneralLedgerSourceCodeDTO(it.source),
+            it.amount,
+            it.message,
+            user.myEmployeeNumber(),
+            journalEntryNumber
+         )
+         generalLedgerDetailService.create(glDetailDTO, company)
          // post accounting entries CYN-930
          val glAccountPostingDTO = GeneralLedgerAccountPostingDTO(glDetailDTO)
-      generalLedgerDetailService.postEntry(glAccountPostingDTO, user.myCompany(), locale)
+         generalLedgerDetailService.postEntry(glAccountPostingDTO, user.myCompany(), locale)
       }
       bulkDelete(glJournals, company)
    }
