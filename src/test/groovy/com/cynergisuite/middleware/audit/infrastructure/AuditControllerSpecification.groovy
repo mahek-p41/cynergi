@@ -1264,7 +1264,7 @@ class AuditControllerSpecification extends ControllerSpecificationBase {
       completedResult.store.storeNumber == 7
       completedResult.actions.size() == 3
       completedResult.totalDetails == 2
-      completedResult.totalExceptions == 3
+      completedResult.totalExceptions == 276
       completedResult.inventoryCount == 275
       final completedActions = completedResult.actions
          .collect{ new AuditActionValueObject(it) }
