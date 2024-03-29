@@ -367,6 +367,33 @@ class FinancialCalendarController @Inject constructor(
       return response ?: throw NoContentException()
    }
 
+   @Get(value = "/ap-dates-close", produces = [APPLICATION_JSON])
+   @Operation(tags = ["FinancialCalendarEndpoints"], summary = "Fetch the latest closed AP period date from beginDate", description = "Fetch the latest close AP period date from beginDate", operationId = "financialCalendar-fetchLatestClosedAPPeriodDate")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = LocalDate::class))]),
+         ApiResponse(responseCode = "204", description = "No closed AP period AP found from the given date"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchLatestClosedAPPeriodDate(
+      authentication: Authentication,
+      @Parameter(name = "beginDate", `in` = QUERY, required = true)
+      @Valid @QueryValue("beginDate")
+      beginDate: LocalDate,
+      httpRequest: HttpRequest<*>
+   ): LocalDate {
+      logger.info("Fetch the latest closed AP date from beginDate: {}", beginDate)
+
+      val user = userService.fetchUser(authentication)
+      val response = financialCalendarService.fetchLatestClosedAPPeriodDate(user.myCompany(), beginDate)
+
+      logger.debug("Fetch the latest closed AP period from beginDate resulted in {}", response)
+
+      return response ?: throw NoContentException()
+   }
+
    //Used to confirm whether or not both general_ledger_detail and general_ledger_summary are empty prior to creating a financial calendar
    @Throws(NotFoundException::class)
    @Get(value = "/gl-exist", produces = [APPLICATION_JSON])

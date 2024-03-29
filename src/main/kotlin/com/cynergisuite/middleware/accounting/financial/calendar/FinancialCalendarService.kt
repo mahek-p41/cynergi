@@ -121,4 +121,8 @@ class FinancialCalendarService @Inject constructor(
    private fun transformEntity(financialCalendarEntity: FinancialCalendarEntity): FinancialCalendarDTO {
       return FinancialCalendarDTO(financialCalendarEntity)
    }
+
+   fun fetchLatestClosedAPPeriodDate(myCompany: CompanyEntity, beginDate: LocalDate): LocalDate? {
+      return financialCalendarRepository.fetchLatestClosedAPPeriodDate(myCompany, beginDate)
+   }
 }

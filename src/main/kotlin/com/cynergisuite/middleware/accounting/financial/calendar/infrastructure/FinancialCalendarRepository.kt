@@ -800,5 +800,24 @@ class FinancialCalendarRepository @Inject constructor(
    ): LocalDate {
       return rs.getLocalDate("$columnPrefix")
    }
+
+   fun fetchLatestClosedAPPeriodDate(company: CompanyEntity, beginDate: LocalDate): LocalDate? {
+      val found = jdbc.query(
+         """
+            SELECT MAX(period_to) as period_to
+            FROM financial_calendar finCal
+               JOIN overall_period_type_domain overallPeriod ON overallPeriod.id = finCal.overall_period_id
+            WHERE company_id = :comp_id AND overallPeriod.value IN ('C','N') AND :date <= period_to AND account_payable_open = FALSE
+         """.trimIndent(),
+         mapOf(
+            "comp_id" to company.id,
+            "date" to beginDate
+         )
+      ) { rs, _ ->
+         mapDate(rs, "period_to")
+      }
+
+      return found.first()
+   }
 }
 
