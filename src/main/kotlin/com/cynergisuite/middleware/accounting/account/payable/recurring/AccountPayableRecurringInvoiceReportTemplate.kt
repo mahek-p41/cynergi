@@ -9,6 +9,6 @@ import io.swagger.v3.oas.annotations.media.Schema
 data class AccountPayableRecurringInvoiceReportTemplate(
 
    @field:Schema(description = "List of Invoices")
-   var invoices: MutableList<AccountPayableRecurringInvoiceEntity?> = mutableListOf()
+   var invoices: MutableList<AccountPayableRecurringInvoiceReportDTO?> = mutableListOf()
 
 )

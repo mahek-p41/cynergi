@@ -15,10 +15,12 @@ import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableRecurringInvoiceStatusType
 import com.cynergisuite.middleware.accounting.account.payable.infrastructure.AccountPayableRecurringInvoiceStatusTypeRepository
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceEntity
+import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceReportDTO
 import com.cynergisuite.middleware.accounting.account.payable.recurring.AccountPayableRecurringInvoiceReportTemplate
 import com.cynergisuite.middleware.accounting.account.payable.recurring.ExpenseMonthCreationType
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.schedule.ScheduleEntity
+import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import io.micronaut.transaction.annotation.ReadOnly
@@ -569,7 +571,7 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
          params)
       { rs, element ->
          do {
-             val tempInvoice = mapRow(rs, company,"apRecurringInvoice_")
+             val tempInvoice = mapRecInvReport(rs, company,"apRecurringInvoice_")
 
                         reportDTO.invoices.add(tempInvoice)
             reportDTO.invoices.sortWith(compareBy { it!!.vendor.number})
@@ -649,4 +651,27 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
          endDate = rs.getLocalDate("${columnPrefix}end_date")
       )
    }
+
+   private fun mapRecInvReport(
+      rs: ResultSet,
+      company: CompanyEntity,
+      columnPrefix: String = EMPTY
+   ): AccountPayableRecurringInvoiceReportDTO {
+      return AccountPayableRecurringInvoiceReportDTO(
+         id = rs.getUuid("${columnPrefix}id"),
+         vendor = VendorDTO(vendorRepository.mapRow(rs, company, "${columnPrefix}vendor_")),
+         invoice = rs.getString("${columnPrefix}invoice"),
+         message = rs.getString("${columnPrefix}message"),
+         amount = rs.getBigDecimal("${columnPrefix}invoice_amount"),
+         payTo = VendorDTO(vendorRepository.mapRow(rs, company, "${columnPrefix}payTo_")),
+         separateCheckIndicator = rs.getBoolean("${columnPrefix}separate_check_indicator"),
+         lastCreatedInPeriod = rs.getLocalDateOrNull("${columnPrefix}last_created_in_period"),
+         nextCreationDate = rs.getLocalDateOrNull("${columnPrefix}next_creation_date"),
+         nextInvoiceDate = rs.getLocalDateOrNull("${columnPrefix}next_invoice_date"),
+         nextExpenseDate = rs.getLocalDateOrNull("${columnPrefix}next_expense_date"),
+         startDate = rs.getLocalDate("${columnPrefix}start_date"),
+         endDate = rs.getLocalDate("${columnPrefix}end_date")
+      )
+   }
+
 }
