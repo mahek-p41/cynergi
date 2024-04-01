@@ -19,8 +19,8 @@ data class AccountPayableInvoiceMaintenanceDTO(
    var apInvoice: AccountPayableInvoiceDTO? = null,
 
    @field:NotNull
-   @field:Schema(name = "glDistribution", description = "Account Payable Distribution Template.", maxLength = 10)
-   var glDistribution: List<AccountPayableInvoiceDistributionDTO>? = null,
+   @field:Schema(name = "glDistributions", description = "List of Account Payable Invoice Distributions.", maxLength = 10)
+   var glDistributions: List<AccountPayableInvoiceDistributionDTO>? = null,
 
    @field:NotNull
    @field:Schema(name = "apInvoiceSchedule", description = "Account Payable Invoice Schedule.", maxLength = 10)

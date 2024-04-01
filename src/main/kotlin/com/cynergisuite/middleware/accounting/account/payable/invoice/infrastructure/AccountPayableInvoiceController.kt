@@ -584,10 +584,10 @@ class AccountPayableInvoiceController @Inject constructor(
    @Secured("APADD")
    @Post(value = "/maintenance/schedule", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Create a single Account Payable Invoice", description = "Create a single AccountPayableInvoice", operationId = "accountPayableInvoice-create")
+   @Operation(tags = ["AccountPayableInvoiceEndpoints"], summary = "Create an Account Payable Invoice Schedule", description = "Create an AccountPayableInvoiceSchedule", operationId = "AccountPayableInvoiceSchedule-create")
    @ApiResponses(
       value = [
-         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableInvoiceDTO::class))]),
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayableInvoiceScheduleDTO::class))]),
          ApiResponse(responseCode = "400", description = "If the request body is invalid"),
          ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
          ApiResponse(responseCode = "404", description = "The Account Payable Invoice was unable to be found"),
@@ -600,12 +600,12 @@ class AccountPayableInvoiceController @Inject constructor(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): List<AccountPayableInvoiceScheduleDTO> {
-      logger.debug("Requested Create Account Payable Invoice {}", dto)
+      logger.debug("Requested Create Account Payable Invoice Schedule {}", dto)
 
       val user = userService.fetchUser(authentication)
       val response = accountPayableInvoiceService.createSchedule(dto, user.myCompany())
 
-      logger.debug("Requested Create Account Payable Invoice {} resulted in {}", dto, response)
+      logger.debug("Requested Create Account Payable Invoice Schedule {} resulted in {}", dto, response)
 
       return response
    }

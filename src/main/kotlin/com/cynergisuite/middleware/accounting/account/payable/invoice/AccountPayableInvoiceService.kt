@@ -394,7 +394,7 @@ class AccountPayableInvoiceService @Inject constructor(
       }
 
       //for each invoice dist with template chosen, create ap invoice dist
-      var updatedDistsEntities = dto.glDistribution?.map {
+      var updatedDistsEntities = dto.glDistributions?.map {
          val account = accountRepository.findOne(it.account!!.id!!, company)
          val store = storeRepository.findOne(it.profitCenter!!.id!!, company)
          AccountPayableInvoiceDistributionEntity(
