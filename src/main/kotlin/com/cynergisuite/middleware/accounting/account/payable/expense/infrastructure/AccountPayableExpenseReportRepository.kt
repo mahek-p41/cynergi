@@ -142,9 +142,19 @@ class AccountPayableExpenseReportRepository @Inject constructor(
 
    @ReadOnly
    fun fetchReport(company: CompanyEntity, filterRequest: ExpenseReportFilterRequest): List<AccountPayableExpenseReportDTO> {
-      var reportData = mutableListOf<AccountPayableExpenseReportDTO>()
-      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val reportData = mutableListOf<AccountPayableExpenseReportDTO>()
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "beginDate" to filterRequest.beginDate, "endDate" to filterRequest.endDate)
       val whereClause = StringBuilder(" WHERE apExpense.company_id = :comp_id ")
+
+      whereClause.append(" AND ((apExpense.expense_date ")
+         .append(buildDateFilterString(filterRequest.beginDate, filterRequest.endDate, "beginDate", "endDate")).append(")")
+         .append(" OR (apExpense.date_voided ")
+         .append(buildDateFilterString(filterRequest.beginDate, filterRequest.endDate, "beginDate", "endDate")).append(")")
+         .append(" OR (InvoiceAndPayment.payment_date ")
+         .append(buildDateFilterString(filterRequest.beginDate, filterRequest.endDate, "beginDate", "endDate")).append(" AND InvoiceAndPayment.pmt_dist_amount != 0)")
+         .append(" OR (InvoiceAndPayment.date_voided ")
+         .append(buildDateFilterString(filterRequest.beginDate, filterRequest.endDate, "beginDate", "endDate")).append(" AND invStatus.value = 'V')").append(")")
+
 
       if (filterRequest.beginAcct != null && filterRequest.endAcct != null) {
          params["beginAcct"] = filterRequest.beginAcct
@@ -165,19 +175,6 @@ class AccountPayableExpenseReportRepository @Inject constructor(
          params["endVenGr"] = filterRequest.endVenGr
          whereClause.append(" AND vgrp.value ")
             .append(buildNumberFilterString("beginVenGr", "endVenGr"))
-      }
-
-      if (filterRequest.beginDate != null || filterRequest.endDate != null) {
-         params["beginDate"] = filterRequest.beginDate
-         params["endDate"] = filterRequest.endDate
-         whereClause.append(" AND ((apExpense.expense_date ")
-            .append(buildDateFilterString(filterRequest.beginDate, filterRequest.endDate, "beginDate", "endDate")).append(")")
-            .append(" OR (apExpense.date_voided ")
-            .append(buildDateFilterString(filterRequest.beginDate, filterRequest.endDate, "beginDate", "endDate")).append(")")
-            .append(" OR (InvoiceAndPayment.payment_date ")
-            .append(buildDateFilterString(filterRequest.beginDate, filterRequest.endDate, "beginDate", "endDate")).append(" AND InvoiceAndPayment.pmt_dist_amount != 0)")
-            .append(" OR (InvoiceAndPayment.date_voided ")
-            .append(buildDateFilterString(filterRequest.beginDate, filterRequest.endDate, "beginDate", "endDate")).append(" AND invStatus.value = 'V')").append(")")
       }
 
       filterRequest.invStatus?.let {

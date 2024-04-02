@@ -343,8 +343,10 @@ class GeneralLedgerJournalRepository @Inject constructor(
 
    @Transactional
    fun bulkDelete(dtoList: List<GeneralLedgerJournalEntity>, company: CompanyEntity) {
-      logger.debug("Deleting GeneralLedgerJournal with id={}")
+      if (dtoList.isEmpty()) return
+
       val idList = dtoList.map { it.id }
+      logger.debug("Deleting GeneralLedgerJournals with ids={}", idList)
 
       val rowsAffected = jdbc.update(
          """
