@@ -9,6 +9,7 @@ import com.cynergisuite.domain.SimpleLegacyIdentifiableDTO
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.domain.infrastructure.SimpleTransactionalSql
+import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceSelectedTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.AccountPayableInvoiceStatusType
@@ -21,7 +22,9 @@ import com.cynergisuite.middleware.accounting.account.payable.distribution.Accou
 import com.cynergisuite.middleware.accounting.account.payable.distribution.AccountPayableDistributionTemplateDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDataLoaderService
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDistributionDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceMaintenanceDTO
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceScheduleDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDataLoaderService
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentDetailDataLoaderService
@@ -33,6 +36,7 @@ import com.cynergisuite.middleware.employee.EmployeeValueObject
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
+import com.cynergisuite.middleware.store.StoreDTO
 import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.vendor.VendorDTO
 import com.cynergisuite.middleware.vendor.VendorTestDataLoaderService
@@ -40,6 +44,7 @@ import com.cynergisuite.middleware.vendor.payment.term.VendorPaymentTermTestData
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
+import org.eclipse.collections.api.list.MutableList
 import spock.lang.Unroll
 
 import java.time.LocalDate
@@ -1098,7 +1103,6 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       'paidAmount'                     || 'paidAmount'
       'type'                           || 'type'
       'status'                         || 'status'
-      'dueDate'                        || 'dueDate'
       'payTo'                          || 'payTo'
       'useTaxIndicator'                || 'useTaxIndicator'
    }
@@ -1420,7 +1424,6 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       'paidAmount'                     || 'paidAmount'
       'type'                           || 'type'
       'status'                         || 'status'
-      'dueDate'                        || 'dueDate'
       'payTo'                          || 'payTo'
       'useTaxIndicator'                || 'useTaxIndicator'
       }
@@ -1717,11 +1720,35 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       def apPaymentDetails = apPaymentDetailDataLoaderService.stream(5, company, vendorIn, existingAPInvoice, apPayments[0], 200, 0.00).toList()
       apPaymentDetails.addAll(apPaymentDetailDataLoaderService.stream(5, company, vendorIn, existingAPInvoice, apPayments[1], 200, 0.00).toList())
 
-      def template = apDistTemplateDataLoaderService.single(company)
-      def apDistribution = apDistDetailDataLoaderService.single(store, account, company, template)
-      def templateDTO = new AccountPayableDistributionTemplateDTO(template)
-      def apPaymentDTO = new AccountPayablePaymentDTO(apPayments[0])
-      def invMaintDTO = new AccountPayableInvoiceMaintenanceDTO(existingAPInvoiceDTO, apPaymentDTO, templateDTO, null)
+      def glDistribution1 = new AccountPayableInvoiceDistributionDTO(
+         null,
+         existingAPInvoice.id,
+         new AccountDTO(account),
+         new StoreDTO(store),
+         1000.00
+      )
+
+      def glDistribution2 = new AccountPayableInvoiceDistributionDTO(
+         null,
+         existingAPInvoice.id,
+         new AccountDTO(account),
+         new StoreDTO(store),
+         1000.00
+      )
+       List<AccountPayableInvoiceScheduleDTO> schedule = new ArrayList<>()
+       schedule.add(new AccountPayableInvoiceScheduleDTO(
+         null,
+         existingAPInvoice.id,
+         company.id,
+         LocalDate.now(),
+         1,
+         1000.00,
+         null, null, null, null, false, false
+      ))
+      List<AccountPayableInvoiceDistributionDTO> glDistributions = new ArrayList<>()
+      glDistributions.add(glDistribution1)
+      glDistributions.add(glDistribution2)
+      def invMaintDTO = new AccountPayableInvoiceMaintenanceDTO(existingAPInvoiceDTO, glDistributions, schedule)
 
       when:
       def result = post("$path/maintenance", invMaintDTO)
