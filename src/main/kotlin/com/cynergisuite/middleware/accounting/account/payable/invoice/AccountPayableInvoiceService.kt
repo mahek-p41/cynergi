@@ -406,7 +406,7 @@ class AccountPayableInvoiceService @Inject constructor(
          )
       }
 
-      updatedDistsEntities = accountPayableInvoiceDistributionRepository.updateDistributions(invoice.id!!, updatedDistsEntities!!)
+      updatedDistsEntities = accountPayableInvoiceDistributionRepository.updateDistributions(updatedInvoice.id!!, updatedDistsEntities!!)
       val updatedDistDTOS = updatedDistsEntities.map{
          val account = accountRepository.findOne(it.accountId, company)
          val store = storeRepository.findOne(it.profitCenter, company)

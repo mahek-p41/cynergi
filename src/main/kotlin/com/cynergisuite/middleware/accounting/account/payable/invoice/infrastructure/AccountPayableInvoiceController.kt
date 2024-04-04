@@ -552,6 +552,7 @@ class AccountPayableInvoiceController @Inject constructor(
       logger.debug("Requested Create Account Payable Invoice {}", dto)
 
       val user = userService.fetchUser(authentication)
+      dto.apInvoice?.employee = EmployeeValueObject(employeeService.fetchOne(user.myId(), user.myCompany()))
       val response = accountPayableInvoiceService.maintenance(dto, user.myCompany())
 
       logger.debug("Requested Create Account Payable Invoice {} resulted in {}", dto, response)
