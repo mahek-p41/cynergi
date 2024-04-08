@@ -4,13 +4,17 @@ import com.cynergisuite.domain.AccountPayableCheckPreviewFilterRequest
 import com.cynergisuite.extensions.getBigDecimalOrNull
 import com.cynergisuite.extensions.getIntOrNull
 import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.sumByBigDecimal
+import com.cynergisuite.middleware.accounting.account.payable.check.AccountPayableVoidCheckDTO
+import com.cynergisuite.middleware.accounting.account.payable.check.infrastructure.AccountPayableVoidCheckFilterRequest
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewEntity
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewInvoiceEntity
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableCheckPreviewVendorsEntity
+import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.infrastructure.AccountPayableInvoiceRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
@@ -24,11 +28,13 @@ import org.slf4j.LoggerFactory
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.sql.ResultSet
+import javax.transaction.Transactional
 
 @Singleton
 class AccountPayableCheckPreviewRepository @Inject constructor(
    private val jdbc: Jdbi,
    private val vendorRepository: VendorRepository,
+   private val accountPayableInvoiceRepository: AccountPayableInvoiceRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(AccountPayableInvoiceRepository::class.java)
 
@@ -85,6 +91,8 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
 
             pmt.payment_number                                          AS apPayment_number,
             pmt.payment_date                                            AS apPayment_payment_date,
+            pmt.account_payable_payment_status_id                       AS apPayment_status_id,
+            pmt.date_cleared                                            AS apPayment_date_cleared,
             pmtDetail.id                                                AS apPayment_detail_id,
             pmtDetail.amount                                            AS apPayment_detail_amount,
             bank.id                                                     AS apInvoice_bank_id,
@@ -207,6 +215,50 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
       return AccountPayableCheckPreviewEntity(previewDetails, gross, discount, deduction, netPaid)
    }
 
+   @Transactional
+   fun voidCheck(company: CompanyEntity, filterRequest: AccountPayableVoidCheckFilterRequest): AccountPayableVoidCheckDTO {
+      var currentVendor: AccountPayableVoidCheckDTO? = null
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id)
+      val sortBy = StringBuilder("ORDER BY ")
+      val whereClause = StringBuilder(
+         "WHERE apInvoice.company_id = :comp_id "
+      )
+
+      if (filterRequest.bank != null) {
+         params["bank"] = filterRequest.bank
+         whereClause.append("AND bank.number = :bank ")
+      }
+
+      if (filterRequest.checkNumber != null) {
+         params["checkNumber"] = filterRequest.checkNumber
+         whereClause.append("AND pmt.payment_number = :checkNumber ")
+      }
+
+      jdbc.query(
+         """
+            ${selectBaseQuery()}
+            $whereClause
+         """.trimIndent(),
+         params
+      )
+      { rs, elements ->
+         do {
+            val tempVendor = if (currentVendor?.vendorNumber != rs.getIntOrNull("apInvoice_payTo_number")) {
+               val localVendor = mapVoidCheck(rs)
+               currentVendor = localVendor
+
+               localVendor
+            } else {
+               currentVendor
+            }
+            accountPayableInvoiceRepository.mapRow(rs, company, "apInvoice_").let {
+               tempVendor!!.invoices ?.add(AccountPayableInvoiceDTO(it))
+            }
+         } while (rs.next())
+      }
+      return currentVendor!!
+   }
+
    fun mapRow(
       rs: ResultSet,
       company: CompanyEntity,
@@ -272,4 +324,19 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
          Boolean::class.java
       )
    }
+
+   private fun mapVoidCheck(rs: ResultSet,): AccountPayableVoidCheckDTO {
+      return AccountPayableVoidCheckDTO(
+         vendorNumber = rs.getInt("apInvoice_payTo_number"),
+         vendorName = rs.getString("apInvoice_payTo_name"),
+         bankId = rs.getUuid("apInvoice_bank_id"),
+         checkNumber = rs.getString("apPayment_number"),
+         amount = rs.getBigDecimal("apPayment_detail_amount"),
+         paymentStatus = rs.getIntOrNull("apPayment_status_id"),
+         dateCleared = rs.getLocalDateOrNull("apPayment_date_cleared"),
+         date = rs.getLocalDate("apPayment_payment_date"),
+         effectiveDate = null,
+      )
+   }
+
 }

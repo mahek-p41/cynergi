@@ -90,6 +90,8 @@ class AuditExceptionHasNotBeenApproved(auditExceptionId: UUID) : Cynergi("cynerg
 class AuditDueToday(auditNumber: Int) : Cynergi("cynergi.audit.due.today", arrayOf(auditNumber))
 class AuditPastDue(auditNumber: Int) : Cynergi("cynergi.audit.past.due", arrayOf(auditNumber))
 class CheckInUse(): Cynergi("cynergi.validation.check.in.use", emptyArray())
+class CheckCleared(): Cynergi("cynergi.validation.check.cleared", emptyArray())
+class CheckVoided(): Cynergi("cynergi.validation.check.voided", emptyArray())
 class AccountInUse(): Cynergi("cynergi.validation.account.in.use.by.another.bank", emptyArray())
 
 class VendorPaymentTermDuePercentDoesNotAddUp(percent: String) : Cynergi("vendor.payment.term.does.not.add.up", arrayOf(percent))
