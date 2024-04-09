@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.recurring
 
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
+import com.cynergisuite.domain.AccountPayableRecurringInvoiceReportFilterRequest
 import com.cynergisuite.domain.AccountPayableRecurringInvoiceTransferFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.Page
@@ -67,7 +68,7 @@ class AccountPayableRecurringInvoiceService @Inject constructor(
       }
    }
 
-   fun fetchReport(company: CompanyEntity, filterRequest: InvoiceReportFilterRequest): AccountPayableRecurringInvoiceReportTemplate {
+   fun fetchReport(company: CompanyEntity, filterRequest: AccountPayableRecurringInvoiceReportFilterRequest): AccountPayableRecurringInvoiceReportTemplate {
       return accountPayableRecurringInvoiceRepository.fetchReport(company, filterRequest)
    }
 

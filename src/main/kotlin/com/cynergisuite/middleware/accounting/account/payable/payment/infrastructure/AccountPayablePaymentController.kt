@@ -131,7 +131,7 @@ class AccountPayablePaymentController @Inject constructor(
 
    @Throws(NotFoundException::class)
    @Get(value = "/bank-payment{?filterRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["AccountPayablePaymentEndpoints"], summary = "Fetch a single Account Payable Payment", description = "Fetch a single Account Payable Payment by its system generated primary key", operationId = "accountPayablePayment-fetchOne")
+   @Operation(tags = ["AccountPayablePaymentEndpoints"], summary = "Fetch an Account Payable Payment by bank and payment number", description = "Fetch an Account Payable Payment by bank and payment number", operationId = "accountPayablePayment-fetchByBankAndPaymentNumber")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = AccountPayablePaymentDTO::class))]),

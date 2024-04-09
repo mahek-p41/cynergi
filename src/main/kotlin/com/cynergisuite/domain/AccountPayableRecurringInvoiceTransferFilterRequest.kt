@@ -5,9 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema
 import java.time.LocalDate
 
 @Schema(
-   name = "AccountPayableInvoiceListByVendorFilterRequest",
-   title = "Account Payable Invoice List By Vendor Filter Request",
-   description = "Filter request for Account Payable Invoice List By Vendor",
+   name = "AccountPayableRecurringInvoiceTransferFilterRequest",
+   title = "Account Payable Recurring Invoice Transfer Filter Request",
+   description = "Filter request for Account Payable Recurring Invoice Transfer",
    allOf = [PageRequestBase::class]
 )
 @Introspected

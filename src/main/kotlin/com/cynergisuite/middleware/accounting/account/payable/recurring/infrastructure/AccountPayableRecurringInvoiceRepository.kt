@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure
 
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
+import com.cynergisuite.domain.AccountPayableRecurringInvoiceReportFilterRequest
 import com.cynergisuite.domain.AccountPayableRecurringInvoiceTransferFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.PageRequest
@@ -607,15 +608,31 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
    }
 
    @ReadOnly
-   fun fetchReport(company: CompanyEntity, filterRequest: InvoiceReportFilterRequest): AccountPayableRecurringInvoiceReportTemplate {
+   fun fetchReport(company: CompanyEntity, filterRequest: AccountPayableRecurringInvoiceReportFilterRequest): AccountPayableRecurringInvoiceReportTemplate {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id)
       val reportDTO = AccountPayableRecurringInvoiceReportTemplate()
       val whereClause = StringBuilder(" WHERE apRecurringInvoice.company_id = :comp_id ")
+      val sortBy = StringBuilder("ORDER BY ")
+
+      if (filterRequest.beginVendor != null || filterRequest.endVendor!= null) {
+         params["beginVendor"] = filterRequest.beginVendor
+         params["endVendor"] = filterRequest.endVendor
+         whereClause.append(" AND vendor.v_number")
+            .append(buildFilterString(filterRequest.beginVendor != null, filterRequest.endVendor != null, "beginVendor", "endVendor"))
+      }
+
+      if (filterRequest.sortBy == "V"){
+         sortBy.append("vendor.v_name")
+      }
+      if (filterRequest.sortBy == "N") {
+         sortBy.append("vendor.v_number")
+      }
+
       jdbc.query(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY vendor.v_number, apRecurringInvoice.invoice
+            $sortBy, apRecurringInvoice.invoice
          """.trimIndent(),
          params)
       { rs, element ->

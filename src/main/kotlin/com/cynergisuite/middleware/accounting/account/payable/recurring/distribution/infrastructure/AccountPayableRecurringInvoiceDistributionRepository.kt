@@ -46,8 +46,8 @@ class AccountPayableRecurringInvoiceDistributionRepository @Inject constructor(
    }
 
    @Transactional
-   fun insert(dto: AccountPayableRecurringInvoiceDistributionEntity, company: CompanyEntity): AccountPayableRecurringInvoiceDistributionEntity {
-      logger.debug("Inserting account_payable_recurring_invoice_distribution {}", dto)
+   fun insert(entity: AccountPayableRecurringInvoiceDistributionEntity, company: CompanyEntity): AccountPayableRecurringInvoiceDistributionEntity {
+      logger.debug("Inserting account_payable_recurring_invoice_distribution {}", entity)
       return jdbc.insertReturning(
          """
          INSERT INTO account_payable_recurring_invoice_distribution (
@@ -64,10 +64,10 @@ class AccountPayableRecurringInvoiceDistributionRepository @Inject constructor(
          RETURNING *
          """.trimIndent(),
          mapOf(
-            "invoiceId" to dto.invoiceId,
-            "accountId" to dto.accountId,
-            "profitCenter" to dto.profitCenter,
-            "amount" to dto.amount
+            "invoiceId" to entity.invoiceId,
+            "accountId" to entity.accountId,
+            "profitCenter" to entity.profitCenter,
+            "amount" to entity.amount
          )
       ) { rs, _ -> mapRow(rs) }
    }

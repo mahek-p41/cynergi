@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.payable.recurring.infrastructure
 
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
+import com.cynergisuite.domain.AccountPayableRecurringInvoiceReportFilterRequest
 import com.cynergisuite.domain.AccountPayableRecurringInvoiceTransferFilterRequest
 import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.Page
@@ -154,7 +155,7 @@ class AccountPayableRecurringInvoiceController @Inject constructor(
    fun fetchReport(
       @Parameter(name = "filterRequest", `in` = QUERY, required = false)
       @Valid @QueryValue("filterRequest")
-      filterRequest: InvoiceReportFilterRequest,
+      filterRequest: AccountPayableRecurringInvoiceReportFilterRequest,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): AccountPayableRecurringInvoiceReportTemplate {
