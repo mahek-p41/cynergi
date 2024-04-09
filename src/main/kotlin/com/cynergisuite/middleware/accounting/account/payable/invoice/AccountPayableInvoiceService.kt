@@ -241,7 +241,7 @@ class AccountPayableInvoiceService @Inject constructor(
 
          for (schedule in scheduleList) {
             //check if payment already exists for this bank or payment number
-            val bank = bankRepository.findOne(schedule.bank!!, company)
+            val bank = schedule.bank?.let { bankRepository.findOne(it, company) }
             val payment = if (schedule.bank !=null && schedule.externalPaymentNumber != null) accountPayablePaymentRepository.findPaymentByBankAndNumber(bank!!.number, schedule.externalPaymentNumber!!, company) else null
             val appt = schedule.externalPaymentTypeId?.let {appttRepository.findOne(schedule.externalPaymentTypeId!!.value) }
             if (payment != null) {
