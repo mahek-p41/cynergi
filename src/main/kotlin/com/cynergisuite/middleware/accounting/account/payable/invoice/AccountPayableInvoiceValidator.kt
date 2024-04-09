@@ -50,7 +50,7 @@ class AccountPayableInvoiceValidator @Inject constructor(
       val type = typeRepository.findOne(dto.type!!.value)
       val status = statusRepository.findOne(dto.status!!.value)
       val payTo = vendorRepository.findOne(dto.payTo!!.id!!, company)
-      val location = dto.location?.id?.let { storeRepository.findOne(it, company) }
+      val location = dto.location?.id?.let { storeRepository.findOne(it.toInt(), company) }
 
       doValidation { errors ->
          // non-nullable validations

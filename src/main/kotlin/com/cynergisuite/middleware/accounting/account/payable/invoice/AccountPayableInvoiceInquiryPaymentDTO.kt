@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice
 
+import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentStatusTypeDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import io.micronaut.core.annotation.Introspected
@@ -35,6 +36,10 @@ data class AccountPayableInvoiceInquiryPaymentDTO(
 
    @field:NotNull
    @field:Schema(description = "Account payable invoice original invoice amount")
-   var originalAmt: BigDecimal? = null
+   var originalAmt: BigDecimal? = null,
+
+   @field:NotNull
+   @field:Schema(description = "Account payable invoice status")
+   var status: String? = null
 
 )

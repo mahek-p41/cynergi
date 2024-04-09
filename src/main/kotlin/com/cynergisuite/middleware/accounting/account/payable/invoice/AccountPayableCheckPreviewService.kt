@@ -48,7 +48,7 @@ class AccountPayableCheckPreviewService @Inject constructor(
 
    fun voidCheck(company: CompanyEntity, dto: AccountPayableVoidCheckDTO) {
 
-      if (dto.paymentStatus == 2) {
+      if (dto.paymentStatus == "V") {
          val errors: Set<ValidationError> = mutableSetOf(ValidationError("Check already voided", CheckVoided()))
          throw ValidationException(errors)
       }

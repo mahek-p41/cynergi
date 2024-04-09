@@ -2,12 +2,14 @@ package com.cynergisuite.middleware.accounting.account.payable.check
 
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDTO
 import com.fasterxml.jackson.annotation.JsonView
+import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
 import javax.validation.constraints.NotNull
 
+@Introspected
 @JsonView
 @Schema(name = "AccountPayableVoidCheck", title = "Account Payable Void Check", description = "Account Payable Void Check")
 data class AccountPayableVoidCheckDTO(
@@ -34,9 +36,8 @@ data class AccountPayableVoidCheckDTO(
 
    @field:NotNull
    @field:Schema(description = "Payment Status")
-   var paymentStatus: Int? = null,
+   var paymentStatus: String? = null,
 
-   @field:NotNull
    @field:Schema(description = "Date Cleared")
    var dateCleared: LocalDate? = null,
 

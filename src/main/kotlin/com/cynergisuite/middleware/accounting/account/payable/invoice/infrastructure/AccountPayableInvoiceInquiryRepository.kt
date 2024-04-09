@@ -166,12 +166,14 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
                pmtDetail.amount                    AS pmtDetail_amount,
                pmt.payment_date                    AS payment_date,
                pmt.amount                          AS payment_amount,
+               status.value                          AS payment_status,
                apInvoice.original_invoice_amount   AS apInvoice_original_amount
             FROM account_payable_payment_detail pmtDetail
                JOIN account_payable_payment pmt ON pmtDetail.payment_number_id = pmt.id
+               JOIN account_payable_payment_status_type_domain status ON pmt.account_payable_payment_status_id = status.id
                JOIN account_payable_invoice apInvoice ON pmtDetail.account_payable_invoice_id = apInvoice.id and apInvoice.deleted = false
                JOIN bank ON pmt.bank_id = bank.id AND bank.deleted = FALSE
-            WHERE apInvoice.id = :apInvoiceId AND pmt.account_payable_payment_status_id = 1
+            WHERE apInvoice.id = :apInvoiceId
             ORDER BY bank.number ASC, pmt.payment_number ASC
          """.trimIndent(),
          mapOf("apInvoiceId" to apInvoiceId)
@@ -273,7 +275,8 @@ class AccountPayableInvoiceInquiryRepository @Inject constructor(
          paid = rs.getBigDecimal("pmtDetail_amount"),
          date = rs.getLocalDate("payment_date"),
          paymentAmt = rs.getBigDecimal("payment_amount"),
-         originalAmt = rs.getBigDecimal("apInvoice_original_amount")
+         originalAmt = rs.getBigDecimal("apInvoice_original_amount"),
+         status = rs.getString("payment_status")
       )
    }
 
