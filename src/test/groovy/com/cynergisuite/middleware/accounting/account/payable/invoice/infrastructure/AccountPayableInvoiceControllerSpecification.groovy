@@ -860,7 +860,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "create one" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
-      final StoreEntity store = storeFactoryService.store(3, company) as StoreEntity
+      final StoreEntity store = storeFactoryService.store(9000, company) as StoreEntity
       final vendorPaymentTermList = vendorPaymentTermTestDataLoaderService.stream(4, company).toList()
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
@@ -891,7 +891,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
          new PurchaseOrderDTO(purchaseOrderIn),
          new EmployeeValueObject(employeeIn),
          new VendorDTO(payToIn),
-         new SimpleLegacyIdentifiableDTO(store.myId())
+         new SimpleLegacyIdentifiableDTO(store.myNumber())
       )
 
       when:
@@ -1163,7 +1163,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       'selected'        | new AccountPayableInvoiceSelectedTypeDTO('Z', 'Invalid DTO')                       || 'selected.value'   | 'system.not.found'                                | "Z was unable to be found"
       'type'            | new AccountPayableInvoiceTypeDTO('Z', 'Invalid DTO')                               || 'type.value'       | 'system.not.found'                                | "Z was unable to be found"
       'status'          | new AccountPayableInvoiceStatusTypeDTO('Z', 'Invalid DTO')                         || 'status.value'     | 'system.not.found'                                | "Z was unable to be found"
-      'location'        | new SimpleLegacyIdentifiableDTO(0)                                                 || 'location.id'      | 'system.not.found'                                | "0 was unable to be found"
+      'location'        | new SimpleLegacyIdentifiableDTO(99)                                                 || 'location.id'      | 'system.not.found'                                | "99 was unable to be found"
       'discountPercent' | -0.1212345                                                                         || 'discountPercent'  | 'javax.validation.constraints.DecimalMin.message' | 'must be greater than or equal to value'
       'discountPercent' | 0.12123456                                                                         || 'discountPercent'  | 'javax.validation.constraints.Digits.message'     | '0.12123456 is out of range for discountPercent'
       'discountPercent' | 1                                                                                  || 'discountPercent'  | 'javax.validation.constraints.DecimalMax.message' | 'must be less than or equal to value'
@@ -1486,7 +1486,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       'selected'      | new AccountPayableInvoiceSelectedTypeDTO('Z', 'Invalid DTO')                       || 'selected.value'   | "Z was unable to be found"
       'type'          | new AccountPayableInvoiceTypeDTO('Z', 'Invalid DTO')                               || 'type.value'       | "Z was unable to be found"
       'status'        | new AccountPayableInvoiceStatusTypeDTO('Z', 'Invalid DTO')                         || 'status.value'     | "Z was unable to be found"
-      'location'      | new SimpleLegacyIdentifiableDTO(0)                                                 || 'location.id'      | "0 was unable to be found"
+      'location'      | new SimpleLegacyIdentifiableDTO(99)                                                 || 'location.id'      | "99 was unable to be found"
    }
 
    void "fetch check preview" () {

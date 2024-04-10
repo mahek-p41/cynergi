@@ -509,7 +509,7 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
          invoiceNumber = rs.getString("${columnPrefix}invoice"),
          date = rs.getLocalDate("${columnPrefix}invoice_date"),
          dueDate = rs.getLocalDate("${columnPrefix}due_date"),
-         poNumber = rs.getInt("${columnPrefix}po_number"),
+         poNumber = rs.getInt("${columnPrefix}purchase_order_number"),
          gross = gross,
          discount = discount,
          deduction = BigDecimal.ZERO,

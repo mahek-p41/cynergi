@@ -82,7 +82,7 @@ class AccountPayableInvoiceValidator @Inject constructor(
          type!!,
          status!!,
          payTo!!,
-         location?.let { SimpleLegacyIdentifiableEntity(it.id) }
+         location?.let { SimpleLegacyIdentifiableEntity(it.number) }
       )
    }
 }

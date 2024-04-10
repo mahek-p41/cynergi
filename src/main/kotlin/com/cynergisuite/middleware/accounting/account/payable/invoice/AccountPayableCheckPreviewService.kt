@@ -10,6 +10,7 @@ import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPay
 import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPayablePaymentStatusTypeDTO
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentRepository
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentStatusTypeRepository
+import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure.BankReconciliationRepository
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastructure.BankReconciliationTypeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
@@ -30,7 +31,8 @@ class AccountPayableCheckPreviewService @Inject constructor(
    private val bankReconciliationRepository: BankReconciliationRepository,
    private val accountPayableInvoiceService: AccountPayableInvoiceService,
    private val accountPayablePaymentService: AccountPayablePaymentService,
-   private val bankReconciliationTypeRepository: BankReconciliationTypeRepository
+   private val bankReconciliationTypeRepository: BankReconciliationTypeRepository,
+   private val bankRepository: BankRepository
 ) {
 
    fun checkPreview(company: CompanyEntity, filterRequest: AccountPayableCheckPreviewFilterRequest): AccountPayableCheckPreviewDTO {
@@ -57,11 +59,12 @@ class AccountPayableCheckPreviewService @Inject constructor(
          val errors: Set<ValidationError> = mutableSetOf(ValidationError("Check already cleared, cannot be voided", CheckCleared()))
          throw ValidationException(errors)
       }
+      val bank = bankRepository.findOne(dto.bankId, company)
 
       //update ap payment, date voided, status voided
       val voidStatus = accountPayablePaymentStatusTypeRepository.findOne("V")
          ?.let { AccountPayablePaymentStatusTypeDTO(it) }
-      val payment = accountPayablePaymentRepository.findPaymentByBankAndNumber(dto.bankId, dto.checkNumber, company)
+      val payment = accountPayablePaymentRepository.findPaymentByBankAndNumber(bank!!.number, dto.checkNumber, company)
          ?.let { AccountPayablePaymentDTO(it) }
 
       payment?.status = voidStatus!!
