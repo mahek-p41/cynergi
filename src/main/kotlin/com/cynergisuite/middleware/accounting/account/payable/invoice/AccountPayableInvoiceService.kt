@@ -35,7 +35,15 @@ import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankRecon
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastructure.BankReconciliationTypeRepository
 import com.cynergisuite.middleware.accounting.general.ledger.control.infrastructure.GeneralLedgerControlRepository
 import com.cynergisuite.middleware.company.CompanyEntity
+import com.cynergisuite.middleware.inventory.InventoryDTO
+import com.cynergisuite.middleware.inventory.InventoryEntity
+import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
+import com.cynergisuite.middleware.inventory.location.InventoryLocationType
+import com.cynergisuite.middleware.inventory.location.InventoryLocationTypeValueObject
+import com.cynergisuite.middleware.location.Location
+import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreDTO
+import com.cynergisuite.middleware.store.StoreEntity
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository
 import com.cynergisuite.middleware.vendor.infrastructure.VendorRepository
 import com.cynergisuite.middleware.vendor.payment.term.infrastructure.VendorPaymentTermRepository
@@ -72,7 +80,8 @@ class AccountPayableInvoiceService @Inject constructor(
    private val accountPayableDistributionDetailRepository: AccountPayableDistributionDetailRepository,
    private val vendorPaymentTermRepository: VendorPaymentTermRepository,
    private val accountPayablePaymentDetailRepository: AccountPayablePaymentDetailRepository,
-   private val bankReconTypeRepository: BankReconciliationTypeRepository
+   private val bankReconTypeRepository: BankReconciliationTypeRepository,
+   private val inventoryRepository: InventoryRepository
 ) {
 
    fun fetchById(id: UUID, company: CompanyEntity): AccountPayableInvoiceDTO? =
@@ -380,7 +389,7 @@ class AccountPayableInvoiceService @Inject constructor(
          }
       }
       val updatedInvoice: AccountPayableInvoiceEntity
-      if (invoice.id != null) {
+      if (invoice.id != null && accountPayableInvoiceRepository.findOne(invoice.id!!, company) != null) {
          val toUpdate = accountPayableInvoiceValidator.validateUpdate(invoice.id!!, invoice, company)
          updatedInvoice = accountPayableInvoiceRepository.update(toUpdate, company)
       } else {
@@ -393,6 +402,7 @@ class AccountPayableInvoiceService @Inject constructor(
       }
 
       //for each invoice dist with template chosen, create ap invoice dist
+      //check values match
       var updatedDistsEntities = dto.glDistributions?.map {
          val account = accountRepository.findOne(it.account!!.id!!, company)
          val store = storeRepository.findOne(it.profitCenter!!.id!!, company)
@@ -431,7 +441,20 @@ class AccountPayableInvoiceService @Inject constructor(
          oldSchedule
       }
       val scheduleDTO = updatedSchedule.map { AccountPayableInvoiceScheduleDTO(it)}
-      val updatedInvoiceMaintenanceDTO = AccountPayableInvoiceMaintenanceDTO(updatedInvoiceDTO, updatedDistDTOS, scheduleDTO.toMutableList())
+
+      //attach inventory to invoice
+      val updatedInventory: List<InventoryEntity>
+      if (dto.apInvoice!!.type!!.value == "P") {
+         updatedInventory = dto.inventory!!.map {
+            val storeEntity = storeRepository.findOne(it.location!!.id!!, company)
+            val locationType = inventoryRepository.findLocationTypeByValue(it.locationType.value)
+            it.invoiceId = updatedInvoice.id
+            inventoryRepository.update(InventoryEntity(it, storeEntity!!, storeEntity, locationType), company)
+         }
+      } else updatedInventory = emptyList()
+      val updatedInventoryDTOList = updatedInventory.map { InventoryDTO(it, InventoryLocationTypeValueObject(it.locationType.value)) }.toMutableList()
+
+      val updatedInvoiceMaintenanceDTO = AccountPayableInvoiceMaintenanceDTO(updatedInvoiceDTO, updatedDistDTOS, scheduleDTO.toMutableList(), updatedInventoryDTOList)
       return updatedInvoiceMaintenanceDTO
    }
 

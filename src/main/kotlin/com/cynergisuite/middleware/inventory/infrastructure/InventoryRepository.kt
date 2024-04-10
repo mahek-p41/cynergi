@@ -1,6 +1,7 @@
 package com.cynergisuite.middleware.inventory.infrastructure
 
 import com.cynergisuite.domain.InventoryInquiryFilterRequest
+import com.cynergisuite.domain.InventoryInvoiceFilterRequest
 import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
@@ -8,15 +9,15 @@ import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getBigDecimalOrNull
 import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
+import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.query
 import com.cynergisuite.extensions.queryForObject
 import com.cynergisuite.extensions.queryPaged
 import com.cynergisuite.extensions.update
 import com.cynergisuite.middleware.audit.AuditEntity
-import com.cynergisuite.middleware.audit.status.Created
-import com.cynergisuite.middleware.audit.status.InProgress
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.infrastructure.CompanyRepository
+import com.cynergisuite.middleware.inventory.AssociateInventoryToInvoiceDTO
 import com.cynergisuite.middleware.inventory.InventoryEntity
 import com.cynergisuite.middleware.inventory.InventoryInquiryDTO
 import com.cynergisuite.middleware.inventory.location.InventoryLocationType
@@ -65,10 +66,14 @@ class InventoryRepository(
       i.condition                   AS condition,
       i.returned_date               AS returned_date,
       i.status                      AS status,
-      i.dataset                     AS dataset
+      i.dataset                     AS dataset,
+      i.inv_purchase_order_number   AS po_number,
+      i.invoice_number              AS invoice_number,
+      i.invoice_id                  AS invoice_id,
+      count(*) OVER() AS total_elements
       """.trimIndent()
 
-   val selectCompanyAndAddress = 
+   val selectCompanyAndAddress =
       """
       comp.id                  AS comp_id,
       comp.time_created        AS comp_time_created,
@@ -209,6 +214,32 @@ class InventoryRepository(
    }
 
    @ReadOnly
+   fun findLocationTypeByValue(value: String): InventoryLocationType {
+      logger.debug("Finding Inventory Location Type Domain key with {}", value)
+
+      return jdbc.findFirstOrNull(
+         """
+         SELECT
+            id,
+            value,
+            description,
+            localization_code
+         FROM inventory_location_type_domain
+         WHERE value = :value
+         """.trimIndent(),
+         mapOf("value" to value)
+      ) { rs, _ ->
+         InventoryLocationType(
+            id = rs.getInt("id"),
+            value = rs.getString("value"),
+            description = rs.getString("description"),
+            localizationCode = rs.getString("localization_code")
+         )
+      } ?: throw IllegalArgumentException("Inventory Location Type Domain with value $value not found")
+
+   }
+
+   @ReadOnly
    fun findAll(
       pageRequest: InventoryPageRequest,
       company: CompanyEntity
@@ -334,7 +365,7 @@ class InventoryRepository(
       count(*) OVER() AS total_elements
       """.trimIndent()
 
-   val withScannedBy = 
+   val withScannedBy =
       """
       LEFT OUTER JOIN system_employees_fimvw scannedBy
          ON auditException.scanned_by = scannedBy.emp_number AND comp.id = scannedBy.comp_id
@@ -499,6 +530,187 @@ class InventoryRepository(
       }
    }
 
+   @ReadOnly
+   fun invoice(filterRequest: InventoryInvoiceFilterRequest, company: CompanyEntity): RepositoryPage<InventoryEntity, PageRequest> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
+      val whereClause = StringBuilder("WHERE comp.id = :comp_id ")
+      val sortBy = StringBuilder("ORDER BY ")
+
+      if (filterRequest.recvLoc != null) {
+         params["recvLoc"] = filterRequest.recvLoc
+         whereClause.append(" AND i.primary_location = :recvLoc ")
+      }
+
+      if (filterRequest.serialNbr != null) {
+         params["serialNbr"] = filterRequest.serialNbr
+         whereClause.append(" AND UPPER(i.serial_number) LIKE \'%${filterRequest.serialNbr!!.trim().uppercase()}%\'")
+      }
+
+      if (filterRequest.modelNbr != null) {
+         params["modelNbr"] = filterRequest.modelNbr
+         whereClause.append(" AND UPPER(i.model_number) LIKE \'%${filterRequest.modelNbr!!.trim().uppercase()}%\'")
+      }
+
+      if (filterRequest.poNbr != null) {
+         params["poNbr"] = filterRequest.poNbr!!.uppercase()
+         whereClause.append(" AND UPPER(i.inv_purchase_order_number) LIKE :poNbr ")
+      }
+
+      if (filterRequest.invoiceNbr != null) {
+         params["invoiceNbr"] = filterRequest.invoiceNbr
+         whereClause.append(" AND UPPER(i.invoice_number) LIKE \'%${filterRequest.invoiceNbr!!.trim().uppercase()}%\'")
+      }
+
+      if (filterRequest.receivedDate != null) {
+         params["receivedDate"] = filterRequest.receivedDate
+         whereClause.append(" AND i.received_date = :receivedDate ")
+      }
+
+      if (filterRequest.beginAltId != null && filterRequest.endAltId != null) {
+         params["beginAltId"] = filterRequest.beginAltId!!.uppercase()
+         params["endAltId"] = filterRequest.endAltId!!.uppercase()
+         whereClause.append(" AND UPPER(i.alternate_id) BETWEEN :beginAltId AND :endAltId ")
+      }
+
+      if (filterRequest.vendor != null) {
+         params["vendor"] = filterRequest.vendor
+         whereClause.append(" AND UPPER(i.vendor) LIKE \'%${filterRequest.vendor!!.trim().uppercase()}%\'")
+      }
+
+      if (filterRequest.receivedDate != null) {
+         sortBy.append("i.received_date, i.inv_purchase_order_number, i.serial_number")
+      } else if (filterRequest.poNbr != null) {
+         sortBy.append("i.inv_purchase_order_number, i.received_date, i.invoice_number, i.model_number, i.serial_number")
+      } else if (filterRequest.invoiceNbr != null) {
+         sortBy.append("i.invoice_number, i.model_number, i.serial_number")
+      } else if (filterRequest.modelNbr != null) {
+         sortBy.append("i.model_number, i.serial_number")
+      } else if (filterRequest.recvLoc != null) {
+         sortBy.append("i.primary_location, i.serial_number")
+      } else if (filterRequest.serialNbr != null) {
+         sortBy.append("i.serial_number")
+      } else if (filterRequest.beginAltId != null && filterRequest.endAltId != null) {
+         sortBy.append("i.alternate_id")
+      } else {
+         sortBy.append("i.inv_purchase_order_number, i.invoice_number, i.model_number, i.serial_number")
+      }
+
+      return jdbc.queryPaged(
+         """
+            $selectBase
+            $whereClause
+            $sortBy
+            LIMIT :limit
+            OFFSET :offset
+         """.trimIndent(),
+         params,
+         filterRequest
+      ) { rs, elements ->
+         do {
+            elements.add(mapRow(rs))
+         } while (rs.next())
+      }
+   }
+
+   @ReadOnly
+   fun bulkUpdate(filterRequest: InventoryInvoiceFilterRequest, company: CompanyEntity): List<InventoryEntity> {
+      val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
+      val whereClause = StringBuilder("WHERE comp.id = :comp_id ")
+      val sortBy = StringBuilder("ORDER BY ")
+      val inventoryList = mutableListOf<InventoryEntity>()
+
+      if (filterRequest.recvLoc != null) {
+         params["recvLoc"] = filterRequest.recvLoc
+         whereClause.append(" AND i.primary_location = :recvLoc ")
+      }
+
+      if (filterRequest.serialNbr != null) {
+         params["serialNbr"] = filterRequest.serialNbr
+         whereClause.append(" AND UPPER(i.serial_number) LIKE \'%${filterRequest.serialNbr!!.trim().uppercase()}%\'")
+      }
+
+      if (filterRequest.modelNbr != null) {
+         params["modelNbr"] = filterRequest.modelNbr
+         whereClause.append(" AND UPPER(i.model_number) LIKE \'%${filterRequest.modelNbr!!.trim().uppercase()}%\'")
+      }
+
+      if (filterRequest.poNbr != null) {
+         params["poNbr"] = filterRequest.poNbr!!.uppercase()
+         whereClause.append(" AND UPPER(i.inv_purchase_order_number) LIKE :poNbr ")
+      }
+
+      if (filterRequest.invoiceNbr != null) {
+         params["invoiceNbr"] = filterRequest.invoiceNbr
+         whereClause.append(" AND UPPER(i.invoice_number) LIKE \'%${filterRequest.invoiceNbr!!.trim().uppercase()}%\'")
+      }
+
+      if (filterRequest.receivedDate != null) {
+         params["receivedDate"] = filterRequest.receivedDate
+         whereClause.append(" AND i.received_date = :receivedDate ")
+      }
+
+      if (filterRequest.beginAltId != null && filterRequest.endAltId != null) {
+         params["beginAltId"] = filterRequest.beginAltId!!.uppercase()
+         params["endAltId"] = filterRequest.endAltId!!.uppercase()
+         whereClause.append(" AND UPPER(i.alternate_id) BETWEEN :beginAltId AND :endAltId ")
+      }
+
+      if (filterRequest.vendor != null) {
+         params["vendor"] = filterRequest.vendor
+         whereClause.append(" AND UPPER(i.vendor) LIKE \'%${filterRequest.vendor!!.trim().uppercase()}%\'")
+      }
+
+      if (filterRequest.receivedDate != null) {
+         sortBy.append("i.received_date, i.inv_purchase_order_number, i.serial_number")
+      } else if (filterRequest.poNbr != null) {
+         sortBy.append("i.inv_purchase_order_number, i.received_date, i.invoice_number, i.model_number, i.serial_number")
+      } else if (filterRequest.invoiceNbr != null) {
+         sortBy.append("i.invoice_number, i.model_number, i.serial_number")
+      } else if (filterRequest.modelNbr != null) {
+         sortBy.append("i.model_number, i.serial_number")
+      } else if (filterRequest.recvLoc != null) {
+         sortBy.append("i.primary_location, i.serial_number")
+      } else if (filterRequest.serialNbr != null) {
+         sortBy.append("i.serial_number")
+      } else if (filterRequest.beginAltId != null && filterRequest.endAltId != null) {
+         sortBy.append("i.alternate_id")
+      } else {
+         sortBy.append("i.inv_purchase_order_number, i.invoice_number, i.model_number, i.serial_number")
+      }
+
+      jdbc.query(
+         """
+            $selectBase
+            $whereClause
+            $sortBy
+         """.trimIndent(),
+         params,
+      ) { rs, _ ->
+         do {
+            inventoryList.add(mapRow(rs))
+         } while (rs.next())
+      }
+      return inventoryList
+   }
+
+   @ReadOnly
+   fun fetchByInvoiceId(id: UUID, company: CompanyEntity): List<InventoryEntity> {
+      val inventoryList = mutableListOf<InventoryEntity>()
+
+      jdbc.query(
+         """
+            $selectBase
+            WHERE i.invoice_id = :invoiceId
+         """.trimIndent(),
+         mapOf("invoiceId" to id)
+      ) { rs, _ ->
+         do {
+            inventoryList.add(mapRow(rs))
+         } while (rs.next())
+      }
+      return inventoryList
+   }
+
    @Transactional
    fun loadInventoryTable() {
       logger.debug("Checking if the inventory table is empty")
@@ -517,6 +729,90 @@ class InventoryRepository(
       } else {
          logger.debug("--> Inventory table already has data")
       }
+   }
+
+   @Transactional
+   fun update(inventory: InventoryEntity, company: CompanyEntity): InventoryEntity {
+      jdbc.update(
+         """
+         UPDATE inventory
+         SET
+            invoice_number = :invoiceNumber,
+            invoice_id = :invoiceId
+         WHERE id = :id
+         RETURNING *
+         """.trimIndent(),
+         mapOf(
+            "invoiceNumber" to inventory.invoiceNumber,
+            "invoiceId" to inventory.invoiceId,
+            "id" to inventory.id
+         )
+      )
+      return findOne(inventory.id, company)!!
+   }
+
+   @Transactional
+   fun associateInventoryToInvoice(
+      invoiceId: UUID,
+      invoiceNumber: String,
+      dto: AssociateInventoryToInvoiceDTO,
+      company: CompanyEntity
+   ){
+      dto.attach?.forEach {
+         jdbc.update(
+            """
+             UPDATE inventory
+             SET
+                invoice_id = :invoiceId,
+                invoice_number = :invoiceNumber
+             WHERE id = :inventoryId
+             RETURNING *
+             """.trimIndent(),
+            mapOf(
+               "invoiceId" to invoiceId,
+               "invoiceNumber" to invoiceNumber,
+               "inventoryId" to it
+            )
+         )
+      }
+      dto.detach?.forEach {
+         jdbc.update(
+            """
+             UPDATE inventory
+             SET
+                invoice_id = null,
+                invoice_number = null
+             WHERE id = :inventoryId
+             RETURNING *
+             """.trimIndent(),
+            mapOf(
+               "inventoryId" to it
+            )
+         )
+      }
+   }
+
+   @ReadOnly
+   fun fetchInventoryLocationTypeByValue(string: String): InventoryLocationType {
+      return jdbc.findFirstOrNull(
+         """
+         SELECT
+            id,
+            value,
+            description,
+            localization_code
+         FROM inventory_location_type_domain
+         WHERE value = :value
+         """.trimIndent(),
+         mapOf("value" to string)
+      ) { rs, _ ->
+         InventoryLocationType(
+            id = rs.getInt("id"),
+            value = rs.getString("value"),
+            description = rs.getString("description"),
+            localizationCode = rs.getString("localization_code")
+         )
+      } ?: throw IllegalArgumentException("Inventory Location Type Domain with value $string not found")
    }
 
    fun mapRow(rs: ResultSet): InventoryEntity {
@@ -553,7 +849,10 @@ class InventoryRepository(
             value = rs.getString("location_type_value"),
             description = rs.getString("location_type_description"),
             localizationCode = rs.getString("location_type_localization_code")
-         )
+         ),
+         poNumber = rs.getString("po_number"),
+         invoiceNumber = rs.getString("invoice_number"),
+         invoiceId = rs.getUuidOrNull("invoice_id")
       )
    }
 

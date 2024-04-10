@@ -36,9 +36,12 @@ data class InventoryEntity(
    val location: Location?,
    val status: String,
    val primaryLocation: Store,
-   val locationType: InventoryLocationType
+   val locationType: InventoryLocationType,
+   val poNumber: String?,
+   val invoiceNumber: String?,
+   val invoiceId: UUID?
 ) : Identifiable {
-   constructor(dto: InventoryDTO, location: Location, primaryLocation: Store, locationType: InventoryLocationType) :
+   constructor(dto: InventoryDTO, location: Location?, primaryLocation: Store, locationType: InventoryLocationType) :
       this(
          id = dto.id,
          serialNumber = dto.serialNumber,
@@ -65,7 +68,10 @@ data class InventoryEntity(
          location = location,
          status = dto.status,
          primaryLocation = primaryLocation,
-         locationType = locationType
+         locationType = locationType,
+         poNumber = dto.poNumber,
+         invoiceNumber = dto.invoiceNumber,
+         invoiceId = dto.invoiceId
       )
 
    override fun myId(): UUID = id

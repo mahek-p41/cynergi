@@ -123,7 +123,19 @@ data class InventoryDTO(
 
    @field:JsonView(value = [Full::class])
    @field:Schema(name = "dataset", description = "dataset item is associated with")
-   val dataset: String
+   val dataset: String,
+
+   @field:JsonView(value = [Full::class])
+   @field:Schema(name = "poNumber", description = "Purchase Order Number")
+   val poNumber: String?,
+
+   @field:JsonView(value = [Full::class])
+   @field:Schema(name = "invoiceNumber", description = "Invoice Number")
+   var invoiceNumber: String?,
+
+   @field:JsonView(value = [Full::class])
+   @field:Schema(name = "invoiceId", description = "Invoice ID")
+   var invoiceId: UUID?
 
 ) : Identifiable {
 
@@ -155,7 +167,10 @@ data class InventoryDTO(
          status = item.status,
          primaryLocation = StoreDTO(item.primaryLocation),
          locationType = locationType,
-         dataset = item.primaryLocation.myCompany().datasetCode
+         dataset = item.primaryLocation.myCompany().datasetCode,
+         poNumber = item.poNumber,
+         invoiceNumber = item.invoiceNumber,
+         invoiceId = item.invoiceId
       )
 
    override fun myId(): UUID = id

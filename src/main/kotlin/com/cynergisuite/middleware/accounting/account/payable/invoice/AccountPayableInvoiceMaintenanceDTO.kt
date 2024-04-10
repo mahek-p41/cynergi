@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.account.payable.invoice
 
+import com.cynergisuite.middleware.inventory.InventoryDTO
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
@@ -20,5 +21,8 @@ data class AccountPayableInvoiceMaintenanceDTO(
 
    @field:NotNull
    @field:Schema(name = "apInvoiceSchedule", description = "Account Payable Invoice Schedule.", maxLength = 10)
-   var apInvoiceSchedule: MutableList<AccountPayableInvoiceScheduleDTO>? = null
+   var apInvoiceSchedule: MutableList<AccountPayableInvoiceScheduleDTO>? = null,
+
+   @field:Schema(name = "inventory", description = "Inventory")
+   var inventory: MutableList<InventoryDTO>? = null
 )
