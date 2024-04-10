@@ -158,7 +158,7 @@ services:
       tty: true
       command: [ "/opt/scripts/db-ready.sh", "cynergitestdb" ]
    cynergitestdbmigrate:
-      container_name: cynergidbmigrate
+      container_name: cynergitestdbmigrate
       image: cynergibasedb
       depends_on:
          - cynergitestdb

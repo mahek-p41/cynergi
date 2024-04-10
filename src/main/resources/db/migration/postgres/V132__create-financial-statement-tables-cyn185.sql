@@ -15,7 +15,7 @@ CREATE TABLE financial_statement_layout (
       time_updated                           TIMESTAMPTZ  DEFAULT clock_timestamp()                                  NOT NULL,
       company_id                             UUID         REFERENCES company (id)                                    NOT NULL,
       statement_type_id                      BIGINT       REFERENCES financial_statement_type_domain (id)       NOT NULL,
-      name                                   VARCHAR(20)                                                             NOT NULL,
+      name                                   VARCHAR(255)                                                             NOT NULL,
       header                                 VARCHAR(255)                                                            NOT NULL,
       deleted                                BOOLEAN      DEFAULT FALSE                                              NOT NULL
 );
@@ -38,7 +38,7 @@ CREATE TABLE financial_statement_section (
       time_updated                           TIMESTAMPTZ  DEFAULT clock_timestamp()                                  NOT NULL,
       company_id                             UUID         REFERENCES company (id)                                    NOT NULL,
       statement_layout_id                    UUID         REFERENCES financial_statement_layout (id)                 NOT NULL,
-      name                                   VARCHAR(20)                                                             NOT NULL,
+      name                                   VARCHAR(255)                                                             NOT NULL,
       total_name                             VARCHAR(255)                                                            NOT NULL,
       deleted                                BOOLEAN      DEFAULT FALSE                                              NOT NULL
 );
@@ -55,7 +55,7 @@ CREATE TABLE financial_statement_group (
       time_updated                           TIMESTAMPTZ  DEFAULT clock_timestamp()                                  NOT NULL,
       company_id                             UUID         REFERENCES company (id)                                    NOT NULL,
       section_id                             UUID         REFERENCES financial_statement_section (id)                NOT NULL,
-      name                                   VARCHAR(20)                                                             NOT NULL,
+      name                                   VARCHAR(255)                                                             NOT NULL,
       total_name                             VARCHAR(255)                                                            NOT NULL,
       sort_order                             BIGINT                                                                  NOT NULL,
       contra_account                         BOOLEAN                                                                 NOT NULL,
@@ -77,3 +77,8 @@ CREATE TABLE group_to_account (
 );
 
 COMMENT ON TABLE financial_statement_layout IS 'Used to map GL accounts to groups.';
+
+INSERT INTO financial_statement_type_domain (id, value, description, localization_code)
+VALUES (1, 'BALANCE', 'Balance Statement', 'balance.statement'),
+       (2, 'INCOME', 'Income Statement', 'income.statement'),
+       (3, 'CASH-FLOW', 'Cash Flow Statement', 'cash.flow.statement')

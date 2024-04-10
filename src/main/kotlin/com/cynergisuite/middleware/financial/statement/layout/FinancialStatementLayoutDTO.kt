@@ -22,7 +22,7 @@ data class FinancialStatementLayoutDTO(
 
    @field:NotNull
    @field:Schema(description = "Type ID", required = true)
-   var statementTypeId: UUID,
+   var statementTypeId: Int,
 
    @field:NotNull
    @field:Schema(description = "Sections", required = true)

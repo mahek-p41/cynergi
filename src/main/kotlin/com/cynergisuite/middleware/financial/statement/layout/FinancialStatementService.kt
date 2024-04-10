@@ -10,10 +10,8 @@ import javax.transaction.Transactional
 class FinancialStatementService @Inject constructor(
    private val financialStatementRepository: FinancialStatementRepository
 ) {
-
    @Transactional
-   fun create(dto: FinancialStatementLayoutDTO, user: User): Any? {
-      TODO("Not yet implemented")
+   fun create(dto: FinancialStatementLayoutDTO, user: User) {
       financialStatementRepository.insert(dto, user)
    }
 }
