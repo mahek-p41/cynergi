@@ -801,6 +801,7 @@ class FinancialCalendarRepository @Inject constructor(
       return rs.getLocalDate("$columnPrefix")
    }
 
+   @Transactional
    fun fetchLatestClosedAPPeriodDate(company: CompanyEntity, beginDate: LocalDate): LocalDate? {
       val found = jdbc.query(
          """

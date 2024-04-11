@@ -380,7 +380,7 @@ class FinancialCalendarController @Inject constructor(
    fun fetchLatestClosedAPPeriodDate(
       authentication: Authentication,
       @Parameter(name = "beginDate", `in` = QUERY, required = true)
-      @Valid @QueryValue("beginDate")
+      @QueryValue("beginDate")
       beginDate: LocalDate,
       httpRequest: HttpRequest<*>
    ): LocalDate {
