@@ -13,20 +13,20 @@ import java.time.LocalDate
 )
 @Introspected
 class EndMonthProceduresDTO(
-   beginAcct: Int? = null,
-   endAcct: Int? = null,
-   beginVen: Int? = null,
-   endVen: Int? = null,
-   beginVenGr: String? = null,
-   endVenGr: String? = null,
+   beginAcct: Int?,
+   endAcct: Int?,
+   beginVen: Int?,
+   endVen: Int?,
+   beginVenGr: String?,
+   endVenGr: String?,
    beginDate: LocalDate,
    endDate: LocalDate,
-   iclHoldInv: Boolean? = false,
-   invStatus: List<String>? = null,
-   overviewType: APInvoiceReportOverviewType? = APInvoiceReportOverviewType.DETAILED,
-   sortBy: String? = "account",
+   iclHoldInv: Boolean?,
+   invStatus: List<String>?,
+   overviewType: APInvoiceReportOverviewType?,
+   sortBy: String?,
    @field:Schema(name = "jeDate", description = "Journal Entry Date")
-   val jeDate: LocalDate? = null,
+   val jeDate: LocalDate?,
 ) : ExpenseReportFilterRequest(
    beginAcct,
    endAcct,
@@ -36,10 +36,10 @@ class EndMonthProceduresDTO(
    endVenGr,
    beginDate,
    endDate,
-   iclHoldInv,
-   invStatus,
-   overviewType,
-   sortBy
+   iclHoldInv ?: true,
+   invStatus ?: listOf("O", "P"),
+   overviewType ?: APInvoiceReportOverviewType.DETAILED,
+   sortBy ?: "account",
 ) {
    override fun sortByMe(): String = sortBy()
 

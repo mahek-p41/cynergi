@@ -1,6 +1,5 @@
 package com.cynergisuite.middleware.accounting.financial.calendar
 
-
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
@@ -293,6 +292,34 @@ class FinancialCalendarControllerSpecification extends ControllerSpecificationBa
       result != null
       result.first == dateRanges.apPeriodFrom.toString()
       result.second == dateRanges.apPeriodTo.plusMonths(1).minusDays(1).toString()
+   }
+
+   void "fetch ap close date range" () {
+      given:
+      final tstds1 = companyFactoryService.forDatasetCode('coravt')
+      financialCalendarDataLoaderService.streamFiscalYear(tstds1, OverallPeriodTypeDataLoader.predefined().find { it.value == "C" }, LocalDate.now(), false, false).collect()
+      final dateRangesOfOpenedPeriods = new FinancialCalendarGLAPDateRangeDTO(LocalDate.now(), LocalDate.now().plusMonths(11), LocalDate.now().plusMonths(6), LocalDate.now().plusMonths(11))
+
+      when:
+      put("$path/open-gl-ap", dateRangesOfOpenedPeriods)
+
+      then:
+      notThrown(Exception)
+
+      when: 'begin date between closed AP periods'
+      def result = get("$path/ap-dates-close?beginDate=${LocalDate.now().plusMonths(1)}")
+
+      then: 'compare with the end date of the closed AP period (the day before the start date of the earliest opened AP periods)'
+      notThrown(Exception)
+      result != null
+      result == dateRangesOfOpenedPeriods.apPeriodFrom.minusDays(1).toString()
+
+      when: 'begin date between opened AP periods'
+      get("$path/ap-dates-close?beginDate=${LocalDate.now().plusMonths(8)}")
+
+      then: 'response with NO_CONTENT(204) status code'
+      def exception = thrown(HttpClientResponseException)
+      exception.response.status == NO_CONTENT
    }
 
    void "fetch ap open date range when none exists" () {

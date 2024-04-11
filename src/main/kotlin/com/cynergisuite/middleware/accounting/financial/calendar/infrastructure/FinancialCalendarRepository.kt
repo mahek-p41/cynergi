@@ -4,6 +4,7 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.domain.infrastructure.RepositoryPage
 import com.cynergisuite.extensions.findFirstOrNull
 import com.cynergisuite.extensions.getLocalDate
+import com.cynergisuite.extensions.getLocalDateOrNull
 import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
@@ -815,7 +816,7 @@ class FinancialCalendarRepository @Inject constructor(
             "date" to beginDate
          )
       ) { rs, _ ->
-         mapDate(rs, "period_to")
+         rs.getLocalDateOrNull("period_to")
       }
 
       return found.first()
