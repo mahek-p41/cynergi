@@ -42,7 +42,7 @@ data class FinancialStatementGroupDTO(
    var inactive: Boolean = false,
 
    @field:Schema(description = "The number of lines underlines.", required = false)
-   var glAccounts : MutableList<UUID> = mutableListOf(),  // TODO: Might change due to what the frontend sends
+   var glAccounts : List<UUID>? = emptyList(),  // TODO: Might change due to what the frontend sends
 
    @field:NotNull
    @field:Schema(description = "Groups", required = true)

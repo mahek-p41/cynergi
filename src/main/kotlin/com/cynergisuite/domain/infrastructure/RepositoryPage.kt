@@ -18,4 +18,8 @@ data class RepositoryPage<ENTITY, REQUESTED : PageRequest>(
          requested = requested.copyFillInDefaults()
       )
    }
+
+   fun toPage(): Page<ENTITY> {
+      return toPage { it }
+   }
 }
