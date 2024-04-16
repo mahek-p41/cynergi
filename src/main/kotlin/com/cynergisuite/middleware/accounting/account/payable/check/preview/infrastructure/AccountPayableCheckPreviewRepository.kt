@@ -354,7 +354,7 @@ class AccountPayableCheckPreviewRepository @Inject constructor(
             JOIN account_payable_invoice_status_type_domain status      ON apInvoice.status_id = status.id
             LEFT JOIN account_payable_payment_detail pmtDetail          ON apInvoice.id = pmtDetail.account_payable_invoice_id
             LEFT JOIN account_payable_payment pmt                       ON pmtDetail.payment_number_id = pmt.id
-            JOIN account_payable_payment_status_type_domain pmtStatus   ON pmt.account_payable_payment_status_id = pmtStatus.id
+            LEFT JOIN account_payable_payment_status_type_domain pmtStatus   ON pmt.account_payable_payment_status_id = pmtStatus.id
             JOIN account_payable_invoice_distribution invDist           ON apInvoice.id = invDist.invoice_id
             JOIN account_payable_control apControl                      ON invDist.distribution_account_id = apControl.general_ledger_inventory_account_id
             LEFT JOIN bank                                              ON pmt.bank_id = bank.id AND bank.deleted = FALSE
