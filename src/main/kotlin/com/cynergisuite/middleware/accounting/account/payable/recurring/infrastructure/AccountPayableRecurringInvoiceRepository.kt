@@ -362,7 +362,7 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
 
       if (filterRequest.vendor != null) {
          params["vendor"] = filterRequest.vendor
-         whereClause.append(" AND vendor.v_number >= :vendor ")
+         whereClause.append(" AND vendor.v_number = :vendor ")
       }
 
       if (filterRequest.invoice != null) {

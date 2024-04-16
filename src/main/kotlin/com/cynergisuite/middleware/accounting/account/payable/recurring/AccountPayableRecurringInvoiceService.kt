@@ -120,7 +120,7 @@ class AccountPayableRecurringInvoiceService @Inject constructor(
       )
 
 
-
+      dto.lastTransferToCreateInvoiceDate = LocalDate.now()
       dto.lastCreatedInPeriod = LocalDate.now()
       dto.nextCreationDate = dto.nextCreationDate!!.plusMonths(1)
       dto.nextInvoiceDate = dto.nextInvoiceDate!!.plusMonths(1)
