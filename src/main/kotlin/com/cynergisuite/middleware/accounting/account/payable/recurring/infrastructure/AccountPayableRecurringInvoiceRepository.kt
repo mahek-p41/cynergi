@@ -359,6 +359,7 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder(" WHERE apRecurringInvoice.company_id = :comp_id")
       val searchQueryBeginsWith = "%$searchQuery%"
+      val sortBy = StringBuilder("ORDER BY ")
 
       if (filterRequest.vendor != null) {
          params["vendor"] = filterRequest.vendor
@@ -370,11 +371,18 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
          whereClause.append(" AND apRecurringInvoice.invoice ILIKE \'$searchQueryBeginsWith\'")
       }
 
+      if (filterRequest.sortBy == "V"){
+         sortBy.append("apRecurringInvoice_vendor_name")
+      }
+      if (filterRequest.sortBy == "N") {
+         sortBy.append("apRecurringInvoice_vendor_number")
+      }
+
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY apRecurringInvoice_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
+            $sortBy ${filterRequest.sortDirection()}
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
          params,
@@ -393,6 +401,7 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
    ): RepositoryPage<AccountPayableRecurringInvoiceEntity, PageRequest> {
       val params = mutableMapOf<String, Any?>("comp_id" to company.id, "limit" to filterRequest.size(), "offset" to filterRequest.offset())
       val whereClause = StringBuilder(" WHERE apRecurringInvoice.company_id = :comp_id")
+      val sortBy = StringBuilder("ORDER BY ")
 
       if (filterRequest.beginVendor != null || filterRequest.endVendor!= null) {
          params["beginVendor"] = filterRequest.beginVendor
@@ -406,11 +415,18 @@ class AccountPayableRecurringInvoiceRepository @Inject constructor(
          whereClause.append(" AND apRecurringInvoice.last_transfer_to_create_invoice_date = :entryDate")
       }
 
+      if (filterRequest.sortBy == "V"){
+         sortBy.append("apRecurringInvoice_vendor_name")
+      }
+      if (filterRequest.sortBy == "N") {
+         sortBy.append("apRecurringInvoice_vendor_number")
+      }
+
       return jdbc.queryPaged(
          """
             ${selectBaseQuery()}
             $whereClause
-            ORDER BY apRecurringInvoice_${filterRequest.snakeSortBy()} ${filterRequest.sortDirection()}
+            $sortBy ${filterRequest.sortDirection()}
             LIMIT :limit OFFSET :offset
          """.trimIndent(),
          params,
