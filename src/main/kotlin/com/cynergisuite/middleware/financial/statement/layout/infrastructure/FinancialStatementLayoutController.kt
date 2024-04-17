@@ -11,6 +11,7 @@ import com.cynergisuite.middleware.financial.statement.layout.FinancialStatement
 import com.cynergisuite.middleware.financial.statement.layout.FinancialStatementService
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.MediaType
+import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
@@ -29,6 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import jakarta.inject.Inject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.UUID
 import javax.validation.Valid
 
 @Secured(IS_AUTHENTICATED)
@@ -72,6 +74,41 @@ class FinancialStatementLayoutController @Inject constructor(
 
    }
 
+   @Post(value = "/{id:[0-9a-fA-F\\-]+}", processes = [MediaType.APPLICATION_JSON])
+   @Throws(ValidationException::class, NotFoundException::class)
+   @Operation(tags = ["FinancialStatementLayoutEndpoints"], description = "Financial Statement Layout", operationId = "FinancialStatementLayout-update")
+   @ApiResponses(
+      value = [
+         ApiResponse(
+            responseCode = "200",
+            content = [Content(
+               mediaType = MediaType.APPLICATION_JSON,
+               schema = Schema(implementation = EndYearProceduresDTO::class)
+            )]
+         ),
+         ApiResponse(
+            responseCode = "400",
+            description = "If one of the required properties in the payload is missing"
+         ),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun update(
+      @QueryValue("id")
+      id: UUID,
+      @Body @Valid
+      dto: FinancialStatementLayoutDTO,
+      authentication: Authentication
+   ) {
+      val user = userService.fetchUser(authentication)
+      logger.info("Requested update a financial statement layout {}", dto)
+
+      financialStatementService.update(dto, user)
+
+      logger.debug("Successfully updated a financial statement layout")
+
+   }
+
    @Throws(PageOutOfBoundsException::class)
    @Get(uri = "{?pageRequest*}", produces = [MediaType.APPLICATION_JSON])
    @Operation(tags = ["FinancialStatementLayoutEndpoints"], summary = "Fetch a listing of Financial Statement Layouts", description = "Fetch a paginated listing of Financial Statement Layouts", operationId = "FinancialStatementLayout-fetchAll")
@@ -94,6 +131,31 @@ class FinancialStatementLayoutController @Inject constructor(
 
       val user = userService.fetchUser(authentication)
       val list = financialStatementService.fetchAll(user, pageRequest)
+
+      return list
+   }
+
+   @Throws(NotFoundException::class)
+   @Get(value = "/{id:[0-9a-fA-F\\-]+}", produces = [APPLICATION_JSON])
+   @Operation(tags = ["FinancialStatementLayoutEndpoints"], summary = "Fetch a single Financial Statement Layouts", description = "Fetch a single Financial Statement Layouts", operationId = "FinancialStatementLayout-fetchOne")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = FinancialStatementLayoutDTO::class))]),
+         ApiResponse(responseCode = "204", description = "The request was unable to be found, or the result is empty"),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchById(
+      @QueryValue("id")
+      id: UUID,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): FinancialStatementLayoutDTO {
+      logger.info("Fetching Financial Statement Layout by id: {}", id)
+
+      val user = userService.fetchUser(authentication)
+      val list = financialStatementService.fetchById(id, user.myCompany()) ?: throw NotFoundException(id)
 
       return list
    }

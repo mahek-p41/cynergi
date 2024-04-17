@@ -20,7 +20,6 @@ data class FinancialStatementSectionDTO(
    @field:Schema(description = "Total name", required = true)
    var totalName: String,
 
-   @field:NotNull
-   @field:Schema(description = "Groups", required = true)
+   @field:Schema(description = "Groups", required = false)
    val groups: MutableList<FinancialStatementGroupDTO> = mutableListOf(),
 )

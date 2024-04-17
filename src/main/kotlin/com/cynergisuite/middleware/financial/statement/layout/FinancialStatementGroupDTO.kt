@@ -44,7 +44,6 @@ data class FinancialStatementGroupDTO(
    @field:Schema(description = "The number of lines underlines.", required = false)
    var glAccounts : List<UUID>? = emptyList(),  // TODO: Might change due to what the frontend sends
 
-   @field:NotNull
-   @field:Schema(description = "Groups", required = true)
-   val groups: MutableList<FinancialStatementGroupDTO> = mutableListOf(),
+   @field:Schema(description = "Groups", required = false)
+   val groups: MutableList<FinancialStatementGroupDTO>? = mutableListOf(),
 )
