@@ -3154,7 +3154,7 @@ CREATE FOREIGN TABLE fastinfo_prod_import.itemfile_vw (
    number VARCHAR,
    description_1 VARCHAR,
    description_2 VARCHAR,
-   discontinued_indr VARCHAR,
+   discontinued_indicator VARCHAR,
    vendor_number INTEGER
 ) SERVER fastinfo OPTIONS (TABLE_NAME 'itemfile_vw', SCHEMA_NAME 'public');
 
