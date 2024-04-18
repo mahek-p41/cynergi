@@ -90,11 +90,17 @@ class AccountPayableRecurringInvoiceControllerSpecification extends ControllerSp
       final company = companyFactoryService.forDatasetCode('coravt')
       final shipVia = shipViaFactoryService.single(company)
       final vendorPaymentTerm = vendorPaymentTermTestDataLoaderService.singleWithSingle90DaysPayment(company)
-      final vendor = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
+      final vendors = vendorTestDataLoaderService.stream(7, company, vendorPaymentTerm, shipVia).toList()
       final payTo = vendorTestDataLoaderService.single(company, vendorPaymentTerm, shipVia)
-      final accountPayableRecurringInvoiceEntity = accountPayableRecurringInvoiceDataLoaderService.stream(7, company, vendor, payTo).toList()
-      final pageOne = new StandardPageRequest(1, 5, "id", "ASC")
-      final pageTwo = new StandardPageRequest(2, 5, "id", "ASC")
+      final accountPayableRecurringInvoiceEntity = vendors.collect { vendor ->
+         accountPayableRecurringInvoiceDataLoaderService.single(company, vendor, payTo)
+      }
+
+      final pageOne = new StandardPageRequest(1, 5, "N", "ASC")
+      final pageTwo = new StandardPageRequest(2, 5, "N", "ASC")
+      accountPayableRecurringInvoiceEntity.sort{
+         o1, o2 -> o1.vendor.number <=> o2.vendor.number
+      }
       final firstPageAccountPayableRecurringInvoice = accountPayableRecurringInvoiceEntity[0..4]
       final lastPageAccountPayableRecurringInvoice = accountPayableRecurringInvoiceEntity[5,6]
 
