@@ -14,13 +14,15 @@ import javax.validation.constraints.NotNull
 @Schema(name = "AccountPayableVoidCheck", title = "Account Payable Void Check", description = "Account Payable Void Check")
 data class AccountPayableVoidCheckDTO(
 
-   @field:NotNull
+
    @field:Schema(description = "Vendor number")
    var vendorNumber: Int? = null,
 
-   @field:NotNull
    @field:Schema(description = "Vendor name")
    var vendorName: String? = null,
+
+   @field:Schema(description = "Vendor ID")
+   var vendorId: UUID? = null,
 
    @field:NotNull
    @field:Schema(description = "Bank ID")
@@ -34,14 +36,12 @@ data class AccountPayableVoidCheckDTO(
    @field:Schema(description = "Amount")
    var amount: BigDecimal? = null,
 
-   @field:NotNull
    @field:Schema(description = "Payment Status")
    var paymentStatus: String? = null,
 
    @field:Schema(description = "Date Cleared")
    var dateCleared: LocalDate? = null,
 
-   @field:NotNull
    @field:Schema(description = "Date")
    var date: LocalDate? = null,
 

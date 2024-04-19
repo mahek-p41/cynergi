@@ -55,7 +55,7 @@ data class AccountPayablePaymentDTO(
    var amount: BigDecimal? = null,
 
    @field:Schema(description = "Listing of Payment Details associated with this Payment", required = false, accessMode = Schema.AccessMode.READ_ONLY)
-   var paymentDetails: MutableSet<AccountPayablePaymentDetailDTO> = mutableSetOf()
+   var paymentDetails: MutableSet<AccountPayablePaymentDetailDTO>? = mutableSetOf()
 
 ) : Identifiable {
    constructor(entity: AccountPayablePaymentEntity) :
@@ -70,9 +70,9 @@ data class AccountPayablePaymentDTO(
          dateVoided = entity.dateVoided,
          paymentNumber = entity.paymentNumber,
          amount = entity.amount,
-         paymentDetails = entity.paymentDetails!!.asSequence().map { paymentDetailEntity ->
+         paymentDetails = entity.paymentDetails?.asSequence()?.map { paymentDetailEntity ->
             AccountPayablePaymentDetailDTO(paymentDetailEntity)
-         }.toMutableSet()
+         }?.toMutableSet()
       )
 
    override fun myId(): UUID? = id
