@@ -72,13 +72,25 @@ class AccountPayableRecurringInvoiceDistributionRepository @Inject constructor(
       ) { rs, _ -> mapRow(rs) }
    }
 
-   fun upsert(entity: AccountPayableRecurringInvoiceDistributionEntity, company: CompanyEntity): AccountPayableRecurringInvoiceDistributionEntity {
-      return if (entity.id == null) {
-         insert(entity, company)
-      } else {
-         update(entity, company)
+   @Transactional
+   fun replace(invoiceId: UUID, entityList: List<AccountPayableRecurringInvoiceDistributionEntity>, company: CompanyEntity): List<AccountPayableRecurringInvoiceDistributionEntity> {
+      val updatedList: MutableList<AccountPayableRecurringInvoiceDistributionEntity> = mutableListOf()
+      jdbc.update(
+         """
+         DELETE FROM account_payable_recurring_invoice_distribution
+         WHERE recurring_invoice_id = :recurring_invoice_id
+      """.trimIndent(),
+         mapOf(
+            "recurring_invoice_id" to invoiceId,
+         )
+      )
+      entityList.forEach {
+         updatedList.add(insert(it, company))
       }
+      return updatedList
    }
+
+
 
    @Transactional
    fun update(entity: AccountPayableRecurringInvoiceDistributionEntity, company: CompanyEntity): AccountPayableRecurringInvoiceDistributionEntity {

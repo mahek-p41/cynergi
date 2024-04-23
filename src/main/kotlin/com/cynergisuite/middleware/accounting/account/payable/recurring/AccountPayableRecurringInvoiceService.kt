@@ -3,7 +3,6 @@ package com.cynergisuite.middleware.accounting.account.payable.recurring
 import com.cynergisuite.domain.AccountPayableInvoiceListByVendorFilterRequest
 import com.cynergisuite.domain.AccountPayableRecurringInvoiceReportFilterRequest
 import com.cynergisuite.domain.AccountPayableRecurringInvoiceTransferFilterRequest
-import com.cynergisuite.domain.InvoiceReportFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
@@ -158,18 +157,16 @@ class AccountPayableRecurringInvoiceService @Inject constructor(
    }
 
    fun updateDistributions(invoiceId: UUID, distributions: List<AccountPayableRecurringInvoiceDistributionDTO>, company: CompanyEntity): List<AccountPayableRecurringInvoiceDistributionDTO> {
-      val updated = distributions.map{
-         accountPayableRecurringInvoiceDistributionRepository.upsert(
+      val entityList = distributions.map{
             AccountPayableRecurringInvoiceDistributionEntity(
                id = it.id,
                invoiceId = invoiceId,
                accountId = it.account!!.id!!,
                profitCenter = it.profitCenter!!.storeNumber!!,
                amount = it.amount!!
-            ),
-            company
-         )
+            )
       }
+      val updated = accountPayableRecurringInvoiceDistributionRepository.replace(invoiceId, entityList, company)
 
       return updated.map{
          val account = accountRepository.findOne(it.accountId, company)
