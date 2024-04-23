@@ -267,4 +267,36 @@ class BankRepository @Inject constructor(
          generalLedgerAccount = bank.generalLedgerAccount
       )
    }
+
+   @ReadOnly
+   fun fetchBalance(id: UUID, company: CompanyEntity): Float? {
+      val params = mutableMapOf<String, Any?>("id" to id, "comp_id" to company.id)
+      val query = """
+         SELECT
+            general_ledger_summary.beginning_balance + SUM(bank_reconciliation.amount) AS bank_balance
+         FROM
+            general_ledger_summary
+            JOIN bank ON bank.general_ledger_account_id = general_ledger_summary.account_id
+               AND bank.general_ledger_profit_center_sfk = general_ledger_summary.profit_center_id_sfk
+            JOIN bank_reconciliation ON bank.id = bank_reconciliation.bank_id
+            JOIN financial_calendar ON financial_calendar.overall_period_id = general_ledger_summary.overall_period_id
+         WHERE
+            financial_calendar.period = 1
+            AND financial_calendar.overall_period_id = 3
+            AND bank_reconciliation.transaction_date = financial_calendar.period_from
+            AND bank_reconciliation.company_id = general_ledger_summary.company_id
+            AND bank.id = :id
+            AND bank_reconciliation.company_id = :comp_id
+         GROUP BY general_ledger_summary.beginning_balance
+      """.trimIndent()
+      val balance = jdbc.queryForObject(
+         query,
+         params,
+         Float::class.java
+      )
+
+      logger.trace("Fetching Bank Balance for Bank id {}: \nQuery {} \nResulted in {}", id, query, balance)
+
+      return balance
+   }
 }

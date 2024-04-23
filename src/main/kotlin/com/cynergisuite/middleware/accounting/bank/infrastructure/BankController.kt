@@ -173,4 +173,31 @@ class BankController @Inject constructor(
 
       return bankService.delete(id, user.myCompany(), httpRequest.findLocaleWithDefault())
    }
+
+   @Secured("MCFBANKBALANCE")
+   @Throws(NotFoundException::class)
+   @Get(uri = "/{id:[0-9a-fA-F\\-]+}/balance", produces = [APPLICATION_JSON])
+   @Operation(tags = ["BankEndpoints"], summary = "Fetch a single Bank balance", description = "Fetch a single Bank balance by ID", operationId = "bank-fetchBalance")
+   @ApiResponses(
+      value = [
+         ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = BankDTO::class))]),
+         ApiResponse(responseCode = "401", description = "If the user calling this endpoint does not have permission to operate it"),
+         ApiResponse(responseCode = "404", description = "The requested Bank was unable to be found"),
+         ApiResponse(responseCode = "500", description = "If an error occurs within the server that cannot be handled")
+      ]
+   )
+   fun fetchBalance(
+      @QueryValue("id") id: UUID,
+      authentication: Authentication,
+      httpRequest: HttpRequest<*>
+   ): Float {
+      logger.info("Fetching Bank balance by ID {}", id)
+
+      val user = userService.fetchUser(authentication)
+      val response = bankService.fetchBalance(id, user.myCompany()) ?: throw NotFoundException(id)
+
+      logger.debug("Fetching Bank balance by ID {} resulted in {}", id, response)
+
+      return response
+   }
 }

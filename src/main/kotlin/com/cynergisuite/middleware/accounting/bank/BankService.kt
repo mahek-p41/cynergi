@@ -96,5 +96,8 @@ class BankService @Inject constructor(
       )
    }
 
-
+   fun fetchBalance(id: UUID, company: CompanyEntity): Float? {
+      val balance = bankRepository.fetchBalance(id, company)
+      return balance
+   }
 }
