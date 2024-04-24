@@ -352,7 +352,23 @@ class AccountPayableInvoiceRepository @Inject constructor(
             status.description                                          AS apInvoice_status_description,
             status.localization_code                                    AS apInvoice_status_localization_code,
 			   poHeader.number												         AS apInvoice_purchase_order_number,
-            count(*) OVER()                                             AS total_elements
+            count(*) OVER()                                             AS total_elements,
+
+            invoice_schedule.id                                         AS apInvoice_schedule_id,
+            invoice_schedule.time_created                               AS apInvoice_schedule_time_created,
+            invoice_schedule.time_updated                               AS apInvoice_schedule_time_updated,
+            invoice_schedule.company_id                                 AS apInvoice_schedule_company_id,
+            invoice_schedule.schedule_date                              AS apInvoice_schedule_date,
+            invoice_schedule.payment_sequence_number                    AS apInvoice_schedule_payment_sequence_number,
+            invoice_schedule.amount_to_pay                              AS apInvoice_schedule_amount_to_pay,
+            invoice_schedule.bank_id                                    AS apInvoice_schedule_bank_id,
+            invoice_schedule.external_payment_type_id                   AS apInvoice_schedule_external_payment_type_id,
+            invoice_schedule.external_payment_number                    AS apInvoice_schedule_external_payment_number,
+            invoice_schedule.external_payment_date                      AS apInvoice_schedule_external_payment_date,
+            invoice_schedule.selected_for_processing                    AS apInvoice_schedule_selected_for_processing,
+            invoice_schedule.payment_processed                          AS apInvoice_schedule_payment_processed,
+            invoice_schedule.deleted                                    AS apInvoice_schedule_deleted
+
          FROM account_payable_invoice apInvoice
             JOIN company comp                                           ON apInvoice.company_id = comp.id AND comp.deleted = FALSE
             JOIN vend                                                   ON apInvoice.vendor_id = vend.v_id
@@ -362,6 +378,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
             JOIN account_payable_invoice_type_domain type               ON apInvoice.type_id = type.id
             JOIN account_payable_invoice_status_type_domain status      ON apInvoice.status_id = status.id
             LEFT JOIN purchase_order_header poHeader                    ON apInvoice.purchase_order_id = poHeader.id AND poHeader.deleted = FALSE
+            JOIN account_payable_invoice_schedule invoice_schedule      ON apInvoice.id = invoice_schedule.invoice_id AND invoice_schedule.deleted = FALSE
       """
    }
 
@@ -419,6 +436,12 @@ class AccountPayableInvoiceRepository @Inject constructor(
       if (filterRequest.dueDate != null) {
          params["dueDate"] = filterRequest.dueDate
          whereClause.append(" AND apInvoice.due_date = :dueDate ")
+      }
+
+      if (filterRequest.schedDate != null) {
+         logger.debug("Scheduling date is {}", filterRequest.schedDate)
+         params["schedDate"] = filterRequest.schedDate
+         whereClause.append(" AND invoice_schedule.schedule_date = :schedDate ")
       }
 
       if (filterRequest.invAmount != null) {

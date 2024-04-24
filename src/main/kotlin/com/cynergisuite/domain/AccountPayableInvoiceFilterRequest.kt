@@ -36,8 +36,11 @@ class AccountPayableInvoiceFilterRequest(
    @field:Schema(name = "invDate", description = "Invoice date")
    var invDate: LocalDate? = null,
 
-   @field:Schema(name = "dueDate", description = "Due date")
+   @field:Schema(name = "dueDate", description = "Due date", deprecated = true)
    var dueDate: LocalDate? = null,
+
+   @field:Schema(name = "schedDate", description = "Scheduled payment date")
+   var schedDate: LocalDate? = null,
 
    @field:Schema(name = "invAmount", description = "Invoice amount")
    var invAmount: BigDecimal? = null,
@@ -62,6 +65,7 @@ class AccountPayableInvoiceFilterRequest(
          invNbr = this.invNbr,
          invDate = this.invDate,
          dueDate = this.dueDate,
+         schedDate = this.schedDate,
          invAmount = this.invAmount,
          sortOption = this.sortOption
       )
@@ -75,6 +79,7 @@ class AccountPayableInvoiceFilterRequest(
          "invNbr" to invNbr,
          "invDate" to invDate,
          "dueDate" to dueDate,
+         "schedDate" to schedDate,
          "invAmount" to invAmount,
          "sortOption" to sortOption
       )
