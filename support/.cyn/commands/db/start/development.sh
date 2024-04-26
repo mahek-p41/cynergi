@@ -18,9 +18,6 @@ if [ -z `docker-compose ps -q cynergidb` ] || [ -z `docker ps -q --no-trunc | gr
     echo "Setting up bridge between cynergidb and fastinfo_production"
     docker exec cynergidb /opt/scripts/setup-database.sh >> /tmp/cynergi-dev.log 2>&1 || exit $?
 
-    echo "Setting up database"
-    docker-compose run --rm cynergidbmigrate
-
     echo "Loading cynergidb development data"
     docker exec cynergidb /opt/scripts/load-dev-cynergidb-data.sh >> /tmp/cynergi-dev.log 2>&1 || exit $?
   fi
