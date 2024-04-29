@@ -57,9 +57,11 @@ class GeneralLedgerProcedureService @Inject constructor(
    fun endCurrentMonth(dto: EndMonthProceduresDTO, user: User, locale: Locale): AccountPayableExpenseReportTemplate {
       val generalLedgerJournalPostPurgeDTO = GeneralLedgerJournalPostPurgeDTO(dto)
       val company = user.myCompany()
-      generalLedgerJournalService.transfer(user, generalLedgerJournalPostPurgeDTO, locale)
-      val dateRange = FinancialCalendarDateRangeDTO(dto.beginDate, dto.endDate)
-      financialCalendarRepository.closeAPAccountsForPeriods(dateRange, company)
+      if (dto.jeDate != null) {
+         generalLedgerJournalService.transfer(user, generalLedgerJournalPostPurgeDTO, locale)
+         val dateRange = FinancialCalendarDateRangeDTO(dto.beginDate, dto.endDate)
+         financialCalendarRepository.closeAPAccountsForPeriods(dateRange, company)
+      }
       return accountPayableInvoiceService.fetchExpenseReport(company, dto)
    }
 

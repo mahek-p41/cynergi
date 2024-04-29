@@ -123,6 +123,8 @@ class FinancialCalendarService @Inject constructor(
    }
 
    fun fetchLatestClosedAPPeriodDate(myCompany: CompanyEntity, beginDate: LocalDate): LocalDate? {
-      return financialCalendarRepository.fetchLatestClosedAPPeriodDate(myCompany, beginDate)
+      // Todo: fix this later
+      // return financialCalendarRepository.fetchLatestClosedAPPeriodDate(myCompany, beginDate)
+      return null
    }
 }
