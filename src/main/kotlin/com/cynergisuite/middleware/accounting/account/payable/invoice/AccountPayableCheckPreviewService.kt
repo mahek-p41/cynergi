@@ -66,12 +66,11 @@ class AccountPayableCheckPreviewService @Inject constructor(
 
       //zero amount check
       if (payment == null) {
-         val vendor = vendorRepository.findOne(dto.vendorId!!, company)
          val voidStatus = accountPayablePaymentStatusTypeRepository.findOne("V")
          val zeroCheck = AccountPayablePaymentEntity(
             null,
             bank,
-            vendor!!,
+            null,
             voidStatus!!,
             AccountPayablePaymentTypeType(1,"C", "Check", "check"),
             LocalDate.now(),
@@ -88,15 +87,10 @@ class AccountPayableCheckPreviewService @Inject constructor(
             LocalDate.now(),
             null,
             BigDecimal.ZERO,
-            "A/P VND# " + dto.vendorNumber,
+            dto.checkNumber,
             dto.checkNumber
          )
          bankReconciliationRepository.insert(br, company)
-         val details = AccountPayablePaymentDetailDTO(
-            null,
-            SimpleIdentifiableDTO(vendor),
-
-         )
          accountPayablePaymentService.create(AccountPayablePaymentDTO(zeroCheck), company)
       } else {
          if (payment.status?.value == "V") {

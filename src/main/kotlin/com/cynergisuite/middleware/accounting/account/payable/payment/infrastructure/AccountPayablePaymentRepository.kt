@@ -1047,7 +1047,7 @@ class AccountPayablePaymentRepository @Inject constructor(
          mapOf(
             "company_id" to company.id,
             "bank_id" to entity.bank.id,
-            "vendor_id" to entity.vendor.id,
+            "vendor_id" to entity.vendor?.id,
             "account_payable_payment_status_id" to entity.status.id,
             "account_payable_payment_type_id" to entity.type.id,
             "payment_number" to entity.paymentNumber,
@@ -1087,7 +1087,7 @@ class AccountPayablePaymentRepository @Inject constructor(
             "id" to entity.id,
             "company_id" to company.id,
             "bank_id" to entity.bank.id,
-            "vendor_id" to entity.vendor.id,
+            "vendor_id" to entity.vendor?.id,
             "account_payable_payment_status_id" to entity.status.id,
             "account_payable_payment_type_id" to entity.type.id,
             "payment_number" to entity.paymentNumber,

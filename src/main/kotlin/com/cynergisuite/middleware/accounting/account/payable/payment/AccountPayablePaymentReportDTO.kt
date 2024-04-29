@@ -61,8 +61,8 @@ data class AccountPayablePaymentReportDTO(
       this(
          id = entity.id,
          bankNumber = entity.bank.number,
-         vendorNumber = entity.vendor.number,
-         vendorName = entity.vendor.name,
+         vendorNumber = entity.vendor?.number,
+         vendorName = entity.vendor?.name,
          status = AccountPayablePaymentStatusTypeDTO(entity.status),
          type = AccountPayablePaymentTypeTypeDTO(entity.type),
          paymentDate = entity.paymentDate,

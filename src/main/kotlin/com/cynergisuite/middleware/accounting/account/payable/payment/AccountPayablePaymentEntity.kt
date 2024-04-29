@@ -10,7 +10,7 @@ import java.util.UUID
 data class AccountPayablePaymentEntity(
     val id: UUID? = null,
     val bank: BankEntity,
-    val vendor: VendorEntity,
+    val vendor: VendorEntity? = null,
     val status: AccountPayablePaymentStatusType,
     val type: AccountPayablePaymentTypeType,
     val paymentDate: LocalDate,
@@ -24,7 +24,7 @@ data class AccountPayablePaymentEntity(
    constructor(
       dto: AccountPayablePaymentDTO,
       bank: BankEntity,
-      vendor: VendorEntity,
+      vendor: VendorEntity?,
       status: AccountPayablePaymentStatusType,
       type: AccountPayablePaymentTypeType,
       paymentDetails: MutableSet<AccountPayablePaymentDetailEntity>? = null

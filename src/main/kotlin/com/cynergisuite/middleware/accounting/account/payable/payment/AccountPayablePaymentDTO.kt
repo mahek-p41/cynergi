@@ -62,7 +62,7 @@ data class AccountPayablePaymentDTO(
       this(
          id = entity.id,
          bank = SimpleIdentifiableDTO(entity.bank.id!!, entity.bank.number, entity.bank.name),
-         vendor = VendorDTO(entity.vendor),
+         vendor = entity.vendor?.let { VendorDTO(it) },
          status = AccountPayablePaymentStatusTypeDTO(entity.status),
          type = AccountPayablePaymentTypeTypeDTO(entity.type),
          paymentDate = entity.paymentDate,

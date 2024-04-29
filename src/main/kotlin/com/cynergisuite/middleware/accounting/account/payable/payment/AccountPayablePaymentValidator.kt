@@ -37,14 +37,13 @@ class AccountPayablePaymentValidator @Inject constructor(
 
    private fun doSharedValidation(dto: AccountPayablePaymentDTO, company: CompanyEntity): AccountPayablePaymentEntity {
       val bank = bankRepository.findOne(dto.bank!!.id!!, company)
-      val vendor = vendorRepository.findOne(dto.vendor!!.id!!, company)
+      val vendor = dto.vendor?.id?.let { vendorRepository.findOne(it, company) }
       val type = typeRepository.findOne(dto.type!!.value)
       val status = statusRepository.findOne(dto.status!!.value)
 
       doValidation { errors ->
          // non-nullable validations
          bank ?: errors.add(ValidationError("bank.id", NotFound(dto.bank!!.id!!)))
-         vendor ?: errors.add(ValidationError("vendor.id", NotFound(dto.vendor!!.id!!)))
          type ?: errors.add(ValidationError("type.value", NotFound(dto.type!!.value)))
          status ?: errors.add(ValidationError("status.value", NotFound(dto.status!!.value)))
       }
@@ -52,7 +51,7 @@ class AccountPayablePaymentValidator @Inject constructor(
       return AccountPayablePaymentEntity(
          dto,
          bank!!,
-         vendor!!,
+         vendor,
          status!!,
          type!!
       )
