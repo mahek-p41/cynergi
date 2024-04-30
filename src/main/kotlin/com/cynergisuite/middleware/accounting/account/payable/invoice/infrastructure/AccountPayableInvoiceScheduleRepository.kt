@@ -5,6 +5,7 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.getUuidOrNull
 import com.cynergisuite.extensions.insertReturning
 import com.cynergisuite.extensions.query
+import com.cynergisuite.extensions.update
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceDistributionDTO
 import com.cynergisuite.middleware.accounting.account.payable.invoice.AccountPayableInvoiceScheduleEntity
 import com.cynergisuite.middleware.accounting.account.payable.payment.infrastructure.AccountPayablePaymentTypeTypeRepository
@@ -114,6 +115,24 @@ class AccountPayableInvoiceScheduleRepository @Inject constructor(
       ) { rs, _ ->
          mapRow(rs)
       }
+   }
+
+   @Transactional
+   fun replace(invoiceId: UUID, entityList: List<AccountPayableInvoiceScheduleEntity>, company: CompanyEntity): List<AccountPayableInvoiceScheduleEntity> {
+      val updatedList: MutableList<AccountPayableInvoiceScheduleEntity> = mutableListOf()
+      jdbc.update(
+         """
+         DELETE FROM account_payable_invoice_schedule
+         WHERE invoice_id = :invoice_id
+      """.trimIndent(),
+         mapOf(
+            "invoice_id" to invoiceId,
+         )
+      )
+      entityList.forEach {
+         updatedList.add(insert(it))
+      }
+      return updatedList
    }
 
    private fun mapRow(

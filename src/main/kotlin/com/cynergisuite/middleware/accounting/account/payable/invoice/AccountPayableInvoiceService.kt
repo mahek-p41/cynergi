@@ -419,9 +419,16 @@ class AccountPayableInvoiceService @Inject constructor(
       }
 
       val updatedInvoiceDTO = transformEntity(updatedInvoice)
-      val updatedSchedule = scheduleList.map {
-         val type = if (it.externalPaymentTypeId != null) appttRepository.findOne(it.externalPaymentTypeId!!.value) else null
-         apInvoiceScheduleRepo.insert(AccountPayableInvoiceScheduleEntity(it, type))
+
+      val oldSchedule = apInvoiceScheduleRepo.fetchByInvoiceId(updatedInvoice.id, company)
+      val updatedSchedule = if (oldSchedule != scheduleList) {
+      val scheduleListEntity = scheduleList.map {
+            val type = if (it.externalPaymentTypeId != null) appttRepository.findOne(it.externalPaymentTypeId!!.value) else null
+            AccountPayableInvoiceScheduleEntity(it, type)
+         }
+      apInvoiceScheduleRepo.replace(updatedInvoice.id, scheduleListEntity, company)
+      } else {
+         oldSchedule
       }
       val scheduleDTO = updatedSchedule.map { AccountPayableInvoiceScheduleDTO(it)}
       val updatedInvoiceMaintenanceDTO = AccountPayableInvoiceMaintenanceDTO(updatedInvoiceDTO, updatedDistDTOS, scheduleDTO.toMutableList())
