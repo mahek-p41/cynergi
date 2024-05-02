@@ -4,7 +4,6 @@ import com.cynergisuite.domain.InventoryInquiryFilterRequest
 import com.cynergisuite.domain.InventoryInvoiceFilterRequest
 import com.cynergisuite.domain.Page
 import com.cynergisuite.extensions.findLocaleWithDefault
-import com.cynergisuite.extensions.toUuid
 import com.cynergisuite.middleware.authentication.AccessException
 import com.cynergisuite.middleware.authentication.user.UserService
 import com.cynergisuite.middleware.error.NotFoundException
@@ -13,7 +12,6 @@ import com.cynergisuite.middleware.error.ValidationException
 import com.cynergisuite.middleware.inventory.AssociateInventoryToInvoiceDTO
 import com.cynergisuite.middleware.inventory.InventoryDTO
 import com.cynergisuite.middleware.inventory.InventoryInquiryDTO
-import com.cynergisuite.middleware.inventory.InventoryInvoiceDTO
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.json.view.Full
 import com.cynergisuite.middleware.json.view.InventoryApp
@@ -32,7 +30,6 @@ import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.rules.SecurityRule.IS_AUTHENTICATED
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.enums.ParameterIn.PATH
 import io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY
 import io.swagger.v3.oas.annotations.media.Content
@@ -120,7 +117,7 @@ class InventoryController(
       ]
    )
    fun fetchByBarcode(
-      @Parameter(name = "lookupKey", `in` = ParameterIn.PATH, required = false) @QueryValue("lookupKey")
+      @Parameter(name = "lookupKey", `in` = PATH, required = false) @QueryValue("lookupKey")
       lookupKey: String,
       authentication: Authentication,
       httpRequest: HttpRequest<*>
@@ -188,7 +185,7 @@ class InventoryController(
 
    @Throws(AccessException::class)
    @Get(uri = "/invoice{?filterRequest*}", produces = [APPLICATION_JSON])
-   @Operation(tags = ["InventoryEndpoints"], summary = "Fetch an Inventory Inquiry", description = "Fetch an Account Payable Inventory Inquiry", operationId = "inventory-inquiry")
+   @Operation(tags = ["InventoryEndpoints"], summary = "Fetch a list of Inventory attached to an Invoice", description = "Fetch a list of Inventory attached to an Invoice", operationId = "inventory-invoiceInventory")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = Page::class))]),
@@ -203,7 +200,7 @@ class InventoryController(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): Page<InventoryDTO> {
-      logger.info("Fetching Account Payable Inventory Inquiry {}", filterRequest)
+      logger.info("Fetching Account Payable Inventory attached to Invoice {}", filterRequest)
 
       val user = userService.fetchUser(authentication)
 
@@ -256,12 +253,10 @@ class InventoryController(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): InventoryDTO {
-      logger.info("Requested Update Account Payable Recurring Invoice {}", dto)
+      logger.info("Requested Update Inventory {}", dto)
 
       val user = userService.fetchUser(authentication)
       val response = inventoryService.update(dto, user.myCompany(), httpRequest.findLocaleWithDefault())
-
-      //logger.debug("Requested Update Account Payable Recurring Invoice {} resulted in {}", dto, response)
 
       return response
    }
@@ -288,18 +283,16 @@ class InventoryController(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ) {
-      logger.info("Requested Update Account Payable Recurring Invoice {}", dto)
+      logger.info("Requested attach Inventory to Invoice {}", dto)
 
       val user = userService.fetchUser(authentication)
-      val response = inventoryService.associateInventoryToInvoice(id, dto, user.myCompany(), httpRequest.findLocaleWithDefault())
-
-      //logger.debug("Requested Update Account Payable Recurring Invoice {} resulted in {}", dto, response)
+      inventoryService.associateInventoryToInvoice(id, dto, user.myCompany(), httpRequest.findLocaleWithDefault())
 
    }
 
    @Put(value = "/invoice{?filterRequest*}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["InventoryEndpoints"], summary = "Update a single Inventory", description = "Update a single Inventory", operationId = "inventory-update")
+   @Operation(tags = ["InventoryEndpoints"], summary = "Attach Inventory to Invoice by criteria", description = "Attach Inventory to Invoice by criteria", operationId = "inventory-updateByCriteria")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = InventoryDTO::class))]),
@@ -317,19 +310,17 @@ class InventoryController(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): List<InventoryDTO> {
-      logger.info("Requested Update Account Payable Recurring Invoice {}", filterRequest)
+      logger.info("Requested attach Inventory to Invoice by criteria {}", filterRequest)
 
       val user = userService.fetchUser(authentication)
       val response = inventoryService.updateCriteria(filterRequest, invoiceId, user.myCompany(), httpRequest.findLocaleWithDefault())
-
-      //logger.debug("Requested Update Account Payable Recurring Invoice {} resulted in {}", dto, response)
 
       return response
    }
 
    @Delete(value = "/invoice{?filterRequest*}", processes = [APPLICATION_JSON])
    @Throws(ValidationException::class, NotFoundException::class)
-   @Operation(tags = ["InventoryEndpoints"], summary = "Update a single Inventory", description = "Update a single Inventory", operationId = "inventory-update")
+   @Operation(tags = ["InventoryEndpoints"], summary = "Detach Inventory by criteria", description = "Detach Inventory from Invoice by criteria", operationId = "inventory-removeByCriteria")
    @ApiResponses(
       value = [
          ApiResponse(responseCode = "200", content = [Content(mediaType = APPLICATION_JSON, schema = Schema(implementation = InventoryDTO::class))]),
@@ -345,12 +336,10 @@ class InventoryController(
       authentication: Authentication,
       httpRequest: HttpRequest<*>
    ): List<InventoryDTO> {
-      logger.info("Requested Update Account Payable Recurring Invoice {}", filterRequest)
+      logger.info("Requested detach Inventory to Invoice by criteria {}", filterRequest)
 
       val user = userService.fetchUser(authentication)
       val response = inventoryService.removeCriteria(filterRequest, user.myCompany(), httpRequest.findLocaleWithDefault())
-
-      //logger.debug("Requested Update Account Payable Recurring Invoice {} resulted in {}", dto, response)
 
       return response
    }
