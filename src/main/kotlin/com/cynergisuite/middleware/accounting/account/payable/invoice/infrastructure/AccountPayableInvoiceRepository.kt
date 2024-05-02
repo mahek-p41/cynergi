@@ -378,7 +378,7 @@ class AccountPayableInvoiceRepository @Inject constructor(
             JOIN account_payable_invoice_type_domain type               ON apInvoice.type_id = type.id
             JOIN account_payable_invoice_status_type_domain status      ON apInvoice.status_id = status.id
             LEFT JOIN purchase_order_header poHeader                    ON apInvoice.purchase_order_id = poHeader.id AND poHeader.deleted = FALSE
-            JOIN account_payable_invoice_schedule invoice_schedule      ON apInvoice.id = invoice_schedule.invoice_id AND invoice_schedule.deleted = FALSE
+            LEFT JOIN account_payable_invoice_schedule invoice_schedule      ON apInvoice.id = invoice_schedule.invoice_id AND invoice_schedule.deleted = FALSE
       """
    }
 
