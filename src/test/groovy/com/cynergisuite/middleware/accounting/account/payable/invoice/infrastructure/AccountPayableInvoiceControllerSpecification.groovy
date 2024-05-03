@@ -33,6 +33,11 @@ import com.cynergisuite.middleware.accounting.account.payable.payment.AccountPay
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.accounting.general.ledger.control.GeneralLedgerControlDataLoaderService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
+import com.cynergisuite.middleware.inventory.InventoryDTO
+import com.cynergisuite.middleware.inventory.InventoryDataLoaderService
+import com.cynergisuite.middleware.inventory.InventoryEntity
+import com.cynergisuite.middleware.inventory.infrastructure.InventoryRepository
+import com.cynergisuite.middleware.inventory.location.InventoryLocationTypeValueObject
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderDTO
 import com.cynergisuite.middleware.purchase.order.PurchaseOrderTestDataLoaderService
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService
@@ -72,6 +77,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    @Inject SimpleTransactionalSql sql
    @Inject AccountPayableControlTestDataLoaderService accountPayableControlDataLoaderService
    @Inject GeneralLedgerControlDataLoaderService generalLedgerControlDataLoaderService
+   @Inject InventoryRepository inventoryRepository
 
    void "fetch one" () {
       given:
@@ -1656,6 +1662,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
    void "ap invoice maintenance" () {
       given:
       final company = companyFactoryService.forDatasetCode('coravt')
+
       final StoreEntity store = storeFactoryService.store(1, company) as StoreEntity
       final vendorPmtTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final poVendorPmtTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
@@ -1663,7 +1670,11 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       final payToPmtTerm = vendorPaymentTermTestDataLoaderService.singleWithTwoMonthPayments(company)
       final shipViaList = shipViaFactoryService.stream(4, company).toList()
       final employeeList = employeeFactoryService.stream(4, company).toList()
-
+      List<InventoryDTO> inventoryList = new ArrayList<>()
+      final inventory = inventoryRepository.findOne(UUID.fromString("de508de0-0661-11ef-9db1-0242ac1f0004"), company)
+      final inventoryType = new InventoryLocationTypeValueObject(inventory.locationType.value, inventory.locationType.description)
+      final inventoryDTO = new InventoryDTO(inventory, inventoryType)
+      inventoryList.add(inventoryDTO)
       final vendorShipVia = shipViaList[0]
       final vendorIn = vendorTestDataLoaderService.single(company, vendorPmtTerm, vendorShipVia)
 
@@ -1748,7 +1759,7 @@ class AccountPayableInvoiceControllerSpecification extends ControllerSpecificati
       List<AccountPayableInvoiceDistributionDTO> glDistributions = new ArrayList<>()
       glDistributions.add(glDistribution1)
       glDistributions.add(glDistribution2)
-      def invMaintDTO = new AccountPayableInvoiceMaintenanceDTO(existingAPInvoiceDTO, glDistributions, schedule)
+      def invMaintDTO = new AccountPayableInvoiceMaintenanceDTO(existingAPInvoiceDTO, glDistributions, schedule, inventoryList)
 
       when:
       def result = post("$path/maintenance", invMaintDTO)
