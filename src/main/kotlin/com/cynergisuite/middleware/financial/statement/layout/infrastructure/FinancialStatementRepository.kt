@@ -45,7 +45,8 @@ class FinancialStatementRepository @Inject constructor(
          "company_id" to user.myCompany().id,
          "statement_type_id" to layoutDTO.statementTypeId,
          "name" to layoutDTO.name,
-         "header" to layoutDTO.header
+         "header" to layoutDTO.header,
+         "comparative" to layoutDTO.comparative
       )
 
       return jdbc.updateReturning(
@@ -54,13 +55,15 @@ class FinancialStatementRepository @Inject constructor(
             company_id,
             statement_type_id,
             name,
-            header
+            header,
+            comparative
         )
         VALUES (
             :company_id,
             :statement_type_id,
             :name,
-            :header
+            :header,
+            :comparative
         )
         RETURNING id
         """.trimIndent(),
@@ -81,6 +84,7 @@ class FinancialStatementRepository @Inject constructor(
                l.company_id               AS layout_company_id,
                l.statement_type_id        AS layout_statement_type_id,
                l.name                     AS layout_name,
+               l.comparative              AS layout_comparative,
                l.header                   AS layout_header,
                s.id                       AS section_id,
                s.name                     AS section_name,
@@ -109,7 +113,8 @@ class FinancialStatementRepository @Inject constructor(
                LEFT JOIN group_to_account ga ON g.id = ga.group_id
                LEFT JOIN financial_statement_group parent ON g.parent_id = parent.id
             WHERE l.company_id = :companyId
-            GROUP BY l.id, l.company_id, l.name, l.header, l.statement_type_id, s.id, s.name, s.total_name, g.id, g.name, g.total_name, g.sort_order, g.contra_account, g.parenthesize, g.underline_row_count, g.inactive, parent.id, l.total_elements
+            GROUP BY 
+               l.id, l.company_id, l.name, l.comparative, l.header, l.statement_type_id, s.id, s.name, s.total_name, g.id, g.name, g.total_name, g.sort_order, g.contra_account, g.parenthesize, g.underline_row_count, g.inactive, parent.id, l.total_elements
          """,
          mapOf("companyId" to user.myCompany().id, "limit" to pageRequest.size(), "offset" to pageRequest.offset()),
          pageRequest
@@ -122,6 +127,7 @@ class FinancialStatementRepository @Inject constructor(
                   name = rs.getString("layout_name"),
                   header = rs.getString("layout_header"),
                   statementTypeId = rs.getInt("layout_statement_type_id"),
+                  comparative = rs.getBoolean("layout_comparative"),
                   sections = mutableListOf()
                )
             }
@@ -178,6 +184,7 @@ class FinancialStatementRepository @Inject constructor(
                 l.company_id               AS layout_company_id,
                 l.statement_type_id        AS layout_statement_type_id,
                 l.name                     AS layout_name,
+                l.comparative              AS layout_comparative,
                 l.header                   AS layout_header,
                 s.id                       AS section_id,
                 s.name                     AS section_name,
@@ -198,7 +205,7 @@ class FinancialStatementRepository @Inject constructor(
             LEFT JOIN group_to_account ga ON g.id = ga.group_id
             LEFT JOIN financial_statement_group parent ON g.parent_id = parent.id
             WHERE l.id = :layoutId AND l.company_id = :companyId
-            GROUP BY l.id, l.company_id, l.name, l.header, l.statement_type_id, s.id, s.name, s.total_name, g.id, g.name, g.total_name, g.sort_order, g.contra_account, g.parenthesize, g.underline_row_count, g.inactive, parent.id
+            GROUP BY l.id, l.company_id, l.name, l.comparative, l.header, l.statement_type_id, s.id, s.name, s.total_name, g.id, g.name, g.total_name, g.sort_order, g.contra_account, g.parenthesize, g.underline_row_count, g.inactive, parent.id
         """,
          mapOf("layoutId" to id, "companyId" to company.id)
       ) { rs, _ ->
@@ -209,6 +216,7 @@ class FinancialStatementRepository @Inject constructor(
                   id = layoutId,
                   name = rs.getString("layout_name"),
                   header = rs.getString("layout_header"),
+                  comparative = rs.getBoolean("layout_comparative"),
                   statementTypeId = rs.getInt("layout_statement_type_id"),
                   sections = mutableListOf()
                )
@@ -270,6 +278,7 @@ class FinancialStatementRepository @Inject constructor(
          "company_id" to user.myCompany().id,
          "statement_type_id" to newLayout.statementTypeId,
          "name" to newLayout.name,
+         "comparative" to newLayout.comparative,
          "header" to newLayout.header
       )
 
@@ -280,7 +289,8 @@ class FinancialStatementRepository @Inject constructor(
             company_id = :company_id,
             statement_type_id = :statement_type_id,
             name = :name,
-            header = :header
+            header = :header,
+            comparative = :comparative
         WHERE id = :id
         """.trimIndent(),
          map

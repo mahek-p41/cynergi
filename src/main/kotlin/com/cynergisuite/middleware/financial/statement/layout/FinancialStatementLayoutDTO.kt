@@ -21,6 +21,10 @@ data class FinancialStatementLayoutDTO(
    var header: String,
 
    @field:NotNull
+   @field:Schema(description = "Add comparative data to financial statement", required = false)
+   var comparative: Boolean? = false,
+
+   @field:NotNull
    @field:Schema(description = "Type ID", required = true)
    var statementTypeId: Int,
 
