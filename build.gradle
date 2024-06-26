@@ -80,7 +80,7 @@ dependencies {
    implementation("org.slf4j:log4j-over-slf4j:1.7.36")
    implementation('org.slf4j:jcl-over-slf4j:1.7.36')
    implementation('org.apache.httpcomponents.core5:httpcore5:5.2')
-   implementation('org.apache.httpcomponents.client5:httpclient5:5.2.1')
+   implementation('org.apache.httpcomponents.client5:httpclient5:5.3.1')
    implementation('info.picocli:picocli:4.7.5')
    implementation('info.picocli:picocli-groovy:4.7.5')
    implementation("org.codehaus.groovy:groovy:${groovyVersion}")
