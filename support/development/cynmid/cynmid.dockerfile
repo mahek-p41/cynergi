@@ -1,4 +1,4 @@
-FROM docker.io/bellsoft/liberica-openjdk-debian:11.0.19-7
+FROM docker.io/bellsoft/liberica-openjdk-debian:22-37
 
 ARG USER_ID=1001
 ARG GROUP_ID=1001
