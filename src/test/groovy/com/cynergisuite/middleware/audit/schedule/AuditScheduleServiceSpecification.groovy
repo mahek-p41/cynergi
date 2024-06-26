@@ -7,7 +7,7 @@ import com.cynergisuite.middleware.audit.AuditUpdateDTO
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.audit.status.AuditStatusValueObject
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
-import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.common.error.ValidationException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 

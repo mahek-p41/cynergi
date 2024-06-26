@@ -8,7 +8,7 @@ import com.cynergisuite.middleware.accounting.bank.BankDTO
 import com.cynergisuite.middleware.accounting.bank.BankFactoryService
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationDataLoaderService
 import com.cynergisuite.middleware.employee.EmployeeValueObject
-import com.cynergisuite.middleware.error.ErrorDTO
+import com.cynergisuite.common.error.ErrorDTO
 import com.cynergisuite.middleware.region.RegionDTO
 import groovy.json.JsonOutput
 import io.micronaut.http.client.exceptions.HttpClientResponseException

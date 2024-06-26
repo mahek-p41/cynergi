@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.shipping.shipvia.infrastructure
 
 import com.cynergisuite.domain.StandardPageRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.error.ErrorDTO
+import com.cynergisuite.common.error.ErrorDTO
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaDTO
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoader
 import com.cynergisuite.middleware.shipping.shipvia.ShipViaTestDataLoaderService

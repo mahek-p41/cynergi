@@ -14,7 +14,7 @@ import com.cynergisuite.middleware.audit.detail.scan.area.AuditScanAreaFactorySe
 import com.cynergisuite.middleware.audit.status.AuditStatusFactory
 import com.cynergisuite.middleware.authentication.user.AuthenticatedEmployee
 import com.cynergisuite.middleware.employee.EmployeeTestDataLoaderService
-import com.cynergisuite.middleware.error.ErrorDTO
+import com.cynergisuite.common.error.ErrorDTO
 import com.cynergisuite.middleware.inventory.InventoryService
 import com.cynergisuite.middleware.inventory.infrastructure.InventoryPageRequest
 import io.micronaut.http.client.exceptions.HttpClientException

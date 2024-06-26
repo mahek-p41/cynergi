@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.notification.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.error.ErrorDTO
+import com.cynergisuite.common.error.ErrorDTO
 import com.cynergisuite.middleware.notification.NotificationDataLoaderService
 import com.cynergisuite.middleware.notification.NotificationRecipientDataLoaderService
 import com.cynergisuite.middleware.notification.NotificationRecipientTestDataLoader

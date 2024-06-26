@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.verification.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.error.ErrorDTO
+import com.cynergisuite.common.error.ErrorDTO
 import com.cynergisuite.middleware.verfication.Verification
 import com.cynergisuite.middleware.verfication.VerificationReference
 import com.cynergisuite.middleware.verfication.VerificationValueObject

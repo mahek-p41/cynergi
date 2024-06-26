@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.notification
 
-import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.common.error.ValidationException
 import com.cynergisuite.middleware.localization.EndDateBeforeStart
 import com.cynergisuite.middleware.localization.NotFound
 import com.cynergisuite.middleware.localization.NotNull

@@ -16,14 +16,14 @@ import com.cynergisuite.extensions.update
 import com.cynergisuite.extensions.updateReturning
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportDTO
 import com.cynergisuite.middleware.accounting.bank.BankReconciliationReportEntity
-import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
+import com.cynergisuite.middleware.accounting.bank.BankRepository
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconSummaryEntity
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationEntity
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationReportDetailEntity
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationTypeEnum
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastructure.BankReconciliationTypeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.error.NotFoundException
+import com.cynergisuite.common.exceptions.NotFoundException
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -38,9 +38,9 @@ import javax.transaction.Transactional
 
 @Singleton
 class BankReconciliationRepository @Inject constructor(
-   private val jdbc: Jdbi,
-   private val bankRepository: BankRepository,
-   private val bankReconciliationTypeRepository: BankReconciliationTypeRepository
+    private val jdbc: Jdbi,
+    private val bankRepository: BankRepository,
+    private val bankReconciliationTypeRepository: BankReconciliationTypeRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(BankReconciliationRepository::class.java)
 

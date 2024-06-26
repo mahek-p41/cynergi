@@ -7,7 +7,6 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.company.CompanyFactory
 import com.cynergisuite.middleware.company.CompanyFactoryService
 import com.cynergisuite.middleware.department.DepartmentEntity
-import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
 import com.cynergisuite.middleware.location.LocationEntity
 import com.cynergisuite.middleware.store.Store
 import com.github.javafaker.Faker

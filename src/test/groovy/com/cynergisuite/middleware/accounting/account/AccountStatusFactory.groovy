@@ -1,5 +1,6 @@
 package com.cynergisuite.middleware.accounting.account
 
+import com.cynergisuite.middleware.accounting.account.status.AccountStatusType
 import groovy.transform.CompileStatic
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton

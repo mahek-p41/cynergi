@@ -7,7 +7,7 @@ import com.cynergisuite.extensions.getUuid
 import com.cynergisuite.extensions.queryFullList
 import com.cynergisuite.middleware.accounting.bank.BankDTO
 import com.cynergisuite.middleware.accounting.bank.ReconcileBankAccountReportTemplate
-import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
+import com.cynergisuite.middleware.accounting.bank.BankRepository
 import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconciliationReportDetailDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.BankReconciliationTypeDTO
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastructure.BankReconciliationTypeRepository
@@ -24,10 +24,10 @@ import java.sql.ResultSet
 
 @Singleton
 class ReconcileBankAccountRepository @Inject constructor(
-   private val jdbc: Jdbi,
-   private val bankRepository: BankRepository,
-   private val bankReconciliationTypeRepository: BankReconciliationTypeRepository,
-   private val glSummaryRepository: GeneralLedgerSummaryRepository
+    private val jdbc: Jdbi,
+    private val bankRepository: BankRepository,
+    private val bankReconciliationTypeRepository: BankReconciliationTypeRepository,
+    private val glSummaryRepository: GeneralLedgerSummaryRepository
 ) {
    private val logger: Logger = LoggerFactory.getLogger(ReconcileBankAccountRepository::class.java)
 

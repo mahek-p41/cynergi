@@ -9,7 +9,7 @@ import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.employee.EmployeeEntity
 import com.cynergisuite.middleware.employee.EmployeeTestDataLoader
 import com.cynergisuite.middleware.employee.EmployeeTestDataLoaderService
-import com.cynergisuite.middleware.employee.infrastructure.EmployeeRepository
+import com.cynergisuite.middleware.employee.EmployeeRepository
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreTestDataLoaderService
 import com.cynergisuite.middleware.store.infrastructure.StoreRepository

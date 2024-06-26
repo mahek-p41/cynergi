@@ -5,7 +5,7 @@ import com.cynergisuite.domain.SimpleIdentifiableDTO
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.AccountStatusFactory
-import com.cynergisuite.middleware.accounting.account.AccountStatusTypeValueDTO
+import com.cynergisuite.middleware.accounting.account.status.AccountStatusTypeValueDTO
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.vendor.VendorEntity
 import com.cynergisuite.middleware.vendor.rebate.infrastructure.RebateRepository

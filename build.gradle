@@ -156,19 +156,19 @@ allOpen {
 }
 
 java {
-   sourceCompatibility = JavaVersion.toVersion("11")
+   sourceCompatibility = JavaVersion.toVersion("19")
 }
 
 tasks {
    compileKotlin {
       kotlinOptions {
-         jvmTarget = "11"
+         jvmTarget = "19"
          freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
       }
    }
    compileTestKotlin {
       kotlinOptions {
-         jvmTarget = "11"
+         jvmTarget = "19"
          freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
       }
    }

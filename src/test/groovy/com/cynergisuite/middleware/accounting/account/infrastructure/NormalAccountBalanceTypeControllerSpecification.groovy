@@ -2,7 +2,7 @@ package com.cynergisuite.middleware.accounting.account.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.NormalAccountBalanceFactoryService
-import com.cynergisuite.middleware.accounting.account.NormalAccountBalanceTypeDTO
+import com.cynergisuite.middleware.accounting.account.normalAccountBalance.NormalAccountBalanceTypeDTO
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject

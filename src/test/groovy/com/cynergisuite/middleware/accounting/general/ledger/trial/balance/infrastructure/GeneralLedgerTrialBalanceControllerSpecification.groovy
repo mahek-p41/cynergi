@@ -3,7 +3,7 @@ package com.cynergisuite.middleware.accounting.general.ledger.trial.balance.infr
 import com.cynergisuite.domain.GeneralLedgerTrialBalanceReportFilterRequest
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
-import com.cynergisuite.middleware.accounting.account.AccountStatusType
+import com.cynergisuite.middleware.accounting.account.status.AccountStatusType
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.AccountTypeFactory
 import com.cynergisuite.middleware.accounting.financial.calendar.FinancialCalendarDataLoaderService

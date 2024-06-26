@@ -2,7 +2,6 @@ package com.cynergisuite.middleware.accounting.bank
 
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
-import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.store.Store
 import com.cynergisuite.middleware.store.StoreDTO

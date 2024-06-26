@@ -1,12 +1,12 @@
 package com.cynergisuite.middleware.accounting.bank.reconciliation
 
 import com.cynergisuite.domain.ValidatorBase
-import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
+import com.cynergisuite.middleware.accounting.bank.BankRepository
 import com.cynergisuite.middleware.accounting.bank.reconciliation.infrastructure.BankReconciliationRepository
 import com.cynergisuite.middleware.accounting.bank.reconciliation.type.infrastructure.BankReconciliationTypeRepository
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.error.NotFoundException
-import com.cynergisuite.middleware.error.ValidationError
+import com.cynergisuite.common.exceptions.NotFoundException
+import com.cynergisuite.common.error.ValidationError
 import com.cynergisuite.middleware.localization.ClearedDateMustNotBeFutureDate
 import com.cynergisuite.middleware.localization.ClearedDateNotPriorTransactionDate
 import com.cynergisuite.middleware.localization.NotFound

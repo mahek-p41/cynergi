@@ -9,7 +9,7 @@ import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.AccountStatusFactory
-import com.cynergisuite.middleware.accounting.account.AccountStatusType
+import com.cynergisuite.middleware.accounting.account.status.AccountStatusType
 import com.cynergisuite.middleware.accounting.account.AccountTestDataLoaderService
 import com.cynergisuite.middleware.accounting.account.AccountTypeFactory
 import com.cynergisuite.middleware.accounting.account.AccountTypeFactoryService

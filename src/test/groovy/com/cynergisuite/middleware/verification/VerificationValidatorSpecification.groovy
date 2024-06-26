@@ -1,6 +1,6 @@
 package com.cynergisuite.middleware.verification
 
-import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.common.error.ValidationException
 import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.verfication.VerificationService
 import com.cynergisuite.middleware.verfication.VerificationValidator

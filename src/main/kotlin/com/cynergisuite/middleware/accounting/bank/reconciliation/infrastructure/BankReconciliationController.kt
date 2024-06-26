@@ -9,9 +9,9 @@ import com.cynergisuite.middleware.accounting.bank.reconciliation.BankReconcilia
 import com.cynergisuite.middleware.authentication.infrastructure.AccessControl
 import com.cynergisuite.middleware.authentication.infrastructure.AreaControl
 import com.cynergisuite.middleware.authentication.user.UserService
-import com.cynergisuite.middleware.error.NotFoundException
-import com.cynergisuite.middleware.error.PageOutOfBoundsException
-import com.cynergisuite.middleware.error.ValidationException
+import com.cynergisuite.common.exceptions.NotFoundException
+import com.cynergisuite.common.exceptions.PageOutOfBoundsException
+import com.cynergisuite.common.error.ValidationException
 import com.cynergisuite.middleware.json.view.Summary
 import com.fasterxml.jackson.annotation.JsonView
 import io.micronaut.core.annotation.Nullable

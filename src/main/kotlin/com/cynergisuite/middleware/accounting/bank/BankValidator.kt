@@ -1,11 +1,10 @@
 package com.cynergisuite.middleware.accounting.bank
 
 import com.cynergisuite.domain.ValidatorBase
-import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
-import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
+import com.cynergisuite.middleware.accounting.account.AccountRepository
 import com.cynergisuite.middleware.company.CompanyEntity
-import com.cynergisuite.middleware.error.NotFoundException
-import com.cynergisuite.middleware.error.ValidationError
+import com.cynergisuite.common.exceptions.NotFoundException
+import com.cynergisuite.common.error.ValidationError
 import com.cynergisuite.middleware.localization.AccountInUse
 import com.cynergisuite.middleware.localization.Duplicate
 import com.cynergisuite.middleware.localization.NotFound
@@ -46,7 +45,9 @@ class BankValidator @Inject constructor(
 
       doValidation { errors ->
          if (existingBank == null && existingBankByNumber != null) errors.add(ValidationError("number", Duplicate(bankDTO.number!!)))
-         if (existingBank != null && existingBankByNumber != null && existingBankByNumber.id != existingBank.id) errors.add(ValidationError("number", Duplicate(bankDTO.number!!)))
+         if (existingBank != null && existingBankByNumber != null && existingBankByNumber.id != existingBank.id) errors.add(
+             ValidationError("number", Duplicate(bankDTO.number!!))
+         )
          generalProfitCenter ?: errors.add(ValidationError("generalLedgerProfitCenter.id", NotFound(bankDTO.generalLedgerProfitCenter!!.id!!)))
          if (generalLedgerAccount == null) {
             errors.add(ValidationError("generalLedgerAccount.id", NotFound(bankDTO.generalLedgerAccount!!.id!!)))

@@ -1,7 +1,7 @@
 package com.cynergisuite.middleware.accounting.account.infrastructure
 
 import com.cynergisuite.domain.infrastructure.ControllerSpecificationBase
-import com.cynergisuite.middleware.accounting.account.AccountTypeDTO
+import com.cynergisuite.middleware.accounting.account.type.AccountTypeDTO
 import com.cynergisuite.middleware.accounting.account.AccountTypeFactoryService
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.extensions.spock.annotation.MicronautTest

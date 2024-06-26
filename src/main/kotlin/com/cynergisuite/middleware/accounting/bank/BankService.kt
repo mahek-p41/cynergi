@@ -5,11 +5,10 @@ import com.cynergisuite.domain.PageRequest
 import com.cynergisuite.middleware.accounting.account.AccountDTO
 import com.cynergisuite.middleware.accounting.account.AccountEntity
 import com.cynergisuite.middleware.accounting.account.AccountService
-import com.cynergisuite.middleware.accounting.account.AccountStatusTypeValueDTO
-import com.cynergisuite.middleware.accounting.account.AccountTypeDTO
-import com.cynergisuite.middleware.accounting.account.NormalAccountBalanceTypeDTO
-import com.cynergisuite.middleware.accounting.account.infrastructure.AccountRepository
-import com.cynergisuite.middleware.accounting.bank.infrastructure.BankRepository
+import com.cynergisuite.middleware.accounting.account.status.AccountStatusTypeValueDTO
+import com.cynergisuite.middleware.accounting.account.type.AccountTypeDTO
+import com.cynergisuite.middleware.accounting.account.normalAccountBalance.NormalAccountBalanceTypeDTO
+import com.cynergisuite.middleware.accounting.account.AccountRepository
 import com.cynergisuite.middleware.company.CompanyEntity
 import com.cynergisuite.middleware.localization.LocalizationService
 import com.cynergisuite.middleware.vendor.VendorTypeDTO
