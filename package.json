@@ -1,0 +1,26 @@
+{
+  "name": "cynergi-middleware",
+  "version": "1.0.0",
+  "description": "Provides the middleware component to the Java based Cynergi system.  All interactions from customers through to the database will go through this application.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky",
+    "lint": "eslint '*/.js'",
+    "prepare": "husky install"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "^9.5.0",
+    "eslint": "^9.5.0",
+    "globals": "^15.6.0",
+    "husky": "^9.0.11",
+    "eslint": "^7.32.0",
+    "husky": "^7.0.0"
+  }
+}
