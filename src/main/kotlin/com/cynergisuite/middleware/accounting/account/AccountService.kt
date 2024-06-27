@@ -1,5 +1,4 @@
 package com.cynergisuite.middleware.accounting.account
 
 
-class AccountService {
-}
+class AccountService {}

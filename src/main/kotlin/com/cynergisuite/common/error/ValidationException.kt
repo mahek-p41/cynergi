@@ -1,5 +1,3 @@
 package com.cynergisuite.common.error
 
-
-class ValidationException(
-)
+class ValidationException()
