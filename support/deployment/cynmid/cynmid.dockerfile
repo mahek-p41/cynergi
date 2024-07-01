@@ -5,7 +5,7 @@ ARG GROOVY_VER=4.0.3
 RUN mkdir -pv /tmp/gdk/${GROOVY_VER} && \
     cp -r /opt/groovy/* /tmp/gdk/${GROOVY_VER}
 
-FROM ibm-semeru-runtimes:open-11.0.15_10-jdk-focal
+FROM ibm-semeru-runtimes:open-22.0.1_8-jdk-focal
 
 ARG GROOVY_VER=4.0.3
 ARG USER_ID=1001
